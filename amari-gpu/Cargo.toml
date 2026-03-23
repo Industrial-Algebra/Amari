@@ -27,7 +27,7 @@ amari-enumerative = { workspace = true, optional = true }
 amari-functional = { workspace = true, optional = true }
 amari-topology = { workspace = true, optional = true }
 num-traits = { workspace = true }
-wgpu = "0.19"
+wgpu = "29.0"
 futures = "0.3"
 pollster = "0.4"
 bytemuck = { workspace = true, features = ["derive"] }
