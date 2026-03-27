@@ -5,7 +5,7 @@
 //!
 //! # Overview
 //!
-//! The crate offers GPU acceleration for:
+//! The crate currently offers GPU acceleration for:
 //!
 //! - **Clifford Algebra**: Batch geometric products with Cayley table upload
 //! - **GF(2) Algebra**: Batch binary Clifford products, matrix-vector multiply, Hamming distance (with `gf2` feature)
@@ -14,6 +14,10 @@
 //! - **Measure Theory**: GPU-accelerated Monte Carlo integration (with `measure` feature)
 //! - **Relativistic Physics**: Batch Lorentz transformations
 //! - **Topology**: Distance matrices, Morse critical points, Rips filtrations (with `topology` feature)
+//!
+//! Some source modules are still undergoing redesign before full public exposure.
+//! In particular, `tropical` remains redesign-pending, while `fusion` has only a
+//! reduced first public surface restored so far.
 //!
 //! # Quick Start
 //!
@@ -88,6 +92,8 @@
 //! | `functional` | GPU-accelerated functional analysis (Hilbert spaces, spectral theory) |
 //! | `topology` | GPU-accelerated computational topology (distance matrices, Morse theory) |
 //! | `gf2` | GPU-accelerated GF(2) algebra (binary Clifford products, matrix ops, Hamming distance) |
+//! | `fusion` | Reduced first public surface restored; broader fusion GPU API still redesign-pending |
+//! | `tropical` | Reserved feature; source exists, public module currently disabled pending redesign |
 //! | `webgpu` | Enable WebGPU backend |
 //! | `high-precision` | Enable 128-bit float support |
 //!
@@ -120,10 +126,8 @@ pub mod enumerative;
 pub mod functional;
 #[cfg(feature = "gf2")]
 pub mod gf2;
-// NOTE: fusion GPU module disabled - requires gpu submodules in amari_dual and amari_tropical crates
-// These would need to be created with DualGpuOps, GpuDualNumber, TropicalGpuOps, GpuTropicalNumber types
-// #[cfg(feature = "fusion")]
-// pub mod fusion;
+#[cfg(feature = "fusion")]
+pub mod fusion;
 #[cfg(feature = "holographic")]
 pub mod holographic;
 #[cfg(feature = "measure")]
@@ -136,8 +140,9 @@ pub mod probabilistic;
 pub mod relativistic;
 pub mod shaders;
 pub mod timeline;
-// NOTE: tropical GPU module disabled - has orphan impl issues (impl for TropicalMatrix/TropicalMultivector)
-// Would need to use extension traits instead of inherent impls
+// NOTE: `tropical.rs` exists in the source tree but is not currently re-exported.
+// The likely redesign path is wrapper types and/or extension traits rather than
+// inherent impls on `amari-tropical` types.
 // #[cfg(feature = "tropical")]
 // pub mod tropical;
 #[cfg(feature = "topology")]
@@ -167,6 +172,10 @@ pub use functional::{
 #[cfg(feature = "gf2")]
 pub use gf2::{
     GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair, GpuGF2MatVecData,
+};
+#[cfg(feature = "fusion")]
+pub use fusion::{
+    FusionGpuError, FusionGpuResult, GpuHolographicTDC, GpuResonatorOutput, HolographicGpuOps,
 };
 #[cfg(feature = "holographic")]
 pub use holographic::{

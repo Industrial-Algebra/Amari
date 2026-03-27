@@ -37,18 +37,18 @@ Integration Crates (consume APIs):
 | **amari-dual** | `dual` | Automatic differentiation GPU operations | ✅ Implemented (feature: `dual`) |
 | **amari-enumerative** | `enumerative` | Intersection theory, WDVV curve counting, matroid ranks, CSM classes, localization, operad, stability | ✅ Implemented (feature: `enumerative`) |
 | **amari-automata** | `automata` | Cellular automata GPU evolution | ✅ Implemented (feature: `automata`) |
-| **amari-fusion** | `fusion` | Tropical-dual-Clifford fusion operations | ✅ Implemented (feature: `fusion`) |
+| **amari-fusion** | `fusion` | Reduced first public surface for holographic/fusion-derived GPU operations | ⚠️ Partially restored; broader fusion GPU API still under redesign |
 | **amari-holographic** | `holographic` | Holographic memory, batch binding, similarity matrices, **optical field operations** | ✅ Implemented (feature: `holographic`) |
 | **amari-probabilistic** | `probabilistic` | Gaussian sampling, batch statistics, Monte Carlo | ✅ Implemented (feature: `probabilistic`) |
 | **amari-functional** | `functional` | Matrix operators, spectral decomposition, Hilbert spaces | ✅ Implemented (feature: `functional`) |
 | **amari-topology** | `topology` | Distance matrices, Morse critical points, Rips filtrations | ✅ Implemented (feature: `topology`) |
-| **amari-dynamics** | `dynamics` | Batch trajectory integration, bifurcation diagrams, Lyapunov spectra, basin computation | ✅ **New in v0.19.1** (feature: `dynamics`) |
 
 ### Temporarily Disabled Modules
 
 | Domain Crate | Module | Status | Reason |
 |-------------|--------|--------|--------|
-| amari-tropical | `tropical` | ❌ Disabled | Orphan impl rules - requires extension traits |
+| amari-fusion | `fusion` | ⚠️ Partially restored | Reduced public surface is available; broader fusion GPU API remains redesign-pending |
+| amari-tropical | `tropical` | ❌ Disabled | Source exists but public module is disabled; redesign likely needs extension traits or wrapper types |
 
 **Note**: If you were using `amari_gpu::tropical` in previous versions, this module is not available in v0.12.2. Use CPU implementations from `amari_tropical` directly until this module is restored in a future release.
 
@@ -67,10 +67,10 @@ enumerative = ["dep:amari-enumerative"]
 automata = ["dep:amari-automata"]
 fusion = ["dep:amari-fusion"]
 holographic = ["dep:amari-holographic"]  # Holographic memory GPU acceleration
-probabilistic = ["dep:rand", "dep:rand_distr"]  # Probabilistic GPU acceleration
+probabilistic = ["dep:amari-probabilistic", "dep:rand", "dep:rand_distr"]  # Probabilistic GPU acceleration
+fusion = ["dep:amari-fusion"]  # Reduced first public surface available; broader API still redesign-pending
 topology = ["dep:amari-topology"]  # Computational topology GPU acceleration
-dynamics = ["dep:amari-dynamics"]  # Dynamical systems GPU acceleration
-# tropical = ["dep:amari-tropical"]  # Disabled - orphan impl rules
+tropical = ["dep:amari-tropical"]  # Feature exists; public module currently disabled pending redesign
 ```
 
 ## Usage
@@ -123,40 +123,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Holographic Memory GPU Acceleration
 
 ```rust
-use amari_gpu::fusion::{HolographicGpuOps, GpuHolographicTDC};
+use amari_gpu::GpuHolographic;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize GPU holographic operations
-    let gpu_ops = HolographicGpuOps::new().await?;
+    // Initialize GPU holographic operations for 256-dimensional ProductCl3x32 vectors
+    let gpu = GpuHolographic::new(256).await?;
 
-    // Create GPU-compatible vectors
-    let keys: Vec<GpuHolographicTDC> = (0..1000)
-        .map(|i| GpuHolographicTDC {
-            tropical: i as f32,
-            dual_real: 1.0,
-            dual_dual: 0.0,
-            clifford: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            _padding: [0.0; 5],
-        })
-        .collect();
-
-    let values = keys.clone();
+    // Flat arrays: batch_size * dimension coefficients
+    let keys = vec![0.0f32; 1000 * 256];
+    let values = vec![0.0f32; 1000 * 256];
 
     // Batch bind 1000 key-value pairs on GPU
-    let bound = gpu_ops.batch_bind(&keys, &values).await?;
-    println!("Bound {} pairs on GPU", bound.len());
+    let bound = gpu.batch_bind(&keys, &values).await?;
+    println!("Produced {} coefficients", bound.len());
 
-    // Compute similarity matrix (1000x1000 = 1M similarities)
-    let similarities = gpu_ops.batch_similarity(&keys, &keys, true).await?;
+    // Batch similarity computation
+    let similarities = gpu.batch_similarity(&keys, &values).await?;
     println!("Computed {} similarities", similarities.len());
-
-    // GPU resonator cleanup
-    let noisy_input = &keys[0];
-    let codebook = &keys[..100];
-    let result = gpu_ops.resonator_cleanup(noisy_input, codebook).await?;
-    println!("Best match: index {}, similarity {:.4}",
-             result.best_index, result.best_similarity);
 
     Ok(())
 }
