@@ -107,3 +107,51 @@ fn canonical_corpus_constructor_deduplicates_input() {
 
     assert_eq!(corpus.as_slice(), &[CanonicalGame(one.0)]);
 }
+
+#[test]
+fn canonical_corpus_contains_named_games() {
+    let mut arena = GameArena::new();
+    let corpus = arena.canonical_corpus_by_birthday(1).unwrap();
+    let zero_id = arena.zero();
+    let star_id = arena.star().unwrap();
+    let zero = arena.canonicalize(zero_id).unwrap();
+    let star = arena.canonicalize(star_id).unwrap();
+
+    assert!(corpus.contains(zero));
+    assert!(corpus.contains(star));
+}
+
+#[test]
+fn canonical_corpus_buckets_group_small_named_games() {
+    let mut arena = GameArena::new();
+    let corpus = arena.canonical_corpus_by_birthday(1).unwrap();
+    let birthday_buckets = corpus.birthday_buckets(&arena).unwrap();
+    let node_buckets = corpus.reachable_node_buckets(&arena).unwrap();
+
+    assert_eq!(birthday_buckets.get(&0).unwrap().len(), 1);
+    assert_eq!(birthday_buckets.get(&1).unwrap().len(), 3);
+    assert_eq!(node_buckets.get(&1).unwrap().len(), 1);
+    assert_eq!(node_buckets.get(&2).unwrap().len(), 3);
+}
+
+#[test]
+fn canonical_corpus_stats_classify_small_named_games() {
+    let mut arena = GameArena::new();
+    let corpus = arena.canonical_corpus_by_birthday(1).unwrap();
+    let stats = corpus.stats(&mut arena).unwrap();
+
+    assert_eq!(stats.total_games(), 4);
+    assert_eq!(stats.birthday_histogram().get(&0), Some(&1));
+    assert_eq!(stats.birthday_histogram().get(&1), Some(&3));
+    assert_eq!(stats.reachable_node_histogram().get(&1), Some(&1));
+    assert_eq!(stats.reachable_node_histogram().get(&2), Some(&3));
+    assert_eq!(stats.outcome_counts().left_wins(), 1);
+    assert_eq!(stats.outcome_counts().right_wins(), 1);
+    assert_eq!(stats.outcome_counts().next_player_wins(), 1);
+    assert_eq!(stats.outcome_counts().previous_player_wins(), 1);
+    assert_eq!(stats.outcome_counts().total(), 4);
+    assert_eq!(stats.impartial_games(), 2);
+    assert_eq!(stats.partizan_games(), 2);
+    assert_eq!(stats.numeric_games(), 3);
+    assert_eq!(stats.non_numeric_games(), 1);
+}
