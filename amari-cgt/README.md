@@ -15,6 +15,7 @@ The initial implementation focuses on:
 - disjunctive sum / negation / subtraction
 - nim heaps and Sprague-Grundy values
 - small exhaustive generation by birthday or reachable node count
+- canonical corpus metadata, bucketing, and counting hooks
 
 ## Non-goals for the current implementation
 
