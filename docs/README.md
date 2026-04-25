@@ -29,6 +29,17 @@ Development guides and procedures:
 - **[CI Setup](development/CI_SETUP.md)** - Continuous integration configuration
 - **[Publishing Guide](development/PUBLISHING.md)** - Publishing to npm and crates.io
 
+### 🗺️ Roadmap & Design Proposals
+
+Forward-looking planning and proposed crate designs:
+
+- **[Amari-CGT Design](roadmap/amari-cgt_design.md)** - Proposed combinatorial game theory crate
+- **[Amari-Surreal Design](roadmap/amari-surreal_design.md)** - Proposed surreal numbers crate built on numeric games
+- **[CGT + Surreal Skeleton Proposal](roadmap/amari-cgt-surreal_skeleton.md)** - Workspace, module, and API skeleton for both crates
+- **[Amari-Calculus Design](roadmap/amari-calculus_design.md)** - Historical calculus crate design document
+- **[V1 Readiness Plan](roadmap/V1_READINESS_PLAN.md)** - Existing stabilization planning document
+- **[New Roadmap Proposal](roadmap/new_roadmap_proposal.md)** - Broader historical roadmap proposal
+
 ### 🧠 Claude Code
 
 AI-assisted development context:
