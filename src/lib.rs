@@ -16,6 +16,8 @@
 //! - Functional analysis on multivector spaces (opt-in via `functional` feature)
 //! - Algebraic topology: homology, persistent homology, Morse theory (opt-in via `topology` feature)
 //! - Dynamical systems: ODE solvers, stability, bifurcations, chaos (opt-in via `dynamics` feature)
+//! - Combinatorial game theory for short games and nimbers (opt-in via `cgt` feature)
+//! - Computable short surreal numbers built on numeric games (opt-in via `surreal` feature)
 //!
 //! Use `features = ["full"]` to enable all optional crates.
 
@@ -58,6 +60,12 @@ pub use amari_gpu as gpu;
 
 #[cfg(feature = "optimization")]
 pub use amari_optimization as optimization;
+
+#[cfg(feature = "cgt")]
+pub use amari_cgt as cgt;
+
+#[cfg(feature = "surreal")]
+pub use amari_surreal as surreal;
 
 // Deterministic computation module (opt-in via feature flag)
 #[cfg(feature = "deterministic")]
@@ -134,6 +142,16 @@ pub enum AmariError {
     #[cfg(feature = "dynamics")]
     #[error(transparent)]
     Dynamics(#[from] amari_dynamics::DynamicsError),
+
+    /// Combinatorial game theory error
+    #[cfg(feature = "cgt")]
+    #[error(transparent)]
+    Cgt(#[from] amari_cgt::CgtError),
+
+    /// Surreal number error
+    #[cfg(feature = "surreal")]
+    #[error(transparent)]
+    Surreal(#[from] amari_surreal::SurrealError),
 }
 
 /// Result type for Amari operations

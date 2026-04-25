@@ -4,10 +4,12 @@
 
 **`amari-cgt`** is a proposed Amari crate for **computational combinatorial game theory**, centered on short partizan and impartial games. The crate is intended to extend Amari into a new mathematical domain while staying aligned with the project's existing strengths: exact algebraic modeling, enumeration, canonical forms, and computational experimentation.
 
-**Status:** Proposal  
-**Role in Amari:** Experimental extension, initially outside the stable 1.0 nucleus  
+**Status:** Planned for `0.22.0`  
+**Target Release:** `0.22.0`  
+**Role in Amari:** Opt-in mathematical extension crate with high-completeness release goals  
 **Primary Goal:** A correct, memoized engine for short games and their canonical forms  
-**Primary Downstream Consumer:** `amari-surreal`
+**Primary Downstream Consumer:** `amari-surreal`  
+**Roadmap:** `docs/roadmap/v0.22.0-cgt-surreal-roadmap.md`
 
 This crate should be designed as the **foundational recursive game engine** on which future combinatorial-game and surreal-number work is built.
 

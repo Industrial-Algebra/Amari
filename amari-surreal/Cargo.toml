@@ -1,0 +1,32 @@
+[package]
+name = "amari-surreal"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Computable surreal numbers for the Amari library"
+repository = "https://github.com/justinelliottcobb/Amari"
+homepage = "https://github.com/justinelliottcobb/Amari"
+keywords = ["mathematics", "surreal-numbers", "dyadic", "combinatorial-game-theory"]
+categories = ["mathematics", "science", "algorithms"]
+
+[dependencies]
+amari-cgt = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true, optional = true }
+num-bigint = "0.4"
+num-integer = "0.1"
+num-traits = { workspace = true }
+
+[dev-dependencies]
+criterion = "0.8"
+
+[features]
+default = ["std"]
+std = []
+serialize = ["dep:serde"]
+
+[[bench]]
+name = "dyadic"
+harness = false

@@ -4,10 +4,12 @@
 
 **`amari-surreal`** is a proposed Amari crate for **computable surreal numbers**, built on top of validated numeric games from `amari-cgt`. Its purpose is to extend Amari into a new algebraic and analytic direction while staying computationally grounded.
 
-**Status:** Proposal  
-**Role in Amari:** Experimental extension, initially outside the stable 1.0 nucleus  
+**Status:** Planned for `0.22.0`  
+**Target Release:** `0.22.0`  
+**Role in Amari:** Opt-in mathematical extension crate with high-completeness release goals  
 **Primary Dependency:** `amari-cgt`  
-**Primary Goal:** Exact computation with short surreal numbers and a disciplined path toward restricted symbolic surreal extensions
+**Primary Goal:** Exact computation with short surreal numbers and a disciplined path toward restricted symbolic surreal extensions  
+**Roadmap:** `docs/roadmap/v0.22.0-cgt-surreal-roadmap.md`
 
 The crate should begin with **short surreals** and only later expand toward carefully chosen symbolic subclasses. It should not begin by claiming support for the full class of all surreal numbers.
 

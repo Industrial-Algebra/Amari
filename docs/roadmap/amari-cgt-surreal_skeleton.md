@@ -16,6 +16,9 @@ It complements:
 
 The goal here is not to finalize implementation details, but to make the next practical steps obvious when the project is ready to scaffold the crates.
 
+**Target Release:** `0.22.0`  
+**Roadmap:** `docs/roadmap/v0.22.0-cgt-surreal-roadmap.md`
+
 ---
 
 ## High-Level Dependency Plan
@@ -72,8 +75,8 @@ members = [
 ```toml
 [workspace.dependencies]
 # ... existing crates ...
-amari-cgt = { path = "amari-cgt", version = "0.19" }
-amari-surreal = { path = "amari-surreal", version = "0.19" }
+amari-cgt = { path = "amari-cgt", version = "0.22" }
+amari-surreal = { path = "amari-surreal", version = "0.22" }
 ```
 
 ### Umbrella crate dependencies
