@@ -4,7 +4,7 @@
 //!
 //! - arena-backed game storage
 //! - birthdays
-//! - negation, addition, and subtraction
+//! - negation, addition, subtraction, and canonicalization
 //! - partial comparison and outcome classes
 //! - impartiality checks and Grundy values
 

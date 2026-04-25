@@ -21,6 +21,7 @@ struct GameCaches {
     leq: HashMap<(GameId, GameId), bool>,
     negations: HashMap<GameId, GameId>,
     sums: HashMap<(GameId, GameId), GameId>,
+    canonicals: HashMap<GameId, GameId>,
     impartial: HashMap<GameId, bool>,
     grundy: HashMap<GameId, Nimber>,
     numeric: HashMap<GameId, bool>,
@@ -250,6 +251,32 @@ impl GameArena {
         Ok(CanonicalGame(game))
     }
 
+    /// Canonicalizes a short game by recursively reducing its option sets.
+    pub fn canonicalize(&mut self, game: GameId) -> Result<CanonicalGame> {
+        self.node(game)?;
+        if let Some(id) = self.caches.canonicals.get(&game) {
+            return Ok(CanonicalGame(*id));
+        }
+
+        let left_ids = self.left_options(game)?.to_vec();
+        let right_ids = self.right_options(game)?.to_vec();
+
+        let mut left = Vec::with_capacity(left_ids.len());
+        for option in left_ids {
+            left.push(self.canonicalize(option)?.0);
+        }
+
+        let mut right = Vec::with_capacity(right_ids.len());
+        for option in right_ids {
+            right.push(self.canonicalize(option)?.0);
+        }
+
+        let canonical_id = self.canonicalize_from_parts(left, right)?;
+        self.caches.canonicals.insert(game, canonical_id);
+        self.caches.canonicals.insert(canonical_id, canonical_id);
+        Ok(CanonicalGame(canonical_id))
+    }
+
     /// Returns whether a game is impartial.
     pub fn is_impartial(&mut self, game: GameId) -> Result<bool> {
         self.node(game)?;
@@ -292,12 +319,7 @@ impl GameArena {
             seen.insert(self.grundy(option)?.0);
         }
 
-        let mut mex = 0;
-        while seen.contains(&mex) {
-            mex += 1;
-        }
-
-        let value = Nimber(mex);
+        let value = self.mex(&seen);
         self.caches.grundy.insert(game, value);
         Ok(value)
     }
@@ -377,6 +399,160 @@ impl GameArena {
 
         self.caches.leq.insert((lhs, rhs), true);
         Ok(true)
+    }
+
+    fn canonicalize_from_parts(&mut self, left: Vec<GameId>, right: Vec<GameId>) -> Result<GameId> {
+        let mut left = self.normalized_options(left)?;
+        let mut right = self.normalized_options(right)?;
+
+        loop {
+            let left_dominated = self.remove_dominated_left(&left)?;
+            let right_dominated = self.remove_dominated_right(&right)?;
+            let candidate = self.from_options(left_dominated.clone(), right_dominated.clone())?;
+
+            let next_left = self.reduce_reversible_left(candidate, &left_dominated)?;
+            let next_left = self.normalized_options(next_left)?;
+            let next_right = self.reduce_reversible_right(candidate, &right_dominated)?;
+            let next_right = self.normalized_options(next_right)?;
+
+            if next_left == left && next_right == right {
+                return Ok(candidate);
+            }
+
+            left = next_left;
+            right = next_right;
+        }
+    }
+
+    fn normalized_options(&self, mut options: Vec<GameId>) -> Result<Vec<GameId>> {
+        for id in &options {
+            self.node(*id)?;
+        }
+
+        options.sort_unstable();
+        options.dedup();
+        Ok(options)
+    }
+
+    fn remove_dominated_left(&mut self, options: &[GameId]) -> Result<Vec<GameId>> {
+        let mut reduced = Vec::with_capacity(options.len());
+
+        'candidate: for (index, &option) in options.iter().enumerate() {
+            for (other_index, &other) in options.iter().enumerate() {
+                if index == other_index {
+                    continue;
+                }
+
+                if matches!(
+                    self.compare(option, other)?,
+                    GameComparison::Less | GameComparison::Equal
+                ) {
+                    continue 'candidate;
+                }
+            }
+
+            reduced.push(option);
+        }
+
+        Ok(reduced)
+    }
+
+    fn remove_dominated_right(&mut self, options: &[GameId]) -> Result<Vec<GameId>> {
+        let mut reduced = Vec::with_capacity(options.len());
+
+        'candidate: for (index, &option) in options.iter().enumerate() {
+            for (other_index, &other) in options.iter().enumerate() {
+                if index == other_index {
+                    continue;
+                }
+
+                if matches!(
+                    self.compare(option, other)?,
+                    GameComparison::Greater | GameComparison::Equal
+                ) {
+                    continue 'candidate;
+                }
+            }
+
+            reduced.push(option);
+        }
+
+        Ok(reduced)
+    }
+
+    fn reduce_reversible_left(
+        &mut self,
+        parent: GameId,
+        options: &[GameId],
+    ) -> Result<Vec<GameId>> {
+        let mut reduced = Vec::with_capacity(options.len());
+
+        for &option in options {
+            if let Some(reply) = self.reversible_left_reply(parent, option)? {
+                let replacements = self.left_options(reply)?.to_vec();
+                reduced.extend(replacements);
+            } else {
+                reduced.push(option);
+            }
+        }
+
+        Ok(reduced)
+    }
+
+    fn reduce_reversible_right(
+        &mut self,
+        parent: GameId,
+        options: &[GameId],
+    ) -> Result<Vec<GameId>> {
+        let mut reduced = Vec::with_capacity(options.len());
+
+        for &option in options {
+            if let Some(reply) = self.reversible_right_reply(parent, option)? {
+                let replacements = self.right_options(reply)?.to_vec();
+                reduced.extend(replacements);
+            } else {
+                reduced.push(option);
+            }
+        }
+
+        Ok(reduced)
+    }
+
+    fn reversible_left_reply(&mut self, parent: GameId, option: GameId) -> Result<Option<GameId>> {
+        let replies = self.right_options(option)?.to_vec();
+        for reply in replies {
+            if matches!(
+                self.compare(reply, parent)?,
+                GameComparison::Less | GameComparison::Equal
+            ) {
+                return Ok(Some(reply));
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn reversible_right_reply(&mut self, parent: GameId, option: GameId) -> Result<Option<GameId>> {
+        let replies = self.left_options(option)?.to_vec();
+        for reply in replies {
+            if matches!(
+                self.compare(reply, parent)?,
+                GameComparison::Greater | GameComparison::Equal
+            ) {
+                return Ok(Some(reply));
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn mex(&self, seen: &HashSet<u32>) -> Nimber {
+        let mut value = 0;
+        while seen.contains(&value) {
+            value += 1;
+        }
+
+        Nimber(value)
     }
 
     fn node(&self, game: GameId) -> Result<&GameNode> {

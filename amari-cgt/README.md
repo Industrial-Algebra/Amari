@@ -11,6 +11,7 @@ The initial implementation focuses on:
 - birthdays
 - normal-play outcome classes
 - partial comparison
+- canonicalization via dominated and reversible option reduction
 - disjunctive sum / negation / subtraction
 - nim heaps and Sprague-Grundy values
 

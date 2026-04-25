@@ -78,3 +78,66 @@ fn numeric_examples_work() {
     assert!(arena.is_numeric(half).unwrap());
     assert!(!arena.is_numeric(star).unwrap());
 }
+
+#[test]
+fn option_deduplication_is_stable() {
+    let mut arena = GameArena::new();
+    let zero = arena.zero();
+    let one = arena.one().unwrap();
+    let duplicate = arena.from_options([zero, zero], []).unwrap();
+
+    assert_eq!(duplicate, one);
+}
+
+#[test]
+fn canonicalization_removes_dominated_left_options() {
+    let mut arena = GameArena::new();
+    let zero = arena.zero();
+    let minus_one = arena.minus_one().unwrap();
+    let dominated = arena.from_options([minus_one, zero], []).unwrap();
+    let canonical = arena.canonicalize(dominated).unwrap().0;
+    let one = arena.one().unwrap();
+
+    assert_eq!(canonical, one);
+}
+
+#[test]
+fn canonicalization_removes_reversible_left_options() {
+    let mut arena = GameArena::new();
+    let zero = arena.zero();
+    let one = arena.one().unwrap();
+    let reversible_option = arena.from_options([one], [zero]).unwrap();
+    let game = arena.from_options([reversible_option], []).unwrap();
+    let canonical = arena.canonicalize(game).unwrap().0;
+
+    assert_eq!(canonical, zero);
+    assert!(arena.equivalent(game, zero).unwrap());
+}
+
+#[test]
+fn canonicalization_is_idempotent() {
+    let mut arena = GameArena::new();
+    let zero = arena.zero();
+    let minus_one = arena.minus_one().unwrap();
+    let dominated = arena.from_options([minus_one, zero], []).unwrap();
+    let once = arena.canonicalize(dominated).unwrap().0;
+    let twice = arena.canonicalize(once).unwrap().0;
+
+    assert_eq!(once, twice);
+}
+
+#[test]
+fn nim_sum_matches_xor() {
+    let mut arena = GameArena::new();
+
+    for lhs in 0..6 {
+        for rhs in 0..6 {
+            let lhs_heap = arena.nim_heap(lhs).unwrap();
+            let rhs_heap = arena.nim_heap(rhs).unwrap();
+            let sum = arena.add(lhs_heap, rhs_heap).unwrap();
+
+            assert!(arena.is_impartial(sum).unwrap());
+            assert_eq!(arena.grundy(sum).unwrap(), Nimber(lhs ^ rhs));
+        }
+    }
+}
