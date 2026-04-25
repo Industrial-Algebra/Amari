@@ -43,10 +43,24 @@ fn grundy_nim_heap(c: &mut Criterion) {
     });
 }
 
+fn canonical_corpus_node_count_three(c: &mut Criterion) {
+    c.bench_function("canonical_corpus_node_count_3", |b| {
+        b.iter(|| {
+            let mut arena = GameArena::new();
+            black_box(
+                arena
+                    .canonical_corpus_by_node_count(3)
+                    .expect("corpus generation should succeed"),
+            )
+        });
+    });
+}
+
 criterion_group!(
     comparison_benches,
     compare_small_games,
     canonicalize_small_game,
-    grundy_nim_heap
+    grundy_nim_heap,
+    canonical_corpus_node_count_three
 );
 criterion_main!(comparison_benches);

@@ -14,4 +14,8 @@ pub enum CgtError {
     /// Returned when an impartial-only operation is requested on a partizan game.
     #[error("game is not impartial: {0:?}")]
     NotImpartial(GameId),
+
+    /// Returned when an exhaustive bounded generation request becomes too large.
+    #[error("generation universe too large for exhaustive construction: {0}")]
+    GenerationUniverseTooLarge(usize),
 }

@@ -14,6 +14,7 @@ The initial implementation focuses on:
 - canonicalization via dominated and reversible option reduction
 - disjunctive sum / negation / subtraction
 - nim heaps and Sprague-Grundy values
+- small exhaustive generation by birthday or reachable node count
 
 ## Non-goals for the current implementation
 
@@ -22,6 +23,7 @@ The initial implementation focuses on:
 - scoring play
 - thermographs / temperatures
 - transfinite game universes
+- large exhaustive universe generation beyond intentionally small bounds
 
 ## Example
 
