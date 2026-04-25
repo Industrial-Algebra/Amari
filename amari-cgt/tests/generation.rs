@@ -34,6 +34,35 @@ fn birthday_generation_reports_large_universe() {
 }
 
 #[test]
+fn exact_birthday_layer_one_recovers_named_nonzero_games() {
+    let mut arena = GameArena::new();
+    let layer = arena.generate_birthday_layer(1).unwrap();
+    let layer_set: HashSet<_> = layer.into_iter().collect();
+
+    assert_eq!(layer_set.len(), 3);
+    assert!(!layer_set.contains(&arena.zero()));
+    assert!(layer_set.contains(&arena.star().unwrap()));
+    assert!(layer_set.contains(&arena.one().unwrap()));
+    assert!(layer_set.contains(&arena.minus_one().unwrap()));
+}
+
+#[test]
+fn birthday_layers_partition_small_generation() {
+    let mut arena = GameArena::new();
+    let layers = arena.generate_birthday_layers(2).unwrap();
+    let cumulative = arena.generate_by_birthday(2).unwrap();
+    let total_layered: usize = layers.values().map(Vec::len).sum();
+    let flattened: HashSet<_> = layers.values().flatten().copied().collect();
+    let cumulative_set: HashSet<_> = cumulative.into_iter().collect();
+
+    assert_eq!(layers.get(&0).unwrap().len(), 1);
+    assert_eq!(layers.get(&1).unwrap().len(), 3);
+    assert_eq!(layers.get(&2).unwrap().len(), 252);
+    assert_eq!(total_layered, 256);
+    assert_eq!(flattened, cumulative_set);
+}
+
+#[test]
 fn reachable_node_count_counts_shared_subgraphs_once() {
     let mut arena = GameArena::new();
     let one = arena.one().unwrap();
@@ -58,6 +87,35 @@ fn node_count_generation_finds_small_three_node_games() {
     assert!(games
         .iter()
         .all(|&game| arena.reachable_node_count(game).unwrap() <= 3));
+}
+
+#[test]
+fn exact_node_count_layer_two_recovers_small_two_node_games() {
+    let mut arena = GameArena::new();
+    let layer = arena.generate_node_count_layer(2).unwrap();
+    let layer_set: HashSet<_> = layer.into_iter().collect();
+
+    assert_eq!(layer_set.len(), 3);
+    assert!(!layer_set.contains(&arena.zero()));
+    assert!(layer_set.contains(&arena.star().unwrap()));
+    assert!(layer_set.contains(&arena.one().unwrap()));
+    assert!(layer_set.contains(&arena.minus_one().unwrap()));
+}
+
+#[test]
+fn node_count_layers_partition_small_generation() {
+    let mut arena = GameArena::new();
+    let layers = arena.generate_node_count_layers(3).unwrap();
+    let cumulative = arena.generate_by_node_count(3).unwrap();
+    let total_layered: usize = layers.values().map(Vec::len).sum();
+    let flattened: HashSet<_> = layers.values().flatten().copied().collect();
+    let cumulative_set: HashSet<_> = cumulative.into_iter().collect();
+
+    assert_eq!(layers.get(&1).unwrap().len(), 1);
+    assert_eq!(layers.get(&2).unwrap().len(), 3);
+    assert!(!layers.get(&3).unwrap().is_empty());
+    assert_eq!(total_layered, flattened.len());
+    assert_eq!(flattened, cumulative_set);
 }
 
 #[test]
@@ -96,6 +154,35 @@ fn canonical_corpus_by_birthday_preserves_small_named_canonicals() {
     for game in expected {
         assert!(canonical_set.contains(&game));
     }
+}
+
+#[test]
+fn canonical_exact_birthday_layer_one_contains_named_triple() {
+    let mut arena = GameArena::new();
+    let corpus = arena.canonical_corpus_birthday_layer(1).unwrap();
+    let star_id = arena.star().unwrap();
+    let one_id = arena.one().unwrap();
+    let minus_one_id = arena.minus_one().unwrap();
+    let star = arena.canonicalize(star_id).unwrap();
+    let one = arena.canonicalize(one_id).unwrap();
+    let minus_one = arena.canonicalize(minus_one_id).unwrap();
+
+    assert_eq!(corpus.len(), 3);
+    assert!(corpus.contains(star));
+    assert!(corpus.contains(one));
+    assert!(corpus.contains(minus_one));
+}
+
+#[test]
+fn canonical_layer_maps_preserve_expected_small_keys() {
+    let mut arena = GameArena::new();
+    let birthday_layers = arena.canonical_corpus_birthday_layers(1).unwrap();
+    let node_layers = arena.canonical_corpus_node_count_layers(2).unwrap();
+
+    assert_eq!(birthday_layers.get(&0).unwrap().len(), 1);
+    assert_eq!(birthday_layers.get(&1).unwrap().len(), 3);
+    assert_eq!(node_layers.get(&1).unwrap().len(), 1);
+    assert_eq!(node_layers.get(&2).unwrap().len(), 3);
 }
 
 #[test]

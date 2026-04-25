@@ -7,7 +7,7 @@
 //! - negation, addition, subtraction, and canonicalization
 //! - partial comparison and outcome classes
 //! - impartiality checks and Grundy values
-//! - small exhaustive generators for birthday/node-count-bounded corpora
+//! - small exhaustive generators for exact and bounded birthday/node-count layers
 
 pub mod arena;
 pub mod error;

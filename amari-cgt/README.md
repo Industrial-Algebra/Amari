@@ -14,8 +14,8 @@ The initial implementation focuses on:
 - canonicalization via dominated and reversible option reduction
 - disjunctive sum / negation / subtraction
 - nim heaps and Sprague-Grundy values
-- small exhaustive generation by birthday or reachable node count
-- canonical corpus metadata, bucketing, and counting hooks
+- small exhaustive generation by exact or bounded birthday / reachable-node layers
+- canonical corpus metadata, layer maps, bucketing, and counting hooks
 
 ## Non-goals for the current implementation
 

@@ -241,28 +241,89 @@ impl GameArena {
         Ok(visited.len())
     }
 
+    /// Exhaustively generates the exact birthday layer `target_birthday`.
+    ///
+    /// This returns only games whose birthday is exactly `target_birthday`.
+    /// The implementation is intentionally limited to very small exhaustive
+    /// searches and returns [`CgtError::GenerationUniverseTooLarge`] once the
+    /// option universe becomes too large.
+    pub fn generate_birthday_layer(&mut self, target_birthday: u32) -> Result<Vec<GameId>> {
+        let mut layers = self.generate_birthday_layers(target_birthday)?;
+        Ok(layers.remove(&target_birthday).unwrap_or_default())
+    }
+
+    /// Exhaustively generates birthday layers up to `max_birthday`.
+    ///
+    /// Each map entry contains only games whose birthday is exactly the key.
+    pub fn generate_birthday_layers(
+        &mut self,
+        max_birthday: u32,
+    ) -> Result<BTreeMap<u32, Vec<GameId>>> {
+        let zero = self.zero();
+        let mut layers = BTreeMap::new();
+        layers.insert(0, vec![zero]);
+
+        let mut cumulative = vec![zero];
+        for target_birthday in 1..=max_birthday {
+            let layer = self.generate_from_option_universe(&cumulative, |arena, game| {
+                Ok(arena.birthday(game)?.0 == target_birthday)
+            })?;
+            cumulative.extend(layer.iter().copied());
+            cumulative.sort_unstable();
+            cumulative.dedup();
+            layers.insert(target_birthday, layer);
+        }
+
+        Ok(layers)
+    }
+
     /// Exhaustively generates all short games whose birthday is at most `max_birthday`.
     ///
     /// This is intentionally limited to very small bounds. Once the candidate
     /// option universe becomes too large for exhaustive subset-pair generation,
     /// the method returns [`CgtError::GenerationUniverseTooLarge`].
     pub fn generate_by_birthday(&mut self, max_birthday: u32) -> Result<Vec<GameId>> {
+        let layers = self.generate_birthday_layers(max_birthday)?;
+        Ok(Self::flatten_game_layers(layers))
+    }
+
+    /// Exhaustively generates the exact reachable-node layer `target_nodes`.
+    ///
+    /// This returns only games whose reachable subgraph contains exactly
+    /// `target_nodes` distinct arena nodes.
+    pub fn generate_node_count_layer(&mut self, target_nodes: usize) -> Result<Vec<GameId>> {
+        let mut layers = self.generate_node_count_layers(target_nodes)?;
+        Ok(layers.remove(&target_nodes).unwrap_or_default())
+    }
+
+    /// Exhaustively generates reachable-node layers up to `max_nodes`.
+    ///
+    /// Each map entry contains only games whose reachable subgraph contains
+    /// exactly the key number of distinct arena nodes.
+    pub fn generate_node_count_layers(
+        &mut self,
+        max_nodes: usize,
+    ) -> Result<BTreeMap<usize, Vec<GameId>>> {
+        let mut layers = BTreeMap::new();
+        if max_nodes == 0 {
+            return Ok(layers);
+        }
+
         let zero = self.zero();
-        if max_birthday == 0 {
-            return Ok(vec![zero]);
-        }
+        layers.insert(1, vec![zero]);
 
-        let mut generated = vec![zero];
-        for target_birthday in 1..=max_birthday {
-            let next = self.generate_from_option_universe(&generated, |arena, game| {
-                Ok(arena.birthday(game)?.0 == target_birthday)
+        let mut cumulative = vec![zero];
+        for target_nodes in 2..=max_nodes {
+            let layer = self.generate_from_option_universe(&cumulative, |arena, game| {
+                Ok(arena.reachable_node_count(game)? == target_nodes)
             })?;
-            generated.extend(next);
-            generated.sort_unstable();
-            generated.dedup();
+            cumulative.extend(layer.iter().copied());
+            cumulative.sort_unstable();
+            cumulative.dedup();
+            layers.insert(target_nodes, layer);
         }
 
-        Ok(generated)
+        Ok(layers)
     }
 
     /// Exhaustively generates all short games whose reachable subgraph contains
@@ -272,38 +333,56 @@ impl GameArena {
     /// option universe becomes too large for exhaustive subset-pair generation,
     /// the method returns [`CgtError::GenerationUniverseTooLarge`].
     pub fn generate_by_node_count(&mut self, max_nodes: usize) -> Result<Vec<GameId>> {
-        if max_nodes == 0 {
-            return Ok(Vec::new());
-        }
+        let layers = self.generate_node_count_layers(max_nodes)?;
+        Ok(Self::flatten_game_layers(layers))
+    }
 
-        let zero = self.zero();
-        if max_nodes == 1 {
-            return Ok(vec![zero]);
-        }
+    /// Builds a deduplicated canonical corpus from the exact birthday layer.
+    pub fn canonical_corpus_birthday_layer(
+        &mut self,
+        target_birthday: u32,
+    ) -> Result<CanonicalCorpus> {
+        let games = self.generate_birthday_layer(target_birthday)?;
+        self.canonical_corpus_from_games(games)
+    }
 
-        let mut generated = vec![zero];
-        for target_nodes in 2..=max_nodes {
-            let next = self.generate_from_option_universe(&generated, |arena, game| {
-                Ok(arena.reachable_node_count(game)? == target_nodes)
-            })?;
-            generated.extend(next);
-            generated.sort_unstable();
-            generated.dedup();
-        }
-
-        Ok(generated)
+    /// Builds canonical corpora for each exact birthday layer up to `max_birthday`.
+    pub fn canonical_corpus_birthday_layers(
+        &mut self,
+        max_birthday: u32,
+    ) -> Result<BTreeMap<u32, CanonicalCorpus>> {
+        let layers = self.generate_birthday_layers(max_birthday)?;
+        self.canonical_corpora_from_layers(layers)
     }
 
     /// Builds a deduplicated canonical corpus from the birthday-bounded generator.
     pub fn canonical_corpus_by_birthday(&mut self, max_birthday: u32) -> Result<CanonicalCorpus> {
-        let games = self.generate_by_birthday(max_birthday)?;
+        let layers = self.canonical_corpus_birthday_layers(max_birthday)?;
+        Ok(Self::flatten_canonical_corpora(layers))
+    }
+
+    /// Builds a deduplicated canonical corpus from the exact reachable-node layer.
+    pub fn canonical_corpus_node_count_layer(
+        &mut self,
+        target_nodes: usize,
+    ) -> Result<CanonicalCorpus> {
+        let games = self.generate_node_count_layer(target_nodes)?;
         self.canonical_corpus_from_games(games)
+    }
+
+    /// Builds canonical corpora for each exact reachable-node layer up to `max_nodes`.
+    pub fn canonical_corpus_node_count_layers(
+        &mut self,
+        max_nodes: usize,
+    ) -> Result<BTreeMap<usize, CanonicalCorpus>> {
+        let layers = self.generate_node_count_layers(max_nodes)?;
+        self.canonical_corpora_from_layers(layers)
     }
 
     /// Builds a deduplicated canonical corpus from the node-count-bounded generator.
     pub fn canonical_corpus_by_node_count(&mut self, max_nodes: usize) -> Result<CanonicalCorpus> {
-        let games = self.generate_by_node_count(max_nodes)?;
-        self.canonical_corpus_from_games(games)
+        let layers = self.canonical_corpus_node_count_layers(max_nodes)?;
+        Ok(Self::flatten_canonical_corpora(layers))
     }
 
     fn canonical_corpus_from_games(&mut self, games: Vec<GameId>) -> Result<CanonicalCorpus> {
@@ -312,6 +391,41 @@ impl GameArena {
             canonical_games.push(self.canonicalize(game)?);
         }
         Ok(CanonicalCorpus::new(canonical_games))
+    }
+
+    fn canonical_corpora_from_layers<K>(
+        &mut self,
+        layers: BTreeMap<K, Vec<GameId>>,
+    ) -> Result<BTreeMap<K, CanonicalCorpus>>
+    where
+        K: Ord,
+    {
+        let mut corpora = BTreeMap::new();
+        for (key, games) in layers {
+            corpora.insert(key, self.canonical_corpus_from_games(games)?);
+        }
+        Ok(corpora)
+    }
+
+    fn flatten_game_layers<K>(layers: BTreeMap<K, Vec<GameId>>) -> Vec<GameId>
+    where
+        K: Ord,
+    {
+        let mut games: Vec<_> = layers.into_values().flatten().collect();
+        games.sort_unstable();
+        games.dedup();
+        games
+    }
+
+    fn flatten_canonical_corpora<K>(layers: BTreeMap<K, CanonicalCorpus>) -> CanonicalCorpus
+    where
+        K: Ord,
+    {
+        let games = layers
+            .into_values()
+            .flat_map(CanonicalCorpus::into_inner)
+            .collect();
+        CanonicalCorpus::new(games)
     }
 
     fn generate_from_option_universe<F>(
