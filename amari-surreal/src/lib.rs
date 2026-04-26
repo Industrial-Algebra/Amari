@@ -4,6 +4,7 @@
 //!
 //! - exact dyadic arithmetic
 //! - conversion from numeric short games in `amari-cgt`
+//! - reconstruction back into numeric short games
 //! - simplest-number construction for finite cuts
 //!
 //! # Example

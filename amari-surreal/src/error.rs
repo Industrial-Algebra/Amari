@@ -5,7 +5,7 @@ use thiserror::Error;
 pub type Result<T> = core::result::Result<T, SurrealError>;
 
 /// Errors produced by `amari-surreal`.
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum SurrealError {
     /// Error propagated from `amari-cgt`.
     #[error(transparent)]
@@ -22,4 +22,8 @@ pub enum SurrealError {
     /// Returned when division by zero is attempted.
     #[error("division by zero")]
     DivisionByZero,
+
+    /// Returned when an exact quotient leaves the dyadic short-surreal layer.
+    #[error("quotient is not dyadic in the short-surreal layer")]
+    NonDyadicQuotient,
 }

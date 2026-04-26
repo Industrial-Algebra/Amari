@@ -1,3 +1,4 @@
+use crate::error::{Result, SurrealError};
 use amari_cgt::Birthday;
 use num_bigint::BigInt;
 use num_integer::Integer;
@@ -66,6 +67,24 @@ impl Dyadic {
         self.numer.is_zero()
     }
 
+    /// Returns whether the dyadic is positive.
+    #[must_use]
+    pub fn is_positive(&self) -> bool {
+        self.numer.is_positive()
+    }
+
+    /// Returns whether the dyadic is negative.
+    #[must_use]
+    pub fn is_negative(&self) -> bool {
+        self.numer.is_negative()
+    }
+
+    /// Returns the absolute value of the dyadic.
+    #[must_use]
+    pub fn abs(&self) -> Self {
+        Self::new(self.numer.abs(), self.exponent)
+    }
+
     /// Returns a normalized version of the dyadic.
     #[must_use]
     pub fn normalize(mut self) -> Self {
@@ -82,23 +101,25 @@ impl Dyadic {
         self
     }
 
-    /// Returns a checked reciprocal.
-    pub fn checked_reciprocal(&self) -> Option<Self> {
+    /// Returns a checked reciprocal within the dyadic short-surreal layer.
+    pub fn checked_reciprocal(&self) -> Result<Self> {
         if self.numer.is_zero() {
-            return None;
+            return Err(SurrealError::DivisionByZero);
         }
 
-        if self.numer.abs() == BigInt::one() {
-            let sign = if self.numer.is_negative() { -1 } else { 1 };
-            return Some(Self::new(sign, self.exponent));
-        }
-
-        None
+        let numer = BigInt::one() << (self.exponent as usize);
+        Self::from_ratio(numer, self.numer.clone())
     }
 
-    /// Returns `self / rhs` when the result remains dyadic.
-    pub fn checked_div(&self, rhs: &Self) -> Option<Self> {
-        rhs.checked_reciprocal().map(|inv| self.clone() * inv)
+    /// Returns `self / rhs` when the quotient remains dyadic.
+    pub fn checked_div(&self, rhs: &Self) -> Result<Self> {
+        if rhs.numer.is_zero() {
+            return Err(SurrealError::DivisionByZero);
+        }
+
+        let numer = self.numer.clone() << (rhs.exponent as usize);
+        let denom = rhs.numer.clone() << (self.exponent as usize);
+        Self::from_ratio(numer, denom)
     }
 
     /// Returns the floor as an integer.
@@ -131,6 +152,46 @@ impl Dyadic {
 
     fn scaled_numer(&self, exponent: u32) -> BigInt {
         self.numer.clone() << ((exponent - self.exponent) as usize)
+    }
+
+    fn from_ratio(mut numer: BigInt, mut denom: BigInt) -> Result<Self> {
+        if denom.is_zero() {
+            return Err(SurrealError::DivisionByZero);
+        }
+
+        if denom.is_negative() {
+            numer = -numer;
+            denom = -denom;
+        }
+
+        let gcd = numer.gcd(&denom);
+        if !gcd.is_zero() {
+            numer /= &gcd;
+            denom /= gcd;
+        }
+
+        let exponent =
+            Self::power_of_two_exponent(&denom).ok_or(SurrealError::NonDyadicQuotient)?;
+        Ok(Self::new(numer, exponent))
+    }
+
+    fn power_of_two_exponent(value: &BigInt) -> Option<u32> {
+        if value.is_zero() || value.is_negative() {
+            return None;
+        }
+
+        if *value == BigInt::one() {
+            return Some(0);
+        }
+
+        let mut value = value.clone();
+        let mut exponent = 0;
+        while value.is_even() {
+            value /= 2u8;
+            exponent += 1;
+        }
+
+        (value == BigInt::one()).then_some(exponent)
     }
 }
 

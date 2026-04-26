@@ -8,6 +8,7 @@ The current implementation focuses on **short surreal numbers**:
 
 - exact dyadic arithmetic
 - conversion from numeric short games in `amari-cgt`
+- reconstruction back into numeric short games
 - simplest-number construction for finite cuts
 - birthday-aware short surreal values
 

@@ -35,6 +35,7 @@ Forward-looking planning and proposed crate designs:
 
 - **[v0.22.0 CGT + Surreal Roadmap](roadmap/v0.22.0-cgt-surreal-roadmap.md)** - Formal roadmap for releasing `amari-cgt` and `amari-surreal` at `0.22.0`
 - **[v0.22.0 CGT + Surreal Checklist](roadmap/v0.22.0-cgt-surreal-checklist.md)** - Execution checklist and milestone tracker for the `0.22.0` cycle
+- **[v0.22.0 CGT + Surreal Completeness Backlog](roadmap/v0.22.0-cgt-surreal-completeness-backlog.md)** - Additional backlog for deepening `amari-cgt` and `amari-surreal` while earlier release cycles are still in flight
 - **[Amari-CGT Design](roadmap/amari-cgt_design.md)** - Proposed combinatorial game theory crate
 - **[Amari-Surreal Design](roadmap/amari-surreal_design.md)** - Proposed surreal numbers crate built on numeric games
 - **[Amari-Surcomplex Design](roadmap/amari-surcomplex_design.md)** - Proposed later surreal-complex extension crate built on mature `amari-surreal`
