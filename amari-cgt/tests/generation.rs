@@ -457,6 +457,35 @@ fn birthday_growth_helpers_build_cumulative_and_comparative_summaries() {
 }
 
 #[test]
+fn layer_report_render_helpers_produce_lightweight_tables() {
+    let mut arena = GameArena::new();
+    let report = arena.analyze_birthday_layers(1).unwrap();
+
+    let layer_table = report.render_layer_table();
+    let growth_table = report.render_growth_table();
+
+    assert_eq!(
+        layer_table,
+        concat!(
+            "layer | raw | canon | reduced | numeric | non-num | impartial | partizan | left | right | next | prev\n",
+            "------+-----+-------+---------+---------+---------+-----------+----------+------+-------+------+-----\n",
+            "0     | 1   | 1     | 0       | 1       | 0       | 1         | 0        | 0    | 0     | 0    | 1\n",
+            "1     | 3   | 3     | 0       | 2       | 1       | 1         | 2        | 1    | 1     | 1    | 0"
+        )
+    );
+
+    assert_eq!(
+        growth_table,
+        concat!(
+            "layer | raw | raw_cum | canon | canon_cum | reduced | reduced_cum | numeric | numeric_cum | non-num | non-num_cum | impartial | impartial_cum | partizan | partizan_cum\n",
+            "------+-----+---------+-------+-----------+---------+-------------+---------+-------------+---------+-------------+-----------+---------------+----------+-------------\n",
+            "0     | 1   | 1       | 1     | 1         | 0       | 0           | 1       | 1           | 0       | 0           | 1         | 1             | 0        | 0\n",
+            "1     | 3   | 4       | 3     | 4         | 0       | 0           | 2       | 3           | 1       | 1           | 1         | 2             | 2        | 2"
+        )
+    );
+}
+
+#[test]
 fn node_count_layer_report_tracks_small_named_growth() {
     let mut arena = GameArena::new();
     let report = arena.analyze_node_count_layers(2).unwrap();

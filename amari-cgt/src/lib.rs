@@ -12,7 +12,7 @@
 //! - partial comparison and outcome classes
 //! - impartiality checks and Grundy values
 //! - small exhaustive generators for exact and bounded birthday/node-count layers
-//! - layer analysis reports plus report-level summary helpers for canonical growth, cumulative/comparative views, and classification trends
+//! - layer analysis reports plus report-level summary helpers for canonical growth, cumulative/comparative views, printable text tables, and classification trends
 //!
 //! # Example
 //!

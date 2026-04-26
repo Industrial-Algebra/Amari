@@ -2,6 +2,7 @@ use crate::arena::GameArena;
 use crate::error::{CgtError, Result};
 use crate::game::{CanonicalGame, GameId, OutcomeClass};
 use std::collections::{BTreeMap, HashSet};
+use std::fmt::{self, Write as _};
 
 /// Maximum option-universe size used by the exhaustive bounded generators.
 ///
@@ -579,10 +580,158 @@ impl<K: Ord + Clone> LayerAnalysisReport<K> {
     }
 }
 
+impl<K: Ord + Clone + fmt::Display> LayerAnalysisReport<K> {
+    /// Renders an exact per-layer summary as a lightweight text table.
+    #[must_use]
+    pub fn render_layer_table(&self) -> String {
+        let rows = self
+            .layers
+            .iter()
+            .map(|(key, analysis)| {
+                vec![
+                    key.to_string(),
+                    analysis.raw_game_count().to_string(),
+                    analysis.canonical_game_count().to_string(),
+                    analysis.canonical_reduction().to_string(),
+                    analysis.numeric_game_count().to_string(),
+                    analysis.non_numeric_game_count().to_string(),
+                    analysis.impartial_game_count().to_string(),
+                    analysis.partizan_game_count().to_string(),
+                    analysis.outcome_counts().left_wins().to_string(),
+                    analysis.outcome_counts().right_wins().to_string(),
+                    analysis.outcome_counts().next_player_wins().to_string(),
+                    analysis.outcome_counts().previous_player_wins().to_string(),
+                ]
+            })
+            .collect();
+
+        render_text_table(
+            &[
+                "layer",
+                "raw",
+                "canon",
+                "reduced",
+                "numeric",
+                "non-num",
+                "impartial",
+                "partizan",
+                "left",
+                "right",
+                "next",
+                "prev",
+            ],
+            rows,
+        )
+    }
+
+    /// Renders exact-vs-cumulative growth counts as a lightweight text table.
+    #[must_use]
+    pub fn render_growth_table(&self) -> String {
+        let rows = self
+            .growth_summaries()
+            .into_iter()
+            .map(|summary| {
+                vec![
+                    summary.layer().to_string(),
+                    summary.exact().raw_games().to_string(),
+                    summary.cumulative().raw_games().to_string(),
+                    summary.exact().canonical_games().to_string(),
+                    summary.cumulative().canonical_games().to_string(),
+                    summary.exact().canonical_reduction().to_string(),
+                    summary.cumulative().canonical_reduction().to_string(),
+                    summary.exact().numeric_games().to_string(),
+                    summary.cumulative().numeric_games().to_string(),
+                    summary.exact().non_numeric_games().to_string(),
+                    summary.cumulative().non_numeric_games().to_string(),
+                    summary.exact().impartial_games().to_string(),
+                    summary.cumulative().impartial_games().to_string(),
+                    summary.exact().partizan_games().to_string(),
+                    summary.cumulative().partizan_games().to_string(),
+                ]
+            })
+            .collect();
+
+        render_text_table(
+            &[
+                "layer",
+                "raw",
+                "raw_cum",
+                "canon",
+                "canon_cum",
+                "reduced",
+                "reduced_cum",
+                "numeric",
+                "numeric_cum",
+                "non-num",
+                "non-num_cum",
+                "impartial",
+                "impartial_cum",
+                "partizan",
+                "partizan_cum",
+            ],
+            rows,
+        )
+    }
+}
+
 /// Small deduplicated collection of canonical games.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct CanonicalCorpus {
     games: Vec<CanonicalGame>,
+}
+
+fn render_text_table(headers: &[&str], rows: Vec<Vec<String>>) -> String {
+    let mut widths: Vec<_> = headers.iter().map(|header| header.len()).collect();
+    for row in &rows {
+        debug_assert_eq!(row.len(), headers.len());
+        for (index, cell) in row.iter().enumerate() {
+            widths[index] = widths[index].max(cell.len());
+        }
+    }
+
+    let mut table = String::new();
+    write_table_row(&mut table, headers.iter().copied(), &widths)
+        .expect("writing to a string must succeed");
+    table.push('\n');
+    write_table_separator(&mut table, &widths).expect("writing to a string must succeed");
+
+    for row in rows {
+        table.push('\n');
+        write_table_row(&mut table, row.iter().map(String::as_str), &widths)
+            .expect("writing to a string must succeed");
+    }
+
+    table
+}
+
+fn write_table_row<'a, I>(table: &mut String, cells: I, widths: &[usize]) -> fmt::Result
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let cells: Vec<_> = cells.into_iter().collect();
+    for (index, cell) in cells.iter().enumerate() {
+        if index > 0 {
+            table.push_str(" | ");
+        }
+        if index + 1 == cells.len() {
+            table.push_str(cell);
+        } else {
+            write!(table, "{cell:<width$}", width = widths[index])?;
+        }
+    }
+    Ok(())
+}
+
+fn write_table_separator(table: &mut String, widths: &[usize]) -> fmt::Result {
+    for (index, width) in widths.iter().copied().enumerate() {
+        if index > 0 {
+            table.push_str("-+-");
+        }
+        for _ in 0..width {
+            table.push('-');
+        }
+    }
+    Ok(())
 }
 
 impl CanonicalCorpus {
