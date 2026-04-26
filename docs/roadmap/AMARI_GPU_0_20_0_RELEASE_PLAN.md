@@ -93,6 +93,7 @@ Status:
 - [x] Fix calculus large-batch vector-field placeholder behavior and document CPU-semantic fallback
 - [x] Audit `measure` public surface, fix/document fallback behavior, and add public import-path tests
 - [x] Audit `functional` public surface, fix/document fallback behavior, and add public import-path tests
+- [x] Audit `topology` public surface, fix/document fallback behavior, and add public import-path tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -127,7 +128,7 @@ Priority domains:
 - [ ] fusion restored subset
 - [ ] tropical restored subset
 - [ ] probabilistic
-- [ ] topology
+- [x] topology public import-path coverage for distance/Morse/Rips/Betti/fallback paths
 - [x] functional public import-path coverage for matrix/Hilbert/spectral/fallback paths
 - [ ] dual
 - [ ] enumerative

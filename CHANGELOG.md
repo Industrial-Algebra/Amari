@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added public calculus API tests covering large-batch CPU-semantic fallback behavior.
 - Added public measure API tests covering crate-root imports, built-in integration, Monte Carlo function IDs, Gaussian density, tropical reductions, and multidimensional volume behavior.
 - Added public functional API tests covering crate-root imports, GPU matrix application, matrix multiply fallback, Hilbert batches, spectral CPU baseline, and adaptive dispatch.
+- Added public topology API tests covering crate-root imports, adaptive distance/Morse paths, direct GPU distance/Morse when available, Rips filtration fallback, Betti fallback, and invalid input handling.
 
 #### Changed
 
@@ -41,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `GpuMatrixOperator::multiply` to a documented CPU readback fallback for correctness across independently-created GPU operators.
 - Changed `GpuSpectralDecomposition::compute` to use the validated `amari-functional` CPU spectral baseline after GPU matrix readback.
 - Documented `GpuSpectralDecomposition::apply_function_batch` as CPU-backed until GPU spectral projection kernels are validated.
+- Documented `topology` feature behavior as mixed GPU-backed distance/Morse kernels plus CPU Rips/Betti fallback.
+- Fixed `GpuTopology::new` robustness by replacing invalid unused boundary-shader scaffolding with a validation-safe no-op shader until persistent-homology kernels are restored.
+- Added distance-matrix shape validation for topology Rips filtration builders and adaptive critical-grid validation.
 
 ## [0.17.0] - 2026-01-11
 

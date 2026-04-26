@@ -90,7 +90,7 @@
 //! | `automata` | GPU-accelerated cellular automata |
 //! | `enumerative` | GPU-accelerated combinatorics |
 //! | `functional` | Mixed GPU-backed functional analysis and documented CPU spectral/fallback paths |
-//! | `topology` | GPU-accelerated computational topology (distance matrices, Morse theory) |
+//! | `topology` | Mixed GPU-backed topology and documented CPU Rips/Betti fallback paths |
 //! | `gf2` | GPU-accelerated GF(2) algebra (binary Clifford products, matrix ops, Hamming distance) |
 //! | `fusion` | Reduced first public surface restored; broader fusion GPU API still redesign-pending |
 //! | `tropical` | Narrow crate-root public v1 surface for tropical matrix multiply/adaptive dispatch |

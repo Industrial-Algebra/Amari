@@ -50,7 +50,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `automata` | `amari-automata` | `pub mod automata` | GPU-backed; needs baseline inventory and public re-export review |
 | `enumerative` | `amari-enumerative` | `pub mod enumerative` | Very broad public surface; likely needs validation/classification by operation |
 | `functional` | `amari-functional` | `pub mod functional`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
-| `topology` | `amari-topology` | `pub mod topology`, crate-root re-exports | Mixed: GPU distance/Morse paths + CPU fallback for Betti/Rips pieces |
+| `topology` | `amari-topology` | `pub mod topology`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
 | `gf2` | `amari-core/gf2` | `pub mod gf2`, crate-root re-exports | Strong candidate for validation; needs hardware report |
 | `webgpu` | `wgpu/webgpu` | backend feature | Backend capability only |
 | `high-precision` | core/relativistic feature | feature-gated precision | Needs check: GPU kernels mostly f32/f64-oriented |
@@ -88,7 +88,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `measure` | `GpuIntegrator`, `GpuMonteCarloIntegrator`, `GpuMultidimIntegrator`, `GpuParametricDensity`, `GpuTropicalMeasure` | Mixed GPU + documented CPU fallback; public import-path test added |
 | `probabilistic` | `GpuProbabilistic`, error/result types | GPU-backed; validate |
 | `tropical` | `TropicalExecutionPath`, `TropicalGpuError`, `TropicalGpuOps`, `TropicalGpuResult` | Narrow v1 public surface; good API honesty state |
-| `topology` | `AdaptiveTopologyCompute`, `GpuCriticalPoint`, `GpuTopology`, error/result types | Mixed GPU + CPU fallback |
+| `topology` | `AdaptiveTopologyCompute`, `GpuCriticalPoint`, `GpuTopology`, error/result types | Mixed GPU + documented CPU fallback; public import-path test added |
 
 ---
 
@@ -242,8 +242,8 @@ Remaining examples found by marker scan:
 - `functional::GpuSpectralDecomposition::compute` falls back to CPU spectral baseline, now documented/tested
 - `functional::GpuSpectralDecomposition::apply_function_batch` uses CPU implementation, now documented/tested
 - `functional::GpuMatrixOperator::multiply` uses CPU readback fallback for cross-device correctness, now documented/tested
-- `topology::build_rips_filtration` uses CPU implementation with GPU distance matrix
-- `topology::compute_betti_numbers` falls back to CPU
+- `topology::build_rips_filtration` uses CPU implementation with optional GPU distance matrix, now documented/tested
+- `topology::compute_betti_numbers` falls back to CPU, now documented/tested
 - `network` centrality/clustering reuses GPU distance or CPU logic
 - `holographic::batch_unbind` uses CPU for correctness
 
@@ -267,7 +267,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `calculus` | feature public module | CPU fallback / GPU-ready scaffolding | add gradient/divergence/curl public baseline tests; implement kernels later |
 | `measure` | feature public module | mixed GPU/fallback documented | implement reduction/multidim kernels later; hardware validate existing GPU paths |
 | `functional` | feature public module | mixed GPU/fallback documented | implement shared-context GPU matrix multiply / eigensolver later; hardware validate existing GPU paths |
-| `topology` | feature public module | mixed GPU/fallback | validate distance/Morse; document CPU Rips/Betti paths |
+| `topology` | feature public module | mixed GPU/fallback documented | implement persistent-homology kernels later; hardware validate distance/Morse paths |
 | `dual` | feature public module | GPU-backed plus unsupported paths | inspect shader correctness and placeholder gradient paths |
 | `enumerative` | feature very broad public module | broad/unvalidated | prioritize representative CPU-baseline tests |
 | `automata` | feature public module | GPU-backed | validate against CPU automata baselines |
@@ -295,6 +295,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] one public import-path integration test for `fusion`
    - [x] one public import-path integration test for `measure`
    - [x] one public import-path integration test for `functional`
+   - [x] one public import-path integration test for `topology`
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior
@@ -314,4 +315,4 @@ The highest-impact immediate code cleanup has been completed:
 
 Next recommended code change:
 
-> Continue auditing mixed fallback public APIs, with `topology` as the next high-impact feature domain.
+> Continue auditing public APIs with placeholder or unsupported paths, with `dual` as the next high-impact feature domain.
