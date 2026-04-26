@@ -1,4 +1,4 @@
-use amari_cgt::{GameArena, GameComparison, Nimber, OutcomeClass};
+use amari_cgt::{GameArena, GameComparison, GameForm, Nimber, OutcomeClass};
 
 #[test]
 fn constructors_and_birthdays() {
@@ -140,4 +140,45 @@ fn nim_sum_matches_xor() {
             assert_eq!(arena.grundy(sum).unwrap(), Nimber(lhs ^ rhs));
         }
     }
+}
+
+#[test]
+fn game_form_normalizes_recursive_option_sets() {
+    let zero = GameForm::zero();
+    let one = GameForm::one();
+    let minus_one = GameForm::minus_one();
+    let form = GameForm::new(
+        [one.clone(), zero.clone(), zero.clone()],
+        [minus_one.clone(), minus_one],
+    );
+
+    assert_eq!(form, GameForm::new([zero, one], [GameForm::minus_one()]));
+    assert_eq!(GameForm::star().birthday().0, 1);
+}
+
+#[test]
+fn arena_round_trips_through_structural_game_form() {
+    let half_form = GameForm::new([GameForm::zero()], [GameForm::one()]);
+
+    let mut arena = GameArena::new();
+    let half = arena.intern_form(&half_form).unwrap();
+    let round_trip = arena.to_form(half).unwrap();
+
+    assert_eq!(round_trip, half_form);
+    assert_eq!(arena.birthday(half).unwrap(), round_trip.birthday());
+    assert!(arena.is_numeric(half).unwrap());
+}
+
+#[test]
+fn canonical_form_export_matches_canonicalization() {
+    let mut arena = GameArena::new();
+    let zero = arena.zero();
+    let minus_one = arena.minus_one().unwrap();
+    let dominated = arena.from_options([minus_one, zero], []).unwrap();
+
+    assert_eq!(
+        arena.to_form(dominated).unwrap(),
+        GameForm::new([GameForm::minus_one(), GameForm::zero()], [])
+    );
+    assert_eq!(arena.canonical_form(dominated).unwrap(), GameForm::one());
 }

@@ -2,6 +2,7 @@
 
 pub use crate::arena::GameArena;
 pub use crate::error::{CgtError, Result};
+pub use crate::form::GameForm;
 pub use crate::game::{Birthday, CanonicalGame, GameComparison, GameId, OutcomeClass};
 pub use crate::generation::{
     CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, OutcomeCounts,

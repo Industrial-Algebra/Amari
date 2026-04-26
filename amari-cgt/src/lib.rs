@@ -3,6 +3,7 @@
 //! The current implementation focuses on short normal-play games and provides:
 //!
 //! - arena-backed game storage
+//! - arena-independent structural game forms for import/export
 //! - birthdays
 //! - negation, addition, subtraction, and canonicalization
 //! - partial comparison and outcome classes
@@ -27,6 +28,7 @@
 
 pub mod arena;
 pub mod error;
+pub mod form;
 pub mod game;
 pub mod generation;
 pub mod nimber;
@@ -34,6 +36,7 @@ pub mod prelude;
 
 pub use arena::GameArena;
 pub use error::{CgtError, Result};
+pub use form::GameForm;
 pub use game::{Birthday, CanonicalGame, GameComparison, GameId, OutcomeClass};
 pub use generation::{
     CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, OutcomeCounts,

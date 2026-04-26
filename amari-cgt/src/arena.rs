@@ -1,4 +1,5 @@
 use crate::error::{CgtError, Result};
+use crate::form::GameForm;
 use crate::game::{Birthday, CanonicalGame, GameComparison, GameId, OutcomeClass};
 use crate::nimber::Nimber;
 use std::collections::{HashMap, HashSet};
@@ -129,6 +130,24 @@ impl GameArena {
         });
         self.intern.insert(key, id);
         Ok(id)
+    }
+
+    /// Imports an arena-independent structural game form into the arena.
+    pub fn intern_form(&mut self, form: &GameForm) -> Result<GameId> {
+        let mut cache = HashMap::new();
+        self.intern_form_cached(form, &mut cache)
+    }
+
+    /// Exports an arena-backed game into an arena-independent structural form.
+    pub fn to_form(&self, game: GameId) -> Result<GameForm> {
+        let mut cache = HashMap::new();
+        self.to_form_cached(game, &mut cache)
+    }
+
+    /// Exports the canonical representative of a game as a structural form.
+    pub fn canonical_form(&mut self, game: GameId) -> Result<GameForm> {
+        let canonical = self.canonicalize(game)?.0;
+        self.to_form(canonical)
     }
 
     /// Returns the birthday of a game.
@@ -372,6 +391,62 @@ impl GameArena {
 
         self.caches.numeric.insert(game, true);
         Ok(true)
+    }
+
+    fn intern_form_cached(
+        &mut self,
+        form: &GameForm,
+        cache: &mut HashMap<GameForm, GameId>,
+    ) -> Result<GameId> {
+        let key = form.clone().normalized();
+        if let Some(game) = cache.get(&key) {
+            return Ok(*game);
+        }
+
+        let left_forms = key.left_options().to_vec();
+        let right_forms = key.right_options().to_vec();
+
+        let mut left = Vec::with_capacity(left_forms.len());
+        for option in left_forms {
+            left.push(self.intern_form_cached(&option, cache)?);
+        }
+
+        let mut right = Vec::with_capacity(right_forms.len());
+        for option in right_forms {
+            right.push(self.intern_form_cached(&option, cache)?);
+        }
+
+        let game = self.from_options(left, right)?;
+        cache.insert(key, game);
+        Ok(game)
+    }
+
+    fn to_form_cached(
+        &self,
+        game: GameId,
+        cache: &mut HashMap<GameId, GameForm>,
+    ) -> Result<GameForm> {
+        self.node(game)?;
+        if let Some(form) = cache.get(&game) {
+            return Ok(form.clone());
+        }
+
+        let left_ids = self.left_options(game)?.to_vec();
+        let right_ids = self.right_options(game)?.to_vec();
+
+        let mut left = Vec::with_capacity(left_ids.len());
+        for option in left_ids {
+            left.push(self.to_form_cached(option, cache)?);
+        }
+
+        let mut right = Vec::with_capacity(right_ids.len());
+        for option in right_ids {
+            right.push(self.to_form_cached(option, cache)?);
+        }
+
+        let form = GameForm::new(left, right);
+        cache.insert(game, form.clone());
+        Ok(form)
     }
 
     fn leq(&mut self, lhs: GameId, rhs: GameId) -> Result<bool> {

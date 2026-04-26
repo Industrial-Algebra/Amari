@@ -9,6 +9,7 @@ The initial implementation focuses on:
 - short partizan games
 - short impartial games
 - birthdays
+- arena-independent structural game forms for import/export
 - normal-play outcome classes
 - partial comparison
 - canonicalization via dominated and reversible option reduction
