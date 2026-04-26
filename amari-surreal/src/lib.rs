@@ -5,6 +5,22 @@
 //! - exact dyadic arithmetic
 //! - conversion from numeric short games in `amari-cgt`
 //! - simplest-number construction for finite cuts
+//!
+//! # Example
+//!
+//! ```rust
+//! use amari_cgt::GameArena;
+//! use amari_surreal::{Dyadic, ShortSurreal};
+//!
+//! let mut arena = GameArena::new();
+//! let zero = arena.zero();
+//! let one = arena.one()?;
+//! let half_game = arena.from_options([zero], [one])?;
+//! let half = ShortSurreal::from_game(&mut arena, half_game)?;
+//!
+//! assert_eq!(half.to_dyadic(), Dyadic::new(1, 1));
+//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! ```
 
 pub mod dyadic;
 pub mod error;

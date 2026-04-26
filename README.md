@@ -52,6 +52,22 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **TypeScript Support**: Complete TypeScript definitions included
 - **Cross-Platform**: Linux, macOS, Windows, browsers, Node.js, and edge computing environments
 
+## Planned v0.22.0 Extensions
+
+The workspace now also includes two opt-in exact game-theoretic crates planned for the `0.22.0` cycle:
+
+- **`amari-cgt`**: computational combinatorial game theory for short normal-play games, including canonicalization, nimbers, and small exhaustive layer generation
+- **`amari-surreal`**: computable short surreal numbers built on validated numeric games from `amari-cgt`, with exact dyadic arithmetic
+
+At the umbrella-crate level these are exposed through optional features:
+
+```toml
+[dependencies]
+amari = { version = "0.22.0", features = ["cgt", "surreal"] }
+```
+
+`surreal` implies `cgt`, while `cgt` also enables the lightweight `amari-enumerative` bridge for CGT layer-growth summaries.
+
 ## Installation
 
 ### Rust Crates

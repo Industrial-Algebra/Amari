@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.0] - Unreleased
+
+### Added
+
+#### New crate: `amari-cgt`
+
+- Arena-backed short combinatorial game engine with interned `GameId` nodes
+- Core short-game operations: birthdays, negation, addition, subtraction, comparison, equivalence, and normal-play outcome classes
+- Canonicalization via dominated-option elimination and reversible-option reduction
+- Impartial-game support with `Nimber`, `grundy`, `nim_heap`, and impartiality detection
+- Small exhaustive generation by exact or bounded birthday and reachable-node layers
+- Canonical corpus metadata, histograms, outcome counts, and layer-analysis reporting
+- Benchmarks for comparison, canonicalization, Grundy evaluation, and canonical-corpus generation
+
+#### New crate: `amari-surreal`
+
+- Exact dyadic arithmetic for short surreal numbers
+- `NumericGame` validation bridge over `amari-cgt`
+- `ShortSurreal` conversion from numeric short games with provenance and birthday metadata
+- Simplest-number construction for finite cuts
+- Exact short-surreal arithmetic over the supported dyadic layer
+- Benchmarks for dyadic arithmetic and short-surreal operations
+
+#### `amari-enumerative`
+
+- New opt-in `cgt-bridge` feature for adapting `amari-cgt` layer-analysis reports into enumerative growth summaries and cumulative sequences
+
+### Documentation
+
+- Roadmap and checklist updates for the `0.22.0` CGT/surreal release track
+- New `amari-surcomplex` design draft documenting a later separate crate depending on mature `amari-surreal`
+- Root README updates covering planned `cgt` / `surreal` umbrella features
+- Crate examples for `amari-cgt` and `amari-surreal` covering small games, nimbers, dyadic arithmetic, game conversion, and simplest-number construction
+
 ## [0.17.0] - 2026-01-11
 
 ### **New Crate: amari-dynamics - Dynamical Systems Analysis**
