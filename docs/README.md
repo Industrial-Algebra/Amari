@@ -37,6 +37,7 @@ Forward-looking planning and proposed crate designs:
 - **[v0.22.0 CGT + Surreal Checklist](roadmap/v0.22.0-cgt-surreal-checklist.md)** - Execution checklist and milestone tracker for the `0.22.0` cycle
 - **[Amari-CGT Design](roadmap/amari-cgt_design.md)** - Proposed combinatorial game theory crate
 - **[Amari-Surreal Design](roadmap/amari-surreal_design.md)** - Proposed surreal numbers crate built on numeric games
+- **[Amari-Surcomplex Design](roadmap/amari-surcomplex_design.md)** - Proposed later surreal-complex extension crate built on mature `amari-surreal`
 - **[CGT + Surreal Skeleton Proposal](roadmap/amari-cgt-surreal_skeleton.md)** - Workspace, module, and API skeleton for both crates
 - **[Amari-Calculus Design](roadmap/amari-calculus_design.md)** - Historical calculus crate design document
 - **[V1 Readiness Plan](roadmap/V1_READINESS_PLAN.md)** - Existing stabilization planning document
