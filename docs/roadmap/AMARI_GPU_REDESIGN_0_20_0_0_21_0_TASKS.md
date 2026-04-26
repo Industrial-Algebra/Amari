@@ -31,6 +31,8 @@ The long-term direction is for `amari-gpu` to expose as many Amari operations as
 
 # 0.20.0 Focus
 
+Active release-plan note: the 0.20.0 implementation focus is now captured in `docs/roadmap/AMARI_GPU_0_20_0_RELEASE_PLAN.md`. The guiding goal is comprehensive, practical `amari-gpu` operation exposure with CPU-baseline tests, hardware validation, benchmark/crossover data, and honest public API boundaries.
+
 ## 1. Current-state audit
 
 - [ ] Inventory all current `amari-gpu` modules and exposed operations

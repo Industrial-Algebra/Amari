@@ -48,9 +48,9 @@ Integration Crates (consume APIs):
 | Domain Crate | Module | Status | Reason |
 |-------------|--------|--------|--------|
 | amari-fusion | `fusion` | ⚠️ Partially restored | Reduced public surface is available; broader fusion GPU API remains redesign-pending |
-| amari-tropical | `tropical` | ❌ Disabled | Source exists but public module is disabled; redesign likely needs extension traits or wrapper types |
+| amari-tropical | `tropical` | ⚠️ Narrow v1 surface restored | Crate-root re-exports are available for `TropicalGpuOps`, `TropicalExecutionPath`, `TropicalGpuError`, `TropicalGpuResult`; broader module internals remain redesign-pending |
 
-**Note**: If you were using `amari_gpu::tropical` in previous versions, this module is not available in v0.12.2. Use CPU implementations from `amari_tropical` directly until this module is restored in a future release.
+**Note**: `amari_gpu::tropical` is still not re-enabled as a full public module. The current public tropical restoration is a narrow crate-root surface intended for dense tropical matrix multiplication and adaptive CPU/GPU dispatch.
 
 ## Features
 
@@ -70,7 +70,7 @@ holographic = ["dep:amari-holographic"]  # Holographic memory GPU acceleration
 probabilistic = ["dep:amari-probabilistic", "dep:rand", "dep:rand_distr"]  # Probabilistic GPU acceleration
 fusion = ["dep:amari-fusion"]  # Reduced first public surface available; broader API still redesign-pending
 topology = ["dep:amari-topology"]  # Computational topology GPU acceleration
-tropical = ["dep:amari-tropical"]  # Feature exists; public module currently disabled pending redesign
+tropical = ["dep:amari-tropical"]  # Narrow crate-root public v1 surface available; broader internals remain redesign-pending
 ```
 
 ## Usage
@@ -119,6 +119,67 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+### Tropical GPU Acceleration *(narrow v1 surface)*
+
+```rust
+use amari_gpu::{TropicalExecutionPath, TropicalGpuOps};
+use amari_tropical::{TropicalMatrix, TropicalNumber};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut gpu = TropicalGpuOps::new().await?;
+
+    let mut a = TropicalMatrix::new(64, 64);
+    let mut b = TropicalMatrix::new(64, 64);
+
+    for i in 0..64 {
+        for j in 0..64 {
+            a.data[i][j] = TropicalNumber::new((i as f32 - j as f32) * 0.25);
+            b.data[i][j] = TropicalNumber::new((i as f32 + j as f32) * 0.125);
+        }
+    }
+
+    match gpu.matrix_multiply_execution_path(a.rows, a.cols, b.cols) {
+        TropicalExecutionPath::Cpu => println!("Using CPU path for this problem size"),
+        TropicalExecutionPath::Gpu => println!("Using GPU path for this problem size"),
+    }
+
+    // Explicit GPU path
+    let _gpu_result = gpu.matrix_multiply(&a, &b).await?;
+
+    // Adaptive path using current crossover heuristic
+    let _adaptive_result = gpu.matrix_multiply_adaptive(&a, &b).await?;
+
+    // Tropical winner-takes-all attention scores for a logits matrix
+    let _scores = gpu.attention_scores(&a).await?;
+
+    Ok(())
+}
+```
+
+#### Tropical v1 Surface
+
+The currently supported public tropical GPU API is intentionally small:
+
+- `TropicalGpuOps`
+- `TropicalExecutionPath`
+- `TropicalGpuError`
+- `TropicalGpuResult`
+
+Current real kernel support:
+
+- dense max-plus matrix multiplication
+- adaptive CPU/GPU dispatch for matrix multiplication
+- winner-takes-all tropical attention scores
+
+Still redesign-pending and intentionally not exposed as a full public module:
+
+- Viterbi
+- attention
+- tropical solve
+- multivector GPU ops
+- the older trait-based placeholder surface
 
 ### Holographic Memory GPU Acceleration
 

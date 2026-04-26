@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### amari-gpu
+
+#### Added
+
+- Restored a narrow `tropical` feature public surface via crate-root re-exports:
+  - `TropicalGpuOps`
+  - `TropicalExecutionPath`
+  - `TropicalGpuError`
+  - `TropicalGpuResult`
+- Added a real shader-backed dense tropical matrix multiplication kernel with CPU baseline tests.
+- Added a shader-backed winner-takes-all tropical attention score kernel.
+- Added adaptive CPU/GPU dispatch for tropical matrix multiplication using a conservative crossover heuristic.
+- Added a manual tropical matrix multiply CPU-vs-GPU benchmark harness.
+- Added a public integration test covering the crate-root tropical API path.
+
+#### Changed
+
+- Kept the full `amari_gpu::tropical` module internal while exposing only the narrow v1 API surface.
+- Isolated older trait-based tropical GPU scaffolding into an internal redesign-pending block.
+
 ## [0.17.0] - 2026-01-11
 
 ### **New Crate: amari-dynamics - Dynamical Systems Analysis**

@@ -35,10 +35,13 @@ In short:
 
 ## Milestone Summary
 
-### 0.20.0 — WASM + GPU hardening
+### 0.20.0 — amari-gpu coverage, validation, and API honesty
 
 Primary outcome:
-- make `amari-wasm` and real-hardware GPU claims trustworthy, measured, and maintainable
+- make `amari-gpu` comprehensively expose as many practical Amari operations as possible, with truthful API boundaries, CPU-baseline correctness tests, real-hardware validation, and benchmark/crossover documentation
+
+Active focus note:
+- `amari-wasm` audit/hardening and non-GPU algebra extension tracks remain documented, but are deferred while 0.20.0 development focuses on `amari-gpu`.
 
 ### 0.21.0 — Tropical / Dual / Fusion extension release
 
@@ -49,7 +52,15 @@ Primary outcome:
 
 # 0.20.0 TASK LIST
 
-## Epic A — amari-wasm implementation audit
+## Active 0.20.0 focus — amari-gpu
+
+The implementation-facing source of truth for the active 0.20.0 focus is:
+
+- `docs/roadmap/AMARI_GPU_0_20_0_RELEASE_PLAN.md`
+
+The WASM and algebra-extension epics below are retained as deferred backlog, not the current 0.20.0 execution focus.
+
+## Deferred Epic A — amari-wasm implementation audit
 
 ### A1. Inventory all exported bindings
 - [ ] Enumerate all `#[wasm_bindgen]` types/functions by module

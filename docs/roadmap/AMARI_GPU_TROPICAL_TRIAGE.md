@@ -23,13 +23,13 @@ Unlike fusion, which was mostly blocked by legacy integration drift, tropical is
 
 ## Bottom-line recommendation
 
-Do **not** re-enable public `amari-gpu::tropical` yet.
+Do **not** re-enable the full public `amari-gpu::tropical` module yet.
 
 Instead:
 
-- keep the module hidden
+- keep the broader module implementation internal
 - redesign around a small, real subset
-- restore only after replacing placeholder operations with actual GPU-backed implementations
+- expose only a narrow v1 surface while placeholder-heavy areas remain internal
 
 ---
 
@@ -119,16 +119,22 @@ Start with one or two real kernels and build upward from there.
 ## Recommended first public subset
 
 ### Candidate minimal v1 surface
-- `TropicalGpuContext`
-- `GpuTropicalNumber`
+- `TropicalGpuError`
+- `TropicalGpuResult`
+- `TropicalExecutionPath`
 - `TropicalGpuOps`
   - `new()`
-  - **one real dense tropical matrix multiply kernel**
-  - optional: one small batch/vector max-plus kernel if justified
+  - `matrix_multiply(...)`
+  - `should_use_gpu_for_matrix_multiply(...)`
+  - `matrix_multiply_execution_path(...)`
+  - `matrix_multiply_adaptive(...)`
+  - `attention_scores(...)`
+
+This narrow v1 surface is now the intended public-facing direction.
 
 ### Do not include in v1
 - Viterbi
-- attention
+- full neural attention pipeline
 - multivector geometric product
 - tropical solve
 - placeholder trait-based generic operations
@@ -150,6 +156,22 @@ The current `TropicalGpuAccelerated` trait attaches GPU behavior directly to dom
 ## Preferred redesign shape
 Use explicit GPU ops structs and free-standing methods instead of pretending every domain type already has a complete GPU implementation.
 
+### Current private API improvement already underway
+The tropical redesign now exposes a narrow crate-root public v1 surface while keeping the broader module internals private.
+
+The candidate v1 shape is centered on `TropicalGpuOps`:
+
+- `new()`
+- `matrix_multiply(...)` for explicit GPU execution
+- `should_use_gpu_for_matrix_multiply(...)`
+- `matrix_multiply_execution_path(...)`
+- `matrix_multiply_adaptive(...)` for heuristic CPU/GPU selection
+- `attention_scores(...)` for shader-backed winner-takes-all tropical attention scores
+
+This is closer to the likely public restoration surface than the older trait-based placeholder API.
+
+The older trait-based/placeholder-heavy surface has now also been isolated into a redesign-pending internal block so it no longer defines the structure of the candidate v1 API.
+
 ### Preferred direction
 Something like:
 
@@ -165,6 +187,21 @@ impl TropicalGpuOps {
         &mut self,
         a: &TropicalMatrix<T>,
         b: &TropicalMatrix<T>,
+    ) -> TropicalGpuResult<TropicalMatrix<T>>
+    where
+        T: Float + bytemuck::Pod + Into<f32> + From<f32>;
+
+    pub async fn matrix_multiply_adaptive<T>(
+        &mut self,
+        a: &TropicalMatrix<T>,
+        b: &TropicalMatrix<T>,
+    ) -> TropicalGpuResult<TropicalMatrix<T>>
+    where
+        T: Float + bytemuck::Pod + Into<f32> + From<f32>;
+
+    pub async fn attention_scores<T>(
+        &mut self,
+        logits: &TropicalMatrix<T>,
     ) -> TropicalGpuResult<TropicalMatrix<T>>
     where
         T: Float + bytemuck::Pod + Into<f32> + From<f32>;
@@ -193,7 +230,28 @@ This is much more honest and easier to validate.
 - `tropical_solve`
 
 ## First real implementation target
-- replace placeholder `gpu_matrix_multiply` / matrix multiply path with a real shader-backed path
+- [x] add a real shader-backed dense tropical matrix multiplication path inside private `TropicalGpuOps::matrix_multiply(...)`
+- [ ] decide whether and how to expose that kernel publicly after API cleanup
+
+### Current implementation note
+A first real tropical kernel now exists privately in `amari-gpu/src/tropical.rs`:
+
+- shader-backed dense max-plus matrix multiply
+- shader-backed winner-takes-all tropical attention scores
+- CPU baseline comparison tests added
+- dimension mismatch validation added
+- manual benchmark harness added for CPU vs GPU crossover measurement
+- full module remains private, with only the narrow crate-root v1 API re-exported
+
+### Initial local crossover snapshot
+From the manual ignored benchmark harness on the current local machine:
+
+- `16x16x16`: CPU faster
+- `32x32x32`: CPU still faster
+- `64x64x64`: GPU begins to win (~2.5x)
+- `128x128x128`: GPU clearly wins (~14x)
+
+These numbers are provisional and should be re-measured on GB10 and RTX 5080.
 
 ---
 
@@ -202,8 +260,8 @@ This is much more honest and easier to validate.
 Before `amari-gpu::tropical` should be re-enabled publicly, all of the following should be true:
 
 - [ ] no placeholder return paths remain in the first public surface
-- [ ] one real matrix kernel is implemented and validated
-- [ ] CPU baseline comparisons exist
+- [x] one real matrix kernel is implemented and validated
+- [x] CPU baseline comparisons exist for current public kernels
 - [ ] GB10 validation exists
 - [ ] RTX 5080 validation exists
 - [ ] benchmark crossover data exists
@@ -216,9 +274,10 @@ Before `amari-gpu::tropical` should be re-enabled publicly, all of the following
 The right next implementation task for tropical GPU is:
 
 ### Tropical GPU v1 kernel task
-- implement one real dense tropical matrix multiplication path in `amari-gpu`
-- benchmark it against CPU
-- use that as the basis for deciding whether and how to restore the public module
+- [x] implement one real dense tropical matrix multiplication path in `amari-gpu`
+- [x] add a benchmark harness comparing it against CPU
+- [ ] collect benchmark runs on GB10 and RTX 5080
+- [ ] use that as the basis for deciding whether and how to restore the public module
 
 ---
 

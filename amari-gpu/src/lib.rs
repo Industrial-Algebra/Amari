@@ -16,8 +16,8 @@
 //! - **Topology**: Distance matrices, Morse critical points, Rips filtrations (with `topology` feature)
 //!
 //! Some source modules are still undergoing redesign before full public exposure.
-//! In particular, `tropical` remains redesign-pending, while `fusion` has only a
-//! reduced first public surface restored so far.
+//! In particular, `tropical` exposes a narrow crate-root v1 surface, while `fusion`
+//! has only a reduced first public surface intended for restoration so far.
 //!
 //! # Quick Start
 //!
@@ -93,9 +93,44 @@
 //! | `topology` | GPU-accelerated computational topology (distance matrices, Morse theory) |
 //! | `gf2` | GPU-accelerated GF(2) algebra (binary Clifford products, matrix ops, Hamming distance) |
 //! | `fusion` | Reduced first public surface restored; broader fusion GPU API still redesign-pending |
-//! | `tropical` | Reserved feature; source exists, public module currently disabled pending redesign |
+//! | `tropical` | Narrow crate-root public v1 surface for tropical matrix multiply/adaptive dispatch |
 //! | `webgpu` | Enable WebGPU backend |
 //! | `high-precision` | Enable 128-bit float support |
+//!
+//! # Tropical GPU v1 (with `tropical` feature)
+//!
+//! A narrow public tropical GPU surface is available at the crate root:
+//!
+//! ```ignore
+//! use amari_gpu::{TropicalExecutionPath, TropicalGpuOps};
+//! use amari_tropical::{TropicalMatrix, TropicalNumber};
+//!
+//! let mut gpu = TropicalGpuOps::new().await?;
+//!
+//! let mut a = TropicalMatrix::new(64, 64);
+//! let mut b = TropicalMatrix::new(64, 64);
+//!
+//! for i in 0..64 {
+//!     for j in 0..64 {
+//!         a.data[i][j] = TropicalNumber::new((i as f32 - j as f32) * 0.25);
+//!         b.data[i][j] = TropicalNumber::new((i as f32 + j as f32) * 0.125);
+//!     }
+//! }
+//!
+//! match gpu.matrix_multiply_execution_path(a.rows, a.cols, b.cols) {
+//!     TropicalExecutionPath::Cpu => println!("CPU path"),
+//!     TropicalExecutionPath::Gpu => println!("GPU path"),
+//! }
+//!
+//! let gpu_result = gpu.matrix_multiply(&a, &b).await?;
+//! let adaptive_result = gpu.matrix_multiply_adaptive(&a, &b).await?;
+//! let attention_scores = gpu.attention_scores(&a).await?;
+//! # let _ = (gpu_result, adaptive_result, attention_scores);
+//! ```
+//!
+//! This is intentionally narrower than a full `amari_gpu::tropical` module. It currently
+//! includes dense tropical matrix multiply and winner-takes-all attention scores. Broader
+//! tropical GPU APIs remain redesign-pending.
 //!
 //! # Performance
 //!
@@ -140,11 +175,11 @@ pub mod probabilistic;
 pub mod relativistic;
 pub mod shaders;
 pub mod timeline;
-// NOTE: `tropical.rs` exists in the source tree but is not currently re-exported.
-// The likely redesign path is wrapper types and/or extension traits rather than
-// inherent impls on `amari-tropical` types.
-// #[cfg(feature = "tropical")]
-// pub mod tropical;
+// NOTE: `tropical.rs` is still redesigning toward a fuller public module, but a
+// narrow v1 surface is now re-exported at the crate root under the `tropical` feature.
+#[cfg(feature = "tropical")]
+#[allow(dead_code)]
+mod tropical;
 #[cfg(feature = "topology")]
 pub mod topology;
 pub mod unified;
@@ -199,6 +234,10 @@ pub use performance::{
 };
 #[cfg(feature = "probabilistic")]
 pub use probabilistic::{GpuProbabilistic, GpuProbabilisticError, GpuProbabilisticResult};
+#[cfg(feature = "tropical")]
+pub use tropical::{
+    TropicalExecutionPath, TropicalGpuError, TropicalGpuOps, TropicalGpuResult,
+};
 pub use relativistic::{
     GpuRelativisticParticle, GpuRelativisticPhysics, GpuSpacetimeVector, GpuTrajectoryParams,
 };
