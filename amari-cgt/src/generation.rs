@@ -122,6 +122,183 @@ impl CorpusStats {
     }
 }
 
+/// Analysis for one exact generation layer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LayerAnalysis {
+    raw_games: Vec<GameId>,
+    canonical_corpus: CanonicalCorpus,
+    stats: CorpusStats,
+}
+
+impl LayerAnalysis {
+    /// Returns the raw games generated in the exact layer.
+    #[must_use]
+    pub fn raw_games(&self) -> &[GameId] {
+        &self.raw_games
+    }
+
+    /// Returns the number of raw generated games in the exact layer.
+    #[must_use]
+    pub fn raw_game_count(&self) -> usize {
+        self.raw_games.len()
+    }
+
+    /// Returns the canonical corpus for the exact layer.
+    #[must_use]
+    pub fn canonical_corpus(&self) -> &CanonicalCorpus {
+        &self.canonical_corpus
+    }
+
+    /// Returns the number of canonical games represented in the layer.
+    #[must_use]
+    pub fn canonical_game_count(&self) -> usize {
+        self.canonical_corpus.len()
+    }
+
+    /// Returns how many raw games collapsed under canonicalization.
+    #[must_use]
+    pub fn canonical_reduction(&self) -> usize {
+        self.raw_game_count()
+            .saturating_sub(self.canonical_game_count())
+    }
+
+    /// Returns summary statistics for the canonical layer corpus.
+    #[must_use]
+    pub fn stats(&self) -> &CorpusStats {
+        &self.stats
+    }
+}
+
+/// Layered analysis report keyed by an exact generation index.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct LayerAnalysisReport<K> {
+    layers: BTreeMap<K, LayerAnalysis>,
+}
+
+impl<K: Ord> LayerAnalysisReport<K> {
+    /// Creates a layered analysis report from exact layer analyses.
+    #[must_use]
+    pub fn new(layers: BTreeMap<K, LayerAnalysis>) -> Self {
+        Self { layers }
+    }
+
+    /// Returns the exact layer analyses as a map.
+    #[must_use]
+    pub fn as_map(&self) -> &BTreeMap<K, LayerAnalysis> {
+        &self.layers
+    }
+
+    /// Returns the analysis for a specific layer key.
+    #[must_use]
+    pub fn get(&self, layer: &K) -> Option<&LayerAnalysis> {
+        self.layers.get(layer)
+    }
+
+    /// Returns an iterator over all exact layer analyses.
+    pub fn iter(&self) -> impl Iterator<Item = (&K, &LayerAnalysis)> {
+        self.layers.iter()
+    }
+
+    /// Returns the number of exact layers in the report.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.layers.len()
+    }
+
+    /// Returns whether the report is empty.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.layers.is_empty()
+    }
+
+    /// Returns the total number of raw games across all layers.
+    #[must_use]
+    pub fn raw_total_games(&self) -> usize {
+        self.layers
+            .values()
+            .map(LayerAnalysis::raw_game_count)
+            .sum()
+    }
+
+    /// Returns the total number of canonical games across all layers.
+    #[must_use]
+    pub fn canonical_total_games(&self) -> usize {
+        self.layers
+            .values()
+            .map(LayerAnalysis::canonical_game_count)
+            .sum()
+    }
+
+    /// Returns the total canonical reduction across all layers.
+    #[must_use]
+    pub fn canonical_reduction_total(&self) -> usize {
+        self.layers
+            .values()
+            .map(LayerAnalysis::canonical_reduction)
+            .sum()
+    }
+}
+
+impl<K: Ord + Clone> LayerAnalysisReport<K> {
+    /// Returns raw-game counts keyed by exact layer.
+    #[must_use]
+    pub fn raw_counts_by_layer(&self) -> BTreeMap<K, usize> {
+        self.map_layer_values(LayerAnalysis::raw_game_count)
+    }
+
+    /// Returns canonical-game counts keyed by exact layer.
+    #[must_use]
+    pub fn canonical_counts_by_layer(&self) -> BTreeMap<K, usize> {
+        self.map_layer_values(LayerAnalysis::canonical_game_count)
+    }
+
+    /// Returns canonical reduction counts keyed by exact layer.
+    #[must_use]
+    pub fn canonical_reductions_by_layer(&self) -> BTreeMap<K, usize> {
+        self.map_layer_values(LayerAnalysis::canonical_reduction)
+    }
+
+    /// Returns numeric canonical-game counts keyed by exact layer.
+    #[must_use]
+    pub fn numeric_counts_by_layer(&self) -> BTreeMap<K, usize> {
+        self.map_layer_values(|analysis| analysis.stats().numeric_games())
+    }
+
+    /// Returns non-numeric canonical-game counts keyed by exact layer.
+    #[must_use]
+    pub fn non_numeric_counts_by_layer(&self) -> BTreeMap<K, usize> {
+        self.map_layer_values(|analysis| analysis.stats().non_numeric_games())
+    }
+
+    /// Returns impartial canonical-game counts keyed by exact layer.
+    #[must_use]
+    pub fn impartial_counts_by_layer(&self) -> BTreeMap<K, usize> {
+        self.map_layer_values(|analysis| analysis.stats().impartial_games())
+    }
+
+    /// Returns partizan canonical-game counts keyed by exact layer.
+    #[must_use]
+    pub fn partizan_counts_by_layer(&self) -> BTreeMap<K, usize> {
+        self.map_layer_values(|analysis| analysis.stats().partizan_games())
+    }
+
+    /// Returns outcome-class counts keyed by exact layer.
+    #[must_use]
+    pub fn outcome_counts_by_layer(&self) -> BTreeMap<K, OutcomeCounts> {
+        self.map_layer_values(|analysis| analysis.stats().outcome_counts().clone())
+    }
+
+    fn map_layer_values<V, F>(&self, mut value: F) -> BTreeMap<K, V>
+    where
+        F: FnMut(&LayerAnalysis) -> V,
+    {
+        self.layers
+            .iter()
+            .map(|(key, analysis)| (key.clone(), value(analysis)))
+            .collect()
+    }
+}
+
 /// Small deduplicated collection of canonical games.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct CanonicalCorpus {
@@ -170,10 +347,10 @@ impl CanonicalCorpus {
 
     /// Returns canonical games bucketed by birthday.
     pub fn birthday_buckets(&self, arena: &GameArena) -> Result<BTreeMap<u32, Vec<CanonicalGame>>> {
-        let mut buckets = BTreeMap::new();
+        let mut buckets: BTreeMap<u32, Vec<CanonicalGame>> = BTreeMap::new();
         for &game in &self.games {
             let birthday = arena.birthday(game.0)?.0;
-            buckets.entry(birthday).or_insert_with(Vec::new).push(game);
+            buckets.entry(birthday).or_default().push(game);
         }
         Ok(buckets)
     }
@@ -183,13 +360,10 @@ impl CanonicalCorpus {
         &self,
         arena: &GameArena,
     ) -> Result<BTreeMap<usize, Vec<CanonicalGame>>> {
-        let mut buckets = BTreeMap::new();
+        let mut buckets: BTreeMap<usize, Vec<CanonicalGame>> = BTreeMap::new();
         for &game in &self.games {
             let reachable_nodes = arena.reachable_node_count(game.0)?;
-            buckets
-                .entry(reachable_nodes)
-                .or_insert_with(Vec::new)
-                .push(game);
+            buckets.entry(reachable_nodes).or_default().push(game);
         }
         Ok(buckets)
     }
@@ -239,6 +413,36 @@ impl GameArena {
         let mut visited = HashSet::new();
         self.visit_reachable(game, &mut visited)?;
         Ok(visited.len())
+    }
+
+    /// Analyzes the exact birthday layer `target_birthday`.
+    pub fn analyze_birthday_layer(&mut self, target_birthday: u32) -> Result<LayerAnalysis> {
+        let raw_games = self.generate_birthday_layer(target_birthday)?;
+        self.analyze_layer(raw_games)
+    }
+
+    /// Analyzes all exact birthday layers up to `max_birthday`.
+    pub fn analyze_birthday_layers(
+        &mut self,
+        max_birthday: u32,
+    ) -> Result<LayerAnalysisReport<u32>> {
+        let layers = self.generate_birthday_layers(max_birthday)?;
+        self.analyze_layer_map(layers)
+    }
+
+    /// Analyzes the exact reachable-node layer `target_nodes`.
+    pub fn analyze_node_count_layer(&mut self, target_nodes: usize) -> Result<LayerAnalysis> {
+        let raw_games = self.generate_node_count_layer(target_nodes)?;
+        self.analyze_layer(raw_games)
+    }
+
+    /// Analyzes all exact reachable-node layers up to `max_nodes`.
+    pub fn analyze_node_count_layers(
+        &mut self,
+        max_nodes: usize,
+    ) -> Result<LayerAnalysisReport<usize>> {
+        let layers = self.generate_node_count_layers(max_nodes)?;
+        self.analyze_layer_map(layers)
     }
 
     /// Exhaustively generates the exact birthday layer `target_birthday`.
@@ -383,6 +587,30 @@ impl GameArena {
     pub fn canonical_corpus_by_node_count(&mut self, max_nodes: usize) -> Result<CanonicalCorpus> {
         let layers = self.canonical_corpus_node_count_layers(max_nodes)?;
         Ok(Self::flatten_canonical_corpora(layers))
+    }
+
+    fn analyze_layer(&mut self, raw_games: Vec<GameId>) -> Result<LayerAnalysis> {
+        let canonical_corpus = self.canonical_corpus_from_games(raw_games.clone())?;
+        let stats = canonical_corpus.stats(self)?;
+        Ok(LayerAnalysis {
+            raw_games,
+            canonical_corpus,
+            stats,
+        })
+    }
+
+    fn analyze_layer_map<K>(
+        &mut self,
+        layers: BTreeMap<K, Vec<GameId>>,
+    ) -> Result<LayerAnalysisReport<K>>
+    where
+        K: Ord,
+    {
+        let mut analyses = BTreeMap::new();
+        for (key, raw_games) in layers {
+            analyses.insert(key, self.analyze_layer(raw_games)?);
+        }
+        Ok(LayerAnalysisReport::new(analyses))
     }
 
     fn canonical_corpus_from_games(&mut self, games: Vec<GameId>) -> Result<CanonicalCorpus> {

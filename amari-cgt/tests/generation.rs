@@ -242,3 +242,90 @@ fn canonical_corpus_stats_classify_small_named_games() {
     assert_eq!(stats.numeric_games(), 3);
     assert_eq!(stats.non_numeric_games(), 1);
 }
+
+#[test]
+fn birthday_layer_analysis_classifies_named_nonzero_games() {
+    let mut arena = GameArena::new();
+    let analysis = arena.analyze_birthday_layer(1).unwrap();
+
+    assert_eq!(analysis.raw_game_count(), 3);
+    assert_eq!(analysis.canonical_game_count(), 3);
+    assert_eq!(analysis.canonical_reduction(), 0);
+    assert_eq!(analysis.stats().birthday_histogram().get(&1), Some(&3));
+    assert_eq!(
+        analysis.stats().reachable_node_histogram().get(&2),
+        Some(&3)
+    );
+    assert_eq!(analysis.stats().outcome_counts().left_wins(), 1);
+    assert_eq!(analysis.stats().outcome_counts().right_wins(), 1);
+    assert_eq!(analysis.stats().outcome_counts().next_player_wins(), 1);
+    assert_eq!(analysis.stats().outcome_counts().previous_player_wins(), 0);
+    assert_eq!(analysis.stats().impartial_games(), 1);
+    assert_eq!(analysis.stats().partizan_games(), 2);
+    assert_eq!(analysis.stats().numeric_games(), 2);
+    assert_eq!(analysis.stats().non_numeric_games(), 1);
+}
+
+#[test]
+fn birthday_layer_report_tracks_growth_and_classification() {
+    let mut arena = GameArena::new();
+    let report = arena.analyze_birthday_layers(1).unwrap();
+
+    assert_eq!(report.len(), 2);
+    assert_eq!(report.raw_total_games(), 4);
+    assert_eq!(report.canonical_total_games(), 4);
+    assert_eq!(report.canonical_reduction_total(), 0);
+    assert_eq!(report.raw_counts_by_layer().get(&0), Some(&1));
+    assert_eq!(report.raw_counts_by_layer().get(&1), Some(&3));
+    assert_eq!(report.canonical_counts_by_layer().get(&0), Some(&1));
+    assert_eq!(report.canonical_counts_by_layer().get(&1), Some(&3));
+    assert_eq!(report.numeric_counts_by_layer().get(&0), Some(&1));
+    assert_eq!(report.numeric_counts_by_layer().get(&1), Some(&2));
+    assert_eq!(report.impartial_counts_by_layer().get(&0), Some(&1));
+    assert_eq!(report.impartial_counts_by_layer().get(&1), Some(&1));
+    assert_eq!(report.partizan_counts_by_layer().get(&0), Some(&0));
+    assert_eq!(report.partizan_counts_by_layer().get(&1), Some(&2));
+    assert_eq!(
+        report
+            .outcome_counts_by_layer()
+            .get(&0)
+            .unwrap()
+            .previous_player_wins(),
+        1
+    );
+    assert_eq!(
+        report
+            .outcome_counts_by_layer()
+            .get(&1)
+            .unwrap()
+            .next_player_wins(),
+        1
+    );
+}
+
+#[test]
+fn deeper_birthday_layer_analysis_reports_canonical_reduction() {
+    let mut arena = GameArena::new();
+    let analysis = arena.analyze_birthday_layer(2).unwrap();
+
+    assert!(analysis.raw_game_count() > analysis.canonical_game_count());
+    assert!(analysis.canonical_reduction() > 0);
+}
+
+#[test]
+fn node_count_layer_report_tracks_small_named_growth() {
+    let mut arena = GameArena::new();
+    let report = arena.analyze_node_count_layers(2).unwrap();
+
+    assert_eq!(report.len(), 2);
+    assert_eq!(report.raw_total_games(), 4);
+    assert_eq!(report.canonical_total_games(), 4);
+    assert_eq!(report.raw_counts_by_layer().get(&1), Some(&1));
+    assert_eq!(report.raw_counts_by_layer().get(&2), Some(&3));
+    assert_eq!(report.canonical_counts_by_layer().get(&1), Some(&1));
+    assert_eq!(report.canonical_counts_by_layer().get(&2), Some(&3));
+    assert_eq!(report.numeric_counts_by_layer().get(&1), Some(&1));
+    assert_eq!(report.numeric_counts_by_layer().get(&2), Some(&2));
+    assert_eq!(report.impartial_counts_by_layer().get(&1), Some(&1));
+    assert_eq!(report.impartial_counts_by_layer().get(&2), Some(&1));
+}
