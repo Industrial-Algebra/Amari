@@ -88,7 +88,7 @@ Status:
 
 ## Tier 1 — Public API honesty and surface inventory
 
-- [x] Restore reduced fusion public surface
+- [x] Restore and enforce reduced fusion public surface
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -211,4 +211,4 @@ The first concrete cleanups completed under this plan:
 - first-pass public API inventory created:
   - `docs/roadmap/AMARI_GPU_PUBLIC_API_INVENTORY.md`
 
-The next highest-impact cleanup identified by the inventory is to fix `fusion` module exposure so the implementation matches the documented reduced public surface.
+The highest-impact cleanup identified by the inventory was completed: `fusion` now uses a private module plus narrow crate-root re-exports so implementation matches the documented reduced public surface.

@@ -159,10 +159,11 @@ pub mod dual;
 pub mod enumerative;
 #[cfg(feature = "functional")]
 pub mod functional;
+#[cfg(feature = "fusion")]
+#[allow(dead_code)]
+mod fusion;
 #[cfg(feature = "gf2")]
 pub mod gf2;
-#[cfg(feature = "fusion")]
-pub mod fusion;
 #[cfg(feature = "holographic")]
 pub mod holographic;
 #[cfg(feature = "measure")]
@@ -177,11 +178,11 @@ pub mod shaders;
 pub mod timeline;
 // NOTE: `tropical.rs` is still redesigning toward a fuller public module, but a
 // narrow v1 surface is now re-exported at the crate root under the `tropical` feature.
+#[cfg(feature = "topology")]
+pub mod topology;
 #[cfg(feature = "tropical")]
 #[allow(dead_code)]
 mod tropical;
-#[cfg(feature = "topology")]
-pub mod topology;
 pub mod unified;
 pub mod verification;
 
@@ -204,13 +205,13 @@ pub use functional::{
     AdaptiveFunctionalCompute, GpuFunctionalError, GpuFunctionalResult, GpuHilbertSpace,
     GpuMatrixOperator, GpuSpectralDecomposition,
 };
-#[cfg(feature = "gf2")]
-pub use gf2::{
-    GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair, GpuGF2MatVecData,
-};
 #[cfg(feature = "fusion")]
 pub use fusion::{
     FusionGpuError, FusionGpuResult, GpuHolographicTDC, GpuResonatorOutput, HolographicGpuOps,
+};
+#[cfg(feature = "gf2")]
+pub use gf2::{
+    GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair, GpuGF2MatVecData,
 };
 #[cfg(feature = "holographic")]
 pub use holographic::{
@@ -234,10 +235,6 @@ pub use performance::{
 };
 #[cfg(feature = "probabilistic")]
 pub use probabilistic::{GpuProbabilistic, GpuProbabilisticError, GpuProbabilisticResult};
-#[cfg(feature = "tropical")]
-pub use tropical::{
-    TropicalExecutionPath, TropicalGpuError, TropicalGpuOps, TropicalGpuResult,
-};
 pub use relativistic::{
     GpuRelativisticParticle, GpuRelativisticPhysics, GpuSpacetimeVector, GpuTrajectoryParams,
 };
@@ -255,6 +252,8 @@ pub use timeline::{
 pub use topology::{
     AdaptiveTopologyCompute, GpuCriticalPoint, GpuTopology, GpuTopologyError, GpuTopologyResult,
 };
+#[cfg(feature = "tropical")]
+pub use tropical::{TropicalExecutionPath, TropicalGpuError, TropicalGpuOps, TropicalGpuResult};
 pub use unified::{
     BufferPoolStats, EnhancedGpuBufferPool, GpuAccelerated, GpuContext, GpuDispatcher,
     GpuOperationParams, GpuParam, MultiGpuStats, PoolEntryStats, SharedGpuContext, UnifiedGpuError,

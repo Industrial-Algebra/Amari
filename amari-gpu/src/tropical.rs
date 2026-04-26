@@ -360,10 +360,11 @@ mod redesign_pending {
             buffer: &Buffer,
             context: &TropicalGpuContext,
         ) -> TropicalGpuResult<TropicalMatrix<T>> {
-            let header_data: Vec<GpuTropicalMatrixHeader> = pollster::block_on(context.read_buffer(
-                buffer,
-                std::mem::size_of::<GpuTropicalMatrixHeader>() as u64,
-            ))?;
+            let header_data: Vec<GpuTropicalMatrixHeader> =
+                pollster::block_on(context.read_buffer(
+                    buffer,
+                    std::mem::size_of::<GpuTropicalMatrixHeader>() as u64,
+                ))?;
 
             if header_data.is_empty() {
                 return Err(TropicalGpuError::InvalidOperation(
@@ -523,7 +524,6 @@ mod redesign_pending {
     }
 }
 
-
 /// Execution path chosen for tropical matrix multiplication.
 #[cfg(feature = "tropical")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -658,7 +658,12 @@ impl TropicalGpuOps {
             .collect();
 
         let result_len = a.rows * b.cols;
-        let result_init = vec![GpuTropicalNumber { value: f32::NEG_INFINITY }; result_len];
+        let result_init = vec![
+            GpuTropicalNumber {
+                value: f32::NEG_INFINITY
+            };
+            result_len
+        ];
         let params = GpuTropicalMatMulParams {
             rows_a: a.rows as u32,
             cols_a: a.cols as u32,
@@ -674,15 +679,15 @@ impl TropicalGpuOps {
                 source: wgpu::ShaderSource::Wgsl(TROPICAL_MATRIX_MULTIPLY_SHADER.into()),
             });
 
-        let pipeline = self
-            .context
-            .device
-            .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-                label: Some("Tropical Matrix Multiply Pipeline"),
-                layout: None,
-                module: &shader,
-                entry_point: "main",
-            });
+        let pipeline =
+            self.context
+                .device
+                .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+                    label: Some("Tropical Matrix Multiply Pipeline"),
+                    layout: None,
+                    module: &shader,
+                    entry_point: "main",
+                });
 
         let buffer_a = self.context.create_buffer_with_data(
             "Tropical Matrix A",
@@ -731,12 +736,12 @@ impl TropicalGpuOps {
                 ],
             });
 
-        let mut encoder = self
-            .context
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Tropical Matrix Multiply Encoder"),
-            });
+        let mut encoder =
+            self.context
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                    label: Some("Tropical Matrix Multiply Encoder"),
+                });
 
         {
             let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
@@ -745,7 +750,11 @@ impl TropicalGpuOps {
             });
             pass.set_pipeline(&pipeline);
             pass.set_bind_group(0, &bind_group, &[]);
-            pass.dispatch_workgroups((a.rows as u32).div_ceil(16), (b.cols as u32).div_ceil(16), 1);
+            pass.dispatch_workgroups(
+                (a.rows as u32).div_ceil(16),
+                (b.cols as u32).div_ceil(16),
+                1,
+            );
         }
 
         self.context.queue.submit([encoder.finish()]);
@@ -763,7 +772,8 @@ impl TropicalGpuOps {
         for i in 0..a.rows {
             for j in 0..b.cols {
                 let idx = i * b.cols + j;
-                result.data[i][j] = TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
+                result.data[i][j] =
+                    TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
             }
         }
 
@@ -810,15 +820,15 @@ impl TropicalGpuOps {
                 source: wgpu::ShaderSource::Wgsl(TROPICAL_ATTENTION_SHADER.into()),
             });
 
-        let pipeline = self
-            .context
-            .device
-            .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-                label: Some("Tropical Attention Scores Pipeline"),
-                layout: None,
-                module: &shader,
-                entry_point: "main",
-            });
+        let pipeline =
+            self.context
+                .device
+                .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+                    label: Some("Tropical Attention Scores Pipeline"),
+                    layout: None,
+                    module: &shader,
+                    entry_point: "main",
+                });
 
         let logits_buffer = self.context.create_buffer_with_data(
             "Tropical Attention Logits",
@@ -858,12 +868,12 @@ impl TropicalGpuOps {
                 ],
             });
 
-        let mut encoder = self
-            .context
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Tropical Attention Scores Encoder"),
-            });
+        let mut encoder =
+            self.context
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                    label: Some("Tropical Attention Scores Encoder"),
+                });
 
         {
             let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
@@ -894,7 +904,8 @@ impl TropicalGpuOps {
         for i in 0..logits.rows {
             for j in 0..logits.cols {
                 let idx = i * logits.cols + j;
-                result.data[i][j] = TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
+                result.data[i][j] =
+                    TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
             }
         }
 
@@ -1091,7 +1102,10 @@ mod tests {
         }
     }
 
-    fn cpu_tropical_matmul(a: &TropicalMatrix<f32>, b: &TropicalMatrix<f32>) -> TropicalMatrix<f32> {
+    fn cpu_tropical_matmul(
+        a: &TropicalMatrix<f32>,
+        b: &TropicalMatrix<f32>,
+    ) -> TropicalMatrix<f32> {
         let mut out = TropicalMatrix::new(a.rows, b.cols);
         for i in 0..a.rows {
             for j in 0..b.cols {
@@ -1189,7 +1203,11 @@ mod tests {
                 row_max = row_max.max(logits.data[i][j].value());
             }
             for j in 0..logits.cols {
-                let score = if logits.data[i][j].value() == row_max { 1.0 } else { 0.0 };
+                let score = if logits.data[i][j].value() == row_max {
+                    1.0
+                } else {
+                    0.0
+                };
                 scores.data[i][j] = TropicalNumber::new(score);
             }
         }
@@ -1319,7 +1337,12 @@ mod tests {
             }
         };
 
-        let cases = [(16usize, 16usize, 16usize), (32, 32, 32), (64, 64, 64), (128, 128, 128)];
+        let cases = [
+            (16usize, 16usize, 16usize),
+            (32, 32, 32),
+            (64, 64, 64),
+            (128, 128, 128),
+        ];
         let warmups = 1;
         let runs = 5;
 
@@ -1331,18 +1354,30 @@ mod tests {
             let b = make_benchmark_matrix(k, n, 0x9ABC_DEF0 ^ n as u32);
 
             let (cpu_result, cpu_avg) = benchmark_cpu_matmul(&a, &b, warmups, runs);
-            let (gpu_result, gpu_avg) = match benchmark_gpu_matmul(&mut ops, &a, &b, warmups, runs).await {
-                Ok(v) => v,
-                Err(err) => {
-                    println!("{}x{}x{}\t{:.3}\tERR\t-\tfalse ({})", m, k, n, cpu_avg.as_secs_f64() * 1000.0, err);
-                    continue;
-                }
-            };
+            let (gpu_result, gpu_avg) =
+                match benchmark_gpu_matmul(&mut ops, &a, &b, warmups, runs).await {
+                    Ok(v) => v,
+                    Err(err) => {
+                        println!(
+                            "{}x{}x{}\t{:.3}\tERR\t-\tfalse ({})",
+                            m,
+                            k,
+                            n,
+                            cpu_avg.as_secs_f64() * 1000.0,
+                            err
+                        );
+                        continue;
+                    }
+                };
 
             assert_matrix_close(&cpu_result, &gpu_result, 1e-4);
             let cpu_ms = cpu_avg.as_secs_f64() * 1000.0;
             let gpu_ms = gpu_avg.as_secs_f64() * 1000.0;
-            let speedup = if gpu_ms > 0.0 { cpu_ms / gpu_ms } else { f64::INFINITY };
+            let speedup = if gpu_ms > 0.0 {
+                cpu_ms / gpu_ms
+            } else {
+                f64::INFINITY
+            };
 
             println!(
                 "{}x{}x{}\t{:.3}\t{:.3}\t{:.2}x\ttrue",

@@ -223,7 +223,7 @@ For restoration, add:
 
 Only after Steps 1–4:
 
-- [x] re-enable `#[cfg(feature = "fusion")] pub mod fusion;` in `amari-gpu/src/lib.rs`
+- [x] compile `fusion` internally under `#[cfg(feature = "fusion")]`
 - [x] re-export only the reduced, validated first-surface types
 - [x] update README with exact restored scope
 
@@ -256,7 +256,8 @@ Suggested first public re-exports:
 
 ```rust
 #[cfg(feature = "fusion")]
-pub mod fusion;
+#[allow(dead_code)]
+mod fusion;
 
 #[cfg(feature = "fusion")]
 pub use fusion::{
@@ -303,7 +304,7 @@ The first restored public fusion surface should not ship without:
 
 The first fusion restoration pass is successful when:
 
-- [x] `amari-gpu --features fusion` compiles with a real public module
+- [x] `amari-gpu --features fusion` compiles with a real reduced public surface
 - [x] restored API is smaller but honest and validated
 - [x] no fake cross-crate GPU dependencies remain
 - [~] hardware-backed correctness and basic benchmarks exist (focused correctness tests pass; full GB10/RTX5080 validation and benchmark reporting still pending)

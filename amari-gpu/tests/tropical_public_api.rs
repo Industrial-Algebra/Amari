@@ -42,7 +42,11 @@ fn cpu_attention_scores(logits: &TropicalMatrix<f32>) -> TropicalMatrix<f32> {
             row_max = row_max.max(logits.data[i][j].value());
         }
         for j in 0..logits.cols {
-            let score = if logits.data[i][j].value() == row_max { 1.0 } else { 0.0 };
+            let score = if logits.data[i][j].value() == row_max {
+                1.0
+            } else {
+                0.0
+            };
             scores.data[i][j] = TropicalNumber::new(score);
         }
     }

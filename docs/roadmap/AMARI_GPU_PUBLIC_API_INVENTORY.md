@@ -43,7 +43,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `calculus` | `amari-calculus` | `pub mod calculus`, `GpuCalculus` re-export | API honesty risk: several large-batch paths are placeholder/fallback |
 | `measure` | `amari-measure` | `pub mod measure`, integration types re-exported | Mixed GPU-backed + CPU fallback; needs public docs distinction |
 | `dual` | `amari-dual` | `pub mod dual` | GPU code exists; some APIs contain placeholder/unsupported paths |
-| `fusion` | `amari-fusion` | `pub mod fusion` plus reduced crate-root re-exports | **Critical API honesty risk**: full module is public even though only reduced surface is documented as restored |
+| `fusion` | `amari-fusion` | private module plus reduced crate-root re-exports | Narrow v1 exposure restored; broader internals private/redesign-pending |
 | `tropical` | `amari-tropical` | private module + narrow crate-root re-exports | Good v1 shape; real kernels restored and tested |
 | `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Strong surface; some CPU-for-correctness/future placeholder notes remain |
 | `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed statistical kernels; needs hardware/crossover validation |
@@ -130,16 +130,24 @@ This is currently the cleanest model for a restored but not fully mature domain 
 
 ## Critical findings
 
-## 1. Fusion reduced-surface intent is not actually enforced
+## 1. Fusion reduced-surface intent is now enforced
 
-The roadmap and README describe fusion as a reduced first public surface centered on `HolographicGpuOps`, but `lib.rs` currently has:
+The roadmap and README describe fusion as a reduced first public surface centered on `HolographicGpuOps`.
+
+This is now reflected in `lib.rs` by keeping the module private and exposing only the intended crate-root re-exports:
 
 ```rust
 #[cfg(feature = "fusion")]
-pub mod fusion;
+#[allow(dead_code)]
+mod fusion;
+
+#[cfg(feature = "fusion")]
+pub use fusion::{
+    FusionGpuError, FusionGpuResult, GpuHolographicTDC, GpuResonatorOutput, HolographicGpuOps,
+};
 ```
 
-That means broader public items are exposed, including but not limited to:
+Broader internals remain private/redesign-pending, including:
 
 - `FusionGpuOps`
 - `FusionGpuContext`
@@ -150,13 +158,7 @@ That means broader public items are exposed, including but not limited to:
 - `FusionObjective`
 - broader methods such as `llm_evaluation`, `geometric_attention`, and `batch_fusion_optimization`
 
-First-pass classification: **API honesty risk**.
-
-Recommended 0.20.0 fix:
-
-- change `pub mod fusion` to private `mod fusion`
-- keep only the intended crate-root re-exports public
-- or explicitly classify/test/document the broader fusion module before leaving it public
+First-pass classification: **narrow v1 exposure restored; broader internals private**.
 
 ## 2. Tropical v1 is currently the cleanest restored domain pattern
 
@@ -240,7 +242,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `network` | public default | GPU-backed distances, mixed higher ops | validate and document centrality/clustering fallback behavior |
 | `relativistic` | public default | GPU-backed | validate Minkowski/trajectory CPU parity |
 | `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | validate all public ops; document CPU unbind path if retained |
-| `fusion` | feature public module | intended reduced surface, actually broad | **fix module exposure or validate/document broad API** |
+| `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
 | `tropical` | feature narrow crate-root API | real restored v1 kernels | hardware validate and benchmark further |
 | `calculus` | feature public module | API honesty risk | inspect/fix placeholder GPU paths |
 | `measure` | feature public module | mixed GPU/fallback | document/test fallback methods |
@@ -257,9 +259,10 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 ## Immediate 0.20.0 follow-up tasks
 
-1. **Fix fusion public exposure**
-   - [ ] decide whether to make `fusion` private with narrow crate-root re-exports
-   - [ ] or validate/document the broad `fusion` module as public
+1. **Validate restored fusion public subset**
+   - [x] make `fusion` private with narrow crate-root re-exports
+   - [ ] add/verify public import-path tests for reduced fusion surface
+   - [ ] run focused holographic/fusion tests on GB10 and RTX 5080
 
 2. **Audit calculus public methods**
    - [ ] identify which methods are real GPU-backed vs CPU fallback vs placeholder
@@ -280,8 +283,10 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 ## Recommended next code change
 
-The highest-impact immediate code cleanup is:
+The highest-impact immediate code cleanup has been completed:
 
-> Make `fusion` follow the `tropical` pattern: private module plus narrow crate-root re-exports, unless the broader `FusionGpuOps` API is fully validated and intended for 0.20.0.
+> `fusion` now follows the `tropical` pattern: private module plus narrow crate-root re-exports.
 
-This would align implementation with the documented reduced fusion restoration plan and prevent accidental public exposure of unvalidated broader APIs.
+Next recommended code change:
+
+> Add a public import-path integration test for the reduced fusion surface, then continue auditing modules with placeholder/fallback-heavy public APIs, starting with `calculus`.

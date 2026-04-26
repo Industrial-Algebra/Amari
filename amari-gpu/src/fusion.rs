@@ -5,8 +5,6 @@
 //! neural attention with geometric awareness, and large-scale optimization.
 
 #[cfg(feature = "fusion")]
-use std::vec::Vec;
-#[cfg(feature = "fusion")]
 use amari_fusion::TropicalDualClifford;
 #[cfg(feature = "fusion")]
 use bytemuck::{Pod, Zeroable};
@@ -14,6 +12,8 @@ use bytemuck::{Pod, Zeroable};
 use futures::channel::oneshot;
 #[cfg(feature = "fusion")]
 use std::collections::HashMap;
+#[cfg(feature = "fusion")]
+use std::vec::Vec;
 #[cfg(feature = "fusion")]
 use thiserror::Error;
 #[cfg(feature = "fusion")]
@@ -1938,10 +1938,16 @@ mod tests {
                         "Self-similarity should be high, got {}",
                         similarities[0]
                     );
-                    println!("✅ Holographic batch similarity successful: {}", similarities[0]);
+                    println!(
+                        "✅ Holographic batch similarity successful: {}",
+                        similarities[0]
+                    );
                 }
                 Err(e) => {
-                    println!("⚠️  Holographic batch similarity failed: {}, but test passes", e);
+                    println!(
+                        "⚠️  Holographic batch similarity failed: {}, but test passes",
+                        e
+                    );
                 }
             }
         } else {
@@ -1983,12 +1989,16 @@ mod tests {
                     // Diagonal should be 1.0 (self-similarity)
                     // Off-diagonal should be 0.0 (orthogonal vectors)
                     println!("✅ Holographic similarity matrix successful");
-                    println!("   Matrix: [{:.2}, {:.2}; {:.2}, {:.2}]",
-                        similarities[0], similarities[1],
-                        similarities[2], similarities[3]);
+                    println!(
+                        "   Matrix: [{:.2}, {:.2}; {:.2}, {:.2}]",
+                        similarities[0], similarities[1], similarities[2], similarities[3]
+                    );
                 }
                 Err(e) => {
-                    println!("⚠️  Holographic similarity matrix failed: {}, but test passes", e);
+                    println!(
+                        "⚠️  Holographic similarity matrix failed: {}, but test passes",
+                        e
+                    );
                 }
             }
         } else {
@@ -2040,13 +2050,19 @@ mod tests {
                 Ok(output) => {
                     // Should match e1 (index 0) as it's closest to noisy input
                     assert_eq!(output.best_index, 0, "Should match e1 at index 0");
-                    assert!(output.best_similarity > 0.5, "Similarity should be positive");
+                    assert!(
+                        output.best_similarity > 0.5,
+                        "Similarity should be positive"
+                    );
                     println!("✅ Holographic resonator cleanup successful");
                     println!("   Best match index: {}", output.best_index);
                     println!("   Best similarity: {:.4}", output.best_similarity);
                 }
                 Err(e) => {
-                    println!("⚠️  Holographic resonator cleanup failed: {}, but test passes", e);
+                    println!(
+                        "⚠️  Holographic resonator cleanup failed: {}, but test passes",
+                        e
+                    );
                 }
             }
         } else {
