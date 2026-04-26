@@ -32,8 +32,8 @@ Integration Crates (consume APIs):
 | **amari-info-geom** | `info_geom` | Fisher metric, divergence computations, statistical manifolds | ✅ Implemented |
 | **amari-relativistic** | `relativistic` | Minkowski space operations, Lorentz transformations | ✅ Implemented |
 | **amari-network** | `network` | Graph operations, spectral methods | ✅ Implemented |
-| **amari-measure** | `measure` | Measure theory computations, sigma-algebras | ✅ Implemented (feature: `measure`) |
-| **amari-calculus** | `calculus` | Field evaluation, gradients, divergence, curl | ✅ Implemented (feature: `calculus`) |
+| **amari-measure** | `measure` | 1D integration, Monte Carlo, Gaussian densities, tropical/multidim scaffolding | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `measure`) |
+| **amari-calculus** | `calculus` | Field evaluation, gradients, divergence, curl | ⚠️ GPU-ready CPU-semantic fallback (feature: `calculus`) |
 | **amari-dual** | `dual` | Automatic differentiation GPU operations | ✅ Implemented (feature: `dual`) |
 | **amari-enumerative** | `enumerative` | Intersection theory, WDVV curve counting, matroid ranks, CSM classes, localization, operad, stability | ✅ Implemented (feature: `enumerative`) |
 | **amari-automata** | `automata` | Cellular automata GPU evolution | ✅ Implemented (feature: `automata`) |
@@ -116,6 +116,40 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Batch gradient computation currently uses the CPU finite-difference baseline.
     let gradients = gpu_calculus.batch_gradient(&field, &points, 1e-6).await?;
+
+    Ok(())
+}
+```
+
+### Measure GPU Operations *(mixed GPU-backed + documented fallback)*
+
+The `measure` feature currently exposes a broad public module plus crate-root re-exports:
+
+| Type / operation | Current 0.20.0 behavior |
+|------------------|--------------------------|
+| `GpuIntegrator::integrate_uniform()` | GPU built-in function evaluation with CPU readback reduction |
+| `GpuIntegrator::integrate_values()` | CPU reduction fallback for precomputed values |
+| `GpuMonteCarloIntegrator::{expectation_uniform, integrate}` | GPU sampling/evaluation for built-in functions with CPU readback reduction |
+| `GpuParametricDensity::gaussian_batch()` | GPU-backed Gaussian density batch evaluation |
+| `GpuTropicalMeasure::{supremum, infimum}` | CPU reduction fallback |
+| `GpuMultidimIntegrator::monte_carlo_nd()` | exact hypercube volume for constant-one integrand; multidimensional GPU Monte Carlo pending |
+
+```rust
+use amari_gpu::{GpuIntegrator, GpuParametricDensity};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let integrator = GpuIntegrator::new().await?;
+
+    // Built-in function IDs: 0=x, 1=x², 2=x³, 3=sin(x), 4=cos(x), 5=exp(x).
+    // This evaluates x² on the GPU and reduces the result after readback.
+    let integral = integrator.integrate_uniform(0.0, 2.0, 10_000, 1).await?;
+
+    // Precomputed/custom values currently use a documented CPU fallback reduction.
+    let custom_integral = integrator.integrate_values(&[1.0, 2.0, 3.0], 0.5).await?;
+
+    let density = GpuParametricDensity::new().await?;
+    let gaussian = density.gaussian_batch(&[0.0, 1.0], 0.0, 1.0).await?;
 
     Ok(())
 }
@@ -547,10 +581,10 @@ let values = gpu_calculus.batch_eval_scalar_field(&field, &large_points).await?;
 
 | Operation | CPU Threshold | GPU Threshold |
 |-----------|--------------|---------------|
-| Scalar field evaluation | < 1000 points | ≥ 1000 points |
-| Vector field evaluation | < 500 points | ≥ 500 points |
-| Gradient computation | < 500 points | ≥ 500 points |
-| Divergence/Curl | < 500 points | ≥ 500 points |
+| Scalar field evaluation | current 0.20.0 path | CPU-semantic fallback; WGSL kernel pending |
+| Vector field evaluation | current 0.20.0 path | CPU-semantic fallback; WGSL kernel pending |
+| Gradient computation | current 0.20.0 path | CPU finite-difference fallback; WGSL kernel pending |
+| Divergence/Curl | current 0.20.0 path | CPU finite-difference fallback; WGSL kernel pending |
 | Holographic binding | < 100 pairs | ≥ 100 pairs |
 | Holographic similarity | < 100 vectors | ≥ 100 vectors |
 | Resonator cleanup | < 100 codebook | ≥ 100 codebook |
@@ -559,6 +593,10 @@ let values = gpu_calculus.batch_eval_scalar_field(&field, &large_points).await?;
 | Lee hologram encoding | < 4096 pixels | ≥ 4096 pixels |
 | Gaussian sampling | < 1000 samples | ≥ 1000 samples |
 | Batch mean/variance | < 1000 elements | ≥ 1000 elements |
+| Measure built-in 1D integration | GPU evaluation | CPU readback reduction |
+| Measure precomputed values | CPU reduction fallback | GPU reduction pending |
+| Measure Gaussian density | N/A | GPU batch evaluation |
+| Tropical measure extrema | CPU reduction fallback | GPU reduction pending |
 | Distance matrix | < 100 points | ≥ 100 points |
 | Morse critical points | < 10000 cells | ≥ 10000 cells |
 | Rips filtration | N/A | Uses GPU distance matrix |

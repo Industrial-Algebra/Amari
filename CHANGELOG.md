@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a public integration test covering the crate-root tropical API path.
 - Added a public integration test covering the reduced crate-root fusion API path.
 - Added public calculus API tests covering large-batch CPU-semantic fallback behavior.
+- Added public measure API tests covering crate-root imports, built-in integration, Monte Carlo function IDs, Gaussian density, tropical reductions, and multidimensional volume behavior.
 
 #### Changed
 
@@ -30,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Isolated older trait-based tropical GPU scaffolding into an internal redesign-pending block.
 - Documented `GpuCalculus` as GPU-ready CPU-semantic fallback while WGSL calculus kernels are pending.
 - Fixed `GpuCalculus::batch_eval_vector_field` large-batch behavior to preserve CPU semantics instead of returning placeholder zero vectors.
+- Documented `measure` feature behavior as mixed GPU-backed plus CPU fallback.
+- Fixed `GpuMonteCarloIntegrator::integrate` to pass `function_id` through to the WGSL Monte Carlo kernel.
+- Documented `GpuIntegrator::integrate_values`, `GpuTropicalMeasure::{supremum, infimum}`, and `GpuMultidimIntegrator::monte_carlo_nd` fallback/scaffolding semantics.
+- Added validation for zero-sample integration and non-positive Gaussian sigma inputs.
 
 ## [0.17.0] - 2026-01-11
 

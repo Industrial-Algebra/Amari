@@ -40,8 +40,8 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | Feature | Dependency / domain | Current public shape | First-pass classification |
 |---------|---------------------|----------------------|---------------------------|
 | default | core, info-geom, network, relativistic, infra | broad crate-root + public modules | Mixed: GPU-backed + adaptive + infra; needs full baseline inventory |
-| `calculus` | `amari-calculus` | `pub mod calculus`, `GpuCalculus` re-export | API honesty risk: several large-batch paths are placeholder/fallback |
-| `measure` | `amari-measure` | `pub mod measure`, integration types re-exported | Mixed GPU-backed + CPU fallback; needs public docs distinction |
+| `calculus` | `amari-calculus` | `pub mod calculus`, `GpuCalculus` re-export | CPU fallback / GPU-ready scaffolding; docs/tests started |
+| `measure` | `amari-measure` | `pub mod measure`, integration types re-exported | Mixed GPU-backed + documented CPU fallback; public tests added |
 | `dual` | `amari-dual` | `pub mod dual` | GPU code exists; some APIs contain placeholder/unsupported paths |
 | `fusion` | `amari-fusion` | private module plus reduced crate-root re-exports | Narrow v1 exposure restored; broader internals private/redesign-pending |
 | `tropical` | `amari-tropical` | private module + narrow crate-root re-exports | Good v1 shape; real kernels restored and tested |
@@ -80,12 +80,12 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 
 | Feature | Re-exports | Classification |
 |---------|------------|----------------|
-| `calculus` | `GpuCalculus` | API honesty risk until fallback/placeholder behavior is documented/tested |
+| `calculus` | `GpuCalculus` | CPU fallback / GPU-ready scaffolding; scalar/vector public tests added |
 | `functional` | `AdaptiveFunctionalCompute`, `GpuHilbertSpace`, `GpuMatrixOperator`, `GpuSpectralDecomposition`, error/result types | Mixed GPU + CPU fallback |
 | `gf2` | `GF2GpuOps`, GF2 data/error/result types | GPU-backed; validate |
-| `fusion` | `FusionGpuError`, `FusionGpuResult`, `GpuHolographicTDC`, `GpuResonatorOutput`, `HolographicGpuOps` | Intended reduced v1 surface, but `pub mod fusion` exposes much more |
+| `fusion` | `FusionGpuError`, `FusionGpuResult`, `GpuHolographicTDC`, `GpuResonatorOutput`, `HolographicGpuOps` | Reduced v1 surface enforced by private module + crate-root re-exports |
 | `holographic` | `GpuHolographic`, `GpuHolographicMemory`, `GpuOpticalField`, error/result types | GPU-backed/adaptive; validate broader CPU correctness |
-| `measure` | `GpuIntegrator`, `GpuMonteCarloIntegrator`, `GpuMultidimIntegrator`, `GpuParametricDensity`, `GpuTropicalMeasure` | Mixed GPU + CPU fallback |
+| `measure` | `GpuIntegrator`, `GpuMonteCarloIntegrator`, `GpuMultidimIntegrator`, `GpuParametricDensity`, `GpuTropicalMeasure` | Mixed GPU + documented CPU fallback; public import-path test added |
 | `probabilistic` | `GpuProbabilistic`, error/result types | GPU-backed; validate |
 | `tropical` | `TropicalExecutionPath`, `TropicalGpuError`, `TropicalGpuOps`, `TropicalGpuResult` | Narrow v1 public surface; good API honesty state |
 | `topology` | `AdaptiveTopologyCompute`, `GpuCriticalPoint`, `GpuTopology`, error/result types | Mixed GPU + CPU fallback |
@@ -223,11 +223,22 @@ Recommended 0.20.0 fix:
 
 ## 5. Several modules expose useful CPU fallback under GPU names
 
-Examples found by marker scan:
+Measure audit status: **documented/tested mixed GPU + fallback**.
 
-- `measure::GpuIntegrator::integrate_values` uses CPU summation
-- `measure::GpuTropicalMeasure::{supremum, infimum}` use CPU reduction
-- `measure::GpuMultidimIntegrator::monte_carlo_nd` uses CPU implementation
+Completed measure fixes:
+
+- [x] documented module-level behavior for GPU-backed vs CPU fallback operations
+- [x] documented `GpuIntegrator::integrate_values` as CPU-backed and removed unnecessary buffer upload
+- [x] fixed `GpuMonteCarloIntegrator::integrate` so `function_id` is actually used by the shader
+- [x] added zero-sample validation for 1D deterministic and Monte Carlo integration
+- [x] added Gaussian sigma validation and empty-input behavior
+- [x] added public import-path integration test for measure re-exports
+
+Remaining examples found by marker scan:
+
+- `measure::GpuIntegrator::integrate_values` uses CPU summation, now documented/tested
+- `measure::GpuTropicalMeasure::{supremum, infimum}` use CPU reduction, now documented/tested
+- `measure::GpuMultidimIntegrator::monte_carlo_nd` returns exact hypercube volume for constant-one integrand, now documented/tested
 - `functional::GpuSpectralDecomposition::compute` falls back to CPU Jacobi algorithm
 - `functional::GpuSpectralDecomposition::apply_function_batch` uses CPU implementation
 - `topology::build_rips_filtration` uses CPU implementation with GPU distance matrix
@@ -253,7 +264,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
 | `tropical` | feature narrow crate-root API | real restored v1 kernels | hardware validate and benchmark further |
 | `calculus` | feature public module | CPU fallback / GPU-ready scaffolding | add gradient/divergence/curl public baseline tests; implement kernels later |
-| `measure` | feature public module | mixed GPU/fallback | document/test fallback methods |
+| `measure` | feature public module | mixed GPU/fallback documented | implement reduction/multidim kernels later; hardware validate existing GPU paths |
 | `functional` | feature public module | mixed GPU/fallback | document/test CPU spectral fallback |
 | `topology` | feature public module | mixed GPU/fallback | validate distance/Morse; document CPU Rips/Betti paths |
 | `dual` | feature public module | GPU-backed plus unsupported paths | inspect shader correctness and placeholder gradient paths |
@@ -280,10 +291,12 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 3. **Create per-domain validation checklist**
    - [ ] one CPU baseline test per high-priority public operation
-   - [ ] one public import-path integration test per feature domain
+   - [x] one public import-path integration test for `fusion`
+   - [x] one public import-path integration test for `measure`
 
 4. **Document fallback semantics**
-   - [ ] README table should distinguish GPU-backed, adaptive, CPU fallback, and infrastructure
+   - [x] README table distinguishes `measure` mixed GPU/fallback behavior
+   - [ ] README table should distinguish GPU-backed, adaptive, CPU fallback, and infrastructure across all domains
 
 5. **Hardware validation template**
    - [ ] GB10 result table
@@ -299,4 +312,4 @@ The highest-impact immediate code cleanup has been completed:
 
 Next recommended code change:
 
-> Continue auditing modules with placeholder/fallback-heavy public APIs, starting with `calculus`.
+> Continue auditing mixed fallback public APIs, with `functional` or `topology` as the next high-impact feature domains.

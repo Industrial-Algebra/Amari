@@ -91,6 +91,7 @@ Status:
 - [x] Restore and enforce reduced fusion public surface
 - [x] Add public import-path integration test for reduced fusion surface
 - [x] Fix calculus large-batch vector-field placeholder behavior and document CPU-semantic fallback
+- [x] Audit `measure` public surface, fix/document fallback behavior, and add public import-path tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -130,7 +131,8 @@ Priority domains:
 - [ ] dual
 - [ ] enumerative
 - [ ] automata
-- [ ] measure/calculus
+- [x] measure public import-path coverage for core paths/fallbacks
+- [ ] calculus gradient/divergence/curl public baseline coverage
 - [ ] GF(2)
 
 ## Tier 3 — Hardware validation
