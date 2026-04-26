@@ -256,14 +256,14 @@ fn birthday_layer_analysis_classifies_named_nonzero_games() {
         analysis.stats().reachable_node_histogram().get(&2),
         Some(&3)
     );
-    assert_eq!(analysis.stats().outcome_counts().left_wins(), 1);
-    assert_eq!(analysis.stats().outcome_counts().right_wins(), 1);
-    assert_eq!(analysis.stats().outcome_counts().next_player_wins(), 1);
-    assert_eq!(analysis.stats().outcome_counts().previous_player_wins(), 0);
-    assert_eq!(analysis.stats().impartial_games(), 1);
-    assert_eq!(analysis.stats().partizan_games(), 2);
-    assert_eq!(analysis.stats().numeric_games(), 2);
-    assert_eq!(analysis.stats().non_numeric_games(), 1);
+    assert_eq!(analysis.outcome_counts().left_wins(), 1);
+    assert_eq!(analysis.outcome_counts().right_wins(), 1);
+    assert_eq!(analysis.outcome_counts().next_player_wins(), 1);
+    assert_eq!(analysis.outcome_counts().previous_player_wins(), 0);
+    assert_eq!(analysis.impartial_game_count(), 1);
+    assert_eq!(analysis.partizan_game_count(), 2);
+    assert_eq!(analysis.numeric_game_count(), 2);
+    assert_eq!(analysis.non_numeric_game_count(), 1);
 }
 
 #[test]
@@ -310,6 +310,94 @@ fn deeper_birthday_layer_analysis_reports_canonical_reduction() {
 
     assert!(analysis.raw_game_count() > analysis.canonical_game_count());
     assert!(analysis.canonical_reduction() > 0);
+}
+
+#[test]
+fn birthday_layer_report_summary_helpers_aggregate_and_peak_correctly() {
+    let mut arena = GameArena::new();
+    let report = arena.analyze_birthday_layers(2).unwrap();
+
+    let (first_key, first_layer) = report.first_layer().unwrap();
+    assert_eq!(*first_key, 0);
+    assert_eq!(first_layer.raw_game_count(), 1);
+
+    let (last_key, last_layer) = report.last_layer().unwrap();
+    assert_eq!(*last_key, 2);
+    assert_eq!(last_layer.raw_game_count(), 252);
+
+    let numeric_total: usize = report
+        .iter()
+        .map(|(_, layer)| layer.numeric_game_count())
+        .sum();
+    let non_numeric_total: usize = report
+        .iter()
+        .map(|(_, layer)| layer.non_numeric_game_count())
+        .sum();
+    let impartial_total: usize = report
+        .iter()
+        .map(|(_, layer)| layer.impartial_game_count())
+        .sum();
+    let partizan_total: usize = report
+        .iter()
+        .map(|(_, layer)| layer.partizan_game_count())
+        .sum();
+
+    assert_eq!(report.numeric_total_games(), numeric_total);
+    assert_eq!(report.non_numeric_total_games(), non_numeric_total);
+    assert_eq!(report.impartial_total_games(), impartial_total);
+    assert_eq!(report.partizan_total_games(), partizan_total);
+    assert_eq!(
+        report.numeric_total_games() + report.non_numeric_total_games(),
+        report.canonical_total_games()
+    );
+    assert_eq!(
+        report.impartial_total_games() + report.partizan_total_games(),
+        report.canonical_total_games()
+    );
+
+    let outcome_totals = report.outcome_counts_total();
+    assert_eq!(outcome_totals.total(), report.canonical_total_games());
+    assert_eq!(
+        outcome_totals.left_wins(),
+        report
+            .iter()
+            .map(|(_, layer)| layer.outcome_counts().left_wins())
+            .sum()
+    );
+    assert_eq!(
+        outcome_totals.right_wins(),
+        report
+            .iter()
+            .map(|(_, layer)| layer.outcome_counts().right_wins())
+            .sum()
+    );
+    assert_eq!(
+        outcome_totals.next_player_wins(),
+        report
+            .iter()
+            .map(|(_, layer)| layer.outcome_counts().next_player_wins())
+            .sum()
+    );
+    assert_eq!(
+        outcome_totals.previous_player_wins(),
+        report
+            .iter()
+            .map(|(_, layer)| layer.outcome_counts().previous_player_wins())
+            .sum()
+    );
+
+    let (max_raw_key, max_raw_count) = report.max_raw_layer().unwrap();
+    assert_eq!((*max_raw_key, max_raw_count), (2, 252));
+
+    let layer_two = report.get(&2).unwrap();
+
+    let (max_canonical_key, max_canonical_count) = report.max_canonical_layer().unwrap();
+    assert_eq!(*max_canonical_key, 2);
+    assert_eq!(max_canonical_count, layer_two.canonical_game_count());
+
+    let (max_reduction_key, max_reduction_count) = report.max_canonical_reduction_layer().unwrap();
+    assert_eq!(*max_reduction_key, 2);
+    assert_eq!(max_reduction_count, layer_two.canonical_reduction());
 }
 
 #[test]

@@ -51,6 +51,14 @@ impl OutcomeCounts {
         self.left_wins + self.right_wins + self.next_player_wins + self.previous_player_wins
     }
 
+    /// Merges another set of outcome counts into this one.
+    pub fn merge(&mut self, other: &Self) {
+        self.left_wins += other.left_wins;
+        self.right_wins += other.right_wins;
+        self.next_player_wins += other.next_player_wins;
+        self.previous_player_wins += other.previous_player_wins;
+    }
+
     fn record(&mut self, outcome: OutcomeClass) {
         match outcome {
             OutcomeClass::LeftWins => self.left_wins += 1,
@@ -167,6 +175,36 @@ impl LayerAnalysis {
     pub fn stats(&self) -> &CorpusStats {
         &self.stats
     }
+
+    /// Returns the outcome-class counts for the canonical layer corpus.
+    #[must_use]
+    pub fn outcome_counts(&self) -> &OutcomeCounts {
+        self.stats.outcome_counts()
+    }
+
+    /// Returns the number of numeric canonical games in the layer.
+    #[must_use]
+    pub fn numeric_game_count(&self) -> usize {
+        self.stats.numeric_games()
+    }
+
+    /// Returns the number of non-numeric canonical games in the layer.
+    #[must_use]
+    pub fn non_numeric_game_count(&self) -> usize {
+        self.stats.non_numeric_games()
+    }
+
+    /// Returns the number of impartial canonical games in the layer.
+    #[must_use]
+    pub fn impartial_game_count(&self) -> usize {
+        self.stats.impartial_games()
+    }
+
+    /// Returns the number of partizan canonical games in the layer.
+    #[must_use]
+    pub fn partizan_game_count(&self) -> usize {
+        self.stats.partizan_games()
+    }
 }
 
 /// Layered analysis report keyed by an exact generation index.
@@ -237,6 +275,100 @@ impl<K: Ord> LayerAnalysisReport<K> {
             .map(LayerAnalysis::canonical_reduction)
             .sum()
     }
+
+    /// Returns the first exact layer in the report.
+    #[must_use]
+    pub fn first_layer(&self) -> Option<(&K, &LayerAnalysis)> {
+        self.layers.iter().next()
+    }
+
+    /// Returns the last exact layer in the report.
+    #[must_use]
+    pub fn last_layer(&self) -> Option<(&K, &LayerAnalysis)> {
+        self.layers.iter().next_back()
+    }
+
+    /// Returns the total number of numeric canonical games across all layers.
+    #[must_use]
+    pub fn numeric_total_games(&self) -> usize {
+        self.layers
+            .values()
+            .map(LayerAnalysis::numeric_game_count)
+            .sum()
+    }
+
+    /// Returns the total number of non-numeric canonical games across all layers.
+    #[must_use]
+    pub fn non_numeric_total_games(&self) -> usize {
+        self.layers
+            .values()
+            .map(LayerAnalysis::non_numeric_game_count)
+            .sum()
+    }
+
+    /// Returns the total number of impartial canonical games across all layers.
+    #[must_use]
+    pub fn impartial_total_games(&self) -> usize {
+        self.layers
+            .values()
+            .map(LayerAnalysis::impartial_game_count)
+            .sum()
+    }
+
+    /// Returns the total number of partizan canonical games across all layers.
+    #[must_use]
+    pub fn partizan_total_games(&self) -> usize {
+        self.layers
+            .values()
+            .map(LayerAnalysis::partizan_game_count)
+            .sum()
+    }
+
+    /// Returns total outcome-class counts aggregated across all layers.
+    #[must_use]
+    pub fn outcome_counts_total(&self) -> OutcomeCounts {
+        let mut total = OutcomeCounts::default();
+        for analysis in self.layers.values() {
+            total.merge(analysis.outcome_counts());
+        }
+        total
+    }
+
+    /// Returns the earliest layer attaining the maximum raw-game count.
+    #[must_use]
+    pub fn max_raw_layer(&self) -> Option<(&K, usize)> {
+        self.max_layer_value(LayerAnalysis::raw_game_count)
+    }
+
+    /// Returns the earliest layer attaining the maximum canonical-game count.
+    #[must_use]
+    pub fn max_canonical_layer(&self) -> Option<(&K, usize)> {
+        self.max_layer_value(LayerAnalysis::canonical_game_count)
+    }
+
+    /// Returns the earliest layer attaining the maximum canonical reduction.
+    #[must_use]
+    pub fn max_canonical_reduction_layer(&self) -> Option<(&K, usize)> {
+        self.max_layer_value(LayerAnalysis::canonical_reduction)
+    }
+
+    fn max_layer_value<F>(&self, mut value: F) -> Option<(&K, usize)>
+    where
+        F: FnMut(&LayerAnalysis) -> usize,
+    {
+        let mut best = None;
+        for (key, analysis) in &self.layers {
+            let count = value(analysis);
+            let should_replace = match best {
+                Some((_, best_count)) => count > best_count,
+                None => true,
+            };
+            if should_replace {
+                best = Some((key, count));
+            }
+        }
+        best
+    }
 }
 
 impl<K: Ord + Clone> LayerAnalysisReport<K> {
@@ -261,31 +393,31 @@ impl<K: Ord + Clone> LayerAnalysisReport<K> {
     /// Returns numeric canonical-game counts keyed by exact layer.
     #[must_use]
     pub fn numeric_counts_by_layer(&self) -> BTreeMap<K, usize> {
-        self.map_layer_values(|analysis| analysis.stats().numeric_games())
+        self.map_layer_values(LayerAnalysis::numeric_game_count)
     }
 
     /// Returns non-numeric canonical-game counts keyed by exact layer.
     #[must_use]
     pub fn non_numeric_counts_by_layer(&self) -> BTreeMap<K, usize> {
-        self.map_layer_values(|analysis| analysis.stats().non_numeric_games())
+        self.map_layer_values(LayerAnalysis::non_numeric_game_count)
     }
 
     /// Returns impartial canonical-game counts keyed by exact layer.
     #[must_use]
     pub fn impartial_counts_by_layer(&self) -> BTreeMap<K, usize> {
-        self.map_layer_values(|analysis| analysis.stats().impartial_games())
+        self.map_layer_values(LayerAnalysis::impartial_game_count)
     }
 
     /// Returns partizan canonical-game counts keyed by exact layer.
     #[must_use]
     pub fn partizan_counts_by_layer(&self) -> BTreeMap<K, usize> {
-        self.map_layer_values(|analysis| analysis.stats().partizan_games())
+        self.map_layer_values(LayerAnalysis::partizan_game_count)
     }
 
     /// Returns outcome-class counts keyed by exact layer.
     #[must_use]
     pub fn outcome_counts_by_layer(&self) -> BTreeMap<K, OutcomeCounts> {
-        self.map_layer_values(|analysis| analysis.stats().outcome_counts().clone())
+        self.map_layer_values(|analysis| analysis.outcome_counts().clone())
     }
 
     fn map_layer_values<V, F>(&self, mut value: F) -> BTreeMap<K, V>
