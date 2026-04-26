@@ -13,6 +13,7 @@
 //! - **Tropical Geometry**: Tropical curve counting and correspondence theorems
 //! - **Moduli Spaces**: Computations on moduli spaces of curves and surfaces
 //! - **Namespace/Capabilities**: Geometric access control via Schubert calculus
+//! - **CGT Bridge**: Growth-sequence adapters for `amari-cgt` layer reports (feature: `cgt-bridge`)
 //! - **Phantom Types**: Compile-time verification of mathematical properties
 //!
 //! ## Usage
@@ -61,6 +62,8 @@
 pub mod comprehensive_tests;
 pub mod verified_contracts;
 
+#[cfg(feature = "cgt-bridge")]
+pub mod cgt_bridge;
 pub mod csm;
 pub mod geometric_algebra;
 pub mod gromov_witten;
@@ -90,6 +93,11 @@ pub mod representability;
 pub mod weight_enumerator;
 
 // Re-export core types
+#[cfg(feature = "cgt-bridge")]
+pub use cgt_bridge::{
+    cgt_birthday_growth_summary, cgt_birthday_growth_summary_in, cgt_node_count_growth_summary,
+    cgt_node_count_growth_summary_in, CgtEnumerationEntry, CgtEnumerationSummary,
+};
 #[cfg(feature = "tropical-schubert")]
 pub use geometric_algebra::tropicalize_multivector;
 pub use geometric_algebra::{
@@ -191,6 +199,11 @@ pub enum EnumerativeError {
     /// Invalid dimension for the ambient space
     #[error("Invalid dimension: {0}")]
     InvalidDimension(String),
+
+    /// `amari-cgt` bridge error
+    #[cfg(feature = "cgt-bridge")]
+    #[error(transparent)]
+    CgtBridge(#[from] amari_cgt::CgtError),
 
     /// Intersection computation failed
     #[error("Intersection error: {0}")]

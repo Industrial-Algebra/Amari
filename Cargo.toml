@@ -52,7 +52,7 @@ probabilistic = ["dep:amari-probabilistic"]
 functional = ["dep:amari-functional"]
 topology = ["dep:amari-topology"]
 dynamics = ["dep:amari-dynamics"]
-cgt = ["dep:amari-cgt"]
+cgt = ["dep:amari-cgt", "amari-enumerative/cgt-bridge"]
 surreal = ["dep:amari-surreal", "cgt"]
 # Deterministic mode for networked physics (~10-20% slower but bit-exact)
 deterministic = []

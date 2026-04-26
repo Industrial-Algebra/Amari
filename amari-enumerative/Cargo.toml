@@ -11,6 +11,7 @@ categories = ["mathematics", "science"]
 
 [dependencies]
 amari-core = { workspace = true }
+amari-cgt = { workspace = true, optional = true }
 num-rational = "0.4"
 num-bigint = "0.4"
 num-traits = { workspace = true }
@@ -33,6 +34,7 @@ high-precision = ["amari-core/high-precision"]
 gf2 = ["amari-core/gf2"]
 wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys"]
 parallel = ["dep:rayon"]
+cgt-bridge = ["dep:amari-cgt"]
 # Tropical Schubert calculus for fast intersection counting
 tropical-schubert = []
 
