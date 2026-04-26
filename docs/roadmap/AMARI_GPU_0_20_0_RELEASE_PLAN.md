@@ -89,6 +89,8 @@ Status:
 ## Tier 1 — Public API honesty and surface inventory
 
 - [x] Restore and enforce reduced fusion public surface
+- [x] Add public import-path integration test for reduced fusion surface
+- [x] Fix calculus large-batch vector-field placeholder behavior and document CPU-semantic fallback
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally

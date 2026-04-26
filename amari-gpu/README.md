@@ -92,7 +92,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-### Calculus GPU Acceleration
+### Calculus GPU-Ready API *(CPU-semantic fallback in 0.20.0)*
 
 ```rust
 use amari_gpu::calculus::GpuCalculus;
@@ -101,7 +101,7 @@ use amari_core::Multivector;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize GPU calculus
+    // Initialize calculus GPU context and pipeline scaffolding
     let gpu_calculus = GpuCalculus::new().await?;
 
     // Define a scalar field (e.g., f(x,y,z) = x² + y² + z²)
@@ -109,11 +109,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]
     });
 
-    // Batch evaluate at 10,000 points (uses GPU)
+    // Batch evaluate through the amari-gpu API.
+    // Current 0.20.0 behavior preserves CPU semantics while WGSL kernels are validated.
     let points: Vec<[f64; 3]> = generate_point_grid(100, 100); // 10,000 points
     let values = gpu_calculus.batch_eval_scalar_field(&field, &points).await?;
 
-    // Batch gradient computation (uses GPU for large batches)
+    // Batch gradient computation currently uses the CPU finite-difference baseline.
     let gradients = gpu_calculus.batch_gradient(&field, &points, 1e-6).await?;
 
     Ok(())

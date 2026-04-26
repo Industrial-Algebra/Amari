@@ -21,11 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added adaptive CPU/GPU dispatch for tropical matrix multiplication using a conservative crossover heuristic.
 - Added a manual tropical matrix multiply CPU-vs-GPU benchmark harness.
 - Added a public integration test covering the crate-root tropical API path.
+- Added a public integration test covering the reduced crate-root fusion API path.
+- Added public calculus API tests covering large-batch CPU-semantic fallback behavior.
 
 #### Changed
 
 - Kept the full `amari_gpu::tropical` module internal while exposing only the narrow v1 API surface.
 - Isolated older trait-based tropical GPU scaffolding into an internal redesign-pending block.
+- Documented `GpuCalculus` as GPU-ready CPU-semantic fallback while WGSL calculus kernels are pending.
+- Fixed `GpuCalculus::batch_eval_vector_field` large-batch behavior to preserve CPU semantics instead of returning placeholder zero vectors.
 
 ## [0.17.0] - 2026-01-11
 

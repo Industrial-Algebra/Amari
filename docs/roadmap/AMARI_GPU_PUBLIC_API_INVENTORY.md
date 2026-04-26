@@ -183,9 +183,11 @@ Recommended pattern:
 
 - use the tropical model for future partial restorations where full module contents are not yet release-ready
 
-## 3. Calculus has public large-batch paths that appear placeholder/fallback-heavy
+## 3. Calculus public behavior is now CPU-semantic fallback while kernels are pending
 
-`GpuCalculus` public methods advertise GPU acceleration, but TODO markers show large-batch/internal GPU paths still include placeholders or CPU fallback behavior.
+`GpuCalculus` public methods previously advertised GPU acceleration while large-batch/internal paths included placeholders or CPU fallback behavior. The most severe correctness issue was `batch_eval_vector_field` returning zero vectors on the large-batch path.
+
+That path has been corrected to preserve CPU semantics, and the module docs/README now state that calculus is GPU-ready pipeline scaffolding with CPU-semantic fallback in 0.20.0.
 
 Public methods needing inspection:
 
@@ -195,12 +197,18 @@ Public methods needing inspection:
 - `batch_divergence`
 - `batch_curl`
 
-First-pass classification: **API honesty risk / CPU fallback mixed**.
+First-pass classification: **CPU fallback / GPU-ready scaffolding**.
 
-Recommended 0.20.0 fix:
+Completed 0.20.0 fixes:
 
-- either implement real kernels, or explicitly document as adaptive/CPU-fallback until GPU kernels are complete
-- add CPU-baseline tests for public behavior
+- [x] large-batch vector field evaluation no longer returns placeholder zeros
+- [x] docs explicitly describe CPU-semantic fallback while WGSL kernels are pending
+- [x] public import-path tests cover large-batch scalar/vector evaluation semantics
+
+Remaining 0.20.0+ work:
+
+- [ ] implement validated WGSL calculus kernels where practical
+- [ ] add CPU-baseline tests for gradient/divergence/curl public paths
 
 ## 4. Benchmarks module includes simulated operation paths
 
@@ -244,7 +252,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | validate all public ops; document CPU unbind path if retained |
 | `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
 | `tropical` | feature narrow crate-root API | real restored v1 kernels | hardware validate and benchmark further |
-| `calculus` | feature public module | API honesty risk | inspect/fix placeholder GPU paths |
+| `calculus` | feature public module | CPU fallback / GPU-ready scaffolding | add gradient/divergence/curl public baseline tests; implement kernels later |
 | `measure` | feature public module | mixed GPU/fallback | document/test fallback methods |
 | `functional` | feature public module | mixed GPU/fallback | document/test CPU spectral fallback |
 | `topology` | feature public module | mixed GPU/fallback | validate distance/Morse; document CPU Rips/Betti paths |
@@ -261,12 +269,14 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 1. **Validate restored fusion public subset**
    - [x] make `fusion` private with narrow crate-root re-exports
-   - [ ] add/verify public import-path tests for reduced fusion surface
+   - [x] add/verify public import-path tests for reduced fusion surface
    - [ ] run focused holographic/fusion tests on GB10 and RTX 5080
 
 2. **Audit calculus public methods**
-   - [ ] identify which methods are real GPU-backed vs CPU fallback vs placeholder
-   - [ ] update docs and tests accordingly
+   - [x] identify which methods are real GPU-backed vs CPU fallback vs placeholder
+   - [x] fix placeholder vector-field large-batch behavior
+   - [x] update docs and tests for scalar/vector public behavior
+   - [ ] add public baseline tests for gradient/divergence/curl
 
 3. **Create per-domain validation checklist**
    - [ ] one CPU baseline test per high-priority public operation
@@ -289,4 +299,4 @@ The highest-impact immediate code cleanup has been completed:
 
 Next recommended code change:
 
-> Add a public import-path integration test for the reduced fusion surface, then continue auditing modules with placeholder/fallback-heavy public APIs, starting with `calculus`.
+> Continue auditing modules with placeholder/fallback-heavy public APIs, starting with `calculus`.
