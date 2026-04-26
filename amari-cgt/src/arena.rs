@@ -1,7 +1,8 @@
 use crate::error::{CgtError, Result};
 use crate::form::GameForm;
 use crate::game::{
-    Birthday, CanonicalGame, GameComparison, GameId, NumericGameWitness, OutcomeClass,
+    Birthday, CanonicalGame, GameComparison, GameId, GameInspection, NumericGameWitness,
+    OutcomeClass,
 };
 use crate::nimber::Nimber;
 use std::collections::{HashMap, HashSet};
@@ -150,6 +151,48 @@ impl GameArena {
     pub fn canonical_form(&mut self, game: GameId) -> Result<GameForm> {
         let canonical = self.canonicalize(game)?.0;
         self.to_form(canonical)
+    }
+
+    /// Returns the canonical representative id of a game.
+    pub fn canonical_id(&mut self, game: GameId) -> Result<GameId> {
+        Ok(self.canonicalize(game)?.0)
+    }
+
+    /// Returns whether a game is already in canonical form.
+    pub fn is_canonical(&mut self, game: GameId) -> Result<bool> {
+        Ok(game == self.canonical_id(game)?)
+    }
+
+    /// Returns whether a short game is partizan.
+    pub fn is_partizan(&mut self, game: GameId) -> Result<bool> {
+        Ok(!self.is_impartial(game)?)
+    }
+
+    /// Returns whether a short game is non-numeric.
+    pub fn is_non_numeric(&mut self, game: GameId) -> Result<bool> {
+        Ok(!self.is_numeric(game)?)
+    }
+
+    /// Returns a public inspection summary for a short game.
+    pub fn inspect(&mut self, game: GameId) -> Result<GameInspection> {
+        let birthday = self.birthday(game)?;
+        let canonical = self.canonicalize(game)?;
+        let canonical_form = self.to_form(canonical.0)?;
+        let outcome = self.outcome(game)?;
+        let impartial = self.is_impartial(game)?;
+        let numeric = self.is_numeric(game)?;
+        let reachable_node_count = self.reachable_node_count(game)?;
+
+        Ok(GameInspection {
+            game,
+            birthday,
+            canonical,
+            canonical_form,
+            outcome,
+            impartial,
+            numeric,
+            reachable_node_count,
+        })
     }
 
     /// Formats an arena-backed game using named small games and cut notation.

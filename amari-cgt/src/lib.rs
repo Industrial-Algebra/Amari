@@ -7,6 +7,7 @@
 //! - birthdays
 //! - formatting/display of small named games and recursive cuts
 //! - explicit numeric-validation witnesses for downstream surreal conversion
+//! - canonical / numeric / impartial inspection helpers
 //! - negation, addition, subtraction, and canonicalization
 //! - partial comparison and outcome classes
 //! - impartiality checks and Grundy values
@@ -39,7 +40,10 @@ pub mod prelude;
 pub use arena::GameArena;
 pub use error::{CgtError, Result};
 pub use form::GameForm;
-pub use game::{Birthday, CanonicalGame, GameComparison, GameId, NumericGameWitness, OutcomeClass};
+pub use game::{
+    Birthday, CanonicalGame, GameComparison, GameId, GameInspection, NumericGameWitness,
+    OutcomeClass,
+};
 pub use generation::{
     CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, OutcomeCounts,
     MAX_EXHAUSTIVE_OPTION_UNIVERSE,

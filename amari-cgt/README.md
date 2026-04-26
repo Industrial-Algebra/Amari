@@ -12,6 +12,7 @@ The initial implementation focuses on:
 - arena-independent structural game forms for import/export
 - formatting/display of small named games and recursive cuts
 - explicit numeric-validation witnesses for downstream surreal conversion
+- canonical / numeric / impartial inspection helpers
 - normal-play outcome classes
 - partial comparison
 - canonicalization via dominated and reversible option reduction

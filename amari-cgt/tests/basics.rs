@@ -207,3 +207,46 @@ fn canonical_form_export_matches_canonicalization() {
     assert_eq!(arena.canonical_form(dominated).unwrap(), GameForm::one());
     assert_eq!(arena.format_canonical_game(dominated).unwrap(), "1");
 }
+
+#[test]
+fn canonical_numeric_and_impartial_inspection_helpers_work() {
+    let mut arena = GameArena::new();
+    let zero = arena.zero();
+    let one = arena.one().unwrap();
+    let half = arena.from_options([zero], [one]).unwrap();
+    let star = arena.star().unwrap();
+    let minus_one = arena.minus_one().unwrap();
+    let dominated = arena.from_options([minus_one, zero], []).unwrap();
+
+    assert!(arena.is_canonical(half).unwrap());
+    assert_eq!(arena.canonical_id(half).unwrap(), half);
+    assert!(arena.is_partizan(half).unwrap());
+    assert!(!arena.is_non_numeric(half).unwrap());
+
+    assert!(!arena.is_canonical(dominated).unwrap());
+    assert_eq!(arena.canonical_id(dominated).unwrap(), one);
+    assert!(arena.is_non_numeric(star).unwrap());
+    assert!(!arena.is_partizan(star).unwrap());
+
+    let half_inspection = arena.inspect(half).unwrap();
+    assert_eq!(half_inspection.game_id(), half);
+    assert_eq!(half_inspection.birthday().0, 2);
+    assert!(half_inspection.is_canonical());
+    assert_eq!(half_inspection.canonical_game_id(), half);
+    assert_eq!(half_inspection.canonical_form().to_string(), "{0 | 1}");
+    assert_eq!(half_inspection.outcome(), OutcomeClass::LeftWins);
+    assert!(half_inspection.is_numeric());
+    assert!(half_inspection.is_partizan());
+    assert_eq!(half_inspection.reachable_node_count(), 3);
+
+    let star_inspection = arena.inspect(star).unwrap();
+    assert_eq!(star_inspection.canonical_form().to_string(), "*");
+    assert!(star_inspection.is_impartial());
+    assert!(star_inspection.is_non_numeric());
+    assert_eq!(star_inspection.outcome(), OutcomeClass::NextPlayerWins);
+
+    let dominated_inspection = arena.inspect(dominated).unwrap();
+    assert!(!dominated_inspection.is_canonical());
+    assert_eq!(dominated_inspection.canonical_game_id(), one);
+    assert_eq!(dominated_inspection.canonical_form().to_string(), "1");
+}
