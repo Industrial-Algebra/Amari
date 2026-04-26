@@ -6,6 +6,7 @@
 
 use crate::EnumerativeResult;
 use amari_cgt::{GameArena, LayerAnalysis, LayerAnalysisReport, OutcomeCounts};
+use std::fmt::{self, Write as _};
 
 /// Enumerative summary for one exact `amari-cgt` layer.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -100,6 +101,32 @@ impl<K: Copy + Ord> CgtEnumerationSummary<K> {
         &self.entries
     }
 
+    /// Returns the summary entry for a specific layer key.
+    #[must_use]
+    pub fn get(&self, layer: K) -> Option<&CgtEnumerationEntry<K>> {
+        self.entries
+            .binary_search_by_key(&layer, CgtEnumerationEntry::layer)
+            .ok()
+            .map(|index| &self.entries[index])
+    }
+
+    /// Returns an iterator over the layer summaries.
+    pub fn iter(&self) -> impl Iterator<Item = &CgtEnumerationEntry<K>> {
+        self.entries.iter()
+    }
+
+    /// Returns the first exact layer summary.
+    #[must_use]
+    pub fn first_entry(&self) -> Option<&CgtEnumerationEntry<K>> {
+        self.entries.first()
+    }
+
+    /// Returns the last exact layer summary.
+    #[must_use]
+    pub fn last_entry(&self) -> Option<&CgtEnumerationEntry<K>> {
+        self.entries.last()
+    }
+
     /// Returns the number of exact layers represented in the summary.
     #[must_use]
     pub fn len(&self) -> usize {
@@ -137,6 +164,52 @@ impl<K: Copy + Ord> CgtEnumerationSummary<K> {
             .iter()
             .map(CgtEnumerationEntry::canonical_reduction)
             .sum()
+    }
+
+    /// Returns total numeric canonical classes across all layers.
+    #[must_use]
+    pub fn total_numeric_count(&self) -> usize {
+        self.entries
+            .iter()
+            .map(CgtEnumerationEntry::numeric_count)
+            .sum()
+    }
+
+    /// Returns total non-numeric canonical classes across all layers.
+    #[must_use]
+    pub fn total_non_numeric_count(&self) -> usize {
+        self.entries
+            .iter()
+            .map(CgtEnumerationEntry::non_numeric_count)
+            .sum()
+    }
+
+    /// Returns total impartial canonical classes across all layers.
+    #[must_use]
+    pub fn total_impartial_count(&self) -> usize {
+        self.entries
+            .iter()
+            .map(CgtEnumerationEntry::impartial_count)
+            .sum()
+    }
+
+    /// Returns total partizan canonical classes across all layers.
+    #[must_use]
+    pub fn total_partizan_count(&self) -> usize {
+        self.entries
+            .iter()
+            .map(CgtEnumerationEntry::partizan_count)
+            .sum()
+    }
+
+    /// Returns aggregated outcome counts across all layers.
+    #[must_use]
+    pub fn total_outcome_counts(&self) -> OutcomeCounts {
+        let mut total = OutcomeCounts::default();
+        for entry in &self.entries {
+            total.merge(entry.outcome_counts());
+        }
+        total
     }
 
     /// Returns the raw-game growth sequence.
@@ -202,6 +275,49 @@ impl<K: Copy + Ord> CgtEnumerationSummary<K> {
         self.cumulative_sequence(CgtEnumerationEntry::canonical_count)
     }
 
+    /// Returns the cumulative canonical-reduction growth sequence.
+    #[must_use]
+    pub fn cumulative_reduction_sequence(&self) -> Vec<(K, usize)> {
+        self.cumulative_sequence(CgtEnumerationEntry::canonical_reduction)
+    }
+
+    /// Returns the cumulative numeric-class growth sequence.
+    #[must_use]
+    pub fn cumulative_numeric_sequence(&self) -> Vec<(K, usize)> {
+        self.cumulative_sequence(CgtEnumerationEntry::numeric_count)
+    }
+
+    /// Returns the cumulative non-numeric-class growth sequence.
+    #[must_use]
+    pub fn cumulative_non_numeric_sequence(&self) -> Vec<(K, usize)> {
+        self.cumulative_sequence(CgtEnumerationEntry::non_numeric_count)
+    }
+
+    /// Returns the cumulative impartial-class growth sequence.
+    #[must_use]
+    pub fn cumulative_impartial_sequence(&self) -> Vec<(K, usize)> {
+        self.cumulative_sequence(CgtEnumerationEntry::impartial_count)
+    }
+
+    /// Returns the cumulative partizan-class growth sequence.
+    #[must_use]
+    pub fn cumulative_partizan_sequence(&self) -> Vec<(K, usize)> {
+        self.cumulative_sequence(CgtEnumerationEntry::partizan_count)
+    }
+
+    /// Returns the cumulative outcome-class growth sequence.
+    #[must_use]
+    pub fn cumulative_outcome_sequence(&self) -> Vec<(K, OutcomeCounts)> {
+        let mut running = OutcomeCounts::default();
+        self.entries
+            .iter()
+            .map(|entry| {
+                running.merge(entry.outcome_counts());
+                (entry.layer(), running.clone())
+            })
+            .collect()
+    }
+
     fn entry_from_analysis(layer: K, analysis: &LayerAnalysis) -> CgtEnumerationEntry<K> {
         let stats = analysis.stats();
         CgtEnumerationEntry {
@@ -240,6 +356,170 @@ impl<K: Copy + Ord> CgtEnumerationSummary<K> {
             })
             .collect()
     }
+}
+
+impl<K: Copy + Ord + fmt::Display> CgtEnumerationSummary<K> {
+    /// Renders the exact per-layer counts as a lightweight text table.
+    #[must_use]
+    pub fn render_layer_table(&self) -> String {
+        let rows = self
+            .entries
+            .iter()
+            .map(|entry| {
+                vec![
+                    entry.layer().to_string(),
+                    entry.raw_count().to_string(),
+                    entry.canonical_count().to_string(),
+                    entry.canonical_reduction().to_string(),
+                    entry.numeric_count().to_string(),
+                    entry.non_numeric_count().to_string(),
+                    entry.impartial_count().to_string(),
+                    entry.partizan_count().to_string(),
+                    entry.outcome_counts().left_wins().to_string(),
+                    entry.outcome_counts().right_wins().to_string(),
+                    entry.outcome_counts().next_player_wins().to_string(),
+                    entry.outcome_counts().previous_player_wins().to_string(),
+                ]
+            })
+            .collect();
+
+        render_text_table(
+            &[
+                "layer",
+                "raw",
+                "canon",
+                "reduced",
+                "numeric",
+                "non-num",
+                "impartial",
+                "partizan",
+                "left",
+                "right",
+                "next",
+                "prev",
+            ],
+            rows,
+        )
+    }
+
+    /// Renders exact-vs-cumulative growth counts as a lightweight text table.
+    #[must_use]
+    pub fn render_growth_table(&self) -> String {
+        let mut raw_cum = 0usize;
+        let mut canon_cum = 0usize;
+        let mut reduced_cum = 0usize;
+        let mut numeric_cum = 0usize;
+        let mut non_numeric_cum = 0usize;
+        let mut impartial_cum = 0usize;
+        let mut partizan_cum = 0usize;
+
+        let rows = self
+            .entries
+            .iter()
+            .map(|entry| {
+                raw_cum += entry.raw_count();
+                canon_cum += entry.canonical_count();
+                reduced_cum += entry.canonical_reduction();
+                numeric_cum += entry.numeric_count();
+                non_numeric_cum += entry.non_numeric_count();
+                impartial_cum += entry.impartial_count();
+                partizan_cum += entry.partizan_count();
+
+                vec![
+                    entry.layer().to_string(),
+                    entry.raw_count().to_string(),
+                    raw_cum.to_string(),
+                    entry.canonical_count().to_string(),
+                    canon_cum.to_string(),
+                    entry.canonical_reduction().to_string(),
+                    reduced_cum.to_string(),
+                    entry.numeric_count().to_string(),
+                    numeric_cum.to_string(),
+                    entry.non_numeric_count().to_string(),
+                    non_numeric_cum.to_string(),
+                    entry.impartial_count().to_string(),
+                    impartial_cum.to_string(),
+                    entry.partizan_count().to_string(),
+                    partizan_cum.to_string(),
+                ]
+            })
+            .collect();
+
+        render_text_table(
+            &[
+                "layer",
+                "raw",
+                "raw_cum",
+                "canon",
+                "canon_cum",
+                "reduced",
+                "reduced_cum",
+                "numeric",
+                "numeric_cum",
+                "non-num",
+                "non-num_cum",
+                "impartial",
+                "impartial_cum",
+                "partizan",
+                "partizan_cum",
+            ],
+            rows,
+        )
+    }
+}
+
+fn render_text_table(headers: &[&str], rows: Vec<Vec<String>>) -> String {
+    let mut widths: Vec<_> = headers.iter().map(|header| header.len()).collect();
+    for row in &rows {
+        debug_assert_eq!(row.len(), headers.len());
+        for (index, cell) in row.iter().enumerate() {
+            widths[index] = widths[index].max(cell.len());
+        }
+    }
+
+    let mut table = String::new();
+    write_table_row(&mut table, headers.iter().copied(), &widths)
+        .expect("writing to a string must succeed");
+    table.push('\n');
+    write_table_separator(&mut table, &widths).expect("writing to a string must succeed");
+
+    for row in rows {
+        table.push('\n');
+        write_table_row(&mut table, row.iter().map(String::as_str), &widths)
+            .expect("writing to a string must succeed");
+    }
+
+    table
+}
+
+fn write_table_row<'a, I>(table: &mut String, cells: I, widths: &[usize]) -> fmt::Result
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let cells: Vec<_> = cells.into_iter().collect();
+    for (index, cell) in cells.iter().enumerate() {
+        if index > 0 {
+            table.push_str(" | ");
+        }
+        if index + 1 == cells.len() {
+            table.push_str(cell);
+        } else {
+            write!(table, "{cell:<width$}", width = widths[index])?;
+        }
+    }
+    Ok(())
+}
+
+fn write_table_separator(table: &mut String, widths: &[usize]) -> fmt::Result {
+    for (index, width) in widths.iter().copied().enumerate() {
+        if index > 0 {
+            table.push_str("-+-");
+        }
+        for _ in 0..width {
+            table.push('-');
+        }
+    }
+    Ok(())
 }
 
 /// Builds a birthday-layer growth summary using a fresh `amari-cgt` arena.
@@ -288,6 +568,10 @@ mod tests {
         assert_eq!(summary.total_raw_count(), 4);
         assert_eq!(summary.total_canonical_count(), 4);
         assert_eq!(summary.total_canonical_reduction(), 0);
+        assert_eq!(summary.total_numeric_count(), 3);
+        assert_eq!(summary.total_non_numeric_count(), 1);
+        assert_eq!(summary.total_impartial_count(), 2);
+        assert_eq!(summary.total_partizan_count(), 2);
         assert_eq!(summary.raw_sequence(), vec![(0, 1), (1, 3)]);
         assert_eq!(summary.canonical_sequence(), vec![(0, 1), (1, 3)]);
         assert_eq!(summary.numeric_sequence(), vec![(0, 1), (1, 2)]);
@@ -298,8 +582,37 @@ mod tests {
             summary.cumulative_canonical_sequence(),
             vec![(0, 1), (1, 4)]
         );
+        assert_eq!(summary.cumulative_numeric_sequence(), vec![(0, 1), (1, 3)]);
+        assert_eq!(
+            summary.cumulative_non_numeric_sequence(),
+            vec![(0, 0), (1, 1)]
+        );
+        assert_eq!(
+            summary.cumulative_impartial_sequence(),
+            vec![(0, 1), (1, 2)]
+        );
+        assert_eq!(summary.cumulative_partizan_sequence(), vec![(0, 0), (1, 2)]);
         assert_eq!(summary.outcome_sequence()[0].1.previous_player_wins(), 1);
         assert_eq!(summary.outcome_sequence()[1].1.next_player_wins(), 1);
+        assert_eq!(summary.cumulative_outcome_sequence()[1].1.total(), 4);
+
+        let first = summary.first_entry().unwrap();
+        assert_eq!(first.layer(), 0);
+        assert_eq!(first.raw_count(), 1);
+
+        let last = summary.last_entry().unwrap();
+        assert_eq!(last.layer(), 1);
+        assert_eq!(last.canonical_count(), 3);
+
+        let layer_one = summary.get(1).unwrap();
+        assert_eq!(layer_one.numeric_count(), 2);
+        assert_eq!(summary.iter().count(), 2);
+
+        let total_outcomes = summary.total_outcome_counts();
+        assert_eq!(total_outcomes.left_wins(), 1);
+        assert_eq!(total_outcomes.right_wins(), 1);
+        assert_eq!(total_outcomes.next_player_wins(), 1);
+        assert_eq!(total_outcomes.previous_player_wins(), 1);
     }
 
     #[test]
@@ -330,5 +643,30 @@ mod tests {
         let summary = cgt_birthday_growth_summary_in(&mut arena, 1).unwrap();
 
         assert_eq!(summary.raw_sequence(), vec![(0, 1), (1, 3)]);
+    }
+
+    #[test]
+    fn growth_summary_render_helpers_produce_lightweight_tables() {
+        let summary = cgt_birthday_growth_summary(1).unwrap();
+
+        assert_eq!(
+            summary.render_layer_table(),
+            concat!(
+                "layer | raw | canon | reduced | numeric | non-num | impartial | partizan | left | right | next | prev\n",
+                "------+-----+-------+---------+---------+---------+-----------+----------+------+-------+------+-----\n",
+                "0     | 1   | 1     | 0       | 1       | 0       | 1         | 0        | 0    | 0     | 0    | 1\n",
+                "1     | 3   | 3     | 0       | 2       | 1       | 1         | 2        | 1    | 1     | 1    | 0"
+            )
+        );
+
+        assert_eq!(
+            summary.render_growth_table(),
+            concat!(
+                "layer | raw | raw_cum | canon | canon_cum | reduced | reduced_cum | numeric | numeric_cum | non-num | non-num_cum | impartial | impartial_cum | partizan | partizan_cum\n",
+                "------+-----+---------+-------+-----------+---------+-------------+---------+-------------+---------+-------------+-----------+---------------+----------+-------------\n",
+                "0     | 1   | 1       | 1     | 1         | 0       | 0           | 1       | 1           | 0       | 0           | 1         | 1             | 0        | 0\n",
+                "1     | 3   | 4       | 3     | 4         | 0       | 0           | 2       | 3           | 1       | 1           | 1         | 2             | 2        | 2"
+            )
+        );
     }
 }

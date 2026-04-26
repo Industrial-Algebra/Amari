@@ -228,7 +228,17 @@ use amari_enumerative::cgt_birthday_growth_summary;
 let summary = cgt_birthday_growth_summary(1).unwrap();
 assert_eq!(summary.raw_sequence(), vec![(0, 1), (1, 3)]);
 assert_eq!(summary.numeric_sequence(), vec![(0, 1), (1, 2)]);
+assert_eq!(summary.cumulative_numeric_sequence(), vec![(0, 1), (1, 3)]);
+
+println!("{}", summary.render_layer_table());
 ```
+
+This bridge also provides ergonomic helpers for:
+
+- entry lookup by layer
+- cumulative numeric/non-numeric/impartial/partizan sequences
+- aggregated outcome counts
+- lightweight printable text tables
 
 This is intended as a lightweight bridge for studying:
 
