@@ -89,7 +89,7 @@
 //! | `probabilistic` | GPU-accelerated probability sampling |
 //! | `automata` | GPU-accelerated cellular automata |
 //! | `enumerative` | GPU-accelerated combinatorics |
-//! | `functional` | GPU-accelerated functional analysis (Hilbert spaces, spectral theory) |
+//! | `functional` | Mixed GPU-backed functional analysis and documented CPU spectral/fallback paths |
 //! | `topology` | GPU-accelerated computational topology (distance matrices, Morse theory) |
 //! | `gf2` | GPU-accelerated GF(2) algebra (binary Clifford products, matrix ops, Hamming distance) |
 //! | `fusion` | Reduced first public surface restored; broader fusion GPU API still redesign-pending |

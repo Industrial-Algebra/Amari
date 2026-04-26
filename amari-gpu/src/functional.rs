@@ -1,10 +1,12 @@
-//! GPU-accelerated functional analysis operations
+//! GPU-backed and GPU-ready functional analysis operations.
 //!
-//! This module provides GPU acceleration for functional analysis on multivector spaces:
+//! Current public behavior is intentionally explicit:
 //!
-//! - **Matrix Operations**: Batch matrix-vector products, matrix multiplication
-//! - **Spectral Decomposition**: GPU-accelerated eigenvalue/eigenvector computation
-//! - **Hilbert Space Operations**: Batch inner products, norms, projections
+//! - **Matrix Operations**: GPU-backed batch matrix-vector products; matrix multiplication currently uses CPU readback fallback for correctness across independently-created GPU operators.
+//! - **Spectral Decomposition**: CPU Jacobi/spectral baseline through the GPU API after matrix readback.
+//! - **Functional Calculus**: CPU spectral functional calculus; batch helper is CPU-backed.
+//! - **Hilbert Space Operations**: GPU-backed batch inner products and norms.
+//! - **Adaptive Dispatch**: chooses GPU for validated matrix batch paths and CPU for small/fallback paths.
 //!
 //! # Quick Start
 //!
@@ -18,7 +20,7 @@
 //! // Batch matrix-vector products
 //! let results = gpu_matrix.apply_batch(&vectors).await?;
 //!
-//! // GPU spectral decomposition
+//! // Spectral decomposition currently uses the CPU spectral baseline after GPU readback.
 //! let decomp = GpuSpectralDecomposition::compute(&gpu_matrix, 100, 1e-10).await?;
 //! ```
 
@@ -71,6 +73,7 @@ pub struct GpuMatrixOperator<const P: usize, const Q: usize, const R: usize> {
     queue: wgpu::Queue,
     matrix_buffer: wgpu::Buffer,
     apply_pipeline: wgpu::ComputePipeline,
+    #[allow(dead_code)] // Reserved for same-device GPU matrix multiplication restoration.
     multiply_pipeline: wgpu::ComputePipeline,
     rows: usize,
     cols: usize,
@@ -117,7 +120,9 @@ impl<const P: usize, const Q: usize, const R: usize> GpuMatrixOperator<P, Q, R> 
         let matrix_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Matrix Buffer"),
             contents: bytemuck::cast_slice(&matrix_data),
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            usage: wgpu::BufferUsages::STORAGE
+                | wgpu::BufferUsages::COPY_SRC
+                | wgpu::BufferUsages::COPY_DST,
         });
 
         // Create compute pipelines
@@ -281,9 +286,12 @@ impl<const P: usize, const Q: usize, const R: usize> GpuMatrixOperator<P, Q, R> 
         Ok(results)
     }
 
-    /// Multiply this matrix with another on GPU
+    /// Multiply this matrix with another using CPU readback fallback.
     ///
-    /// Computes self × other using GPU-accelerated matrix multiplication.
+    /// Independently-created `GpuMatrixOperator`s own independent `wgpu::Device`s,
+    /// so sharing `other`'s buffer in `self`'s command encoder is not generally
+    /// valid. Until a shared-context constructor is added, this method reads both
+    /// matrices back and multiplies them on CPU to preserve public correctness.
     pub async fn multiply(
         &self,
         other: &GpuMatrixOperator<P, Q, R>,
@@ -295,103 +303,21 @@ impl<const P: usize, const Q: usize, const R: usize> GpuMatrixOperator<P, Q, R> 
             });
         }
 
-        let n = self.rows;
-        let output_size = (n * n * std::mem::size_of::<f32>()) as u64;
+        let left = self.to_matrix_operator().await?;
+        let right = other.to_matrix_operator().await?;
 
-        let output_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Matrix Product"),
-            size: output_size,
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
-            mapped_at_creation: false,
-        });
-
-        let staging_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Staging Buffer"),
-            size: output_size,
-            usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
-
-        let params = MatrixMultiplyParams {
-            m: n as u32,
-            n: n as u32,
-            k: n as u32,
-            _padding: 0,
-        };
-        let params_buffer = self
-            .device
-            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some("Multiply Params"),
-                contents: bytemuck::cast_slice(&[params]),
-                usage: wgpu::BufferUsages::UNIFORM,
-            });
-
-        let bind_group_layout = self.multiply_pipeline.get_bind_group_layout(0);
-        let bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("Multiply Bind Group"),
-            layout: &bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: params_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: self.matrix_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 2,
-                    resource: other.matrix_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 3,
-                    resource: output_buffer.as_entire_binding(),
-                },
-            ],
-        });
-
-        let mut encoder = self
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Multiply Encoder"),
-            });
-
-        {
-            let mut compute_pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
-                label: Some("Multiply Pass"),
-                timestamp_writes: None,
-            });
-            compute_pass.set_pipeline(&self.multiply_pipeline);
-            compute_pass.set_bind_group(0, &bind_group, &[]);
-            // One thread per output element
-            let workgroup_count = ((n * n) as u32).div_ceil(64);
-            compute_pass.dispatch_workgroups(workgroup_count, 1, 1);
+        let mut entries = vec![0.0; self.rows * other.cols];
+        for row in 0..self.rows {
+            for col in 0..other.cols {
+                let mut sum = 0.0;
+                for k in 0..self.cols {
+                    sum += left.get(row, k) * right.get(k, col);
+                }
+                entries[row * other.cols + col] = sum;
+            }
         }
 
-        encoder.copy_buffer_to_buffer(&output_buffer, 0, &staging_buffer, 0, output_size);
-
-        self.queue.submit(Some(encoder.finish()));
-
-        let buffer_slice = staging_buffer.slice(..);
-        let (sender, receiver) = futures::channel::oneshot::channel();
-        buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-            let _ = sender.send(result);
-        });
-
-        self.device.poll(wgpu::Maintain::Wait);
-        receiver
-            .await
-            .map_err(|_| GpuFunctionalError::BufferError("Channel error".to_string()))?
-            .map_err(|e| GpuFunctionalError::BufferError(format!("{:?}", e)))?;
-
-        let data = buffer_slice.get_mapped_range();
-        let results_f32: &[f32] = bytemuck::cast_slice(&data);
-        let entries: Vec<f64> = results_f32.iter().map(|&x| x as f64).collect();
-
-        drop(data);
-        staging_buffer.unmap();
-
-        MatrixOperator::new(entries, self.rows, self.cols).map_err(|e| {
+        MatrixOperator::new(entries, self.rows, other.cols).map_err(|e| {
             GpuFunctionalError::BufferError(format!("Failed to create matrix: {:?}", e))
         })
     }
@@ -483,9 +409,11 @@ impl<const P: usize, const Q: usize, const R: usize> GpuMatrixOperator<P, Q, R> 
     }
 }
 
-/// GPU-accelerated spectral decomposition
+/// GPU-ready spectral decomposition wrapper.
 ///
-/// Computes eigenvalues and eigenvectors using GPU-accelerated algorithms.
+/// Current 0.20.0 behavior reads the matrix back from GPU storage and uses the
+/// `amari-functional` CPU spectral baseline. This is deliberately documented as
+/// CPU-backed until a validated GPU eigensolver is added.
 pub struct GpuSpectralDecomposition<const P: usize, const Q: usize, const R: usize> {
     eigenvalues: Vec<f64>,
     eigenvectors: Vec<Multivector<P, Q, R>>,
@@ -493,45 +421,43 @@ pub struct GpuSpectralDecomposition<const P: usize, const Q: usize, const R: usi
 }
 
 impl<const P: usize, const Q: usize, const R: usize> GpuSpectralDecomposition<P, Q, R> {
-    /// Dimension of the multivector space
-    const DIM: usize = 1 << (P + Q + R);
-
-    /// Compute spectral decomposition using GPU-accelerated algorithms
+    /// Compute spectral decomposition with the CPU spectral baseline.
     ///
-    /// Uses the Jacobi algorithm with GPU-accelerated matrix operations.
+    /// The input matrix is read back from GPU storage, checked for symmetry, and
+    /// decomposed with `amari-functional`'s CPU Jacobi/spectral implementation.
     pub async fn compute(
         matrix: &GpuMatrixOperator<P, Q, R>,
         max_iterations: usize,
         tolerance: f64,
     ) -> GpuFunctionalResult<Self> {
-        // For now, fall back to CPU for the actual Jacobi algorithm
-        // but use GPU for the matrix-vector products in eigenvector computation
         let cpu_matrix = matrix.to_matrix_operator().await?;
 
-        // Check symmetry
         if !cpu_matrix.is_symmetric(tolerance) {
             return Err(GpuFunctionalError::NotSymmetric);
         }
 
-        // Use CPU Jacobi for eigenvalue computation (the algorithm itself is sequential)
-        let eigenvalues =
-            amari_functional::compute_eigenvalues(&cpu_matrix, max_iterations, tolerance).map_err(
+        let decomposition =
+            amari_functional::spectral_decompose(&cpu_matrix, max_iterations, tolerance).map_err(
                 |_e| GpuFunctionalError::ConvergenceError {
                     iterations: max_iterations,
                 },
             )?;
 
-        let eigenvalue_values: Vec<f64> = eigenvalues.iter().map(|e| e.value).collect();
-
-        // Compute eigenvectors using GPU-accelerated power method
-        let eigenvectors =
-            Self::compute_eigenvectors_gpu(matrix, &eigenvalue_values, max_iterations, tolerance)
-                .await?;
+        let eigenvalues: Vec<f64> = decomposition
+            .eigenpairs()
+            .iter()
+            .map(|pair| pair.eigenvalue.value)
+            .collect();
+        let eigenvectors: Vec<Multivector<P, Q, R>> = decomposition
+            .eigenpairs()
+            .iter()
+            .map(|pair| pair.eigenvector.clone())
+            .collect();
 
         Ok(Self {
-            eigenvalues: eigenvalue_values,
+            eigenvalues,
             eigenvectors,
-            is_complete: true,
+            is_complete: decomposition.is_complete(),
         })
     }
 
@@ -614,7 +540,7 @@ impl<const P: usize, const Q: usize, const R: usize> GpuSpectralDecomposition<P,
         result
     }
 
-    /// Batch apply function to multiple vectors
+    /// Batch apply function to multiple vectors using the CPU spectral baseline.
     pub async fn apply_function_batch<F>(
         &self,
         f: F,
@@ -623,8 +549,7 @@ impl<const P: usize, const Q: usize, const R: usize> GpuSpectralDecomposition<P,
     where
         F: Fn(f64) -> f64,
     {
-        // For now, use CPU implementation
-        // TODO: Implement GPU batch inner products
+        // TODO(0.20.x+): replace with validated GPU batch inner products/projections.
         vectors.iter().map(|x| self.apply_function(&f, x)).collect()
     }
 
@@ -644,118 +569,6 @@ impl<const P: usize, const Q: usize, const R: usize> GpuSpectralDecomposition<P,
             .collect();
 
         SpectralDecomposition::new(eigenpairs)
-    }
-
-    async fn compute_eigenvectors_gpu(
-        matrix: &GpuMatrixOperator<P, Q, R>,
-        eigenvalues: &[f64],
-        max_iterations: usize,
-        tolerance: f64,
-    ) -> GpuFunctionalResult<Vec<Multivector<P, Q, R>>> {
-        let mut eigenvectors = Vec::with_capacity(eigenvalues.len());
-
-        for (idx, &eigenvalue) in eigenvalues.iter().enumerate() {
-            // Use shifted power method: (A - σI) where σ is slightly off from λ
-            // to make the target eigenvalue dominant
-            let shift = eigenvalue - 0.01;
-
-            // Create initial vector orthogonal to previous eigenvectors
-            let mut v = Self::create_orthogonal_initial(&eigenvectors, idx);
-
-            // Power iteration on shifted matrix
-            let cpu_matrix = matrix.to_matrix_operator().await?;
-
-            for _ in 0..max_iterations {
-                // Apply A - σI
-                let av = cpu_matrix.apply(&v).map_err(|_| {
-                    GpuFunctionalError::BufferError("Matrix apply failed".to_string())
-                })?;
-                let shifted: Vec<f64> = av
-                    .to_vec()
-                    .iter()
-                    .zip(v.to_vec().iter())
-                    .map(|(a, x)| a - shift * x)
-                    .collect();
-                let mut new_v: Multivector<P, Q, R> = Multivector::from_coefficients(shifted);
-
-                // Orthogonalize against previous eigenvectors
-                for prev in &eigenvectors {
-                    let prev_coeffs = prev.to_vec();
-                    let new_coeffs = new_v.to_vec();
-                    let dot: f64 = prev_coeffs
-                        .iter()
-                        .zip(new_coeffs.iter())
-                        .map(|(a, b)| a * b)
-                        .sum();
-                    let correction: Vec<f64> = prev_coeffs.iter().map(|&x| x * dot).collect();
-                    let orthogonalized: Vec<f64> = new_coeffs
-                        .iter()
-                        .zip(correction.iter())
-                        .map(|(a, b)| a - b)
-                        .collect();
-                    new_v = Multivector::<P, Q, R>::from_coefficients(orthogonalized);
-                }
-
-                // Normalize
-                let norm_sq: f64 = new_v.to_vec().iter().map(|x| x * x).sum();
-                let norm = norm_sq.sqrt();
-                if norm > 1e-14 {
-                    let normalized: Vec<f64> = new_v.to_vec().iter().map(|x| x / norm).collect();
-                    v = Multivector::<P, Q, R>::from_coefficients(normalized);
-                }
-
-                // Check convergence
-                let old_norm: f64 = v.to_vec().iter().map(|x| x * x).sum::<f64>().sqrt();
-                if (old_norm - 1.0).abs() < tolerance {
-                    break;
-                }
-            }
-
-            eigenvectors.push(v);
-        }
-
-        Ok(eigenvectors)
-    }
-
-    fn create_orthogonal_initial(
-        existing: &[Multivector<P, Q, R>],
-        idx: usize,
-    ) -> Multivector<P, Q, R> {
-        // Start with basis vector corresponding to index
-        let mut coeffs = vec![0.0; Self::DIM];
-        coeffs[idx % Self::DIM] = 1.0;
-        let mut v: Multivector<P, Q, R> = Multivector::from_coefficients(coeffs);
-
-        // Orthogonalize against existing vectors
-        for prev in existing {
-            let prev_coeffs = prev.to_vec();
-            let v_coeffs = v.to_vec();
-            let dot: f64 = prev_coeffs
-                .iter()
-                .zip(v_coeffs.iter())
-                .map(|(a, b)| a * b)
-                .sum();
-            let correction: Vec<f64> = prev_coeffs.iter().map(|&x| x * dot).collect();
-            let orthogonalized: Vec<f64> = v_coeffs
-                .iter()
-                .zip(correction.iter())
-                .map(|(a, b)| a - b)
-                .collect();
-            v = Multivector::<P, Q, R>::from_coefficients(orthogonalized);
-        }
-
-        // Normalize
-        let norm_sq: f64 = v.to_vec().iter().map(|x| x * x).sum();
-        let norm = norm_sq.sqrt();
-        if norm > 1e-14 {
-            let normalized: Vec<f64> = v.to_vec().iter().map(|x| x / norm).collect();
-            Multivector::<P, Q, R>::from_coefficients(normalized)
-        } else {
-            // Fallback to unit vector
-            let mut coeffs = vec![0.0; Self::DIM];
-            coeffs[0] = 1.0;
-            Multivector::<P, Q, R>::from_coefficients(coeffs)
-        }
     }
 }
 
@@ -975,9 +788,11 @@ impl<const P: usize, const Q: usize, const R: usize> GpuHilbertSpace<P, Q, R> {
     }
 }
 
-/// Adaptive CPU/GPU dispatcher for functional analysis
+/// Adaptive CPU/GPU dispatcher for functional analysis.
 ///
-/// Automatically chooses between CPU and GPU based on problem size and GPU availability.
+/// Matrix batch application uses GPU for large batches when available and CPU for
+/// small batches. Spectral decomposition currently returns the CPU spectral
+/// baseline even when routed through the GPU matrix wrapper.
 pub struct AdaptiveFunctionalCompute<const P: usize, const Q: usize, const R: usize> {
     gpu_available: bool,
 }
@@ -1055,15 +870,6 @@ struct MatrixApplyParams {
     rows: u32,
     cols: u32,
     batch_size: u32,
-    _padding: u32,
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, Pod, Zeroable)]
-struct MatrixMultiplyParams {
-    m: u32,
-    n: u32,
-    k: u32,
     _padding: u32,
 }
 

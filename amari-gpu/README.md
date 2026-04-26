@@ -40,7 +40,7 @@ Integration Crates (consume APIs):
 | **amari-fusion** | `fusion` | Reduced first public surface for holographic/fusion-derived GPU operations | ⚠️ Partially restored; broader fusion GPU API still under redesign |
 | **amari-holographic** | `holographic` | Holographic memory, batch binding, similarity matrices, **optical field operations** | ✅ Implemented (feature: `holographic`) |
 | **amari-probabilistic** | `probabilistic` | Gaussian sampling, batch statistics, Monte Carlo | ✅ Implemented (feature: `probabilistic`) |
-| **amari-functional** | `functional` | Matrix operators, spectral decomposition, Hilbert spaces | ✅ Implemented (feature: `functional`) |
+| **amari-functional** | `functional` | GPU matrix batch ops, Hilbert batches, CPU spectral/fallback paths | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `functional`) |
 | **amari-topology** | `topology` | Distance matrices, Morse critical points, Rips filtrations | ✅ Implemented (feature: `topology`) |
 
 ### Temporarily Disabled Modules
@@ -150,6 +150,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let density = GpuParametricDensity::new().await?;
     let gaussian = density.gaussian_batch(&[0.0, 1.0], 0.0, 1.0).await?;
+
+    Ok(())
+}
+```
+
+### Functional Analysis GPU Operations *(mixed GPU-backed + documented fallback)*
+
+The `functional` feature exposes matrix, Hilbert-space, spectral, and adaptive helpers:
+
+| Type / operation | Current 0.20.0 behavior |
+|------------------|--------------------------|
+| `GpuMatrixOperator::apply_batch()` | GPU-backed batch matrix-vector products |
+| `GpuMatrixOperator::multiply()` | CPU readback fallback for correctness across independently-created GPU operators |
+| `GpuMatrixOperator::to_matrix_operator()` | GPU readback to CPU matrix |
+| `GpuSpectralDecomposition::compute()` | CPU `amari-functional` spectral baseline after GPU matrix readback |
+| `GpuSpectralDecomposition::apply_function_batch()` | CPU spectral functional-calculus batch helper |
+| `GpuHilbertSpace::{inner_product_batch, norm_batch}` | GPU-backed batch inner products and norms |
+| `AdaptiveFunctionalCompute` | CPU/GPU dispatch for matrix batches; spectral path currently preserves CPU baseline semantics |
+
+```rust
+use amari_core::Multivector;
+use amari_functional::{LinearOperator, MatrixOperator};
+use amari_gpu::{GpuMatrixOperator, GpuSpectralDecomposition};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let matrix = MatrixOperator::<2, 0, 0>::diagonal(&[2.0, 3.0, 4.0, 5.0])?;
+    let gpu_matrix = GpuMatrixOperator::from_matrix_operator(&matrix).await?;
+
+    let vectors = vec![Multivector::<2, 0, 0>::from_coefficients(vec![1.0, 2.0, 3.0, 4.0])];
+    let applied = gpu_matrix.apply_batch(&vectors).await?;
+
+    // Spectral decomposition is currently the CPU spectral baseline after readback.
+    let spectral = GpuSpectralDecomposition::compute(&gpu_matrix, 100, 1e-10).await?;
+    assert_eq!(spectral.eigenvalues().len(), 4);
 
     Ok(())
 }
