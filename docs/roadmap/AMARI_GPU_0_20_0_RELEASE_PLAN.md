@@ -94,6 +94,8 @@ Status:
 - [x] Audit `measure` public surface, fix/document fallback behavior, and add public import-path tests
 - [x] Audit `functional` public surface, fix/document fallback behavior, and add public import-path tests
 - [x] Audit `topology` public surface, fix/document fallback behavior, and add public import-path tests
+- [x] Restore narrow `dual` public v1 surface, hide redesign-pending scaffolding, and add public import-path tests
+- [x] Audit `automata` public surface, document CPU neighborhood fallback, and add public import-path tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -130,9 +132,9 @@ Priority domains:
 - [ ] probabilistic
 - [x] topology public import-path coverage for distance/Morse/Rips/Betti/fallback paths
 - [x] functional public import-path coverage for matrix/Hilbert/spectral/fallback paths
-- [ ] dual
+- [x] dual public import-path coverage for unary forward-AD v1 surface
 - [ ] enumerative
-- [ ] automata
+- [x] automata public import-path coverage for rule application, energy, evolution, and neighborhood fallback
 - [x] measure public import-path coverage for core paths/fallbacks
 - [ ] calculus gradient/divergence/curl public baseline coverage
 - [ ] GF(2)
@@ -179,7 +181,8 @@ Candidate expansion areas:
 
 - [ ] tropical batched matrix multiply / additional semiring kernels
 - [ ] fusion broader public surface after WGSL cleanup
-- [ ] dual batched derivative kernels
+- [x] dual unary batched forward-AD kernel v1
+- [ ] dual binary/broadcast operations and broader gradient/training kernels
 - [ ] optimization-like GPU workflows if source crate/API surface supports them
 - [ ] explicit info-geometry module boundary if public API clarity improves
 - [ ] probabilistic/statistical kernels

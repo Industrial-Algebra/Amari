@@ -1,8 +1,12 @@
-//! GPU-accelerated cellular automata using WebGPU
+//! GPU-backed and GPU-ready cellular automata operations.
 //!
-//! This module provides GPU acceleration for cellular automata evolution using WebGPU/wgpu.
-//! It implements parallel processing of CA rules, geometric algebra operations, and
-//! batch evolution for massive scale simulations.
+//! Current public behavior is intentionally explicit:
+//! - `AutomataGpuOps::batch_apply_rules` is GPU-backed and applies the first rule to each cell.
+//! - `AutomataGpuOps::batch_evolve_ca` repeats the GPU rule-application path for multiple steps.
+//! - `AutomataGpuOps::calculate_total_energy` is GPU-backed and sums multivector component energy.
+//! - `AutomataGpuOps::extract_neighborhoods` currently uses a CPU Moore-neighborhood baseline.
+//! - CA-evolution and neighborhood shader pipelines are kept as validation-safe scaffolding until
+//!   richer neighborhood-aware GPU evolution is restored.
 
 pub use self::gpu_impl::*;
 
@@ -158,7 +162,7 @@ mod gpu_impl {
             })
         }
 
-        /// Evolve cellular automata for multiple steps on GPU
+        /// Evolve cellular automata for multiple steps through the GPU rule-application path.
         pub async fn batch_evolve_ca(
             &mut self,
             initial_states: &[GpuCellData],
@@ -167,6 +171,18 @@ mod gpu_impl {
         ) -> AutomataGpuResult<Vec<GpuCellData>> {
             if initial_states.is_empty() {
                 return Ok(Vec::new());
+            }
+            if rule_configs.is_empty() {
+                return Err(AutomataGpuError::EvolutionComputationFailed(
+                    "At least one rule configuration is required".to_string(),
+                ));
+            }
+            if !evolution_params.steps_per_batch.is_finite()
+                || evolution_params.steps_per_batch < 0.0
+            {
+                return Err(AutomataGpuError::EvolutionComputationFailed(
+                    "steps_per_batch must be finite and non-negative".to_string(),
+                ));
             }
 
             let steps = evolution_params.steps_per_batch as usize;
@@ -181,14 +197,19 @@ mod gpu_impl {
             Ok(current_states)
         }
 
-        /// Apply CA rules to batch of cells
+        /// Apply the first CA rule to a batch of cells on the GPU.
         pub async fn batch_apply_rules(
             &mut self,
             cells: &[GpuCellData],
             rules: &[GpuRuleConfig],
         ) -> AutomataGpuResult<Vec<GpuCellData>> {
-            if cells.is_empty() || rules.is_empty() {
+            if cells.is_empty() {
                 return Ok(Vec::new());
+            }
+            if rules.is_empty() {
+                return Err(AutomataGpuError::EvolutionComputationFailed(
+                    "At least one rule configuration is required".to_string(),
+                ));
             }
 
             // Create buffers
@@ -287,19 +308,28 @@ mod gpu_impl {
             let buffer_slice = staging_buffer.slice(..);
             let (sender, receiver) = futures::channel::oneshot::channel();
             buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-                sender.send(result).unwrap();
+                let _ = sender.send(result);
             });
 
             self.context.device.poll(wgpu::Maintain::Wait);
-            receiver.await.unwrap().map_err(|e| {
-                AutomataGpuError::EvolutionComputationFailed(format!(
-                    "Buffer mapping failed: {:?}",
-                    e
-                ))
-            })?;
+            receiver
+                .await
+                .map_err(|_| {
+                    AutomataGpuError::EvolutionComputationFailed(
+                        "Buffer mapping channel closed".to_string(),
+                    )
+                })?
+                .map_err(|e| {
+                    AutomataGpuError::EvolutionComputationFailed(format!(
+                        "Buffer mapping failed: {:?}",
+                        e
+                    ))
+                })?;
 
             let data = buffer_slice.get_mapped_range();
             let result: Vec<GpuCellData> = bytemuck::cast_slice(&data).to_vec();
+            drop(data);
+            staging_buffer.unmap();
 
             Ok(result)
         }
@@ -392,24 +422,36 @@ mod gpu_impl {
             let buffer_slice = staging_buffer.slice(..);
             let (sender, receiver) = futures::channel::oneshot::channel();
             buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-                sender.send(result).unwrap();
+                let _ = sender.send(result);
             });
 
             self.context.device.poll(wgpu::Maintain::Wait);
-            receiver.await.unwrap().map_err(|e| {
-                AutomataGpuError::EvolutionComputationFailed(format!(
-                    "Buffer mapping failed: {:?}",
-                    e
-                ))
-            })?;
+            receiver
+                .await
+                .map_err(|_| {
+                    AutomataGpuError::EvolutionComputationFailed(
+                        "Buffer mapping channel closed".to_string(),
+                    )
+                })?
+                .map_err(|e| {
+                    AutomataGpuError::EvolutionComputationFailed(format!(
+                        "Buffer mapping failed: {:?}",
+                        e
+                    ))
+                })?;
 
             let data = buffer_slice.get_mapped_range();
             let energy: f32 = bytemuck::cast_slice(&data)[0];
+            drop(data);
+            staging_buffer.unmap();
 
             Ok(energy)
         }
 
-        /// Extract neighborhoods for all cells in parallel
+        /// Extract Moore neighborhoods for all cells using a CPU baseline.
+        ///
+        /// This preserves public correctness while the neighborhood-aware GPU evolution
+        /// kernel is redesigned and validated.
         pub async fn extract_neighborhoods(
             &mut self,
             cells: &[GpuCellData],
@@ -419,45 +461,40 @@ mod gpu_impl {
             if cells.is_empty() {
                 return Ok(Vec::new());
             }
+            if grid_width == 0 || grid_height == 0 || grid_width * grid_height != cells.len() {
+                return Err(AutomataGpuError::EvolutionComputationFailed(format!(
+                    "Expected {} cells for {}x{} grid, got {}",
+                    grid_width * grid_height,
+                    grid_width,
+                    grid_height,
+                    cells.len()
+                )));
+            }
 
-            // Create buffers for neighborhood extraction
-            let _cell_buffer =
-                self.context
-                    .device
-                    .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                        label: Some("Cell Neighborhood Buffer"),
-                        contents: bytemuck::cast_slice(cells),
-                        usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-                    });
-
-            let params_data = [
-                grid_width as f32,
-                grid_height as f32,
-                cells.len() as f32,
-                0.0,
+            let offsets = [
+                (-1isize, -1isize),
+                (0, -1),
+                (1, -1),
+                (-1, 0),
+                (1, 0),
+                (-1, 1),
+                (0, 1),
+                (1, 1),
             ];
-            let _params_buffer =
-                self.context
-                    .device
-                    .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                        label: Some("Neighborhood Params Buffer"),
-                        contents: bytemuck::cast_slice(&params_data),
-                        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-                    });
 
-            // For Moore neighborhood (8 neighbors max per cell)
-            let _neighborhood_buffer = self.context.device.create_buffer(&wgpu::BufferDescriptor {
-                label: Some("Neighborhood Output Buffer"),
-                size: (cells.len() * 8 * mem::size_of::<GpuCellData>()) as u64,
-                usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
-                mapped_at_creation: false,
-            });
-
-            // Create bind group and execute (implementation continues...)
-            // For brevity, returning simplified result
-            let neighborhoods: Vec<Vec<GpuCellData>> = cells
-                .iter()
-                .map(|_| vec![GpuCellData::default(); 8])
+            let neighborhoods = (0..cells.len())
+                .map(|idx| {
+                    let x = idx % grid_width;
+                    let y = idx / grid_width;
+                    offsets
+                        .iter()
+                        .map(|(dx, dy)| {
+                            let nx = (x as isize + dx).rem_euclid(grid_width as isize) as usize;
+                            let ny = (y as isize + dy).rem_euclid(grid_height as isize) as usize;
+                            cells[ny * grid_width + nx]
+                        })
+                        .collect()
+                })
                 .collect();
 
             Ok(neighborhoods)
@@ -544,59 +581,17 @@ mod gpu_impl {
         fn create_ca_evolution_pipeline(
             device: &wgpu::Device,
         ) -> AutomataGpuResult<wgpu::ComputePipeline> {
-            let shader_source = crate::shaders::CA_EVOLUTION;
             let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-                label: Some("CA Evolution Shader"),
-                source: wgpu::ShaderSource::Wgsl(shader_source.into()),
-            });
-
-            let bind_group_layout =
-                device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                    label: Some("CA Evolution Bind Group Layout"),
-                    entries: &[
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 2,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: false },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                    ],
-                });
-
-            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("CA Evolution Pipeline Layout"),
-                bind_group_layouts: &[&bind_group_layout],
-                push_constant_ranges: &[],
+                label: Some("CA Evolution Scaffolding Shader"),
+                source: wgpu::ShaderSource::Wgsl(
+                    "@compute @workgroup_size(1) fn ca_evolution_main() { return; }".into(),
+                ),
             });
 
             Ok(
                 device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-                    label: Some("CA Evolution Pipeline"),
-                    layout: Some(&pipeline_layout),
+                    label: Some("CA Evolution Scaffolding Pipeline"),
+                    layout: None,
                     module: &shader,
                     entry_point: "ca_evolution_main",
                 }),
@@ -723,59 +718,17 @@ mod gpu_impl {
         fn create_neighbor_extraction_pipeline(
             device: &wgpu::Device,
         ) -> AutomataGpuResult<wgpu::ComputePipeline> {
-            let shader_source = crate::shaders::NEIGHBOR_EXTRACTION;
             let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-                label: Some("Neighbor Extraction Shader"),
-                source: wgpu::ShaderSource::Wgsl(shader_source.into()),
-            });
-
-            let bind_group_layout =
-                device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                    label: Some("Neighbor Extraction Bind Group Layout"),
-                    entries: &[
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Uniform,
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 2,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: false },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                    ],
-                });
-
-            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("Neighbor Extraction Pipeline Layout"),
-                bind_group_layouts: &[&bind_group_layout],
-                push_constant_ranges: &[],
+                label: Some("Neighbor Extraction Scaffolding Shader"),
+                source: wgpu::ShaderSource::Wgsl(
+                    "@compute @workgroup_size(1) fn neighbor_extraction_main() { return; }".into(),
+                ),
             });
 
             Ok(
                 device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-                    label: Some("Neighbor Extraction Pipeline"),
-                    layout: Some(&pipeline_layout),
+                    label: Some("Neighbor Extraction Scaffolding Pipeline"),
+                    layout: None,
                     module: &shader,
                     entry_point: "neighbor_extraction_main",
                 }),
@@ -849,7 +802,7 @@ mod gpu_impl {
             // Simple conversion using scalar part only for now
             Self {
                 scalar: cell.scalar_part() as f32,
-                e1: 0.0, // TODO: Extract proper components when multivector API is available
+                e1: 0.0, // Current conversion preserves scalar component only.
                 e2: 0.0,
                 e3: 0.0,
                 e12: 0.0,

@@ -86,8 +86,9 @@
 //! | `holographic` | GPU-accelerated holographic memory |
 //! | `measure` | GPU-accelerated Monte Carlo integration |
 //! | `calculus` | GPU-accelerated differential geometry |
+//! | `dual` | Narrow GPU-backed dual-number v1 surface; broader gradient/training scaffolding private |
 //! | `probabilistic` | GPU-accelerated probability sampling |
-//! | `automata` | GPU-accelerated cellular automata |
+//! | `automata` | GPU-backed automata rule/energy kernels with documented CPU neighborhood fallback |
 //! | `enumerative` | GPU-accelerated combinatorics |
 //! | `functional` | Mixed GPU-backed functional analysis and documented CPU spectral/fallback paths |
 //! | `topology` | Mixed GPU-backed topology and documented CPU Rips/Betti fallback paths |
@@ -154,7 +155,8 @@ pub mod benchmarks;
 #[cfg(feature = "calculus")]
 pub mod calculus;
 #[cfg(feature = "dual")]
-pub mod dual;
+#[allow(dead_code)]
+mod dual;
 #[cfg(feature = "enumerative")]
 pub mod enumerative;
 #[cfg(feature = "functional")]
@@ -193,6 +195,11 @@ pub use adaptive::{
 };
 use amari_core::Multivector;
 use amari_info_geom::amari_chentsov_tensor;
+#[cfg(feature = "automata")]
+pub use automata::{
+    AutomataGpuConfig, AutomataGpuError, AutomataGpuOps, AutomataGpuResult, GpuCellData,
+    GpuEvolutionParams, GpuRuleConfig,
+};
 pub use benchmarks::{
     AmariMultiGpuBenchmarks, BenchmarkConfig, BenchmarkResult, BenchmarkRunner,
     BenchmarkSuiteResults, BenchmarkSummary, ScalingAnalysis,
@@ -200,6 +207,8 @@ pub use benchmarks::{
 use bytemuck::{Pod, Zeroable};
 #[cfg(feature = "calculus")]
 pub use calculus::GpuCalculus;
+#[cfg(feature = "dual")]
+pub use dual::{DualGpuError, DualGpuOps, DualGpuResult, DualOperation, GpuDualNumber};
 #[cfg(feature = "functional")]
 pub use functional::{
     AdaptiveFunctionalCompute, GpuFunctionalError, GpuFunctionalResult, GpuHilbertSpace,

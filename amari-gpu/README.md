@@ -34,9 +34,9 @@ Integration Crates (consume APIs):
 | **amari-network** | `network` | Graph operations, spectral methods | ✅ Implemented |
 | **amari-measure** | `measure` | 1D integration, Monte Carlo, Gaussian densities, tropical/multidim scaffolding | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `measure`) |
 | **amari-calculus** | `calculus` | Field evaluation, gradients, divergence, curl | ⚠️ GPU-ready CPU-semantic fallback (feature: `calculus`) |
-| **amari-dual** | `dual` | Automatic differentiation GPU operations | ✅ Implemented (feature: `dual`) |
+| **amari-dual** | `dual` | Narrow GPU-backed unary forward-AD v1 surface | ⚠️ Narrow v1 restored; broader gradients/training private/redesign-pending (feature: `dual`) |
 | **amari-enumerative** | `enumerative` | Intersection theory, WDVV curve counting, matroid ranks, CSM classes, localization, operad, stability | ✅ Implemented (feature: `enumerative`) |
-| **amari-automata** | `automata` | Cellular automata GPU evolution | ✅ Implemented (feature: `automata`) |
+| **amari-automata** | `automata` | GPU rule application/energy kernels, CPU neighborhood fallback | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `automata`) |
 | **amari-fusion** | `fusion` | Reduced first public surface for holographic/fusion-derived GPU operations | ⚠️ Partially restored; broader fusion GPU API still under redesign |
 | **amari-holographic** | `holographic` | Holographic memory, batch binding, similarity matrices, **optical field operations** | ✅ Implemented (feature: `holographic`) |
 | **amari-probabilistic** | `probabilistic` | Gaussian sampling, batch statistics, Monte Carlo | ✅ Implemented (feature: `probabilistic`) |
@@ -116,6 +116,72 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Batch gradient computation currently uses the CPU finite-difference baseline.
     let gradients = gpu_calculus.batch_gradient(&field, &points, 1e-6).await?;
+
+    Ok(())
+}
+```
+
+### Dual Number GPU Operations *(narrow v1 surface)*
+
+The `dual` feature exposes a narrow crate-root public surface for element-wise unary forward-mode AD:
+
+| Type / operation | Current 0.20.0 behavior |
+|------------------|--------------------------|
+| `DualGpuOps::batch_forward_ad()` | GPU-backed unary operation chains over `DualNumber<f32>` batches |
+| `GpuDualNumber` | POD transfer representation for `DualNumber<f32>` |
+| `DualOperation::{Sin,Cos,Exp,Log,ReLU,Sigmoid,Tanh,Square,Sqrt}` | supported unary operations |
+| `DualOperation::{Add,Multiply}` | retained for API continuity but rejected until binary/broadcast semantics are designed |
+
+The full historical `amari_gpu::dual` module is no longer public. Neural-network gradients,
+vector-function gradients, optimization scaffolding, and generic multi-dual GPU traits are internal
+redesign-pending implementation details.
+
+```rust
+use amari_dual::DualNumber;
+use amari_gpu::{DualGpuOps, DualOperation};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut gpu = DualGpuOps::new().await?;
+    let inputs = vec![DualNumber::new(2.0_f32, 1.0_f32)];
+
+    // Computes exp(x²) and its forward derivative for every input.
+    let outputs = gpu
+        .batch_forward_ad(&inputs, &[DualOperation::Square, DualOperation::Exp])
+        .await?;
+
+    println!("value={}, derivative={}", outputs[0].real, outputs[0].dual);
+    Ok(())
+}
+```
+
+### Automata GPU Operations *(mixed GPU-backed + documented fallback)*
+
+The `automata` feature exposes cellular-automata helpers through crate-root re-exports:
+
+| Type / operation | Current 0.20.0 behavior |
+|------------------|--------------------------|
+| `AutomataGpuOps::batch_apply_rules()` | GPU-backed rule application using the first supplied rule configuration |
+| `AutomataGpuOps::batch_evolve_ca()` | repeats the GPU rule-application path for `steps_per_batch` steps |
+| `AutomataGpuOps::calculate_total_energy()` | GPU-backed sum of squared multivector components |
+| `AutomataGpuOps::extract_neighborhoods()` | CPU Moore-neighborhood baseline with wrapping boundaries |
+| CA evolution / neighborhood pipelines | validation-safe scaffolding pending richer neighborhood-aware GPU kernels |
+
+```rust
+use amari_gpu::{AutomataGpuOps, GpuCellData, GpuEvolutionParams, GpuRuleConfig};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut gpu = AutomataGpuOps::new().await?;
+
+    let cells = vec![GpuCellData { scalar: 2.0, e1: 1.0, ..GpuCellData::default() }];
+    let rule = GpuRuleConfig { damping_factor: 0.1, threshold: 0.5, ..GpuRuleConfig::default() };
+
+    let evolved = gpu.batch_apply_rules(&cells, &[rule]).await?;
+    let energy = gpu.calculate_total_energy(&evolved).await?;
+
+    let params = GpuEvolutionParams { steps_per_batch: 4.0, ..GpuEvolutionParams::default() };
+    let after_four_steps = gpu.batch_evolve_ca(&cells, &[rule], &params).await?;
 
     Ok(())
 }

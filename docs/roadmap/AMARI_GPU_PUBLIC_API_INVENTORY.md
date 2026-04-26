@@ -42,12 +42,12 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | default | core, info-geom, network, relativistic, infra | broad crate-root + public modules | Mixed: GPU-backed + adaptive + infra; needs full baseline inventory |
 | `calculus` | `amari-calculus` | `pub mod calculus`, `GpuCalculus` re-export | CPU fallback / GPU-ready scaffolding; docs/tests started |
 | `measure` | `amari-measure` | `pub mod measure`, integration types re-exported | Mixed GPU-backed + documented CPU fallback; public tests added |
-| `dual` | `amari-dual` | `pub mod dual` | GPU code exists; some APIs contain placeholder/unsupported paths |
+| `dual` | `amari-dual` | private module + narrow crate-root re-exports | Narrow GPU-backed unary forward-AD v1 surface restored; broader scaffolding private |
 | `fusion` | `amari-fusion` | private module plus reduced crate-root re-exports | Narrow v1 exposure restored; broader internals private/redesign-pending |
 | `tropical` | `amari-tropical` | private module + narrow crate-root re-exports | Good v1 shape; real kernels restored and tested |
 | `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Strong surface; some CPU-for-correctness/future placeholder notes remain |
 | `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed statistical kernels; needs hardware/crossover validation |
-| `automata` | `amari-automata` | `pub mod automata` | GPU-backed; needs baseline inventory and public re-export review |
+| `automata` | `amari-automata` | `pub mod automata`, crate-root re-exports | Mixed GPU-backed + documented CPU neighborhood fallback; public tests added |
 | `enumerative` | `amari-enumerative` | `pub mod enumerative` | Very broad public surface; likely needs validation/classification by operation |
 | `functional` | `amari-functional` | `pub mod functional`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
 | `topology` | `amari-topology` | `pub mod topology`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
@@ -89,6 +89,8 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `probabilistic` | `GpuProbabilistic`, error/result types | GPU-backed; validate |
 | `tropical` | `TropicalExecutionPath`, `TropicalGpuError`, `TropicalGpuOps`, `TropicalGpuResult` | Narrow v1 public surface; good API honesty state |
 | `topology` | `AdaptiveTopologyCompute`, `GpuCriticalPoint`, `GpuTopology`, error/result types | Mixed GPU + documented CPU fallback; public import-path test added |
+| `dual` | `DualGpuOps`, `DualOperation`, `GpuDualNumber`, `DualGpuError`, `DualGpuResult` | Narrow GPU-backed unary forward-AD v1 surface; public import-path test added |
+| `automata` | `AutomataGpuOps`, `AutomataGpuConfig`, `GpuCellData`, `GpuRuleConfig`, `GpuEvolutionParams`, error/result types | Mixed GPU-backed + documented CPU neighborhood fallback; public import-path test added |
 
 ---
 
@@ -102,11 +104,9 @@ Rust `pub mod` exposes every `pub` item inside the module, even if crate-root re
 - `automata` with feature
 - `benchmarks`
 - `calculus` with feature
-- `dual` with feature
 - `enumerative` with feature
 - `functional` with feature
 - `gf2` with feature
-- `fusion` with feature
 - `holographic` with feature
 - `measure` with feature
 - `multi_gpu`
@@ -122,6 +122,8 @@ Rust `pub mod` exposes every `pub` item inside the module, even if crate-root re
 
 ### Private module with narrow re-exports
 
+- `dual` with feature
+- `fusion` with feature
 - `tropical` with feature
 
 This is currently the cleanest model for a restored but not fully mature domain surface.
@@ -244,6 +246,7 @@ Remaining examples found by marker scan:
 - `functional::GpuMatrixOperator::multiply` uses CPU readback fallback for cross-device correctness, now documented/tested
 - `topology::build_rips_filtration` uses CPU implementation with optional GPU distance matrix, now documented/tested
 - `topology::compute_betti_numbers` falls back to CPU, now documented/tested
+- `automata::AutomataGpuOps::extract_neighborhoods` uses CPU Moore-neighborhood baseline, now documented/tested
 - `network` centrality/clustering reuses GPU distance or CPU logic
 - `holographic::batch_unbind` uses CPU for correctness
 
@@ -268,9 +271,9 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `measure` | feature public module | mixed GPU/fallback documented | implement reduction/multidim kernels later; hardware validate existing GPU paths |
 | `functional` | feature public module | mixed GPU/fallback documented | implement shared-context GPU matrix multiply / eigensolver later; hardware validate existing GPU paths |
 | `topology` | feature public module | mixed GPU/fallback documented | implement persistent-homology kernels later; hardware validate distance/Morse paths |
-| `dual` | feature public module | GPU-backed plus unsupported paths | inspect shader correctness and placeholder gradient paths |
+| `dual` | feature private module + crate-root v1 re-exports | narrow unary forward-AD surface documented/tested | design binary/broadcast ops and broader gradient/training APIs later |
 | `enumerative` | feature very broad public module | broad/unvalidated | prioritize representative CPU-baseline tests |
-| `automata` | feature public module | GPU-backed | validate against CPU automata baselines |
+| `automata` | feature public module + crate-root re-exports | mixed GPU/fallback documented | implement neighborhood-aware GPU evolution later; hardware validate rule/energy paths |
 | `probabilistic` | feature public module | GPU-backed | validate statistical correctness/tolerances |
 | `gf2` | feature public module | GPU-backed | validate exact CPU parity |
 | infra modules | public default | infrastructure | keep, document simulation/profiling caveats |
@@ -296,6 +299,8 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] one public import-path integration test for `measure`
    - [x] one public import-path integration test for `functional`
    - [x] one public import-path integration test for `topology`
+   - [x] one public import-path integration test for `dual`
+   - [x] one public import-path integration test for `automata`
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior
@@ -315,4 +320,4 @@ The highest-impact immediate code cleanup has been completed:
 
 Next recommended code change:
 
-> Continue auditing public APIs with placeholder or unsupported paths, with `dual` as the next high-impact feature domain.
+> Take special care auditing `enumerative`, which is broad, frequently used, and currently the next high-impact feature domain.

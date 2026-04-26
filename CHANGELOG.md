@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added public measure API tests covering crate-root imports, built-in integration, Monte Carlo function IDs, Gaussian density, tropical reductions, and multidimensional volume behavior.
 - Added public functional API tests covering crate-root imports, GPU matrix application, matrix multiply fallback, Hilbert batches, spectral CPU baseline, and adaptive dispatch.
 - Added public topology API tests covering crate-root imports, adaptive distance/Morse paths, direct GPU distance/Morse when available, Rips filtration fallback, Betti fallback, and invalid input handling.
+- Added public dual API tests covering crate-root imports, POD conversion, GPU unary forward-AD, empty inputs, and unsupported binary operation errors.
+- Added public automata API tests covering crate-root imports, GPU rule application, GPU energy calculation, batch evolution, CPU neighborhood fallback, and invalid input handling.
 
 #### Changed
 
@@ -45,6 +47,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documented `topology` feature behavior as mixed GPU-backed distance/Morse kernels plus CPU Rips/Betti fallback.
 - Fixed `GpuTopology::new` robustness by replacing invalid unused boundary-shader scaffolding with a validation-safe no-op shader until persistent-homology kernels are restored.
 - Added distance-matrix shape validation for topology Rips filtration builders and adaptive critical-grid validation.
+- Changed `dual` to a narrow crate-root public v1 surface while keeping broader gradient/training scaffolding private.
+- Documented `DualGpuOps::batch_forward_ad` as GPU-backed for unary element-wise operation chains.
+- Added empty-input handling and explicit `InvalidOperation` errors for unsupported `DualOperation::{Add, Multiply}` binary semantics.
+- Documented `automata` feature behavior as mixed GPU-backed rule/energy kernels plus CPU Moore-neighborhood fallback.
+- Replaced invalid/unused automata CA-evolution and neighborhood shader paths with validation-safe scaffolding until richer kernels are restored.
+- Added automata input validation for missing rules, invalid evolution step counts, and invalid grid dimensions.
 
 ## [0.17.0] - 2026-01-11
 
