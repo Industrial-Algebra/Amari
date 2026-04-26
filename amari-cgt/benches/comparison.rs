@@ -56,11 +56,91 @@ fn canonical_corpus_node_count_three(c: &mut Criterion) {
     });
 }
 
+fn generate_exact_layers(c: &mut Criterion) {
+    let mut group = c.benchmark_group("generate_exact_layers");
+
+    group.bench_function("birthday_layer_2", |b| {
+        b.iter(|| {
+            let mut arena = GameArena::new();
+            black_box(
+                arena
+                    .generate_birthday_layer(2)
+                    .expect("birthday layer generation should succeed"),
+            )
+        });
+    });
+
+    group.bench_function("node_count_layer_3", |b| {
+        b.iter(|| {
+            let mut arena = GameArena::new();
+            black_box(
+                arena
+                    .generate_node_count_layer(3)
+                    .expect("node-count layer generation should succeed"),
+            )
+        });
+    });
+
+    group.finish();
+}
+
+fn analyze_canonical_reduction_trends(c: &mut Criterion) {
+    let mut group = c.benchmark_group("canonical_reduction_trends");
+
+    group.bench_function("canonical_corpus_birthday_2", |b| {
+        b.iter(|| {
+            let mut arena = GameArena::new();
+            black_box(
+                arena
+                    .canonical_corpus_by_birthday(2)
+                    .expect("canonical birthday corpus should succeed"),
+            )
+        });
+    });
+
+    group.bench_function("analyze_birthday_layer_2", |b| {
+        b.iter(|| {
+            let mut arena = GameArena::new();
+            black_box(
+                arena
+                    .analyze_birthday_layer(2)
+                    .expect("birthday layer analysis should succeed"),
+            )
+        });
+    });
+
+    group.bench_function("analyze_birthday_layers_2", |b| {
+        b.iter(|| {
+            let mut arena = GameArena::new();
+            black_box(
+                arena
+                    .analyze_birthday_layers(2)
+                    .expect("birthday layer report should succeed"),
+            )
+        });
+    });
+
+    group.bench_function("analyze_node_count_layers_3", |b| {
+        b.iter(|| {
+            let mut arena = GameArena::new();
+            black_box(
+                arena
+                    .analyze_node_count_layers(3)
+                    .expect("node-count layer report should succeed"),
+            )
+        });
+    });
+
+    group.finish();
+}
+
 criterion_group!(
     comparison_benches,
     compare_small_games,
     canonicalize_small_game,
     grundy_nim_heap,
-    canonical_corpus_node_count_three
+    canonical_corpus_node_count_three,
+    generate_exact_layers,
+    analyze_canonical_reduction_trends
 );
 criterion_main!(comparison_benches);
