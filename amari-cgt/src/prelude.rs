@@ -8,7 +8,7 @@ pub use crate::game::{
     OutcomeClass,
 };
 pub use crate::generation::{
-    CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, OutcomeCounts,
-    MAX_EXHAUSTIVE_OPTION_UNIVERSE,
+    CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, LayerGrowthCounts,
+    LayerGrowthSummary, OutcomeCounts, MAX_EXHAUSTIVE_OPTION_UNIVERSE,
 };
 pub use crate::nimber::Nimber;

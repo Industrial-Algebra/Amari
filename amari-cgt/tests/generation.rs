@@ -401,6 +401,62 @@ fn birthday_layer_report_summary_helpers_aggregate_and_peak_correctly() {
 }
 
 #[test]
+fn birthday_growth_helpers_build_cumulative_and_comparative_summaries() {
+    let mut arena = GameArena::new();
+    let report = arena.analyze_birthday_layers(1).unwrap();
+
+    let cumulative = report.cumulative_growth_by_layer();
+    let cumulative_zero = cumulative.get(&0).unwrap();
+    assert_eq!(cumulative_zero.raw_games(), 1);
+    assert_eq!(cumulative_zero.canonical_games(), 1);
+    assert_eq!(cumulative_zero.canonical_reduction(), 0);
+    assert_eq!(cumulative_zero.numeric_games(), 1);
+    assert_eq!(cumulative_zero.non_numeric_games(), 0);
+    assert_eq!(cumulative_zero.impartial_games(), 1);
+    assert_eq!(cumulative_zero.partizan_games(), 0);
+    assert_eq!(cumulative_zero.outcome_counts().previous_player_wins(), 1);
+
+    let cumulative_one = cumulative.get(&1).unwrap();
+    assert_eq!(cumulative_one.raw_games(), 4);
+    assert_eq!(cumulative_one.canonical_games(), 4);
+    assert_eq!(cumulative_one.canonical_reduction(), 0);
+    assert_eq!(cumulative_one.numeric_games(), 3);
+    assert_eq!(cumulative_one.non_numeric_games(), 1);
+    assert_eq!(cumulative_one.impartial_games(), 2);
+    assert_eq!(cumulative_one.partizan_games(), 2);
+    assert_eq!(cumulative_one.outcome_counts().left_wins(), 1);
+    assert_eq!(cumulative_one.outcome_counts().right_wins(), 1);
+    assert_eq!(cumulative_one.outcome_counts().next_player_wins(), 1);
+    assert_eq!(cumulative_one.outcome_counts().previous_player_wins(), 1);
+
+    let summaries = report.growth_summaries();
+    assert_eq!(summaries.len(), 2);
+
+    let zero_summary = &summaries[0];
+    assert_eq!(*zero_summary.layer(), 0);
+    assert_eq!(zero_summary.exact().raw_games(), 1);
+    assert_eq!(zero_summary.exact().canonical_games(), 1);
+    assert_eq!(zero_summary.cumulative(), cumulative_zero);
+
+    let one_summary = &summaries[1];
+    assert_eq!(*one_summary.layer(), 1);
+    assert_eq!(one_summary.exact().raw_games(), 3);
+    assert_eq!(one_summary.exact().canonical_games(), 3);
+    assert_eq!(one_summary.exact().numeric_games(), 2);
+    assert_eq!(one_summary.exact().non_numeric_games(), 1);
+    assert_eq!(one_summary.exact().impartial_games(), 1);
+    assert_eq!(one_summary.exact().partizan_games(), 2);
+    assert_eq!(one_summary.exact().outcome_counts().left_wins(), 1);
+    assert_eq!(one_summary.exact().outcome_counts().right_wins(), 1);
+    assert_eq!(one_summary.exact().outcome_counts().next_player_wins(), 1);
+    assert_eq!(
+        one_summary.exact().outcome_counts().previous_player_wins(),
+        0
+    );
+    assert_eq!(one_summary.cumulative(), cumulative_one);
+}
+
+#[test]
 fn node_count_layer_report_tracks_small_named_growth() {
     let mut arena = GameArena::new();
     let report = arena.analyze_node_count_layers(2).unwrap();

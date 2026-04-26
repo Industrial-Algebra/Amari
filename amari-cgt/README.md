@@ -21,7 +21,7 @@ The initial implementation focuses on:
 - small exhaustive generation by exact or bounded birthday / reachable-node layers
 - canonical corpus metadata, layer maps, bucketing, and counting hooks
 - layer analysis reports for growth, canonical reduction, and classification trends
-- report-level summary helpers for totals, extrema, and layer inspection
+- report-level summary helpers for totals, extrema, layer inspection, and cumulative/comparative growth views
 
 ## Non-goals for the current implementation
 

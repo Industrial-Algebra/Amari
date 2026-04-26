@@ -207,6 +207,121 @@ impl LayerAnalysis {
     }
 }
 
+/// Exact or cumulative growth counts derived from one or more analyzed layers.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct LayerGrowthCounts {
+    raw_games: usize,
+    canonical_games: usize,
+    canonical_reduction: usize,
+    numeric_games: usize,
+    non_numeric_games: usize,
+    impartial_games: usize,
+    partizan_games: usize,
+    outcome_counts: OutcomeCounts,
+}
+
+impl LayerGrowthCounts {
+    /// Returns the number of raw generated games represented by the counts.
+    #[must_use]
+    pub fn raw_games(&self) -> usize {
+        self.raw_games
+    }
+
+    /// Returns the number of canonical games represented by the counts.
+    #[must_use]
+    pub fn canonical_games(&self) -> usize {
+        self.canonical_games
+    }
+
+    /// Returns the number of raw games removed by canonicalization.
+    #[must_use]
+    pub fn canonical_reduction(&self) -> usize {
+        self.canonical_reduction
+    }
+
+    /// Returns the number of numeric canonical games represented by the counts.
+    #[must_use]
+    pub fn numeric_games(&self) -> usize {
+        self.numeric_games
+    }
+
+    /// Returns the number of non-numeric canonical games represented by the counts.
+    #[must_use]
+    pub fn non_numeric_games(&self) -> usize {
+        self.non_numeric_games
+    }
+
+    /// Returns the number of impartial canonical games represented by the counts.
+    #[must_use]
+    pub fn impartial_games(&self) -> usize {
+        self.impartial_games
+    }
+
+    /// Returns the number of partizan canonical games represented by the counts.
+    #[must_use]
+    pub fn partizan_games(&self) -> usize {
+        self.partizan_games
+    }
+
+    /// Returns the outcome-class counts represented by the counts.
+    #[must_use]
+    pub fn outcome_counts(&self) -> &OutcomeCounts {
+        &self.outcome_counts
+    }
+
+    fn from_analysis(analysis: &LayerAnalysis) -> Self {
+        Self {
+            raw_games: analysis.raw_game_count(),
+            canonical_games: analysis.canonical_game_count(),
+            canonical_reduction: analysis.canonical_reduction(),
+            numeric_games: analysis.numeric_game_count(),
+            non_numeric_games: analysis.non_numeric_game_count(),
+            impartial_games: analysis.impartial_game_count(),
+            partizan_games: analysis.partizan_game_count(),
+            outcome_counts: analysis.outcome_counts().clone(),
+        }
+    }
+
+    fn merge(&mut self, other: &Self) {
+        self.raw_games += other.raw_games;
+        self.canonical_games += other.canonical_games;
+        self.canonical_reduction += other.canonical_reduction;
+        self.numeric_games += other.numeric_games;
+        self.non_numeric_games += other.non_numeric_games;
+        self.impartial_games += other.impartial_games;
+        self.partizan_games += other.partizan_games;
+        self.outcome_counts.merge(&other.outcome_counts);
+    }
+}
+
+/// Per-layer growth summary pairing exact and cumulative counts.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LayerGrowthSummary<K> {
+    layer: K,
+    exact: LayerGrowthCounts,
+    cumulative: LayerGrowthCounts,
+}
+
+impl<K> LayerGrowthSummary<K> {
+    /// Returns the exact layer key.
+    #[must_use]
+    pub fn layer(&self) -> &K {
+        &self.layer
+    }
+
+    /// Returns the exact counts for this layer.
+    #[must_use]
+    pub fn exact(&self) -> &LayerGrowthCounts {
+        &self.exact
+    }
+
+    /// Returns cumulative counts through and including this layer.
+    #[must_use]
+    pub fn cumulative(&self) -> &LayerGrowthCounts {
+        &self.cumulative
+    }
+}
+
 /// Layered analysis report keyed by an exact generation index.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct LayerAnalysisReport<K> {
@@ -412,6 +527,39 @@ impl<K: Ord + Clone> LayerAnalysisReport<K> {
     #[must_use]
     pub fn partizan_counts_by_layer(&self) -> BTreeMap<K, usize> {
         self.map_layer_values(LayerAnalysis::partizan_game_count)
+    }
+
+    /// Returns cumulative growth counts keyed by exact layer.
+    #[must_use]
+    pub fn cumulative_growth_by_layer(&self) -> BTreeMap<K, LayerGrowthCounts> {
+        let mut cumulative = LayerGrowthCounts::default();
+        let mut growth = BTreeMap::new();
+
+        for (key, analysis) in &self.layers {
+            cumulative.merge(&LayerGrowthCounts::from_analysis(analysis));
+            growth.insert(key.clone(), cumulative.clone());
+        }
+
+        growth
+    }
+
+    /// Returns per-layer summaries pairing exact and cumulative growth counts.
+    #[must_use]
+    pub fn growth_summaries(&self) -> Vec<LayerGrowthSummary<K>> {
+        let mut cumulative = LayerGrowthCounts::default();
+        let mut summaries = Vec::with_capacity(self.layers.len());
+
+        for (key, analysis) in &self.layers {
+            let exact = LayerGrowthCounts::from_analysis(analysis);
+            cumulative.merge(&exact);
+            summaries.push(LayerGrowthSummary {
+                layer: key.clone(),
+                exact,
+                cumulative: cumulative.clone(),
+            });
+        }
+
+        summaries
     }
 
     /// Returns outcome-class counts keyed by exact layer.

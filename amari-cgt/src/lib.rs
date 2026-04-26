@@ -12,7 +12,7 @@
 //! - partial comparison and outcome classes
 //! - impartiality checks and Grundy values
 //! - small exhaustive generators for exact and bounded birthday/node-count layers
-//! - layer analysis reports plus report-level summary helpers for canonical growth and classification trends
+//! - layer analysis reports plus report-level summary helpers for canonical growth, cumulative/comparative views, and classification trends
 //!
 //! # Example
 //!
@@ -45,7 +45,7 @@ pub use game::{
     OutcomeClass,
 };
 pub use generation::{
-    CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, OutcomeCounts,
-    MAX_EXHAUSTIVE_OPTION_UNIVERSE,
+    CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, LayerGrowthCounts,
+    LayerGrowthSummary, OutcomeCounts, MAX_EXHAUSTIVE_OPTION_UNIVERSE,
 };
 pub use nimber::Nimber;
