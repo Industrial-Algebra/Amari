@@ -1,4 +1,5 @@
 use crate::game::Birthday;
+use std::fmt;
 
 /// Arena-independent structural form of a short combinatorial game.
 ///
@@ -14,6 +15,14 @@ use crate::game::Birthday;
 /// [`crate::arena::GameArena::intern_form`] re-interns any
 /// repeated subgames. Exporting from a `GameArena` into a `GameForm` expands the
 /// arena-backed DAG into a purely structural recursive representation.
+///
+/// Display formatting recognizes a few small named games directly:
+///
+/// - `0`
+/// - `*`
+/// - short integers like `1`, `-1`, `2`, ...
+///
+/// Other values are rendered as recursive cuts such as `{0 | 1}`.
 #[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct GameForm {
@@ -117,5 +126,51 @@ impl GameForm {
         self.left.dedup();
         self.right.sort_unstable();
         self.right.dedup();
+    }
+
+    fn integer_value(&self) -> Option<i64> {
+        if self.is_zero() {
+            Some(0)
+        } else if self.right.is_empty() && self.left.len() == 1 {
+            self.left[0].integer_value()?.checked_add(1)
+        } else if self.left.is_empty() && self.right.len() == 1 {
+            self.right[0].integer_value()?.checked_sub(1)
+        } else {
+            None
+        }
+    }
+
+    fn is_star(&self) -> bool {
+        self.left.len() == 1
+            && self.right.len() == 1
+            && self.left[0].is_zero()
+            && self.right[0].is_zero()
+    }
+}
+
+impl fmt::Display for GameForm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(integer) = self.integer_value() {
+            return write!(f, "{integer}");
+        }
+        if self.is_star() {
+            return write!(f, "*");
+        }
+
+        write!(f, "{{")?;
+        for (index, option) in self.left.iter().enumerate() {
+            if index > 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{option}")?;
+        }
+        write!(f, " | ")?;
+        for (index, option) in self.right.iter().enumerate() {
+            if index > 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{option}")?;
+        }
+        write!(f, "}}")
     }
 }

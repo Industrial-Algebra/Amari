@@ -152,6 +152,16 @@ impl GameArena {
         self.to_form(canonical)
     }
 
+    /// Formats an arena-backed game using named small games and cut notation.
+    pub fn format_game(&self, game: GameId) -> Result<String> {
+        Ok(self.to_form(game)?.to_string())
+    }
+
+    /// Formats the canonical representative of a game using named small games and cut notation.
+    pub fn format_canonical_game(&mut self, game: GameId) -> Result<String> {
+        Ok(self.canonical_form(game)?.to_string())
+    }
+
     /// Returns the birthday of a game.
     pub fn birthday(&self, game: GameId) -> Result<Birthday> {
         Ok(self.node(game)?.birthday)

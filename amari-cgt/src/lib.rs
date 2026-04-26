@@ -5,6 +5,7 @@
 //! - arena-backed game storage
 //! - arena-independent structural game forms for import/export
 //! - birthdays
+//! - formatting/display of small named games and recursive cuts
 //! - explicit numeric-validation witnesses for downstream surreal conversion
 //! - negation, addition, subtraction, and canonicalization
 //! - partial comparison and outcome classes

@@ -163,6 +163,23 @@ fn game_form_normalizes_recursive_option_sets() {
 }
 
 #[test]
+fn game_form_display_uses_named_small_games_and_cut_notation() {
+    assert_eq!(GameForm::zero().to_string(), "0");
+    assert_eq!(GameForm::star().to_string(), "*");
+    assert_eq!(GameForm::one().to_string(), "1");
+    assert_eq!(GameForm::minus_one().to_string(), "-1");
+    assert_eq!(GameForm::new([GameForm::one()], []).to_string(), "2");
+    assert_eq!(
+        GameForm::new([GameForm::zero()], [GameForm::one()]).to_string(),
+        "{0 | 1}"
+    );
+    assert_eq!(
+        GameForm::new([GameForm::zero(), GameForm::one()], [GameForm::star()]).to_string(),
+        "{0, 1 | *}"
+    );
+}
+
+#[test]
 fn arena_round_trips_through_structural_game_form() {
     let half_form = GameForm::new([GameForm::zero()], [GameForm::one()]);
 
@@ -173,6 +190,7 @@ fn arena_round_trips_through_structural_game_form() {
     assert_eq!(round_trip, half_form);
     assert_eq!(arena.birthday(half).unwrap(), round_trip.birthday());
     assert!(arena.is_numeric(half).unwrap());
+    assert_eq!(arena.format_game(half).unwrap(), "{0 | 1}");
 }
 
 #[test]
@@ -187,4 +205,5 @@ fn canonical_form_export_matches_canonicalization() {
         GameForm::new([GameForm::minus_one(), GameForm::zero()], [])
     );
     assert_eq!(arena.canonical_form(dominated).unwrap(), GameForm::one());
+    assert_eq!(arena.format_canonical_game(dominated).unwrap(), "1");
 }

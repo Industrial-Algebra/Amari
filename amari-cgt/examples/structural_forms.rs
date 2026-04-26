@@ -10,7 +10,9 @@ fn main() -> Result<(), amari_cgt::CgtError> {
     assert_eq!(round_trip, half_form);
     assert!(arena.is_numeric(half)?);
 
+    println!("structural form: {round_trip}");
     println!("structural form birthday: {:?}", round_trip.birthday());
+    println!("arena formatting: {}", arena.format_game(half)?);
 
     Ok(())
 }
