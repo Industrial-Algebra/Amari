@@ -15,6 +15,10 @@ pub enum CgtError {
     #[error("game is not impartial: {0:?}")]
     NotImpartial(GameId),
 
+    /// Returned when a numeric-validation witness is requested for a non-numeric game.
+    #[error("game is not numeric: {0:?}")]
+    NotNumericGame(GameId),
+
     /// Returned when an exhaustive bounded generation request becomes too large.
     #[error("generation universe too large for exhaustive construction: {0}")]
     GenerationUniverseTooLarge(usize),

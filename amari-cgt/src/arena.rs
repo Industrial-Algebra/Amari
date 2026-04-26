@@ -1,6 +1,8 @@
 use crate::error::{CgtError, Result};
 use crate::form::GameForm;
-use crate::game::{Birthday, CanonicalGame, GameComparison, GameId, OutcomeClass};
+use crate::game::{
+    Birthday, CanonicalGame, GameComparison, GameId, NumericGameWitness, OutcomeClass,
+};
 use crate::nimber::Nimber;
 use std::collections::{HashMap, HashSet};
 
@@ -361,6 +363,15 @@ impl GameArena {
 
         self.caches.nim_heaps.insert(size, id);
         Ok(id)
+    }
+
+    /// Validates that a short game is numeric and returns a witness on success.
+    pub fn validate_numeric(&mut self, game: GameId) -> Result<NumericGameWitness> {
+        if self.is_numeric(game)? {
+            Ok(NumericGameWitness(game))
+        } else {
+            Err(CgtError::NotNumericGame(game))
+        }
     }
 
     /// Returns whether a short game is numeric.

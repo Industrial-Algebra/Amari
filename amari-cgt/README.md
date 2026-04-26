@@ -10,6 +10,7 @@ The initial implementation focuses on:
 - short impartial games
 - birthdays
 - arena-independent structural game forms for import/export
+- explicit numeric-validation witnesses for downstream surreal conversion
 - normal-play outcome classes
 - partial comparison
 - canonicalization via dominated and reversible option reduction

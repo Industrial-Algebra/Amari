@@ -5,6 +5,7 @@
 //! - arena-backed game storage
 //! - arena-independent structural game forms for import/export
 //! - birthdays
+//! - explicit numeric-validation witnesses for downstream surreal conversion
 //! - negation, addition, subtraction, and canonicalization
 //! - partial comparison and outcome classes
 //! - impartiality checks and Grundy values
@@ -37,7 +38,7 @@ pub mod prelude;
 pub use arena::GameArena;
 pub use error::{CgtError, Result};
 pub use form::GameForm;
-pub use game::{Birthday, CanonicalGame, GameComparison, GameId, OutcomeClass};
+pub use game::{Birthday, CanonicalGame, GameComparison, GameId, NumericGameWitness, OutcomeClass};
 pub use generation::{
     CanonicalCorpus, CorpusStats, LayerAnalysis, LayerAnalysisReport, OutcomeCounts,
     MAX_EXHAUSTIVE_OPTION_UNIVERSE,

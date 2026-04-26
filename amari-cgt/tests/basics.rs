@@ -77,6 +77,12 @@ fn numeric_examples_work() {
     assert!(arena.is_numeric(one).unwrap());
     assert!(arena.is_numeric(half).unwrap());
     assert!(!arena.is_numeric(star).unwrap());
+
+    assert_eq!(arena.validate_numeric(half).unwrap().game_id(), half);
+    assert!(matches!(
+        arena.validate_numeric(star),
+        Err(amari_cgt::CgtError::NotNumericGame(game)) if game == star
+    ));
 }
 
 #[test]

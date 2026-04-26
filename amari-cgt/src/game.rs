@@ -35,3 +35,15 @@ pub enum GameComparison {
 /// Marker wrapper for a game treated as canonical.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CanonicalGame(pub GameId);
+
+/// Witness that a game has been validated as numeric in a specific arena.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct NumericGameWitness(pub(crate) GameId);
+
+impl NumericGameWitness {
+    /// Returns the validated underlying game id.
+    #[must_use]
+    pub fn game_id(self) -> GameId {
+        self.0
+    }
+}
