@@ -35,7 +35,7 @@ Integration Crates (consume APIs):
 | **amari-measure** | `measure` | 1D integration, Monte Carlo, Gaussian densities, tropical/multidim scaffolding | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `measure`) |
 | **amari-calculus** | `calculus` | Field evaluation, gradients, divergence, curl | ⚠️ GPU-ready CPU-semantic fallback (feature: `calculus`) |
 | **amari-dual** | `dual` | Narrow GPU-backed unary forward-AD v1 surface | ⚠️ Narrow v1 restored; broader gradients/training private/redesign-pending (feature: `dual`) |
-| **amari-enumerative** | `enumerative` | Intersection theory, WDVV curve counting, matroid ranks, CSM classes, localization, operad, stability | ✅ Implemented (feature: `enumerative`) |
+| **amari-enumerative** | `enumerative` | High-use GPU kernels for WDVV, matroids, localization, CSM, operad, stability | ⚠️ Broad GPU-backed surface with representative public tests (feature: `enumerative`) |
 | **amari-automata** | `automata` | GPU rule application/energy kernels, CPU neighborhood fallback | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `automata`) |
 | **amari-fusion** | `fusion` | Reduced first public surface for holographic/fusion-derived GPU operations | ⚠️ Partially restored; broader fusion GPU API still under redesign |
 | **amari-holographic** | `holographic` | Holographic memory, batch binding, similarity matrices, **optical field operations** | ✅ Implemented (feature: `holographic`) |
@@ -578,33 +578,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   - Classifies each grid point by attractor convergence
   - 256-thread workgroups for spatial parallelism
 
-### Enumerative Geometry GPU Acceleration *(v0.19.1)*
+### Enumerative Geometry GPU Operations *(high-use broad surface)*
+
+The `enumerative` feature remains a broad public module for downstream compatibility, with
+crate-root re-exports for the most-used data types and operations. Representative public tests now
+cover the high-use kernels listed below.
 
 ```rust
-use amari_gpu::enumerative::{EnumerativeGpuOps, GpuWDVVData, GpuMatroidRankData, GpuStabilityData};
+use std::collections::BTreeSet;
+use amari_enumerative::Matroid;
+use amari_gpu::{EnumerativeGpuOps, GpuMatroidRankData, GpuWDVVData};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut gpu_ops = EnumerativeGpuOps::new().await?;
 
-    // Batch WDVV curve counts (degrees 1-6)
+    // Batch WDVV/Kontsevich curve counts for P², degrees 1..=6.
     let wdvv_data: Vec<GpuWDVVData> = (1..=6).map(GpuWDVVData::from_degree).collect();
     let counts = gpu_ops.batch_wdvv_curve_counts(&wdvv_data).await?;
-    // counts = [1, 1, 12, 620, 87304, 26312976]
+    assert_eq!(counts, vec![1, 1, 12, 620, 87304, 26312976]);
 
-    // Batch matroid rank computation
-    let matroid_data = vec![
-        GpuMatroidRankData::from_matroid_subset(&matroid, &[0, 1]),
-        GpuMatroidRankData::from_matroid_subset(&matroid, &[0, 2, 3]),
-    ];
-    let ranks = gpu_ops.batch_matroid_ranks(&matroid_data).await?;
-
-    // Batch stability phase computation
-    let stability_data = vec![
-        GpuStabilityData::from_class_and_trust(&class, 0.5),
-        GpuStabilityData::from_class_and_trust(&class, 1.0),
-    ];
-    let phases = gpu_ops.batch_stability_phases(&stability_data).await?;
+    // Batch matroid rank computation via bitmask-encoded bases.
+    let matroid = Matroid::uniform(2, 4);
+    let subset: BTreeSet<usize> = [0, 1, 2].into_iter().collect();
+    let rank_data = vec![GpuMatroidRankData::from_matroid_subset(&matroid, &subset)];
+    let ranks = gpu_ops.batch_matroid_ranks(&rank_data).await?;
 
     Ok(())
 }
@@ -612,15 +610,53 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #### Enumerative GPU Operations
 
-| Operation | Description | Shader |
-|-----------|-------------|--------|
-| `batch_wdvv_curve_counts()` | WDVV rational curve counts N_d | Lookup table (N_1..N_6) |
-| `batch_localization_euler_classes()` | Tangent Euler classes at fixed points | Product formula |
-| `batch_matroid_ranks()` | Matroid rank via bitmask popcount | Bitmask intersection |
-| `batch_csm_euler_characteristics()` | CSM Euler characteristics | Cell decomposition |
-| `batch_operad_multiplicities()` | Operadic composition multiplicities | Codimension matching |
-| `batch_stability_phases()` | Stability phases | Normalized atan2 |
-| `batch_stability_checks()` | Stability checks (phase in (0,1)) | Phase interval test |
+| Operation | Current path | Mathematical basis / caveat |
+|-----------|--------------|-----------------------------|
+| `batch_intersection_numbers()` | GPU-backed compact formula | degree/codimension compatibility with multiplicity/genus correction |
+| `batch_wdvv_curve_counts()` | GPU-backed lookup | Kontsevich numbers `N_1..N_6` for `P²`; higher degrees return `0` |
+| `batch_localization_euler_classes()` | GPU-backed product formula | tangent Euler class at fixed points, weights limited by compact GPU data layout |
+| `batch_matroid_ranks()` | GPU-backed bitmask computation | max `|A ∩ B|` over up to 32 encoded bases |
+| `batch_csm_euler_characteristics()` | GPU-backed cell contribution | Schubert-cell contribution currently returns `1` per cell |
+| `batch_operad_multiplicities()` | GPU-backed codimension check | matching single-interface codimensions give multiplicity `1` within dimension bounds |
+| `batch_stability_phases()` | GPU-backed phase formula | normalized `atan2(trust * dim, -codim) / π` |
+| `batch_stability_checks()` | GPU-backed phase interval test | stable iff normalized phase is strictly in `(0, 1)` |
+| broader Schubert/GW/LR/namespace/tropical/GF(2) helpers | GPU-backed, representative tests exist | deeper mathematical parity work remains a post-0.20.0 task |
+
+See `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` for the method-by-method classification table.
+
+### GF(2) GPU Operations *(fixed-layout GPU-backed surface)*
+
+The `gf2` feature exposes batch binary Clifford products, GF(2) matrix-vector multiplication,
+and Hamming distance kernels. The public API validates fixed-layout bounds before dispatch:
+
+| Operation | Current 0.20.0 behavior |
+|-----------|--------------------------|
+| `batch_gf2_geometric_product()` | GPU-backed `Cl(N,R;F₂)` product, up to 128 blades (`num_generators <= 7`) |
+| `batch_gf2_matvec()` | GPU-backed GF(2) matrix-vector multiplication, up to 16 rows × 32 columns |
+| `batch_gf2_hamming_distance()` | GPU-backed Hamming distance, up to 128 bits, masks unused final-word bits by `dim` |
+
+```rust
+use amari_core::gf2::{GF2Matrix, GF2Vector};
+use amari_gpu::{GF2GpuOps, GpuGF2CliffordPair, GpuGF2MatVecData};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut gpu = GF2GpuOps::new().await?;
+
+    // e1 * e2 = e12 in Cl(3,0;F₂).
+    let products = gpu.batch_gf2_geometric_product(&[
+        GpuGF2CliffordPair::from_bits(&[0, 1], &[0, 0, 1], 3, 0),
+    ]).await?;
+    assert_eq!(products[0][0] & (1 << 3), 1 << 3);
+
+    let matrix = GF2Matrix::identity(3);
+    let vector = GF2Vector::from_bits(&[1, 0, 1]);
+    let matvec = GpuGF2MatVecData::from_matrix_and_vector(&matrix, &vector);
+    assert_eq!(gpu.batch_gf2_matvec(&[matvec]).await?, vec![0b101]);
+
+    Ok(())
+}
+```
 
 ### Probabilistic GPU Acceleration
 

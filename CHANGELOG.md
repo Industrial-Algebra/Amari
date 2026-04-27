@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added public topology API tests covering crate-root imports, adaptive distance/Morse paths, direct GPU distance/Morse when available, Rips filtration fallback, Betti fallback, and invalid input handling.
 - Added public dual API tests covering crate-root imports, POD conversion, GPU unary forward-AD, empty inputs, and unsupported binary operation errors.
 - Added public automata API tests covering crate-root imports, GPU rule application, GPU energy calculation, batch evolution, CPU neighborhood fallback, and invalid input handling.
+- Added representative public enumerative API tests covering crate-root imports, WDVV counts, intersection numbers, localization Euler classes, matroid ranks, CSM Euler characteristics, operad multiplicities, and stability phases/checks.
+- Added method-by-method enumerative GPU classification table at `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md`.
+- Added representative public GF(2) GPU API tests covering crate-root imports, Clifford products, matrix-vector multiplication, Hamming distance, empty batches, and invalid fixed-layout inputs.
 
 #### Changed
 
@@ -53,6 +56,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documented `automata` feature behavior as mixed GPU-backed rule/energy kernels plus CPU Moore-neighborhood fallback.
 - Replaced invalid/unused automata CA-evolution and neighborhood shader paths with validation-safe scaffolding until richer kernels are restored.
 - Added automata input validation for missing rules, invalid evolution step counts, and invalid grid dimensions.
+- Added crate-root re-exports for high-use `enumerative` GPU types while preserving the broad `amari_gpu::enumerative` module for compatibility.
+- Fixed representative enumerative WGSL validation blockers: recursive `gcd`, dynamic indexing of fixed-size arrays, reserved `partition` field names, and mismatched intersection shader layout.
+- Stabilized enumerative/adaptive test execution by serializing enumerative unit-test GPU contexts and adding an `AMARI_GPU_FORCE_CPU` fallback for adaptive verifier tests on headless EGL stacks.
+- Documented and validated GF(2) GPU fixed-layout bounds: Clifford `num_generators <= 7`, matvec `nrows <= 16`/`ncols <= 32`, and Hamming `dim <= 128`.
+- Fixed GF(2) Hamming distance to mask unused bits in the final word according to `dim`.
+- Re-exported `GF2GpuContext` at the `amari_gpu` crate root.
+- Documented `enumerative` as a broad high-use GPU-backed surface with representative tests and remaining deeper mathematical parity work.
 
 ## [0.17.0] - 2026-01-11
 

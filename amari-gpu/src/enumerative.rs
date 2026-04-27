@@ -1,8 +1,14 @@
-//! GPU acceleration for enumerative geometry computations
+//! GPU-backed enumerative geometry computations.
 //!
-//! This module provides comprehensive GPU acceleration for intersection theory,
-//! Schubert calculus, Gromov-Witten invariants, and tropical curve counting
-//! using WebGPU compute shaders optimized for mathematical computations.
+//! This high-use module intentionally keeps its broad public surface for
+//! compatibility while 0.20.0 adds stronger API-honesty tests around the most
+//! used paths. Representative GPU-backed kernels are covered for intersection
+//! numbers, WDVV/Kontsevich counts, localization Euler classes, matroid ranks,
+//! CSM Euler characteristics, operadic multiplicities, and stability checks.
+//!
+//! Some formulas are deliberately compact GPU kernels rather than complete
+//! symbolic enumerative-geometry engines; the roadmap tracks deeper parity work
+//! with `amari-enumerative` for future releases.
 
 #[cfg(feature = "enumerative")]
 use amari_enumerative::{
@@ -1423,9 +1429,46 @@ impl EnumerativeGpuOps {
         Ok(results)
     }
 
-    /// Generate intersection computation shader
+    /// Generate intersection computation shader.
+    ///
+    /// This matches `GpuIntersectionData` and uses a deliberately simple,
+    /// validation-safe formula for the public GPU path.
     fn get_intersection_shader(&self) -> String {
-        String::from(crate::shaders::INTERSECTION_THEORY)
+        String::from(
+            r#"
+struct IntersectionData {
+    degree1: f32,
+    degree2: f32,
+    codimension1: f32,
+    codimension2: f32,
+    ambient_dimension: f32,
+    genus_correction: f32,
+    multiplicity_factor: f32,
+    padding: f32,
+}
+
+@group(0) @binding(0) var<storage, read> input_data: array<IntersectionData>;
+@group(0) @binding(1) var<storage, read_write> output_data: array<f32>;
+
+@compute @workgroup_size(64, 1, 1)
+fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
+    let index = global_id.x;
+    if (index >= arrayLength(&input_data)) {
+        return;
+    }
+
+    let item = input_data[index];
+    let codimension = item.codimension1 + item.codimension2;
+    if (codimension > item.ambient_dimension) {
+        output_data[index] = 0.0;
+        return;
+    }
+
+    output_data[index] = item.degree1 * item.degree2 * item.multiplicity_factor
+        + item.genus_correction;
+}
+"#,
+        )
     }
 
     /// Generate Schubert calculus shader
@@ -1947,6 +1990,30 @@ struct LocalizationData {
 @group(0) @binding(0) var<storage, read> input_data: array<LocalizationData>;
 @group(0) @binding(1) var<storage, read_write> output_data: array<f32>;
 
+fn read_subset(loc: LocalizationData, i: u32) -> u32 {
+    if (i == 0u) { return loc.subset[0]; }
+    if (i == 1u) { return loc.subset[1]; }
+    if (i == 2u) { return loc.subset[2]; }
+    if (i == 3u) { return loc.subset[3]; }
+    if (i == 4u) { return loc.subset[4]; }
+    if (i == 5u) { return loc.subset[5]; }
+    if (i == 6u) { return loc.subset[6]; }
+    if (i == 7u) { return loc.subset[7]; }
+    return 0u;
+}
+
+fn read_weight(loc: LocalizationData, i: u32) -> f32 {
+    if (i == 0u) { return loc.weights[0]; }
+    if (i == 1u) { return loc.weights[1]; }
+    if (i == 2u) { return loc.weights[2]; }
+    if (i == 3u) { return loc.weights[3]; }
+    if (i == 4u) { return loc.weights[4]; }
+    if (i == 5u) { return loc.weights[5]; }
+    if (i == 6u) { return loc.weights[6]; }
+    if (i == 7u) { return loc.weights[7]; }
+    return 0.0;
+}
+
 @compute @workgroup_size(64, 1, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let index = global_id.x;
@@ -1963,20 +2030,20 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     var euler: f32 = 1.0;
 
     for (var ii: u32 = 0u; ii < k && ii < 8u; ii++) {
-        let i_idx = loc.subset[ii];
-        let t_i = loc.weights[i_idx];
+        let i_idx = read_subset(loc, ii);
+        let t_i = read_weight(loc, i_idx);
 
         for (var jj: u32 = 0u; jj < n && jj < 8u; jj++) {
             // Check if jj-th element is NOT in subset
             var in_subset: bool = false;
             for (var kk: u32 = 0u; kk < k && kk < 8u; kk++) {
-                if (loc.subset[kk] == jj) {
+                if (read_subset(loc, kk) == jj) {
                     in_subset = true;
                 }
             }
 
             if (!in_subset) {
-                let t_j = loc.weights[jj];
+                let t_j = read_weight(loc, jj);
                 euler *= (t_j - t_i);
             }
         }
@@ -2003,6 +2070,42 @@ struct MatroidRankData {
 @group(0) @binding(0) var<storage, read> input_data: array<MatroidRankData>;
 @group(0) @binding(1) var<storage, read_write> output_data: array<u32>;
 
+fn read_basis(m: MatroidRankData, i: u32) -> u32 {
+    if (i == 0u) { return m.bases[0]; }
+    if (i == 1u) { return m.bases[1]; }
+    if (i == 2u) { return m.bases[2]; }
+    if (i == 3u) { return m.bases[3]; }
+    if (i == 4u) { return m.bases[4]; }
+    if (i == 5u) { return m.bases[5]; }
+    if (i == 6u) { return m.bases[6]; }
+    if (i == 7u) { return m.bases[7]; }
+    if (i == 8u) { return m.bases[8]; }
+    if (i == 9u) { return m.bases[9]; }
+    if (i == 10u) { return m.bases[10]; }
+    if (i == 11u) { return m.bases[11]; }
+    if (i == 12u) { return m.bases[12]; }
+    if (i == 13u) { return m.bases[13]; }
+    if (i == 14u) { return m.bases[14]; }
+    if (i == 15u) { return m.bases[15]; }
+    if (i == 16u) { return m.bases[16]; }
+    if (i == 17u) { return m.bases[17]; }
+    if (i == 18u) { return m.bases[18]; }
+    if (i == 19u) { return m.bases[19]; }
+    if (i == 20u) { return m.bases[20]; }
+    if (i == 21u) { return m.bases[21]; }
+    if (i == 22u) { return m.bases[22]; }
+    if (i == 23u) { return m.bases[23]; }
+    if (i == 24u) { return m.bases[24]; }
+    if (i == 25u) { return m.bases[25]; }
+    if (i == 26u) { return m.bases[26]; }
+    if (i == 27u) { return m.bases[27]; }
+    if (i == 28u) { return m.bases[28]; }
+    if (i == 29u) { return m.bases[29]; }
+    if (i == 30u) { return m.bases[30]; }
+    if (i == 31u) { return m.bases[31]; }
+    return 0u;
+}
+
 fn count_ones(x: u32) -> u32 {
     var n = x;
     n = n - ((n >> 1u) & 0x55555555u);
@@ -2027,7 +2130,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     var max_intersect: u32 = 0u;
 
     for (var i: u32 = 0u; i < m.num_bases && i < 32u; i++) {
-        let intersection = m.bases[i] & m.subset_mask;
+        let intersection = read_basis(m, i) & m.subset_mask;
         let count = count_ones(intersection);
         if (count > max_intersect) {
             max_intersect = count;
@@ -2045,7 +2148,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         String::from(
             r#"
 struct CSMData {
-    partition: array<u32, 8>,
+    parts: array<u32, 8>,
     partition_len: u32,
     grassmannian_k: u32,
     grassmannian_n: u32,
@@ -3539,6 +3642,13 @@ impl GpuRepresentabilityData {
 mod tests {
     use super::*;
 
+    macro_rules! with_serial_gpu_ops {
+        ($gpu_ops:ident, $body:block) => {{
+            let _gpu_test_guard = crate::GPU_TEST_LOCK.lock().await;
+            if let Ok(mut $gpu_ops) = EnumerativeGpuOps::new().await $body
+        }};
+    }
+
     #[tokio::test]
     async fn test_enumerative_gpu_context_initialization() {
         // Should not fail even without GPU hardware
@@ -3556,7 +3666,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_gpu_intersection_computation() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let intersection_data = vec![
                 GpuIntersectionData {
                     degree1: 3.0,
@@ -3594,12 +3704,12 @@ mod tests {
                     println!("⚠️  GPU intersection computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_schubert_computation() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let schubert_data = vec![
                 GpuSchubertClass {
                     partition: [2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -3629,12 +3739,12 @@ mod tests {
                     println!("⚠️  GPU Schubert computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_gromov_witten_computation() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let gw_data = vec![
                 GpuGromovWittenData {
                     curve_degree: 1.0,
@@ -3670,7 +3780,7 @@ mod tests {
                     println!("⚠️  GPU Gromov-Witten computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[test]
@@ -3712,7 +3822,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_gpu_lr_coefficient_computation() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let lr_data = vec![
                 GpuLittlewoodRichardsonData {
                     lambda: [2, 1, 0, 0, 0, 0, 0, 0],
@@ -3748,12 +3858,12 @@ mod tests {
                     println!("⚠️  GPU LR computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_namespace_configuration_counting() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let namespace_data = vec![
                 GpuNamespaceData {
                     grassmannian_k: 2,
@@ -3789,12 +3899,12 @@ mod tests {
                     println!("⚠️  GPU namespace computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_tropical_schubert_intersection() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let tropical_data = vec![
                 GpuTropicalSchubertData {
                     weights: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -3826,12 +3936,12 @@ mod tests {
                     println!("⚠️  GPU tropical computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_multi_intersect_computation() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let multi_data = vec![
                 GpuMultiIntersectData {
                     partitions: [
@@ -3875,7 +3985,7 @@ mod tests {
                     println!("⚠️  GPU multi-intersect computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[test]
@@ -3940,7 +4050,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_gpu_wdvv_computation() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let wdvv_data: Vec<GpuWDVVData> = (1..=6).map(GpuWDVVData::from_degree).collect();
 
             let result = gpu_ops.batch_wdvv_curve_counts(&wdvv_data).await;
@@ -3957,12 +4067,12 @@ mod tests {
                     println!("⚠️  GPU WDVV computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_wdvv_empty_batch() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let result = gpu_ops.batch_wdvv_curve_counts(&[]).await;
             match result {
                 Ok(counts) => {
@@ -3973,12 +4083,12 @@ mod tests {
                     println!("⚠️  GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_localization_euler_class() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             use amari_enumerative::{FixedPoint, TorusWeights};
 
             let fp1 = FixedPoint {
@@ -4016,12 +4126,12 @@ mod tests {
                     println!("⚠️  GPU localization computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_matroid_rank_computation() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             use amari_enumerative::Matroid;
             use std::collections::BTreeSet;
 
@@ -4051,12 +4161,12 @@ mod tests {
                     println!("⚠️  GPU matroid rank computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_csm_euler_characteristic() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let csm_data = vec![
                 // Top cell: partition [2,1] in Gr(2,4)
                 GpuCSMData::from_partition(&[2, 1], (2, 4)),
@@ -4078,12 +4188,12 @@ mod tests {
                     println!("⚠️  GPU CSM computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_operad_multiplicity() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let operad_data = vec![
                 // Compatible: same codimension
                 GpuOperadData {
@@ -4115,12 +4225,12 @@ mod tests {
                     println!("⚠️  GPU operad computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_stability_phase() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             // σ_1 on Gr(2,4): codim=1, dim=4, trust=1.0
             let stability_data = vec![GpuStabilityData {
                 codimension: 1.0,
@@ -4149,12 +4259,12 @@ mod tests {
                     println!("⚠️  GPU stability computation failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_gpu_stability_check() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let stability_data = vec![
                 // Should be stable: positive trust, positive dim
                 GpuStabilityData {
@@ -4191,7 +4301,7 @@ mod tests {
                     println!("⚠️  GPU stability check failed, but test passes");
                 }
             }
-        }
+        });
     }
 
     // ─── Sync conversion tests ───
@@ -4297,7 +4407,7 @@ mod tests {
     #[cfg(feature = "gf2")]
     #[tokio::test]
     async fn test_gpu_finite_field_points() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let data = vec![
                 // |Gr(1,3;F₂)| = [3,1]_2 = (2^3 - 1)/(2^1 - 1) = 7
                 GpuFiniteFieldPointData::new(1, 3, 2),
@@ -4321,13 +4431,13 @@ mod tests {
                     println!("GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[cfg(feature = "gf2")]
     #[tokio::test]
     async fn test_gpu_weight_distribution() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             // Repetition code [3,1,3]: generator = [1,1,1]
             let data = vec![GpuWeightDistributionData {
                 generator_rows: {
@@ -4358,13 +4468,13 @@ mod tests {
                     println!("GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[cfg(feature = "gf2")]
     #[tokio::test]
     async fn test_gpu_kl_coefficients() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             // U_{2,4}: uniform matroid, rank 2, ground set 4
             let matroid = Matroid::uniform(2, 4);
             let data = vec![GpuKLPolynomialData::from_matroid(&matroid)];
@@ -4383,13 +4493,13 @@ mod tests {
                     println!("GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[cfg(feature = "gf2")]
     #[tokio::test]
     async fn test_gpu_representability_check() {
-        if let Ok(mut gpu_ops) = EnumerativeGpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             // U_{2,3} is representable over GF(2) (rank 2, 3 elements, all 2-subsets are bases).
             // Note: U_{2,4} is NOT representable over GF(2) since GF(2)^2 has only 3 nonzero vectors.
             let uniform = Matroid::uniform(2, 3);
@@ -4411,7 +4521,7 @@ mod tests {
                     println!("GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[cfg(feature = "gf2")]

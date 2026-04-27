@@ -48,10 +48,10 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Strong surface; some CPU-for-correctness/future placeholder notes remain |
 | `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed statistical kernels; needs hardware/crossover validation |
 | `automata` | `amari-automata` | `pub mod automata`, crate-root re-exports | Mixed GPU-backed + documented CPU neighborhood fallback; public tests added |
-| `enumerative` | `amari-enumerative` | `pub mod enumerative` | Very broad public surface; likely needs validation/classification by operation |
+| `enumerative` | `amari-enumerative` | `pub mod enumerative`, crate-root re-exports for high-use types | Broad high-use GPU-backed surface; representative public tests added; method classification in `AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` |
 | `functional` | `amari-functional` | `pub mod functional`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
 | `topology` | `amari-topology` | `pub mod topology`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
-| `gf2` | `amari-core/gf2` | `pub mod gf2`, crate-root re-exports | Strong candidate for validation; needs hardware report |
+| `gf2` | `amari-core/gf2` | `pub mod gf2`, crate-root re-exports | GPU-backed fixed-layout surface; public test/validation pass started, hardware report pending |
 | `webgpu` | `wgpu/webgpu` | backend feature | Backend capability only |
 | `high-precision` | core/relativistic feature | feature-gated precision | Needs check: GPU kernels mostly f32/f64-oriented |
 
@@ -82,7 +82,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 |---------|------------|----------------|
 | `calculus` | `GpuCalculus` | CPU fallback / GPU-ready scaffolding; scalar/vector public tests added |
 | `functional` | `AdaptiveFunctionalCompute`, `GpuHilbertSpace`, `GpuMatrixOperator`, `GpuSpectralDecomposition`, error/result types | Mixed GPU + documented CPU fallback; public import-path test added |
-| `gf2` | `GF2GpuOps`, GF2 data/error/result types | GPU-backed; validate |
+| `gf2` | `GF2GpuOps`, `GF2GpuContext`, GF2 data/error/result types | GPU-backed with fixed-layout validation; public import-path test added |
 | `fusion` | `FusionGpuError`, `FusionGpuResult`, `GpuHolographicTDC`, `GpuResonatorOutput`, `HolographicGpuOps` | Reduced v1 surface enforced by private module + crate-root re-exports |
 | `holographic` | `GpuHolographic`, `GpuHolographicMemory`, `GpuOpticalField`, error/result types | GPU-backed/adaptive; validate broader CPU correctness |
 | `measure` | `GpuIntegrator`, `GpuMonteCarloIntegrator`, `GpuMultidimIntegrator`, `GpuParametricDensity`, `GpuTropicalMeasure` | Mixed GPU + documented CPU fallback; public import-path test added |
@@ -91,6 +91,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `topology` | `AdaptiveTopologyCompute`, `GpuCriticalPoint`, `GpuTopology`, error/result types | Mixed GPU + documented CPU fallback; public import-path test added |
 | `dual` | `DualGpuOps`, `DualOperation`, `GpuDualNumber`, `DualGpuError`, `DualGpuResult` | Narrow GPU-backed unary forward-AD v1 surface; public import-path test added |
 | `automata` | `AutomataGpuOps`, `AutomataGpuConfig`, `GpuCellData`, `GpuRuleConfig`, `GpuEvolutionParams`, error/result types | Mixed GPU-backed + documented CPU neighborhood fallback; public import-path test added |
+| `enumerative` | `EnumerativeGpuOps`, core GPU data/error/result types | Broad GPU-backed high-use surface; representative public import-path test added |
 
 ---
 
@@ -272,10 +273,10 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `functional` | feature public module | mixed GPU/fallback documented | implement shared-context GPU matrix multiply / eigensolver later; hardware validate existing GPU paths |
 | `topology` | feature public module | mixed GPU/fallback documented | implement persistent-homology kernels later; hardware validate distance/Morse paths |
 | `dual` | feature private module + crate-root v1 re-exports | narrow unary forward-AD surface documented/tested | design binary/broadcast ops and broader gradient/training APIs later |
-| `enumerative` | feature very broad public module | broad/unvalidated | prioritize representative CPU-baseline tests |
+| `enumerative` | feature very broad public module + high-use crate-root re-exports | broad GPU-backed; representative tests added | deeper per-operation parity/hardware validation remains high priority |
 | `automata` | feature public module + crate-root re-exports | mixed GPU/fallback documented | implement neighborhood-aware GPU evolution later; hardware validate rule/energy paths |
 | `probabilistic` | feature public module | GPU-backed | validate statistical correctness/tolerances |
-| `gf2` | feature public module | GPU-backed | validate exact CPU parity |
+| `gf2` | feature public module + crate-root re-exports | GPU-backed fixed-layout kernels | public import-path test added; exact CPU parity/hardware validation still pending |
 | infra modules | public default | infrastructure | keep, document simulation/profiling caveats |
 
 ---
@@ -301,6 +302,9 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] one public import-path integration test for `topology`
    - [x] one public import-path integration test for `dual`
    - [x] one public import-path integration test for `automata`
+   - [x] one representative public import-path integration test for high-use `enumerative` paths
+   - [x] method-by-method enumerative classification table
+   - [x] one public import-path integration test for `gf2`
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior
@@ -320,4 +324,4 @@ The highest-impact immediate code cleanup has been completed:
 
 Next recommended code change:
 
-> Take special care auditing `enumerative`, which is broad, frequently used, and currently the next high-impact feature domain.
+> Continue `enumerative` with deeper per-operation parity matrices, then move to GF(2), probabilistic, holographic, or default core/network validation.

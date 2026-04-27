@@ -89,7 +89,7 @@
 //! | `dual` | Narrow GPU-backed dual-number v1 surface; broader gradient/training scaffolding private |
 //! | `probabilistic` | GPU-accelerated probability sampling |
 //! | `automata` | GPU-backed automata rule/energy kernels with documented CPU neighborhood fallback |
-//! | `enumerative` | GPU-accelerated combinatorics |
+//! | `enumerative` | Broad GPU-backed enumerative kernels; high-use surface with representative baseline tests |
 //! | `functional` | Mixed GPU-backed functional analysis and documented CPU spectral/fallback paths |
 //! | `topology` | Mixed GPU-backed topology and documented CPU Rips/Betti fallback paths |
 //! | `gf2` | GPU-accelerated GF(2) algebra (binary Clifford products, matrix ops, Hamming distance) |
@@ -209,6 +209,19 @@ use bytemuck::{Pod, Zeroable};
 pub use calculus::GpuCalculus;
 #[cfg(feature = "dual")]
 pub use dual::{DualGpuError, DualGpuOps, DualGpuResult, DualOperation, GpuDualNumber};
+#[cfg(feature = "enumerative")]
+pub use enumerative::{
+    EnumerativeGpuConfig, EnumerativeGpuContext, EnumerativeGpuError, EnumerativeGpuOps,
+    EnumerativeGpuResult, GpuCSMData, GpuGromovWittenData, GpuIntersectionData,
+    GpuLittlewoodRichardsonData, GpuLocalizationData, GpuMatroidRankData, GpuMultiIntersectData,
+    GpuNamespaceData, GpuOperadData, GpuSchubertClass, GpuStabilityData, GpuTropicalSchubertData,
+    GpuWDVVData,
+};
+#[cfg(all(feature = "enumerative", feature = "gf2"))]
+pub use enumerative::{
+    GpuFiniteFieldPointData, GpuKLPolynomialData, GpuRepresentabilityData,
+    GpuWeightDistributionData,
+};
 #[cfg(feature = "functional")]
 pub use functional::{
     AdaptiveFunctionalCompute, GpuFunctionalError, GpuFunctionalResult, GpuHilbertSpace,
@@ -220,7 +233,8 @@ pub use fusion::{
 };
 #[cfg(feature = "gf2")]
 pub use gf2::{
-    GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair, GpuGF2MatVecData,
+    GF2GpuContext, GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair,
+    GpuGF2MatVecData,
 };
 #[cfg(feature = "holographic")]
 pub use holographic::{
@@ -251,6 +265,10 @@ pub use shaders::{
     ShaderLibrary, DUAL_SHADERS, FUSION_SHADERS, TOPOLOGY_SHADERS, TROPICAL_SHADERS,
 };
 use thiserror::Error;
+
+#[cfg(test)]
+#[allow(dead_code)]
+pub(crate) static GPU_TEST_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 pub use timeline::{
     BottleneckAnalysis, DeviceUtilizationStats, GpuTimelineAnalyzer, MultiGpuPerformanceMonitor,
     OptimizationRecommendation, PerformanceAnalysisReport, PerformanceBottleneck,
