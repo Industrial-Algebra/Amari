@@ -97,7 +97,7 @@ Status:
 - [x] Restore narrow `dual` public v1 surface, hide redesign-pending scaffolding, and add public import-path tests
 - [x] Audit `automata` public surface, document CPU neighborhood fallback, and add public import-path tests
 - [x] Start special-care `enumerative` audit: fix representative shader validation issues, stabilize local GPU test execution, add high-use public import-path tests, and create method-by-method classification table
-- [x] Start `gf2` audit: document fixed-layout bounds, add validation, add crate-root context re-export, and add public import-path tests
+- [x] Start `gf2` audit: document fixed-layout bounds, add validation, add crate-root context re-export, add public import-path tests, and add CPU parity/property tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -137,6 +137,7 @@ Priority domains:
 - [x] dual public import-path coverage for unary forward-AD v1 surface
 - [x] enumerative representative public import-path coverage for WDVV, intersection, localization, matroid, CSM, operad, and stability paths
 - [x] gf2 representative public import-path coverage for Clifford product, matvec, Hamming distance, empty batches, and invalid fixed-layout inputs
+- [x] gf2 CPU parity/property coverage for `amari-core::gf2` Clifford products, degenerate-generator behavior, associativity, distributivity, matvec parity/linearity, and Hamming final-word masking
 - [x] automata public import-path coverage for rule application, energy, evolution, and neighborhood fallback
 - [x] measure public import-path coverage for core paths/fallbacks
 - [ ] calculus gradient/divergence/curl public baseline coverage

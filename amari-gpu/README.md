@@ -627,7 +627,9 @@ See `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` for the method-by-met
 ### GF(2) GPU Operations *(fixed-layout GPU-backed surface)*
 
 The `gf2` feature exposes batch binary Clifford products, GF(2) matrix-vector multiplication,
-and Hamming distance kernels. The public API validates fixed-layout bounds before dispatch:
+and Hamming distance kernels. The public API validates fixed-layout bounds before dispatch,
+and representative tests compare these kernels against `amari-core::gf2` CPU baselines and
+GF(2) algebraic properties.
 
 | Operation | Current 0.20.0 behavior |
 |-----------|--------------------------|

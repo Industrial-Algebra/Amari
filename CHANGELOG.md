@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added representative public enumerative API tests covering crate-root imports, WDVV counts, intersection numbers, localization Euler classes, matroid ranks, CSM Euler characteristics, operad multiplicities, and stability phases/checks.
 - Added method-by-method enumerative GPU classification table at `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md`.
 - Added representative public GF(2) GPU API tests covering crate-root imports, Clifford products, matrix-vector multiplication, Hamming distance, empty batches, and invalid fixed-layout inputs.
+- Added GF(2) CPU parity/property tests against `amari-core::gf2` for Clifford products, degenerate-generator behavior, associativity, distributivity, matrix-vector multiplication, Hamming distance masking, and matvec linearity.
 
 #### Changed
 

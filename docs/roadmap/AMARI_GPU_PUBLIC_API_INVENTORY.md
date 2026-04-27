@@ -51,7 +51,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `enumerative` | `amari-enumerative` | `pub mod enumerative`, crate-root re-exports for high-use types | Broad high-use GPU-backed surface; representative public tests added; method classification in `AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` |
 | `functional` | `amari-functional` | `pub mod functional`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
 | `topology` | `amari-topology` | `pub mod topology`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
-| `gf2` | `amari-core/gf2` | `pub mod gf2`, crate-root re-exports | GPU-backed fixed-layout surface; public test/validation pass started, hardware report pending |
+| `gf2` | `amari-core/gf2` | `pub mod gf2`, crate-root re-exports | GPU-backed fixed-layout surface; public tests plus CPU parity/property tests added, hardware report pending |
 | `webgpu` | `wgpu/webgpu` | backend feature | Backend capability only |
 | `high-precision` | core/relativistic feature | feature-gated precision | Needs check: GPU kernels mostly f32/f64-oriented |
 
@@ -82,7 +82,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 |---------|------------|----------------|
 | `calculus` | `GpuCalculus` | CPU fallback / GPU-ready scaffolding; scalar/vector public tests added |
 | `functional` | `AdaptiveFunctionalCompute`, `GpuHilbertSpace`, `GpuMatrixOperator`, `GpuSpectralDecomposition`, error/result types | Mixed GPU + documented CPU fallback; public import-path test added |
-| `gf2` | `GF2GpuOps`, `GF2GpuContext`, GF2 data/error/result types | GPU-backed with fixed-layout validation; public import-path test added |
+| `gf2` | `GF2GpuOps`, `GF2GpuContext`, GF2 data/error/result types | GPU-backed with fixed-layout validation; public import-path and CPU parity/property tests added |
 | `fusion` | `FusionGpuError`, `FusionGpuResult`, `GpuHolographicTDC`, `GpuResonatorOutput`, `HolographicGpuOps` | Reduced v1 surface enforced by private module + crate-root re-exports |
 | `holographic` | `GpuHolographic`, `GpuHolographicMemory`, `GpuOpticalField`, error/result types | GPU-backed/adaptive; validate broader CPU correctness |
 | `measure` | `GpuIntegrator`, `GpuMonteCarloIntegrator`, `GpuMultidimIntegrator`, `GpuParametricDensity`, `GpuTropicalMeasure` | Mixed GPU + documented CPU fallback; public import-path test added |
@@ -276,7 +276,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `enumerative` | feature very broad public module + high-use crate-root re-exports | broad GPU-backed; representative tests added | deeper per-operation parity/hardware validation remains high priority |
 | `automata` | feature public module + crate-root re-exports | mixed GPU/fallback documented | implement neighborhood-aware GPU evolution later; hardware validate rule/energy paths |
 | `probabilistic` | feature public module | GPU-backed | validate statistical correctness/tolerances |
-| `gf2` | feature public module + crate-root re-exports | GPU-backed fixed-layout kernels | public import-path test added; exact CPU parity/hardware validation still pending |
+| `gf2` | feature public module + crate-root re-exports | GPU-backed fixed-layout kernels | CPU parity/property tests added for core kernels; hardware validation still pending |
 | infra modules | public default | infrastructure | keep, document simulation/profiling caveats |
 
 ---
@@ -305,6 +305,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] one representative public import-path integration test for high-use `enumerative` paths
    - [x] method-by-method enumerative classification table
    - [x] one public import-path integration test for `gf2`
+   - [x] GF(2) CPU parity/property integration test for Clifford, matvec, and Hamming kernels
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior
