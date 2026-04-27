@@ -28,10 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added public topology API tests covering crate-root imports, adaptive distance/Morse paths, direct GPU distance/Morse when available, Rips filtration fallback, Betti fallback, and invalid input handling.
 - Added public dual API tests covering crate-root imports, POD conversion, GPU unary forward-AD, empty inputs, and unsupported binary operation errors.
 - Added public automata API tests covering crate-root imports, GPU rule application, GPU energy calculation, batch evolution, CPU neighborhood fallback, and invalid input handling.
+- Added public network API tests covering crate-root imports, adaptive CPU geometric-distance fallback, direct GPU distance/centrality/clustering paths when available, and unsupported-embedding validation.
 - Added representative public enumerative API tests covering crate-root imports, WDVV counts, intersection numbers, localization Euler classes, matroid ranks, CSM Euler characteristics, operad multiplicities, and stability phases/checks.
 - Added method-by-method enumerative GPU classification table at `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md`.
 - Added representative public GF(2) GPU API tests covering crate-root imports, Clifford products, matrix-vector multiplication, Hamming distance, empty batches, and invalid fixed-layout inputs.
 - Added GF(2) CPU parity/property tests against `amari-core::gf2` for Clifford products, degenerate-generator behavior, associativity, distributivity, matrix-vector multiplication, Hamming distance masking, and matvec linearity.
+- Added public probabilistic API tests covering crate-root imports, parameter validation, CPU fallback statistics, GPU mean/variance parity, and deterministic zero-variance GPU Gaussian sampling.
 
 #### Changed
 
@@ -63,6 +65,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documented and validated GF(2) GPU fixed-layout bounds: Clifford `num_generators <= 7`, matvec `nrows <= 16`/`ncols <= 32`, and Hamming `dim <= 128`.
 - Fixed GF(2) Hamming distance to mask unused bits in the final word according to `dim`.
 - Re-exported `GF2GpuContext` at the `amari_gpu` crate root.
+- Documented `probabilistic` as GPU-backed sampling/statistics kernels with CPU fallback for small batches after GPU context creation.
+- Documented `network` as a narrow GPU-distance path for vector-only `Cl(P,0,0)` embeddings with `P <= 3`, with CPU fallback for adaptive unsupported/small cases.
+- Added probabilistic validation for zero dimensions, invalid distribution dimensions, non-finite values, negative standard deviations, empty sample batches, and one-sample variance.
+- Fixed the probabilistic Gaussian sampling shader to guard trailing workgroup lanes before storage-buffer access.
+- Fixed network GPU distance dispatch to use 8×8 workgroup tiling correctly.
+- Fixed adaptive network pairwise distance fallback to return geometric distances instead of graph shortest-path edge distances.
+- Added network validation for unsupported signatures, non-vector multivector coefficients, non-finite positions, and zero clustering iterations.
+- Replaced placeholder network clustering cohesion with a distance-derived cohesion score.
+- Resolved the Cargo warning in `amari-relativistic` by switching its `amari-core` dependency to a direct dependency where `default-features = false` is honored.
 - Documented `enumerative` as a broad high-use GPU-backed surface with representative tests and remaining deeper mathematical parity work.
 
 ## [0.17.0] - 2026-01-11

@@ -98,6 +98,8 @@ Status:
 - [x] Audit `automata` public surface, document CPU neighborhood fallback, and add public import-path tests
 - [x] Start special-care `enumerative` audit: fix representative shader validation issues, stabilize local GPU test execution, add high-use public import-path tests, and create method-by-method classification table
 - [x] Start `gf2` audit: document fixed-layout bounds, add validation, add crate-root context re-export, add public import-path tests, and add CPU parity/property tests
+- [x] Start `probabilistic` audit: document sampling/statistics semantics, add input validation, guard trailing GPU sample lanes, and add public import-path/parity tests
+- [x] Start `network` audit: document narrow GPU-distance semantics, fix GPU dispatch tiling, correct adaptive CPU fallback semantics, add validation, and add public import-path/baseline tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -127,11 +129,11 @@ Priority domains:
 - [ ] core geometric algebra
 - [ ] info geometry
 - [ ] relativistic
-- [ ] network
+- [x] network representative public import-path/baseline coverage for adaptive geometric distances, GPU distances/centrality/clustering when available, and unsupported embeddings
 - [ ] holographic
 - [ ] fusion restored subset
 - [ ] tropical restored subset
-- [ ] probabilistic
+- [x] probabilistic representative public import-path/parity coverage for validation, CPU fallback stats, GPU mean/variance, and deterministic zero-variance sampling
 - [x] topology public import-path coverage for distance/Morse/Rips/Betti/fallback paths
 - [x] functional public import-path coverage for matrix/Hilbert/spectral/fallback paths
 - [x] dual public import-path coverage for unary forward-AD v1 surface
@@ -189,8 +191,8 @@ Candidate expansion areas:
 - [ ] dual binary/broadcast operations and broader gradient/training kernels
 - [ ] optimization-like GPU workflows if source crate/API surface supports them
 - [ ] explicit info-geometry module boundary if public API clarity improves
-- [ ] probabilistic/statistical kernels
-- [ ] topology and graph/network kernels with baseline tests
+- [x] probabilistic/statistical kernels representative parity; broader statistical distribution/hardware validation pending
+- [x] topology and graph/network representative baseline tests; broader graph/network expansion and hardware validation pending
 
 ---
 

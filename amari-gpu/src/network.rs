@@ -1,7 +1,13 @@
 //! GPU-accelerated geometric network analysis
 //!
-//! This module provides GPU acceleration for network analysis operations
-//! including distance calculations, centrality measures, and clustering.
+//! This module provides GPU acceleration for network analysis operations.
+//!
+//! The current GPU path is intentionally narrow and honest: it accelerates
+//! pairwise Euclidean distances for vector-only `Cl(P,0,0)` embeddings with
+//! `P <= 3`. Centrality and clustering reuse those GPU distances but complete
+//! their reductions/medoid updates on the CPU. Adaptive dispatch falls back to
+//! the `amari-network` CPU geometric-distance baseline for unsupported
+//! signatures, non-vector multivectors, or small networks.
 
 use crate::GpuError;
 use amari_network::{Community, GeometricNetwork};
@@ -20,6 +26,12 @@ pub enum GpuNetworkError {
 
     #[error("Invalid network size: {0}")]
     InvalidSize(usize),
+
+    #[error("Unsupported GPU embedding: {0}")]
+    UnsupportedEmbedding(String),
+
+    #[error("Invalid position: {0}")]
+    InvalidPosition(String),
 
     #[error("Buffer error: {0}")]
     BufferError(String),
@@ -97,7 +109,11 @@ impl GpuGeometricNetwork {
         })
     }
 
-    /// Compute all pairwise distances using GPU acceleration
+    /// Compute all pairwise Euclidean distances using GPU acceleration.
+    ///
+    /// This GPU path supports vector-only `Cl(P,0,0)` embeddings with `P <= 3`.
+    /// Use [`AdaptiveNetworkCompute`] for automatic CPU fallback on unsupported
+    /// signatures or non-vector multivectors.
     pub async fn compute_all_pairwise_distances<const P: usize, const Q: usize, const R: usize>(
         &self,
         network: &GeometricNetwork<P, Q, R>,
@@ -106,6 +122,7 @@ impl GpuGeometricNetwork {
         if num_nodes == 0 {
             return Ok(Vec::new());
         }
+        self.validate_gpu_distance_network(network)?;
 
         // Convert node positions to GPU format
         let gpu_positions: Vec<GpuNodePosition> = (0..num_nodes)
@@ -175,7 +192,7 @@ impl GpuGeometricNetwork {
             });
             compute_pass.set_pipeline(&self.distance_pipeline);
             compute_pass.set_bind_group(0, &bind_group, &[]);
-            let workgroup_count = num_nodes.div_ceil(64);
+            let workgroup_count = num_nodes.div_ceil(8);
             compute_pass.dispatch_workgroups(workgroup_count as u32, workgroup_count as u32, 1);
         }
 
@@ -216,7 +233,7 @@ impl GpuGeometricNetwork {
         Ok(distances)
     }
 
-    /// Compute geometric centrality using GPU acceleration
+    /// Compute geometric centrality using GPU distances plus CPU reduction.
     pub async fn compute_geometric_centrality<const P: usize, const Q: usize, const R: usize>(
         &self,
         network: &GeometricNetwork<P, Q, R>,
@@ -241,7 +258,10 @@ impl GpuGeometricNetwork {
         Ok(centrality)
     }
 
-    /// GPU-accelerated k-means clustering for community detection
+    /// GPU-distance-assisted k-medoids clustering for community detection.
+    ///
+    /// Pairwise distances are computed by the GPU path; assignment, medoid
+    /// updates, and cohesion scoring are CPU-side for 0.20.0.
     pub async fn geometric_clustering<const P: usize, const Q: usize, const R: usize>(
         &self,
         network: &GeometricNetwork<P, Q, R>,
@@ -251,6 +271,9 @@ impl GpuGeometricNetwork {
         let num_nodes = network.num_nodes();
         if k > num_nodes || k == 0 {
             return Err(GpuNetworkError::InvalidSize(k));
+        }
+        if max_iterations == 0 {
+            return Err(GpuNetworkError::InvalidSize(max_iterations));
         }
 
         // For simplicity, use CPU-based k-means with GPU distance calculations
@@ -334,10 +357,11 @@ impl GpuGeometricNetwork {
 
             if !nodes.is_empty() {
                 let centroid_pos = network.get_node(centroid).unwrap().clone();
+                let cohesion_score = Self::compute_cluster_cohesion(&nodes, &distances);
                 communities.push(Community {
                     nodes,
                     geometric_centroid: centroid_pos,
-                    cohesion_score: 1.0, // Placeholder - would calculate actual cohesion
+                    cohesion_score,
                 });
             }
         }
@@ -345,13 +369,73 @@ impl GpuGeometricNetwork {
         Ok(communities)
     }
 
-    /// Determine if GPU acceleration should be used based on network size
+    /// Determine if GPU acceleration should be used based on network size.
     pub fn should_use_gpu(num_nodes: usize) -> bool {
         // GPU is beneficial for networks with many nodes
         num_nodes >= 100
     }
 
+    /// Return whether this signature can use the current GPU distance kernel.
+    pub fn supports_gpu_distance<const P: usize, const Q: usize, const R: usize>() -> bool {
+        Q == 0 && R == 0 && P <= 3
+    }
+
     // Private helper methods
+
+    fn validate_gpu_distance_network<const P: usize, const Q: usize, const R: usize>(
+        &self,
+        network: &GeometricNetwork<P, Q, R>,
+    ) -> GpuNetworkResult<()> {
+        if !Self::supports_gpu_distance::<P, Q, R>() {
+            return Err(GpuNetworkError::UnsupportedEmbedding(format!(
+                "GPU network distance supports vector-only Cl(P,0,0) with P <= 3; got Cl({P},{Q},{R})"
+            )));
+        }
+
+        for node_idx in 0..network.num_nodes() {
+            let node = network.get_node(node_idx).ok_or_else(|| {
+                GpuNetworkError::InvalidPosition(format!("node {node_idx} is missing"))
+            })?;
+            for (coeff_idx, &coeff) in node.as_slice().iter().enumerate() {
+                if !coeff.is_finite() {
+                    return Err(GpuNetworkError::InvalidPosition(format!(
+                        "node {node_idx} coefficient {coeff_idx} is not finite"
+                    )));
+                }
+                let is_vector_component = coeff_idx.is_power_of_two()
+                    && coeff_idx > 0
+                    && coeff_idx.trailing_zeros() < P as u32;
+                if !is_vector_component && coeff.abs() > 1e-12 {
+                    return Err(GpuNetworkError::UnsupportedEmbedding(format!(
+                        "node {node_idx} has non-vector coefficient at blade {coeff_idx}"
+                    )));
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn compute_cluster_cohesion(nodes: &[usize], distances: &[Vec<f64>]) -> f64 {
+        if nodes.len() <= 1 {
+            return 1.0;
+        }
+
+        let mut total = 0.0;
+        let mut count = 0usize;
+        for (idx, &a) in nodes.iter().enumerate() {
+            for &b in nodes.iter().skip(idx + 1) {
+                total += distances[a][b];
+                count += 1;
+            }
+        }
+
+        if count == 0 {
+            1.0
+        } else {
+            1.0 / (1.0 + total / count as f64)
+        }
+    }
 
     fn create_distance_pipeline(device: &wgpu::Device) -> Result<wgpu::ComputePipeline, GpuError> {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
@@ -434,6 +518,21 @@ pub struct AdaptiveNetworkCompute {
 }
 
 impl AdaptiveNetworkCompute {
+    fn compute_pairwise_geometric_distances_cpu<const P: usize, const Q: usize, const R: usize>(
+        network: &GeometricNetwork<P, Q, R>,
+    ) -> GpuNetworkResult<Vec<Vec<f64>>> {
+        let num_nodes = network.num_nodes();
+        let mut distances = vec![vec![0.0; num_nodes]; num_nodes];
+
+        for (i, row) in distances.iter_mut().enumerate() {
+            for (j, distance) in row.iter_mut().enumerate() {
+                *distance = network.geometric_distance(i, j)?;
+            }
+        }
+
+        Ok(distances)
+    }
+
     /// Create with optional GPU acceleration
     pub async fn new() -> Self {
         // Use panic-safe GPU detection like in adaptive verification
@@ -457,15 +556,18 @@ impl AdaptiveNetworkCompute {
         let num_nodes = network.num_nodes();
 
         if let Some(gpu) = &self.gpu {
-            if GpuGeometricNetwork::should_use_gpu(num_nodes) {
-                return gpu.compute_all_pairwise_distances(network).await;
+            if GpuGeometricNetwork::should_use_gpu(num_nodes)
+                && GpuGeometricNetwork::supports_gpu_distance::<P, Q, R>()
+            {
+                if let Ok(distances) = gpu.compute_all_pairwise_distances(network).await {
+                    return Ok(distances);
+                }
             }
         }
 
-        // CPU fallback
-        network
-            .compute_all_pairs_shortest_paths()
-            .map_err(GpuNetworkError::Network)
+        // CPU geometric-distance fallback. Do not use graph shortest paths here:
+        // this API returns geometric distances between embedded node positions.
+        Self::compute_pairwise_geometric_distances_cpu(network)
     }
 
     /// Compute centrality with adaptive dispatch
@@ -476,8 +578,12 @@ impl AdaptiveNetworkCompute {
         let num_nodes = network.num_nodes();
 
         if let Some(gpu) = &self.gpu {
-            if GpuGeometricNetwork::should_use_gpu(num_nodes) {
-                return gpu.compute_geometric_centrality(network).await;
+            if GpuGeometricNetwork::should_use_gpu(num_nodes)
+                && GpuGeometricNetwork::supports_gpu_distance::<P, Q, R>()
+            {
+                if let Ok(centrality) = gpu.compute_geometric_centrality(network).await {
+                    return Ok(centrality);
+                }
             }
         }
 

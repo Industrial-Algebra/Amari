@@ -46,7 +46,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `fusion` | `amari-fusion` | private module plus reduced crate-root re-exports | Narrow v1 exposure restored; broader internals private/redesign-pending |
 | `tropical` | `amari-tropical` | private module + narrow crate-root re-exports | Good v1 shape; real kernels restored and tested |
 | `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Strong surface; some CPU-for-correctness/future placeholder notes remain |
-| `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed statistical kernels; needs hardware/crossover validation |
+| `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed sampling/statistics with validation and public tests; hardware/crossover validation pending |
 | `automata` | `amari-automata` | `pub mod automata`, crate-root re-exports | Mixed GPU-backed + documented CPU neighborhood fallback; public tests added |
 | `enumerative` | `amari-enumerative` | `pub mod enumerative`, crate-root re-exports for high-use types | Broad high-use GPU-backed surface; representative public tests added; method classification in `AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` |
 | `functional` | `amari-functional` | `pub mod functional`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
@@ -68,7 +68,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | core GA | `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuError`, `GpuDeviceInfo`, `GpuFisherMatrix` | GPU-backed/adaptive; needs current CPU-baseline matrix |
 | info geometry | `GpuInfoGeometry` and related methods from `lib.rs` | GPU/fallback mixed; lacks explicit `info_geom` module boundary |
 | multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; needs hardware validation on multi-device setups |
-| network | `GpuGeometricNetwork`, `AdaptiveNetworkCompute`, `GpuNetworkError`, `GpuNetworkResult` | GPU-backed distances; some centrality/clustering reuse distance/CPU logic |
+| network | `GpuGeometricNetwork`, `AdaptiveNetworkCompute`, `GpuNetworkError`, `GpuNetworkResult` | Narrow GPU-backed 3D vector distances; centrality/clustering use GPU distances plus CPU reductions; public tests added |
 | performance | `GpuProfiler`, `AdaptiveDispatchPolicy`, `WorkgroupOptimizer`, profile/report types | Infrastructure; some profiling capabilities depend on adapter support |
 | relativistic | `GpuRelativisticPhysics`, `GpuRelativisticParticle`, `GpuSpacetimeVector`, `GpuTrajectoryParams` | GPU-backed Minkowski/trajectory paths; needs baseline validation |
 | shaders | `ShaderLibrary`, shader collections | Infrastructure/source exposure |
@@ -86,7 +86,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `fusion` | `FusionGpuError`, `FusionGpuResult`, `GpuHolographicTDC`, `GpuResonatorOutput`, `HolographicGpuOps` | Reduced v1 surface enforced by private module + crate-root re-exports |
 | `holographic` | `GpuHolographic`, `GpuHolographicMemory`, `GpuOpticalField`, error/result types | GPU-backed/adaptive; validate broader CPU correctness |
 | `measure` | `GpuIntegrator`, `GpuMonteCarloIntegrator`, `GpuMultidimIntegrator`, `GpuParametricDensity`, `GpuTropicalMeasure` | Mixed GPU + documented CPU fallback; public import-path test added |
-| `probabilistic` | `GpuProbabilistic`, error/result types | GPU-backed; validate |
+| `probabilistic` | `GpuProbabilistic`, error/result types | GPU-backed sampling/statistics plus small-batch CPU fallback; public import-path/parity test added |
 | `tropical` | `TropicalExecutionPath`, `TropicalGpuError`, `TropicalGpuOps`, `TropicalGpuResult` | Narrow v1 public surface; good API honesty state |
 | `topology` | `AdaptiveTopologyCompute`, `GpuCriticalPoint`, `GpuTopology`, error/result types | Mixed GPU + documented CPU fallback; public import-path test added |
 | `dual` | `DualGpuOps`, `DualOperation`, `GpuDualNumber`, `DualGpuError`, `DualGpuResult` | Narrow GPU-backed unary forward-AD v1 surface; public import-path test added |
@@ -248,7 +248,7 @@ Remaining examples found by marker scan:
 - `topology::build_rips_filtration` uses CPU implementation with optional GPU distance matrix, now documented/tested
 - `topology::compute_betti_numbers` falls back to CPU, now documented/tested
 - `automata::AutomataGpuOps::extract_neighborhoods` uses CPU Moore-neighborhood baseline, now documented/tested
-- `network` centrality/clustering reuses GPU distance or CPU logic
+- `network` centrality/clustering reuses GPU distance plus CPU reductions/medoid updates
 - `holographic::batch_unbind` uses CPU for correctness
 
 First-pass classification: **mixed GPU/fallback**.
@@ -263,7 +263,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 |-----------------|----------------------|-----------------------------------|---------------|
 | core GA in `lib.rs` | public default | GPU-backed/adaptive | add/verify CPU baseline tests and hardware validation |
 | info geometry in `lib.rs` | public default | GPU-backed/fallback mixed | consider explicit module boundary; validate tensor/fisher/divergence |
-| `network` | public default | GPU-backed distances, mixed higher ops | validate and document centrality/clustering fallback behavior |
+| `network` | public default | narrow GPU-backed distances, mixed higher ops | public import-path/baseline test added; hardware validation pending |
 | `relativistic` | public default | GPU-backed | validate Minkowski/trajectory CPU parity |
 | `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | validate all public ops; document CPU unbind path if retained |
 | `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
@@ -275,7 +275,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `dual` | feature private module + crate-root v1 re-exports | narrow unary forward-AD surface documented/tested | design binary/broadcast ops and broader gradient/training APIs later |
 | `enumerative` | feature very broad public module + high-use crate-root re-exports | broad GPU-backed; representative tests added | deeper per-operation parity/hardware validation remains high priority |
 | `automata` | feature public module + crate-root re-exports | mixed GPU/fallback documented | implement neighborhood-aware GPU evolution later; hardware validate rule/energy paths |
-| `probabilistic` | feature public module | GPU-backed | validate statistical correctness/tolerances |
+| `probabilistic` | feature public module + crate-root re-exports | GPU-backed sampling/statistics with validation | public import-path/parity test added; broader statistical/hardware validation pending |
 | `gf2` | feature public module + crate-root re-exports | GPU-backed fixed-layout kernels | CPU parity/property tests added for core kernels; hardware validation still pending |
 | infra modules | public default | infrastructure | keep, document simulation/profiling caveats |
 
@@ -306,6 +306,8 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] method-by-method enumerative classification table
    - [x] one public import-path integration test for `gf2`
    - [x] GF(2) CPU parity/property integration test for Clifford, matvec, and Hamming kernels
+   - [x] one public import-path/parity integration test for `probabilistic`
+   - [x] one public import-path/baseline integration test for `network`
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior

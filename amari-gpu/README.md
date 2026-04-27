@@ -31,7 +31,7 @@ Integration Crates (consume APIs):
 | **amari-core** | `core` | Geometric algebra operations (G2, G3, G4), multivector products | ✅ Implemented |
 | **amari-info-geom** | `info_geom` | Fisher metric, divergence computations, statistical manifolds | ✅ Implemented |
 | **amari-relativistic** | `relativistic` | Minkowski space operations, Lorentz transformations | ✅ Implemented |
-| **amari-network** | `network` | Graph operations, spectral methods | ✅ Implemented |
+| **amari-network** | `network` | Narrow GPU vector-distance path with mixed centrality/clustering | ⚠️ GPU-backed for vector-only `Cl(P,0,0)`, `P <= 3` |
 | **amari-measure** | `measure` | 1D integration, Monte Carlo, Gaussian densities, tropical/multidim scaffolding | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `measure`) |
 | **amari-calculus** | `calculus` | Field evaluation, gradients, divergence, curl | ⚠️ GPU-ready CPU-semantic fallback (feature: `calculus`) |
 | **amari-dual** | `dual` | Narrow GPU-backed unary forward-AD v1 surface | ⚠️ Narrow v1 restored; broader gradients/training private/redesign-pending (feature: `dual`) |
@@ -660,24 +660,67 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-### Probabilistic GPU Acceleration
+### Network GPU Operations *(narrow GPU distances + adaptive CPU fallback)*
+
+The default network API exposes crate-root `GpuGeometricNetwork` and `AdaptiveNetworkCompute`.
+The current GPU kernel computes pairwise Euclidean distances for vector-only `Cl(P,0,0)` embeddings
+with `P <= 3`. Geometric centrality and clustering reuse those GPU distances but perform their
+reductions/medoid updates on the CPU. Adaptive dispatch falls back to `amari-network` CPU geometric
+baselines for small networks, unsupported signatures, or non-vector multivectors.
 
 ```rust
-use amari_gpu::probabilistic::GpuProbabilistic;
+use amari_core::Vector;
+use amari_gpu::AdaptiveNetworkCompute;
+use amari_network::GeometricNetwork;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize GPU probabilistic operations
-    let gpu_prob = GpuProbabilistic::new().await?;
+    let mut network = GeometricNetwork::<3, 0, 0>::new();
+    let a = network.add_node(Vector::from_components(0.0, 0.0, 0.0).mv);
+    let b = network.add_node(Vector::from_components(3.0, 4.0, 0.0).mv);
+    network.add_undirected_edge(a, b, 1.0)?;
 
-    // Batch sample 10,000 Gaussians on GPU
-    let samples = gpu_prob.batch_sample_gaussian(10000, 0.0, 1.0).await?;
-    println!("Generated {} samples", samples.len());
+    let adaptive = AdaptiveNetworkCompute::new().await;
+    let distances = adaptive.compute_all_pairwise_distances(&network).await?;
+    assert_eq!(distances[a][b], 5.0); // geometric distance, not edge shortest path
 
-    // Compute batch statistics
+    let centrality = adaptive.compute_geometric_centrality(&network).await?;
+    assert_eq!(centrality.len(), network.num_nodes());
+
+    Ok(())
+}
+```
+
+| Operation | Current 0.20.0 behavior |
+|-----------|--------------------------|
+| `GpuGeometricNetwork::compute_all_pairwise_distances()` | GPU Euclidean distances for vector-only `Cl(P,0,0)`, `P <= 3`; rejects unsupported embeddings |
+| `GpuGeometricNetwork::compute_geometric_centrality()` | GPU distance matrix plus CPU centrality reduction |
+| `GpuGeometricNetwork::geometric_clustering()` | GPU distance matrix plus CPU k-medoid assignment/update and distance-derived cohesion |
+| `AdaptiveNetworkCompute::*` | Uses GPU only for supported large networks; otherwise CPU geometric-distance baselines |
+
+### Probabilistic GPU Operations *(GPU-backed sampling/statistics + small-batch CPU fallback)*
+
+The `probabilistic` feature exposes crate-root `GpuProbabilistic` APIs for vector-valued Gaussian
+sampling and batch statistics. A GPU context is still required; after initialization, small batches
+currently use CPU fallback while larger batches dispatch WGSL kernels.
+
+```rust
+use amari_gpu::GpuProbabilistic;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Dimension of each sample vector / multivector coefficient array.
+    let gpu_prob = GpuProbabilistic::new(3).await?;
+
+    // Batch sample 10,000 Gaussian vectors on GPU.
+    let samples = gpu_prob
+        .batch_sample_gaussian(10_000, &[0.0, 1.0, 2.0], &[1.0, 0.5, 2.0])
+        .await?;
+    assert_eq!(samples.len(), 10_000 * 3);
+
+    // Compute coefficient-wise statistics.
     let mean = gpu_prob.batch_mean(&samples).await?;
-    let variance = gpu_prob.batch_variance(&samples).await?;
-    println!("Sample mean: {:.4}, variance: {:.4}", mean, variance);
+    let variance = gpu_prob.batch_variance(&samples, &mean).await?;
 
     Ok(())
 }
@@ -685,11 +728,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #### Probabilistic GPU Operations
 
-| Operation | Description | GPU Threshold |
-|-----------|-------------|---------------|
-| `batch_sample_gaussian()` | Parallel Box-Muller Gaussian sampling | ≥ 1000 samples |
-| `batch_mean()` | Parallel reduction for mean | ≥ 1000 elements |
-| `batch_variance()` | Two-pass parallel variance | ≥ 1000 elements |
+| Operation | Current 0.20.0 behavior | Validation / fallback |
+|-----------|--------------------------|-----------------------|
+| `GpuProbabilistic::new(dimension)` | creates GPU pipelines for fixed sample dimension | rejects `dimension == 0` |
+| `batch_sample_gaussian()` | GPU Box-Muller sampling for `num_samples >= 100`; CPU fallback below that | validates mean/std-dev lengths, finite means, finite non-negative std-devs |
+| `batch_mean()` | GPU coefficient-wise sum/readback for `num_samples >= 100`; CPU fallback below that | rejects empty, non-finite, or mis-shaped sample buffers |
+| `batch_variance()` | GPU coefficient-wise squared-difference/readback with Bessel correction for `num_samples >= 100`; CPU fallback below that | rejects empty, one-sample, non-finite, mis-shaped, or bad mean buffers |
 
 ### Adaptive CPU/GPU Dispatch
 
@@ -721,8 +765,8 @@ let values = gpu_calculus.batch_eval_scalar_field(&field, &large_points).await?;
 | Optical field bind | < 4096 pixels | ≥ 4096 pixels (64×64) |
 | Optical similarity | < 4096 pixels | ≥ 4096 pixels |
 | Lee hologram encoding | < 4096 pixels | ≥ 4096 pixels |
-| Gaussian sampling | < 1000 samples | ≥ 1000 samples |
-| Batch mean/variance | < 1000 elements | ≥ 1000 elements |
+| Gaussian sampling | < 100 samples | ≥ 100 samples |
+| Batch mean/variance | < 100 samples | ≥ 100 samples |
 | Measure built-in 1D integration | GPU evaluation | CPU readback reduction |
 | Measure precomputed values | CPU reduction fallback | GPU reduction pending |
 | Measure Gaussian density | N/A | GPU batch evaluation |
@@ -759,24 +803,25 @@ let values = gpu_calculus.batch_eval_scalar_field(&field, &large_points).await?;
 - Uses `BinaryHologram` for bit-packed hologram output
 - Uses `LeeEncoderConfig` for carrier wave parameters
 
-### Probabilistic Module (v0.13.0)
+### Probabilistic Module (v0.20.0)
 
-**GPU Implementations** (✅ Complete):
-- Batch Gaussian sampling on multivector spaces
-- Parallel mean and variance computation
-- Monte Carlo integration acceleration
-- GPU-based random number generation with Box-Muller transform
+**GPU-backed implementations**:
+- Batch Gaussian sampling on coefficient vectors using Box-Muller transform
+- Coefficient-wise batch mean computation
+- Coefficient-wise batch variance computation with Bessel correction
+
+**CPU fallback paths**:
+- Sampling/statistics batches with fewer than 100 samples use CPU fallback after GPU context creation.
 
 **Types**:
-- `GpuHolographicTDC`: GPU-compatible TropicalDualClifford representation
-- `GpuResonatorOutput`: Cleanup result with best match info
-- `HolographicGpuOps`: Main GPU operations struct
+- `GpuProbabilistic`: GPU context for probabilistic sampling/statistics
+- `GpuProbabilisticError` / `GpuProbabilisticResult`: error/result types
 
-**Shaders**:
-- `HOLOGRAPHIC_BATCH_BIND`: 64-thread workgroups for binding
-- `HOLOGRAPHIC_BATCH_SIMILARITY`: 256-thread workgroups for similarity
-- `HOLOGRAPHIC_BUNDLE_ALL`: Workgroup-shared memory reduction
-- `HOLOGRAPHIC_RESONATOR_STEP`: 256-thread parallel max-finding
+**Current validation**:
+- rejects zero dimensions
+- validates sample-buffer shape and finite values
+- validates finite means and non-negative finite standard deviations
+- rejects variance requests with fewer than two samples
 
 ### Calculus Module (v0.13.0)
 
