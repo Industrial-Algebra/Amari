@@ -70,7 +70,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; needs hardware validation on multi-device setups |
 | network | `GpuGeometricNetwork`, `AdaptiveNetworkCompute`, `GpuNetworkError`, `GpuNetworkResult` | Narrow GPU-backed 3D vector distances; centrality/clustering use GPU distances plus CPU reductions; public tests added |
 | performance | `GpuProfiler`, `AdaptiveDispatchPolicy`, `WorkgroupOptimizer`, profile/report types | Infrastructure; some profiling capabilities depend on adapter support |
-| relativistic | `GpuRelativisticPhysics`, `GpuRelativisticParticle`, `GpuSpacetimeVector`, `GpuTrajectoryParams` | GPU-backed Minkowski/trajectory paths; needs baseline validation |
+| relativistic | `GpuRelativisticPhysics`, `GpuRelativisticParticle`, `GpuSpacetimeVector`, `GpuTrajectoryParams` | GPU-backed Minkowski norm-squared and simplified geodesic propagation; public tests added |
 | shaders | `ShaderLibrary`, shader collections | Infrastructure/source exposure |
 | timeline | timeline/performance monitor/report types | Infrastructure |
 | unified | `GpuContext`, `SharedGpuContext`, `GpuDispatcher`, buffer-pool/result/param types | Infrastructure; central consolidation target |
@@ -264,7 +264,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | core GA in `lib.rs` | public default | GPU-backed/adaptive | add/verify CPU baseline tests and hardware validation |
 | info geometry in `lib.rs` | public default | GPU-backed/fallback mixed | consider explicit module boundary; validate tensor/fisher/divergence |
 | `network` | public default | narrow GPU-backed distances, mixed higher ops | public import-path/baseline test added; hardware validation pending |
-| `relativistic` | public default | GPU-backed | validate Minkowski/trajectory CPU parity |
+| `relativistic` | public default | GPU-backed Minkowski/simplified geodesic kernels | public import-path/baseline test added; hardware validation pending |
 | `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | validate all public ops; document CPU unbind path if retained |
 | `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
 | `tropical` | feature narrow crate-root API | real restored v1 kernels | hardware validate and benchmark further |
@@ -308,6 +308,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] GF(2) CPU parity/property integration test for Clifford, matvec, and Hamming kernels
    - [x] one public import-path/parity integration test for `probabilistic`
    - [x] one public import-path/baseline integration test for `network`
+   - [x] one public import-path/baseline integration test for `relativistic`
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior

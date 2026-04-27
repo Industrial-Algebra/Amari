@@ -30,7 +30,7 @@ Integration Crates (consume APIs):
 |-------------|--------|------------|--------|
 | **amari-core** | `core` | Geometric algebra operations (G2, G3, G4), multivector products | ✅ Implemented |
 | **amari-info-geom** | `info_geom` | Fisher metric, divergence computations, statistical manifolds | ✅ Implemented |
-| **amari-relativistic** | `relativistic` | Minkowski space operations, Lorentz transformations | ✅ Implemented |
+| **amari-relativistic** | `relativistic` | Minkowski norm-squared and simplified geodesic propagation | ⚠️ GPU-backed narrow v1 |
 | **amari-network** | `network` | Narrow GPU vector-distance path with mixed centrality/clustering | ⚠️ GPU-backed for vector-only `Cl(P,0,0)`, `P <= 3` |
 | **amari-measure** | `measure` | 1D integration, Monte Carlo, Gaussian densities, tropical/multidim scaffolding | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `measure`) |
 | **amari-calculus** | `calculus` | Field evaluation, gradients, divergence, curl | ⚠️ GPU-ready CPU-semantic fallback (feature: `calculus`) |
@@ -659,6 +659,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+### Relativistic GPU Operations *(Minkowski products + simplified geodesic propagation)*
+
+The default relativistic API exposes crate-root `GpuRelativisticPhysics`, `GpuSpacetimeVector`,
+`GpuRelativisticParticle`, and `GpuTrajectoryParams`. `GpuSpacetimeVector` stores coordinates as
+`(ct, x, y, z)` and `compute_minkowski_products()` returns `ct² - x² - y² - z²`. Particle
+propagation uses a simplified Schwarzschild-style GPU geodesic step and validates trajectory and
+particle fields before dispatch.
+
+```rust
+use amari_gpu::{GpuRelativisticPhysics, GpuSpacetimeVector};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let gpu = GpuRelativisticPhysics::new().await?;
+    let norms = gpu.compute_minkowski_products(&[
+        GpuSpacetimeVector::new(2.0, 1.0, 0.5, 0.25),
+    ]).await?;
+    assert!((norms[0] - (4.0 - 1.0 - 0.25 - 0.0625)).abs() < 1e-5);
+    Ok(())
+}
+```
+
+| Operation | Current 0.20.0 behavior |
+|-----------|--------------------------|
+| `GpuSpacetimeVector::{from,to}_spacetime_vector()` | preserves `[ct, x, y, z]` CPU coordinates |
+| `compute_minkowski_products()` | GPU-backed Minkowski norm-squared for finite spacetime vectors; empty input returns empty |
+| `propagate_particles()` | simplified GPU geodesic step; zero steps return input unchanged; validates finite/non-negative fields and trajectory parameters |
 
 ### Network GPU Operations *(narrow GPU distances + adaptive CPU fallback)*
 

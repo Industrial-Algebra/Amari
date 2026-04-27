@@ -100,6 +100,7 @@ Status:
 - [x] Start `gf2` audit: document fixed-layout bounds, add validation, add crate-root context re-export, add public import-path tests, and add CPU parity/property tests
 - [x] Start `probabilistic` audit: document sampling/statistics semantics, add input validation, guard trailing GPU sample lanes, and add public import-path/parity tests
 - [x] Start `network` audit: document narrow GPU-distance semantics, fix GPU dispatch tiling, correct adaptive CPU fallback semantics, add validation, and add public import-path/baseline tests
+- [x] Start `relativistic` audit: document `(ct,x,y,z)` semantics, fix CPU conversion/layout issues, add validation, and add public import-path/baseline tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -128,7 +129,7 @@ Priority domains:
 
 - [ ] core geometric algebra
 - [ ] info geometry
-- [ ] relativistic
+- [x] relativistic representative public import-path/baseline coverage for conversion, Minkowski products, validation, zero-step identity, and one-step propagation
 - [x] network representative public import-path/baseline coverage for adaptive geometric distances, GPU distances/centrality/clustering when available, and unsupported embeddings
 - [ ] holographic
 - [ ] fusion restored subset
