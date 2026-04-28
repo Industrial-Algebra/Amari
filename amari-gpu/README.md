@@ -43,6 +43,18 @@ Integration Crates (consume APIs):
 | **amari-functional** | `functional` | GPU matrix batch ops, Hilbert batches, CPU spectral/fallback paths | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `functional`) |
 | **amari-topology** | `topology` | GPU distance/Morse kernels, CPU Rips/Betti fallback paths | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `topology`) |
 
+### Current Hardware Validation
+
+A focused GB10 validation pass has been completed on DGX Spark / NVIDIA GB10 with driver `580.142` and CUDA `13.0`.
+See `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md` for the command table and results.
+
+Current status:
+
+- Focused public API tests passed for default/core/info-geometry, network, relativistic, holographic, tropical, fusion, calculus, measure, functional, topology, dual, automata, probabilistic, GF(2), enumerative, and infra APIs.
+- `cargo +stable test -p amari-gpu --all-features --quiet -- --test-threads=1` passed on GB10.
+- Benchmark/crossover measurements are still pending and should be reported separately.
+- RTX 5080 validation is still pending.
+
 ### Temporarily Disabled Modules
 
 | Domain Crate | Module | Status | Reason |

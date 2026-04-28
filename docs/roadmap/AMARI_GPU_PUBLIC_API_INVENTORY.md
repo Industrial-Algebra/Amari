@@ -46,12 +46,12 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `fusion` | `amari-fusion` | private module plus reduced crate-root re-exports | Narrow v1 exposure restored; broader internals private/redesign-pending |
 | `tropical` | `amari-tropical` | private module + narrow crate-root re-exports | Good v1 shape; real kernels restored and tested |
 | `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Validated ProductCl3x32 v1 + optical field surface; CPU correctness paths documented |
-| `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed sampling/statistics with validation and public tests; hardware/crossover validation pending |
+| `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed sampling/statistics with validation and public tests; GB10 validation passed; crossover validation pending |
 | `automata` | `amari-automata` | `pub mod automata`, crate-root re-exports | Mixed GPU-backed + documented CPU neighborhood fallback; public tests added |
 | `enumerative` | `amari-enumerative` | `pub mod enumerative`, crate-root re-exports for high-use types | Broad high-use GPU-backed surface; representative public tests added; method classification in `AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` |
 | `functional` | `amari-functional` | `pub mod functional`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
 | `topology` | `amari-topology` | `pub mod topology`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
-| `gf2` | `amari-core/gf2` | `pub mod gf2`, crate-root re-exports | GPU-backed fixed-layout surface; public tests plus CPU parity/property tests added, hardware report pending |
+| `gf2` | `amari-core/gf2` | `pub mod gf2`, crate-root re-exports | GPU-backed fixed-layout surface; public tests plus CPU parity/property tests added; GB10 validation passed |
 | `webgpu` | `wgpu/webgpu` | backend feature | Backend capability only |
 | `high-precision` | core/relativistic feature | feature-gated precision | Needs check: GPU kernels mostly f32/f64-oriented |
 
@@ -64,10 +64,10 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | Area | Crate-root exports | Classification |
 |------|--------------------|----------------|
 | adaptive verification | `AdaptiveVerifier`, `AdaptiveVerification*`, `CpuFeatures`, `GpuBackend`, `Platform*`, `WasmEnvironment` | Infrastructure/adaptive; public tests added for CPU fallback, platform capability traits, and batch validation |
-| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths and needs hardware reports |
+| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths; GB10 correctness validation passed, benchmark reports pending |
 | core GA | `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuError`, `GpuDeviceInfo`, `GpuFisherMatrix` | GPU-backed batch geometric products + legacy Cl(3,0,0) adaptive helper; public tests added |
 | info geometry | `GpuInfoGeometry` and related methods from `lib.rs` | GPU-ready CPU baselines for Amari-Chentsov/Fisher/KL-style divergence; public tests added |
-| multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; needs hardware validation on multi-device setups |
+| multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; single-GB10 public validation passed; multi-device validation still pending |
 | network | `GpuGeometricNetwork`, `AdaptiveNetworkCompute`, `GpuNetworkError`, `GpuNetworkResult` | Narrow GPU-backed 3D vector distances; centrality/clustering use GPU distances plus CPU reductions; public tests added |
 | performance | `GpuProfiler`, `AdaptiveDispatchPolicy`, `WorkgroupOptimizer`, profile/report types | Infrastructure; public tests added for optimizer defaults/calibration and dispatch policy learning; profiler hardware behavior pending |
 | relativistic | `GpuRelativisticPhysics`, `GpuRelativisticParticle`, `GpuSpacetimeVector`, `GpuTrajectoryParams` | GPU-backed Minkowski norm-squared and simplified geodesic propagation; public tests added |
@@ -261,24 +261,24 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 | Domain / module | Current public state | First-pass release classification | 0.20.0 action |
 |-----------------|----------------------|-----------------------------------|---------------|
-| core GA in `lib.rs` | public default | GPU-backed/adaptive | add/verify CPU baseline tests and hardware validation |
+| core GA in `lib.rs` | public default | GPU-backed/adaptive | public baseline tests and GB10 validation passed |
 | info geometry in `lib.rs` | public default | GPU-backed/fallback mixed | consider explicit module boundary; validate tensor/fisher/divergence |
-| `network` | public default | narrow GPU-backed distances, mixed higher ops | public import-path/baseline test added; hardware validation pending |
-| `relativistic` | public default | GPU-backed Minkowski/simplified geodesic kernels | public import-path/baseline test added; hardware validation pending |
-| `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | public import-path/baseline tests added; hardware validation pending |
-| default core GA | crate-root structs | GPU-backed + adaptive CPU fallback | public import-path/baseline tests added; hardware validation pending |
+| `network` | public default | narrow GPU-backed distances, mixed higher ops | public import-path/baseline test added; GB10 validation passed |
+| `relativistic` | public default | GPU-backed Minkowski/simplified geodesic kernels | public import-path/baseline test added; GB10 validation passed |
+| `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | public import-path/baseline tests added; GB10 validation passed |
+| default core GA | crate-root structs | GPU-backed + adaptive CPU fallback | public import-path/baseline tests added; GB10 validation passed |
 | info geometry | crate-root `GpuInfoGeometry` | GPU-ready CPU-baseline path | public import-path/baseline tests added; shader parity restoration pending |
-| `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
-| `tropical` | feature narrow crate-root API | real restored v1 kernels | hardware validate and benchmark further |
+| `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | GB10 public validation passed; heavy ignored tests still need policy decision |
+| `tropical` | feature narrow crate-root API | real restored v1 kernels | GB10 validation passed; benchmark further |
 | `calculus` | feature public module | CPU fallback / GPU-ready scaffolding | add gradient/divergence/curl public baseline tests; implement kernels later |
-| `measure` | feature public module | mixed GPU/fallback documented | implement reduction/multidim kernels later; hardware validate existing GPU paths |
-| `functional` | feature public module | mixed GPU/fallback documented | implement shared-context GPU matrix multiply / eigensolver later; hardware validate existing GPU paths |
-| `topology` | feature public module | mixed GPU/fallback documented | implement persistent-homology kernels later; hardware validate distance/Morse paths |
+| `measure` | feature public module | mixed GPU/fallback documented | GB10 validation passed; implement reduction/multidim kernels later |
+| `functional` | feature public module | mixed GPU/fallback documented | GB10 validation passed; implement shared-context GPU matrix multiply / eigensolver later |
+| `topology` | feature public module | mixed GPU/fallback documented | GB10 validation passed; implement persistent-homology kernels later |
 | `dual` | feature private module + crate-root v1 re-exports | narrow unary forward-AD surface documented/tested | design binary/broadcast ops and broader gradient/training APIs later |
-| `enumerative` | feature very broad public module + high-use crate-root re-exports | broad GPU-backed; representative tests added | deeper per-operation parity/hardware validation remains high priority |
-| `automata` | feature public module + crate-root re-exports | mixed GPU/fallback documented | implement neighborhood-aware GPU evolution later; hardware validate rule/energy paths |
-| `probabilistic` | feature public module + crate-root re-exports | GPU-backed sampling/statistics with validation | public import-path/parity test added; broader statistical/hardware validation pending |
-| `gf2` | feature public module + crate-root re-exports | GPU-backed fixed-layout kernels | CPU parity/property tests added for core kernels; hardware validation still pending |
+| `enumerative` | feature very broad public module + high-use crate-root re-exports | broad GPU-backed; representative tests added | GB10 validation passed; deeper per-operation parity remains high priority |
+| `automata` | feature public module + crate-root re-exports | mixed GPU/fallback documented | GB10 validation passed; implement neighborhood-aware GPU evolution later |
+| `probabilistic` | feature public module + crate-root re-exports | GPU-backed sampling/statistics with validation | public import-path/parity test added; GB10 validation passed; broader statistical validation pending |
+| `gf2` | feature public module + crate-root re-exports | GPU-backed fixed-layout kernels | CPU parity/property tests added for core kernels; GB10 validation passed |
 | infra modules | public default | infrastructure | public import-path/baseline tests added; keep documenting simulation/profiling caveats and hardware-dependent behavior |
 
 ---
@@ -288,7 +288,8 @@ This is not necessarily bad, but it must be documented and tested honestly.
 1. **Validate restored fusion public subset**
    - [x] make `fusion` private with narrow crate-root re-exports
    - [x] add/verify public import-path tests for reduced fusion surface
-   - [ ] run focused holographic/fusion tests on GB10 and RTX 5080
+   - [x] run focused holographic/fusion tests on GB10
+   - [ ] run focused holographic/fusion tests on RTX 5080
 
 2. **Audit calculus public methods**
    - [x] identify which methods are real GPU-backed vs CPU fallback vs placeholder
@@ -320,7 +321,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [ ] README table should distinguish GPU-backed, adaptive, CPU fallback, and infrastructure across all domains
 
 5. **Hardware validation template**
-   - [ ] GB10 result table
+   - [x] GB10 result table: `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md`
    - [ ] RTX 5080 result table
 
 ---

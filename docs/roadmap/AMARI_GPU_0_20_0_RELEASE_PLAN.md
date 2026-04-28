@@ -154,17 +154,17 @@ Priority domains:
 
 Target devices:
 
-- [ ] GB10
+- [x] GB10 — DGX Spark / NVIDIA GB10 validation passed; see `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md`
 - [ ] RTX 5080
 
 For each domain:
 
-- [ ] record adapter/backend
-- [ ] run focused correctness tests
-- [ ] run public integration tests
+- [x] record adapter/backend for GB10
+- [x] run focused correctness tests on GB10
+- [x] run public integration tests on GB10
 - [ ] run benchmark harnesses where available
-- [ ] record pass/fail/skip/timeout
-- [ ] record tolerances and backend-specific caveats
+- [x] record pass/fail/skip/timeout for GB10
+- [x] record tolerances and backend-specific caveats for GB10
 
 ## Tier 4 — Benchmark and crossover reporting
 
@@ -209,7 +209,7 @@ Candidate expansion areas:
 - [ ] README and crate docs match actual public surface
 - [ ] restored fusion/tropical APIs are honest and tested
 - [ ] every public high-priority GPU operation has CPU-baseline correctness tests or is explicitly documented as infrastructure/fallback-only
-- [ ] GB10 validation report exists
+- [x] GB10 validation report exists
 - [ ] RTX 5080 validation report exists
 - [ ] benchmark/crossover notes exist for major kernels
 - [ ] placeholder or redesign-pending APIs are not accidentally public
