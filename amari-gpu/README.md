@@ -45,15 +45,19 @@ Integration Crates (consume APIs):
 
 ### Current Hardware Validation
 
-A focused GB10 validation pass has been completed on DGX Spark / NVIDIA GB10 with driver `580.142` and CUDA `13.0`.
-See `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md` for the command table and results.
+Focused hardware validation has completed on both DGX Spark / NVIDIA GB10 and NVIDIA GeForce RTX 5080 Laptop GPU.
+See:
+
+- `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md`
+- `docs/roadmap/AMARI_GPU_RTX5080_HARDWARE_VALIDATION.md`
 
 Current status:
 
 - Focused public API tests passed for default/core/info-geometry, network, relativistic, holographic, tropical, fusion, calculus, measure, functional, topology, dual, automata, probabilistic, GF(2), enumerative, and infra APIs.
 - `cargo +stable test -p amari-gpu --all-features --quiet -- --test-threads=1` passed on GB10.
+- `WGPU_BACKEND=vulkan cargo +stable test -p amari-gpu --all-features --quiet -- --test-threads=1` passed on RTX 5080.
+- RTX 5080 validation should use `WGPU_BACKEND=vulkan` and serial aggregate execution on the current Ubuntu 25.10 laptop stack.
 - Benchmark/crossover measurements are still pending and should be reported separately.
-- RTX 5080 validation is still pending.
 
 ### Temporarily Disabled Modules
 
