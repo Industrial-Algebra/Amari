@@ -183,6 +183,9 @@ impl AdaptiveVerifier {
         a_batch: &[VerifiedMultivector<P, Q, R>],
         b_batch: &[VerifiedMultivector<P, Q, R>],
     ) -> Result<Vec<VerifiedMultivector<P, Q, R>>, AdaptiveVerificationError> {
+        if a_batch.len() != b_batch.len() {
+            return Err(AdaptiveVerificationError::NoSuitableStrategy);
+        }
         if a_batch.is_empty() {
             return Ok(Vec::new());
         }

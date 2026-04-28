@@ -63,17 +63,17 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 
 | Area | Crate-root exports | Classification |
 |------|--------------------|----------------|
-| adaptive verification | `AdaptiveVerifier`, `AdaptiveVerification*`, `CpuFeatures`, `GpuBackend`, `Platform*`, `WasmEnvironment` | Infrastructure/adaptive; tests exist, hardware behavior needs validation |
-| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths |
+| adaptive verification | `AdaptiveVerifier`, `AdaptiveVerification*`, `CpuFeatures`, `GpuBackend`, `Platform*`, `WasmEnvironment` | Infrastructure/adaptive; public tests added for CPU fallback, platform capability traits, and batch validation |
+| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths and needs hardware reports |
 | core GA | `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuError`, `GpuDeviceInfo`, `GpuFisherMatrix` | GPU-backed batch geometric products + legacy Cl(3,0,0) adaptive helper; public tests added |
 | info geometry | `GpuInfoGeometry` and related methods from `lib.rs` | GPU-ready CPU baselines for Amari-Chentsov/Fisher/KL-style divergence; public tests added |
 | multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; needs hardware validation on multi-device setups |
 | network | `GpuGeometricNetwork`, `AdaptiveNetworkCompute`, `GpuNetworkError`, `GpuNetworkResult` | Narrow GPU-backed 3D vector distances; centrality/clustering use GPU distances plus CPU reductions; public tests added |
-| performance | `GpuProfiler`, `AdaptiveDispatchPolicy`, `WorkgroupOptimizer`, profile/report types | Infrastructure; some profiling capabilities depend on adapter support |
+| performance | `GpuProfiler`, `AdaptiveDispatchPolicy`, `WorkgroupOptimizer`, profile/report types | Infrastructure; public tests added for optimizer defaults/calibration and dispatch policy learning; profiler hardware behavior pending |
 | relativistic | `GpuRelativisticPhysics`, `GpuRelativisticParticle`, `GpuSpacetimeVector`, `GpuTrajectoryParams` | GPU-backed Minkowski norm-squared and simplified geodesic propagation; public tests added |
 | shaders | `ShaderLibrary`, shader collections | Infrastructure/source exposure |
-| timeline | timeline/performance monitor/report types | Infrastructure |
-| unified | `GpuContext`, `SharedGpuContext`, `GpuDispatcher`, buffer-pool/result/param types | Infrastructure; central consolidation target |
+| timeline | timeline/performance monitor/report types | Infrastructure; public tests added for event accounting, bounded history, zero-window analysis, and timestamp safety |
+| unified | `GpuContext`, `SharedGpuContext`, `GpuDispatcher`, buffer-pool/result/param types | Infrastructure; public tests added for operation params and CPU fallback dispatch; central consolidation target |
 | verification | `GpuBoundaryVerifier`, `StatisticalGpuVerifier`, `RelativisticVerifier`, `VerifiedMultivector`, config/strategy/error types | Validation infrastructure; important for 0.20.0 |
 
 ### Feature-gated crate-root re-exports
@@ -279,7 +279,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `automata` | feature public module + crate-root re-exports | mixed GPU/fallback documented | implement neighborhood-aware GPU evolution later; hardware validate rule/energy paths |
 | `probabilistic` | feature public module + crate-root re-exports | GPU-backed sampling/statistics with validation | public import-path/parity test added; broader statistical/hardware validation pending |
 | `gf2` | feature public module + crate-root re-exports | GPU-backed fixed-layout kernels | CPU parity/property tests added for core kernels; hardware validation still pending |
-| infra modules | public default | infrastructure | keep, document simulation/profiling caveats |
+| infra modules | public default | infrastructure | public import-path/baseline tests added; keep documenting simulation/profiling caveats and hardware-dependent behavior |
 
 ---
 
@@ -313,6 +313,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] one public import-path/baseline integration test for `relativistic`
    - [x] one public import-path/baseline integration test for `holographic`
    - [x] one public import-path/baseline integration test for default/core GA + info geometry
+   - [x] one public import-path/baseline integration test for infra/adaptive/performance/timeline APIs
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior

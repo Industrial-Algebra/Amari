@@ -295,6 +295,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 | `GpuInfoGeometry::bregman_divergence_batch()` | CPU KL-style Bregman divergence with shape/finite/non-negative validation |
 | `GpuInfoGeometry::memory_usage()` | returns `0`; portable `wgpu` does not expose allocator usage |
 
+### Infrastructure / Adaptive / Performance / Timeline APIs *(orchestration layer)*
+
+The default crate also exposes infrastructure APIs used by higher-level GPU domains.
+These are orchestration, profiling, and dispatch helpers; they are not mathematical
+kernel APIs by themselves.
+
+| Area | Public types | Current 0.20.0 behavior |
+|------|--------------|--------------------------|
+| Adaptive verification | `AdaptiveVerifier`, `VerificationPlatform`, `AdaptiveVerificationLevel`, `PlatformCapabilities` | platform detection with CPU fallback; verified batch operations validate equal lengths |
+| Unified dispatch/context | `GpuContext`, `SharedGpuContext`, `GpuDispatcher`, `GpuOperationParams`, `GpuParam`, buffer-pool stats | common WebGPU context/dispatcher infrastructure with CPU fallback when GPU operations fail or are unavailable |
+| Performance tuning | `WorkgroupOptimizer`, `AdaptiveDispatchPolicy`, `WorkgroupConfig`, `CalibrationResult`, `GpuProfiler` | heuristic workgroup defaults, calibration history, crossover learning; non-finite benchmark values are sanitized |
+| Timeline analysis | `TimelineEvent`, `GpuTimelineAnalyzer`, `MultiGpuPerformanceMonitor`, report/summary types | CPU-timeline-based event recording, utilization/bottleneck heuristics, safe zero-window and timestamp handling |
+| Multi-GPU coordination | `DeviceId`, `GpuDevice`, `Workload`, `IntelligentLoadBalancer`, `WorkloadCoordinator`, synchronization types | workload distribution/coordinator scaffolding for available `wgpu` devices; hardware validation still pending |
+| Benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkRunner`, result/config/summary types | benchmark orchestration/reporting; crossover numbers must be generated per hardware target |
+
 ### Tropical GPU Acceleration *(narrow v1 surface)*
 
 ```rust

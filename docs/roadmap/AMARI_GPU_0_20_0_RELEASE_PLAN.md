@@ -103,6 +103,7 @@ Status:
 - [x] Start `relativistic` audit: document `(ct,x,y,z)` semantics, fix CPU conversion/layout issues, add validation, and add public import-path/baseline tests
 - [x] Start broader `holographic` audit: document ProductCl3x32 v1 semantics, fix Cl3 binding shader parity, pack optical bind outputs under portable WebGPU limits, add validation, and add public import-path/baseline tests
 - [x] Start default/core GA + info-geometry audit: document crate-root v1 semantics, fix signature-specific GA shader basis counts, replace info-geometry placeholders with CPU baselines, add validation, and add public import-path/baseline tests
+- [x] Start broader infra/adaptive/performance/timeline audit: document orchestration semantics, add adaptive batch validation, harden non-finite calibration/timestamp edge cases, and add public import-path/baseline tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -134,6 +135,7 @@ Priority domains:
 - [x] relativistic representative public import-path/baseline coverage for conversion, Minkowski products, validation, zero-step identity, and one-step propagation
 - [x] network representative public import-path/baseline coverage for adaptive geometric distances, GPU distances/centrality/clustering when available, and unsupported embeddings
 - [x] holographic representative public import-path/baseline coverage for ProductCl3x32 binding/similarity/bundling and optical bind/similarity/Lee encoding
+- [x] infra/adaptive/performance/timeline representative public import-path coverage for CPU fallback, platform traits, optimizer calibration, dispatch policy learning, timeline accounting, and unified dispatcher fallback
 - [ ] fusion restored subset
 - [ ] tropical restored subset
 - [x] probabilistic representative public import-path/parity coverage for validation, CPU fallback stats, GPU mean/variance, and deterministic zero-variance sampling
