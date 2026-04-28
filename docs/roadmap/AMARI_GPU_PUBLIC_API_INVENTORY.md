@@ -65,8 +65,8 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 |------|--------------------|----------------|
 | adaptive verification | `AdaptiveVerifier`, `AdaptiveVerification*`, `CpuFeatures`, `GpuBackend`, `Platform*`, `WasmEnvironment` | Infrastructure/adaptive; tests exist, hardware behavior needs validation |
 | benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths |
-| core GA | `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuError`, `GpuDeviceInfo`, `GpuFisherMatrix` | GPU-backed/adaptive; needs current CPU-baseline matrix |
-| info geometry | `GpuInfoGeometry` and related methods from `lib.rs` | GPU/fallback mixed; lacks explicit `info_geom` module boundary |
+| core GA | `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuError`, `GpuDeviceInfo`, `GpuFisherMatrix` | GPU-backed batch geometric products + legacy Cl(3,0,0) adaptive helper; public tests added |
+| info geometry | `GpuInfoGeometry` and related methods from `lib.rs` | GPU-ready CPU baselines for Amari-Chentsov/Fisher/KL-style divergence; public tests added |
 | multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; needs hardware validation on multi-device setups |
 | network | `GpuGeometricNetwork`, `AdaptiveNetworkCompute`, `GpuNetworkError`, `GpuNetworkResult` | Narrow GPU-backed 3D vector distances; centrality/clustering use GPU distances plus CPU reductions; public tests added |
 | performance | `GpuProfiler`, `AdaptiveDispatchPolicy`, `WorkgroupOptimizer`, profile/report types | Infrastructure; some profiling capabilities depend on adapter support |
@@ -266,6 +266,8 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | `network` | public default | narrow GPU-backed distances, mixed higher ops | public import-path/baseline test added; hardware validation pending |
 | `relativistic` | public default | GPU-backed Minkowski/simplified geodesic kernels | public import-path/baseline test added; hardware validation pending |
 | `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | public import-path/baseline tests added; hardware validation pending |
+| default core GA | crate-root structs | GPU-backed + adaptive CPU fallback | public import-path/baseline tests added; hardware validation pending |
+| info geometry | crate-root `GpuInfoGeometry` | GPU-ready CPU-baseline path | public import-path/baseline tests added; shader parity restoration pending |
 | `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
 | `tropical` | feature narrow crate-root API | real restored v1 kernels | hardware validate and benchmark further |
 | `calculus` | feature public module | CPU fallback / GPU-ready scaffolding | add gradient/divergence/curl public baseline tests; implement kernels later |
@@ -310,6 +312,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] one public import-path/baseline integration test for `network`
    - [x] one public import-path/baseline integration test for `relativistic`
    - [x] one public import-path/baseline integration test for `holographic`
+   - [x] one public import-path/baseline integration test for default/core GA + info geometry
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior

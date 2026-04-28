@@ -28,8 +28,8 @@ Integration Crates (consume APIs):
 
 | Domain Crate | Module | Operations | Status |
 |-------------|--------|------------|--------|
-| **amari-core** | `core` | Geometric algebra operations (G2, G3, G4), multivector products | ✅ Implemented |
-| **amari-info-geom** | `info_geom` | Fisher metric, divergence computations, statistical manifolds | ✅ Implemented |
+| **amari-core** | crate root | `GpuCliffordAlgebra` GPU batch geometric products; `AdaptiveCompute` Cl(3,0,0) CPU/GPU helper | ⚠️ GPU-backed core v1 with public baseline tests |
+| **amari-info-geom** | crate root | `GpuInfoGeometry` CPU-baseline Amari-Chentsov, Fisher, and KL/Bregman operations after GPU context creation | ⚠️ GPU-ready CPU-baseline v1 |
 | **amari-relativistic** | `relativistic` | Minkowski norm-squared and simplified geodesic propagation | ⚠️ GPU-backed narrow v1 |
 | **amari-network** | `network` | Narrow GPU vector-distance path with mixed centrality/clustering | ⚠️ GPU-backed for vector-only `Cl(P,0,0)`, `P <= 3` |
 | **amari-measure** | `measure` | 1D integration, Monte Carlo, Gaussian densities, tropical/multidim scaffolding | ⚠️ Mixed GPU-backed + documented CPU fallback (feature: `measure`) |
@@ -255,6 +255,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+### Core Geometric Algebra + Information Geometry *(default crate-root APIs)*
+
+The default API exposes `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuInfoGeometry`,
+`GpuDeviceInfo`, and `GpuFisherMatrix` at the crate root.
+
+```rust
+use amari_core::Multivector;
+use amari_gpu::{AdaptiveCompute, GpuInfoGeometry};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Legacy adaptive Cl(3,0,0) helper: single products use CPU baseline;
+    // flat batches use GPU only above the current crossover and when available.
+    let adaptive = AdaptiveCompute::new::<3, 0, 0>().await;
+    let e1 = Multivector::<3, 0, 0>::basis_vector(0);
+    let e2 = Multivector::<3, 0, 0>::basis_vector(1);
+    let product = adaptive.geometric_product(&e1, &e2).await;
+    assert_eq!(product.to_vec(), e1.geometric_product(&e2).to_vec());
+
+    // Info geometry currently uses validated CPU baselines after WebGPU context creation.
+    let info = GpuInfoGeometry::new().await?;
+    let fisher = info.fisher_information_matrix(&[0.25, 0.5]).await?;
+    assert_eq!(fisher.matrix(), &[vec![4.0, 0.0], vec![0.0, 2.0]]);
+    Ok(())
+}
+```
+
+| Type / operation | Current 0.20.0 behavior |
+|------------------|--------------------------|
+| `GpuCliffordAlgebra::new::<P,Q,R>()` | GPU context with signature-specific basis count and Cayley table |
+| `GpuCliffordAlgebra::batch_geometric_product()` | GPU-backed `f32` batch geometric product for complete finite flat coefficient batches |
+| `AdaptiveCompute::geometric_product()` | CPU `amari-core` baseline for single multivector products |
+| `AdaptiveCompute::batch_geometric_product()` | legacy Cl(3,0,0) flat-batch helper with CPU fallback and GPU above threshold when available |
+| `GpuInfoGeometry::amari_chentsov_tensor{,_batch}` | CPU baseline using `amari-info-geom`; equal-length batch validation |
+| `GpuInfoGeometry::amari_chentsov_tensor_from_typed_arrays()` | finite `[x,y,z]` vector-component flat input validation, then CPU baseline |
+| `GpuInfoGeometry::fisher_information_matrix()` | CPU probability-simplex-style diagonal Fisher metric baseline; finite non-negative inputs |
+| `GpuInfoGeometry::bregman_divergence_batch()` | CPU KL-style Bregman divergence with shape/finite/non-negative validation |
+| `GpuInfoGeometry::memory_usage()` | returns `0`; portable `wgpu` does not expose allocator usage |
 
 ### Tropical GPU Acceleration *(narrow v1 surface)*
 

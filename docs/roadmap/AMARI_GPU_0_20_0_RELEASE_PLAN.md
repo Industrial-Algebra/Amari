@@ -102,6 +102,7 @@ Status:
 - [x] Start `network` audit: document narrow GPU-distance semantics, fix GPU dispatch tiling, correct adaptive CPU fallback semantics, add validation, and add public import-path/baseline tests
 - [x] Start `relativistic` audit: document `(ct,x,y,z)` semantics, fix CPU conversion/layout issues, add validation, and add public import-path/baseline tests
 - [x] Start broader `holographic` audit: document ProductCl3x32 v1 semantics, fix Cl3 binding shader parity, pack optical bind outputs under portable WebGPU limits, add validation, and add public import-path/baseline tests
+- [x] Start default/core GA + info-geometry audit: document crate-root v1 semantics, fix signature-specific GA shader basis counts, replace info-geometry placeholders with CPU baselines, add validation, and add public import-path/baseline tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -128,8 +129,8 @@ For each practical public GPU operation:
 
 Priority domains:
 
-- [ ] core geometric algebra
-- [ ] info geometry
+- [x] core geometric algebra representative public import-path/baseline coverage for adaptive CPU fallback, direct GPU batch products, validation, and signature-specific shader basis counts
+- [x] info geometry representative public import-path/baseline coverage for Amari-Chentsov, typed-array input, Fisher matrices, KL-style divergence, memory usage, and device info
 - [x] relativistic representative public import-path/baseline coverage for conversion, Minkowski products, validation, zero-step identity, and one-step propagation
 - [x] network representative public import-path/baseline coverage for adaptive geometric distances, GPU distances/centrality/clustering when available, and unsupported embeddings
 - [x] holographic representative public import-path/baseline coverage for ProductCl3x32 binding/similarity/bundling and optical bind/similarity/Lee encoding
@@ -192,7 +193,7 @@ Candidate expansion areas:
 - [x] dual unary batched forward-AD kernel v1
 - [ ] dual binary/broadcast operations and broader gradient/training kernels
 - [ ] optimization-like GPU workflows if source crate/API surface supports them
-- [ ] explicit info-geometry module boundary if public API clarity improves
+- [ ] explicit info-geometry module boundary if public API clarity improves (deferred; crate-root v1 documented/tested)
 - [x] probabilistic/statistical kernels representative parity; broader statistical distribution/hardware validation pending
 - [x] topology and graph/network representative baseline tests; broader graph/network expansion and hardware validation pending
 

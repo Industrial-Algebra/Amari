@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added public network API tests covering crate-root imports, adaptive CPU geometric-distance fallback, direct GPU distance/centrality/clustering paths when available, and unsupported-embedding validation.
 - Added public relativistic API tests covering crate-root imports, spacetime coordinate conversion, GPU Minkowski products, propagation input validation, zero-step identity behavior, and one-step simplified geodesic propagation.
 - Added public holographic API tests covering crate-root imports, ProductCl3x32 dimension validation, GPU Cl3 binding parity, similarity, CPU-backed bundling, optical field binding/similarity/Lee encoding, and optical dimension validation.
+- Added public default/core GA + information-geometry API tests covering `AdaptiveCompute`, direct `GpuCliffordAlgebra` GPU paths, signature-specific shader basis counts, `GpuInfoGeometry` CPU baselines, Fisher matrices, KL-style Bregman divergence validation, and device-info accessors.
 - Added representative public enumerative API tests covering crate-root imports, WDVV counts, intersection numbers, localization Euler classes, matroid ranks, CSM Euler characteristics, operad multiplicities, and stability phases/checks.
 - Added method-by-method enumerative GPU classification table at `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md`.
 - Added representative public GF(2) GPU API tests covering crate-root imports, Clifford products, matrix-vector multiplication, Hamming distance, empty batches, and invalid fixed-layout inputs.
@@ -71,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documented `network` as a narrow GPU-distance path for vector-only `Cl(P,0,0)` embeddings with `P <= 3`, with CPU fallback for adaptive unsupported/small cases.
 - Documented `relativistic` as GPU-backed Minkowski norm-squared and simplified geodesic propagation over `(ct, x, y, z)` coordinates.
 - Documented `holographic` as a validated ProductCl3x32 v1 surface with GPU-backed binding/similarity plus CPU correctness paths for unbinding, bundling, and memory storage.
+- Documented default/core GA and information-geometry crate-root APIs as GPU-backed batch geometric products plus GPU-ready CPU-baseline information-geometry operations.
 - Added probabilistic validation for zero dimensions, invalid distribution dimensions, non-finite values, negative standard deviations, empty sample batches, and one-sample variance.
 - Fixed the probabilistic Gaussian sampling shader to guard trailing workgroup lanes before storage-buffer access.
 - Fixed network GPU distance dispatch to use 8×8 workgroup tiling correctly.
@@ -83,6 +85,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the holographic Cl3 binding WGSL kernel to use the same ProductCl3x32 basis/sign convention as `amari-holographic` instead of the earlier simplified XOR/sign placeholder.
 - Fixed holographic similarity WGSL trailing-lane bounds handling.
 - Fixed optical field pipeline creation on portable WebGPU limits by packing bind outputs into one storage buffer instead of requiring nine storage-buffer bindings.
+- Fixed `GpuCliffordAlgebra` shader generation to use the signature-specific basis count instead of a hard-coded 8-basis Cl(3,0,0) shader.
+- Added core GA flat-batch validation for equal lengths, complete multivector records, finite coefficients, and empty batches.
+- Changed `GpuInfoGeometry::memory_usage()` to return `0` honestly because portable `wgpu` does not expose allocator usage, replacing the previous fabricated 1 MiB placeholder.
+- Changed `GpuInfoGeometry::fisher_information_matrix()` from placeholder identity output to a validated probability-simplex-style diagonal Fisher baseline.
+- Added information-geometry validation for batch length mismatches, malformed typed-array inputs, non-finite/negative values, and invalid KL-style divergence pairs.
 - Added optical field validation for nonzero context dimensions, matching field/config dimensions, and finite field components.
 - Added relativistic input validation for empty batches, non-finite spacetime vectors, invalid trajectory parameters, and invalid particle fields.
 - Resolved the Cargo warning in `amari-relativistic` by switching its `amari-core` dependency to a direct dependency where `default-features = false` is honored.
