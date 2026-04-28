@@ -57,7 +57,7 @@ Current status:
 - `cargo +stable test -p amari-gpu --all-features --quiet -- --test-threads=1` passed on GB10.
 - `WGPU_BACKEND=vulkan cargo +stable test -p amari-gpu --all-features --quiet -- --test-threads=1` passed on RTX 5080.
 - RTX 5080 validation should use `WGPU_BACKEND=vulkan` and serial aggregate execution on the current Ubuntu 25.10 laptop stack.
-- Benchmark/crossover measurements are still pending and should be reported separately.
+- Initial benchmark/crossover measurements for core GA and tropical matmul are recorded in `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`; broader per-kernel benchmarks remain pending.
 
 ### Temporarily Disabled Modules
 

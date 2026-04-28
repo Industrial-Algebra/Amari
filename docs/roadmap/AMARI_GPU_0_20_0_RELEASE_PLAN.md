@@ -168,15 +168,20 @@ For each domain:
 
 ## Tier 4 — Benchmark and crossover reporting
 
-- [ ] keep manual benchmark harnesses for restored kernels
-- [ ] add benchmark harnesses for high-value public operations
-- [ ] record CPU vs GPU crossover points
-- [ ] identify kernels that should default to CPU for small sizes
-- [ ] document when GPU acceleration is expected to help
+- [x] keep manual benchmark harnesses for restored kernels
+- [ ] add benchmark harnesses for all high-value public operations
+- [x] record initial CPU vs GPU crossover points for core GA and tropical matmul
+- [x] identify initial kernels that should default to CPU for small sizes
+- [x] document initial guidance for when GPU acceleration is expected to help
 
-Existing benchmark seed:
+Current benchmark report:
 
-- tropical dense matrix multiply shows local crossover around `64x64x64` for the current naive kernel
+- `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`
+
+Initial GB10 crossover snapshots:
+
+- core GA Cl(3,0,0) batch geometric product crosses over around batch size `64`
+- tropical dense matrix multiply crosses over between `32x32x32` and `64x64x64`; GPU is clearly useful at `64x64x64`
 
 ## Tier 5 — Coverage expansion
 
@@ -211,7 +216,7 @@ Candidate expansion areas:
 - [ ] every public high-priority GPU operation has CPU-baseline correctness tests or is explicitly documented as infrastructure/fallback-only
 - [x] GB10 validation report exists
 - [x] RTX 5080 validation report exists
-- [ ] benchmark/crossover notes exist for major kernels
+- [x] initial benchmark/crossover notes exist for core GA and tropical matmul; broader major-kernel benchmark expansion remains pending
 - [ ] placeholder or redesign-pending APIs are not accidentally public
 - [ ] `cargo +stable test -p amari-gpu --quiet` passes
 - [ ] feature-focused checks/tests pass for restored surfaces

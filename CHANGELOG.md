@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added public infrastructure/adaptive/performance/timeline API tests covering adaptive verification CPU fallback, platform capability traits, workgroup optimizer calibration, adaptive dispatch policy learning, timeline analysis, and unified dispatcher CPU fallback.
 - Added GB10 hardware validation report at `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md` covering focused public API tests plus serial `--all-features` validation on DGX Spark / NVIDIA GB10.
 - Added RTX 5080 hardware validation report at `docs/roadmap/AMARI_GPU_RTX5080_HARDWARE_VALIDATION.md`; validation passed with `WGPU_BACKEND=vulkan` after making verification overhead diagnostic-only.
+- Added initial benchmark/crossover report at `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md` with GB10 snapshots for core GA batch geometric product and tropical dense max-plus matrix multiplication.
+- Added ignored manual benchmark harness `amari-gpu/tests/core_ga_benchmark_crossover.rs` for CPU-vs-GPU Cl(3,0,0) batch geometric-product crossover work.
 - Added representative public enumerative API tests covering crate-root imports, WDVV counts, intersection numbers, localization Euler classes, matroid ranks, CSM Euler characteristics, operad multiplicities, and stability phases/checks.
 - Added method-by-method enumerative GPU classification table at `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md`.
 - Added representative public GF(2) GPU API tests covering crate-root imports, Clifford products, matrix-vector multiplication, Hamming distance, empty batches, and invalid fixed-layout inputs.
