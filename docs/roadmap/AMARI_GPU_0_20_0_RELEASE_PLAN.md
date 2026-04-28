@@ -101,6 +101,7 @@ Status:
 - [x] Start `probabilistic` audit: document sampling/statistics semantics, add input validation, guard trailing GPU sample lanes, and add public import-path/parity tests
 - [x] Start `network` audit: document narrow GPU-distance semantics, fix GPU dispatch tiling, correct adaptive CPU fallback semantics, add validation, and add public import-path/baseline tests
 - [x] Start `relativistic` audit: document `(ct,x,y,z)` semantics, fix CPU conversion/layout issues, add validation, and add public import-path/baseline tests
+- [x] Start broader `holographic` audit: document ProductCl3x32 v1 semantics, fix Cl3 binding shader parity, pack optical bind outputs under portable WebGPU limits, add validation, and add public import-path/baseline tests
 - [x] Restore narrow tropical public v1 surface
 - [x] Keep full `amari_gpu::tropical` module private while re-exporting only v1 API
 - [x] Quarantine redesign-pending tropical trait scaffolding internally
@@ -131,7 +132,7 @@ Priority domains:
 - [ ] info geometry
 - [x] relativistic representative public import-path/baseline coverage for conversion, Minkowski products, validation, zero-step identity, and one-step propagation
 - [x] network representative public import-path/baseline coverage for adaptive geometric distances, GPU distances/centrality/clustering when available, and unsupported embeddings
-- [ ] holographic
+- [x] holographic representative public import-path/baseline coverage for ProductCl3x32 binding/similarity/bundling and optical bind/similarity/Lee encoding
 - [ ] fusion restored subset
 - [ ] tropical restored subset
 - [x] probabilistic representative public import-path/parity coverage for validation, CPU fallback stats, GPU mean/variance, and deterministic zero-variance sampling

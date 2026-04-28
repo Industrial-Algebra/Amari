@@ -45,7 +45,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `dual` | `amari-dual` | private module + narrow crate-root re-exports | Narrow GPU-backed unary forward-AD v1 surface restored; broader scaffolding private |
 | `fusion` | `amari-fusion` | private module plus reduced crate-root re-exports | Narrow v1 exposure restored; broader internals private/redesign-pending |
 | `tropical` | `amari-tropical` | private module + narrow crate-root re-exports | Good v1 shape; real kernels restored and tested |
-| `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Strong surface; some CPU-for-correctness/future placeholder notes remain |
+| `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Validated ProductCl3x32 v1 + optical field surface; CPU correctness paths documented |
 | `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed sampling/statistics with validation and public tests; hardware/crossover validation pending |
 | `automata` | `amari-automata` | `pub mod automata`, crate-root re-exports | Mixed GPU-backed + documented CPU neighborhood fallback; public tests added |
 | `enumerative` | `amari-enumerative` | `pub mod enumerative`, crate-root re-exports for high-use types | Broad high-use GPU-backed surface; representative public tests added; method classification in `AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` |
@@ -84,7 +84,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `functional` | `AdaptiveFunctionalCompute`, `GpuHilbertSpace`, `GpuMatrixOperator`, `GpuSpectralDecomposition`, error/result types | Mixed GPU + documented CPU fallback; public import-path test added |
 | `gf2` | `GF2GpuOps`, `GF2GpuContext`, GF2 data/error/result types | GPU-backed with fixed-layout validation; public import-path and CPU parity/property tests added |
 | `fusion` | `FusionGpuError`, `FusionGpuResult`, `GpuHolographicTDC`, `GpuResonatorOutput`, `HolographicGpuOps` | Reduced v1 surface enforced by private module + crate-root re-exports |
-| `holographic` | `GpuHolographic`, `GpuHolographicMemory`, `GpuOpticalField`, error/result types | GPU-backed/adaptive; validate broader CPU correctness |
+| `holographic` | `GpuHolographic`, `GpuHolographicMemory`, `GpuOpticalField`, error/result types | ProductCl3x32 GPU bind/similarity + CPU unbind/bundle/memory; optical bind/similarity/Lee encoding validated |
 | `measure` | `GpuIntegrator`, `GpuMonteCarloIntegrator`, `GpuMultidimIntegrator`, `GpuParametricDensity`, `GpuTropicalMeasure` | Mixed GPU + documented CPU fallback; public import-path test added |
 | `probabilistic` | `GpuProbabilistic`, error/result types | GPU-backed sampling/statistics plus small-batch CPU fallback; public import-path/parity test added |
 | `tropical` | `TropicalExecutionPath`, `TropicalGpuError`, `TropicalGpuOps`, `TropicalGpuResult` | Narrow v1 public surface; good API honesty state |
@@ -249,7 +249,7 @@ Remaining examples found by marker scan:
 - `topology::compute_betti_numbers` falls back to CPU, now documented/tested
 - `automata::AutomataGpuOps::extract_neighborhoods` uses CPU Moore-neighborhood baseline, now documented/tested
 - `network` centrality/clustering reuses GPU distance plus CPU reductions/medoid updates
-- `holographic::batch_unbind` uses CPU for correctness
+- `holographic::batch_unbind`, `batch_bundle`, and `GpuHolographicMemory::store_batch` use CPU correctness paths intentionally
 
 First-pass classification: **mixed GPU/fallback**.
 
@@ -265,7 +265,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | info geometry in `lib.rs` | public default | GPU-backed/fallback mixed | consider explicit module boundary; validate tensor/fisher/divergence |
 | `network` | public default | narrow GPU-backed distances, mixed higher ops | public import-path/baseline test added; hardware validation pending |
 | `relativistic` | public default | GPU-backed Minkowski/simplified geodesic kernels | public import-path/baseline test added; hardware validation pending |
-| `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | validate all public ops; document CPU unbind path if retained |
+| `holographic` | feature public module | GPU-backed/adaptive + CPU correctness path | public import-path/baseline tests added; hardware validation pending |
 | `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | validate restored holographic subset on hardware |
 | `tropical` | feature narrow crate-root API | real restored v1 kernels | hardware validate and benchmark further |
 | `calculus` | feature public module | CPU fallback / GPU-ready scaffolding | add gradient/divergence/curl public baseline tests; implement kernels later |
@@ -309,6 +309,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
    - [x] one public import-path/parity integration test for `probabilistic`
    - [x] one public import-path/baseline integration test for `network`
    - [x] one public import-path/baseline integration test for `relativistic`
+   - [x] one public import-path/baseline integration test for `holographic`
 
 4. **Document fallback semantics**
    - [x] README table distinguishes `measure` mixed GPU/fallback behavior

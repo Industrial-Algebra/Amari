@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added public automata API tests covering crate-root imports, GPU rule application, GPU energy calculation, batch evolution, CPU neighborhood fallback, and invalid input handling.
 - Added public network API tests covering crate-root imports, adaptive CPU geometric-distance fallback, direct GPU distance/centrality/clustering paths when available, and unsupported-embedding validation.
 - Added public relativistic API tests covering crate-root imports, spacetime coordinate conversion, GPU Minkowski products, propagation input validation, zero-step identity behavior, and one-step simplified geodesic propagation.
+- Added public holographic API tests covering crate-root imports, ProductCl3x32 dimension validation, GPU Cl3 binding parity, similarity, CPU-backed bundling, optical field binding/similarity/Lee encoding, and optical dimension validation.
 - Added representative public enumerative API tests covering crate-root imports, WDVV counts, intersection numbers, localization Euler classes, matroid ranks, CSM Euler characteristics, operad multiplicities, and stability phases/checks.
 - Added method-by-method enumerative GPU classification table at `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md`.
 - Added representative public GF(2) GPU API tests covering crate-root imports, Clifford products, matrix-vector multiplication, Hamming distance, empty batches, and invalid fixed-layout inputs.
@@ -69,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documented `probabilistic` as GPU-backed sampling/statistics kernels with CPU fallback for small batches after GPU context creation.
 - Documented `network` as a narrow GPU-distance path for vector-only `Cl(P,0,0)` embeddings with `P <= 3`, with CPU fallback for adaptive unsupported/small cases.
 - Documented `relativistic` as GPU-backed Minkowski norm-squared and simplified geodesic propagation over `(ct, x, y, z)` coordinates.
+- Documented `holographic` as a validated ProductCl3x32 v1 surface with GPU-backed binding/similarity plus CPU correctness paths for unbinding, bundling, and memory storage.
 - Added probabilistic validation for zero dimensions, invalid distribution dimensions, non-finite values, negative standard deviations, empty sample batches, and one-sample variance.
 - Fixed the probabilistic Gaussian sampling shader to guard trailing workgroup lanes before storage-buffer access.
 - Fixed network GPU distance dispatch to use 8×8 workgroup tiling correctly.
@@ -77,6 +79,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced placeholder network clustering cohesion with a distance-derived cohesion score.
 - Fixed `GpuSpacetimeVector` CPU conversion to preserve `[ct, x, y, z]` coordinates instead of mixing seconds and length units.
 - Fixed `GpuRelativisticParticle` layout to match the WGSL storage-buffer particle stride.
+- Fixed `GpuHolographic` input validation so flat coefficient arrays must be finite and exact multiples of the validated dimension.
+- Fixed the holographic Cl3 binding WGSL kernel to use the same ProductCl3x32 basis/sign convention as `amari-holographic` instead of the earlier simplified XOR/sign placeholder.
+- Fixed holographic similarity WGSL trailing-lane bounds handling.
+- Fixed optical field pipeline creation on portable WebGPU limits by packing bind outputs into one storage buffer instead of requiring nine storage-buffer bindings.
+- Added optical field validation for nonzero context dimensions, matching field/config dimensions, and finite field components.
 - Added relativistic input validation for empty batches, non-finite spacetime vectors, invalid trajectory parameters, and invalid particle fields.
 - Resolved the Cargo warning in `amari-relativistic` by switching its `amari-core` dependency to a direct dependency where `default-features = false` is honored.
 - Documented `enumerative` as a broad high-use GPU-backed surface with representative tests and remaining deeper mathematical parity work.

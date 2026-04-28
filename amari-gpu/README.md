@@ -328,8 +328,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let gpu = GpuHolographic::new(256).await?;
 
     // Flat arrays: batch_size * dimension coefficients
-    let keys = vec![0.0f32; 1000 * 256];
-    let values = vec![0.0f32; 1000 * 256];
+    let keys = vec![0.0f64; 1000 * 256];
+    let values = vec![0.0f64; 1000 * 256];
 
     // Batch bind 1000 key-value pairs on GPU
     let bound = gpu.batch_bind(&keys, &values).await?;
@@ -343,13 +343,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-#### Holographic GPU Operations
+#### Holographic GPU Operations *(validated v1)*
 
-| Operation | Description | GPU Threshold |
-|-----------|-------------|---------------|
-| `batch_bind()` | Parallel geometric product binding | ≥ 100 pairs |
-| `batch_similarity()` | Pairwise or matrix similarity computation | ≥ 100 vectors |
-| `resonator_cleanup()` | Parallel codebook search for best match | ≥ 100 codebook entries |
+`GpuHolographic` currently validates and supports the canonical 256-dimensional `ProductCl3x32` layout.
+Flat coefficient arrays must be finite and have length `batch_size * 256`.
+
+| Operation | Current 0.20.0 behavior | GPU Threshold |
+|-----------|--------------------------|---------------|
+| `GpuHolographic::new(256)` / `new_product_cl3x32()` | accepts only validated `ProductCl3x32` dimensionality | n/a |
+| `batch_bind()` | GPU-backed Cl3 geometric-product binding with the same basis/sign convention as `amari-holographic` | ≥ 100 pairs |
+| `batch_unbind()` | CPU correctness path using `amari-holographic` inverse/unbind semantics | CPU-backed |
+| `batch_similarity()` | GPU-backed ProductCl3x32 cosine similarity | ≥ 100 pairs |
+| `batch_bundle()` | CPU correctness path using `ProductCl3x32::bundle(..., beta = 1.0)` | CPU-backed |
+| `find_most_similar()` | batch similarity plus CPU max reduction; empty codebooks rejected | inherits similarity path |
+| `GpuHolographicMemory::store_batch()` | CPU memory path with equal-length validation | CPU-backed |
 
 #### WGSL Shaders
 
@@ -415,6 +422,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 - **`OPTICAL_BIND_SHADER`**: Element-wise rotor product in Cl(2,0)
   - Computes: `s_out = a_s·b_s - a_b·b_b`, `b_out = a_s·b_b + a_b·b_s`
+  - Uses a packed output buffer to remain within WebGPU's portable storage-buffer binding limit
   - 256-thread workgroups for per-pixel parallelism
 
 - **`OPTICAL_SIMILARITY_SHADER`**: Inner product with workgroup reduction
