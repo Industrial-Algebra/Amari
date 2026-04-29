@@ -108,12 +108,16 @@ async fn test_info_geometry_public_cpu_baselines_when_available() {
     assert_close(tensor, 1.0, 1e-12);
 
     let batch = gpu
-        .amari_chentsov_tensor_batch(&[e1.clone()], &[e2.clone()], &[e3.clone()])
+        .amari_chentsov_tensor_batch(
+            std::slice::from_ref(&e1),
+            std::slice::from_ref(&e2),
+            std::slice::from_ref(&e3),
+        )
         .await
         .unwrap();
     assert_eq!(batch, vec![1.0]);
     assert!(matches!(
-        gpu.amari_chentsov_tensor_batch(&[e1.clone()], &[], &[e3.clone()])
+        gpu.amari_chentsov_tensor_batch(std::slice::from_ref(&e1), &[], std::slice::from_ref(&e3))
             .await,
         Err(GpuError::BufferError(_))
     ));

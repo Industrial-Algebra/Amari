@@ -34,8 +34,10 @@ fn test_fusion_public_error_and_result_types() {
         "public fusion API smoke error".to_string(),
     ));
 
-    let error = result.unwrap_err();
-    assert!(error.to_string().contains("public fusion API smoke error"));
+    match result {
+        Err(error) => assert!(error.to_string().contains("public fusion API smoke error")),
+        Ok(_) => panic!("expected public fusion API smoke error"),
+    }
 }
 
 #[tokio::test]

@@ -51,7 +51,7 @@ async fn test_gf2_gpu_matches_cpu_baselines_and_laws() {
 
     // Clifford parity: compare a representative Cl(3,0;F₂) batch against
     // amari-core's BinaryMultivector CPU implementation.
-    let cl3_cases = vec![
+    let cl3_cases = [
         (0b0000_0010, 0b0000_0100),
         (0b0000_1011, 0b0000_0110),
         (0b1010_0101, 0b0101_1010),
@@ -68,7 +68,7 @@ async fn test_gf2_gpu_matches_cpu_baselines_and_laws() {
     }
 
     // Degenerate Clifford parity: e3 is degenerate in Cl(2,1;F₂), so e3*e3 = 0.
-    let cl21_cases = vec![
+    let cl21_cases = [
         // In Cl(2,1), the degenerate basis vector is generator 2,
         // whose blade index is 1 << 2 = 4, so its coefficient bit is bit 4.
         (0b0001_0000, 0b0001_0000),
@@ -124,7 +124,7 @@ async fn test_gf2_gpu_matches_cpu_baselines_and_laws() {
     assert_eq!(lhs[0], ac[0] ^ bc[0], "left distributivity over XOR");
 
     // Matrix-vector parity: deterministic sweep across shapes and row patterns.
-    let matrices_and_vectors = vec![
+    let matrices_and_vectors = [
         (
             GF2Matrix::from_rows(vec![
                 GF2Vector::from_bits(&[1, 0, 1, 1]),
@@ -180,13 +180,13 @@ async fn test_gf2_gpu_matches_cpu_baselines_and_laws() {
         .unwrap();
     assert_eq!(gpu_distances[0], 3);
     assert_eq!(gpu_distances[1], 3);
-    let masked_second_word_diff = (0xF0F0_F0F0u32 ^ 0x0F0F_0F0Fu32) & 0xFF;
+    let masked_second_word_diff = 0xFFu32;
     let expected_third = 32 + masked_second_word_diff.count_ones();
     assert_eq!(gpu_distances[2], expected_third);
 
     // Lightweight deterministic property sweep for matvec linearity:
     // M(x+y) = Mx + My over GF(2).
-    let mut seed = 0xA11C_Eu32;
+    let mut seed = 0x000A_11CE_u32;
     for _ in 0..12 {
         let rows: Vec<_> = (0..4)
             .map(|_| {

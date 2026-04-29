@@ -169,8 +169,8 @@ For each domain:
 ## Tier 4 — Benchmark and crossover reporting
 
 - [x] keep manual benchmark harnesses for restored kernels
-- [ ] add benchmark harnesses for all high-value public operations
-- [x] record initial CPU vs GPU crossover points for core GA and tropical matmul
+- [x] add initial benchmark harnesses for high-value public operation groups
+- [x] record initial CPU vs GPU crossover points for core GA, tropical matmul, tropical attention, holographic, GF(2), probabilistic, topology, automata, measure, functional, and network paths
 - [x] identify initial kernels that should default to CPU for small sizes
 - [x] document initial guidance for when GPU acceleration is expected to help
 
@@ -182,6 +182,9 @@ Initial GB10 crossover snapshots:
 
 - core GA Cl(3,0,0) batch geometric product crosses over around batch size `64`
 - tropical dense matrix multiply crosses over between `32x32x32` and `64x64x64`; GPU is clearly useful at `64x64x64`
+- topology distance matrix crosses over between `64` and `256` points
+- measure integration/density kernels cross over only at large sample/value counts in the current test-profile harness
+- several restored kernels are correctness-valid but should remain CPU-preferred until larger/release-mode benchmark sweeps show a GPU win
 
 ## Tier 5 — Coverage expansion
 

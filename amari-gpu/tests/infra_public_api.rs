@@ -97,13 +97,13 @@ async fn test_adaptive_verifier_public_cpu_forced_baseline() {
     );
 
     let batch = verifier
-        .verified_batch_geometric_product(&[e1.clone()], &[e2.clone()])
+        .verified_batch_geometric_product(std::slice::from_ref(&e1), std::slice::from_ref(&e2))
         .await
         .unwrap();
     assert_eq!(batch.len(), 1);
     assert!(matches!(
         verifier
-            .verified_batch_geometric_product(&[e1.clone()], &[])
+            .verified_batch_geometric_product(std::slice::from_ref(&e1), &[])
             .await,
         Err(AdaptiveVerificationError::NoSuitableStrategy)
     ));

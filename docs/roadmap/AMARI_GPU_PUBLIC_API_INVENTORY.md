@@ -64,7 +64,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | Area | Crate-root exports | Classification |
 |------|--------------------|----------------|
 | adaptive verification | `AdaptiveVerifier`, `AdaptiveVerification*`, `CpuFeatures`, `GpuBackend`, `Platform*`, `WasmEnvironment` | Infrastructure/adaptive; public tests added for CPU fallback, platform capability traits, and batch validation |
-| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths; initial core GA/tropical benchmark report added |
+| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths; manual crossover harnesses/report added for core GA, tropical, holographic, GF(2), probabilistic, topology, automata, measure, functional, and network paths |
 | core GA | `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuError`, `GpuDeviceInfo`, `GpuFisherMatrix` | GPU-backed batch geometric products + legacy Cl(3,0,0) adaptive helper; public tests added |
 | info geometry | `GpuInfoGeometry` and related methods from `lib.rs` | GPU-ready CPU baselines for Amari-Chentsov/Fisher/KL-style divergence; public tests added |
 | multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; single-device GB10/RTX 5080 public validation passed; multi-device validation still pending |
