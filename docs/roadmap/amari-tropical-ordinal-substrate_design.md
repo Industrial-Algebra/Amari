@@ -126,9 +126,11 @@ with:
 
 - `bottom()`
 - `one()`
-- `oplus(...)`
-- `otimes(...)`
+- `oplus(..., arena)`
+- `otimes(..., arena)`
 - valuation helpers
+
+Because the carrier is arena-backed through `OrdinalId`, semiring-style composition should be exposed through arena-aware methods rather than assuming a completely context-free trait implementation.
 
 ---
 

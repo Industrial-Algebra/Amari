@@ -220,9 +220,11 @@ with public re-export:
 
 This gives the existing float layer a shared algebraic surface without changing its role.
 
-### Future ordinal carrier also implements `Semiring`
+### Future ordinal carrier follows the same semiring vocabulary
 
-The planned ordinal runtime weight type should implement the same trait, giving downstream optimization code a small common vocabulary.
+Because the ordinal layer uses arena-backed identifiers, its composition operations need arena context for interning.
+
+So the planned ordinal runtime weight type should expose the same `zero` / `one` / `oplus` / `otimes` vocabulary, but via arena-aware methods rather than a direct implementation of the context-free `Semiring` trait.
 
 ---
 
@@ -265,31 +267,35 @@ with core arena operations such as:
 
 ```rust
 impl OrdinalArena {
-    pub fn zero(&mut self) -> OrdinalId;
+    pub fn zero(&self) -> OrdinalId;
     pub fn finite(&mut self, n: u64) -> OrdinalId;
     pub fn omega(&mut self) -> OrdinalId;
-    pub fn intern_cnf(&mut self, terms: Vec<CnfTerm>) -> OrdinalId;
+    pub fn intern_cnf(&mut self, terms: Vec<CnfTerm>) -> Result<OrdinalId, TropicalError>;
 
-    pub fn compare(&self, left: OrdinalId, right: OrdinalId) -> core::cmp::Ordering;
-    pub fn add(&mut self, left: OrdinalId, right: OrdinalId) -> OrdinalId;
+    pub fn compare(
+        &self,
+        left: OrdinalId,
+        right: OrdinalId,
+    ) -> Result<core::cmp::Ordering, TropicalError>;
+    pub fn add(
+        &mut self,
+        left: OrdinalId,
+        right: OrdinalId,
+    ) -> Result<OrdinalId, TropicalError>;
 
-    pub fn leading_exponent(&self, ordinal: OrdinalId) -> Option<OrdinalId>;
-    pub fn leading_term(&self, ordinal: OrdinalId) -> Option<(OrdinalId, u64)>;
+    pub fn leading_exponent(&self, ordinal: OrdinalId) -> Result<Option<OrdinalId>, TropicalError>;
+    pub fn leading_term(
+        &self,
+        ordinal: OrdinalId,
+    ) -> Result<Option<(OrdinalId, u64)>, TropicalError>;
 }
 
 impl OrdinalWeight {
     pub fn bottom() -> Self;
     pub fn one() -> Self;
-    pub fn valuation(&self, arena: &OrdinalArena) -> Option<OrdinalId>;
-}
-```
-
-and the semiring implementation:
-
-```rust
-impl Semiring for OrdinalWeight {
-    /* zero = Bottom, one = ordinal zero,
-       oplus = max, otimes = ordinal addition with bottom annihilation */
+    pub fn oplus(self, other: Self, arena: &OrdinalArena) -> Result<Self, TropicalError>;
+    pub fn otimes(self, other: Self, arena: &mut OrdinalArena) -> Result<Self, TropicalError>;
+    pub fn valuation(self, arena: &OrdinalArena) -> Result<Option<OrdinalId>, TropicalError>;
 }
 ```
 

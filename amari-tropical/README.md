@@ -16,6 +16,7 @@ Tropical (max-plus) algebra implementation for optimization and neural network a
 - **TropicalNumber**: Core scalar type with max-plus operations
 - **TropicalMatrix**: Matrix operations in tropical algebra
 - **TropicalMultivector**: Integration with geometric algebra
+- **OrdinalArena / OrdinalWeight**: Arena-backed ordinals below `ε₀` for ordinal-weighted optimization
 - **Viterbi Decoder**: Efficient sequence decoding using tropical operations
 - **Tropical Polytopes**: Geometric structures in tropical space
 - **High-Precision Support**: Optional extended precision arithmetic
@@ -126,14 +127,39 @@ let distances = TropicalMatrix::new(/* ... */);
 let paths = distances.tropical_matmul(&distances);
 ```
 
+### OrdinalArena / OrdinalWeight
+
+```rust
+use amari_tropical::{CnfTerm, OrdinalArena, OrdinalWeight};
+
+let mut arena = OrdinalArena::new();
+let one = arena.one();
+let omega = arena.omega();
+let omega_plus_one = arena.add(omega, one)?;
+let omega_squared = arena.intern_cnf(vec![CnfTerm::new(omega, 1)])?;
+
+assert_eq!(arena.format_ordinal(omega), Ok("ω".to_string()));
+assert_eq!(arena.format_ordinal(omega_plus_one), Ok("ω + 1".to_string()));
+assert_eq!(arena.format_ordinal(omega_squared), Ok("ω^ω".to_string()));
+
+let weight = OrdinalWeight::from_ordinal(omega_plus_one);
+assert_eq!(arena.format_weight(weight), Ok("ω + 1".to_string()));
+# Ok::<(), amari_tropical::TropicalError>(())
+```
+
 ### Viterbi Decoder
 
 ```rust
-use amari_tropical::viterbi::ViterbiDecoder;
+use amari_tropical::viterbi::TropicalViterbi;
+
+let transitions = vec![vec![-1.0, -2.0], vec![-2.0, -1.0]];
+let emissions = vec![vec![-1.0, -3.0], vec![-3.0, -1.0]];
+let observations = vec![0, 1, 0];
 
 // Efficient sequence decoding using tropical algebra
-let decoder = ViterbiDecoder::new(&transitions, &emissions);
+let decoder = TropicalViterbi::new(transitions, emissions);
 let best_path = decoder.decode(&observations);
+assert_eq!(best_path.0.len(), observations.len());
 ```
 
 ## Modules
@@ -141,6 +167,8 @@ let best_path = decoder.decode(&observations);
 | Module | Description |
 |--------|-------------|
 | `types` | Core tropical number, matrix, and multivector types |
+| `ordinal` | Arena-backed ordinals below `ε₀` and bottom-extended ordinal weights |
+| `semiring` | Minimal semiring trait for context-free runtime carriers |
 | `viterbi` | Viterbi algorithm for sequence decoding |
 | `polytope` | Tropical polytopes and geometric structures |
 | `verified` | Phantom types for compile-time verification |
