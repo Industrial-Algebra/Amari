@@ -14,6 +14,7 @@ pub use amari_core::HighPrecisionFloat;
 pub use amari_core::{ExtendedFloat, PrecisionFloat, StandardFloat};
 
 // Core tropical algebra types
+pub mod semiring;
 pub mod types;
 
 // Domain modules
@@ -30,7 +31,8 @@ pub mod verified_contracts;
 // Re-export error types
 pub use error::{TropicalError, TropicalResult};
 
-// Re-export core types
+// Re-export core traits and types
+pub use semiring::Semiring;
 pub use types::{StandardTropical, TropicalMatrix, TropicalMultivector, TropicalNumber};
 
 #[cfg(feature = "high-precision")]

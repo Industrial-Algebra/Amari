@@ -24,6 +24,7 @@ Current planning and release-roadmap documentation:
 - **[v0.21.0 Tropical / Dual Checklist](roadmap/v0.21.0-tropical-dual-checklist.md)** - Milestone tracker for the `0.21.0` extension cycle
 - **[Tropical / Dual Optimization Design](roadmap/amari-tropical-dual-optimization_design.md)** - Design notes for compiler/interpreter optimization use cases
 - **[Tropical Ordinal Substrate Design](roadmap/amari-tropical-ordinal-substrate_design.md)** - Design notes for the ordinal semiring substrate in `amari-tropical`
+- **[Tropical M1 Architecture Pass](roadmap/amari-tropical-m1-architecture.md)** - Concrete architecture decisions for semiring layering and the ordinal API surface
 - **[V1 Readiness Plan](roadmap/V1_READINESS_PLAN.md)** - Existing broader readiness tracker
 
 ### 🏗️ Architecture
