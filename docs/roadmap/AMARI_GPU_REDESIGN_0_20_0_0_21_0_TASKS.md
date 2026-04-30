@@ -2,7 +2,7 @@
 
 Date: 2026-03-27
 Current version: 0.19.1
-Target horizon: 0.20.0 → 0.21.0
+Target horizon: 0.20.0 → 0.23.0
 
 This document is a **standalone task list** for `amari-gpu`.
 
@@ -24,6 +24,8 @@ Because there are currently no important downstream users constraining its shape
 ## Goal
 
 Turn `amari-gpu` from a coverage-oriented integration crate into a robust, hardware-validated GPU platform layer for Amari.
+
+The 0.20.0 hardening pass establishes the known-good baseline. Broad follow-up work is now deferred to 0.23.0, after 0.21.0 extends `amari-tropical`/`amari-dual` and 0.22.0 introduces `amari-cgt`/`amari-surreal`. That lets `amari-gpu` be revisited in a better context alongside `amari-surcomplex`, `amari-cli`, hardware-aware calibration, and the dedicated `wgpu 29` migration investigation.
 
 The long-term direction is for `amari-gpu` to expose as many Amari operations as are technically justified, ideally approaching the breadth of `amari-wasm`, while maintaining strong CPU-baseline validation and graceful fallback behavior.
 
@@ -161,7 +163,18 @@ Active release-plan note: the 0.20.0 implementation focus is now captured in `do
 
 ---
 
-# 0.21.0 Focus
+# Deferred 0.23.0 GPU revisit
+
+The previous 0.21.0 GPU expansion focus is deferred. 0.21.0 should stay centered on `amari-tropical` and `amari-dual` extension work; 0.22.0 should introduce `amari-cgt` and `amari-surreal`. The GPU follow-up cycle resumes in 0.23.0 alongside `amari-surcomplex` and `amari-cli`.
+
+Tracked 0.23.0 GPU issues:
+
+- #137 — Add missing CPU baseline timings to `amari-gpu` benchmark harnesses
+- #138 — Add release-mode or Criterion benchmarks for `amari-gpu`
+- #139 — Implement hardware-aware calibrated dispatch for `amari-gpu`
+- #140 — Optimize high-upside `amari-gpu` kernels identified by crossover data
+- #141 — Revisit `amari-gpu` coverage for upcoming crates and extensions
+- #142 — Plan dedicated migration from `wgpu 0.19` to `wgpu 29`
 
 ## 7. Coverage expansion toward platform parity
 
@@ -219,13 +232,15 @@ This track depends on the additive 0.21.0 algebra extension work, but remains a 
 
 ---
 
-## 0.21.0 Exit Criteria
+## 0.23.0 GPU revisit exit criteria
 
-- [ ] `amari-gpu` has a redesigned, robustness-first architecture
-- [ ] current and newly added domains have CPU-baseline validation on real hardware
-- [ ] tropical/dual/fusion-related GPU paths are implemented where justified
+- [ ] missing CPU baseline timings are added for benchmark rows that are currently GPU-timing-only
+- [ ] release-mode or Criterion-style benchmark path exists for high-priority kernels
+- [ ] calibrated/hardware-aware dispatch policy is designed or partially implemented
+- [ ] high-upside kernels identified by 0.20.0 crossover data have at least one focused optimization pass
+- [ ] new 0.21.0/0.22.0 crate surfaces are reviewed for GPU suitability
+- [ ] `wgpu 29` migration is either completed with refreshed GB10/RTX 5080 validation or explicitly moved to a later release
 - [ ] documentation reflects validated capabilities rather than aspirational coverage
-- [ ] release claims are benchmark-backed
 
 ---
 

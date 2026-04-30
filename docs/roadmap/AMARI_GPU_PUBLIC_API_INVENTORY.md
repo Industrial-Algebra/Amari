@@ -283,7 +283,11 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 ---
 
-## Immediate 0.20.0 follow-up tasks
+## Post-0.20.0 GPU follow-up backlog — deferred to 0.23.0
+
+The validated 0.20.0 `amari-gpu` baseline is sufficient for release. The items below are no longer planned as an immediate 0.20.1 fast-follow; they are deferred to the 0.23.0 `amari-surcomplex` / `amari-cli` / GPU revisit cycle after 0.21.0 extends `amari-tropical`/`amari-dual` and 0.22.0 introduces `amari-cgt`/`amari-surreal`.
+
+Tracked GitHub issues for that cycle include #137, #138, #139, #140, #141, and #142.
 
 1. **Validate restored fusion public subset**
    - [x] make `fusion` private with narrow crate-root re-exports

@@ -215,6 +215,19 @@ Candidate expansion areas:
 
 ---
 
+## Post-0.20.0 planning note
+
+The 0.20.0 goal is the validated `amari-gpu` stabilization baseline. Follow-up GPU issues are deferred to the 0.23.0 cycle rather than a planned 0.20.1 fast-follow:
+
+- #137 benchmark CPU baseline completion
+- #138 release-mode/Criterion benchmark pass
+- #139 hardware-aware calibrated dispatch
+- #140 focused high-upside kernel optimization
+- #141 coverage revisit for upcoming crates/extensions
+- #142 dedicated `wgpu 29` migration planning
+
+This keeps 0.21.0 focused on `amari-tropical`/`amari-dual` extension work and 0.22.0 focused on `amari-cgt`/`amari-surreal` introductions. Patch releases in the 0.20.x line should remain bug-fix only unless a release-blocking issue appears.
+
 ## 0.20.0 exit criteria
 
 `amari-gpu` is ready for 0.20.0 when:
@@ -225,7 +238,7 @@ Candidate expansion areas:
 - [ ] every public high-priority GPU operation has CPU-baseline correctness tests or is explicitly documented as infrastructure/fallback-only
 - [x] GB10 validation report exists
 - [x] RTX 5080 validation report exists
-- [x] initial benchmark/crossover notes exist for core GA and tropical matmul; broader major-kernel benchmark expansion remains pending
+- [x] GB10/RTX 5080 benchmark/crossover notes exist for core GA, tropical, holographic, GF(2), probabilistic, topology, automata, measure, functional, and network paths
 - [ ] placeholder or redesign-pending APIs are not accidentally public
 - [ ] `cargo +stable test -p amari-gpu --quiet` passes
 - [ ] feature-focused checks/tests pass for restored surfaces

@@ -3,16 +3,21 @@
 Date: 2026-03-27
 Current version: 0.19.1
 
-This document is a **standalone task list** for extending:
+This document is a **standalone task list** for the 0.21.0 algebra extension release.
 
-- `amari-tropical`
-- `amari-dual`
-- `amari-fusion`
+Primary 0.21.0 focus:
+
+- considerably extending `amari-tropical`
+- considerably extending `amari-dual`
+
+Secondary/additive 0.21.0 work:
+
+- `amari-fusion` examples and integrations where they naturally consume the new tropical/dual capabilities
 
 This work is intentionally separate from:
 
 - `amari-wasm` audit/hardening
-- `amari-gpu` redesign and hardware validation
+- `amari-gpu` redesign and hardware validation, now deferred to the 0.23.0 GPU revisit cycle after `amari-cgt`/`amari-surreal` and alongside `amari-surcomplex`/`amari-cli`
 
 ## Guiding Rule
 
