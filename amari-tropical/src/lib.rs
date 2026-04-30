@@ -39,8 +39,11 @@ pub mod verified_contracts;
 pub use error::{TropicalError, TropicalResult};
 
 // Re-export core traits and types
-pub use ordinal::{CnfTerm, OrdinalArena, OrdinalId, OrdinalWeight};
-pub use semiring::Semiring;
+pub use ordinal::{
+    CnfTerm, OrdinalArena, OrdinalId, OrdinalInspection, OrdinalKind, OrdinalWeight,
+    OrdinalWeightInspection,
+};
+pub use semiring::{fold_oplus, fold_otimes, Semiring};
 pub use types::{StandardTropical, TropicalMatrix, TropicalMultivector, TropicalNumber};
 
 #[cfg(feature = "high-precision")]

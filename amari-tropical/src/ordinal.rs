@@ -83,6 +83,117 @@ struct OrdinalNode {
     terms: Vec<CnfTerm>,
 }
 
+/// Lightweight structural classification for an ordinal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum OrdinalKind {
+    /// The zero ordinal.
+    Zero,
+    /// A finite natural ordinal greater than zero.
+    Finite,
+    /// A nonzero successor ordinal with a final finite term.
+    Successor,
+    /// A nonzero limit ordinal.
+    Limit,
+}
+
+/// Inspectable summary of an ordinal inside an [`OrdinalArena`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OrdinalInspection {
+    ordinal: OrdinalId,
+    kind: OrdinalKind,
+    finite_value: Option<u64>,
+    term_count: usize,
+    leading_exponent: Option<OrdinalId>,
+    leading_term: Option<(OrdinalId, u64)>,
+    rendered: String,
+}
+
+impl OrdinalInspection {
+    /// The inspected ordinal identifier.
+    #[inline]
+    pub const fn ordinal(&self) -> OrdinalId {
+        self.ordinal
+    }
+
+    /// The coarse structural kind.
+    #[inline]
+    pub const fn kind(&self) -> OrdinalKind {
+        self.kind
+    }
+
+    /// The finite value, when the ordinal is finite.
+    #[inline]
+    pub const fn finite_value(&self) -> Option<u64> {
+        self.finite_value
+    }
+
+    /// The number of CNF terms.
+    #[inline]
+    pub const fn term_count(&self) -> usize {
+        self.term_count
+    }
+
+    /// The leading exponent, if any.
+    #[inline]
+    pub const fn leading_exponent(&self) -> Option<OrdinalId> {
+        self.leading_exponent
+    }
+
+    /// The leading term, if any.
+    #[inline]
+    pub const fn leading_term(&self) -> Option<(OrdinalId, u64)> {
+        self.leading_term
+    }
+
+    /// Pre-rendered Cantor normal form text.
+    #[inline]
+    pub fn rendered(&self) -> &str {
+        &self.rendered
+    }
+}
+
+/// Inspectable summary of an [`OrdinalWeight`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OrdinalWeightInspection {
+    weight: OrdinalWeight,
+    ordinal: Option<OrdinalId>,
+    ordinal_kind: Option<OrdinalKind>,
+    valuation: Option<OrdinalId>,
+    rendered: String,
+}
+
+impl OrdinalWeightInspection {
+    /// The inspected weight.
+    #[inline]
+    pub const fn weight(&self) -> OrdinalWeight {
+        self.weight
+    }
+
+    /// The wrapped ordinal identifier, if this is not bottom.
+    #[inline]
+    pub const fn ordinal(&self) -> Option<OrdinalId> {
+        self.ordinal
+    }
+
+    /// The ordinal kind, if this is not bottom.
+    #[inline]
+    pub const fn ordinal_kind(&self) -> Option<OrdinalKind> {
+        self.ordinal_kind
+    }
+
+    /// Leading-exponent valuation of the wrapped ordinal, if any.
+    #[inline]
+    pub const fn valuation(&self) -> Option<OrdinalId> {
+        self.valuation
+    }
+
+    /// Pre-rendered weight text.
+    #[inline]
+    pub fn rendered(&self) -> &str {
+        &self.rendered
+    }
+}
+
 /// Arena-backed store for canonical ordinals below `ε₀`.
 #[derive(Debug, Clone)]
 pub struct OrdinalArena {
@@ -248,12 +359,153 @@ impl OrdinalArena {
         }
     }
 
+    /// Return `true` if the ordinal is zero.
+    pub fn is_zero_ordinal(&self, ordinal: OrdinalId) -> TropicalResult<bool> {
+        self.validate_id(ordinal)?;
+        Ok(self.node_unchecked(ordinal).terms.is_empty())
+    }
+
+    /// Return the finite value of an ordinal, if it is finite.
+    pub fn finite_value(&self, ordinal: OrdinalId) -> TropicalResult<Option<u64>> {
+        self.validate_id(ordinal)?;
+        Ok(self.as_finite(ordinal))
+    }
+
+    /// Return the number of CNF terms in an ordinal.
+    pub fn term_count(&self, ordinal: OrdinalId) -> TropicalResult<usize> {
+        self.validate_id(ordinal)?;
+        Ok(self.node_unchecked(ordinal).terms.len())
+    }
+
+    /// Return `true` if the ordinal is a successor ordinal.
+    pub fn is_successor(&self, ordinal: OrdinalId) -> TropicalResult<bool> {
+        self.validate_id(ordinal)?;
+        if ordinal == self.zero() {
+            return Ok(false);
+        }
+
+        Ok(self
+            .node_unchecked(ordinal)
+            .terms
+            .last()
+            .map(|term| term.exponent == self.zero())
+            .unwrap_or(false))
+    }
+
+    /// Return `true` if the ordinal is a nonzero limit ordinal.
+    pub fn is_limit(&self, ordinal: OrdinalId) -> TropicalResult<bool> {
+        self.validate_id(ordinal)?;
+        if ordinal == self.zero() {
+            return Ok(false);
+        }
+
+        Ok(!self.is_successor(ordinal)?)
+    }
+
+    /// Classify the ordinal into a lightweight structural kind.
+    pub fn kind(&self, ordinal: OrdinalId) -> TropicalResult<OrdinalKind> {
+        self.validate_id(ordinal)?;
+
+        if ordinal == self.zero() {
+            return Ok(OrdinalKind::Zero);
+        }
+        if self.as_finite(ordinal).is_some() {
+            return Ok(OrdinalKind::Finite);
+        }
+        if self.is_successor(ordinal)? {
+            return Ok(OrdinalKind::Successor);
+        }
+
+        Ok(OrdinalKind::Limit)
+    }
+
+    /// Build an inspectable summary of an ordinal.
+    pub fn inspect(&self, ordinal: OrdinalId) -> TropicalResult<OrdinalInspection> {
+        self.validate_id(ordinal)?;
+
+        Ok(OrdinalInspection {
+            ordinal,
+            kind: self.kind(ordinal)?,
+            finite_value: self.as_finite(ordinal),
+            term_count: self.node_unchecked(ordinal).terms.len(),
+            leading_exponent: self.leading_exponent(ordinal)?,
+            leading_term: self.leading_term(ordinal)?,
+            rendered: self.format_ordinal(ordinal)?,
+        })
+    }
+
+    /// Build an inspectable summary of an [`OrdinalWeight`].
+    pub fn inspect_weight(&self, weight: OrdinalWeight) -> TropicalResult<OrdinalWeightInspection> {
+        self.validate_weight(weight)?;
+
+        Ok(match weight {
+            OrdinalWeight::Bottom => OrdinalWeightInspection {
+                weight,
+                ordinal: None,
+                ordinal_kind: None,
+                valuation: None,
+                rendered: String::from("Bottom"),
+            },
+            OrdinalWeight::Ordinal(ordinal) => OrdinalWeightInspection {
+                weight,
+                ordinal: Some(ordinal),
+                ordinal_kind: Some(self.kind(ordinal)?),
+                valuation: self.leading_exponent(ordinal)?,
+                rendered: self.format_ordinal(ordinal)?,
+            },
+        })
+    }
+
+    /// Compare two weights using `Bottom < Ordinal(_)` and ordinal comparison above bottom.
+    pub fn compare_weight(
+        &self,
+        left: OrdinalWeight,
+        right: OrdinalWeight,
+    ) -> TropicalResult<Ordering> {
+        self.validate_weight(left)?;
+        self.validate_weight(right)?;
+        Ok(self.compare_weight_internal(left, right))
+    }
+
+    /// Select the best weight from a slice using semiring-style `max`.
+    ///
+    /// An empty slice returns [`OrdinalWeight::bottom`].
+    pub fn best_weight(&self, weights: &[OrdinalWeight]) -> TropicalResult<OrdinalWeight> {
+        let mut best = OrdinalWeight::bottom();
+        for &weight in weights {
+            self.validate_weight(weight)?;
+            if self.compare_weight_internal(best, weight) == Ordering::Less {
+                best = weight;
+            }
+        }
+        Ok(best)
+    }
+
+    /// Compose a sequence of weights using ordinal addition with bottom annihilation.
+    ///
+    /// An empty slice returns [`OrdinalWeight::one`].
+    pub fn compose_weights(&mut self, weights: &[OrdinalWeight]) -> TropicalResult<OrdinalWeight> {
+        let mut composed = OrdinalWeight::one();
+        for &weight in weights {
+            self.validate_weight(weight)?;
+            composed = composed.otimes(weight, self)?;
+        }
+        Ok(composed)
+    }
+
     fn validate_id(&self, ordinal: OrdinalId) -> TropicalResult<()> {
         if self.contains(ordinal) {
             Ok(())
         } else {
             Err(TropicalError::InvalidOrdinalId(ordinal))
         }
+    }
+
+    fn validate_weight(&self, weight: OrdinalWeight) -> TropicalResult<()> {
+        if let OrdinalWeight::Ordinal(ordinal) = weight {
+            self.validate_id(ordinal)?;
+        }
+        Ok(())
     }
 
     fn node(&self, ordinal: OrdinalId) -> TropicalResult<&OrdinalNode> {
@@ -340,6 +592,17 @@ impl OrdinalArena {
         }
 
         left_terms.len().cmp(&right_terms.len())
+    }
+
+    fn compare_weight_internal(&self, left: OrdinalWeight, right: OrdinalWeight) -> Ordering {
+        match (left, right) {
+            (OrdinalWeight::Bottom, OrdinalWeight::Bottom) => Ordering::Equal,
+            (OrdinalWeight::Bottom, OrdinalWeight::Ordinal(_)) => Ordering::Less,
+            (OrdinalWeight::Ordinal(_), OrdinalWeight::Bottom) => Ordering::Greater,
+            (OrdinalWeight::Ordinal(left), OrdinalWeight::Ordinal(right)) => {
+                self.compare_internal(left, right)
+            }
+        }
     }
 
     fn format_ordinal_inner(&self, ordinal: OrdinalId) -> String {
@@ -602,6 +865,34 @@ mod tests {
     }
 
     #[test]
+    fn ordinal_kind_and_inspection_helpers_work() {
+        let mut arena = OrdinalArena::new();
+        let zero = arena.zero();
+        let three = arena.finite(3);
+        let omega = arena.omega();
+        let omega_plus_three = arena.add(omega, three).unwrap();
+
+        assert_eq!(arena.kind(zero).unwrap(), OrdinalKind::Zero);
+        assert_eq!(arena.kind(three).unwrap(), OrdinalKind::Finite);
+        assert_eq!(arena.kind(omega).unwrap(), OrdinalKind::Limit);
+        assert_eq!(
+            arena.kind(omega_plus_three).unwrap(),
+            OrdinalKind::Successor
+        );
+
+        assert!(arena.is_zero_ordinal(zero).unwrap());
+        assert_eq!(arena.finite_value(three).unwrap(), Some(3));
+        assert!(arena.is_limit(omega).unwrap());
+        assert!(arena.is_successor(omega_plus_three).unwrap());
+
+        let inspection = arena.inspect(omega_plus_three).unwrap();
+        assert_eq!(inspection.ordinal(), omega_plus_three);
+        assert_eq!(inspection.kind(), OrdinalKind::Successor);
+        assert_eq!(inspection.term_count(), 2);
+        assert_eq!(inspection.rendered(), "ω + 3");
+    }
+
+    #[test]
     fn ordinal_weight_operations_work() {
         let mut arena = OrdinalArena::new();
         let one = arena.one();
@@ -620,6 +911,42 @@ mod tests {
         assert_eq!(arena.format_weight(w_omega_plus_one).unwrap(), "ω + 1");
         assert_eq!(w_omega.valuation(&arena).unwrap(), Some(one));
         assert_eq!(bottom.valuation(&arena).unwrap(), None);
+    }
+
+    #[test]
+    fn ordinal_weight_aggregation_and_inspection_helpers_work() {
+        let mut arena = OrdinalArena::new();
+        let one = arena.one();
+        let two = arena.finite(2);
+        let omega = arena.omega();
+        let omega_plus_one = arena.add(omega, one).unwrap();
+
+        let weights = [
+            OrdinalWeight::from_ordinal(one),
+            OrdinalWeight::from_ordinal(omega),
+            OrdinalWeight::from_ordinal(omega_plus_one),
+        ];
+
+        let best = arena.best_weight(&weights).unwrap();
+        let composed = arena
+            .compose_weights(&[
+                OrdinalWeight::from_ordinal(omega),
+                OrdinalWeight::from_ordinal(one),
+            ])
+            .unwrap();
+        let empty_best = arena.best_weight(&[]).unwrap();
+        let empty_composed = arena.compose_weights(&[]).unwrap();
+        let inspection = arena
+            .inspect_weight(OrdinalWeight::from_ordinal(two))
+            .unwrap();
+
+        assert_eq!(best, OrdinalWeight::from_ordinal(omega_plus_one));
+        assert_eq!(composed, OrdinalWeight::from_ordinal(omega_plus_one));
+        assert_eq!(empty_best, OrdinalWeight::bottom());
+        assert_eq!(empty_composed, OrdinalWeight::one());
+        assert_eq!(inspection.ordinal_kind(), Some(OrdinalKind::Finite));
+        assert_eq!(inspection.rendered(), "2");
+        assert_eq!(inspection.valuation(), Some(arena.zero()));
     }
 
     #[test]

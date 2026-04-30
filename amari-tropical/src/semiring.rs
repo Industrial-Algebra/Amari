@@ -48,6 +48,34 @@ pub trait Semiring: Clone + PartialEq {
     fn otimes(&self, other: &Self) -> Self;
 }
 
+/// Fold a sequence with semiring addition.
+///
+/// An empty iterator returns [`Semiring::zero`].
+#[inline]
+pub fn fold_oplus<S, I>(values: I) -> S
+where
+    S: Semiring,
+    I: IntoIterator<Item = S>,
+{
+    values
+        .into_iter()
+        .fold(S::zero(), |acc, value| acc.oplus(&value))
+}
+
+/// Fold a sequence with semiring multiplication.
+///
+/// An empty iterator returns [`Semiring::one`].
+#[inline]
+pub fn fold_otimes<S, I>(values: I) -> S
+where
+    S: Semiring,
+    I: IntoIterator<Item = S>,
+{
+    values
+        .into_iter()
+        .fold(S::one(), |acc, value| acc.otimes(&value))
+}
+
 impl<T: Float> Semiring for TropicalNumber<T> {
     #[inline]
     fn zero() -> Self {
@@ -89,5 +117,24 @@ mod tests {
         );
         assert_eq!(a.oplus(&b), a.tropical_add(&b));
         assert_eq!(a.otimes(&b), a.tropical_mul(&b));
+    }
+
+    #[test]
+    fn fold_helpers_match_tropical_expectations() {
+        let values = [
+            TropicalNumber::new(1.0f64),
+            TropicalNumber::new(5.0),
+            TropicalNumber::new(3.0),
+        ];
+
+        let best = fold_oplus(values.iter().copied());
+        let composed = fold_otimes(values.iter().copied());
+        let empty_best = fold_oplus::<TropicalNumber<f64>, _>([]);
+        let empty_composed = fold_otimes::<TropicalNumber<f64>, _>([]);
+
+        assert_eq!(best.value(), 5.0);
+        assert_eq!(composed.value(), 9.0);
+        assert!(empty_best.is_zero());
+        assert!(empty_composed.is_one());
     }
 }

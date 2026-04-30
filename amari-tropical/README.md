@@ -50,7 +50,7 @@ amari-tropical = { version = "0.12", features = ["high-precision"] }
 ## Quick Start
 
 ```rust
-use amari_tropical::TropicalNumber;
+use amari_tropical::{fold_oplus, fold_otimes, TropicalNumber};
 
 // Create tropical numbers
 let a = TropicalNumber::new(3.0);
@@ -67,6 +67,12 @@ assert_eq!(product.value(), 8.0);
 // Tropical identities
 let zero = TropicalNumber::<f64>::tropical_zero(); // -∞ (additive identity)
 let one = TropicalNumber::<f64>::tropical_one();   // 0 (multiplicative identity)
+
+// Fold alternative scores with tropical max and path scores with tropical composition
+let best = fold_oplus([a, b]);
+let path = fold_otimes([a, b]);
+assert_eq!(best.value(), 5.0);
+assert_eq!(path.value(), 8.0);
 ```
 
 ## Mathematical Background
@@ -144,6 +150,7 @@ assert_eq!(arena.format_ordinal(omega_squared), Ok("ω^ω".to_string()));
 
 let weight = OrdinalWeight::from_ordinal(omega_plus_one);
 assert_eq!(arena.format_weight(weight), Ok("ω + 1".to_string()));
+assert_eq!(arena.best_weight(&[OrdinalWeight::bottom(), weight]), Ok(weight));
 # Ok::<(), amari_tropical::TropicalError>(())
 ```
 
@@ -167,8 +174,8 @@ assert_eq!(best_path.0.len(), observations.len());
 | Module | Description |
 |--------|-------------|
 | `types` | Core tropical number, matrix, and multivector types |
-| `ordinal` | Arena-backed ordinals below `ε₀` and bottom-extended ordinal weights |
-| `semiring` | Minimal semiring trait for context-free runtime carriers |
+| `ordinal` | Arena-backed ordinals below `ε₀`, ordinal inspection, and bottom-extended ordinal weights |
+| `semiring` | Minimal semiring trait plus fold helpers for context-free runtime carriers |
 | `viterbi` | Viterbi algorithm for sequence decoding |
 | `polytope` | Tropical polytopes and geometric structures |
 | `verified` | Phantom types for compile-time verification |
