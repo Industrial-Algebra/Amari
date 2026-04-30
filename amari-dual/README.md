@@ -9,7 +9,9 @@ Dual number automatic differentiation for efficient gradient computation.
 ## Features
 
 - **DualNumber**: Single-variable automatic differentiation
-- **MultiDualNumber**: Multi-variable gradient computation
+- **MultiDualNumber**: Heap-backed multi-variable gradient computation
+- **StaticMultiDual**: Fixed-size const-generic gradients for small hot loops
+- **BranchPolicy**: Explicit tie behavior for `max` / `min` style branch points
 - **DualMultivector**: Integration with geometric algebra
 - **Mathematical Functions**: Differentiable sin, cos, exp, log, and more
 - **High-Precision Support**: Optional extended precision arithmetic
@@ -65,9 +67,9 @@ println!("f'(3) = {}", f.derivative()); // 6.0 (2x at x=3)
 use amari_dual::MultiDualNumber;
 
 // Variables: x=2, y=3
-// Seed x with [1,0], y with [0,1] for gradient computation
-let x = MultiDualNumber::new(2.0, vec![1.0, 0.0]);
-let y = MultiDualNumber::new(3.0, vec![0.0, 1.0]);
+let vars = MultiDualNumber::variables(&[2.0, 3.0]);
+let x = vars[0].clone();
+let y = vars[1].clone();
 
 // Compute f(x,y) = x² + xy
 let f = x.clone() * x.clone() + x * y;
@@ -138,7 +140,7 @@ let deriv = x.derivative();
 
 ### MultiDualNumber<T>
 
-Multi-variable dual number for computing gradients:
+Heap-backed multi-variable dual number for computing gradients:
 
 ```rust
 use amari_dual::MultiDualNumber;
@@ -147,6 +149,34 @@ let x = MultiDualNumber::new(value, gradient_seeds);
 let value = x.get_value();
 let gradient = x.get_gradient();
 let n_vars = x.n_vars();
+```
+
+### StaticMultiDual<T, N>
+
+Fixed-size multi-variable dual number for small optimization loops:
+
+```rust
+use amari_dual::StaticMultiDual;
+
+let [alpha, beta] = StaticMultiDual::<f64, 2>::variables([0.5, 1.25]);
+let score = alpha * alpha + StaticMultiDual::constant(3.0) * beta;
+
+assert_eq!(score.get_gradient(), &[1.0, 3.0]);
+```
+
+### Branch-sensitive `max` / `min`
+
+```rust
+use amari_dual::{BranchPolicy, DualNumber};
+
+let left = DualNumber::new(1.0, 2.0);
+let right = DualNumber::new(1.0, 6.0);
+
+// Backward-compatible default: left-biased on ties
+assert_eq!(left.max(right).derivative(), 2.0);
+
+// Explicit tie handling when equality cases matter
+assert_eq!(left.max_by_policy(right, BranchPolicy::Average).derivative(), 4.0);
 ```
 
 ### DualMultivector
@@ -164,7 +194,7 @@ let mv = DualMultivector::new(/* ... */);
 
 | Module | Description |
 |--------|-------------|
-| `types` | DualNumber and MultiDualNumber implementations |
+| `types` | DualNumber, MultiDualNumber, StaticMultiDual, and branch policy types |
 | `functions` | Differentiable mathematical functions (sin, cos, exp, log) |
 | `multivector` | Integration with geometric algebra multivectors |
 | `verified` | Phantom types for compile-time verification |
@@ -216,7 +246,8 @@ let deriv = x.derivative();
 
 - **Machine Learning**: Backpropagation and gradient descent
 - **Scientific Computing**: Sensitivity analysis
-- **Optimization**: Gradient-based methods
+- **Optimization**: Gradient-based methods and heuristic tuning
+- **Compiler / Interpreter Workloads**: Small parameter loops and branch-sensitive scoring
 - **Physics Simulation**: Computing forces from potentials
 
 ## License
