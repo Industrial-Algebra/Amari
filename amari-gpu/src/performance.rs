@@ -428,6 +428,11 @@ impl WorkgroupOptimizer {
         for config in test_configs {
             let start = Instant::now();
             let throughput = test_function(config);
+            let throughput = if throughput.is_finite() && throughput >= 0.0 {
+                throughput
+            } else {
+                0.0
+            };
             let latency = start.elapsed().as_secs_f32() * 1000.0;
 
             let efficiency = if latency > 0.0 {
@@ -450,7 +455,7 @@ impl WorkgroupOptimizer {
             .max_by(|a, b| {
                 a.efficiency_percent
                     .partial_cmp(&b.efficiency_percent)
-                    .unwrap()
+                    .unwrap_or(std::cmp::Ordering::Equal)
             })
             .map(|r| r.config)
             .unwrap_or(WorkgroupConfig {
@@ -541,7 +546,17 @@ impl AdaptiveDispatchPolicy {
     /// Update performance profile based on benchmark results
     pub fn update_from_benchmark(&mut self, benchmark: DispatchBenchmark) {
         // Simple learning: if GPU was faster, lower the crossover point; if slower, raise it
-        let gpu_advantage = benchmark.cpu_time_ms / benchmark.gpu_time_ms.max(0.1);
+        let cpu_time_ms = if benchmark.cpu_time_ms.is_finite() && benchmark.cpu_time_ms >= 0.0 {
+            benchmark.cpu_time_ms
+        } else {
+            0.0
+        };
+        let gpu_time_ms = if benchmark.gpu_time_ms.is_finite() && benchmark.gpu_time_ms > 0.0 {
+            benchmark.gpu_time_ms
+        } else {
+            0.1
+        };
+        let gpu_advantage = cpu_time_ms / gpu_time_ms.max(0.1);
 
         let current_crossover = self
             .crossover_points

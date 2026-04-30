@@ -5,6 +5,108 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### amari-gpu
+
+#### Added
+
+- Restored a narrow `tropical` feature public surface via crate-root re-exports:
+  - `TropicalGpuOps`
+  - `TropicalExecutionPath`
+  - `TropicalGpuError`
+  - `TropicalGpuResult`
+- Added a real shader-backed dense tropical matrix multiplication kernel with CPU baseline tests.
+- Added a shader-backed winner-takes-all tropical attention score kernel.
+- Added adaptive CPU/GPU dispatch for tropical matrix multiplication using a conservative crossover heuristic.
+- Added a manual tropical matrix multiply CPU-vs-GPU benchmark harness.
+- Added a public integration test covering the crate-root tropical API path.
+- Added a public integration test covering the reduced crate-root fusion API path.
+- Added public calculus API tests covering large-batch CPU-semantic fallback behavior.
+- Added public measure API tests covering crate-root imports, built-in integration, Monte Carlo function IDs, Gaussian density, tropical reductions, and multidimensional volume behavior.
+- Added public functional API tests covering crate-root imports, GPU matrix application, matrix multiply fallback, Hilbert batches, spectral CPU baseline, and adaptive dispatch.
+- Added public topology API tests covering crate-root imports, adaptive distance/Morse paths, direct GPU distance/Morse when available, Rips filtration fallback, Betti fallback, and invalid input handling.
+- Added public dual API tests covering crate-root imports, POD conversion, GPU unary forward-AD, empty inputs, and unsupported binary operation errors.
+- Added public automata API tests covering crate-root imports, GPU rule application, GPU energy calculation, batch evolution, CPU neighborhood fallback, and invalid input handling.
+- Added public network API tests covering crate-root imports, adaptive CPU geometric-distance fallback, direct GPU distance/centrality/clustering paths when available, and unsupported-embedding validation.
+- Added public relativistic API tests covering crate-root imports, spacetime coordinate conversion, GPU Minkowski products, propagation input validation, zero-step identity behavior, and one-step simplified geodesic propagation.
+- Added public holographic API tests covering crate-root imports, ProductCl3x32 dimension validation, GPU Cl3 binding parity, similarity, CPU-backed bundling, optical field binding/similarity/Lee encoding, and optical dimension validation.
+- Added public default/core GA + information-geometry API tests covering `AdaptiveCompute`, direct `GpuCliffordAlgebra` GPU paths, signature-specific shader basis counts, `GpuInfoGeometry` CPU baselines, Fisher matrices, KL-style Bregman divergence validation, and device-info accessors.
+- Added public infrastructure/adaptive/performance/timeline API tests covering adaptive verification CPU fallback, platform capability traits, workgroup optimizer calibration, adaptive dispatch policy learning, timeline analysis, and unified dispatcher CPU fallback.
+- Added GB10 hardware validation report at `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md` covering focused public API tests plus serial `--all-features` validation on DGX Spark / NVIDIA GB10.
+- Added RTX 5080 hardware validation report at `docs/roadmap/AMARI_GPU_RTX5080_HARDWARE_VALIDATION.md`; validation passed with `WGPU_BACKEND=vulkan` after making verification overhead diagnostic-only.
+- Added benchmark/crossover report at `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md` with GB10 and RTX 5080 snapshots for core GA, tropical, holographic, GF(2), probabilistic, topology, automata, measure, functional, and network public paths.
+- Added ignored manual benchmark harness `amari-gpu/tests/core_ga_benchmark_crossover.rs` for CPU-vs-GPU Cl(3,0,0) batch geometric-product crossover work.
+- Added ignored manual benchmark harnesses for tropical attention, holographic/optical, GF(2), probabilistic, topology, automata, measure, functional, and network public GPU paths.
+- Clarified `amari-gpu` 0.20.0 positioning as correctness-first, hardware-validated GPU support with conservative adaptive dispatch rather than blanket GPU acceleration for every restored path.
+- Added representative public enumerative API tests covering crate-root imports, WDVV counts, intersection numbers, localization Euler classes, matroid ranks, CSM Euler characteristics, operad multiplicities, and stability phases/checks.
+- Added method-by-method enumerative GPU classification table at `docs/roadmap/AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md`.
+- Added representative public GF(2) GPU API tests covering crate-root imports, Clifford products, matrix-vector multiplication, Hamming distance, empty batches, and invalid fixed-layout inputs.
+- Added GF(2) CPU parity/property tests against `amari-core::gf2` for Clifford products, degenerate-generator behavior, associativity, distributivity, matrix-vector multiplication, Hamming distance masking, and matvec linearity.
+- Added public probabilistic API tests covering crate-root imports, parameter validation, CPU fallback statistics, GPU mean/variance parity, and deterministic zero-variance GPU Gaussian sampling.
+
+#### Changed
+
+- Kept the full `amari_gpu::tropical` module internal while exposing only the narrow v1 API surface.
+- Isolated older trait-based tropical GPU scaffolding into an internal redesign-pending block.
+- Documented `GpuCalculus` as GPU-ready CPU-semantic fallback while WGSL calculus kernels are pending.
+- Fixed `GpuCalculus::batch_eval_vector_field` large-batch behavior to preserve CPU semantics instead of returning placeholder zero vectors.
+- Documented `measure` feature behavior as mixed GPU-backed plus CPU fallback.
+- Fixed `GpuMonteCarloIntegrator::integrate` to pass `function_id` through to the WGSL Monte Carlo kernel.
+- Documented `GpuIntegrator::integrate_values`, `GpuTropicalMeasure::{supremum, infimum}`, and `GpuMultidimIntegrator::monte_carlo_nd` fallback/scaffolding semantics.
+- Added validation for zero-sample integration and non-positive Gaussian sigma inputs.
+- Documented `functional` feature behavior as mixed GPU-backed plus CPU fallback.
+- Fixed `GpuMatrixOperator::to_matrix_operator` readback by creating matrix buffers with `COPY_SRC` usage.
+- Changed `GpuMatrixOperator::multiply` to a documented CPU readback fallback for correctness across independently-created GPU operators.
+- Changed `GpuSpectralDecomposition::compute` to use the validated `amari-functional` CPU spectral baseline after GPU matrix readback.
+- Documented `GpuSpectralDecomposition::apply_function_batch` as CPU-backed until GPU spectral projection kernels are validated.
+- Documented `topology` feature behavior as mixed GPU-backed distance/Morse kernels plus CPU Rips/Betti fallback.
+- Fixed `GpuTopology::new` robustness by replacing invalid unused boundary-shader scaffolding with a validation-safe no-op shader until persistent-homology kernels are restored.
+- Added distance-matrix shape validation for topology Rips filtration builders and adaptive critical-grid validation.
+- Changed `dual` to a narrow crate-root public v1 surface while keeping broader gradient/training scaffolding private.
+- Documented `DualGpuOps::batch_forward_ad` as GPU-backed for unary element-wise operation chains.
+- Added empty-input handling and explicit `InvalidOperation` errors for unsupported `DualOperation::{Add, Multiply}` binary semantics.
+- Documented `automata` feature behavior as mixed GPU-backed rule/energy kernels plus CPU Moore-neighborhood fallback.
+- Replaced invalid/unused automata CA-evolution and neighborhood shader paths with validation-safe scaffolding until richer kernels are restored.
+- Added automata input validation for missing rules, invalid evolution step counts, and invalid grid dimensions.
+- Added crate-root re-exports for high-use `enumerative` GPU types while preserving the broad `amari_gpu::enumerative` module for compatibility.
+- Fixed representative enumerative WGSL validation blockers: recursive `gcd`, dynamic indexing of fixed-size arrays, reserved `partition` field names, and mismatched intersection shader layout.
+- Stabilized enumerative/adaptive test execution by serializing enumerative unit-test GPU contexts and adding an `AMARI_GPU_FORCE_CPU` fallback for adaptive verifier tests on headless EGL stacks.
+- Documented and validated GF(2) GPU fixed-layout bounds: Clifford `num_generators <= 7`, matvec `nrows <= 16`/`ncols <= 32`, and Hamming `dim <= 128`.
+- Fixed GF(2) Hamming distance to mask unused bits in the final word according to `dim`.
+- Re-exported `GF2GpuContext` at the `amari_gpu` crate root.
+- Documented `probabilistic` as GPU-backed sampling/statistics kernels with CPU fallback for small batches after GPU context creation.
+- Documented `network` as a narrow GPU-distance path for vector-only `Cl(P,0,0)` embeddings with `P <= 3`, with CPU fallback for adaptive unsupported/small cases.
+- Documented `relativistic` as GPU-backed Minkowski norm-squared and simplified geodesic propagation over `(ct, x, y, z)` coordinates.
+- Documented `holographic` as a validated ProductCl3x32 v1 surface with GPU-backed binding/similarity plus CPU correctness paths for unbinding, bundling, and memory storage.
+- Documented default/core GA and information-geometry crate-root APIs as GPU-backed batch geometric products plus GPU-ready CPU-baseline information-geometry operations.
+- Documented broader infrastructure/adaptive/performance/timeline public APIs as orchestration/profiling infrastructure rather than domain math kernels.
+- Added probabilistic validation for zero dimensions, invalid distribution dimensions, non-finite values, negative standard deviations, empty sample batches, and one-sample variance.
+- Fixed the probabilistic Gaussian sampling shader to guard trailing workgroup lanes before storage-buffer access.
+- Fixed network GPU distance dispatch to use 8×8 workgroup tiling correctly.
+- Fixed adaptive network pairwise distance fallback to return geometric distances instead of graph shortest-path edge distances.
+- Added network validation for unsupported signatures, non-vector multivector coefficients, non-finite positions, and zero clustering iterations.
+- Replaced placeholder network clustering cohesion with a distance-derived cohesion score.
+- Fixed `GpuSpacetimeVector` CPU conversion to preserve `[ct, x, y, z]` coordinates instead of mixing seconds and length units.
+- Fixed `GpuRelativisticParticle` layout to match the WGSL storage-buffer particle stride.
+- Fixed `GpuHolographic` input validation so flat coefficient arrays must be finite and exact multiples of the validated dimension.
+- Fixed the holographic Cl3 binding WGSL kernel to use the same ProductCl3x32 basis/sign convention as `amari-holographic` instead of the earlier simplified XOR/sign placeholder.
+- Fixed holographic similarity WGSL trailing-lane bounds handling.
+- Fixed optical field pipeline creation on portable WebGPU limits by packing bind outputs into one storage buffer instead of requiring nine storage-buffer bindings.
+- Fixed `GpuCliffordAlgebra` shader generation to use the signature-specific basis count instead of a hard-coded 8-basis Cl(3,0,0) shader.
+- Added core GA flat-batch validation for equal lengths, complete multivector records, finite coefficients, and empty batches.
+- Changed `GpuInfoGeometry::memory_usage()` to return `0` honestly because portable `wgpu` does not expose allocator usage, replacing the previous fabricated 1 MiB placeholder.
+- Changed `GpuInfoGeometry::fisher_information_matrix()` from placeholder identity output to a validated probability-simplex-style diagonal Fisher baseline.
+- Added information-geometry validation for batch length mismatches, malformed typed-array inputs, non-finite/negative values, and invalid KL-style divergence pairs.
+- Added adaptive verifier batch length validation so mismatched verified batches fail explicitly instead of silently truncating via `zip`.
+- Hardened workgroup calibration and adaptive dispatch learning against non-finite benchmark values.
+- Hardened timeline GPU timestamp duration handling so inverted timestamps return `None` instead of underflowing.
+- Hardened zero-window timeline utilization analysis to return an empty finite result.
+- Added optical field validation for nonzero context dimensions, matching field/config dimensions, and finite field components.
+- Added relativistic input validation for empty batches, non-finite spacetime vectors, invalid trajectory parameters, and invalid particle fields.
+- Resolved the Cargo warning in `amari-relativistic` by switching its `amari-core` dependency to a direct dependency where `default-features = false` is honored.
+- Documented `enumerative` as a broad high-use GPU-backed surface with representative tests and remaining deeper mathematical parity work.
+
 ## [0.17.0] - 2026-01-11
 
 ### **New Crate: amari-dynamics - Dynamical Systems Analysis**

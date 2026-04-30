@@ -6,7 +6,10 @@
 //! - Hamming distance computation
 //!
 //! All operations use bit-packed u32 representations for efficient GPU computation
-//! via WGSL compute shaders with XOR, AND, and popcount.
+//! via WGSL compute shaders with XOR, AND, and popcount. The public API validates
+//! the fixed-layout bounds used by the kernels: Clifford products support up to
+//! 128 blades (`num_generators <= 7`), matrix-vector inputs support up to
+//! 16 rows × 32 columns, and Hamming vectors support up to 128 bits.
 
 #[cfg(feature = "gf2")]
 use amari_core::gf2::{GF2Matrix, GF2Vector};
@@ -292,10 +295,14 @@ impl GF2GpuOps {
         Ok(Self { context })
     }
 
-    /// Batch GF(2) Clifford algebra geometric product
+    /// Batch GF(2) Clifford algebra geometric product.
     ///
-    /// Computes the geometric product of each pair (a, b) in the Clifford algebra Cl(N,R;F₂).
-    /// Returns the result multivector packed as `[u32; 4]` per pair.
+    /// Computes the geometric product of each pair `(a, b)` in the Clifford
+    /// algebra `Cl(N,R;F₂)`. Results are packed as `[u32; 4]` per pair.
+    ///
+    /// This GPU kernel supports at most 128 basis blades, so
+    /// `num_generators <= 7`; `num_degenerate` must not exceed
+    /// `num_generators`.
     pub async fn batch_gf2_geometric_product(
         &mut self,
         pairs: &[GpuGF2CliffordPair],
@@ -303,6 +310,18 @@ impl GF2GpuOps {
         let num_pairs = pairs.len();
         if num_pairs == 0 {
             return Ok(Vec::new());
+        }
+        for pair in pairs {
+            if pair.num_generators > 7 {
+                return Err(GF2GpuError::Computation(
+                    "GF(2) Clifford GPU kernel supports num_generators <= 7".to_string(),
+                ));
+            }
+            if pair.num_degenerate > pair.num_generators {
+                return Err(GF2GpuError::Computation(
+                    "num_degenerate must be <= num_generators".to_string(),
+                ));
+            }
         }
 
         let input_buffer =
@@ -369,14 +388,27 @@ impl GF2GpuOps {
             .collect())
     }
 
-    /// Batch GF(2) matrix-vector multiplication
+    /// Batch GF(2) matrix-vector multiplication.
     ///
-    /// For each (matrix, vector) pair, computes the matrix-vector product over GF(2).
-    /// Returns result vectors as u32 bitmasks.
+    /// For each `(matrix, vector)` pair, computes the matrix-vector product over
+    /// GF(2). Results are returned as row-bitmasks. The fixed GPU layout supports
+    /// at most 16 rows and 32 columns.
     pub async fn batch_gf2_matvec(&mut self, data: &[GpuGF2MatVecData]) -> GF2GpuResult<Vec<u32>> {
         let num_items = data.len();
         if num_items == 0 {
             return Ok(Vec::new());
+        }
+        for item in data {
+            if item.nrows > 16 {
+                return Err(GF2GpuError::Computation(
+                    "GF(2) matvec GPU kernel supports nrows <= 16".to_string(),
+                ));
+            }
+            if item.ncols > 32 {
+                return Err(GF2GpuError::Computation(
+                    "GF(2) matvec GPU kernel supports ncols <= 32".to_string(),
+                ));
+            }
         }
 
         let input_buffer =
@@ -429,9 +461,11 @@ impl GF2GpuOps {
         self.context.read_buffer(&output_buffer, output_size).await
     }
 
-    /// Batch Hamming distance computation
+    /// Batch Hamming distance computation.
     ///
-    /// Computes the Hamming distance between each pair of GF(2) vectors.
+    /// Computes the Hamming distance between each pair of GF(2) vectors. The
+    /// fixed GPU layout supports vectors up to 128 bits and masks unused bits in
+    /// the final word according to `dim`.
     pub async fn batch_gf2_hamming_distance(
         &mut self,
         pairs: &[GpuGF2HammingPair],
@@ -439,6 +473,13 @@ impl GF2GpuOps {
         let num_pairs = pairs.len();
         if num_pairs == 0 {
             return Ok(Vec::new());
+        }
+        for pair in pairs {
+            if pair.dim > 128 {
+                return Err(GF2GpuError::Computation(
+                    "GF(2) Hamming GPU kernel supports dim <= 128".to_string(),
+                ));
+            }
         }
 
         let input_buffer =
@@ -714,6 +755,18 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     if (num_words >= 3u) { distance += count_ones(pair.a_words[2] ^ pair.b_words[2]); }
     if (num_words >= 4u) { distance += count_ones(pair.a_words[3] ^ pair.b_words[3]); }
 
+    let rem_bits = pair.dim % 32u;
+    if (rem_bits != 0u && num_words > 0u) {
+        let last_word = num_words - 1u;
+        let mask = (1u << rem_bits) - 1u;
+        var extra: u32 = 0u;
+        if (last_word == 0u) { extra = count_ones((pair.a_words[0] ^ pair.b_words[0]) & ~mask); }
+        else if (last_word == 1u) { extra = count_ones((pair.a_words[1] ^ pair.b_words[1]) & ~mask); }
+        else if (last_word == 2u) { extra = count_ones((pair.a_words[2] ^ pair.b_words[2]) & ~mask); }
+        else { extra = count_ones((pair.a_words[3] ^ pair.b_words[3]) & ~mask); }
+        distance -= extra;
+    }
+
     output_data[index] = distance;
 }
 "#,
@@ -886,8 +939,16 @@ mod tests {
     use super::*;
     use amari_core::gf2::{GF2Matrix, GF2Vector, GF2};
 
+    macro_rules! with_serial_gpu_ops {
+        ($gpu_ops:ident, $body:block) => {{
+            let _gpu_test_guard = crate::GPU_TEST_LOCK.lock().await;
+            if let Ok(mut $gpu_ops) = GF2GpuOps::new().await $body
+        }};
+    }
+
     #[tokio::test]
     async fn test_gf2_gpu_context_initialization() {
+        let _gpu_test_guard = crate::GPU_TEST_LOCK.lock().await;
         let result = GF2GpuContext::new().await;
 
         match result {
@@ -902,7 +963,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_batch_gf2_geometric_product() {
-        if let Ok(mut gpu_ops) = GF2GpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             // Cl(3,0;F₂): e1*e2 = e12
             // a = e1 (blade index 1 = bit 1), b = e2 (blade index 2 = bit 2)
             let pairs = vec![
@@ -935,12 +996,12 @@ mod tests {
                     println!("GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_batch_gf2_matvec() {
-        if let Ok(mut gpu_ops) = GF2GpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             // Identity matrix times [1,0,1] should give [1,0,1]
             let matrix = GF2Matrix::identity(3);
             let vector = GF2Vector::from_bits(&[1, 0, 1]);
@@ -960,12 +1021,12 @@ mod tests {
                     println!("GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[tokio::test]
     async fn test_batch_gf2_hamming_distance() {
-        if let Ok(mut gpu_ops) = GF2GpuOps::new().await {
+        with_serial_gpu_ops!(gpu_ops, {
             let a = GF2Vector::from_bits(&[1, 0, 1, 1, 0]);
             let b = GF2Vector::from_bits(&[0, 0, 1, 0, 1]);
 
@@ -984,7 +1045,7 @@ mod tests {
                     println!("GPU not available, test passes");
                 }
             }
-        }
+        });
     }
 
     #[test]

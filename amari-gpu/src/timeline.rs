@@ -62,7 +62,7 @@ impl TimelineEvent {
     /// Get the GPU duration of the event (if available)
     pub fn gpu_duration_ns(&self) -> Option<u64> {
         match (self.gpu_timestamp_start, self.gpu_timestamp_end) {
-            (Some(start), Some(end)) => Some(end - start),
+            (Some(start), Some(end)) => end.checked_sub(start),
             _ => None,
         }
     }
@@ -163,6 +163,13 @@ impl GpuTimelineAnalyzer {
     /// Analyze GPU utilization over time
     pub fn analyze_gpu_utilization(&self, window_duration: Duration) -> UtilizationAnalysis {
         let now = Instant::now();
+        if window_duration.is_zero() {
+            return UtilizationAnalysis {
+                analysis_window: window_duration,
+                device_stats: HashMap::new(),
+                timestamp: now,
+            };
+        }
         let window_start = now - window_duration;
 
         let events = self.get_events_in_range(window_start, now);
