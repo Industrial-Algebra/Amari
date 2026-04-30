@@ -173,7 +173,7 @@ impl GpuProbabilistic {
         if !samples.len().is_multiple_of(self.dimension) {
             return Err(GpuProbabilisticError::DimensionMismatch {
                 expected: self.dimension,
-                actual: samples.len() % self.dimension,
+                actual: samples.len(),
             });
         }
         if samples.iter().any(|x| !x.is_finite()) {

@@ -43,6 +43,13 @@ async fn test_probabilistic_public_api_validation_and_cpu_gpu_parity() {
         Err(GpuProbabilisticError::DimensionMismatch { .. })
     ));
     assert!(matches!(
+        gpu.batch_mean(&[1.0, 2.0, 3.0, 4.0, 5.0]).await,
+        Err(GpuProbabilisticError::DimensionMismatch {
+            expected: 3,
+            actual: 5
+        })
+    ));
+    assert!(matches!(
         gpu.batch_variance(&[1.0, 2.0, 3.0], &[1.0, 2.0, 3.0]).await,
         Err(GpuProbabilisticError::InvalidParameters(_))
     ));
