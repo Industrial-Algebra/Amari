@@ -1,6 +1,6 @@
 {
   "name": "amari-typescript-example",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "description": "Example TypeScript project using the Amari mathematical computing library",
   "main": "dist/example.js",
   "scripts": {
