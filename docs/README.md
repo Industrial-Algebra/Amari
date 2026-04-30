@@ -15,6 +15,7 @@ This directory contains comprehensive documentation for the Amari mathematical c
 Current release process documentation:
 
 - **[v0.9.8 Release Process](releases/RELEASE_PROCESS_v0.9.8.md)** - Current release procedures and lessons learned
+- **[v0.21.0 Tropical / Dual Release Prep](releases/v0.21.0-tropical-dual-release-prep.md)** - Release notes, PR summary, publish-order notes, and hold conditions for the `0.21.0` cycle
 
 ### 🗺️ Roadmaps
 

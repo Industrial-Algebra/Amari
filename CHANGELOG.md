@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.21.0] - 2026-04-21
 
+> Release-prepared on this branch. Actual publication is intentionally queued until the `0.20.1` fast-follow release lands after `0.20.0`.
+
 ### Changed
 
 - Reframed `amari-tropical` as an optimization-oriented semiring crate rather than only a float max-plus utility layer.
