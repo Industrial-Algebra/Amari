@@ -1,23 +1,27 @@
-//! GPU-accelerated differential calculus operations
+//! GPU-ready differential calculus operations.
 //!
-//! This module provides GPU acceleration for differential calculus operations from
-//! amari-calculus using WebGPU compute shaders. It implements progressive enhancement:
-//! - Automatically detects GPU capabilities during initialization
-//! - Falls back to CPU computation when GPU is unavailable or for small workloads
-//! - Scales to GPU acceleration for large batch operations in production
+//! This module provides the public `amari-gpu` calculus API and initializes the
+//! WebGPU pipeline scaffolding for future calculus kernels. The current public
+//! behavior is intentionally honest: calculus operations preserve CPU semantics
+//! and fall back to CPU computation while the WGSL kernels are still being
+//! completed and validated.
 //!
-//! ## Accelerated Operations
+//! ## Current Operations
 //!
-//! - **Batch Field Evaluation**: Parallel evaluation of scalar and vector fields
-//! - **Batch Gradient**: GPU-accelerated numerical gradients using finite differences
-//! - **Batch Divergence**: Parallel divergence computation for vector fields
-//! - **Batch Curl**: GPU-accelerated curl computation
+//! - **Batch Field Evaluation**: CPU-compatible batch evaluation through the GPU API
+//! - **Batch Gradient**: CPU finite-difference baseline through the GPU API
+//! - **Batch Divergence**: CPU finite-difference baseline through the GPU API
+//! - **Batch Curl**: CPU finite-difference baseline through the GPU API
 
 use crate::unified::{GpuContext, UnifiedGpuResult};
 use amari_calculus::{ScalarField, VectorField};
 use amari_core::Multivector;
 
-/// GPU-accelerated differential calculus operations
+/// GPU-ready differential calculus operations.
+///
+/// Current public methods preserve `amari-calculus` CPU semantics while GPU
+/// kernels are completed and validated. The type still owns GPU pipeline
+/// scaffolding so future kernels can be added without changing the public API.
 pub struct GpuCalculus {
     #[allow(dead_code)] // Used for future GPU shader implementation
     context: GpuContext,
@@ -47,106 +51,66 @@ impl GpuCalculus {
         })
     }
 
-    /// Batch evaluate scalar field at multiple points on GPU
+    /// Batch evaluate a scalar field at multiple points.
     ///
-    /// For large batches (>1000 points), uses GPU acceleration.
-    /// For small batches, falls back to CPU for efficiency.
+    /// Current 0.20.0 behavior: CPU-semantic fallback through the GPU API.
+    /// Future releases may route large batches to a validated WGSL kernel.
     pub async fn batch_eval_scalar_field<const P: usize, const Q: usize, const R: usize>(
         &self,
         field: &ScalarField<P, Q, R>,
         points: &[[f64; 3]],
     ) -> UnifiedGpuResult<Vec<f64>> {
-        let batch_size = points.len();
-
-        // CPU fallback for small batches
-        if batch_size < 1000 {
-            return Ok(points.iter().map(|p| field.evaluate(p)).collect());
-        }
-
-        // GPU path for large batches
         self.eval_scalar_field_gpu(field, points).await
     }
 
-    /// Batch evaluate vector field at multiple points on GPU
+    /// Batch evaluate a vector field at multiple points.
+    ///
+    /// Current 0.20.0 behavior: CPU-semantic fallback through the GPU API.
+    /// Future releases may route large batches to a validated WGSL kernel.
     pub async fn batch_eval_vector_field<const P: usize, const Q: usize, const R: usize>(
         &self,
         field: &VectorField<P, Q, R>,
         points: &[[f64; 3]],
     ) -> UnifiedGpuResult<Vec<Multivector<P, Q, R>>> {
-        let batch_size = points.len();
-
-        // CPU fallback for small batches
-        if batch_size < 1000 {
-            return Ok(points.iter().map(|p| field.evaluate(p)).collect());
-        }
-
-        // GPU path for large batches
         self.eval_vector_field_gpu(field, points).await
     }
 
-    /// Batch compute gradients at multiple points using GPU
+    /// Batch compute gradients at multiple points.
     ///
-    /// Uses central finite differences with GPU parallelization.
-    /// Step size (h) is automatically chosen based on field characteristics.
+    /// Current 0.20.0 behavior: CPU central finite differences through the GPU API.
+    /// Future releases may route large batches to a validated WGSL kernel.
     pub async fn batch_gradient<const P: usize, const Q: usize, const R: usize>(
         &self,
         field: &ScalarField<P, Q, R>,
         points: &[[f64; 3]],
         h: f64,
     ) -> UnifiedGpuResult<Vec<Multivector<P, Q, R>>> {
-        let batch_size = points.len();
-
-        // CPU fallback for small batches
-        if batch_size < 500 {
-            return Ok(points
-                .iter()
-                .map(|p| self.compute_gradient_cpu(field, p, h))
-                .collect());
-        }
-
-        // GPU path for large batches
         self.compute_gradient_gpu(field, points, h).await
     }
 
-    /// Batch compute divergence of vector field at multiple points
+    /// Batch compute divergence of a vector field at multiple points.
+    ///
+    /// Current 0.20.0 behavior: CPU central finite differences through the GPU API.
+    /// Future releases may route large batches to a validated WGSL kernel.
     pub async fn batch_divergence<const P: usize, const Q: usize, const R: usize>(
         &self,
         field: &VectorField<P, Q, R>,
         points: &[[f64; 3]],
         h: f64,
     ) -> UnifiedGpuResult<Vec<f64>> {
-        let batch_size = points.len();
-
-        // CPU fallback for small batches
-        if batch_size < 500 {
-            return Ok(points
-                .iter()
-                .map(|p| self.compute_divergence_cpu(field, p, h))
-                .collect());
-        }
-
-        // GPU path for large batches
         self.compute_divergence_gpu(field, points, h).await
     }
 
-    /// Batch compute curl of vector field at multiple points
+    /// Batch compute curl of a vector field at multiple points.
+    ///
+    /// Current 0.20.0 behavior: CPU central finite differences through the GPU API.
+    /// Future releases may route large batches to a validated WGSL kernel.
     pub async fn batch_curl<const P: usize, const Q: usize, const R: usize>(
         &self,
         field: &VectorField<P, Q, R>,
         points: &[[f64; 3]],
         h: f64,
     ) -> UnifiedGpuResult<Vec<Multivector<P, Q, R>>> {
-        let batch_size = points.len();
-
-        // CPU fallback for small batches
-        if batch_size < 500 {
-            return Ok(points
-                .iter()
-                .map(|p| self.compute_curl_cpu(field, p, h))
-                .collect());
-        }
-
-        // GPU path for large batches
         self.compute_curl_gpu(field, points, h).await
     }
 
@@ -242,7 +206,7 @@ impl GpuCalculus {
     }
 
     // ==================================================================
-    // GPU IMPLEMENTATIONS (Placeholders - would use WGSL shaders)
+    // CPU-SEMANTIC FALLBACKS FOR FUTURE GPU IMPLEMENTATIONS
     // ==================================================================
 
     async fn eval_scalar_field_gpu<const P: usize, const Q: usize, const R: usize>(
@@ -250,19 +214,17 @@ impl GpuCalculus {
         field: &ScalarField<P, Q, R>,
         points: &[[f64; 3]],
     ) -> UnifiedGpuResult<Vec<f64>> {
-        // TODO: Implement GPU version with WGSL shader
-        // For now, fall back to CPU
+        // TODO(0.20.x+): replace with validated WGSL field-evaluation kernel.
         Ok(points.iter().map(|p| field.evaluate(p)).collect())
     }
 
     async fn eval_vector_field_gpu<const P: usize, const Q: usize, const R: usize>(
         &self,
-        _field: &VectorField<P, Q, R>,
+        field: &VectorField<P, Q, R>,
         points: &[[f64; 3]],
     ) -> UnifiedGpuResult<Vec<Multivector<P, Q, R>>> {
-        // TODO: Implement GPU version
-        // For now, return empty vector as placeholder
-        Ok(vec![Multivector::zero(); points.len()])
+        // TODO(0.20.x+): replace with validated WGSL vector-field kernel.
+        Ok(points.iter().map(|p| field.evaluate(p)).collect())
     }
 
     async fn compute_gradient_gpu<const P: usize, const Q: usize, const R: usize>(
@@ -271,8 +233,7 @@ impl GpuCalculus {
         points: &[[f64; 3]],
         h: f64,
     ) -> UnifiedGpuResult<Vec<Multivector<P, Q, R>>> {
-        // TODO: Implement GPU version with finite differences shader
-        // For now, fall back to CPU
+        // TODO(0.20.x+): replace with validated WGSL finite-difference kernel.
         Ok(points
             .iter()
             .map(|p| self.compute_gradient_cpu(field, p, h))
@@ -285,8 +246,7 @@ impl GpuCalculus {
         points: &[[f64; 3]],
         h: f64,
     ) -> UnifiedGpuResult<Vec<f64>> {
-        // TODO: Implement GPU version
-        // For now, fall back to CPU
+        // TODO(0.20.x+): replace with validated WGSL divergence kernel.
         Ok(points
             .iter()
             .map(|p| self.compute_divergence_cpu(field, p, h))
@@ -299,8 +259,7 @@ impl GpuCalculus {
         points: &[[f64; 3]],
         h: f64,
     ) -> UnifiedGpuResult<Vec<Multivector<P, Q, R>>> {
-        // TODO: Implement GPU version
-        // For now, fall back to CPU
+        // TODO(0.20.x+): replace with validated WGSL curl kernel.
         Ok(points
             .iter()
             .map(|p| self.compute_curl_cpu(field, p, h))

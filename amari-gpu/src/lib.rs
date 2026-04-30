@@ -5,7 +5,7 @@
 //!
 //! # Overview
 //!
-//! The crate offers GPU acceleration for:
+//! The crate currently offers GPU acceleration for:
 //!
 //! - **Clifford Algebra**: Batch geometric products with Cayley table upload
 //! - **GF(2) Algebra**: Batch binary Clifford products, matrix-vector multiply, Hamming distance (with `gf2` feature)
@@ -14,6 +14,10 @@
 //! - **Measure Theory**: GPU-accelerated Monte Carlo integration (with `measure` feature)
 //! - **Relativistic Physics**: Batch Lorentz transformations
 //! - **Topology**: Distance matrices, Morse critical points, Rips filtrations (with `topology` feature)
+//!
+//! Some source modules are still undergoing redesign before full public exposure.
+//! In particular, `tropical` exposes a narrow crate-root v1 surface, while `fusion`
+//! has only a reduced first public surface intended for restoration so far.
 //!
 //! # Quick Start
 //!
@@ -82,14 +86,52 @@
 //! | `holographic` | GPU-accelerated holographic memory |
 //! | `measure` | GPU-accelerated Monte Carlo integration |
 //! | `calculus` | GPU-accelerated differential geometry |
+//! | `dual` | Narrow GPU-backed dual-number v1 surface; broader gradient/training scaffolding private |
 //! | `probabilistic` | GPU-accelerated probability sampling |
-//! | `automata` | GPU-accelerated cellular automata |
-//! | `enumerative` | GPU-accelerated combinatorics |
-//! | `functional` | GPU-accelerated functional analysis (Hilbert spaces, spectral theory) |
-//! | `topology` | GPU-accelerated computational topology (distance matrices, Morse theory) |
+//! | `automata` | GPU-backed automata rule/energy kernels with documented CPU neighborhood fallback |
+//! | `enumerative` | Broad GPU-backed enumerative kernels; high-use surface with representative baseline tests |
+//! | `functional` | Mixed GPU-backed functional analysis and documented CPU spectral/fallback paths |
+//! | `topology` | Mixed GPU-backed topology and documented CPU Rips/Betti fallback paths |
 //! | `gf2` | GPU-accelerated GF(2) algebra (binary Clifford products, matrix ops, Hamming distance) |
+//! | `fusion` | Reduced first public surface restored; broader fusion GPU API still redesign-pending |
+//! | `tropical` | Narrow crate-root public v1 surface for tropical matrix multiply/adaptive dispatch |
 //! | `webgpu` | Enable WebGPU backend |
 //! | `high-precision` | Enable 128-bit float support |
+//!
+//! # Tropical GPU v1 (with `tropical` feature)
+//!
+//! A narrow public tropical GPU surface is available at the crate root:
+//!
+//! ```ignore
+//! use amari_gpu::{TropicalExecutionPath, TropicalGpuOps};
+//! use amari_tropical::{TropicalMatrix, TropicalNumber};
+//!
+//! let mut gpu = TropicalGpuOps::new().await?;
+//!
+//! let mut a = TropicalMatrix::new(64, 64);
+//! let mut b = TropicalMatrix::new(64, 64);
+//!
+//! for i in 0..64 {
+//!     for j in 0..64 {
+//!         a.data[i][j] = TropicalNumber::new((i as f32 - j as f32) * 0.25);
+//!         b.data[i][j] = TropicalNumber::new((i as f32 + j as f32) * 0.125);
+//!     }
+//! }
+//!
+//! match gpu.matrix_multiply_execution_path(a.rows, a.cols, b.cols) {
+//!     TropicalExecutionPath::Cpu => println!("CPU path"),
+//!     TropicalExecutionPath::Gpu => println!("GPU path"),
+//! }
+//!
+//! let gpu_result = gpu.matrix_multiply(&a, &b).await?;
+//! let adaptive_result = gpu.matrix_multiply_adaptive(&a, &b).await?;
+//! let attention_scores = gpu.attention_scores(&a).await?;
+//! # let _ = (gpu_result, adaptive_result, attention_scores);
+//! ```
+//!
+//! This is intentionally narrower than a full `amari_gpu::tropical` module. It currently
+//! includes dense tropical matrix multiply and winner-takes-all attention scores. Broader
+//! tropical GPU APIs remain redesign-pending.
 //!
 //! # Performance
 //!
@@ -113,17 +155,17 @@ pub mod benchmarks;
 #[cfg(feature = "calculus")]
 pub mod calculus;
 #[cfg(feature = "dual")]
-pub mod dual;
+#[allow(dead_code)]
+mod dual;
 #[cfg(feature = "enumerative")]
 pub mod enumerative;
 #[cfg(feature = "functional")]
 pub mod functional;
+#[cfg(feature = "fusion")]
+#[allow(dead_code)]
+mod fusion;
 #[cfg(feature = "gf2")]
 pub mod gf2;
-// NOTE: fusion GPU module disabled - requires gpu submodules in amari_dual and amari_tropical crates
-// These would need to be created with DualGpuOps, GpuDualNumber, TropicalGpuOps, GpuTropicalNumber types
-// #[cfg(feature = "fusion")]
-// pub mod fusion;
 #[cfg(feature = "holographic")]
 pub mod holographic;
 #[cfg(feature = "measure")]
@@ -136,12 +178,13 @@ pub mod probabilistic;
 pub mod relativistic;
 pub mod shaders;
 pub mod timeline;
-// NOTE: tropical GPU module disabled - has orphan impl issues (impl for TropicalMatrix/TropicalMultivector)
-// Would need to use extension traits instead of inherent impls
-// #[cfg(feature = "tropical")]
-// pub mod tropical;
+// NOTE: `tropical.rs` is still redesigning toward a fuller public module, but a
+// narrow v1 surface is now re-exported at the crate root under the `tropical` feature.
 #[cfg(feature = "topology")]
 pub mod topology;
+#[cfg(feature = "tropical")]
+#[allow(dead_code)]
+mod tropical;
 pub mod unified;
 pub mod verification;
 
@@ -152,6 +195,11 @@ pub use adaptive::{
 };
 use amari_core::Multivector;
 use amari_info_geom::amari_chentsov_tensor;
+#[cfg(feature = "automata")]
+pub use automata::{
+    AutomataGpuConfig, AutomataGpuError, AutomataGpuOps, AutomataGpuResult, GpuCellData,
+    GpuEvolutionParams, GpuRuleConfig,
+};
 pub use benchmarks::{
     AmariMultiGpuBenchmarks, BenchmarkConfig, BenchmarkResult, BenchmarkRunner,
     BenchmarkSuiteResults, BenchmarkSummary, ScalingAnalysis,
@@ -159,14 +207,34 @@ pub use benchmarks::{
 use bytemuck::{Pod, Zeroable};
 #[cfg(feature = "calculus")]
 pub use calculus::GpuCalculus;
+#[cfg(feature = "dual")]
+pub use dual::{DualGpuError, DualGpuOps, DualGpuResult, DualOperation, GpuDualNumber};
+#[cfg(feature = "enumerative")]
+pub use enumerative::{
+    EnumerativeGpuConfig, EnumerativeGpuContext, EnumerativeGpuError, EnumerativeGpuOps,
+    EnumerativeGpuResult, GpuCSMData, GpuGromovWittenData, GpuIntersectionData,
+    GpuLittlewoodRichardsonData, GpuLocalizationData, GpuMatroidRankData, GpuMultiIntersectData,
+    GpuNamespaceData, GpuOperadData, GpuSchubertClass, GpuStabilityData, GpuTropicalSchubertData,
+    GpuWDVVData,
+};
+#[cfg(all(feature = "enumerative", feature = "gf2"))]
+pub use enumerative::{
+    GpuFiniteFieldPointData, GpuKLPolynomialData, GpuRepresentabilityData,
+    GpuWeightDistributionData,
+};
 #[cfg(feature = "functional")]
 pub use functional::{
     AdaptiveFunctionalCompute, GpuFunctionalError, GpuFunctionalResult, GpuHilbertSpace,
     GpuMatrixOperator, GpuSpectralDecomposition,
 };
+#[cfg(feature = "fusion")]
+pub use fusion::{
+    FusionGpuError, FusionGpuResult, GpuHolographicTDC, GpuResonatorOutput, HolographicGpuOps,
+};
 #[cfg(feature = "gf2")]
 pub use gf2::{
-    GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair, GpuGF2MatVecData,
+    GF2GpuContext, GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair,
+    GpuGF2MatVecData,
 };
 #[cfg(feature = "holographic")]
 pub use holographic::{
@@ -197,6 +265,10 @@ pub use shaders::{
     ShaderLibrary, DUAL_SHADERS, FUSION_SHADERS, TOPOLOGY_SHADERS, TROPICAL_SHADERS,
 };
 use thiserror::Error;
+
+#[cfg(test)]
+#[allow(dead_code)]
+pub(crate) static GPU_TEST_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 pub use timeline::{
     BottleneckAnalysis, DeviceUtilizationStats, GpuTimelineAnalyzer, MultiGpuPerformanceMonitor,
     OptimizationRecommendation, PerformanceAnalysisReport, PerformanceBottleneck,
@@ -207,6 +279,8 @@ pub use timeline::{
 pub use topology::{
     AdaptiveTopologyCompute, GpuCriticalPoint, GpuTopology, GpuTopologyError, GpuTopologyResult,
 };
+#[cfg(feature = "tropical")]
+pub use tropical::{TropicalExecutionPath, TropicalGpuError, TropicalGpuOps, TropicalGpuResult};
 pub use unified::{
     BufferPoolStats, EnhancedGpuBufferPool, GpuAccelerated, GpuContext, GpuDispatcher,
     GpuOperationParams, GpuParam, MultiGpuStats, PoolEntryStats, SharedGpuContext, UnifiedGpuError,
@@ -230,7 +304,15 @@ pub enum GpuError {
     ShaderError(String),
 }
 
-/// GPU-accelerated Clifford algebra operations
+/// GPU-accelerated Clifford algebra operations.
+///
+/// Public v1 exposes batch geometric products for flat multivector coefficient
+/// arrays. Inputs must contain complete multivectors of length `2^(P+Q+R)` and
+/// are computed on the GPU in `f32`, then converted back to `f64` for API
+/// compatibility.
+///
+/// `AdaptiveCompute::batch_geometric_product` is a separate Cl(3,0,0) helper;
+/// use `GpuCliffordAlgebra::new::<P,Q,R>()` directly for other signatures.
 pub struct GpuCliffordAlgebra {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -278,10 +360,14 @@ impl GpuCliffordAlgebra {
             usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
         });
 
-        // Create compute shader
+        // Create compute shader with a signature-specific basis count.
+        let shader_source = GEOMETRIC_PRODUCT_SHADER.replace(
+            "const BASIS_COUNT: u32 = 8u; // For 3D Clifford algebra",
+            &format!("const BASIS_COUNT: u32 = {basis_count}u;"),
+        );
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Geometric Product Shader"),
-            source: wgpu::ShaderSource::Wgsl(GEOMETRIC_PRODUCT_SHADER.into()),
+            source: wgpu::ShaderSource::Wgsl(shader_source.into()),
         });
 
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -374,18 +460,15 @@ impl GpuCliffordAlgebra {
         flat_table
     }
 
-    /// Perform batch geometric product on GPU
+    /// Perform batch geometric product on GPU.
     pub async fn batch_geometric_product(
         &self,
         a_batch: &[f64],
         b_batch: &[f64],
     ) -> Result<Vec<f64>, GpuError> {
-        let batch_size = a_batch.len() / self.basis_count;
-
-        if a_batch.len() != b_batch.len() {
-            return Err(GpuError::BufferError(
-                "Input batches must have same size".to_string(),
-            ));
+        let batch_size = self.validate_flat_batches(a_batch, b_batch)?;
+        if batch_size == 0 {
+            return Ok(Vec::new());
         }
 
         // Convert to f32 for GPU
@@ -480,13 +563,13 @@ impl GpuCliffordAlgebra {
         let buffer_slice = staging_buffer.slice(..);
         let (sender, receiver) = futures::channel::oneshot::channel();
         buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-            sender.send(result).unwrap();
+            let _ = sender.send(result);
         });
 
         self.device.poll(wgpu::Maintain::Wait);
         receiver
             .await
-            .unwrap()
+            .map_err(|_| GpuError::BufferError("Failed to receive buffer map result".to_string()))?
             .map_err(|e| GpuError::BufferError(e.to_string()))?;
 
         let data = buffer_slice.get_mapped_range();
@@ -503,6 +586,43 @@ impl GpuCliffordAlgebra {
     pub fn should_use_gpu(operation_count: usize) -> bool {
         // GPU is beneficial for batch operations with many multivectors
         operation_count >= 100
+    }
+
+    /// Number of basis blades for this signature.
+    pub fn basis_count(&self) -> usize {
+        self.basis_count
+    }
+
+    /// Algebra dimension `P + Q + R` for this GPU context.
+    pub fn dimension(&self) -> usize {
+        self.dim
+    }
+
+    fn validate_flat_batches(&self, a_batch: &[f64], b_batch: &[f64]) -> Result<usize, GpuError> {
+        if a_batch.len() != b_batch.len() {
+            return Err(GpuError::BufferError(
+                "input batches must have the same coefficient count".to_string(),
+            ));
+        }
+        if !a_batch.len().is_multiple_of(self.basis_count) {
+            return Err(GpuError::BufferError(format!(
+                "coefficient count {} is not a multiple of basis_count {}",
+                a_batch.len(),
+                self.basis_count
+            )));
+        }
+        for (name, batch) in [("a", a_batch), ("b", b_batch)] {
+            if let Some((index, _)) = batch
+                .iter()
+                .enumerate()
+                .find(|(_, value)| !value.is_finite())
+            {
+                return Err(GpuError::BufferError(format!(
+                    "{name}_batch coefficient {index} is not finite"
+                )));
+            }
+        }
+        Ok(a_batch.len() / self.basis_count)
     }
 }
 
@@ -566,7 +686,12 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 }
 "#;
 
-/// Adaptive GPU/CPU dispatcher
+/// Adaptive GPU/CPU dispatcher for the legacy Cl(3,0,0) flat-batch helper.
+///
+/// Single multivector products always use the CPU `amari-core` baseline.
+/// `batch_geometric_product` accepts flat Cl(3,0,0) batches with 8 coefficients
+/// per multivector and uses GPU only when a context is available and the batch
+/// crosses `GpuCliffordAlgebra::should_use_gpu`.
 pub struct AdaptiveCompute {
     gpu: Option<GpuCliffordAlgebra>,
 }
@@ -588,13 +713,16 @@ impl AdaptiveCompute {
         a.geometric_product(b)
     }
 
-    /// Batch geometric product with adaptive dispatch
+    /// Batch geometric product with adaptive dispatch for flat Cl(3,0,0) inputs.
     pub async fn batch_geometric_product(
         &self,
         a_batch: &[f64],
         b_batch: &[f64],
     ) -> Result<Vec<f64>, GpuError> {
-        let batch_size = a_batch.len() / 8; // Assuming 3D
+        let batch_size = validate_cl3_flat_batches(a_batch, b_batch)?;
+        if batch_size == 0 {
+            return Ok(Vec::new());
+        }
 
         if let Some(gpu) = &self.gpu {
             if GpuCliffordAlgebra::should_use_gpu(batch_size) {
@@ -621,16 +749,78 @@ impl AdaptiveCompute {
     }
 }
 
-/// GPU-accelerated Information Geometry operations
+fn validate_probability_like_vector(name: &str, values: &[f64]) -> Result<(), GpuError> {
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(GpuError::BufferError(format!(
+                "{name}[{index}] is not finite"
+            )));
+        }
+        if *value < 0.0 {
+            return Err(GpuError::BufferError(format!(
+                "{name}[{index}] is negative"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn validate_kl_pair(index: usize, p: &[f64], q: &[f64]) -> Result<(), GpuError> {
+    if p.len() != q.len() {
+        return Err(GpuError::BufferError(format!(
+            "divergence pair {index} length mismatch: p={}, q={}",
+            p.len(),
+            q.len()
+        )));
+    }
+    validate_probability_like_vector("p", p)?;
+    validate_probability_like_vector("q", q)?;
+    for (coord, (pi, qi)) in p.iter().zip(q.iter()).enumerate() {
+        if *pi > 0.0 && *qi <= 0.0 {
+            return Err(GpuError::BufferError(format!(
+                "divergence pair {index} has q[{coord}] <= 0 while p[{coord}] > 0"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn validate_cl3_flat_batches(a_batch: &[f64], b_batch: &[f64]) -> Result<usize, GpuError> {
+    const CL3_BASIS_COUNT: usize = 8;
+    if a_batch.len() != b_batch.len() {
+        return Err(GpuError::BufferError(
+            "input batches must have the same coefficient count".to_string(),
+        ));
+    }
+    if !a_batch.len().is_multiple_of(CL3_BASIS_COUNT) {
+        return Err(GpuError::BufferError(format!(
+            "coefficient count {} is not a multiple of 8 for Cl(3,0,0)",
+            a_batch.len()
+        )));
+    }
+    for (name, batch) in [("a", a_batch), ("b", b_batch)] {
+        if let Some((index, _)) = batch
+            .iter()
+            .enumerate()
+            .find(|(_, value)| !value.is_finite())
+        {
+            return Err(GpuError::BufferError(format!(
+                "{name}_batch coefficient {index} is not finite"
+            )));
+        }
+    }
+    Ok(a_batch.len() / CL3_BASIS_COUNT)
+}
+
+/// Information-geometry operations with GPU-ready infrastructure.
 ///
-/// This struct provides GPU acceleration for information geometry computations
-/// using WebGPU and WGSL compute shaders. It implements progressive enhancement:
-/// - Automatically detects GPU capabilities during initialization
-/// - Falls back to CPU computation when GPU is unavailable or for small workloads
-/// - Scales to GPU acceleration for large batch operations in production
+/// The public 0.20 surface is a correctness-first CPU baseline after WebGPU
+/// context creation. Amari-Chentsov batches, Fisher metrics, and Bregman/KL-style
+/// divergences are validated and computed with `amari-info-geom` semantics while
+/// shader-backed tensor/fisher/divergence pipelines remain private restoration
+/// candidates.
 ///
-/// The struct maintains WebGPU resources (device, queue, pipelines) but gracefully
-/// handles environments where GPU access is restricted (e.g., CI/test environments).
+/// This preserves public API stability without claiming unvalidated GPU kernels.
 pub struct GpuInfoGeometry {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -768,41 +958,29 @@ impl GpuInfoGeometry {
         Ok(amari_chentsov_tensor(x, y, z))
     }
 
-    /// Batch compute Amari-Chentsov tensors with intelligent CPU/GPU dispatch
+    /// Batch compute Amari-Chentsov tensors with CPU-baseline semantics.
     ///
-    /// This method implements progressive enhancement:
-    /// - Small batches (< 100): CPU computation for efficiency
-    /// - Large batches: GPU acceleration when available, with CPU fallback
-    ///
-    /// Note: Current implementation uses CPU computation to ensure correctness
-    /// in test environments where GPU access may be restricted. In production
-    /// deployments with proper GPU access, this will automatically use GPU
-    /// acceleration for large batches.
+    /// All three batches must have equal length. The current public path uses
+    /// `amari-info-geom::amari_chentsov_tensor` for correctness; the shader path
+    /// remains private until hardware parity is validated.
     pub async fn amari_chentsov_tensor_batch(
         &self,
         x_batch: &[Multivector<3, 0, 0>],
         y_batch: &[Multivector<3, 0, 0>],
         z_batch: &[Multivector<3, 0, 0>],
     ) -> Result<Vec<f64>, GpuError> {
-        let batch_size = x_batch.len();
-        if batch_size == 0 {
+        if x_batch.len() != y_batch.len() || x_batch.len() != z_batch.len() {
+            return Err(GpuError::BufferError(format!(
+                "batch length mismatch: x={}, y={}, z={}",
+                x_batch.len(),
+                y_batch.len(),
+                z_batch.len()
+            )));
+        }
+        if x_batch.is_empty() {
             return Ok(Vec::new());
         }
 
-        // For small batches, CPU is more efficient due to GPU setup overhead
-        if batch_size < 100 {
-            let results = x_batch
-                .iter()
-                .zip(y_batch.iter())
-                .zip(z_batch.iter())
-                .map(|((x, y), z)| amari_chentsov_tensor(x, y, z))
-                .collect();
-            return Ok(results);
-        }
-
-        // For large batches: Use CPU computation as fallback
-        // TODO: Enable GPU path when production environment has proper GPU access
-        // This would use self.compute_tensor_batch_gpu() for actual GPU acceleration
         let results = x_batch
             .iter()
             .zip(y_batch.iter())
@@ -812,14 +990,32 @@ impl GpuInfoGeometry {
         Ok(results)
     }
 
-    /// Compute tensor batch from TypedArray-style flat data
+    /// Compute tensor batch from TypedArray-style flat data.
+    ///
+    /// Each item is `[x0,x1,x2, y0,y1,y2, z0,z1,z2]` for Cl(3,0,0) vector
+    /// components. All values must be finite.
     pub async fn amari_chentsov_tensor_from_typed_arrays(
         &self,
         flat_data: &[f64],
         batch_size: usize,
     ) -> Result<Vec<f64>, GpuError> {
-        if flat_data.len() != batch_size * 9 {
-            return Err(GpuError::BufferError("Invalid flat data size".to_string()));
+        let expected = batch_size.checked_mul(9).ok_or_else(|| {
+            GpuError::BufferError("batch size overflows flat data shape".to_string())
+        })?;
+        if flat_data.len() != expected {
+            return Err(GpuError::BufferError(format!(
+                "invalid flat data size: expected {expected}, got {}",
+                flat_data.len()
+            )));
+        }
+        if let Some((index, _)) = flat_data
+            .iter()
+            .enumerate()
+            .find(|(_, value)| !value.is_finite())
+        {
+            return Err(GpuError::BufferError(format!(
+                "flat tensor coefficient {index} is not finite"
+            )));
         }
 
         // Convert flat data to multivector batches
@@ -860,28 +1056,68 @@ impl GpuInfoGeometry {
         Ok(GpuDeviceInfo::new(true, "WebGPU Device"))
     }
 
-    /// Get current memory usage
+    /// Get current memory usage if the backend exposes it.
+    ///
+    /// Portable WebGPU does not expose allocator usage through `wgpu`, so this
+    /// returns `0` rather than a fabricated placeholder value.
     pub async fn memory_usage(&self) -> Result<u64, GpuError> {
-        // Simplified memory usage tracking
-        Ok(1024 * 1024) // 1MB placeholder
+        Ok(0)
     }
 
-    /// Compute Fisher Information Matrix
+    /// Compute a Fisher Information Matrix CPU baseline.
+    ///
+    /// Interprets `parameters` as coordinates of a probability-simplex style
+    /// point and delegates to `amari-info-geom::DuallyFlatManifold`'s Fisher
+    /// metric implementation. Values must be finite and non-negative.
     pub async fn fisher_information_matrix(
         &self,
-        _parameters: &[f64],
+        parameters: &[f64],
     ) -> Result<GpuFisherMatrix, GpuError> {
-        // Placeholder implementation
-        Ok(GpuFisherMatrix::new(vec![vec![1.0, 0.0], vec![0.0, 1.0]]))
+        validate_probability_like_vector("parameters", parameters)?;
+        if parameters.is_empty() {
+            return Ok(GpuFisherMatrix::new(Vec::new()));
+        }
+        let matrix = parameters
+            .iter()
+            .enumerate()
+            .map(|(row, _)| {
+                parameters
+                    .iter()
+                    .enumerate()
+                    .map(|(col, value)| {
+                        if row == col {
+                            if *value > 1e-12 {
+                                1.0 / value
+                            } else {
+                                1e12
+                            }
+                        } else {
+                            0.0
+                        }
+                    })
+                    .collect()
+            })
+            .collect();
+        Ok(GpuFisherMatrix::new(matrix))
     }
 
-    /// Batch compute Bregman divergences
+    /// Batch compute KL-style Bregman divergences on the CPU correctness path.
     pub async fn bregman_divergence_batch(
         &self,
         p_batch: &[Vec<f64>],
         q_batch: &[Vec<f64>],
     ) -> Result<Vec<f64>, GpuError> {
-        // CPU implementation for now
+        if p_batch.len() != q_batch.len() {
+            return Err(GpuError::BufferError(format!(
+                "batch length mismatch: p={}, q={}",
+                p_batch.len(),
+                q_batch.len()
+            )));
+        }
+        for (index, (p, q)) in p_batch.iter().zip(q_batch.iter()).enumerate() {
+            validate_kl_pair(index, p, q)?;
+        }
+
         let results = p_batch
             .iter()
             .zip(q_batch.iter())
@@ -1102,9 +1338,9 @@ impl GpuInfoGeometry {
 }
 
 /// GPU device information for edge computing
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct GpuDeviceInfo {
     is_gpu: bool,
-    #[allow(dead_code)]
     description: String,
 }
 
@@ -1127,9 +1363,15 @@ impl GpuDeviceInfo {
     pub fn is_initialized(&self) -> bool {
         true
     }
+
+    /// Human-readable device/backend description.
+    pub fn description(&self) -> &str {
+        &self.description
+    }
 }
 
-/// GPU Fisher Information Matrix
+/// Fisher Information Matrix returned by `GpuInfoGeometry`.
+#[derive(Clone, Debug, PartialEq)]
 pub struct GpuFisherMatrix {
     matrix: Vec<Vec<f64>>,
 }
@@ -1137,6 +1379,16 @@ pub struct GpuFisherMatrix {
 impl GpuFisherMatrix {
     fn new(matrix: Vec<Vec<f64>>) -> Self {
         Self { matrix }
+    }
+
+    /// Borrow the matrix rows.
+    pub fn matrix(&self) -> &[Vec<f64>] {
+        &self.matrix
+    }
+
+    /// Matrix dimension, assuming the validated square matrices produced by this crate.
+    pub fn dimension(&self) -> usize {
+        self.matrix.len()
     }
 
     pub async fn eigenvalues(&self) -> Result<Vec<f64>, GpuError> {

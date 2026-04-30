@@ -1,11 +1,11 @@
-//! GPU-accelerated computational topology operations
+//! GPU-backed and GPU-ready computational topology operations.
 //!
-//! This module provides GPU acceleration for topology operations including:
-//! - Boundary matrix construction
-//! - Betti number computation via parallel Gaussian elimination
-//! - Persistent homology computation
-//! - Morse critical point detection
-//! - Vietoris-Rips filtration construction
+//! Current public behavior is intentionally explicit:
+//! - `GpuTopology::compute_distance_matrix` is GPU-backed pairwise Euclidean distance computation.
+//! - `GpuTopology::find_critical_points_2d` is GPU-backed discrete Morse critical point detection.
+//! - `GpuTopology::build_rips_filtration` currently builds the Vietoris-Rips filtration on CPU from a supplied distance matrix.
+//! - `GpuTopology::compute_betti_numbers` currently uses the `amari-topology` CPU homology baseline.
+//! - `AdaptiveTopologyCompute` chooses GPU for distance/Morse paths above thresholds and CPU fallback otherwise.
 //!
 //! # Example
 //!
@@ -68,7 +68,11 @@ pub enum GpuTopologyError {
 
 pub type GpuTopologyResult<T> = Result<T, GpuTopologyError>;
 
-/// GPU-accelerated topology operations
+/// GPU-backed and GPU-ready topology operations.
+///
+/// Distance matrices and 2D Morse critical point detection are GPU-backed.
+/// Rips filtration construction and Betti numbers currently preserve CPU
+/// baseline semantics while GPU persistent-homology kernels are pending.
 pub struct GpuTopology {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -161,10 +165,10 @@ impl GpuTopology {
         })
     }
 
-    /// Compute all pairwise distances for Rips filtration
+    /// Compute all pairwise distances for Rips filtration on the GPU.
     ///
     /// This is the key operation for building Vietoris-Rips complexes.
-    /// GPU acceleration provides ~50x speedup for 1000+ points.
+    /// Hardware-specific speedups still require benchmark validation.
     ///
     /// # Arguments
     /// * `points` - Slice of (x, y, z) tuples or (x, y, z, w) for 4D
@@ -281,10 +285,10 @@ impl GpuTopology {
         Ok(distances)
     }
 
-    /// Find Morse critical points on a 2D height function grid
+    /// Find Morse critical points on a 2D height function grid on the GPU.
     ///
-    /// This operation is embarrassingly parallel and achieves ~100x
-    /// speedup for high-resolution grids.
+    /// This operation is embarrassingly parallel. Hardware-specific speedups
+    /// still require benchmark validation.
     ///
     /// # Arguments
     /// * `values` - Height values on a width×height grid (row-major)
@@ -463,9 +467,10 @@ impl GpuTopology {
         Ok(critical_points)
     }
 
-    /// Build Rips filtration from distance matrix using GPU
+    /// Build a Vietoris-Rips filtration from a distance matrix using CPU logic.
     ///
-    /// Constructs simplices at each distance threshold in parallel.
+    /// Distance computation may be GPU-backed, but filtration/clique construction
+    /// currently runs on CPU for correctness.
     ///
     /// # Arguments
     /// * `distances` - Flattened n×n distance matrix
@@ -482,8 +487,7 @@ impl GpuTopology {
         max_distance: f64,
         max_dimension: usize,
     ) -> GpuTopologyResult<Vec<(Vec<usize>, f64)>> {
-        // For now, use CPU implementation with GPU distance matrix
-        // Full GPU implementation would require more complex shader logic
+        Self::validate_distance_matrix(distances, num_points)?;
 
         let mut filtration = Vec::new();
 
@@ -504,8 +508,7 @@ impl GpuTopology {
 
         // Higher-dimensional simplices (clique detection)
         if max_dimension >= 2 {
-            // Use CPU for clique detection - GPU acceleration would require
-            // more sophisticated parallel algorithms
+            // TODO(0.20.x+): replace clique detection with validated GPU kernels.
             for dim in 2..=max_dimension {
                 let mut new_simplices = Vec::new();
 
@@ -559,9 +562,10 @@ impl GpuTopology {
         Ok(filtration)
     }
 
-    /// Compute Betti numbers using GPU-accelerated parallel reduction
+    /// Compute Betti numbers using the CPU homology baseline.
     ///
-    /// Uses parallel Gaussian elimination on the boundary matrix.
+    /// Boundary/reduction shader scaffolding exists, but validated GPU persistent
+    /// homology is not yet exposed as public behavior.
     ///
     /// # Arguments
     /// * `complex` - The simplicial complex
@@ -572,15 +576,8 @@ impl GpuTopology {
         &self,
         complex: &SimplicialComplex,
     ) -> GpuTopologyResult<Vec<usize>> {
-        // For small complexes, use CPU
-        let total_simplices = complex.total_simplices();
-        if total_simplices < Self::gpu_threshold_betti() {
-            return Ok(complex.betti_numbers());
-        }
-
-        // For large complexes, we'd use GPU-accelerated sparse matrix reduction
-        // This is a complex algorithm requiring multiple shader passes
-        // For now, fall back to CPU implementation
+        let _total_simplices = complex.total_simplices();
+        // TODO(0.20.x+): replace with validated sparse boundary-matrix GPU reduction.
         Ok(complex.betti_numbers())
     }
 
@@ -589,7 +586,7 @@ impl GpuTopology {
         num_points >= 100
     }
 
-    /// Threshold for GPU Betti number computation
+    /// Threshold reserved for future GPU Betti number computation.
     pub fn gpu_threshold_betti() -> usize {
         500
     }
@@ -597,6 +594,19 @@ impl GpuTopology {
     /// Threshold for GPU critical point detection
     pub fn should_use_gpu_morse(grid_size: usize) -> bool {
         grid_size >= 10000 // 100x100 or larger
+    }
+
+    fn validate_distance_matrix(distances: &[f64], num_points: usize) -> GpuTopologyResult<()> {
+        let expected = num_points.checked_mul(num_points).ok_or_else(|| {
+            GpuTopologyError::InvalidSize("Distance matrix dimensions overflow".to_string())
+        })?;
+        if distances.len() != expected {
+            return Err(GpuTopologyError::InvalidSize(format!(
+                "Expected flattened {num_points}x{num_points} distance matrix with {expected} entries, got {}",
+                distances.len()
+            )));
+        }
+        Ok(())
     }
 
     // Pipeline creation methods
@@ -666,7 +676,11 @@ impl GpuTopology {
     }
 }
 
-/// Adaptive CPU/GPU dispatcher for topology operations
+/// Adaptive CPU/GPU dispatcher for topology operations.
+///
+/// Uses GPU distance/Morse kernels when available and above conservative
+/// thresholds. Rips filtration construction and Betti numbers currently use CPU
+/// topology baselines after optional GPU distance computation.
 pub struct AdaptiveTopologyCompute {
     gpu: Option<GpuTopology>,
 }
@@ -713,6 +727,22 @@ impl AdaptiveTopologyCompute {
         width: usize,
         height: usize,
     ) -> GpuTopologyResult<Vec<GpuCriticalPoint>> {
+        if values.len() != width * height {
+            return Err(GpuTopologyError::InvalidSize(format!(
+                "Expected {} values for {}x{} grid, got {}",
+                width * height,
+                width,
+                height,
+                values.len()
+            )));
+        }
+
+        if width < 3 || height < 3 {
+            return Err(GpuTopologyError::InvalidSize(
+                "Grid must be at least 3x3 for critical point detection".to_string(),
+            ));
+        }
+
         let grid_size = width * height;
 
         if let Some(gpu) = &self.gpu {
@@ -725,7 +755,10 @@ impl AdaptiveTopologyCompute {
         Ok(Self::find_critical_points_cpu(values, width, height))
     }
 
-    /// Build Rips filtration with adaptive dispatch
+    /// Build Rips filtration with adaptive distance computation.
+    ///
+    /// Distance matrix computation may use GPU for sufficiently large point sets;
+    /// filtration construction currently uses CPU logic.
     pub async fn build_rips_filtration(
         &self,
         points: &[(f64, f64, f64)],
@@ -745,7 +778,7 @@ impl AdaptiveTopologyCompute {
             }
         }
 
-        // CPU fallback for filtration construction
+        // CPU fallback for filtration construction.
         Self::build_rips_filtration_cpu(&distances, num_points, max_distance, max_dimension)
     }
 
@@ -837,6 +870,8 @@ impl AdaptiveTopologyCompute {
         max_distance: f64,
         max_dimension: usize,
     ) -> GpuTopologyResult<Vec<(Vec<usize>, f64)>> {
+        GpuTopology::validate_distance_matrix(distances, num_points)?;
+
         let mut filtration = Vec::new();
 
         // Add 0-simplices
@@ -1044,64 +1079,15 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 }
 "#;
 
-/// Boundary matrix construction shader (sparse format)
+/// Reserved boundary matrix construction shader.
+///
+/// Public Betti computation currently uses the CPU topology baseline, so this
+/// pipeline is intentionally a validation-safe no-op placeholder until the full
+/// sparse boundary kernel is restored and tested.
 const BOUNDARY_MATRIX_SHADER: &str = r#"
-struct Simplex {
-    vertices: array<u32, 8>,
-    dimension: u32,
-    filtration_time: f32,
-    padding: array<u32, 2>,
-}
-
-struct MatrixEntry {
-    row: u32,
-    col: u32,
-    value: i32,
-    padding: u32,
-}
-
-@group(0) @binding(0)
-var<storage, read> simplices: array<Simplex>;
-
-@group(0) @binding(1)
-var<storage, read_write> boundary_entries: array<MatrixEntry>;
-
-@group(0) @binding(2)
-var<storage, read_write> entry_counter: atomic<u32>;
-
-@compute @workgroup_size(256)
-fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-    let simplex_idx = global_id.x;
-    if (simplex_idx >= arrayLength(&simplices)) {
-        return;
-    }
-
-    let s = simplices[simplex_idx];
-    if (s.dimension == 0u) {
-        return;  // 0-simplices have no boundary
-    }
-
-    // Generate boundary faces with alternating signs
-    let dim = s.dimension;
-    for (var i = 0u; i <= dim; i++) {
-        let sign = select(-1, 1, i % 2u == 0u);
-
-        // Allocate entry
-        let entry_idx = atomicAdd(&entry_counter, 1u);
-
-        // Face is obtained by removing vertex i
-        // Row = index of face in (dim-1) simplices (would need lookup)
-        // Col = simplex_idx
-        // For now, store face hash as row (simplified)
-        var face_hash = 0u;
-        for (var j = 0u; j <= dim; j++) {
-            if (j != i) {
-                face_hash = face_hash * 31u + s.vertices[j];
-            }
-        }
-
-        boundary_entries[entry_idx] = MatrixEntry(face_hash, simplex_idx, sign, 0u);
-    }
+@compute @workgroup_size(1)
+fn main(@builtin(global_invocation_id) _global_id: vec3<u32>) {
+    return;
 }
 "#;
 

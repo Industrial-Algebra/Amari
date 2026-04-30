@@ -103,7 +103,7 @@ amari-wasm = { path = "amari-wasm", version = "0.21.0" }
 # External dependencies
 bytemuck = "1.14"
 rayon = "1.8"
-thiserror = "1.0"
+thiserror = "2.0"
 num-traits = "0.2"
 approx = "0.5"
 serde = { version = "1.0", features = ["derive"] }
