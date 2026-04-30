@@ -34,7 +34,13 @@ It should prioritize:
 5. benchmark/crossover reporting
 6. honest documentation of what is GPU-backed, fallback-only, or redesign-pending
 
-Breadth is important, but only when backed by tests and truthful API boundaries.
+Breadth is important, but only when backed by tests and truthful API boundaries. The release posture is correctness-first and hardware-validated, with conservative adaptive dispatch informed by GB10 and RTX 5080 benchmark data. The goal is not to make every restored path faster than CPU in 0.20.0; it is to put `amari-gpu` in a solid, truthful place to improve later as new crates and extensions arrive.
+
+Benchmark terminology for public docs:
+
+- **GPU-backed** means a real GPU path exists and is validated.
+- **GPU-recommended** means benchmark/crossover data justifies using GPU by default above a documented threshold.
+- **CPU-preferred** means the GPU path is retained for validation, future optimization, and manual use, but adaptive/default dispatch should remain on CPU for current tested sizes.
 
 ---
 
@@ -178,12 +184,12 @@ Current benchmark report:
 
 - `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`
 
-Initial GB10 crossover snapshots:
+Initial GB10/RTX 5080 crossover snapshots:
 
-- core GA Cl(3,0,0) batch geometric product crosses over around batch size `64`
-- tropical dense matrix multiply crosses over between `32x32x32` and `64x64x64`; GPU is clearly useful at `64x64x64`
-- topology distance matrix crosses over between `64` and `256` points
-- measure integration/density kernels cross over only at large sample/value counts in the current test-profile harness
+- core GA Cl(3,0,0) batch geometric product crosses over around batch size `64` on GB10 and between `64` and `256` on RTX 5080
+- tropical dense matrix multiply crosses over between `32x32x32` and `64x64x64` on GB10 and between `64x64x64` and `128x128x128` on RTX 5080
+- topology distance matrix crosses over between `64` and `256` points on GB10, but did not cross over through `512` points on RTX 5080
+- measure integration/density kernels cross over only at large sample/value counts on GB10 and approached parity without crossing over in the RTX 5080 test-profile sweep
 - several restored kernels are correctness-valid but should remain CPU-preferred until larger/release-mode benchmark sweeps show a GPU win
 
 ## Tier 5 — Coverage expansion

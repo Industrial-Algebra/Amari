@@ -46,7 +46,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | `fusion` | `amari-fusion` | private module plus reduced crate-root re-exports | Narrow v1 exposure restored; broader internals private/redesign-pending |
 | `tropical` | `amari-tropical` | private module + narrow crate-root re-exports | Good v1 shape; real kernels restored and tested |
 | `holographic` | `amari-holographic` | `pub mod holographic`, crate-root re-exports | Validated ProductCl3x32 v1 + optical field surface; CPU correctness paths documented |
-| `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed sampling/statistics with validation and public tests; GB10/RTX 5080 validation passed; crossover validation pending |
+| `probabilistic` | `amari-probabilistic` | `pub mod probabilistic`, crate-root re-exports | GPU-backed sampling/statistics with validation and public tests; GB10/RTX 5080 validation passed; benchmark harness/report added; no crossover through 8192×8 in initial sweeps |
 | `automata` | `amari-automata` | `pub mod automata`, crate-root re-exports | Mixed GPU-backed + documented CPU neighborhood fallback; public tests added |
 | `enumerative` | `amari-enumerative` | `pub mod enumerative`, crate-root re-exports for high-use types | Broad high-use GPU-backed surface; representative public tests added; method classification in `AMARI_GPU_ENUMERATIVE_CLASSIFICATION.md` |
 | `functional` | `amari-functional` | `pub mod functional`, crate-root re-exports | Mixed GPU-backed + documented CPU fallback; public tests added |
@@ -64,7 +64,7 @@ This is not yet a final rustdoc-complete API map. It is a release-planning inven
 | Area | Crate-root exports | Classification |
 |------|--------------------|----------------|
 | adaptive verification | `AdaptiveVerifier`, `AdaptiveVerification*`, `CpuFeatures`, `GpuBackend`, `Platform*`, `WasmEnvironment` | Infrastructure/adaptive; public tests added for CPU fallback, platform capability traits, and batch validation |
-| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths; manual crossover harnesses/report added for core GA, tropical, holographic, GF(2), probabilistic, topology, automata, measure, functional, and network paths |
+| benchmarks | `AmariMultiGpuBenchmarks`, `BenchmarkConfig`, `BenchmarkResult`, `BenchmarkRunner`, `BenchmarkSuiteResults`, `BenchmarkSummary`, `ScalingAnalysis` | Infrastructure; benchmark engine currently includes simulated workload paths; manual crossover harnesses/report added for core GA, tropical, holographic, GF(2), probabilistic, topology, automata, measure, functional, and network paths on GB10 and RTX 5080 |
 | core GA | `GpuCliffordAlgebra`, `AdaptiveCompute`, `GpuError`, `GpuDeviceInfo`, `GpuFisherMatrix` | GPU-backed batch geometric products + legacy Cl(3,0,0) adaptive helper; public tests added |
 | info geometry | `GpuInfoGeometry` and related methods from `lib.rs` | GPU-ready CPU baselines for Amari-Chentsov/Fisher/KL-style divergence; public tests added |
 | multi-GPU | `DeviceId`, `GpuDevice`, `Workload*`, `IntelligentLoadBalancer`, `SynchronizationManager`, `MultiGpuBarrier`, stats types | Infrastructure; single-device GB10/RTX 5080 public validation passed; multi-device validation still pending |
@@ -261,7 +261,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 | Domain / module | Current public state | First-pass release classification | 0.20.0 action |
 |-----------------|----------------------|-----------------------------------|---------------|
-| core GA in `lib.rs` | public default | GPU-backed/adaptive | public baseline tests and GB10/RTX 5080 validation passed; initial GB10 crossover recorded |
+| core GA in `lib.rs` | public default | GPU-backed/adaptive | public baseline tests and GB10/RTX 5080 validation passed; initial GB10/RTX 5080 crossover recorded |
 | info geometry in `lib.rs` | public default | GPU-backed/fallback mixed | consider explicit module boundary; validate tensor/fisher/divergence |
 | `network` | public default | narrow GPU-backed distances, mixed higher ops | public import-path/baseline test added; GB10/RTX 5080 validation passed |
 | `relativistic` | public default | GPU-backed Minkowski/simplified geodesic kernels | public import-path/baseline test added; GB10/RTX 5080 validation passed |
@@ -269,7 +269,7 @@ This is not necessarily bad, but it must be documented and tested honestly.
 | default core GA | crate-root structs | GPU-backed + adaptive CPU fallback | public import-path/baseline tests added; GB10/RTX 5080 validation passed |
 | info geometry | crate-root `GpuInfoGeometry` | GPU-ready CPU-baseline path | public import-path/baseline tests added; shader parity restoration pending |
 | `fusion` | feature private module + crate-root v1 re-exports | intended reduced surface enforced | GB10/RTX 5080 public validation passed; heavy ignored tests still need policy decision |
-| `tropical` | feature narrow crate-root API | real restored v1 kernels | GB10/RTX 5080 validation passed; initial GB10 matmul crossover recorded |
+| `tropical` | feature narrow crate-root API | real restored v1 kernels | GB10/RTX 5080 validation passed; initial GB10/RTX 5080 matmul/attention crossover recorded |
 | `calculus` | feature public module | CPU fallback / GPU-ready scaffolding | add gradient/divergence/curl public baseline tests; implement kernels later |
 | `measure` | feature public module | mixed GPU/fallback documented | GB10/RTX 5080 validation passed; implement reduction/multidim kernels later |
 | `functional` | feature public module | mixed GPU/fallback documented | GB10/RTX 5080 validation passed; implement shared-context GPU matrix multiply / eigensolver later |

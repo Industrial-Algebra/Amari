@@ -264,24 +264,194 @@ Benchmark harness: `amari-gpu/tests/network_benchmark_crossover.rs`
 
 **Observed crossover:** none through `256` nodes for this public API path; larger node-count and release-mode sweeps are needed before claiming acceleration.
 
+
+## RTX 5080 results
+
+Hardware: NVIDIA GeForce RTX 5080 Laptop GPU (`rindler`)
+Backend: `WGPU_BACKEND=vulkan`
+Driver/CUDA: NVIDIA `580.126.09`, CUDA `13.0`
+Execution: serial ignored benchmark tests with `-- --ignored --nocapture --test-threads=1`.
+
+### Core GA: `GpuCliffordAlgebra::batch_geometric_product::<Cl(3,0,0)>`
+
+| Batch size | CPU avg ms | GPU avg ms | Speedup | Correct |
+|------------|------------|------------|---------|---------|
+| 16 | 0.066 | 0.333 | 0.20× | yes |
+| 64 | 0.270 | 0.349 | 0.77× | yes |
+| 256 | 1.127 | 0.469 | 2.40× | yes |
+| 1024 | 4.440 | 0.679 | 6.54× | yes |
+| 4096 | 13.630 | 1.443 | 9.44× | yes |
+
+**Observed crossover:** between batch `64` and `256` on RTX 5080. This is later than GB10's ~`64` crossover because the RTX 5080 CPU baseline is faster in this test-profile run.
+
+### Tropical: dense max-plus matrix multiply
+
+| Dimensions `(m×k×n)` | CPU avg ms | GPU avg ms | Speedup | Correct |
+|----------------------|------------|------------|---------|---------|
+| 16×16×16 | 0.058 | 3.633 | 0.02× | yes |
+| 32×32×32 | 0.438 | 3.776 | 0.12× | yes |
+| 64×64×64 | 3.406 | 3.826 | 0.89× | yes |
+| 128×128×128 | 27.885 | 4.552 | 6.13× | yes |
+
+**Observed crossover:** between `64³` and `128³` on RTX 5080. This is later than GB10, where `64³` already wins.
+
+### Tropical: attention scores
+
+| Rows×cols | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|------------|------------|---------|---------|
+| 16×64 | 0.031 | 3.980 | 0.01× | yes |
+| 64×64 | 0.116 | 3.210 | 0.04× | yes |
+| 128×128 | 0.460 | 4.076 | 0.11× | yes |
+| 256×256 | 1.837 | 6.448 | 0.28× | yes |
+
+**Observed crossover:** none through `256×256`.
+
+### Holographic: ProductCl3x32 bind/similarity
+
+| Operation | Batch | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|-------|------------|------------|---------|---------|
+| bind | 16 | 0.047 | 0.077 | 0.61× | yes |
+| bind | 100 | 0.302 | 1.881 | 0.16× | yes |
+| bind | 512 | 1.614 | 3.499 | 0.46× | yes |
+| bind | 2048 | 6.826 | 11.119 | 0.61× | yes |
+| similarity | 16 | 0.089 | 0.109 | 0.82× | yes |
+| similarity | 100 | 0.571 | 1.341 | 0.43× | yes |
+| similarity | 512 | 2.879 | 2.647 | 1.09× | yes |
+| similarity | 2048 | 11.127 | 8.697 | 1.28× | yes |
+
+**Observed crossover:** similarity crosses over around batch `512`; bind did not cross over through batch `2048`.
+
+### Optical holographic GPU timings
+
+| Operation | Field size | GPU avg ms | Correct |
+|-----------|------------|------------|---------|
+| optical bind | 256 | 0.017 | yes |
+| optical similarity | 256 | 0.009 | yes |
+| Lee encode | 256 | 0.015 | yes |
+| optical bind | 4096 | 0.826 | yes |
+| optical similarity | 4096 | 0.463 | yes |
+| Lee encode | 4096 | 1.354 | yes |
+| optical bind | 16384 | 1.597 | yes |
+| optical similarity | 16384 | 1.674 | yes |
+| Lee encode | 16384 | 1.658 | yes |
+
+CPU baseline timings are still pending for optical operations.
+
+### GF(2): Clifford, matvec, and Hamming kernels
+
+| Operation | Batch | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|-------|------------|------------|---------|---------|
+| Clifford one-hot | 16 | 0.000 | 4.240 | 0.00× | yes |
+| Clifford one-hot | 4096 | 0.061 | 3.753 | 0.02× | yes |
+| matvec 16×16 | 16 | 0.001 | 3.968 | 0.00× | yes |
+| matvec 16×16 | 4096 | 0.306 | 4.571 | 0.07× | yes |
+| Hamming 64-bit | 16 | 0.000 | 4.020 | 0.00× | yes |
+| Hamming 64-bit | 4096 | 0.102 | 4.045 | 0.03× | yes |
+
+**Observed crossover:** none through batch `4096`.
+
+### Probabilistic: sampling/statistics
+
+| Operation | Samples×dim | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|-------------|------------|------------|---------|---------|
+| mean | 16×8 | 0.001 | 0.001 | 1.02× | yes |
+| mean | 8192×8 | 0.703 | 0.916 | 0.77× | yes |
+| variance | 16×8 | 0.001 | 0.001 | 0.78× | yes |
+| variance | 8192×8 | 0.505 | 1.050 | 0.48× | yes |
+| deterministic Gaussian | 16×8 | 0.000 | 0.035 | 0.01× | yes |
+| deterministic Gaussian | 8192×8 | 0.201 | 18.520 | 0.01× | yes |
+
+**Observed crossover:** none through `8192×8`; mean approaches parity at the largest tested size.
+
+### Topology: distance matrix and critical points
+
+| Operation | Size | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|------|------------|------------|---------|---------|
+| distance matrix | 16 points | 0.002 | 0.300 | 0.01× | yes |
+| distance matrix | 64 points | 0.026 | 0.302 | 0.09× | yes |
+| distance matrix | 256 points | 0.409 | 0.853 | 0.48× | yes |
+| distance matrix | 512 points | 1.725 | 2.007 | 0.86× | yes |
+| critical points 2D | 256 cells | — | 0.543 | — | yes |
+| critical points 2D | 4096 cells | — | 0.432 | — | yes |
+| critical points 2D | 16384 cells | — | 0.515 | — | yes |
+
+**Observed crossover:** none through `512` points on RTX 5080, though distance matrix approaches parity at `512`.
+
+### Automata: rule application, energy, and evolution
+
+| Operation | Cells | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|-------|------------|------------|---------|---------|
+| apply rules | 256 | 0.006 | 0.745 | 0.01× | yes |
+| apply rules | 4096 | 0.090 | 0.381 | 0.24× | yes |
+| apply rules | 16384 | 0.433 | 0.896 | 0.48× | yes |
+| energy | 256 | 0.002 | 0.379 | 0.00× | yes |
+| energy | 4096 | 0.031 | 0.562 | 0.05× | yes |
+| energy | 16384 | 0.105 | 1.601 | 0.07× | yes |
+| evolve CA | 256 | — | 0.292 | — | yes |
+| evolve CA | 4096 | — | 0.440 | — | yes |
+| evolve CA | 16384 | — | 1.008 | — | yes |
+
+**Observed crossover:** none through `16384` cells.
+
+### Measure: built-ins, densities, tropical reductions
+
+| Operation | Size | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|------|------------|------------|---------|---------|
+| integrate x² | 1000 | 0.007 | 0.462 | 0.02× | yes |
+| integrate x² | 10000 | 0.072 | 0.440 | 0.16× | yes |
+| integrate x² | 100000 | 0.739 | 0.818 | 0.90× | yes |
+| Gaussian density | 256 | 0.002 | 0.661 | 0.00× | yes |
+| Gaussian density | 4096 | 0.030 | 0.438 | 0.07× | yes |
+| Gaussian density | 65536 | 0.487 | 0.570 | 0.85× | yes |
+| tropical supremum | 65536 | 0.454 | 0.359 | 1.27× | yes |
+| tropical infimum | 65536 | 0.454 | 0.361 | 1.25× | yes |
+
+**Observed crossover:** integration and Gaussian density approach parity but do not cross over at the largest tested sizes; tropical reductions are CPU fallbacks and track CPU timing.
+
+### Functional: matrix apply and Hilbert inner products
+
+| Operation | Batch | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|-------|------------|------------|---------|---------|
+| matrix apply | 16 | 0.005 | 1.313 | 0.00× | yes |
+| matrix apply | 64 | 0.020 | 1.519 | 0.01× | yes |
+| matrix apply | 256 | 0.076 | 0.878 | 0.09× | yes |
+| matrix apply | 1024 | 0.290 | 0.867 | 0.33× | yes |
+| matrix apply | 4096 | 1.395 | 1.818 | 0.77× | yes |
+| Hilbert inner | 4096 | 0.497 | 2.123 | 0.23× | yes |
+
+**Observed crossover:** none through batch `4096`; matrix apply approaches parity.
+
+### Network: distances, centrality, clustering
+
+| Operation | Nodes | CPU avg ms | GPU avg ms | Speedup | Correct |
+|-----------|-------|------------|------------|---------|---------|
+| distances | 16 | 0.002 | 0.410 | 0.01× | yes |
+| distances | 64 | 0.027 | 0.445 | 0.06× | yes |
+| distances | 128 | 0.089 | 0.536 | 0.17× | yes |
+| distances | 256 | 0.352 | 0.915 | 0.39× | yes |
+| centrality | 256 | 0.219 | 1.745 | 0.13× | yes |
+| clustering | 256 | — | 1.729 | — | yes |
+
+**Observed crossover:** none through `256` nodes.
+
 ## Current crossover guidance summary
 
-| Operation | Current public path | GB10 crossover snapshot | Guidance |
-|-----------|---------------------|--------------------------|----------|
-| Core GA batch geometric product, Cl(3,0,0) | GPU-backed batch kernel | ~64 complete products | CPU for tiny batches; GPU for medium/large flat batches |
-| Tropical dense max-plus matmul | GPU-backed kernel + adaptive dispatch | between 32³ and 64³ | CPU below 64³; GPU at/above 64³ on GB10 |
-| Tropical attention scores | GPU-backed winner-takes-all scores | none through 256×256 | CPU default until larger/release-mode sweeps justify GPU |
-| Holographic ProductCl3x32 bind | GPU-backed bind | none through batch 2048 | CPU may remain better for basis-like sparse batches |
-| Holographic ProductCl3x32 similarity | GPU-backed similarity | ~100 vectors | GPU starts helping for larger similarity batches |
-| Optical bind/similarity/Lee encoding | GPU-backed above field-size heuristic | GPU timings only | Add CPU baseline before final crossover guidance |
-| GF(2) kernels | GPU-backed fixed-layout kernels | none through batch 4096 | CPU bit ops remain preferred for small fixed-layout workloads |
-| Probabilistic sampling/statistics | GPU-backed after context; small stats CPU fallback | none through 8192×8 | Revisit with release-mode reductions; CPU preferred for current harness sizes |
-| Topology distance matrix | GPU-backed distance matrix | between 64 and 256 points | GPU useful for medium/large point clouds |
-| Topology critical points | GPU-backed discrete Morse path | GPU timings only | Add CPU critical-point timing baseline |
-| Automata rule/energy | GPU-backed rule/energy, CPU neighborhood fallback | none through 16384 cells | Rule path approaches parity at largest tested size; CPU preferred for now |
-| Measure built-ins/densities | mixed GPU-backed integrators/densities | ~100k integration samples / ~65k density values | GPU useful for large sample/value batches |
-| Functional matrix batches | GPU-backed batch apply/Hilbert, CPU spectral fallback | matrix apply ~4096; Hilbert none through 4096 | GPU only for large matrix-apply batches on this profile |
-| Network distances/centrality/clustering | GPU distance + CPU reductions | none through 256 nodes | Need larger/release sweeps before GPU default claims |
+| Operation | Current public path | GB10 snapshot | RTX 5080 snapshot | Guidance |
+|-----------|---------------------|---------------|-------------------|----------|
+| Core GA batch geometric product, Cl(3,0,0) | GPU-backed batch kernel | ~64 complete products | between 64 and 256 | CPU for tiny batches; GPU for medium/large flat batches |
+| Tropical dense max-plus matmul | GPU-backed kernel + adaptive dispatch | between 32³ and 64³ | between 64³ and 128³ | CPU below 64³; GPU is clearly useful by 128³ on both hardware targets |
+| Tropical attention scores | GPU-backed winner-takes-all scores | none through 256×256 | none through 256×256 | CPU default until larger/release-mode sweeps justify GPU |
+| Holographic ProductCl3x32 bind | GPU-backed bind | none through batch 2048 | none through batch 2048 | CPU may remain better for basis-like sparse batches |
+| Holographic ProductCl3x32 similarity | GPU-backed similarity | ~100 vectors | ~512 vectors | GPU starts helping for larger similarity batches |
+| Optical bind/similarity/Lee encoding | GPU-backed above field-size heuristic | GPU timings only | GPU timings only | Add CPU baseline before final crossover guidance |
+| GF(2) kernels | GPU-backed fixed-layout kernels | none through batch 4096 | none through batch 4096 | CPU bit ops remain preferred for small fixed-layout workloads |
+| Probabilistic sampling/statistics | GPU-backed after context; small stats CPU fallback | none through 8192×8 | none through 8192×8 | Revisit with release-mode reductions; CPU preferred for current harness sizes |
+| Topology distance matrix | GPU-backed distance matrix | between 64 and 256 points | none through 512 points | GPU useful on GB10 for medium point clouds; RTX 5080 needs larger/release sweeps |
+| Topology critical points | GPU-backed discrete Morse path | GPU timings only | GPU timings only | Add CPU critical-point timing baseline |
+| Automata rule/energy | GPU-backed rule/energy, CPU neighborhood fallback | none through 16384 cells | none through 16384 cells | Rule path approaches parity at largest tested size; CPU preferred for now |
+| Measure built-ins/densities | mixed GPU-backed integrators/densities | crosses only at large sample/value counts | approaches parity but no crossover at tested sizes | GPU useful only for large batches and hardware-dependent; keep conservative thresholds |
+| Functional matrix batches | GPU-backed batch apply/Hilbert, CPU spectral fallback | matrix apply ~4096; Hilbert none through 4096 | matrix apply approaches parity; Hilbert none through 4096 | GPU only for large matrix-apply batches after hardware-specific thresholding |
+| Network distances/centrality/clustering | GPU distance + CPU reductions | none through 256 nodes | none through 256 nodes | Need larger/release sweeps before GPU default claims |
 
 ## Manual benchmark harness inventory
 
@@ -305,7 +475,7 @@ Already present:
 Remaining benchmark work:
 
 - add CPU baseline timings for optical holographic operations, topology critical points, automata CA evolution, and network clustering.
-- add RTX 5080 benchmark run using `WGPU_BACKEND=vulkan`.
+- add any missing RTX 5080 rows if additional larger-size/release-mode sweeps are run.
 - repeat selected sweeps in release-mode or Criterion-style harnesses before making external performance claims.
 
 ## Caveats

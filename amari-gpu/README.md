@@ -4,7 +4,9 @@ GPU acceleration for Amari mathematical computations using WebGPU.
 
 ## Overview
 
-`amari-gpu` is an integration crate that provides GPU-accelerated implementations of mathematical operations from Amari domain crates. It follows the **progressive enhancement** pattern: operations automatically fall back to CPU computation when GPU is unavailable or for small workloads, scaling to GPU acceleration for large batch operations in production.
+`amari-gpu` is an integration crate that provides validated GPU-backed implementations of mathematical operations from Amari domain crates. It follows the **progressive enhancement** pattern: operations fall back to CPU computation when GPU is unavailable or when benchmark data shows CPU is preferable, scaling to GPU acceleration for larger workloads where the current kernels are known to help.
+
+For the 0.20.0 release line, the crate is positioned as a **correctness-first, hardware-validated GPU backend** with conservative adaptive dispatch. Not every GPU-backed path is GPU-recommended by default; benchmark/crossover data is used to keep public claims and dispatch behavior honest.
 
 ## Architecture
 
@@ -57,7 +59,27 @@ Current status:
 - `cargo +stable test -p amari-gpu --all-features --quiet -- --test-threads=1` passed on GB10.
 - `WGPU_BACKEND=vulkan cargo +stable test -p amari-gpu --all-features --quiet -- --test-threads=1` passed on RTX 5080.
 - RTX 5080 validation should use `WGPU_BACKEND=vulkan` and serial aggregate execution on the current Ubuntu 25.10 laptop stack.
-- Initial benchmark/crossover measurements and manual harness commands are recorded in `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`; this now covers core GA, tropical, holographic/optical, GF(2), probabilistic, topology, automata, measure, functional, and network paths.
+- Initial GB10 and RTX 5080 benchmark/crossover measurements plus manual harness commands are recorded in `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`; this covers core GA, tropical, holographic/optical, GF(2), probabilistic, topology, automata, measure, functional, and network paths.
+
+### GPU-backed vs GPU-recommended posture
+
+Initial GB10 and RTX 5080 benchmarks show that GPU acceleration is workload- and hardware-dependent. The table below distinguishes paths that have real GPU kernels from paths that should currently be preferred by adaptive/default dispatch.
+
+| Path | GPU-backed? | GPU-recommended by default? | Current guidance |
+|------|-------------|-----------------------------|------------------|
+| Core GA batch geometric product | yes | above threshold | Cross-hardware win at medium/large batch sizes; conservative threshold should account for RTX 5080 crossing between batch `64` and `256`. |
+| Tropical dense matrix multiply | yes | large matrices only | Strong large-matrix win; RTX 5080 crosses later than GB10, so keep threshold conservative. |
+| Tropical attention scores | yes | no | Correctness-restored, but no crossover through `256×256` in initial sweeps. |
+| Holographic ProductCl3x32 similarity | yes | above threshold | Cross-hardware win for larger batches; RTX 5080 crosses around batch `512`. |
+| Holographic ProductCl3x32 bind | yes | no/adaptive only | No crossover through batch `2048` in initial sweeps. |
+| Optical holographic operations | yes | not yet classified | GPU timings exist; CPU baseline timings are still needed. |
+| GF(2) fixed-layout kernels | yes | no | CPU bit operations dominate through the tested batch sizes. |
+| Probabilistic sampling/statistics | yes | no | Current mean/variance paths approach parity only at large sizes; deterministic sampling remains CPU-preferred. |
+| Topology distance matrix | yes | hardware-sensitive | GB10 crosses between `64` and `256` points; RTX 5080 did not cross through `512`. |
+| Measure integration/density | yes | large batches only/adaptive | GB10 crosses at large sample/value counts; RTX 5080 approaches parity without crossing in the initial sweep. |
+| Functional matrix apply | yes | large batches only/adaptive | GB10 reaches parity near batch `4096`; RTX 5080 approaches but does not cross there. |
+| Automata rule/energy | yes/mixed | no | Rule application approaches parity at large sizes; CPU remains preferred for now. |
+| Network distances/centrality/clustering | yes/mixed | no | No crossover through `256` nodes in the current public path. |
 
 ### Temporarily Disabled Modules
 

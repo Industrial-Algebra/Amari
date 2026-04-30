@@ -98,11 +98,25 @@ Observed caveats:
 - Use `WGPU_BACKEND=vulkan` on this Ubuntu 25.10 / RTX 5080 laptop stack.
 - Use `-- --test-threads=1` for aggregate/default/all-features validation to avoid GPU context contention and reduce driver stress.
 - The verification overhead test is diagnostic, not a benchmark gate.
-- Benchmark/crossover measurements remain pending and should be reported separately.
+- Benchmark/crossover measurements are now reported separately in `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`.
+
+## Benchmark campaign
+
+A complete serial ignored benchmark campaign was run with `WGPU_BACKEND=vulkan` after correctness validation. Results are recorded in:
+
+- `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`
+
+High-level RTX 5080 crossover observations from this test-profile campaign:
+
+- core GA Cl(3,0,0) batch geometric product crosses over between batch `64` and `256`.
+- tropical dense max-plus matmul crosses over between `64³` and `128³`.
+- holographic ProductCl3x32 similarity crosses over around batch `512`; bind did not cross over through batch `2048`.
+- topology distance matrix, automata, GF(2), probabilistic, functional, and network public paths did not cross over within the tested sizes on this machine, though some approached parity at the largest sizes.
+- measure integration/density approached parity at the largest tested sizes; tropical reductions are CPU fallback paths and track CPU timing.
 
 ## Remaining work
 
-- Produce benchmark/crossover reports on GB10 and RTX 5080 for restored kernels:
+- Extend benchmark/crossover reports with release-mode and larger-size sweeps for restored kernels:
   - tropical matmul/attention
   - core GA batch geometric product
   - holographic ProductCl3x32 bind/similarity
