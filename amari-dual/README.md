@@ -1,10 +1,10 @@
 # amari-dual
 
-Dual number automatic differentiation for efficient gradient computation.
+Forward-mode dual number automatic differentiation for optimization workloads.
 
 ## Overview
 
-`amari-dual` implements dual numbers for forward-mode automatic differentiation. Dual numbers extend real numbers with an infinitesimal unit ε where ε² = 0, enabling exact derivative computation without numerical approximation or computational graphs.
+`amari-dual` implements dual numbers for forward-mode automatic differentiation. Dual numbers extend real numbers with an infinitesimal unit ε where ε² = 0, enabling exact derivative computation without numerical approximation or computational graphs. The crate is aimed at local sensitivity analysis, heuristic tuning, and small optimization loops rather than large reverse-mode graph systems.
 
 ## Features
 
@@ -23,7 +23,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-amari-dual = "0.12"
+amari-dual = "0.21.0"
 ```
 
 ### Feature Flags
@@ -31,16 +31,16 @@ amari-dual = "0.12"
 ```toml
 [dependencies]
 # Default features
-amari-dual = "0.12"
+amari-dual = "0.21.0"
 
 # With serialization
-amari-dual = { version = "0.12", features = ["serialize"] }
+amari-dual = { version = "0.21.0", features = ["serialize"] }
 
 # With GPU acceleration
-amari-dual = { version = "0.12", features = ["gpu"] }
+amari-dual = { version = "0.21.0", features = ["gpu"] }
 
 # High-precision arithmetic
-amari-dual = { version = "0.12", features = ["high-precision"] }
+amari-dual = { version = "0.21.0", features = ["high-precision"] }
 ```
 
 ## Quick Start
@@ -190,6 +190,12 @@ use amari_dual::DualMultivector;
 let mv = DualMultivector::new(/* ... */);
 ```
 
+## Scope Boundaries
+
+- `amari-dual` remains a forward-mode AD crate; it does not provide reverse-mode graph AD in `0.21.0`.
+- `MultiDualNumber` stays the flexible heap-backed carrier, while `StaticMultiDual` is the fixed-size companion for small hot loops.
+- Branch policies make tie behavior explicit for piecewise `max` / `min` style operators rather than pretending those cases are globally smooth.
+
 ## Modules
 
 | Module | Description |
@@ -219,7 +225,7 @@ let ln_x = functions::ln(x);    // ln(1)=0, 1/1=1
 let x_squared = x * x;          // 1, 2
 ```
 
-## v0.12.0 API Changes
+## Historical Note: v0.12 API Changes
 
 The API was updated in v0.12.0 for better encapsulation:
 
@@ -237,7 +243,7 @@ let deriv = x.derivative();
 
 ## Performance
 
-- **Zero overhead**: Dual arithmetic has minimal cost over regular arithmetic
+- **Predictable overhead**: Dual arithmetic tracks value and derivative together without separate graph construction
 - **Single pass**: Compute value and derivative together
 - **Cache friendly**: Data locality for dual number pairs
 - **SIMD potential**: Parallel computation of value and derivative

@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.0] - 2026-04-21
+
+### Changed
+
+- Reframed `amari-tropical` as an optimization-oriented semiring crate rather than only a float max-plus utility layer.
+- Reframed `amari-dual` as an optimization-oriented forward-mode AD crate with clearer branch semantics and small-loop ergonomics.
+- Synchronized workspace and package versions for the `0.21.0` release plan.
+
+### Added
+
+- `amari-tropical::semiring::{Semiring, fold_oplus, fold_otimes}` for lightweight context-free semiring workflows.
+- `amari-tropical::ordinal::{OrdinalArena, OrdinalId, CnfTerm, OrdinalWeight, OrdinalKind, OrdinalInspection, OrdinalWeightInspection}` for arena-backed ordinals below `ε₀`.
+- Ordinal-weight helpers such as `OrdinalArena::{best_weight, compose_weights, inspect, inspect_weight}` plus curated ordinal examples and ordinal benchmarks.
+- `amari-dual::{BranchPolicy, StaticMultiDual, StandardStaticMultiDual, ExtendedStaticMultiDual}` for explicit branch handling and fixed-size gradient loops.
+- `MultiDualNumber::variables(...)` plus optimization-oriented examples and benchmark coverage for heap-backed and fixed-size AD workflows.
+- Stronger optimization-facing tests in `amari-tropical/tests/optimization.rs` and `amari-dual/tests/optimization.rs`.
+
+### Documentation
+
+- Updated root and crate READMEs to document the `0.21.0` scope accurately.
+- Documented that the ordinal substrate is intentionally restricted to ordinals below `ε₀`.
+- Documented that `amari-dual` remains a forward-mode AD crate and does not claim reverse-mode graph support.
+- Clarified that `viterbi` and `polytope` remain float-specific within `amari-tropical` for this release cycle.
+
 ## [0.17.0] - 2026-01-11
 
 ### **New Crate: amari-dynamics - Dynamical Systems Analysis**

@@ -1,4 +1,4 @@
-# Amari v0.19.1
+# Amari v0.21.0
 
 **Comprehensive Mathematical Computing Platform with Geometric Algebra, Differential Calculus, Measure Theory, Probability Theory, Functional Analysis, Algebraic Topology, Dynamical Systems, and Vector Symbolic Architectures**
 
@@ -10,6 +10,12 @@ A unified mathematical computing library featuring geometric algebra, differenti
 [![License](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
 
 **[Live Examples Suite](https://amari-math.netlify.app)** | **[API Documentation](https://docs.rs/amari)** | **[MCP Server](https://github.com/justinelliottcobb/Amari-mcp)**
+
+## v0.21.0 Highlights
+
+- **`amari-tropical`** now has a clearer optimization-facing split between float max-plus carriers and an arena-backed ordinal substrate below `ε₀` via `OrdinalArena`, `OrdinalId`, `CnfTerm`, and `OrdinalWeight`.
+- **`amari-dual`** now includes explicit `BranchPolicy` handling, `MultiDualNumber::variables(...)` seed helpers, and `StaticMultiDual<T, const N: usize>` for small hot loops.
+- **Scope remains explicit**: the ordinal layer does not claim broader transfinite arithmetic, `viterbi` and `polytope` remain float-specific, and `amari-dual` remains a forward-mode AD crate.
 
 ## Features
 
@@ -25,8 +31,8 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **Vector Symbolic Architectures**: Holographic Reduced Representations (HRR), binding algebras, and associative memory
 - **Optical Field Operations**: GA-native Lee hologram encoding for DMD displays, rotor field algebra, and VSA on optical wavefronts
 - **Relativistic Physics**: Complete spacetime algebra (Cl(1,3)) with Minkowski signature for relativistic calculations
-- **Tropical Algebra**: Max-plus semiring operations for optimization and neural network applications
-- **Automatic Differentiation**: Forward-mode AD with dual numbers for exact derivatives
+- **Tropical Algebra**: Max-plus semiring operations plus ordinal-weighted optimization carriers below `ε₀`
+- **Automatic Differentiation**: Forward-mode AD with dual numbers, fixed-size gradients, and explicit branch policies
 - **Fusion Systems**: Tropical-dual-Clifford fusion combining three algebraic systems
 - **Information Geometry**: Statistical manifolds, KL/JS divergences, and Fisher information
 - **Optimization**: Gradient-based optimization with geometric constraints
@@ -61,54 +67,54 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 # Complete library with all features
-amari = "0.19.1"
+amari = "0.21.0"
 
 # Or individual crates:
 
 # Core geometric algebra and mathematical foundations
-amari-core = "0.19.1"
+amari-core = "0.21.0"
 
 # Differential calculus with geometric algebra
-amari-calculus = "0.19.1"
+amari-calculus = "0.21.0"
 
 # Measure theory and integration
-amari-measure = "0.19.1"
+amari-measure = "0.21.0"
 
 # Probability theory on geometric algebra spaces
-amari-probabilistic = "0.19.1"
+amari-probabilistic = "0.21.0"
 
 # Functional analysis: Hilbert spaces, operators, spectral theory
-amari-functional = "0.19.1"
+amari-functional = "0.21.0"
 
 # Algebraic topology: homology, persistent homology, Morse theory
-amari-topology = "0.19.1"
+amari-topology = "0.21.0"
 
 # Dynamical systems: ODE solvers, stability, bifurcations, Lyapunov exponents
-amari-dynamics = "0.19.1"
+amari-dynamics = "0.21.0"
 
 # Vector Symbolic Architectures, holographic memory, and optical fields
-amari-holographic = "0.19.1"
+amari-holographic = "0.21.0"
 
 # High-precision relativistic physics
-amari-relativistic = { version = "0.19.1", features = ["high-precision"] }
+amari-relativistic = { version = "0.21.0", features = ["high-precision"] }
 
 # GPU acceleration (includes optical field GPU operations)
-amari-gpu = "0.19.1"
+amari-gpu = "0.21.0"
 
 # Optimization algorithms
-amari-optimization = "0.19.1"
+amari-optimization = "0.21.0"
 
 # Additional mathematical systems
-amari-tropical = "0.19.1"
-amari-dual = "0.19.1"
-amari-info-geom = "0.19.1"
-amari-automata = "0.19.1"
-amari-fusion = "0.19.1"
-amari-network = "0.19.1"
-amari-enumerative = "0.19.1"
+amari-tropical = "0.21.0"
+amari-dual = "0.21.0"
+amari-info-geom = "0.21.0"
+amari-automata = "0.21.0"
+amari-fusion = "0.21.0"
+amari-network = "0.21.0"
+amari-enumerative = "0.21.0"
 
 # Probabilistic verification contracts (SMT-LIB2, Monte Carlo)
-amari-flynn = "0.19.1"
+amari-flynn = "0.21.0"
 ```
 
 ### JavaScript/TypeScript (WebAssembly)

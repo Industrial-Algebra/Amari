@@ -1,15 +1,15 @@
 # amari-tropical
 
-Tropical (max-plus) algebra implementation for optimization and neural network applications.
+Tropical max-plus algebra and ordinal-weighted optimization carriers.
 
 ## Overview
 
-`amari-tropical` implements tropical algebra, also known as max-plus algebra, where the traditional operations (+, ×) are replaced with (max, +). This transformation converts expensive softmax and multiplication operations into simple max and addition operations, making it particularly useful for:
+`amari-tropical` now exposes two complementary layers:
 
-- Finding most likely sequences (Viterbi algorithm)
-- Shortest path optimization
-- Neural network inference optimization
-- Dynamic programming
+- a float-oriented max-plus layer built around `TropicalNumber`, `TropicalMatrix`, and `TropicalMultivector`
+- an arena-backed ordinal layer below `ε₀` built around `OrdinalArena` and `OrdinalWeight`
+
+Together these layers target ranking, path aggregation, Viterbi-style decoding, dynamic programming, and ordinal-weighted optimization heuristics.
 
 ## Features
 
@@ -27,7 +27,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-amari-tropical = "0.12"
+amari-tropical = "0.21.0"
 ```
 
 ### Feature Flags
@@ -35,16 +35,16 @@ amari-tropical = "0.12"
 ```toml
 [dependencies]
 # Default features
-amari-tropical = "0.12"
+amari-tropical = "0.21.0"
 
 # With serialization
-amari-tropical = { version = "0.12", features = ["serialize"] }
+amari-tropical = { version = "0.21.0", features = ["serialize"] }
 
 # With GPU acceleration
-amari-tropical = { version = "0.12", features = ["gpu"] }
+amari-tropical = { version = "0.21.0", features = ["gpu"] }
 
 # High-precision arithmetic
-amari-tropical = { version = "0.12", features = ["high-precision"] }
+amari-tropical = { version = "0.21.0", features = ["high-precision"] }
 ```
 
 ## Quick Start
@@ -169,6 +169,12 @@ let best_path = decoder.decode(&observations);
 assert_eq!(best_path.0.len(), observations.len());
 ```
 
+## Scope Boundaries
+
+- The ordinal substrate is intentionally restricted to ordinals below `ε₀` in canonical Cantor normal form.
+- `OrdinalWeight` is a bottom-extended optimization carrier, not a full transfinite arithmetic tower.
+- `viterbi` and `polytope` remain float-specific in the `0.21.0` release cycle.
+
 ## Modules
 
 | Module | Description |
@@ -190,7 +196,7 @@ Tropical algebra offers significant performance benefits:
 - **Parallelizable**: Element-wise max operations are embarrassingly parallel
 - **GPU-friendly**: Simple operations map well to GPU architectures
 
-## v0.12.0 API Changes
+## Historical Note: v0.12 API Changes
 
 The API was updated in v0.12.0 for better encapsulation:
 

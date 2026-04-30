@@ -317,7 +317,7 @@ impl<T: Float> TropicalMatrix<T> {
 
     /// Tropical matrix multiplication
     ///
-    /// (A ⊗ B)[i,j] = max_k(A[i,k] + B[k,j])
+    /// `(A ⊗ B)[i,j] = max_k(A[i,k] + B[k,j])`
     pub fn tropical_matmul(&self, other: &Self) -> Result<Self, TropicalError> {
         if self.cols != other.rows {
             return Err(TropicalError::DimensionMismatch(format!(

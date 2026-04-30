@@ -8,7 +8,9 @@
 //!
 //! Tropical max-plus arithmetic replaces traditional `(+ , ×)` with `(max, +)`,
 //! which is useful for path/ranking computations, dynamic programming, and
-//! optimization-oriented workloads.
+//! optimization-oriented workloads. The ordinal layer is intentionally bounded to
+//! ordinals below `ε₀`, and float-oriented modules such as `viterbi` and `polytope`
+//! remain separate from that arena-backed substrate.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
