@@ -17,7 +17,7 @@ Secondary/additive 0.21.0 work:
 This work is intentionally separate from:
 
 - `amari-wasm` audit/hardening
-- `amari-gpu` redesign and hardware validation, now deferred to the 0.23.0 GPU revisit cycle after `amari-cgt`/`amari-surreal` and alongside `amari-surcomplex`/`amari-cli`
+- `amari-gpu` redesign and hardware validation, now deferred to the 0.24.0 GPU revisit cycle after `amari-cgt`/`amari-surreal` and `amari-surcomplex`/`amari-rewrite`, alongside `amari-cli`
 
 ## Guiding Rule
 

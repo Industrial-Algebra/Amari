@@ -2,7 +2,7 @@
 
 Date: 2026-03-27
 Current version: 0.19.1
-Target horizon: 0.20.0 → 0.23.0
+Target horizon: 0.20.0 → 0.24.0
 
 This document is a **standalone task list** for `amari-gpu`.
 
@@ -25,7 +25,7 @@ Because there are currently no important downstream users constraining its shape
 
 Turn `amari-gpu` from a coverage-oriented integration crate into a robust, hardware-validated GPU platform layer for Amari.
 
-The 0.20.0 hardening pass establishes the known-good baseline. Broad follow-up work is now deferred to 0.23.0, after 0.21.0 extends `amari-tropical`/`amari-dual` and 0.22.0 introduces `amari-cgt`/`amari-surreal`. That lets `amari-gpu` be revisited in a better context alongside `amari-surcomplex`, `amari-cli`, hardware-aware calibration, and the dedicated `wgpu 29` migration investigation.
+The 0.20.0 hardening pass establishes the known-good baseline. Broad follow-up work is now deferred to 0.24.0, after 0.21.0 extends `amari-tropical`/`amari-dual`, 0.22.0 introduces `amari-cgt`/`amari-surreal`, and 0.23.0 introduces `amari-surcomplex`/`amari-rewrite`. That lets `amari-gpu` be revisited in a better context alongside `amari-cli`, hardware-aware calibration, accumulated new crate coverage, and the dedicated `wgpu 29` migration investigation.
 
 The long-term direction is for `amari-gpu` to expose as many Amari operations as are technically justified, ideally approaching the breadth of `amari-wasm`, while maintaining strong CPU-baseline validation and graceful fallback behavior.
 
@@ -163,11 +163,11 @@ Active release-plan note: the 0.20.0 implementation focus is now captured in `do
 
 ---
 
-# Deferred 0.23.0 GPU revisit
+# Deferred 0.24.0 GPU revisit
 
-The previous 0.21.0 GPU expansion focus is deferred. 0.21.0 should stay centered on `amari-tropical` and `amari-dual` extension work; 0.22.0 should introduce `amari-cgt` and `amari-surreal`. The GPU follow-up cycle resumes in 0.23.0 alongside `amari-surcomplex` and `amari-cli`.
+The previous 0.21.0 GPU expansion focus is deferred. 0.21.0 should stay centered on `amari-tropical` and `amari-dual` extension work; 0.22.0 should introduce `amari-cgt` and `amari-surreal`; 0.23.0 should introduce `amari-surcomplex` and `amari-rewrite`. The GPU follow-up cycle resumes in 0.24.0 alongside `amari-cli`.
 
-Tracked 0.23.0 GPU issues:
+Tracked 0.24.0 GPU issues:
 
 - #137 — Add missing CPU baseline timings to `amari-gpu` benchmark harnesses
 - #138 — Add release-mode or Criterion benchmarks for `amari-gpu`
@@ -232,7 +232,7 @@ This track depends on the additive 0.21.0 algebra extension work, but remains a 
 
 ---
 
-## 0.23.0 GPU revisit exit criteria
+## 0.24.0 GPU revisit exit criteria
 
 - [ ] missing CPU baseline timings are added for benchmark rows that are currently GPU-timing-only
 - [ ] release-mode or Criterion-style benchmark path exists for high-priority kernels

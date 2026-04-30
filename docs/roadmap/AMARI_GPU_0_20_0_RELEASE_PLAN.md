@@ -217,7 +217,7 @@ Candidate expansion areas:
 
 ## Post-0.20.0 planning note
 
-The 0.20.0 goal is the validated `amari-gpu` stabilization baseline. Follow-up GPU issues are deferred to the 0.23.0 cycle rather than a planned 0.20.1 fast-follow:
+The 0.20.0 goal is the validated `amari-gpu` stabilization baseline. Follow-up GPU issues are deferred to the 0.24.0 cycle rather than a planned 0.20.1 fast-follow:
 
 - #137 benchmark CPU baseline completion
 - #138 release-mode/Criterion benchmark pass
@@ -226,7 +226,7 @@ The 0.20.0 goal is the validated `amari-gpu` stabilization baseline. Follow-up G
 - #141 coverage revisit for upcoming crates/extensions
 - #142 dedicated `wgpu 29` migration planning
 
-This keeps 0.21.0 focused on `amari-tropical`/`amari-dual` extension work and 0.22.0 focused on `amari-cgt`/`amari-surreal` introductions. Patch releases in the 0.20.x line should remain bug-fix only unless a release-blocking issue appears.
+This keeps 0.21.0 focused on `amari-tropical`/`amari-dual` extension work, 0.22.0 focused on `amari-cgt`/`amari-surreal` introductions, and 0.23.0 focused on `amari-surcomplex`/`amari-rewrite`. Patch releases in the 0.20.x line should remain bug-fix only unless a release-blocking issue appears.
 
 ## 0.20.0 exit criteria
 

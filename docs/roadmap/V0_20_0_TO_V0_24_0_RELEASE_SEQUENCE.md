@@ -1,13 +1,13 @@
-# Amari 0.20.0 → 0.23.0 Release Sequence
+# Amari 0.20.0 → 0.24.0 Release Sequence
 
 Date: 2026-04-30
 Current planning baseline: `0.20.0` release candidate work is complete pending merge/release.
 
 ## Release posture
 
-The next releases should preserve the separation between stabilization, algebraic expansion, new crate introductions, and GPU follow-up work.
+The next releases should preserve the separation between stabilization, algebraic expansion, new crate introductions, rewrite-system foundations, tooling, and GPU follow-up work.
 
-The key planning change is that the `amari-gpu` follow-up issues raised after the 0.20.0 hardening pass are no longer planned as a `0.20.1` fast-follow. They are better handled in the `0.23.0` cycle, where `amari-cli`, `amari-surcomplex`, and new crate coverage create a more natural context for GPU tooling, calibration, and backend migration work.
+The key planning change is that the `amari-gpu` follow-up issues raised after the 0.20.0 hardening pass are no longer planned as a `0.20.1` fast-follow. They are also no longer assigned to 0.23.0. Instead, they are deferred to the `0.24.0` cycle, where `amari-cli` and the accumulated new crate surface create a better context for GPU tooling, calibration, coverage review, and backend migration work.
 
 Patch releases between these milestones should remain bug-fix only.
 
@@ -72,17 +72,41 @@ Non-goals:
 - do not require immediate GPU acceleration for `amari-cgt` or `amari-surreal`
 - do not block these crates on `amari-gpu` follow-up work
 
-## 0.23.0 — `amari-surcomplex`, `amari-cli`, and `amari-gpu` follow-up
+## 0.23.0 — `amari-surcomplex` and `amari-rewrite`
 
-Theme: new front-door tooling plus GPU revisit.
+Theme: surcomplex numbers plus rewrite-rule / term-rewriting foundations.
 
 Primary outcome:
 
 - introduce `amari-surcomplex`
+- introduce `amari-rewrite` for rewrite rules and term-rewriting-system (TRS) workflows
+- define public APIs, tests, documentation, and examples for both crates
+- establish integration points with `amari-surreal`, `amari-cgt`, and existing algebraic crates where appropriate
+
+Potential `amari-rewrite` scope:
+
+- term and pattern representations
+- rewrite rules and strategies
+- normalization / reduction APIs
+- confluence / termination analysis scaffolding where practical
+- algebraic simplification examples that can later support CLI and optimization workflows
+
+Non-goals:
+
+- do not require `amari-cli` in 0.23.0
+- do not require immediate GPU acceleration for `amari-surcomplex` or `amari-rewrite`
+- do not fold `amari-gpu` benchmark/dispatch/`wgpu` follow-up work into 0.23.0 unless a tiny compatibility fix is required
+
+## 0.24.0 — `amari-cli` and `amari-gpu` follow-up
+
+Theme: front-door tooling plus GPU revisit.
+
+Primary outcome:
+
 - introduce `amari-cli`
-- revisit `amari-gpu` in light of the new 0.21.0 and 0.22.0 crates
+- revisit `amari-gpu` in light of the 0.21.0, 0.22.0, and 0.23.0 crates
 - decide which new operations are practical GPU candidates
-- move benchmark/crossover and dispatch refinement work out of the 0.20.x patch lane
+- move benchmark/crossover and dispatch refinement work out of the 0.20.x patch lane and out of the 0.23.0 new-crate cycle
 
 GPU follow-up issues planned for this cycle:
 
@@ -95,8 +119,8 @@ GPU follow-up issues planned for this cycle:
 
 `wgpu 29` migration note:
 
-- track it during 0.23.0 as a dedicated migration effort
-- allow it to slip to 0.24.0 if compile/API/runtime changes are too broad
+- track it during 0.24.0 as a dedicated migration effort
+- allow it to slip to 0.25.0 if compile/API/runtime changes are too broad
 - do not combine it with unrelated release work
 - rerun GB10 and RTX 5080 validation before claiming the migration complete
 
@@ -118,4 +142,5 @@ These commands are a natural home for hardware-aware dispatch and benchmark cali
 | 0.20.0 | GPU stabilization | `amari-gpu` hardening, validation, benchmark docs | Establish known-good conservative baseline |
 | 0.21.0 | Algebra extension | `amari-tropical`, `amari-dual` | Defer broad GPU follow-up |
 | 0.22.0 | New mathematical foundations | `amari-cgt`, `amari-surreal` | No GPU blocker |
-| 0.23.0 | Tooling + GPU revisit | `amari-surcomplex`, `amari-cli`, GPU follow-up issues | Benchmark/calibration/backend migration cycle |
+| 0.23.0 | Surcomplex + rewrite systems | `amari-surcomplex`, `amari-rewrite` | No GPU blocker |
+| 0.24.0 | CLI + GPU revisit | `amari-cli`, GPU follow-up issues | Benchmark/calibration/backend migration cycle |

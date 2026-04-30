@@ -4,7 +4,7 @@ Date: 2026-03-27
 Current workspace version: 0.19.1
 Target horizon: 0.20.0 → 0.21.0
 
-> Planning update: the broader 0.20.0 → 0.23.0 sequence is tracked in `docs/roadmap/V0_20_0_TO_V0_23_0_RELEASE_SEQUENCE.md`. This document remains the 0.21.0 algebra-extension analysis, but GPU benchmark/dispatch/`wgpu` follow-up work is now deferred to the 0.23.0 `amari-surcomplex` / `amari-cli` / GPU revisit cycle.
+> Planning update: the broader 0.20.0 → 0.24.0 sequence is tracked in `docs/roadmap/V0_20_0_TO_V0_24_0_RELEASE_SEQUENCE.md`. This document remains the 0.21.0 algebra-extension analysis, but GPU benchmark/dispatch/`wgpu` follow-up work is now deferred to the 0.24.0 `amari-cli` / GPU revisit cycle.
 
 ## Executive Summary
 
@@ -25,7 +25,8 @@ Recommended release framing:
 - **0.20.0** = `amari-gpu` stabilization baseline: API honesty, CPU-baseline tests, GB10/RTX 5080 validation, and benchmark/crossover documentation
 - **0.21.0** = substantial `amari-tropical` and `amari-dual` extension release, with additive `amari-fusion` examples where appropriate
 - **0.22.0** = introduce `amari-cgt` and `amari-surreal`
-- **0.23.0** = introduce `amari-surcomplex` and `amari-cli`, and revisit `amari-gpu` benchmark, dispatch, coverage, optimization, and `wgpu` migration follow-ups
+- **0.23.0** = introduce `amari-surcomplex` and `amari-rewrite`
+- **0.24.0** = introduce `amari-cli`, and revisit `amari-gpu` benchmark, dispatch, coverage, optimization, and `wgpu` migration follow-ups
 
 ---
 
