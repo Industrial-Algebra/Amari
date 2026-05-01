@@ -1,8 +1,12 @@
-//! GPU acceleration for dual number automatic differentiation
+//! GPU-backed and GPU-ready dual-number automatic differentiation.
 //!
-//! This module provides comprehensive GPU acceleration for forward-mode automatic
-//! differentiation using dual numbers. It includes optimized compute shaders for
-//! batch gradient computation, neural network training, and large-scale optimization.
+//! Current public 0.20.0 behavior is intentionally narrow:
+//! - `DualGpuOps::batch_forward_ad` is GPU-backed for element-wise unary dual operations.
+//! - `GpuDualNumber` provides a POD transfer representation for `DualNumber<f32>`.
+//! - `Add` and `Multiply` operation variants are retained for API continuity but are rejected by
+//!   `batch_forward_ad` until binary/broadcast semantics are designed.
+//! - Neural-network gradients, generic vector gradients, and optimization scaffolding remain
+//!   internal redesign-pending implementation details.
 
 #[cfg(feature = "dual")]
 use amari_dual::{DualNumber, MultiDualNumber};
@@ -332,12 +336,29 @@ impl DualGpuOps {
         Ok(Self { context })
     }
 
-    /// Batch forward-mode automatic differentiation
+    /// Batch forward-mode automatic differentiation for unary element-wise operations.
+    ///
+    /// Supported operations: `Sin`, `Cos`, `Exp`, `Log`, `ReLU`, `Sigmoid`, `Tanh`,
+    /// `Square`, and `Sqrt`. `Add` and `Multiply` require a binary/broadcast input
+    /// contract and currently return `InvalidOperation`.
     pub async fn batch_forward_ad(
         &mut self,
         inputs: &[DualNumber<f32>],
         operations: &[DualOperation],
     ) -> DualGpuResult<Vec<DualNumber<f32>>> {
+        if operations
+            .iter()
+            .any(|op| matches!(op, DualOperation::Add | DualOperation::Multiply))
+        {
+            return Err(DualGpuError::InvalidOperation(
+                "Add and Multiply require binary/broadcast semantics and are not part of the 0.20.0 dual v1 surface".to_string(),
+            ));
+        }
+
+        if inputs.is_empty() {
+            return Ok(Vec::new());
+        }
+
         let workgroup_size = 64;
         let num_elements = inputs.len();
 
@@ -478,8 +499,10 @@ impl DualGpuOps {
         Ok(())
     }
 
-    /// Compute gradient for neural network training
-    pub async fn neural_gradient(
+    /// Compute gradient for neural network training.
+    ///
+    /// Internal redesign-pending scaffold; not re-exported as part of the public v1 dual surface.
+    pub(crate) async fn neural_gradient(
         &mut self,
         weights: &[f32],
         inputs: &[f32],
@@ -582,8 +605,10 @@ impl DualGpuOps {
         Ok(gradients)
     }
 
-    /// Optimize function using GPU-accelerated gradient descent
-    pub async fn gradient_descent_optimization(
+    /// Optimize function using gradient descent.
+    ///
+    /// Internal redesign-pending scaffold; not re-exported as part of the public v1 dual surface.
+    pub(crate) async fn gradient_descent_optimization(
         &mut self,
         initial_params: &[f32],
         objective_function: &ObjectiveFunction,
@@ -593,7 +618,7 @@ impl DualGpuOps {
         let _num_params = initial_params.len();
         let mut current_params = initial_params.to_vec();
 
-        for iteration in 0..max_iterations {
+        for _iteration in 0..max_iterations {
             // Compute gradients using forward-mode AD
             let gradients = self
                 .compute_function_gradients(&current_params, objective_function)
@@ -607,7 +632,6 @@ impl DualGpuOps {
             // Optional: check convergence criteria
             let gradient_norm: f32 = gradients.iter().map(|g| g * g).sum::<f32>().sqrt();
             if gradient_norm < 1e-6 {
-                println!("Converged at iteration {}", iteration);
                 break;
             }
         }
@@ -735,8 +759,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
                     shader.push_str("    result = dual_mul(result, result);\n")
                 }
                 DualOperation::Sqrt => shader.push_str("    result = dual_sqrt(result);\n"),
-                DualOperation::Add => {} // Requires two operands, handled differently
-                DualOperation::Multiply => {} // Requires two operands, handled differently
+                DualOperation::Add => unreachable!("validated before shader generation"),
+                DualOperation::Multiply => unreachable!("validated before shader generation"),
             }
         }
 
@@ -984,8 +1008,10 @@ impl<T: Float + Send + Sync> DualGpuAccelerated<MultiDualNumber<T>> for MultiDua
 // Convenience functions for common GPU operations
 #[cfg(feature = "dual")]
 impl DualGpuOps {
-    /// Compute batch gradients for a vector function
-    pub async fn batch_gradients(
+    /// Compute batch gradients for a vector function.
+    ///
+    /// Internal redesign-pending scaffold; not re-exported as part of the public v1 dual surface.
+    pub(crate) async fn batch_gradients(
         &mut self,
         inputs: &[f32],
         function: &VectorFunction,

@@ -183,6 +183,9 @@ impl AdaptiveVerifier {
         a_batch: &[VerifiedMultivector<P, Q, R>],
         b_batch: &[VerifiedMultivector<P, Q, R>],
     ) -> Result<Vec<VerifiedMultivector<P, Q, R>>, AdaptiveVerificationError> {
+        if a_batch.len() != b_batch.len() {
+            return Err(AdaptiveVerificationError::NoSuitableStrategy);
+        }
         if a_batch.is_empty() {
             return Ok(Vec::new());
         }
@@ -262,6 +265,11 @@ impl AdaptiveVerifier {
 
     /// Detect current execution platform
     async fn detect_platform() -> Result<VerificationPlatform, AdaptiveVerificationError> {
+        if std::env::var_os("AMARI_GPU_FORCE_CPU").is_some() {
+            let features = Self::detect_cpu_features();
+            return Ok(VerificationPlatform::NativeCpu { features });
+        }
+
         // Try GPU detection with comprehensive error handling
         let gpu_platform = {
             // Use std::panic::catch_unwind to handle GPU driver panics
@@ -703,7 +711,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_verification_with_config() {
-        // Test adaptive behavior: should work with or without GPU
+        // Test adaptive behavior through the robust CPU fallback path; hardware GPU
+        // probing is covered by ignored hardware tests because some headless EGL
+        // stacks panic during adapter initialization.
+        std::env::set_var("AMARI_GPU_FORCE_CPU", "1");
         match AdaptiveVerifier::with_config(
             AdaptiveVerificationLevel::Minimal,
             Duration::from_millis(5),
@@ -718,23 +729,19 @@ mod tests {
                 );
                 assert_eq!(verifier.performance_budget(), Duration::from_millis(5));
 
-                // Test that the platform was detected correctly
-                match verifier.platform() {
-                    VerificationPlatform::Gpu { .. } => {
-                        println!("✅ GPU verification platform detected");
-                    }
-                    VerificationPlatform::NativeCpu { .. } => {
-                        println!("✅ CPU verification platform detected (GPU not available)");
-                    }
-                    VerificationPlatform::Wasm { .. } => {
-                        println!("✅ WASM verification platform detected");
-                    }
-                }
+                assert!(matches!(
+                    verifier.platform(),
+                    VerificationPlatform::NativeCpu { .. }
+                ));
+                println!("✅ CPU verification platform detected via forced fallback");
             }
             Err(e) => {
+                std::env::remove_var("AMARI_GPU_FORCE_CPU");
                 // Should not fail - adaptive design should always have a fallback
                 panic!("Adaptive verifier should not fail, but got: {:?}", e);
             }
         }
+
+        std::env::remove_var("AMARI_GPU_FORCE_CPU");
     }
 }

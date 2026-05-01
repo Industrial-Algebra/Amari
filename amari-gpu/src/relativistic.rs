@@ -1,9 +1,14 @@
 //! GPU acceleration for relativistic physics computations
 //!
 //! This module provides GPU-accelerated implementations of relativistic physics
-//! operations from amari-relativistic, including spacetime algebra operations,
-//! geodesic integration, and particle trajectory calculations for spacecraft
-//! orbital mechanics and plasma physics applications.
+//! operations from amari-relativistic, including spacetime algebra operations
+//! and a narrow Schwarzschild-style particle propagation kernel.
+//!
+//! The public v1 surface is GPU-backed but intentionally bounded: spacetime
+//! vectors store coordinates as `(ct, x, y, z)`, Minkowski products compute
+//! `ct² - x² - y² - z²`, and particle propagation uses a simplified GPU
+//! geodesic step. Inputs are validated for finite values and basic parameter
+//! consistency before dispatch.
 
 use crate::GpuError;
 use amari_relativistic::{particle::RelativisticParticle, spacetime::SpacetimeVector};
@@ -14,7 +19,7 @@ use wgpu::util::DeviceExt;
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
 pub struct GpuSpacetimeVector {
-    /// Temporal component (ct)
+    /// Temporal component (`ct`, in length units)
     pub t: f32,
     /// Spatial x component
     pub x: f32,
@@ -30,19 +35,29 @@ impl GpuSpacetimeVector {
         Self { t, x, y, z }
     }
 
-    /// Convert from CPU spacetime vector
+    /// Convert from CPU spacetime vector, preserving coordinates `[ct, x, y, z]`.
     pub fn from_spacetime_vector(sv: &SpacetimeVector) -> Self {
+        let coords = sv.coordinates();
         Self::new(
-            sv.time() as f32,
-            sv.x() as f32,
-            sv.y() as f32,
-            sv.z() as f32,
+            coords[0] as f32,
+            coords[1] as f32,
+            coords[2] as f32,
+            coords[3] as f32,
         )
     }
 
-    /// Convert to CPU spacetime vector
+    /// Convert to CPU spacetime vector, interpreting `t` as `ct`.
     pub fn to_spacetime_vector(&self) -> SpacetimeVector {
-        SpacetimeVector::new(self.t as f64, self.x as f64, self.y as f64, self.z as f64)
+        SpacetimeVector::from_coordinates([
+            self.t as f64,
+            self.x as f64,
+            self.y as f64,
+            self.z as f64,
+        ])
+    }
+
+    fn is_finite(&self) -> bool {
+        self.t.is_finite() && self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
     }
 }
 
@@ -60,8 +75,8 @@ pub struct GpuRelativisticParticle {
     pub charge: f32,
     /// Proper time
     pub proper_time: f32,
-    /// Padding for alignment
-    pub _padding: [f32; 3],
+    /// Padding for WGSL storage-buffer alignment (64-byte particle stride)
+    pub _padding: [f32; 5],
 }
 
 /// GPU-accelerated trajectory calculation parameters
@@ -221,7 +236,7 @@ impl GpuRelativisticPhysics {
                 mass: f32,
                 charge: f32,
                 proper_time: f32,
-                padding: f32,
+                padding: array<f32, 5>,
             };
 
             struct TrajectoryParams {
@@ -368,11 +383,24 @@ impl GpuRelativisticPhysics {
         Self::create_geodesic_pipeline(device)
     }
 
-    /// Compute Minkowski inner products for multiple spacetime vectors
+    /// Compute Minkowski norm-squared values for multiple spacetime vectors.
+    ///
+    /// Returns `ct² - x² - y² - z²` for each vector.
     pub async fn compute_minkowski_products(
         &self,
         vectors: &[GpuSpacetimeVector],
     ) -> Result<Vec<f32>, GpuError> {
+        if vectors.is_empty() {
+            return Ok(Vec::new());
+        }
+        for (index, vector) in vectors.iter().enumerate() {
+            if !vector.is_finite() {
+                return Err(GpuError::BufferError(format!(
+                    "spacetime vector {index} contains non-finite values"
+                )));
+            }
+        }
+
         let vectors_buffer = self
             .device
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -446,12 +474,14 @@ impl GpuRelativisticPhysics {
 
         let buffer_slice = staging_buffer.slice(..);
         let (sender, receiver) = futures::channel::oneshot::channel();
-        buffer_slice.map_async(wgpu::MapMode::Read, move |v| sender.send(v).unwrap());
+        buffer_slice.map_async(wgpu::MapMode::Read, move |v| {
+            let _ = sender.send(v);
+        });
 
         self.device.poll(wgpu::Maintain::wait()).panic_on_timeout();
         receiver
             .await
-            .unwrap()
+            .map_err(|_| GpuError::BufferError("Failed to receive buffer mapping".to_string()))?
             .map_err(|e| GpuError::BufferError(format!("Buffer mapping failed: {:?}", e)))?;
 
         let data = buffer_slice.get_mapped_range();
@@ -463,12 +493,20 @@ impl GpuRelativisticPhysics {
         Ok(results)
     }
 
-    /// Propagate multiple particles through spacetime using GPU acceleration
+    /// Propagate multiple particles through spacetime using the simplified GPU geodesic kernel.
     pub async fn propagate_particles(
         &self,
         particles: &[GpuRelativisticParticle],
         params: &GpuTrajectoryParams,
     ) -> Result<Vec<GpuRelativisticParticle>, GpuError> {
+        if particles.is_empty() || params.steps == 0 {
+            return Ok(particles.to_vec());
+        }
+        Self::validate_trajectory_params(params)?;
+        for (index, particle) in particles.iter().enumerate() {
+            Self::validate_particle(index, particle)?;
+        }
+
         let particles_buffer = self
             .device
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -554,12 +592,14 @@ impl GpuRelativisticPhysics {
 
         let buffer_slice = staging_buffer.slice(..);
         let (sender, receiver) = futures::channel::oneshot::channel();
-        buffer_slice.map_async(wgpu::MapMode::Read, move |v| sender.send(v).unwrap());
+        buffer_slice.map_async(wgpu::MapMode::Read, move |v| {
+            let _ = sender.send(v);
+        });
 
         self.device.poll(wgpu::Maintain::wait()).panic_on_timeout();
         receiver
             .await
-            .unwrap()
+            .map_err(|_| GpuError::BufferError("Failed to receive buffer mapping".to_string()))?
             .map_err(|e| GpuError::BufferError(format!("Buffer mapping failed: {:?}", e)))?;
 
         let data = buffer_slice.get_mapped_range();
@@ -569,6 +609,66 @@ impl GpuRelativisticPhysics {
         staging_buffer.unmap();
 
         Ok(results)
+    }
+
+    fn validate_trajectory_params(params: &GpuTrajectoryParams) -> Result<(), GpuError> {
+        if !params.dt.is_finite() || params.dt <= 0.0 {
+            return Err(GpuError::BufferError(
+                "trajectory dt must be finite and positive".to_string(),
+            ));
+        }
+        if !params.tolerance.is_finite() || params.tolerance < 0.0 {
+            return Err(GpuError::BufferError(
+                "trajectory tolerance must be finite and non-negative".to_string(),
+            ));
+        }
+        if params.renorm_freq == 0 {
+            return Err(GpuError::BufferError(
+                "trajectory renorm_freq must be greater than zero".to_string(),
+            ));
+        }
+        if !params.schwarzschild_radius.is_finite() || params.schwarzschild_radius < 0.0 {
+            return Err(GpuError::BufferError(
+                "schwarzschild_radius must be finite and non-negative".to_string(),
+            ));
+        }
+        if !params.gm_parameter.is_finite() {
+            return Err(GpuError::BufferError(
+                "gm_parameter must be finite".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    fn validate_particle(index: usize, particle: &GpuRelativisticParticle) -> Result<(), GpuError> {
+        if !particle.position.is_finite() {
+            return Err(GpuError::BufferError(format!(
+                "particle {index} position contains non-finite values"
+            )));
+        }
+        if !particle.velocity.is_finite() {
+            return Err(GpuError::BufferError(format!(
+                "particle {index} velocity contains non-finite values"
+            )));
+        }
+        if !particle.mass.is_finite() || particle.mass < 0.0 {
+            return Err(GpuError::BufferError(format!(
+                "particle {index} mass must be finite and non-negative"
+            )));
+        }
+        if !particle.charge.is_finite() {
+            return Err(GpuError::BufferError(format!(
+                "particle {index} charge must be finite"
+            )));
+        }
+        if !particle.proper_time.is_finite() {
+            return Err(GpuError::BufferError(format!(
+                "particle {index} proper_time must be finite"
+            )));
+        }
+
+        Ok(())
     }
 }
 
@@ -584,7 +684,7 @@ impl From<&RelativisticParticle> for GpuRelativisticParticle {
             mass: particle.mass as f32,
             charge: particle.charge as f32,
             proper_time: 0.0, // Will be updated during integration
-            _padding: [0.0; 3],
+            _padding: [0.0; 5],
         }
     }
 }
@@ -599,7 +699,7 @@ mod tests {
         let gpu_vector = GpuSpacetimeVector::from_spacetime_vector(&cpu_vector);
         let converted_back = gpu_vector.to_spacetime_vector();
 
-        assert_eq!(converted_back.time(), 1.0);
+        assert!((converted_back.time() - 1.0).abs() < 1e-6);
         assert_eq!(converted_back.x(), 2.0);
         assert_eq!(converted_back.y(), 3.0);
         assert_eq!(converted_back.z(), 4.0);

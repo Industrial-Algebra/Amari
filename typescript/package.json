@@ -1,6 +1,6 @@
 {
   "name": "amari",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "description": "High-performance Geometric Algebra/Clifford Algebra library with TypeScript bindings",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

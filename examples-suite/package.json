@@ -1,6 +1,6 @@
 {
   "name": "amari-examples-suite",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "description": "Interactive API examples for the Amari Mathematical Computing Library",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@justinelliottcobb/amari-wasm": "latest",
-    "@mantine/code-highlight": "^8.3.15",
+    "@mantine/code-highlight": "^8.3.16",
     "@mantine/core": "^8.3.15",
     "@mantine/hooks": "^8.3.15",
     "shiki": "^3.4.2",

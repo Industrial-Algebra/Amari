@@ -1,6 +1,6 @@
 {
   "name": "amari-interactive-demos",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "description": "Interactive web demonstrations of Amari mathematical computing library",
   "main": "index.js",
   "scripts": {

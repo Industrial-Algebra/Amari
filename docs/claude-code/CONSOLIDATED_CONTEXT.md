@@ -1,295 +1,331 @@
-# Amari Project Context for Claude Code
+# Amari Project Context for Coding Assistants
 
-This document consolidates all project context, guidelines, and technical documentation for AI assistants working on the Amari mathematical computing library.
+This document reflects the current state of the repository as of **2026-03-27**.
 
 ## Project Overview
 
-Amari is a high-performance mathematical computing library focusing on:
-- Geometric Algebra (Clifford Algebra)
-- Tropical Algebra (max-plus algebra)
-- Dual Numbers and Automatic Differentiation
-- Information Geometry
-- Enumerative Geometry
-- Fusion Systems
-- Cellular Automata
-- Relativistic Physics
-- Network Analysis
+**Amari** is a Rust workspace centered on a broad mathematical computing platform.
+It is no longer just a geometric/tropical/dual algebra project: the repository now spans a large family of domain crates plus integration layers for GPU, WebAssembly, TypeScript, and interactive examples.
 
-### Current Status: v0.9.6 Multi-GPU Infrastructure
+### Current Version
 
-The library now features comprehensive multi-GPU computing infrastructure with:
-- Intelligent load balancing across up to 8 GPU devices
-- Advanced profiling systems with microsecond precision
-- Production-ready benchmarking across all mathematical domains
-- Scaling efficiency up to 5.6x with 8 GPUs (70% efficiency)
-- Comprehensive testing with 65 tests including 10 integration tests
+- **Workspace version:** `0.19.1`
+- **Primary crate:** `amari`
+- **Rust edition:** `2021`
+- **MSRV / rust-version:** `1.75`
+- **Default toolchain file:** `nightly` (`rust-toolchain.toml`)
+- **Practical note:** stable is still used for normal builds/tests in several places; nightly is primarily required for formal-verification workflows.
 
-## Core Design Principles
+## What the Project Contains Now
 
-### 1. Mathematical Rigor
-- All operations must preserve mathematical properties
-- Formal verification through property-based testing
-- Compile-time type safety via phantom types
-- No silent failures or undefined behavior
+### Workspace crates
 
-### 2. Performance
-- Zero-cost abstractions where possible
-- SIMD optimization for vectorized operations
-- Multi-GPU acceleration with intelligent load balancing
-- Advanced profiling and performance monitoring
-- Cache-friendly memory layouts
-- Scaling efficiency up to 8 GPUs
+The workspace currently includes these packages:
 
-### 3. Type Safety
-- Phantom types encode mathematical constraints
-- Compile-time dimension checking
-- Type-level encoding of algebraic structures
-- Safe cross-language bindings
+1. `amari` (umbrella crate)
+2. `amari-core`
+3. `amari-tropical`
+4. `amari-dual`
+5. `amari-network`
+6. `amari-fusion`
+7. `amari-info-geom`
+8. `amari-automata`
+9. `amari-enumerative`
+10. `amari-relativistic`
+11. `amari-gpu`
+12. `amari-optimization`
+13. `amari-flynn`
+14. `amari-flynn-macros`
+15. `amari-measure`
+16. `amari-calculus`
+17. `amari-holographic`
+18. `amari-probabilistic`
+19. `amari-functional`
+20. `amari-topology`
+21. `amari-dynamics`
+22. `amari-wasm`
 
-## API Design Conventions
+### Non-workspace project apps/packages
 
-### Naming Convention
-- **Geometric operations**: `geometric_product`, `inner_product`, `outer_product`
-- **Algebraic operations**: `add`, `mul`, `inverse`
-- **Transformations**: `apply_rotor`, `reflect`, `project`
-- **Constructors**: `from_*`, `new`, `zero`, `identity`
-- **Conversions**: `to_*`, `into_*`, `as_*`
+- `examples-suite/` — Vite + React interactive examples site
+- `typescript/` — TypeScript wrapper/build flow for WASM output
+- `examples/` — Rust and PureScript examples/documentation
 
-### Method Organization
-```rust
-// 1. Constructors
-impl<const N: usize, const S: usize, const P: usize> Multivector<N, S, P> {
-    pub fn new(components: [f64; 1 << N]) -> Self { ... }
-    pub fn zero() -> Self { ... }
-}
+## Current Mathematical / Product Scope
 
-// 2. Core operations
-impl<const N: usize, const S: usize, const P: usize> Multivector<N, S, P> {
-    pub fn geometric_product(&self, other: &Self) -> Self { ... }
-    pub fn grade_projection<const K: usize>(&self) -> Blade<N, K, S, P> { ... }
-}
+The current root README describes Amari as a unified platform covering:
 
-// 3. Trait implementations
-impl<const N: usize, const S: usize, const P: usize> Add for Multivector<N, S, P> { ... }
-```
+- Geometric algebra / Clifford algebra
+- Differential calculus
+- Measure theory
+- Probability theory on geometric spaces
+- Functional analysis
+- Algebraic topology
+- Dynamical systems
+- Vector symbolic architectures / holographic memory
+- Optical field operations
+- Relativistic physics
+- Tropical algebra
+- Automatic differentiation
+- Fusion systems
+- Information geometry
+- Optimization
+- Network analysis
+- Cellular automata
+- Enumerative geometry
+- **GF(2) algebra** (newly highlighted in `0.19.1`)
+- **Probabilistic contracts / verification** via `amari-flynn`
 
-## Error Handling Strategy
+## Architecture
 
-### Principles
-1. **Compile-time over runtime**: Catch errors at compile time when possible
-2. **Explicit over implicit**: No silent failures
-3. **Recoverable errors**: Use `Result<T, E>` for operations that can fail
-4. **Type safety**: Use phantom types to prevent invalid operations
+### Repository shape
 
-### Error Types
-```rust
-#[derive(Debug, thiserror::Error)]
-pub enum AlgebraError {
-    #[error("Division by zero")]
-    DivisionByZero,
+The repo is organized around **domain crates** plus **integration crates**:
 
-    #[error("Non-invertible element")]
-    NonInvertible,
+- **Domain crates:** `amari-core`, `amari-calculus`, `amari-measure`, `amari-functional`, `amari-topology`, `amari-dynamics`, etc.
+- **Integration crates:**
+  - `amari` — umbrella re-export crate
+  - `amari-gpu` — GPU acceleration layer over domain crates
+  - `amari-wasm` — WebAssembly bindings over domain crates
 
-    #[error("Dimension mismatch: expected {expected}, got {actual}")]
-    DimensionMismatch { expected: usize, actual: usize },
-}
-```
+This dependency direction is documented explicitly in `amari-gpu/README.md`: integration crates consume domain crates, never the reverse.
 
-## Phantom Types Methodology
+### Umbrella crate behavior
 
-### Type Parameters
-- `N`: Number of basis vectors (dimension)
-- `S`: Positive signature dimensions
-- `P`: Negative signature dimensions
-- `Q`: Zero signature dimensions (degenerate)
+`src/lib.rs` currently:
 
-### Metric Signatures
-```rust
-// Euclidean 3D: (3, 0, 0)
-type Euclidean3D = Multivector<3, 3, 0>;
+- always re-exports: `core`, `dual`, `tropical`, `network`, `fusion`, `info_geom`, `automata`, `enumerative`, `relativistic`
+- conditionally re-exports via features:
+  - `measure`
+  - `calculus`
+  - `holographic`
+  - `probabilistic`
+  - `functional`
+  - `topology`
+  - `dynamics`
+  - `flynn`
+  - `gpu`
+  - `optimization`
+- defines a unified `AmariError`
+- has an essentially placeholder `src/main.rs` (`Hello, world!`)
 
-// Minkowski spacetime: (3, 1, 0)
-type Spacetime = Multivector<4, 3, 1>;
+### Feature model
 
-// Projective geometry: (3, 0, 1)
-type Projective3D = Multivector<4, 3, 0>;
-```
+The root crate has a very small default surface:
 
-## Testing Strategy
+- `default = []`
+- richer functionality is opt-in through feature flags
+- `full` enables all optional crates
+- `deterministic` is a dedicated feature for networked physics / bit-exact behavior
 
-### Test Categories
-1. **Unit tests**: Core mathematical operations
-2. **Property tests**: Mathematical invariants
-3. **Integration tests**: Cross-crate interactions
-4. **Formal verification**: Contract-based testing
-5. **Performance benchmarks**: Regression prevention
+## Current State vs Older Context
 
-### Test Enforcement
-```rust
-#[test]
-fn test_geometric_product_associativity() {
-    let a = Multivector::random();
-    let b = Multivector::random();
-    let c = Multivector::random();
+The older consolidated context in this folder is outdated in several major ways:
 
-    assert_eq!(
-        (a.geometric_product(&b)).geometric_product(&c),
-        a.geometric_product(&b.geometric_product(&c))
-    );
-}
-```
+- it still describes the project as **v0.9.6**
+- it focuses primarily on the multi-GPU milestone
+- it omits many now-present crates (`measure`, `calculus`, `holographic`, `probabilistic`, `functional`, `topology`, `dynamics`, `optimization`, `flynn`, `flynn-macros`, `wasm`)
+- it understates the breadth of the examples and frontend packages
+- it does not mention the current `0.19.1` emphasis on **GF(2)** and **probabilistic contracts**
 
-## CI/CD Pipeline
+## Current GPU State
 
-### Workflow Structure
-1. **Validation**: Format, lint, test
-2. **Build**: All features, all targets
-3. **Publish**: crates.io and npm
-4. **Release**: GitHub releases
+`amari-gpu` is still important, but it should no longer be treated as the sole center of the repository.
 
-### Quality Gates
-- All tests must pass
-- No clippy warnings
-- Code formatted with rustfmt
-- Documentation builds without warnings
-- Formal verification tests pass
+### Implemented integrations per README
 
-## Publishing Process
+`amari-gpu` currently claims acceleration for:
 
-### Version Management
-Use `scripts/bump-version.sh` to update versions:
-```bash
-./scripts/bump-version.sh 0.6.2
-```
+- core geometric algebra
+- information geometry
+- relativistic operations
+- network analysis
+- measure theory
+- calculus
+- dual numbers
+- enumerative geometry
+- automata
+- fusion
+- holographic memory / optical field ops
+- probabilistic computations
+- functional analysis
+- topology
+- dynamics
 
-### Publishing Order
-1. Core crates (amari-core, etc.)
-2. Dependent crates (amari-fusion, etc.)
-3. Main crate (amari)
-4. WASM/npm packages
+### Current limitation
 
-### Release Workflow
-```bash
-# Automated release with version bump
-gh workflow run publish.yml --field version=0.6.2
-```
+Both `docs/1.0-audit.md` and `amari-gpu/README.md` make clear that GPU support still has an important caveat:
 
-## Development Phases
+- the crate needs validation on real modern GPU hardware
+- several tests are environment-sensitive
+- some WGSL shaders use workaround-heavy code paths
+- tropical GPU integration is still disabled
 
-### Completed Phases
-- **Phase 1**: Core geometric algebra
-- **Phase 2**: Advanced algebras (tropical, dual)
-- **Phase 3**: Cross-language bindings
-- **Phase 4**: Formal verification and GPU boundary verification
-- **Phase 5**: Complete GPU coverage and optimization (v0.9.5)
-- **Phase 6**: Multi-GPU infrastructure implementation (v0.9.6)
+This is still an active risk area before a 1.0 release.
 
-### Current Focus
-- Multi-GPU production deployment
-- Advanced mathematical domain expansion
-- Performance optimization and scaling analysis
-- Production-ready benchmarking frameworks
+## Testing / Validation Snapshot
 
-## Code Quality Standards
+### What was verified during repo inspection
 
-### Documentation
-- All public APIs must be documented
-- Include mathematical formulas where relevant
-- Provide usage examples
-- Link to relevant papers/resources
+- `cargo +stable test --workspace --all-features --quiet` successfully ran through a large portion of the workspace and many crates passed hundreds of tests.
+- That run **timed out** in `amari-gpu` after several long-running GPU-related tests had been running for over 60 seconds in the current environment.
+- A plain `cargo test -q` from the root completed only a small subset and also triggered rustup toolchain syncing because the repo defaults to nightly.
 
-### Performance
-- Benchmark critical operations
-- Profile memory usage
-- Optimize hot paths
-- Use SIMD where beneficial
+### Practical interpretation
 
-### Safety
-- No unsafe code without justification
-- Proper error handling
-- Memory safety guaranteed
-- Thread safety where applicable
+- **Most non-GPU crates appear healthy from a testing perspective in this environment.**
+- **GPU-heavy validation remains environment-dependent and is not fully confirmable here without appropriate hardware/runtime support.**
 
-## Project Structure
+### Current audit document
 
-```
+`docs/1.0-audit.md` is the most important state-of-the-project document for correctness work.
+It records:
+
+- `amari-core` audit work as complete/pending manual review
+- `amari-enumerative` GF(2) extension audit work as complete/pending manual review
+- the remaining crates as still pending in the staged 1.0 audit sequence
+- explicit GPU limitations and pre-1.0 recommendations
+
+## Notable Recent State Changes
+
+### 1.0 readiness effort is active
+
+The repository is clearly in a **pre-1.0 hardening phase**, not an early exploratory phase anymore.
+Evidence:
+
+- `docs/1.0-audit.md`
+- `docs/roadmap/V1_READINESS_PLAN.md`
+- many per-crate READMEs with mature API sections
+- release/version scripts across the workspace
+
+### GF(2) work is now first-class
+
+The audit doc describes a newly added `gf2` module in `amari-core` and downstream `amari-enumerative` extensions, including:
+
+- GF(2) scalars, vectors, matrices
+- binary Clifford algebra / binary multivectors
+- binary Grassmannian and representability utilities
+- coding-theory support
+- Kazhdan-Lusztig related functionality in enumerative geometry
+
+### Flynn/probabilistic contracts are now part of the platform
+
+`amari-flynn` and `amari-flynn-macros` are now part of the workspace and the root README explicitly highlights:
+
+- SMT-LIB2 proof obligation generation
+- Monte Carlo verification
+- probabilistic value tracking
+- rare event classification
+
+### Frontend/examples surface is larger
+
+There is now a substantial examples/application layer:
+
+- `examples-suite/` is a modern React/Vite app at version `0.19.1`
+- Netlify deployment config exists (`netlify.toml`)
+- `amari-wasm` publishes npm package `@justinelliottcobb/amari-wasm` version `0.19.1`
+- `examples/` includes Rust and PureScript materials, plus learning-path and documentation files
+
+## Current Documentation Signals
+
+### Most useful current docs
+
+For understanding actual current state, prioritize:
+
+1. `README.md` — current top-level scope and positioning
+2. `Cargo.toml` — authoritative workspace members/features/version
+3. `docs/1.0-audit.md` — best correctness/status snapshot
+4. `docs/roadmap/V1_READINESS_PLAN.md` — current direction toward 1.0
+5. crate-level READMEs — per-domain current APIs and feature claims
+6. `amari-gpu/README.md` — GPU integration architecture and limitations
+
+### Historical docs still present
+
+There are many archive/roadmap docs referring to older versions (`0.8.x` through `0.9.x`).
+These are useful for historical context, but should not be treated as authoritative project state.
+
+## Development Conventions That Still Fit
+
+The older context's general engineering guidance is still broadly correct:
+
+- preserve mathematical invariants
+- prefer explicit error handling
+- use type-level encodings and phantom types where established
+- avoid unsafe code unless justified
+- keep performance in mind
+- add tests for mathematical properties and regressions
+
+But coding assistants should also recognize that:
+
+- the workspace is now broad and unevenly matured across crates
+- some README claims are ahead of what can be verified locally without special hardware
+- `docs/1.0-audit.md` is the best indicator of what has actually been audited for correctness
+
+## Current Project Structure Snapshot
+
+```text
 amari/
-├── amari-core/          # Core geometric algebra
-├── amari-tropical/      # Tropical algebra
-├── amari-dual/          # Dual numbers
-├── amari-info-geom/     # Information geometry
-├── amari-enumerative/   # Enumerative geometry
-├── amari-fusion/        # Fusion systems
-├── amari-automata/      # Cellular automata
-├── amari-network/       # Network analysis and graph neural networks
-├── amari-relativistic/  # Relativistic physics and spacetime algebra
-├── amari-gpu/           # Multi-GPU acceleration with load balancing
-│   ├── src/
-│   │   ├── multi_gpu.rs    # Multi-GPU infrastructure (777 lines)
-│   │   ├── timeline.rs     # Performance profiling (848 lines)
-│   │   ├── benchmarks.rs   # Comprehensive benchmarking (889 lines)
-│   │   └── unified.rs      # Enhanced unified context
-│   └── tests/
-│       └── integration_tests.rs  # Multi-GPU integration tests (351 lines)
-├── amari-wasm/          # WebAssembly bindings
-├── examples/            # Usage examples
-├── scripts/             # Build and release scripts
-└── docs/               # Documentation
-    ├── claude-code/    # AI assistant context
-    ├── technical/      # Technical specifications
-    └── v0.9.6-multi-gpu-design.md  # Multi-GPU architecture documentation
+├── Cargo.toml
+├── src/                        # umbrella crate
+├── amari-core/
+├── amari-tropical/
+├── amari-dual/
+├── amari-network/
+├── amari-fusion/
+├── amari-info-geom/
+├── amari-automata/
+├── amari-enumerative/
+├── amari-relativistic/
+├── amari-gpu/
+├── amari-optimization/
+├── amari-flynn/
+├── amari-flynn-macros/
+├── amari-measure/
+├── amari-calculus/
+├── amari-holographic/
+├── amari-probabilistic/
+├── amari-functional/
+├── amari-topology/
+├── amari-dynamics/
+├── amari-wasm/
+├── examples/
+├── examples-suite/
+├── typescript/
+├── docs/
+├── benches/
+└── tests/
 ```
 
-## Guidelines for AI Assistants
+## Practical Assistant Guidance
 
-### Do's
-- Maintain mathematical correctness
-- Use existing patterns and conventions
-- Write comprehensive tests
-- Document complex algorithms
-- Consider performance implications
+### When working in this repo
 
-### Don'ts
-- Don't break mathematical invariants
-- Don't use unsafe without justification
-- Don't skip error handling
-- Don't ignore compiler warnings
-- Don't duplicate existing functionality
+- Treat this as a **large Rust workspace**, not a single crate.
+- Check whether a capability belongs in a domain crate, `amari-gpu`, or `amari-wasm` before editing.
+- Verify feature flags before assuming modules are available by default.
+- Use `cargo +stable ...` when nightly sync/toolchain issues get in the way of ordinary validation.
+- For correctness/risk questions, consult `docs/1.0-audit.md` first.
+- Be cautious about GPU assumptions unless you have confirmed hardware-backed execution.
 
-## Quick References
+### Good default commands
 
-### Common Commands
 ```bash
-# Run all tests
-cargo test --workspace --all-features
+# Workspace tests on stable
+cargo +stable test --workspace --all-features
 
-# Check formatting
-cargo fmt --all -- --check
+# Basic root package test
+cargo test
 
-# Run clippy
+# Format
+cargo fmt --all
+
+# Lint
 cargo clippy --workspace --all-features -- -D warnings
 
-# Build documentation
+# Build docs
 cargo doc --workspace --no-deps
-
-# Bump version
-./scripts/bump-version.sh X.Y.Z
-
-# Publish
-gh workflow run publish.yml --field version=X.Y.Z
 ```
 
-### Key Files
-- `Cargo.toml`: Workspace configuration
-- `rust-toolchain.toml`: Rust version specification
-- `.github/workflows/`: CI/CD pipelines
-- `scripts/bump-version.sh`: Version management
-- `CHANGELOG.md`: Release notes
+## Bottom Line
 
-## Contact and Resources
-
-- Repository: https://github.com/justinelliottcobb/Amari
-- Documentation: https://docs.rs/amari
-- Crates.io: https://crates.io/crates/amari
-- Issues: https://github.com/justinelliottcobb/Amari/issues
+**Amari is currently a broad `0.19.1` mathematical computing workspace approaching 1.0, with substantial domain coverage, active audit/readiness work, strong non-GPU test coverage, and unresolved GPU validation risk.**

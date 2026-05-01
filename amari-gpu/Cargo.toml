@@ -12,10 +12,12 @@ categories = ["mathematics", "science", "algorithms"]
 
 [dependencies]
 # Default to no high-precision for GPU (and WASM compatibility)
-amari-core = { workspace = true, default-features = false, features = ["std", "phantom-types"] }
-amari-info-geom = { workspace = true, default-features = false, features = ["std"] }
-amari-network = { workspace = true, default-features = false, features = ["std"] }
-amari-relativistic = { workspace = true, default-features = false, features = ["std", "phantom-types"] }
+# These are specified directly instead of via workspace inheritance so
+# `default-features = false` is honored without Cargo warnings.
+amari-core = { path = "../amari-core", version = "0.20", default-features = false, features = ["std", "phantom-types"] }
+amari-info-geom = { path = "../amari-info-geom", version = "0.20", default-features = false, features = ["std"] }
+amari-network = { path = "../amari-network", version = "0.20", default-features = false, features = ["std"] }
+amari-relativistic = { path = "../amari-relativistic", version = "0.20", default-features = false, features = ["std", "phantom-types"] }
 amari-measure = { workspace = true, optional = true }
 amari-calculus = { workspace = true, optional = true }
 amari-tropical = { workspace = true, optional = true }
@@ -26,6 +28,7 @@ amari-automata = { workspace = true, optional = true }
 amari-enumerative = { workspace = true, optional = true }
 amari-functional = { workspace = true, optional = true }
 amari-topology = { workspace = true, optional = true }
+amari-probabilistic = { workspace = true, optional = true }
 num-traits = { workspace = true }
 wgpu = "0.19"
 futures = "0.3"
@@ -51,7 +54,7 @@ tropical = ["dep:amari-tropical"]
 dual = ["dep:amari-dual"]
 fusion = ["dep:amari-fusion"]
 holographic = ["dep:amari-holographic"]
-probabilistic = ["dep:rand", "dep:rand_distr"]
+probabilistic = ["dep:amari-probabilistic", "dep:rand", "dep:rand_distr"]
 automata = ["dep:amari-automata"]
 enumerative = ["dep:amari-enumerative"]
 functional = ["dep:amari-functional"]
