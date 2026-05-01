@@ -1,8 +1,8 @@
-# Amari v0.19.1
+# Amari v0.20.0
 
 **Comprehensive Mathematical Computing Platform with Geometric Algebra, Differential Calculus, Measure Theory, Probability Theory, Functional Analysis, Algebraic Topology, Dynamical Systems, and Vector Symbolic Architectures**
 
-A unified mathematical computing library featuring geometric algebra, differential calculus, measure theory, probability theory on geometric spaces, functional analysis (Hilbert spaces, operators, spectral theory), algebraic topology (homology, persistent homology, Morse theory), dynamical systems analysis (ODE solvers, stability, bifurcations, chaos, Lyapunov exponents), relativistic physics, tropical algebra, automatic differentiation, holographic associative memory (Vector Symbolic Architectures), optical field operations for holographic displays, and information geometry. The library provides multi-GPU infrastructure with intelligent workload distribution and complete WebAssembly support for browser deployment.
+A unified mathematical computing library featuring geometric algebra, differential calculus, measure theory, probability theory on geometric spaces, functional analysis (Hilbert spaces, operators, spectral theory), algebraic topology (homology, persistent homology, Morse theory), dynamical systems analysis (ODE solvers, stability, bifurcations, chaos, Lyapunov exponents), relativistic physics, tropical algebra, automatic differentiation, holographic associative memory (Vector Symbolic Architectures), optical field operations for holographic displays, and information geometry. The library provides multi-GPU infrastructure with intelligent workload distribution and complete WebAssembly support for browser deployment. Version 0.20.0 establishes `amari-gpu` as a correctness-first, hardware-validated WebGPU backend with conservative benchmark-informed dispatch.
 
 [![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-Ready-blue.svg)](https://webassembly.org/)
@@ -33,22 +33,24 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **Network Analysis**: Geometric network analysis and graph neural networks
 - **Cellular Automata**: Geometric automata with configurable rules
 - **Enumerative Geometry**: Intersection theory, Schubert calculus, LR coefficients, WDVV curve counting, matroids, CSM classes, equivariant localization, operadic composition, and stability conditions
-- **GF(2) Algebra** *(v0.19.1)*: Finite field GF(2) linear algebra, binary Clifford algebra Cl(N,R; F₂), coding theory (Hamming, Reed-Muller, Golay codes), Grassmannian combinatorics, matroid representability, and Kazhdan-Lusztig polynomials
-- **Probabilistic Contracts** *(v0.19.1)*: SMT-LIB2 proof obligation generation, Monte Carlo statistical verification, probabilistic value tracking, and rare event classification
+- **GF(2) Algebra**: Finite field GF(2) linear algebra, binary Clifford algebra Cl(N,R; F₂), coding theory (Hamming, Reed-Muller, Golay codes), Grassmannian combinatorics, matroid representability, and Kazhdan-Lusztig polynomials
+- **Probabilistic Contracts**: SMT-LIB2 proof obligation generation, Monte Carlo statistical verification, probabilistic value tracking, and rare event classification
+- **GPU Backend Stabilization** *(v0.20.0)*: Hardware-validated WebGPU acceleration with public API tests, CPU-baseline correctness checks, benchmark/crossover documentation, and explicit GPU-backed vs GPU-recommended guidance
 
-### Multi-GPU Infrastructure
+### GPU Acceleration & Multi-GPU Infrastructure
 
+- **Correctness-First GPU Backend**: Hardware-validated WebGPU kernels and documented CPU-baseline fallback paths for the 0.20.0 release line
 - **Multi-GPU Architecture**: Infrastructure supporting up to 8 GPUs with intelligent workload distribution
 - **Advanced Load Balancing**: Five strategies including Balanced, CapabilityAware, MemoryAware, LatencyOptimized, and Adaptive
 - **Performance Profiling**: Timeline analysis with microsecond precision and automatic bottleneck detection
-- **Comprehensive Benchmarking**: Production-ready validation across all mathematical domains
-- **Graceful Degradation**: Automatic fallback to single GPU or CPU when multi-GPU unavailable
+- **Benchmark-Informed Dispatch**: Manual crossover reports distinguish GPU-backed paths from GPU-recommended paths
+- **Graceful Degradation**: Automatic fallback to single GPU or CPU when multi-GPU unavailable or CPU is preferred
 
 ### Platform Support
 
 - **Native Rust**: High-performance execution with rug (GMP/MPFR) backend for high-precision arithmetic
 - **WebAssembly**: Full-featured WASM bindings with dashu backend for browser compatibility
-- **GPU Acceleration**: WebGPU support for large-scale parallel computations
+- **GPU Acceleration**: WebGPU support for large-scale parallel computations with conservative adaptive dispatch
 - **TypeScript Support**: Complete TypeScript definitions included
 - **Cross-Platform**: Linux, macOS, Windows, browsers, Node.js, and edge computing environments
 
@@ -61,54 +63,54 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 # Complete library with all features
-amari = "0.19.1"
+amari = "0.20.0"
 
 # Or individual crates:
 
 # Core geometric algebra and mathematical foundations
-amari-core = "0.19.1"
+amari-core = "0.20.0"
 
 # Differential calculus with geometric algebra
-amari-calculus = "0.19.1"
+amari-calculus = "0.20.0"
 
 # Measure theory and integration
-amari-measure = "0.19.1"
+amari-measure = "0.20.0"
 
 # Probability theory on geometric algebra spaces
-amari-probabilistic = "0.19.1"
+amari-probabilistic = "0.20.0"
 
 # Functional analysis: Hilbert spaces, operators, spectral theory
-amari-functional = "0.19.1"
+amari-functional = "0.20.0"
 
 # Algebraic topology: homology, persistent homology, Morse theory
-amari-topology = "0.19.1"
+amari-topology = "0.20.0"
 
 # Dynamical systems: ODE solvers, stability, bifurcations, Lyapunov exponents
-amari-dynamics = "0.19.1"
+amari-dynamics = "0.20.0"
 
 # Vector Symbolic Architectures, holographic memory, and optical fields
-amari-holographic = "0.19.1"
+amari-holographic = "0.20.0"
 
 # High-precision relativistic physics
-amari-relativistic = { version = "0.19.1", features = ["high-precision"] }
+amari-relativistic = { version = "0.20.0", features = ["high-precision"] }
 
 # GPU acceleration (includes optical field GPU operations)
-amari-gpu = "0.19.1"
+amari-gpu = "0.20.0"
 
 # Optimization algorithms
-amari-optimization = "0.19.1"
+amari-optimization = "0.20.0"
 
 # Additional mathematical systems
-amari-tropical = "0.19.1"
-amari-dual = "0.19.1"
-amari-info-geom = "0.19.1"
-amari-automata = "0.19.1"
-amari-fusion = "0.19.1"
-amari-network = "0.19.1"
-amari-enumerative = "0.19.1"
+amari-tropical = "0.20.0"
+amari-dual = "0.20.0"
+amari-info-geom = "0.20.0"
+amari-automata = "0.20.0"
+amari-fusion = "0.20.0"
+amari-network = "0.20.0"
+amari-enumerative = "0.20.0"
 
 # Probabilistic verification contracts (SMT-LIB2, Monte Carlo)
-amari-flynn = "0.19.1"
+amari-flynn = "0.20.0"
 ```
 
 ### JavaScript/TypeScript (WebAssembly)
@@ -559,7 +561,7 @@ main();
 - `amari-flynn`: Probabilistic verification contracts
 
 **Integration Crates** (consume domain APIs):
-- `amari-gpu`: Multi-GPU acceleration with WebGPU
+- `amari-gpu`: Correctness-first WebGPU acceleration and GPU infrastructure with conservative adaptive dispatch
 - `amari-wasm`: WebAssembly bindings for TypeScript/JavaScript
 - `amari`: Umbrella crate re-exporting all features
 
@@ -693,9 +695,9 @@ The **[Amari Examples Suite](https://amari-math.netlify.app)** provides comprehe
 
 - **Interactive Playground**: Write and run JavaScript code with live WASM execution
 
-## Examples & Documentation (v0.19.1)
+## Examples & Documentation (v0.20.0)
 
-The examples suite has been completely overhauled for v0.19.1 with comprehensive coverage of all new crates:
+The examples suite remains the primary interactive documentation surface, while v0.20.0 adds GPU stabilization docs, hardware validation reports, and benchmark/crossover guidance:
 
 ### Rust Examples (`examples/rust/`)
 
@@ -714,31 +716,52 @@ The examples suite has been completely overhauled for v0.19.1 with comprehensive
 
 See [`examples/README.md`](examples/README.md) for complete documentation and [`examples/LEARNING_PATHS.md`](examples/LEARNING_PATHS.md) for structured learning curricula.
 
-## GPU Module Status (v0.19.1)
+## GPU Module Status (v0.20.0)
 
-| Module | Status | Feature Flag |
-|--------|--------|--------------|
-| Core GA | ✅ Enabled | default |
-| Info Geometry | ✅ Enabled | default |
-| Relativistic | ✅ Enabled | default |
-| Network | ✅ Enabled | default |
-| Measure | ✅ Enabled | `measure` |
-| Calculus | ✅ Enabled | `calculus` |
-| Dual | ✅ Enabled | `dual` |
-| Enumerative | ✅ Enabled | `enumerative` |
-| Automata | ✅ Enabled | `automata` |
-| Fusion | ✅ Enabled | `fusion` |
-| Holographic | ✅ Enabled | `holographic` |
-| Optical Fields | ✅ Enabled | `holographic` |
-| Probabilistic | ✅ Enabled | `probabilistic` |
-| Functional | ✅ Enabled | `functional` |
-| Topology | ✅ Enabled | `topology` |
-| **Dynamics** | ✅ **New in v0.19.1** | `dynamics` |
-| **GF(2)** | ✅ **New in v0.19.1** | `gf2` |
-| **Enumerative (GF(2))** | ✅ **New in v0.19.1** | `enumerative` |
-| Tropical | ❌ Disabled | - |
+Version 0.20.0 establishes `amari-gpu` as a correctness-first, hardware-validated WebGPU backend. The public surface is intentionally honest: some paths are GPU-backed and GPU-recommended for large workloads, some are GPU-backed but currently CPU-preferred, and some are GPU-ready CPU-baseline fallbacks while kernels mature.
 
-Note: Tropical GPU module temporarily disabled due to Rust orphan impl rules. Use CPU implementations from domain crates.
+| Module | Status | Feature Flag | v0.20.0 posture |
+|--------|--------|--------------|------------------|
+| Core GA | ✅ Enabled | default | GPU-backed flat-batch geometric products with CPU correctness tests |
+| Info Geometry | ✅ Enabled | default | GPU-ready CPU-baseline Amari-Chentsov/Fisher/KL operations |
+| Relativistic | ✅ Enabled | default | GPU-backed Minkowski norm-squared and simplified geodesic propagation |
+| Network | ✅ Enabled | default | Narrow GPU vector-distance path; broader graph metrics remain CPU-preferred |
+| Measure | ✅ Enabled | `measure` | Mixed GPU-backed integration/density paths plus documented CPU fallback |
+| Calculus | ✅ Enabled | `calculus` | GPU-ready CPU-semantic fallback with validated API behavior |
+| Tropical | ✅ Enabled | `tropical` | Restored narrow v1 surface: dense max-plus matmul, adaptive dispatch, attention scores |
+| Dual | ✅ Enabled | `dual` | Narrow GPU-backed unary forward-AD v1 surface |
+| Enumerative | ✅ Enabled | `enumerative` | Representative GPU kernels with public API and WGSL validation hardening |
+| GF(2) | ✅ Enabled | `gf2` | Fixed-layout GPU kernels with CPU parity/property tests; CPU-preferred in current sweeps |
+| Automata | ✅ Enabled | `automata` | GPU rule/energy kernels plus CPU Moore-neighborhood fallback |
+| Fusion | ✅ Enabled | `fusion` | Reduced public fusion/holographic GPU surface; broader API redesign deferred |
+| Holographic / Optical Fields | ✅ Enabled | `holographic` | Validated ProductCl3x32 bind/similarity and optical field operations |
+| Probabilistic | ✅ Enabled | `probabilistic` | GPU-backed sampling/statistics with validation and small-batch CPU fallback |
+| Functional | ✅ Enabled | `functional` | GPU matrix batches plus CPU spectral/fallback paths |
+| Topology | ✅ Enabled | `topology` | GPU distance/Morse kernels plus CPU Rips/Betti fallback paths |
+| Adaptive / Timeline / Performance Infra | ✅ Enabled | default | Dispatch, verification, profiling, and timeline infrastructure |
+
+### v0.20.0 GPU Stabilization
+
+- Public `amari-gpu` modules were narrowed or restored through crate-root re-exports so placeholder or redesign-pending internals are not exposed accidentally.
+- CPU-baseline public API tests cover the high-priority default/core, tropical, fusion, calculus, measure, functional, topology, dual, automata, enumerative, GF(2), probabilistic, network, relativistic, holographic, and infrastructure surfaces.
+- Hardware validation passed on DGX Spark / NVIDIA GB10 and NVIDIA GeForce RTX 5080 Laptop GPU.
+- RTX 5080 aggregate GPU validation uses `WGPU_BACKEND=vulkan` and serial execution (`-- --test-threads=1`) on the current NVIDIA/Wayland stack.
+- Benchmark/crossover reports document where GPU dispatch is currently recommended versus where CPU remains preferable.
+- `wgpu` remains on `0.19`; the major `wgpu 29` migration is intentionally deferred to the 0.24.0 GPU revisit cycle.
+
+### GPU-backed vs GPU-recommended guidance
+
+| Path | Current guidance |
+|------|------------------|
+| Core GA batch geometric products | GPU-recommended above conservative medium/large batch thresholds |
+| Tropical dense matrix multiplication | GPU-recommended for large matrices; CPU remains preferred for small matrices |
+| Tropical attention scores | GPU-backed, but not GPU-recommended by default in initial sweeps |
+| Holographic similarity | GPU-recommended for larger batches |
+| Holographic bind, GF(2), probabilistic, automata, network | GPU-backed, but CPU-preferred in current benchmark ranges |
+| Topology, measure, functional | Hardware-sensitive; use conservative/adaptive dispatch |
+| Calculus and info-geometry | GPU-ready public APIs with CPU-baseline semantics in 0.20.0 |
+
+See `docs/roadmap/AMARI_GPU_BENCHMARK_CROSSOVER_REPORT.md`, `docs/roadmap/AMARI_GPU_GB10_HARDWARE_VALIDATION.md`, and `docs/roadmap/AMARI_GPU_RTX5080_HARDWARE_VALIDATION.md` for release validation details.
 
 ### v0.19.1 Additions
 
@@ -757,17 +780,6 @@ Note: Tropical GPU module temporarily disabled due to Rust orphan impl rules. Us
 - WASM bindings for browser-based verification workflows
 
 **MCP Server** — [Amari-MCP](https://github.com/justinelliottcobb/Amari-mcp) provides Model Context Protocol integration, enabling AI assistants to use Amari's mathematical operations as tools.
-
-### v0.19.1 GPU Additions (Dynamics)
-
-The `dynamics` feature provides GPU-accelerated dynamical systems operations:
-
-- **GpuDynamics**: GPU context for dynamical systems operations with adaptive dispatch
-- **DYNAMICS_RK4_STEP**: Parallel RK4 integration (256-thread workgroups)
-- **DYNAMICS_LYAPUNOV_QR**: QR-based Lyapunov exponent computation
-- **DYNAMICS_BIFURCATION**: Parameter sweep with attractor sampling
-- **DYNAMICS_BASIN**: Grid-based basin of attraction computation
-- Automatic CPU fallback for < 100 trajectories or < 10,000 grid cells
 
 ### v0.16.0 GPU Additions
 
@@ -825,7 +837,7 @@ The library is optimized for high-performance applications:
 - **SIMD**: Vectorized operations where supported
 - **Cache Alignment**: 64-byte aligned data structures
 - **Const Generics**: Zero-cost abstractions for dimensions
-- **GPU Fallback**: Automatic CPU/GPU dispatch based on workload size
+- **GPU Fallback**: Conservative CPU/GPU dispatch based on workload size, hardware validation, and benchmark/crossover data
 - **Batch Operations**: Efficient batch processing for large datasets
 
 ## Documentation
