@@ -1,9 +1,12 @@
 #![cfg(feature = "automata")]
 
+mod common;
+
 use amari_gpu::{
     AutomataGpuConfig, AutomataGpuError, AutomataGpuOps, AutomataGpuResult, GpuCellData,
     GpuEvolutionParams, GpuRuleConfig,
 };
+use common::direct_gpu_runtime_available;
 
 fn sample_cells() -> Vec<GpuCellData> {
     vec![
@@ -40,6 +43,9 @@ fn sample_cells() -> Vec<GpuCellData> {
 
 #[tokio::test]
 async fn test_automata_public_api_paths() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let config = AutomataGpuConfig::default();
     assert_eq!(config.workgroup_size, (16, 16, 1));
 

@@ -1,5 +1,8 @@
+mod common;
+
 use amari_core::Multivector;
 use amari_gpu::{AdaptiveCompute, GpuCliffordAlgebra, GpuError, GpuInfoGeometry};
+use common::direct_gpu_runtime_available;
 
 fn assert_close(actual: f64, expected: f64, tol: f64) {
     assert!(
@@ -10,6 +13,10 @@ fn assert_close(actual: f64, expected: f64, tol: f64) {
 
 #[tokio::test]
 async fn test_adaptive_core_ga_cpu_baseline_and_validation() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let adaptive = AdaptiveCompute::new::<3, 0, 0>().await;
 
     let e1 = Multivector::<3, 0, 0>::basis_vector(0);
@@ -43,6 +50,10 @@ async fn test_adaptive_core_ga_cpu_baseline_and_validation() {
 
 #[tokio::test]
 async fn test_direct_core_ga_gpu_path_when_available() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let gpu = match GpuCliffordAlgebra::new::<3, 0, 0>().await {
         Ok(gpu) => gpu,
         Err(_) => return,
@@ -96,6 +107,10 @@ async fn test_direct_core_ga_gpu_path_when_available() {
 
 #[tokio::test]
 async fn test_info_geometry_public_cpu_baselines_when_available() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let gpu = match GpuInfoGeometry::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,

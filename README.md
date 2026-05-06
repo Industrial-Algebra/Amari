@@ -1,4 +1,4 @@
-# Amari v0.19.1
+# Amari v0.21.0
 
 **Comprehensive Mathematical Computing Platform with Geometric Algebra, Differential Calculus, Measure Theory, Probability Theory, Functional Analysis, Algebraic Topology, Dynamical Systems, and Vector Symbolic Architectures**
 
@@ -10,6 +10,14 @@ A unified mathematical computing library featuring geometric algebra, differenti
 [![License](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
 
 **[Live Examples Suite](https://amari-math.netlify.app)** | **[API Documentation](https://docs.rs/amari)** | **[MCP Server](https://github.com/justinelliottcobb/Amari-mcp)**
+
+## v0.21.0 Highlights
+
+- **`amari-tropical`** now has a clearer optimization-facing split between float max-plus carriers and an arena-backed ordinal substrate below `ε₀` via `OrdinalArena`, `OrdinalId`, `CnfTerm`, and `OrdinalWeight`.
+- **`amari-dual`** now includes explicit `BranchPolicy` handling, `MultiDualNumber::variables(...)` seed helpers, and `StaticMultiDual<T, const N: usize>` for small hot loops.
+- **`amari-wasm`** exposes the new tropical/dual extension surface to TypeScript: semiring folds, ordinal arenas/weights, branch-policy min/max, multi-dual seeding, and fixed-size `WasmStaticMultiDual2/3/4` wrappers.
+- **Examples and API docs** now include release-focused `0.21.0` tropical/dual workflows across Rust and WebAssembly.
+- **Scope remains explicit**: the ordinal layer does not claim broader transfinite arithmetic, `viterbi` and `polytope` remain float-specific, and `amari-dual` remains a forward-mode AD crate.
 
 ## Features
 
@@ -25,16 +33,16 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **Vector Symbolic Architectures**: Holographic Reduced Representations (HRR), binding algebras, and associative memory
 - **Optical Field Operations**: GA-native Lee hologram encoding for DMD displays, rotor field algebra, and VSA on optical wavefronts
 - **Relativistic Physics**: Complete spacetime algebra (Cl(1,3)) with Minkowski signature for relativistic calculations
-- **Tropical Algebra**: Max-plus semiring operations for optimization and neural network applications
-- **Automatic Differentiation**: Forward-mode AD with dual numbers for exact derivatives
+- **Tropical Algebra** *(v0.21.0 extension focus)*: Max-plus semiring operations plus ordinal-weighted optimization carriers below `ε₀`, semiring folds, and ordinal-weight best/compose helpers
+- **Automatic Differentiation** *(v0.21.0 extension focus)*: Forward-mode AD with dual numbers, branch-policy min/max semantics, heap-backed multi-dual seeding, and fixed-size static gradients
 - **Fusion Systems**: Tropical-dual-Clifford fusion combining three algebraic systems
 - **Information Geometry**: Statistical manifolds, KL/JS divergences, and Fisher information
 - **Optimization**: Gradient-based optimization with geometric constraints
 - **Network Analysis**: Geometric network analysis and graph neural networks
 - **Cellular Automata**: Geometric automata with configurable rules
 - **Enumerative Geometry**: Intersection theory, Schubert calculus, LR coefficients, WDVV curve counting, matroids, CSM classes, equivariant localization, operadic composition, and stability conditions
-- **GF(2) Algebra** *(v0.19.1)*: Finite field GF(2) linear algebra, binary Clifford algebra Cl(N,R; F₂), coding theory (Hamming, Reed-Muller, Golay codes), Grassmannian combinatorics, matroid representability, and Kazhdan-Lusztig polynomials
-- **Probabilistic Contracts** *(v0.19.1)*: SMT-LIB2 proof obligation generation, Monte Carlo statistical verification, probabilistic value tracking, and rare event classification
+- **GF(2) Algebra**: Finite field GF(2) linear algebra, binary Clifford algebra Cl(N,R; F₂), coding theory (Hamming, Reed-Muller, Golay codes), Grassmannian combinatorics, matroid representability, and Kazhdan-Lusztig polynomials
+- **Probabilistic Contracts**: SMT-LIB2 proof obligation generation, Monte Carlo statistical verification, probabilistic value tracking, and rare event classification
 
 ### Multi-GPU Infrastructure
 
@@ -61,66 +69,69 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 # Complete library with all features
-amari = "0.19.1"
+amari = "0.21.0"
 
 # Or individual crates:
 
 # Core geometric algebra and mathematical foundations
-amari-core = "0.19.1"
+amari-core = "0.21.0"
 
 # Differential calculus with geometric algebra
-amari-calculus = "0.19.1"
+amari-calculus = "0.21.0"
 
 # Measure theory and integration
-amari-measure = "0.19.1"
+amari-measure = "0.21.0"
 
 # Probability theory on geometric algebra spaces
-amari-probabilistic = "0.19.1"
+amari-probabilistic = "0.21.0"
 
 # Functional analysis: Hilbert spaces, operators, spectral theory
-amari-functional = "0.19.1"
+amari-functional = "0.21.0"
 
 # Algebraic topology: homology, persistent homology, Morse theory
-amari-topology = "0.19.1"
+amari-topology = "0.21.0"
 
 # Dynamical systems: ODE solvers, stability, bifurcations, Lyapunov exponents
-amari-dynamics = "0.19.1"
+amari-dynamics = "0.21.0"
 
 # Vector Symbolic Architectures, holographic memory, and optical fields
-amari-holographic = "0.19.1"
+amari-holographic = "0.21.0"
 
 # High-precision relativistic physics
-amari-relativistic = { version = "0.19.1", features = ["high-precision"] }
+amari-relativistic = { version = "0.21.0", features = ["high-precision"] }
 
 # GPU acceleration (includes optical field GPU operations)
-amari-gpu = "0.19.1"
+amari-gpu = "0.21.0"
 
 # Optimization algorithms
-amari-optimization = "0.19.1"
+amari-optimization = "0.21.0"
 
 # Additional mathematical systems
-amari-tropical = "0.19.1"
-amari-dual = "0.19.1"
-amari-info-geom = "0.19.1"
-amari-automata = "0.19.1"
-amari-fusion = "0.19.1"
-amari-network = "0.19.1"
-amari-enumerative = "0.19.1"
+amari-tropical = "0.21.0"    # max-plus semiring + ordinal weights below ε₀
+amari-dual = "0.21.0"        # forward-mode AD + branch policies + static gradients
+amari-info-geom = "0.21.0"
+amari-automata = "0.21.0"
+amari-fusion = "0.21.0"
+amari-network = "0.21.0"
+amari-enumerative = "0.21.0"
 
 # Probabilistic verification contracts (SMT-LIB2, Monte Carlo)
-amari-flynn = "0.19.1"
+amari-flynn = "0.21.0"
+
+# Optional Rust-side WebAssembly crate
+amari-wasm = "0.21.0"
 ```
 
 ### JavaScript/TypeScript (WebAssembly)
 
 ```bash
-npm install @justinelliottcobb/amari-wasm
+npm install @justinelliottcobb/amari-wasm@0.21.0
 ```
 
 Or with yarn:
 
 ```bash
-yarn add @justinelliottcobb/amari-wasm
+yarn add @justinelliottcobb/amari-wasm@0.21.0
 ```
 
 ## Quick Start
@@ -195,6 +206,27 @@ let zero = TropicalNumber::<f64>::tropical_zero(); // -∞ (additive identity)
 let one = TropicalNumber::<f64>::tropical_one();   // 0 (multiplicative identity)
 ```
 
+### Rust: Tropical Ordinal Weights (v0.21.0)
+
+```rust
+use amari_tropical::{CnfTerm, OrdinalArena, OrdinalWeight};
+
+let mut arena = OrdinalArena::new();
+let one = arena.one();
+let omega = arena.omega();
+let omega_plus_one = arena.add(omega, one).unwrap();
+let omega_squared = arena.intern_cnf(vec![CnfTerm::new(omega, 1)]).unwrap();
+
+let weights = [
+    OrdinalWeight::bottom(),
+    OrdinalWeight::from_ordinal(omega_plus_one),
+    OrdinalWeight::from_ordinal(omega_squared),
+];
+
+let best = arena.best_weight(&weights).unwrap();
+println!("Best ordinal weight: {}", arena.format_weight(best).unwrap()); // ω^ω
+```
+
 ### Rust: Automatic Differentiation
 
 ```rust
@@ -214,6 +246,30 @@ println!("f'(3) = {}", result.derivative()); // 6.0
 // For constants (derivative = 0)
 let c = DualNumber::constant(2.0);
 let scaled = x * c; // 2x, derivative = 2
+```
+
+### Rust: Branch Policies and Static Gradients (v0.21.0)
+
+```rust
+use amari_dual::{BranchPolicy, DualNumber, MultiDualNumber, StaticMultiDual};
+
+// Explicit derivative behavior at non-smooth branch ties.
+let left = DualNumber::new(2.0, 1.0);
+let right = DualNumber::new(2.0, 5.0);
+let averaged = left.max_by_policy(right, BranchPolicy::Average);
+assert_eq!(averaged.derivative(), 3.0);
+
+// Heap-backed basis seeding for gradients.
+let vars = MultiDualNumber::variables(&[2.0, 3.0]);
+let x = vars[0].clone();
+let y = vars[1].clone();
+let score = x.clone() * x + y;
+println!("gradient = {:?}", score.get_gradient());
+
+// Fixed-size carrier for small hot loops.
+let [sx, sy] = StaticMultiDual::<f64, 2>::variables([2.0, 3.0]);
+let static_score = sx * sx + sy;
+println!("static gradient = {:?}", static_score.get_gradient());
 ```
 
 ### Rust: Tropical-Dual-Clifford Fusion
@@ -501,7 +557,15 @@ println!("Bifurcation diagram: {} parameter values", diagram.branches().len());
 ### JavaScript/TypeScript: Mathematical Computing
 
 ```typescript
-import init, { WasmMultivector, WasmTropicalNumber, WasmDualNumber } from '@justinelliottcobb/amari-wasm';
+import init, {
+  TropicalBatch,
+  WasmBranchPolicy,
+  WasmDualNumber,
+  WasmMultivector,
+  WasmOrdinalArena,
+  WasmStaticMultiDual2,
+  WasmTropicalNumber,
+} from '@justinelliottcobb/amari-wasm';
 
 async function main() {
   // Initialize the WASM module
@@ -513,22 +577,45 @@ async function main() {
   const bivector = e1.geometricProduct(e2);
   console.log('Geometric product:', bivector.toString());
 
-  // Tropical Algebra: Neural network operations
-  const trop1 = WasmTropicalNumber.new(3.0);
-  const trop2 = WasmTropicalNumber.new(5.0);
-  const sum = trop1.tropicalAdd(trop2); // max(3, 5) = 5
-  const product = trop1.tropicalMul(trop2); // 3 + 5 = 8
-  console.log('Tropical operations:', sum.getValue(), product.getValue());
+  // Tropical Algebra: max-plus arithmetic and v0.21.0 semiring folds
+  const trop1 = new WasmTropicalNumber(3.0);
+  const trop2 = new WasmTropicalNumber(5.0);
+  const sum = trop1.tropicalAdd(trop2);       // max(3, 5) = 5
+  const product = trop1.tropicalMul(trop2);   // 3 + 5 = 8
+  const best = TropicalBatch.foldOplus(new Float64Array([3, 5, 2]));
+  const composed = TropicalBatch.foldOtimes(new Float64Array([3, 5, 2]));
+  console.log('Tropical operations:', sum.getValue(), product.getValue(), best, composed);
 
-  // Automatic Differentiation: Compute derivatives
-  const x = WasmDualNumber.new(2.0, 1.0);
+  // v0.21.0 ordinal-weighted tropical carriers below ε₀
+  const arena = new WasmOrdinalArena();
+  const omega = arena.omega();
+  const one = arena.one();
+  const omegaPlusOne = arena.add(omega, one);
+  const ordinalWeight = arena.weightFromOrdinal(omegaPlusOne);
+  console.log('Ordinal weight:', arena.formatWeight(ordinalWeight));
+
+  // Automatic Differentiation: Compute derivatives and branch ties
+  const x = new WasmDualNumber(2.0, 1.0);
   const xSquared = x.mul(x); // f(x) = x², f'(x) = 2x
-  console.log('f(2) =', xSquared.getValue(), "f'(2) =", xSquared.getDerivative());
+  const left = new WasmDualNumber(2.0, 1.0);
+  const right = new WasmDualNumber(2.0, 5.0);
+  const averageTie = left.maxByPolicy(right, WasmBranchPolicy.Average);
+  console.log('f(2) =', xSquared.getReal(), "f'(2) =", xSquared.getDual());
+  console.log('average tie derivative =', averageTie.getDual());
+
+  // v0.21.0 fixed-size multi-dual wrapper for small hot loops
+  const sx = WasmStaticMultiDual2.variable(2.0, 0);
+  const sy = WasmStaticMultiDual2.variable(3.0, 1);
+  const staticSquared = sx.mul(sx);
+  const score = staticSquared.add(sy);
+  console.log('static gradient =', score.getGradient());
 
   // Clean up WASM memory
   e1.free(); e2.free(); bivector.free();
   trop1.free(); trop2.free(); sum.free(); product.free();
-  x.free(); xSquared.free();
+  ordinalWeight.free(); omegaPlusOne.free(); one.free(); omega.free(); arena.free();
+  x.free(); xSquared.free(); left.free(); right.free(); averageTie.free();
+  sx.free(); sy.free(); staticSquared.free(); score.free();
 }
 
 main();
@@ -547,8 +634,8 @@ main();
 - `amari-topology`: Algebraic topology, simplicial complexes, persistent homology, Morse theory
 - `amari-dynamics`: Dynamical systems, ODE solvers, stability analysis, bifurcations, Lyapunov exponents, phase portraits
 - `amari-holographic`: Vector Symbolic Architectures (VSA), binding algebras, holographic memory, optical field operations
-- `amari-tropical`: Tropical (max-plus) algebra for optimization
-- `amari-dual`: Dual numbers for automatic differentiation
+- `amari-tropical`: Tropical (max-plus) algebra, semiring folds, and ordinal-weighted optimization below `ε₀`
+- `amari-dual`: Forward-mode dual numbers, explicit branch policies, heap-backed multi-dual seeding, and fixed-size gradient carriers
 - `amari-fusion`: Unified Tropical-Dual-Clifford system
 - `amari-info-geom`: Information geometry and statistical manifolds
 - `amari-automata`: Cellular automata with geometric algebra
@@ -560,7 +647,7 @@ main();
 
 **Integration Crates** (consume domain APIs):
 - `amari-gpu`: Multi-GPU acceleration with WebGPU
-- `amari-wasm`: WebAssembly bindings for TypeScript/JavaScript
+- `amari-wasm`: WebAssembly bindings for TypeScript/JavaScript, including the `0.21.0` tropical/dual extension surface
 - `amari`: Umbrella crate re-exporting all features
 
 ### Key Types
@@ -573,11 +660,17 @@ Multivector<const P: usize, const Q: usize, const R: usize>
 // Tropical numbers (max-plus semiring)
 TropicalNumber<T: Float>  // Use TropicalNumber::new(value)
 
+// Arena-backed ordinals below ε₀ and ordinal tropical weights
+OrdinalArena              // Owns OrdinalId handles
+OrdinalWeight             // Bottom-extended optimization carrier
+
 // Dual numbers for automatic differentiation
 DualNumber<T: Float>      // Use DualNumber::new(value, derivative)
+BranchPolicy              // Explicit tie behavior for min/max branch points
 
 // Multi-variable dual numbers
-MultiDualNumber<T: Float> // Use MultiDualNumber::new(value, gradients)
+MultiDualNumber<T: Float>         // Heap-backed gradients; use MultiDualNumber::variables(...)
+StaticMultiDual<T, const N: usize> // Inline fixed-size gradients for small hot loops
 
 // Tropical-Dual-Clifford unified system
 TropicalDualClifford<T: Float, const DIM: usize>
@@ -607,7 +700,13 @@ a ⊕ b = max(a, b)    // Tropical addition
 a ⊙ b = a + b        // Tropical multiplication
 ```
 
-Applications: Path optimization, sequence decoding, dynamic programming
+`0.21.0` also adds a bounded ordinal substrate for optimization-oriented ranking:
+
+- `OrdinalArena` interns canonical ordinals below `ε₀`
+- `OrdinalWeight` extends those ordinals with a bottom element for impossible paths/states
+- `best_weight` and `compose_weights` provide semiring-style selection and composition
+
+Applications: Path optimization, sequence decoding, dynamic programming, ordinal ranking, and valuation workflows
 
 ### Dual Numbers
 
@@ -617,7 +716,9 @@ a + εb where ε² = 0
 (a + εb) × (c + εd) = ac + ε(ad + bc)
 ```
 
-Applications: Automatic differentiation, gradient computation
+`0.21.0` makes branch-sensitive behavior explicit with `BranchPolicy::{Left, Right, Average}` and adds fixed-size `StaticMultiDual<T, N>` carriers for small optimization loops.
+
+Applications: Automatic differentiation, gradient computation, local sensitivity analysis, and browser-friendly optimization loops
 
 ### Information Geometry
 
@@ -684,18 +785,24 @@ The **[Amari Examples Suite](https://amari-math.netlify.app)** provides comprehe
   - Geodesic distance heatmaps
   - Holographic memory exploration
 
-- **Comprehensive API Reference**: 77 classes with 300+ methods fully documented
+- **Comprehensive API Reference**: 77+ classes with 300+ methods fully documented
   - Geometric Algebra (Multivector, Rotor, Bivector)
-  - Tropical Algebra (TropicalNumber, TropicalMatrix)
-  - Automatic Differentiation (DualNumber, MultiDualNumber)
+  - Tropical Algebra (TropicalNumber, TropicalMatrix, `TropicalBatch`, `WasmOrdinalArena`, `WasmOrdinalWeight`)
+  - Automatic Differentiation (`WasmDualNumber`, `WasmBranchPolicy`, `WasmMultiDualNumber`, `WasmStaticMultiDual2/3/4`)
   - Probability (GaussianMultivector, MCMC samplers)
   - And 12 more categories
 
 - **Interactive Playground**: Write and run JavaScript code with live WASM execution
 
-## Examples & Documentation (v0.19.1)
+## Examples & Documentation (v0.21.0)
 
-The examples suite has been completely overhauled for v0.19.1 with comprehensive coverage of all new crates:
+The examples suite is versioned for `0.21.0` and now includes release-focused tropical/dual WebAssembly workflows alongside the broader mathematical catalog:
+
+- **Tropical 0.21.0 WASM examples**: `TropicalBatch.foldOplus`, `TropicalBatch.foldOtimes`, `WasmOrdinalArena`, and `WasmOrdinalWeight`
+- **Dual 0.21.0 WASM examples**: `WasmBranchPolicy`, `WasmMultiDualNumber.variables(...)`, and `WasmStaticMultiDual2` hot-loop gradients
+- **API reference coverage**: the new tropical/dual extension classes and methods are listed in the browser reference
+
+The suite also keeps comprehensive coverage of the broader crate family:
 
 ### Rust Examples (`examples/rust/`)
 
@@ -714,7 +821,7 @@ The examples suite has been completely overhauled for v0.19.1 with comprehensive
 
 See [`examples/README.md`](examples/README.md) for complete documentation and [`examples/LEARNING_PATHS.md`](examples/LEARNING_PATHS.md) for structured learning curricula.
 
-## GPU Module Status (v0.19.1)
+## GPU Module Status (v0.21.0)
 
 | Module | Status | Feature Flag |
 |--------|--------|--------------|
@@ -733,16 +840,25 @@ See [`examples/README.md`](examples/README.md) for complete documentation and [`
 | Probabilistic | ✅ Enabled | `probabilistic` |
 | Functional | ✅ Enabled | `functional` |
 | Topology | ✅ Enabled | `topology` |
-| **Dynamics** | ✅ **New in v0.19.1** | `dynamics` |
-| **GF(2)** | ✅ **New in v0.19.1** | `gf2` |
-| **Enumerative (GF(2))** | ✅ **New in v0.19.1** | `enumerative` |
+| Dynamics | ✅ Enabled | `dynamics` |
+| GF(2) | ✅ Enabled | `gf2` |
+| Enumerative (GF(2)) | ✅ Enabled | `enumerative` |
 | Tropical | ❌ Disabled | - |
 
 Note: Tropical GPU module temporarily disabled due to Rust orphan impl rules. Use CPU implementations from domain crates.
 
-### v0.19.1 Additions
+### v0.21.0 Extension Additions
 
-**GF(2) Algebra & Coding Theory** — New mathematical domain across amari-core, amari-enumerative, amari-gpu, and amari-wasm:
+**Tropical / Dual Optimization Extensions** — Release-focused additions across `amari-tropical`, `amari-dual`, `amari-wasm`, and the examples suite:
+
+- **amari-tropical**: `Semiring`, `fold_oplus`, `fold_otimes`, `OrdinalArena`, `OrdinalId`, `CnfTerm`, `OrdinalWeight`, ordinal inspection, and ordinal-weight best/compose helpers
+- **amari-dual**: `BranchPolicy`, explicit branch-sensitive min/max semantics, `MultiDualNumber::variables(...)`, and `StaticMultiDual<T, const N: usize>`
+- **amari-wasm**: `TropicalBatch.foldOplus/foldOtimes`, `WasmOrdinalArena`, `WasmOrdinalWeight`, `WasmBranchPolicy`, `WasmMultiDualNumber.variables(...)`, and `WasmStaticMultiDual2/3/4`
+- **examples-suite**: browser examples and API reference entries for the new tropical/dual `0.21.0` WASM surface
+
+### Earlier Extension Additions
+
+**GF(2) Algebra & Coding Theory** — Mathematical domain across amari-core, amari-enumerative, amari-gpu, and amari-wasm:
 
 - **amari-core**: GF(2) vectors, matrices, Gaussian elimination, binary Clifford algebra Cl(N,R; F₂)
 - **amari-enumerative**: Binary linear codes (Hamming, Reed-Muller, Golay), weight enumerators, Grassmannian combinatorics, matroid representability, Kazhdan-Lusztig polynomials

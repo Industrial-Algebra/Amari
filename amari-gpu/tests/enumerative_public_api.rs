@@ -1,5 +1,7 @@
 #![cfg(feature = "enumerative")]
 
+mod common;
+
 use std::collections::BTreeSet;
 
 use amari_enumerative::{FixedPoint, Matroid, TorusWeights};
@@ -7,9 +9,13 @@ use amari_gpu::{
     EnumerativeGpuError, EnumerativeGpuOps, EnumerativeGpuResult, GpuCSMData, GpuIntersectionData,
     GpuLocalizationData, GpuMatroidRankData, GpuOperadData, GpuStabilityData, GpuWDVVData,
 };
+use common::direct_gpu_runtime_available;
 
 #[tokio::test]
 async fn test_enumerative_public_api_high_use_paths() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let explicit_result: EnumerativeGpuResult<()> = Ok(());
     assert!(explicit_result.is_ok());
     let explicit_error = EnumerativeGpuError::Computation("expected".to_string());

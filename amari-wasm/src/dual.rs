@@ -1,7 +1,30 @@
 //! WASM bindings for automatic differentiation with dual numbers
 
-use amari_dual::{DualNumber, MultiDualNumber};
+use amari_dual::{BranchPolicy, DualNumber, MultiDualNumber, StaticMultiDual};
+use js_sys::Array;
 use wasm_bindgen::prelude::*;
+
+/// Tie-handling policy for branch-sensitive dual-number min/max operations.
+#[wasm_bindgen]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WasmBranchPolicy {
+    /// Preserve the left operand derivative on ties.
+    Left,
+    /// Preserve the right operand derivative on ties.
+    Right,
+    /// Average derivatives on ties.
+    Average,
+}
+
+impl From<WasmBranchPolicy> for BranchPolicy {
+    fn from(value: WasmBranchPolicy) -> Self {
+        match value {
+            WasmBranchPolicy::Left => Self::Left,
+            WasmBranchPolicy::Right => Self::Right,
+            WasmBranchPolicy::Average => Self::Average,
+        }
+    }
+}
 
 /// WASM wrapper for single-variable dual numbers
 #[wasm_bindgen]
@@ -213,6 +236,30 @@ impl WasmDualNumber {
         }
     }
 
+    /// Maximum with explicit derivative tie handling.
+    #[wasm_bindgen(js_name = maxByPolicy)]
+    pub fn max_by_policy(
+        &self,
+        other: &WasmDualNumber,
+        policy: WasmBranchPolicy,
+    ) -> WasmDualNumber {
+        Self {
+            inner: self.inner.max_by_policy(other.inner, policy.into()),
+        }
+    }
+
+    /// Minimum with explicit derivative tie handling.
+    #[wasm_bindgen(js_name = minByPolicy)]
+    pub fn min_by_policy(
+        &self,
+        other: &WasmDualNumber,
+        policy: WasmBranchPolicy,
+    ) -> WasmDualNumber {
+        Self {
+            inner: self.inner.min_by_policy(other.inner, policy.into()),
+        }
+    }
+
     /// Integer power
     #[wasm_bindgen(js_name = powi)]
     pub fn powi(&self, n: i32) -> WasmDualNumber {
@@ -253,6 +300,16 @@ impl WasmMultiDualNumber {
         Self {
             inner: MultiDualNumber::constant(value, num_vars),
         }
+    }
+
+    /// Create one basis-seeded variable per input coordinate.
+    #[wasm_bindgen(js_name = variables)]
+    pub fn variables(values: &[f64]) -> Array {
+        let result = Array::new();
+        for variable in MultiDualNumber::variables(values) {
+            result.push(&JsValue::from(Self { inner: variable }));
+        }
+        result
     }
 
     /// Get the real part (function value)
@@ -323,7 +380,187 @@ impl WasmMultiDualNumber {
             inner: MultiDualNumber::new(val, grad),
         })
     }
+
+    /// Maximum with explicit derivative tie handling.
+    #[wasm_bindgen(js_name = maxByPolicy)]
+    pub fn max_by_policy(
+        &self,
+        other: &WasmMultiDualNumber,
+        policy: WasmBranchPolicy,
+    ) -> Result<WasmMultiDualNumber, JsValue> {
+        if self.inner.n_vars() != other.inner.n_vars() {
+            return Err(JsValue::from_str("Incompatible number of variables"));
+        }
+        Ok(Self {
+            inner: self
+                .inner
+                .clone()
+                .max_by_policy(other.inner.clone(), policy.into()),
+        })
+    }
+
+    /// Minimum with explicit derivative tie handling.
+    #[wasm_bindgen(js_name = minByPolicy)]
+    pub fn min_by_policy(
+        &self,
+        other: &WasmMultiDualNumber,
+        policy: WasmBranchPolicy,
+    ) -> Result<WasmMultiDualNumber, JsValue> {
+        if self.inner.n_vars() != other.inner.n_vars() {
+            return Err(JsValue::from_str("Incompatible number of variables"));
+        }
+        Ok(Self {
+            inner: self
+                .inner
+                .clone()
+                .min_by_policy(other.inner.clone(), policy.into()),
+        })
+    }
 }
+
+macro_rules! define_static_multi_dual_wasm {
+    ($name:ident, $n:expr) => {
+        #[wasm_bindgen]
+        pub struct $name {
+            inner: StaticMultiDual<f64, $n>,
+        }
+
+        #[wasm_bindgen]
+        impl $name {
+            /// Create a fixed-size multi-dual number from a value and gradient.
+            #[wasm_bindgen(constructor)]
+            pub fn new(value: f64, gradient: &[f64]) -> Result<$name, JsValue> {
+                if gradient.len() != $n {
+                    return Err(JsValue::from_str(concat!(
+                        "gradient length must be ",
+                        stringify!($n)
+                    )));
+                }
+                let mut array = [0.0; $n];
+                array.copy_from_slice(gradient);
+                Ok(Self {
+                    inner: StaticMultiDual::new(value, array),
+                })
+            }
+
+            /// Create a constant with zero gradient.
+            pub fn constant(value: f64) -> $name {
+                Self {
+                    inner: StaticMultiDual::constant(value),
+                }
+            }
+
+            /// Create a basis-seeded variable.
+            pub fn variable(value: f64, var_index: usize) -> Result<$name, JsValue> {
+                if var_index >= $n {
+                    return Err(JsValue::from_str("variable index out of bounds"));
+                }
+                Ok(Self {
+                    inner: StaticMultiDual::variable(value, var_index),
+                })
+            }
+
+            /// Create one fixed-size variable per coordinate.
+            pub fn variables(values: &[f64]) -> Result<Array, JsValue> {
+                if values.len() != $n {
+                    return Err(JsValue::from_str(concat!(
+                        "values length must be ",
+                        stringify!($n)
+                    )));
+                }
+                let mut array = [0.0; $n];
+                array.copy_from_slice(values);
+                let result = Array::new();
+                for variable in StaticMultiDual::variables(array) {
+                    result.push(&JsValue::from(Self { inner: variable }));
+                }
+                Ok(result)
+            }
+
+            /// Get the function value.
+            #[wasm_bindgen(js_name = getValue)]
+            pub fn get_value(&self) -> f64 {
+                self.inner.get_value()
+            }
+
+            /// Get the fixed-size gradient as a JavaScript array-compatible vector.
+            #[wasm_bindgen(js_name = getGradient)]
+            pub fn get_gradient(&self) -> Vec<f64> {
+                self.inner.get_gradient().to_vec()
+            }
+
+            /// Number of derivative variables.
+            #[wasm_bindgen(js_name = nVars)]
+            pub fn n_vars(&self) -> usize {
+                self.inner.n_vars()
+            }
+
+            /// Addition.
+            pub fn add(&self, other: &$name) -> $name {
+                Self {
+                    inner: self.inner + other.inner,
+                }
+            }
+
+            /// Subtraction.
+            pub fn sub(&self, other: &$name) -> $name {
+                Self {
+                    inner: self.inner - other.inner,
+                }
+            }
+
+            /// Multiplication.
+            pub fn mul(&self, other: &$name) -> $name {
+                Self {
+                    inner: self.inner * other.inner,
+                }
+            }
+
+            /// Division.
+            pub fn div(&self, other: &$name) -> Result<$name, JsValue> {
+                if other.inner.get_value() == 0.0 {
+                    return Err(JsValue::from_str("Division by zero"));
+                }
+                Ok(Self {
+                    inner: self.inner / other.inner,
+                })
+            }
+
+            /// Negation.
+            pub fn neg(&self) -> $name {
+                Self { inner: -self.inner }
+            }
+
+            /// Maximum with explicit derivative tie handling.
+            #[wasm_bindgen(js_name = maxByPolicy)]
+            pub fn max_by_policy(&self, other: &$name, policy: WasmBranchPolicy) -> $name {
+                Self {
+                    inner: self.inner.max_by_policy(other.inner, policy.into()),
+                }
+            }
+
+            /// Minimum with explicit derivative tie handling.
+            #[wasm_bindgen(js_name = minByPolicy)]
+            pub fn min_by_policy(&self, other: &$name, policy: WasmBranchPolicy) -> $name {
+                Self {
+                    inner: self.inner.min_by_policy(other.inner, policy.into()),
+                }
+            }
+
+            /// Convert to the heap-backed multi-dual wrapper.
+            #[wasm_bindgen(js_name = toMultiDual)]
+            pub fn to_multi_dual(&self) -> WasmMultiDualNumber {
+                WasmMultiDualNumber {
+                    inner: self.inner.to_multi_dual(),
+                }
+            }
+        }
+    };
+}
+
+define_static_multi_dual_wasm!(WasmStaticMultiDual2, 2);
+define_static_multi_dual_wasm!(WasmStaticMultiDual3, 3);
+define_static_multi_dual_wasm!(WasmStaticMultiDual4, 4);
 
 /// Automatic differentiation utilities
 #[wasm_bindgen]
@@ -798,6 +1035,24 @@ mod tests {
     }
 
     #[test]
+    fn test_dual_branch_policy_ties_are_exposed() {
+        let left = WasmDualNumber::new(3.0, 1.0);
+        let right = WasmDualNumber::new(3.0, 5.0);
+
+        let left_biased = left.max_by_policy(&right, WasmBranchPolicy::Left);
+        assert_eq!(left_biased.get_real(), 3.0);
+        assert_eq!(left_biased.get_dual(), 1.0);
+
+        let right_biased = left.max_by_policy(&right, WasmBranchPolicy::Right);
+        assert_eq!(right_biased.get_real(), 3.0);
+        assert_eq!(right_biased.get_dual(), 5.0);
+
+        let averaged = left.min_by_policy(&right, WasmBranchPolicy::Average);
+        assert_eq!(averaged.get_real(), 3.0);
+        assert_eq!(averaged.get_dual(), 3.0);
+    }
+
+    #[test]
     fn test_dual_chain_rule() {
         // f(x) = sin(x^2) at x = sqrt(pi/2)
         // f'(x) = 2x * cos(x^2)
@@ -853,6 +1108,42 @@ mod tests {
         let grad = prod.get_gradient();
         assert_eq!(grad[0], 3.0); // ∂/∂x(xy) = y = 3
         assert_eq!(grad[1], 2.0); // ∂/∂y(xy) = x = 2
+    }
+
+    #[test]
+    fn test_multi_dual_variables_and_branch_policy_are_exposed() {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let variables = WasmMultiDualNumber::variables(&[2.0, 3.0, 5.0]);
+            assert_eq!(variables.length(), 3);
+        }
+
+        let left = WasmMultiDualNumber::new(7.0, &[1.0, 0.0]);
+        let right = WasmMultiDualNumber::new(7.0, &[0.0, 1.0]);
+        let averaged = left
+            .max_by_policy(&right, WasmBranchPolicy::Average)
+            .unwrap();
+        assert_eq!(averaged.get_real(), 7.0);
+        assert_eq!(averaged.get_gradient(), vec![0.5, 0.5]);
+    }
+
+    #[test]
+    fn test_static_multi_dual2_arithmetic_is_exposed() {
+        let x = WasmStaticMultiDual2::variable(2.0, 0).unwrap();
+        let y = WasmStaticMultiDual2::variable(3.0, 1).unwrap();
+        let product = x.mul(&y);
+
+        assert_eq!(product.get_value(), 6.0);
+        assert_eq!(product.get_gradient(), vec![3.0, 2.0]);
+
+        let tied_left = WasmStaticMultiDual2::new(4.0, &[1.0, 0.0]).unwrap();
+        let tied_right = WasmStaticMultiDual2::new(4.0, &[0.0, 1.0]).unwrap();
+        let averaged = tied_left.max_by_policy(&tied_right, WasmBranchPolicy::Average);
+        assert_eq!(averaged.get_gradient(), vec![0.5, 0.5]);
+
+        let dynamic = averaged.to_multi_dual();
+        assert_eq!(dynamic.get_real(), 4.0);
+        assert_eq!(dynamic.get_gradient(), vec![0.5, 0.5]);
     }
 
     // ========================================================================

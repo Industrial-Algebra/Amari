@@ -1,12 +1,18 @@
 #![cfg(feature = "measure")]
 
+mod common;
+
 use amari_gpu::{
     GpuIntegrator, GpuMonteCarloIntegrator, GpuMultidimIntegrator, GpuParametricDensity,
     GpuTropicalMeasure,
 };
+use common::direct_gpu_runtime_available;
 
 #[tokio::test]
 async fn test_measure_public_api_paths() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     if let Ok(integrator) = GpuIntegrator::new().await {
         let quadratic = integrator
             .integrate_uniform(0.0, 2.0, 10_000, 1)

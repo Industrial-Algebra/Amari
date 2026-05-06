@@ -1,13 +1,59 @@
-import { Title, Text, Card, Container, Stack, List, Box } from "@mantine/core";
+import { Title, Text, Card, Container, Stack, List } from "@mantine/core";
 import { ExampleCard } from "../components/ExampleCard";
+import { useAmariWasm } from "../hooks/useAmariWasm";
+
+type WasmOrdinalArenaInstance = {
+  nodeCount(): number;
+  omega(): unknown;
+  finite(n: number): unknown;
+  add(left: unknown, right: unknown): unknown;
+  kind(ordinal: unknown): string;
+  formatOrdinal(ordinal: unknown): string;
+  weightFromOrdinal(ordinal: unknown): unknown;
+  oplusWeight(left: unknown, right: unknown): unknown;
+  otimesWeight(left: unknown, right: unknown): unknown;
+  formatWeight(weight: unknown): string;
+};
+
+type AmariWasmModule = Record<string, unknown> & {
+  TropicalBatch?: {
+    foldOplus?: (values: Float64Array) => number;
+    foldOtimes?: (values: Float64Array) => number;
+  };
+  WasmOrdinalArena?: new () => WasmOrdinalArenaInstance;
+};
+
+function missingWasmExports(wasm: AmariWasmModule, names: string[]) {
+  return names.filter((name) => wasm[name] === undefined || wasm[name] === null);
+}
 
 export function TropicalAlgebra() {
+  const { ready, error, amari } = useAmariWasm();
+
   const simulateExample = (title: string, operation: () => string) => {
     return async () => {
       try {
         return operation();
       } catch (err) {
         throw new Error(`Simulation error: ${err}`);
+      }
+    };
+  };
+
+  const wasmExample = (operation: (wasm: AmariWasmModule) => string) => {
+    return async () => {
+      if (error) {
+        throw new Error(`WASM initialization error: ${error}`);
+      }
+
+      if (!ready || !amari) {
+        return "WASM module is still loading. Try again in a moment.";
+      }
+
+      try {
+        return operation(amari as unknown as AmariWasmModule);
+      } catch (err) {
+        throw new Error(`WASM example error: ${err}`);
       }
     };
   };
@@ -46,6 +92,88 @@ console.log("(3 ⊕ 5) ⊗ 2 =", result);`,
           `3 ⊕ 5 = ${sum}`,
           `3 ⊗ 2 = ${product}`,
           `(3 ⊕ 5) ⊗ 2 = ${result}`
+        ].join('\n');
+      })
+    },
+    {
+      title: "Semiring Folds via WASM",
+      description: "Use the 0.21.0 TropicalBatch fold helpers exposed by amari-wasm",
+      category: "WASM 0.21.0",
+      code: `import init, { TropicalBatch } from '@justinelliottcobb/amari-wasm';
+
+await init();
+
+const weights = new Float64Array([3.0, 5.0, 2.0]);
+
+// Max-plus semiring folds: ⊕ = max, ⊗ = +
+const best = TropicalBatch.foldOplus(weights);
+const composed = TropicalBatch.foldOtimes(weights);
+
+console.log("foldOplus([3, 5, 2]) =", best);      // 5
+console.log("foldOtimes([3, 5, 2]) =", composed); // 10`,
+      onRun: wasmExample((wasm) => {
+        const missing = missingWasmExports(wasm, ["TropicalBatch"]);
+        const tropicalBatch = wasm.TropicalBatch;
+        if (missing.length > 0 || typeof tropicalBatch?.foldOplus !== "function" || typeof tropicalBatch?.foldOtimes !== "function") {
+          return "This example requires amari-wasm v0.21.0 TropicalBatch.foldOplus/foldOtimes bindings.";
+        }
+
+        const weights = new Float64Array([3.0, 5.0, 2.0]);
+        const best = tropicalBatch.foldOplus(weights);
+        const composed = tropicalBatch.foldOtimes(weights);
+
+        return [
+          `Input weights: [${Array.from(weights).join(', ')}]`,
+          `foldOplus = ${best} (max-plus best weight)`,
+          `foldOtimes = ${composed} (max-plus composition)`
+        ].join('\n');
+      })
+    },
+    {
+      title: "Ordinal Weights Below ε₀ via WASM",
+      description: "Create bounded ordinal handles and compose ordinal-weighted tropical costs",
+      category: "WASM 0.21.0",
+      code: `import init, { WasmOrdinalArena } from '@justinelliottcobb/amari-wasm';
+
+await init();
+
+const arena = new WasmOrdinalArena();
+const omega = arena.omega();
+const three = arena.finite(3);
+const omegaPlusThree = arena.add(omega, three);
+
+const finiteWeight = arena.weightFromOrdinal(three);
+const limitWeight = arena.weightFromOrdinal(omegaPlusThree);
+
+const best = arena.oplusWeight(finiteWeight, limitWeight);
+const composed = arena.otimesWeight(finiteWeight, limitWeight);
+
+console.log(arena.formatOrdinal(omegaPlusThree));
+console.log(arena.formatWeight(best));
+console.log(arena.formatWeight(composed));`,
+      onRun: wasmExample((wasm) => {
+        const missing = missingWasmExports(wasm, ["WasmOrdinalArena"]);
+        const OrdinalArena = wasm.WasmOrdinalArena;
+        if (missing.length > 0 || !OrdinalArena) {
+          return "This example requires amari-wasm v0.21.0 WasmOrdinalArena bindings.";
+        }
+
+        const arena = new OrdinalArena();
+        const omega = arena.omega();
+        const three = arena.finite(3);
+        const omegaPlusThree = arena.add(omega, three);
+
+        const finiteWeight = arena.weightFromOrdinal(three);
+        const limitWeight = arena.weightFromOrdinal(omegaPlusThree);
+        const best = arena.oplusWeight(finiteWeight, limitWeight);
+        const composed = arena.otimesWeight(finiteWeight, limitWeight);
+
+        return [
+          `nodes allocated = ${arena.nodeCount()}`,
+          `ω + 3 = ${arena.formatOrdinal(omegaPlusThree)}`,
+          `kind(ω + 3) = ${arena.kind(omegaPlusThree)}`,
+          `best weight = ${arena.formatWeight(best)}`,
+          `composed weight = ${arena.formatWeight(composed)}`
         ].join('\n');
       })
     },
@@ -234,8 +362,8 @@ console.log("Speed improvement: ~100x faster!");`,
           </Card.Section>
           <Card.Section inheritPadding py="md">
             <Text size="sm" c="dimmed">
-              These examples use simulated tropical operations for demonstration.
-              The full Amari tropical algebra implementation will be available in the WASM bindings soon.
+              The release-focused examples above call the `0.21.0` amari-wasm tropical bindings when the loaded package exposes them.
+              Older browser bundles will show a version-gated message until the v0.21.0 WASM package is published.
             </Text>
           </Card.Section>
         </Card>

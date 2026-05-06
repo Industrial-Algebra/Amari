@@ -1,8 +1,11 @@
 #![cfg(feature = "fusion")]
 
+mod common;
+
 use amari_gpu::{
     FusionGpuError, FusionGpuResult, GpuHolographicTDC, GpuResonatorOutput, HolographicGpuOps,
 };
+use common::direct_gpu_runtime_available;
 
 #[test]
 fn test_fusion_public_api_holographic_types() {
@@ -42,6 +45,9 @@ fn test_fusion_public_error_and_result_types() {
 
 #[tokio::test]
 async fn test_fusion_public_api_empty_batch_bind_if_gpu_available() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let ops = match HolographicGpuOps::new().await {
         Ok(ops) => ops,
         Err(_) => return,

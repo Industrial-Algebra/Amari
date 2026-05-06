@@ -2,7 +2,7 @@
 //!
 //! Measures critical operations for dual number and automatic differentiation.
 
-use amari_dual::{DualNumber, MultiDualNumber};
+use amari_dual::{DualNumber, MultiDualNumber, StaticMultiDual};
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::hint::black_box;
 
@@ -120,6 +120,44 @@ fn bench_multi_dual(c: &mut Criterion) {
     group.finish();
 }
 
+/// Benchmark fixed-size multi-dual loops
+fn bench_static_multi_dual(c: &mut Criterion) {
+    let mut group = c.benchmark_group("static_multi_dual");
+
+    group.bench_function("variable_creation_2vars", |b| {
+        b.iter(|| black_box(StaticMultiDual::<f64, 2>::variable(black_box(1.0), 0)))
+    });
+
+    group.bench_function("variable_creation_4vars", |b| {
+        b.iter(|| black_box(StaticMultiDual::<f64, 4>::variable(black_box(1.0), 0)))
+    });
+
+    let x2 = StaticMultiDual::<f64, 2>::variable(2.0, 0);
+    let y2 = StaticMultiDual::<f64, 2>::variable(3.0, 1);
+    group.bench_function("mul_2vars", |b| {
+        b.iter(|| black_box(black_box(x2) * black_box(y2)))
+    });
+
+    let x4 = StaticMultiDual::<f64, 4>::variable(2.0, 0);
+    let y4 = StaticMultiDual::<f64, 4>::variable(3.0, 1);
+    group.bench_function("mul_4vars", |b| {
+        b.iter(|| black_box(black_box(x4) * black_box(y4)))
+    });
+
+    group.bench_function("quadratic_gradient_4vars", |b| {
+        b.iter(|| {
+            let vars = StaticMultiDual::<f64, 4>::variables([1.0, 1.1, 1.2, 1.3]);
+            let mut result = StaticMultiDual::<f64, 4>::constant(0.0);
+            for value in vars {
+                result = result + value * value;
+            }
+            black_box(result.gradient)
+        })
+    });
+
+    group.finish();
+}
+
 /// Benchmark gradient computation
 fn bench_gradient_computation(c: &mut Criterion) {
     let mut group = c.benchmark_group("gradient_computation");
@@ -231,6 +269,7 @@ criterion_group!(
     bench_dual_creation,
     bench_dual_transcendental,
     bench_multi_dual,
+    bench_static_multi_dual,
     bench_gradient_computation,
     bench_chain_rule,
     bench_batch_operations,

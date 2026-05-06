@@ -5,8 +5,11 @@
 //! in web applications.
 
 use amari_tropical::viterbi::{TropicalPolynomial, TropicalViterbi};
-use amari_tropical::TropicalNumber;
+use amari_tropical::{
+    fold_oplus, fold_otimes, OrdinalArena, OrdinalId, OrdinalKind, OrdinalWeight, TropicalNumber,
+};
 use js_sys::{Array, Object};
+use std::cmp::Ordering;
 use wasm_bindgen::prelude::*;
 
 /// WASM wrapper for TropicalNumber
@@ -156,6 +159,20 @@ impl TropicalBatch {
         Self::batch_tropical_add(log_probs)
     }
 
+    /// Fold values with tropical addition (`max`).
+    #[wasm_bindgen(js_name = foldOplus)]
+    pub fn fold_oplus(values: &[f64]) -> f64 {
+        let tropical_values = values.iter().copied().map(TropicalNumber::new);
+        fold_oplus(tropical_values).value()
+    }
+
+    /// Fold values with tropical multiplication (`+`).
+    #[wasm_bindgen(js_name = foldOtimes)]
+    pub fn fold_otimes(values: &[f64]) -> f64 {
+        let tropical_values = values.iter().copied().map(TropicalNumber::new);
+        fold_otimes(tropical_values).value()
+    }
+
     /// Viterbi algorithm helper: find best path through trellis
     #[wasm_bindgen(js_name = viterbiStep)]
     pub fn viterbi_step(
@@ -192,6 +209,373 @@ impl TropicalBatch {
 
         Ok(new_scores)
     }
+}
+
+/// Arena-bound handle for an ordinal below ε₀.
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
+pub struct WasmOrdinal {
+    inner: OrdinalId,
+}
+
+#[wasm_bindgen]
+impl WasmOrdinal {
+    /// Raw arena-local ordinal index.
+    #[wasm_bindgen(js_name = getIndex)]
+    pub fn get_index(&self) -> usize {
+        self.inner.index()
+    }
+}
+
+/// Bottom-extended ordinal optimization weight.
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
+pub struct WasmOrdinalWeight {
+    inner: OrdinalWeight,
+}
+
+#[wasm_bindgen]
+impl WasmOrdinalWeight {
+    /// Construct the bottom element.
+    pub fn bottom() -> Self {
+        Self {
+            inner: OrdinalWeight::bottom(),
+        }
+    }
+
+    /// Alias for the semiring zero element.
+    pub fn zero() -> Self {
+        Self {
+            inner: OrdinalWeight::zero(),
+        }
+    }
+
+    /// Construct the semiring one element, i.e. ordinal zero.
+    pub fn one() -> Self {
+        Self {
+            inner: OrdinalWeight::one(),
+        }
+    }
+
+    /// Whether this weight is bottom.
+    #[wasm_bindgen(js_name = isBottom)]
+    pub fn is_bottom(&self) -> bool {
+        self.inner.is_bottom()
+    }
+
+    /// Arena-local ordinal index when this weight wraps an ordinal.
+    #[wasm_bindgen(js_name = ordinalIndex)]
+    pub fn ordinal_index(&self) -> Option<usize> {
+        self.inner.ordinal().map(OrdinalId::index)
+    }
+}
+
+/// Arena-backed store for canonical ordinals below ε₀.
+#[wasm_bindgen]
+pub struct WasmOrdinalArena {
+    inner: OrdinalArena,
+}
+
+impl Default for WasmOrdinalArena {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[wasm_bindgen]
+impl WasmOrdinalArena {
+    /// Create an ordinal arena containing zero.
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self {
+            inner: OrdinalArena::new(),
+        }
+    }
+
+    /// Number of interned ordinal nodes.
+    #[wasm_bindgen(js_name = nodeCount)]
+    pub fn node_count(&self) -> usize {
+        self.inner.node_count()
+    }
+
+    /// Canonical zero ordinal.
+    pub fn zero(&self) -> WasmOrdinal {
+        WasmOrdinal {
+            inner: self.inner.zero(),
+        }
+    }
+
+    /// Finite natural ordinal `n`.
+    pub fn finite(&mut self, n: u32) -> WasmOrdinal {
+        WasmOrdinal {
+            inner: self.inner.finite(u64::from(n)),
+        }
+    }
+
+    /// Finite ordinal one.
+    pub fn one(&mut self) -> WasmOrdinal {
+        WasmOrdinal {
+            inner: self.inner.one(),
+        }
+    }
+
+    /// The ordinal ω.
+    pub fn omega(&mut self) -> WasmOrdinal {
+        WasmOrdinal {
+            inner: self.inner.omega(),
+        }
+    }
+
+    /// Ordinal addition.
+    pub fn add(&mut self, left: &WasmOrdinal, right: &WasmOrdinal) -> Result<WasmOrdinal, JsValue> {
+        self.inner
+            .add(left.inner, right.inner)
+            .map(|inner| WasmOrdinal { inner })
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Compare two ordinals: -1 for less, 0 for equal, 1 for greater.
+    pub fn compare(&self, left: &WasmOrdinal, right: &WasmOrdinal) -> Result<i32, JsValue> {
+        self.inner
+            .compare(left.inner, right.inner)
+            .map(ordering_to_i32)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Format an ordinal in Cantor normal form.
+    #[wasm_bindgen(js_name = formatOrdinal)]
+    pub fn format_ordinal(&self, ordinal: &WasmOrdinal) -> Result<String, JsValue> {
+        self.inner
+            .format_ordinal(ordinal.inner)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Return true if the ordinal is zero.
+    #[wasm_bindgen(js_name = isZeroOrdinal)]
+    pub fn is_zero_ordinal(&self, ordinal: &WasmOrdinal) -> Result<bool, JsValue> {
+        self.inner
+            .is_zero_ordinal(ordinal.inner)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Finite value when the ordinal is finite.
+    #[wasm_bindgen(js_name = finiteValue)]
+    pub fn finite_value(&self, ordinal: &WasmOrdinal) -> Result<Option<f64>, JsValue> {
+        self.inner
+            .finite_value(ordinal.inner)
+            .map(|value| value.map(|value| value as f64))
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Number of CNF terms.
+    #[wasm_bindgen(js_name = termCount)]
+    pub fn term_count(&self, ordinal: &WasmOrdinal) -> Result<usize, JsValue> {
+        self.inner
+            .term_count(ordinal.inner)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Return true if this is a successor ordinal.
+    #[wasm_bindgen(js_name = isSuccessor)]
+    pub fn is_successor(&self, ordinal: &WasmOrdinal) -> Result<bool, JsValue> {
+        self.inner
+            .is_successor(ordinal.inner)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Return true if this is a nonzero limit ordinal.
+    #[wasm_bindgen(js_name = isLimit)]
+    pub fn is_limit(&self, ordinal: &WasmOrdinal) -> Result<bool, JsValue> {
+        self.inner
+            .is_limit(ordinal.inner)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Structural kind: zero, finite, successor, or limit.
+    pub fn kind(&self, ordinal: &WasmOrdinal) -> Result<String, JsValue> {
+        self.inner
+            .kind(ordinal.inner)
+            .map(ordinal_kind_to_string)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Build a JavaScript object with ordinal inspection metadata.
+    #[wasm_bindgen(js_name = inspectOrdinal)]
+    pub fn inspect_ordinal(&self, ordinal: &WasmOrdinal) -> Result<JsValue, JsValue> {
+        let inspection = self
+            .inner
+            .inspect(ordinal.inner)
+            .map_err(tropical_error_to_js)?;
+        let result = Object::new();
+        js_sys::Reflect::set(
+            &result,
+            &"index".into(),
+            &JsValue::from(inspection.ordinal().index()),
+        )?;
+        js_sys::Reflect::set(
+            &result,
+            &"kind".into(),
+            &JsValue::from(ordinal_kind_to_string(inspection.kind())),
+        )?;
+        js_sys::Reflect::set(
+            &result,
+            &"finiteValue".into(),
+            &inspection
+                .finite_value()
+                .map(|value| JsValue::from(value as f64))
+                .unwrap_or(JsValue::NULL),
+        )?;
+        js_sys::Reflect::set(
+            &result,
+            &"termCount".into(),
+            &JsValue::from(inspection.term_count()),
+        )?;
+        js_sys::Reflect::set(
+            &result,
+            &"rendered".into(),
+            &JsValue::from(inspection.rendered()),
+        )?;
+        Ok(result.into())
+    }
+
+    /// Construct a weight from an ordinal.
+    #[wasm_bindgen(js_name = weightFromOrdinal)]
+    pub fn weight_from_ordinal(&self, ordinal: &WasmOrdinal) -> WasmOrdinalWeight {
+        WasmOrdinalWeight {
+            inner: OrdinalWeight::from_ordinal(ordinal.inner),
+        }
+    }
+
+    /// Format an ordinal weight.
+    #[wasm_bindgen(js_name = formatWeight)]
+    pub fn format_weight(&self, weight: &WasmOrdinalWeight) -> Result<String, JsValue> {
+        self.inner
+            .format_weight(weight.inner)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Semiring-style additive combination (`max`) for ordinal weights.
+    #[wasm_bindgen(js_name = oplusWeight)]
+    pub fn oplus_weight(
+        &self,
+        left: &WasmOrdinalWeight,
+        right: &WasmOrdinalWeight,
+    ) -> Result<WasmOrdinalWeight, JsValue> {
+        left.inner
+            .oplus(right.inner, &self.inner)
+            .map(|inner| WasmOrdinalWeight { inner })
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Semiring-style multiplicative composition (ordinal addition) for weights.
+    #[wasm_bindgen(js_name = otimesWeight)]
+    pub fn otimes_weight(
+        &mut self,
+        left: &WasmOrdinalWeight,
+        right: &WasmOrdinalWeight,
+    ) -> Result<WasmOrdinalWeight, JsValue> {
+        left.inner
+            .otimes(right.inner, &mut self.inner)
+            .map(|inner| WasmOrdinalWeight { inner })
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Compare two weights: -1 for less, 0 for equal, 1 for greater.
+    #[wasm_bindgen(js_name = compareWeight)]
+    pub fn compare_weight(
+        &self,
+        left: &WasmOrdinalWeight,
+        right: &WasmOrdinalWeight,
+    ) -> Result<i32, JsValue> {
+        self.inner
+            .compare_weight(left.inner, right.inner)
+            .map(ordering_to_i32)
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Leading-exponent valuation of a weight, if any.
+    pub fn valuation(&self, weight: &WasmOrdinalWeight) -> Result<Option<usize>, JsValue> {
+        weight
+            .inner
+            .valuation(&self.inner)
+            .map(|ordinal| ordinal.map(OrdinalId::index))
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Select the best of two weights using semiring-style `max`.
+    #[wasm_bindgen(js_name = bestWeight2)]
+    pub fn best_weight2(
+        &self,
+        left: &WasmOrdinalWeight,
+        right: &WasmOrdinalWeight,
+    ) -> Result<WasmOrdinalWeight, JsValue> {
+        self.inner
+            .best_weight(&[left.inner, right.inner])
+            .map(|inner| WasmOrdinalWeight { inner })
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Select the best of three weights using semiring-style `max`.
+    #[wasm_bindgen(js_name = bestWeight3)]
+    pub fn best_weight3(
+        &self,
+        first: &WasmOrdinalWeight,
+        second: &WasmOrdinalWeight,
+        third: &WasmOrdinalWeight,
+    ) -> Result<WasmOrdinalWeight, JsValue> {
+        self.inner
+            .best_weight(&[first.inner, second.inner, third.inner])
+            .map(|inner| WasmOrdinalWeight { inner })
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Compose two weights using ordinal addition with bottom annihilation.
+    #[wasm_bindgen(js_name = composeWeight2)]
+    pub fn compose_weight2(
+        &mut self,
+        left: &WasmOrdinalWeight,
+        right: &WasmOrdinalWeight,
+    ) -> Result<WasmOrdinalWeight, JsValue> {
+        self.inner
+            .compose_weights(&[left.inner, right.inner])
+            .map(|inner| WasmOrdinalWeight { inner })
+            .map_err(tropical_error_to_js)
+    }
+
+    /// Compose three weights using ordinal addition with bottom annihilation.
+    #[wasm_bindgen(js_name = composeWeight3)]
+    pub fn compose_weight3(
+        &mut self,
+        first: &WasmOrdinalWeight,
+        second: &WasmOrdinalWeight,
+        third: &WasmOrdinalWeight,
+    ) -> Result<WasmOrdinalWeight, JsValue> {
+        self.inner
+            .compose_weights(&[first.inner, second.inner, third.inner])
+            .map(|inner| WasmOrdinalWeight { inner })
+            .map_err(tropical_error_to_js)
+    }
+}
+
+fn ordering_to_i32(ordering: Ordering) -> i32 {
+    match ordering {
+        Ordering::Less => -1,
+        Ordering::Equal => 0,
+        Ordering::Greater => 1,
+    }
+}
+
+fn ordinal_kind_to_string(kind: OrdinalKind) -> String {
+    match kind {
+        OrdinalKind::Zero => String::from("zero"),
+        OrdinalKind::Finite => String::from("finite"),
+        OrdinalKind::Successor => String::from("successor"),
+        OrdinalKind::Limit => String::from("limit"),
+    }
+}
+
+fn tropical_error_to_js(error: amari_tropical::TropicalError) -> JsValue {
+    JsValue::from_str(&error.to_string())
 }
 
 /// WASM wrapper for TropicalViterbi - Hidden Markov Model decoding
@@ -462,5 +846,61 @@ mod tests {
         // x * 1 = x (tropical multiplication with one)
         let x_times_one = x.tropical_mul(&one);
         assert_eq!(x_times_one.get_value(), 5.0);
+    }
+
+    #[test]
+    fn test_tropical_semiring_folds_are_exposed() {
+        assert_eq!(TropicalBatch::fold_oplus(&[2.0, 5.0, 3.0]), 5.0);
+        assert_eq!(TropicalBatch::fold_otimes(&[2.0, 5.0, 3.0]), 10.0);
+        assert_eq!(TropicalBatch::fold_oplus(&[]), f64::NEG_INFINITY);
+        assert_eq!(TropicalBatch::fold_otimes(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_ordinal_weight_optimization_helpers_are_exposed() {
+        let mut arena = WasmOrdinalArena::new();
+        let one = arena.one();
+        let omega = arena.omega();
+        let omega_plus_one = arena.add(&omega, &one).unwrap();
+
+        assert_eq!(arena.format_ordinal(&omega).unwrap(), "ω");
+        assert_eq!(arena.format_ordinal(&omega_plus_one).unwrap(), "ω + 1");
+        assert_eq!(arena.compare(&omega_plus_one, &omega).unwrap(), 1);
+        assert_eq!(arena.kind(&omega_plus_one).unwrap(), "successor");
+        assert!(arena.is_successor(&omega_plus_one).unwrap());
+
+        let bottom = WasmOrdinalWeight::bottom();
+        let omega_weight = arena.weight_from_ordinal(&omega);
+        let omega_plus_one_weight = arena.weight_from_ordinal(&omega_plus_one);
+
+        assert!(bottom.is_bottom());
+        assert_eq!(arena.format_weight(&bottom).unwrap(), "Bottom");
+        assert_eq!(
+            arena.format_weight(&omega_plus_one_weight).unwrap(),
+            "ω + 1"
+        );
+
+        let best = arena
+            .oplus_weight(&omega_weight, &omega_plus_one_weight)
+            .unwrap();
+        assert_eq!(arena.format_weight(&best).unwrap(), "ω + 1");
+
+        let composed = arena
+            .otimes_weight(&omega_weight, &arena.weight_from_ordinal(&one))
+            .unwrap();
+        assert_eq!(arena.format_weight(&composed).unwrap(), "ω + 1");
+
+        let best_from_helper = arena
+            .best_weight3(&bottom, &omega_weight, &omega_plus_one_weight)
+            .unwrap();
+        assert_eq!(arena.format_weight(&best_from_helper).unwrap(), "ω + 1");
+
+        let composed_from_helper = arena
+            .compose_weight2(
+                &arena.weight_from_ordinal(&omega),
+                &arena.weight_from_ordinal(&one),
+            )
+            .unwrap();
+        assert_eq!(arena.format_weight(&composed_from_helper).unwrap(), "ω + 1");
     }
 }

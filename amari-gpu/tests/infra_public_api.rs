@@ -1,3 +1,5 @@
+mod common;
+
 use amari_core::Multivector;
 use amari_gpu::performance::DispatchBenchmark;
 use amari_gpu::{
@@ -6,6 +8,7 @@ use amari_gpu::{
     PlatformCapabilities, RecommendationPriority, TimelineEvent, UnifiedGpuError,
     VerificationPlatform, VerifiedMultivector, WorkgroupOptimizer,
 };
+use common::direct_gpu_runtime_available;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
@@ -172,6 +175,9 @@ async fn test_performance_policy_and_optimizer_public_api() {
 
 #[tokio::test]
 async fn test_unified_dispatcher_public_cpu_fallback_and_params() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let params = GpuOperationParams {
         params: HashMap::from([
             ("alpha".to_string(), GpuParam::Float(0.5)),

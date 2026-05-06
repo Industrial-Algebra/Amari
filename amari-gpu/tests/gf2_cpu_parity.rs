@@ -1,7 +1,10 @@
 #![cfg(feature = "gf2")]
 
+mod common;
+
 use amari_core::gf2::{BinaryMultivector, GF2Matrix, GF2Vector};
 use amari_gpu::{GF2GpuOps, GpuGF2CliffordPair, GpuGF2HammingPair, GpuGF2MatVecData};
+use common::direct_gpu_runtime_available;
 
 fn binary_to_words<const N: usize, const R: usize>(mv: &BinaryMultivector<N, R>) -> [u32; 4] {
     let mut words = [0u32; 4];
@@ -44,6 +47,10 @@ fn lcg(seed: &mut u32) -> u32 {
 
 #[tokio::test]
 async fn test_gf2_gpu_matches_cpu_baselines_and_laws() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let mut gpu = match GF2GpuOps::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,
