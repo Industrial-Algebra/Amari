@@ -1,8 +1,11 @@
+mod common;
+
 use amari_gpu::{
     GpuError, GpuRelativisticParticle, GpuRelativisticPhysics, GpuSpacetimeVector,
     GpuTrajectoryParams,
 };
 use amari_relativistic::spacetime::SpacetimeVector;
+use common::direct_gpu_runtime_available;
 
 fn assert_close(actual: f32, expected: f32, tol: f32) {
     assert!(
@@ -27,6 +30,9 @@ fn test_relativistic_public_conversions_and_errors() {
 
 #[tokio::test]
 async fn test_relativistic_public_gpu_paths_when_available() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let gpu = match GpuRelativisticPhysics::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,

@@ -3,12 +3,21 @@
 //! This module contains tests for GPU-accelerated information geometry operations,
 //! focusing on edge computing capabilities with WebAssembly integration.
 
+mod common;
+
 use amari_core::Multivector;
 use amari_gpu::{GpuError, GpuInfoGeometry};
 use amari_info_geom::amari_chentsov_tensor;
+use common::direct_gpu_runtime_available;
 
-/// Helper function to safely initialize GPU in CI environments
+/// Helper function to safely initialize GPU in CI or headless environments.
 async fn safe_gpu_init() -> Result<GpuInfoGeometry, GpuError> {
+    if !direct_gpu_runtime_available() {
+        return Err(GpuError::InitializationError(
+            "GPU runtime unavailable in this test environment".to_string(),
+        ));
+    }
+
     let gpu_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         tokio::runtime::Handle::current().block_on(async { GpuInfoGeometry::new().await })
     }));

@@ -8,12 +8,15 @@
 //! - Cross-crate GPU resource sharing
 //! - Memory usage optimization
 
+mod common;
+
 use amari_gpu::*;
+use common::direct_gpu_runtime_available;
 use std::time::Instant;
 
-/// Skip GPU tests in CI environments where GPU is not available
+/// Skip direct GPU tests in environments where GPU runtime access is unavailable.
 fn skip_if_ci() -> bool {
-    std::env::var("CI").is_ok() || std::env::var("GITHUB_ACTIONS").is_ok()
+    !direct_gpu_runtime_available()
 }
 
 #[tokio::test]

@@ -1,7 +1,10 @@
 #![cfg(feature = "dual")]
 
+mod common;
+
 use amari_dual::DualNumber;
 use amari_gpu::{DualGpuError, DualGpuOps, DualGpuResult, DualOperation, GpuDualNumber};
+use common::direct_gpu_runtime_available;
 
 fn apply_cpu(mut value: DualNumber<f32>, operations: &[DualOperation]) -> DualNumber<f32> {
     for operation in operations {
@@ -37,6 +40,9 @@ fn apply_cpu(mut value: DualNumber<f32>, operations: &[DualOperation]) -> DualNu
 
 #[tokio::test]
 async fn test_dual_public_api_paths() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let dual = DualNumber::new(2.0_f32, 3.0_f32);
     let gpu_dual: GpuDualNumber = dual.into();
     assert_eq!(gpu_dual.real, 2.0);

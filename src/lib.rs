@@ -2,8 +2,8 @@
 //!
 //! A comprehensive mathematical computing library combining:
 //! - Geometric algebra (Clifford algebras)
-//! - Tropical algebra (max-plus semiring)
-//! - Dual number automatic differentiation
+//! - Tropical algebra (max-plus semiring plus ordinal-weighted optimization carriers)
+//! - Dual number automatic differentiation (forward-mode, including fixed-size gradient loops)
 //! - Geometric network analysis
 //! - Information geometry
 //! - Fusion systems for neural network optimization

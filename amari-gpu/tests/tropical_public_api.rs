@@ -1,7 +1,10 @@
 #![cfg(feature = "tropical")]
 
+mod common;
+
 use amari_gpu::{TropicalExecutionPath, TropicalGpuOps};
 use amari_tropical::{TropicalMatrix, TropicalNumber};
+use common::direct_gpu_runtime_available;
 
 fn cpu_tropical_matmul(a: &TropicalMatrix<f32>, b: &TropicalMatrix<f32>) -> TropicalMatrix<f32> {
     let mut out = TropicalMatrix::new(a.rows, b.cols);
@@ -55,6 +58,9 @@ fn cpu_attention_scores(logits: &TropicalMatrix<f32>) -> TropicalMatrix<f32> {
 
 #[tokio::test]
 async fn test_tropical_public_api_adaptive_matrix_multiply() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let mut gpu = match TropicalGpuOps::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,
@@ -80,6 +86,9 @@ async fn test_tropical_public_api_adaptive_matrix_multiply() {
 
 #[tokio::test]
 async fn test_tropical_public_api_attention_scores() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let mut gpu = match TropicalGpuOps::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,

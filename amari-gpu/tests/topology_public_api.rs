@@ -1,7 +1,10 @@
 #![cfg(feature = "topology")]
 
+mod common;
+
 use amari_gpu::{AdaptiveTopologyCompute, GpuTopology};
 use amari_topology::{CriticalType, Simplex, SimplicialComplex};
+use common::direct_gpu_runtime_available;
 
 fn assert_distance_matrix_close(actual: &[f64], expected: &[f64], tolerance: f64) {
     assert_eq!(actual.len(), expected.len());
@@ -26,6 +29,9 @@ fn peak_grid() -> (Vec<f64>, usize, usize) {
 
 #[tokio::test]
 async fn test_topology_public_api_paths() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let points = vec![(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0)];
     let expected_distances = vec![
         0.0,

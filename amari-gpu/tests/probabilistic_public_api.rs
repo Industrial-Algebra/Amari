@@ -1,6 +1,9 @@
 #![cfg(feature = "probabilistic")]
 
+mod common;
+
 use amari_gpu::{GpuProbabilistic, GpuProbabilisticError, GpuProbabilisticResult};
+use common::direct_gpu_runtime_available;
 
 #[test]
 fn test_probabilistic_public_errors_and_pre_gpu_validation() {
@@ -18,6 +21,9 @@ fn test_probabilistic_public_errors_and_pre_gpu_validation() {
 
 #[tokio::test]
 async fn test_probabilistic_public_api_validation_and_cpu_gpu_parity() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let gpu = match GpuProbabilistic::new(3).await {
         Ok(gpu) => gpu,
         Err(_) => return,
