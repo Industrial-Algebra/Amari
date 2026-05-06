@@ -17,7 +17,8 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **`amari-cgt`** is now a first-class short combinatorial game theory crate with arena-backed games, canonicalization, outcome/comparison helpers, nimbers, bounded/exact layer generation, and growth-reporting utilities.
 - **`amari-surreal`** is now a first-class short-surreal crate with exact dyadic arithmetic, numeric-game validation over `amari-cgt`, simplest-number construction, and game/value round trips for supported finite cuts.
 - **`amari-enumerative`** includes an opt-in `cgt-bridge` feature for adapting CGT layer-analysis reports into enumerative growth summaries.
-- **Scope remains explicit**: the release is about short normal-play games and short surreal numbers; loopy games, misère play, thermographs, hyperreal analysis, and symbolic infinite surreal universes remain deferred.
+- **`amari-wasm`** exposes release-focused CGT/surreal bindings to TypeScript: `WasmCgtArena`, `WasmGameInspection`, `WasmDyadic`, and `WasmShortSurreal`.
+- **Scope remains explicit**: the release is about short normal-play games and short surreal numbers; loopy games, misère play, thermographs, hyperreal analysis, symbolic infinite surreal universes, and surcomplex arithmetic remain deferred.
 
 ## v0.21.0 Highlights
 
@@ -819,18 +820,21 @@ The **[Amari Examples Suite](https://amari-math.netlify.app)** provides comprehe
   - Geometric Algebra (Multivector, Rotor, Bivector)
   - Tropical Algebra (TropicalNumber, TropicalMatrix, `TropicalBatch`, `WasmOrdinalArena`, `WasmOrdinalWeight`)
   - Automatic Differentiation (`WasmDualNumber`, `WasmBranchPolicy`, `WasmMultiDualNumber`, `WasmStaticMultiDual2/3/4`)
+  - CGT & Short Surreals (`WasmCgtArena`, `WasmGameInspection`, `WasmDyadic`, `WasmShortSurreal`)
   - Probability (GaussianMultivector, MCMC samplers)
   - And 12 more categories
 
 - **Interactive Playground**: Write and run JavaScript code with live WASM execution
 
-## Examples & Documentation (v0.21.0)
+## Examples & Documentation (v0.22.0)
 
-The examples suite is versioned for `0.21.0` and now includes release-focused tropical/dual WebAssembly workflows alongside the broader mathematical catalog:
+The examples suite is versioned for `0.22.0` and now includes release-focused CGT/surreal WebAssembly workflows alongside the broader mathematical catalog:
 
+- **CGT 0.22.0 WASM examples**: `WasmCgtArena`, short-game cuts, outcomes, comparison, nimbers, and `WasmGameInspection`
+- **Surreal 0.22.0 WASM examples**: `WasmDyadic`, `WasmShortSurreal`, exact dyadic arithmetic, checked division, and numeric-game conversion
 - **Tropical 0.21.0 WASM examples**: `TropicalBatch.foldOplus`, `TropicalBatch.foldOtimes`, `WasmOrdinalArena`, and `WasmOrdinalWeight`
 - **Dual 0.21.0 WASM examples**: `WasmBranchPolicy`, `WasmMultiDualNumber.variables(...)`, and `WasmStaticMultiDual2` hot-loop gradients
-- **API reference coverage**: the new tropical/dual extension classes and methods are listed in the browser reference
+- **API reference coverage**: the new CGT/surreal and tropical/dual extension classes and methods are listed in the browser reference
 
 The suite also keeps comprehensive coverage of the broader crate family:
 

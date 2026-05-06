@@ -1,4 +1,4 @@
-# @justinelliottcobb/amari-wasm v0.21.0
+# @justinelliottcobb/amari-wasm v0.22.0
 
 **Unified Mathematical Computing Library with High-Precision WebAssembly Support**
 
@@ -15,6 +15,8 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 | [Geometric Algebra](docs/geometric-algebra.md) | amari-core | v0.1 | Multivectors, rotors, geometric products for 3D rotations and spatial transformations |
 | [Tropical Algebra](docs/tropical-algebra.md) | amari-tropical | v0.9.3 | Max-plus semiring operations plus `0.21.0` ordinal-weighted optimization carriers below ε₀ |
 | [Automatic Differentiation](docs/automatic-differentiation.md) | amari-dual | v0.9.3 | Forward-mode AD with `0.21.0` branch policies, multi-dual seeding, and fixed-size gradient wrappers |
+| Combinatorial Game Theory | amari-cgt | v0.22.0 | Short normal-play games, cuts, outcomes, comparison, nimbers, and inspection helpers |
+| Short Surreal Numbers | amari-surreal | v0.22.0 | Exact dyadic short-surreal arithmetic and conversion to/from numeric CGT games |
 | [Cellular Automata](docs/cellular-automata.md) | amari-automata | v0.9.4 | Geometric cellular automata with multivector states |
 | [Holographic Memory](docs/holographic-memory.md) | amari-fusion | v0.12.3 | Vector Symbolic Architecture for associative memory with binding and bundling |
 | [Measure Theory](docs/measure-theory.md) | amari-measure | v0.10.0 | Lebesgue integration, probability measures, and measure-theoretic foundations |
@@ -29,6 +31,17 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 | [Orbital Mechanics](docs/orbital-mechanics.md) | amari-relativistic | v0.9.4 | Spacetime algebra (Cl(1,3)) with high-precision trajectory calculations |
 
 Also includes bindings for: amari-network (geometric network analysis), amari-optimization (gradient descent, NSGA-II), amari-info-geom (Fisher metrics, statistical manifolds), amari-calculus (differential geometry, manifolds).
+
+### v0.22.0 CGT / Surreal WASM Surface
+
+The `0.22.0` release exposes the new short-game and short-surreal Rust APIs to JavaScript/TypeScript:
+
+- `WasmCgtArena` and `WasmGameId` for arena-backed short games, focused one-option cuts, addition/subtraction/negation, comparison, outcomes, canonicalization, and formatting.
+- `WasmGameInspection` for birthday, canonical form, outcome, numeric/impartial classification, and reachable-node counts.
+- `WasmDyadic` for exact dyadic arithmetic with checked division inside the short-surreal layer.
+- `WasmShortSurreal` for exact short-surreal arithmetic plus conversion from numeric CGT games and reconstruction back into a `WasmCgtArena`.
+
+The scope remains intentionally short/exact: loopy games, misère play, symbolic infinite surreals, and surcomplex arithmetic are not part of the `0.22.0` WASM surface.
 
 ### v0.21.0 Tropical / Dual WASM Surface
 
