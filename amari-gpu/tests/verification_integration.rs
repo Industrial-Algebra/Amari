@@ -4,12 +4,15 @@
 //! verification, and adaptive platform selection for GPU-accelerated
 //! geometric algebra operations.
 
+mod common;
+
 use amari_core::Multivector;
 use amari_gpu::{
     AdaptiveVerificationLevel, AdaptiveVerifier, GpuBoundaryVerifier, GpuCliffordAlgebra,
     PlatformCapabilities, StatisticalGpuVerifier, VerificationConfig, VerificationPlatform,
     VerificationStrategy, VerifiedMultivector,
 };
+use common::direct_gpu_runtime_available;
 use std::time::Duration;
 
 /// Test verified multivector creation and invariant checking
@@ -38,12 +41,8 @@ async fn test_verified_multivector_operations() {
 /// Test boundary verification with small batches
 #[tokio::test]
 async fn test_boundary_verification_small_batch() {
-    // Skip GPU tests in CI environments where GPU is not available
-    if std::env::var("CI").is_ok()
-        || std::env::var("GITHUB_ACTIONS").is_ok()
-        || std::env::var("DISPLAY").is_err()
-    {
-        println!("Skipping GPU boundary verification test in CI environment");
+    if !direct_gpu_runtime_available() {
+        println!("Skipping GPU boundary verification test in this environment");
         return;
     }
     let config = VerificationConfig {
@@ -129,6 +128,10 @@ async fn test_boundary_verification_small_batch() {
 /// Test statistical verification sampling strategies
 #[tokio::test]
 async fn test_statistical_verification() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let mut verifier = StatisticalGpuVerifier::<3, 0, 0>::new(0.2, 1e-12);
 
     // Create test batch with known results
@@ -182,12 +185,8 @@ async fn test_statistical_verification() {
 /// Test adaptive verification platform detection and strategy selection
 #[tokio::test]
 async fn test_adaptive_verification_strategies() {
-    // Skip GPU tests in CI environments where GPU is not available
-    if std::env::var("CI").is_ok()
-        || std::env::var("GITHUB_ACTIONS").is_ok()
-        || std::env::var("DISPLAY").is_err()
-    {
-        println!("Skipping GPU adaptive verification test in CI environment");
+    if !direct_gpu_runtime_available() {
+        println!("Skipping GPU adaptive verification test in this environment");
         return;
     }
 
@@ -298,12 +297,8 @@ async fn test_adaptive_verification_strategies() {
 /// Test verification level adaptation and performance budgets
 #[tokio::test]
 async fn test_verification_level_adaptation() {
-    // Skip GPU tests in CI environments where GPU is not available
-    if std::env::var("CI").is_ok()
-        || std::env::var("GITHUB_ACTIONS").is_ok()
-        || std::env::var("DISPLAY").is_err()
-    {
-        println!("Skipping GPU verification level adaptation test in CI environment");
+    if !direct_gpu_runtime_available() {
+        println!("Skipping GPU verification level adaptation test in this environment");
         return;
     }
     let levels = vec![
@@ -390,6 +385,10 @@ fn test_platform_capabilities() {
 /// Test error handling and edge cases
 #[tokio::test]
 async fn test_verification_error_handling() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     // Test mismatched batch sizes
     let config = VerificationConfig::default();
     let mut verifier = GpuBoundaryVerifier::new(config);
@@ -432,12 +431,8 @@ async fn test_verification_error_handling() {
 /// Performance benchmark for verification overhead
 #[tokio::test]
 async fn test_verification_performance_overhead() {
-    // Skip GPU performance tests in CI environments where GPU is not available
-    if std::env::var("CI").is_ok()
-        || std::env::var("GITHUB_ACTIONS").is_ok()
-        || std::env::var("DISPLAY").is_err()
-    {
-        println!("Skipping GPU performance test in CI environment");
+    if !direct_gpu_runtime_available() {
+        println!("Skipping GPU performance test in this environment");
         return;
     }
 

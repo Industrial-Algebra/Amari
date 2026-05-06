@@ -1,10 +1,17 @@
 #![cfg(feature = "calculus")]
 
+mod common;
+
 use amari_calculus::{vector_from_slice, ScalarField, VectorField};
 use amari_gpu::GpuCalculus;
+use common::direct_gpu_runtime_available;
 
 #[tokio::test]
 async fn test_calculus_public_api_large_batch_preserves_scalar_cpu_semantics() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let gpu = match GpuCalculus::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,
@@ -24,6 +31,10 @@ async fn test_calculus_public_api_large_batch_preserves_scalar_cpu_semantics() {
 
 #[tokio::test]
 async fn test_calculus_public_api_large_batch_preserves_vector_cpu_semantics() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let gpu = match GpuCalculus::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,

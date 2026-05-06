@@ -1,10 +1,13 @@
 #![cfg(feature = "gf2")]
 
+mod common;
+
 use amari_core::gf2::{GF2Matrix, GF2Vector, GF2};
 use amari_gpu::{
     GF2GpuContext, GF2GpuError, GF2GpuOps, GF2GpuResult, GpuGF2CliffordPair, GpuGF2HammingPair,
     GpuGF2MatVecData,
 };
+use common::direct_gpu_runtime_available;
 
 #[test]
 fn test_gf2_public_constructors_and_errors() {
@@ -40,6 +43,9 @@ fn test_gf2_public_constructors_and_errors() {
 
 #[tokio::test]
 async fn test_gf2_public_gpu_ops_and_validation() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let mut gpu = match GF2GpuOps::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,

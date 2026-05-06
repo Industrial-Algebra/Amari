@@ -1,8 +1,17 @@
-//! Dual number automatic differentiation for efficient gradient computation
+//! Dual number automatic differentiation for efficient gradient computation.
+//!
+//! `amari-dual` provides:
+//!
+//! - [`DualNumber`] for single-variable forward-mode AD
+//! - [`MultiDualNumber`] for heap-backed multi-variable gradients
+//! - [`StaticMultiDual`] for small fixed-size gradient loops
+//! - [`BranchPolicy`] for explicit tie behavior in branch-sensitive `max` / `min` cases
 //!
 //! Dual numbers extend real numbers with an infinitesimal unit ε where ε² = 0.
 //! This allows for exact computation of derivatives without numerical approximation
 //! or computational graphs, making it ideal for forward-mode automatic differentiation.
+//! The crate intentionally stays in the forward-mode/local-sensitivity space rather
+//! than providing reverse-mode graph AD.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -32,9 +41,12 @@ pub use error::{DualError, DualResult};
 
 // Re-export core types
 pub use multivector::{DualMultivector, MultiDualMultivector};
-pub use types::{DualNumber, MultiDualNumber, StandardDual, StandardMultiDual};
+pub use types::{
+    BranchPolicy, DualNumber, MultiDualNumber, StandardDual, StandardMultiDual,
+    StandardStaticMultiDual, StaticMultiDual,
+};
 
 #[cfg(feature = "high-precision")]
-pub use types::{ExtendedDual, ExtendedMultiDual};
+pub use types::{ExtendedDual, ExtendedMultiDual, ExtendedStaticMultiDual};
 
 // GPU acceleration exports

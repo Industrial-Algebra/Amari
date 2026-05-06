@@ -1,6 +1,9 @@
+mod common;
+
 use amari_core::{Multivector, Vector};
 use amari_gpu::{AdaptiveNetworkCompute, GpuGeometricNetwork, GpuNetworkError, GpuNetworkResult};
 use amari_network::GeometricNetwork;
+use common::direct_gpu_runtime_available;
 
 fn sample_network() -> GeometricNetwork<3, 0, 0> {
     let mut network = GeometricNetwork::<3, 0, 0>::new();
@@ -24,6 +27,10 @@ fn assert_matrix_close(actual: &[Vec<f64>], expected: &[Vec<f64>], tol: f64) {
 
 #[tokio::test]
 async fn test_network_public_api_adaptive_cpu_baseline() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let explicit_result: GpuNetworkResult<()> = Ok(());
     assert!(explicit_result.is_ok());
     let explicit_error = GpuNetworkError::InvalidSize(0);
@@ -65,6 +72,10 @@ async fn test_network_public_api_adaptive_cpu_baseline() {
 
 #[tokio::test]
 async fn test_network_direct_gpu_paths_when_available() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let gpu = match GpuGeometricNetwork::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,
@@ -99,6 +110,10 @@ async fn test_network_direct_gpu_paths_when_available() {
 
 #[tokio::test]
 async fn test_network_direct_gpu_rejects_unsupported_embeddings() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
+
     let gpu = match GpuGeometricNetwork::new().await {
         Ok(gpu) => gpu,
         Err(_) => return,

@@ -1,9 +1,12 @@
 #![cfg(feature = "holographic")]
 
+mod common;
+
 use amari_gpu::holographic::ProductCl3x32;
 use amari_gpu::{GpuHolographic, GpuHolographicError, GpuHolographicMemory, GpuOpticalField};
 use amari_holographic::optical::{LeeEncoderConfig, OpticalRotorField};
 use amari_holographic::BindingAlgebra;
+use common::direct_gpu_runtime_available;
 
 fn assert_close(actual: f64, expected: f64, tol: f64) {
     assert!(
@@ -63,6 +66,9 @@ fn test_holographic_public_imports_and_pre_gpu_validation() {
 
 #[tokio::test]
 async fn test_holographic_gpu_batch_ops_when_available() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let gpu = match GpuHolographic::new_product_cl3x32().await {
         Ok(gpu) => gpu,
         Err(_) => return,
@@ -109,6 +115,9 @@ async fn test_holographic_gpu_batch_ops_when_available() {
 
 #[tokio::test]
 async fn test_optical_public_ops_when_available() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let dims = (16, 16);
     let gpu = match GpuOpticalField::new(dims).await {
         Ok(gpu) => gpu,

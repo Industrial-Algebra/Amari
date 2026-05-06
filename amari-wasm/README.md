@@ -1,4 +1,4 @@
-# @justinelliottcobb/amari-wasm v0.19.1
+# @justinelliottcobb/amari-wasm v0.21.0
 
 **Unified Mathematical Computing Library with High-Precision WebAssembly Support**
 
@@ -13,8 +13,8 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 | Module | Crate | Since | Description |
 |--------|-------|-------|-------------|
 | [Geometric Algebra](docs/geometric-algebra.md) | amari-core | v0.1 | Multivectors, rotors, geometric products for 3D rotations and spatial transformations |
-| [Tropical Algebra](docs/tropical-algebra.md) | amari-tropical | v0.9.3 | Max-plus semiring operations for optimization and neural network applications |
-| [Automatic Differentiation](docs/automatic-differentiation.md) | amari-dual | v0.9.3 | Forward-mode AD with dual numbers for exact derivatives |
+| [Tropical Algebra](docs/tropical-algebra.md) | amari-tropical | v0.9.3 | Max-plus semiring operations plus `0.21.0` ordinal-weighted optimization carriers below ε₀ |
+| [Automatic Differentiation](docs/automatic-differentiation.md) | amari-dual | v0.9.3 | Forward-mode AD with `0.21.0` branch policies, multi-dual seeding, and fixed-size gradient wrappers |
 | [Cellular Automata](docs/cellular-automata.md) | amari-automata | v0.9.4 | Geometric cellular automata with multivector states |
 | [Holographic Memory](docs/holographic-memory.md) | amari-fusion | v0.12.3 | Vector Symbolic Architecture for associative memory with binding and bundling |
 | [Measure Theory](docs/measure-theory.md) | amari-measure | v0.10.0 | Lebesgue integration, probability measures, and measure-theoretic foundations |
@@ -29,6 +29,16 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 | [Orbital Mechanics](docs/orbital-mechanics.md) | amari-relativistic | v0.9.4 | Spacetime algebra (Cl(1,3)) with high-precision trajectory calculations |
 
 Also includes bindings for: amari-network (geometric network analysis), amari-optimization (gradient descent, NSGA-II), amari-info-geom (Fisher metrics, statistical manifolds), amari-calculus (differential geometry, manifolds).
+
+### v0.21.0 Tropical / Dual WASM Surface
+
+The `0.21.0` release exposes the new optimization-oriented Rust APIs to JavaScript/TypeScript:
+
+- `TropicalBatch.foldOplus(...)` and `TropicalBatch.foldOtimes(...)` for semiring folds.
+- `WasmOrdinalArena`, `WasmOrdinal`, and `WasmOrdinalWeight` for bounded ordinals below ε₀, ordinal formatting/inspection, and ordinal-weight `oplus` / `otimes` helpers.
+- `WasmBranchPolicy` plus `maxByPolicy(...)` / `minByPolicy(...)` on dual and multi-dual numbers for explicit tie behavior.
+- `WasmMultiDualNumber.variables(...)` for basis-seeded gradient setup.
+- `WasmStaticMultiDual2`, `WasmStaticMultiDual3`, and `WasmStaticMultiDual4` for small fixed-size forward-mode AD loops in browser-facing workloads.
 
 ### High-Precision Arithmetic
 

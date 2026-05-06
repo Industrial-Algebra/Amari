@@ -1,10 +1,13 @@
 #![cfg(feature = "functional")]
 
+mod common;
+
 use amari_core::Multivector;
 use amari_functional::{LinearOperator, MatrixOperator};
 use amari_gpu::{
     AdaptiveFunctionalCompute, GpuHilbertSpace, GpuMatrixOperator, GpuSpectralDecomposition,
 };
+use common::direct_gpu_runtime_available;
 
 fn mv<const P: usize, const Q: usize, const R: usize>(coeffs: &[f64]) -> Multivector<P, Q, R> {
     Multivector::from_coefficients(coeffs.to_vec())
@@ -22,6 +25,9 @@ fn assert_mv_close<const P: usize, const Q: usize, const R: usize>(
 
 #[tokio::test]
 async fn test_functional_public_api_paths() {
+    if !direct_gpu_runtime_available() {
+        return;
+    }
     let matrix = MatrixOperator::<2, 0, 0>::diagonal(&[2.0, 3.0, 4.0, 5.0]).unwrap();
     let vectors = vec![
         mv::<2, 0, 0>(&[1.0, 2.0, 3.0, 4.0]),
