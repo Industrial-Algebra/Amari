@@ -1,17 +1,20 @@
-//! GPU-accelerated measure theory and integration
+//! GPU-backed and GPU-ready measure theory operations.
 //!
-//! Provides parallel computation for:
-//! - Numerical integration with Lebesgue and probability measures
-//! - Monte Carlo expectation calculations
-//! - Batch probability density evaluations
-//! - Convolution operations on measure spaces
+//! Current public behavior is intentionally explicit:
+//! - `GpuIntegrator::integrate_uniform` evaluates built-in functions on the GPU and reduces on CPU.
+//! - `GpuIntegrator::integrate_values` is a CPU reduction fallback for precomputed values.
+//! - `GpuMonteCarloIntegrator` samples/evaluates built-in functions on the GPU and reduces on CPU.
+//! - `GpuParametricDensity::gaussian_batch` is GPU-backed batch density evaluation.
+//! - `GpuTropicalMeasure::{supremum, infimum}` are CPU reduction fallbacks.
+//! - `GpuMultidimIntegrator::monte_carlo_nd` currently returns the exact volume for the constant-one integrand.
 
 use crate::{GpuError, UnifiedGpuError};
 use wgpu::util::DeviceExt;
 
-/// GPU-accelerated numerical integrator
+/// GPU-backed numerical integrator for built-in one-dimensional functions.
 ///
-/// Computes integrals ∫f(x)dμ using parallel evaluation on the GPU.
+/// `integrate_uniform` evaluates built-in functions on the GPU and performs the
+/// final reduction on CPU. `integrate_values` is explicitly CPU-backed.
 pub struct GpuIntegrator {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -64,10 +67,20 @@ impl GpuIntegrator {
         })
     }
 
-    /// Integrate a function over [a, b] using Riemann sum with n points
+    /// Integrate a built-in function over `[a, b]` using a midpoint Riemann sum.
     ///
-    /// The function is evaluated at n uniformly spaced points and summed in parallel.
-    /// For custom functions, upload function values to GPU via `integrate_values`.
+    /// The function is evaluated at `n` uniformly spaced midpoint samples on the
+    /// GPU and reduced on CPU after readback. For custom/precomputed function
+    /// values, use `integrate_values`, which is a CPU reduction fallback.
+    ///
+    /// Built-in `function_id` values:
+    /// - `0`: `x`
+    /// - `1`: `x²`
+    /// - `2`: `x³`
+    /// - `3`: `sin(x)`
+    /// - `4`: `cos(x)`
+    /// - `5`: `exp(x)`
+    /// - any other value: `1`
     pub async fn integrate_uniform(
         &self,
         a: f32,
@@ -75,6 +88,12 @@ impl GpuIntegrator {
         n: u32,
         function_id: u32,
     ) -> Result<f32, UnifiedGpuError> {
+        if n == 0 {
+            return Err(UnifiedGpuError::InvalidOperation(
+                "Cannot integrate with zero sample points".to_string(),
+            ));
+        }
+
         // Create buffers for integration parameters
         let params = IntegrationParams {
             lower_bound: a,
@@ -178,21 +197,12 @@ impl GpuIntegrator {
         Ok(total_sum * dx)
     }
 
-    /// Integrate pre-computed function values
+    /// Integrate pre-computed function values with CPU reduction.
     ///
-    /// Useful for custom functions computed on CPU or for testing.
+    /// This method is useful for custom functions computed on CPU or in tests.
+    /// It is intentionally documented as CPU-backed until a validated GPU
+    /// reduction kernel is added.
     pub async fn integrate_values(&self, values: &[f32], dx: f32) -> Result<f32, UnifiedGpuError> {
-        // Upload values to GPU
-        let _values_buffer = self
-            .device
-            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some("Function Values"),
-                contents: bytemuck::cast_slice(values),
-                usage: wgpu::BufferUsages::STORAGE,
-            });
-
-        // TODO: Implement GPU reduction for custom values
-        // For now, use CPU summation
         let sum: f32 = values.iter().sum();
         Ok(sum * dx)
     }
@@ -208,9 +218,10 @@ struct IntegrationParams {
     function_id: u32, // ID for built-in test functions
 }
 
-/// GPU-accelerated Monte Carlo integrator
+/// GPU-backed Monte Carlo integrator for built-in one-dimensional functions.
 ///
-/// Computes expectations E[f(X)] using parallel random sampling.
+/// Sampling and built-in function evaluation run on the GPU; the final average
+/// is reduced on CPU after readback.
 pub struct GpuMonteCarloIntegrator {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -263,9 +274,10 @@ impl GpuMonteCarloIntegrator {
         })
     }
 
-    /// Compute E[f(X)] for uniform distribution on [a, b]
+    /// Compute `E[X]` for `X ~ Uniform(a, b)`.
     ///
-    /// Uses Monte Carlo sampling with n samples evaluated in parallel.
+    /// Uses Monte Carlo sampling with `n` samples evaluated on the GPU and a CPU
+    /// readback reduction. Use `integrate` for the other built-in functions.
     pub async fn expectation_uniform(
         &self,
         a: f32,
@@ -273,12 +285,32 @@ impl GpuMonteCarloIntegrator {
         n: u32,
         seed: u32,
     ) -> Result<f32, UnifiedGpuError> {
+        self.expectation_uniform_for_function(a, b, n, seed, 0)
+            .await
+    }
+
+    async fn expectation_uniform_for_function(
+        &self,
+        a: f32,
+        b: f32,
+        n: u32,
+        seed: u32,
+        function_id: u32,
+    ) -> Result<f32, UnifiedGpuError> {
+        if n == 0 {
+            return Err(UnifiedGpuError::InvalidOperation(
+                "Cannot run Monte Carlo with zero samples".to_string(),
+            ));
+        }
+
         // Create parameters buffer
         let params = MonteCarloParams {
             lower_bound: a,
             upper_bound: b,
             num_samples: n,
             seed,
+            function_id,
+            _padding: [0; 3],
         };
 
         let params_buffer = self
@@ -374,18 +406,22 @@ impl GpuMonteCarloIntegrator {
         Ok(total_sum / n as f32)
     }
 
-    /// Monte Carlo integration of a function
+    /// Monte Carlo integration of a built-in function.
     ///
-    /// Computes ∫_a^b f(x) dx using Monte Carlo sampling
+    /// Computes `∫_a^b f(x) dx` using GPU Monte Carlo sampling/evaluation and a
+    /// CPU readback reduction. Uses the same built-in `function_id` mapping as
+    /// `GpuIntegrator::integrate_uniform`.
     pub async fn integrate(
         &self,
         a: f32,
         b: f32,
         n: u32,
         seed: u32,
-        _function_id: u32,
+        function_id: u32,
     ) -> Result<f32, UnifiedGpuError> {
-        let expectation = self.expectation_uniform(a, b, n, seed).await?;
+        let expectation = self
+            .expectation_uniform_for_function(a, b, n, seed, function_id)
+            .await?;
         // Monte Carlo integral: (b - a) * E[f(X)]
         Ok((b - a) * expectation)
     }
@@ -399,6 +435,8 @@ struct MonteCarloParams {
     upper_bound: f32,
     num_samples: u32,
     seed: u32,
+    function_id: u32,
+    _padding: [u32; 3],
 }
 
 /// WGSL shader for numerical integration
@@ -456,6 +494,10 @@ struct MonteCarloParams {
     upper_bound: f32,
     num_samples: u32,
     seed: u32,
+    function_id: u32,
+    padding0: u32,
+    padding1: u32,
+    padding2: u32,
 }
 
 @group(0) @binding(0)
@@ -505,16 +547,15 @@ fn monte_carlo_integrate(
     let rand_val = random_f32(thread_id, 0u);
     let x = params.lower_bound + rand_val * (params.upper_bound - params.lower_bound);
 
-    // Evaluate function at random point
-    // For now, use a simple test function (can be extended)
-    let y = evaluate_function(x, 0u); // Default to f(x) = x
+    // Evaluate built-in function at random point
+    let y = evaluate_function(x, params.function_id);
 
     // Store result (will be averaged by CPU)
     results[thread_id] = y;
 }
 "#;
 
-/// GPU-accelerated parametric density batch evaluation
+/// GPU-backed parametric density batch evaluation.
 pub struct GpuParametricDensity {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -566,15 +607,24 @@ impl GpuParametricDensity {
         })
     }
 
-    /// Batch evaluate Gaussian density
+    /// Batch evaluate Gaussian density on the GPU.
     ///
-    /// Evaluates N(x | μ, σ²) for many data points in parallel
+    /// Evaluates `N(x | μ, σ²)` for many data points in parallel.
     pub async fn gaussian_batch(
         &self,
         data: &[f32],
         mu: f32,
         sigma: f32,
     ) -> Result<Vec<f32>, UnifiedGpuError> {
+        if sigma <= 0.0 {
+            return Err(UnifiedGpuError::InvalidOperation(
+                "Gaussian sigma must be positive".to_string(),
+            ));
+        }
+        if data.is_empty() {
+            return Ok(Vec::new());
+        }
+
         self.evaluate_batch(data, &[mu, sigma], 0).await
     }
 
@@ -688,7 +738,10 @@ impl GpuParametricDensity {
     }
 }
 
-/// GPU-accelerated tropical measures
+/// GPU-ready tropical measure reductions.
+///
+/// Current 0.20.0 behavior uses CPU reductions while GPU reduction kernels are
+/// pending validation.
 pub struct GpuTropicalMeasure {
     _device: wgpu::Device,
     _queue: wgpu::Queue,
@@ -726,7 +779,7 @@ impl GpuTropicalMeasure {
         })
     }
 
-    /// Compute supremum (max) of values in parallel
+    /// Compute supremum (max) using CPU reduction.
     pub async fn supremum(&self, values: &[f32]) -> Result<f32, UnifiedGpuError> {
         if values.is_empty() {
             return Err(UnifiedGpuError::InvalidOperation(
@@ -734,14 +787,14 @@ impl GpuTropicalMeasure {
             ));
         }
 
-        // For now, use CPU reduction (GPU reduction shader can be added)
+        // TODO(0.20.x+): replace with validated GPU reduction kernel.
         Ok(*values
             .iter()
             .max_by(|a, b| a.partial_cmp(b).unwrap())
             .unwrap())
     }
 
-    /// Compute infimum (min) of values in parallel
+    /// Compute infimum (min) using CPU reduction.
     pub async fn infimum(&self, values: &[f32]) -> Result<f32, UnifiedGpuError> {
         if values.is_empty() {
             return Err(UnifiedGpuError::InvalidOperation(
@@ -756,7 +809,10 @@ impl GpuTropicalMeasure {
     }
 }
 
-/// GPU-accelerated multidimensional integration
+/// GPU-ready multidimensional integration scaffolding.
+///
+/// Current 0.20.0 behavior is limited to the exact hypercube volume, i.e. the
+/// integral of the constant-one function over the supplied bounds.
 pub struct GpuMultidimIntegrator {
     _device: wgpu::Device,
     _queue: wgpu::Queue,
@@ -794,9 +850,10 @@ impl GpuMultidimIntegrator {
         })
     }
 
-    /// Multidimensional Monte Carlo integration
+    /// Return the exact hypercube volume for the constant-one integrand.
     ///
-    /// Integrates over an n-dimensional hypercube using Monte Carlo sampling
+    /// `num_samples` and `seed` are accepted for API continuity but are not used
+    /// until multidimensional GPU Monte Carlo kernels are implemented.
     pub async fn monte_carlo_nd(
         &self,
         bounds: &[(f32, f32)],
@@ -806,11 +863,7 @@ impl GpuMultidimIntegrator {
         // Compute volume of integration region
         let volume: f32 = bounds.iter().map(|(a, b)| b - a).product();
 
-        // For now, use CPU implementation
-        // GPU shader for multidimensional sampling can be added
-        let _dimension = bounds.len();
-
-        // Placeholder: return volume (for constant function = 1)
+        // TODO(0.20.x+): add validated multidimensional GPU Monte Carlo kernels.
         Ok(volume)
     }
 }

@@ -2,7 +2,9 @@
 //!
 //! Measures critical operations for tropical arithmetic and matrices.
 
-use amari_tropical::{TropicalMatrix, TropicalMultivector, TropicalNumber};
+use amari_tropical::{
+    CnfTerm, OrdinalArena, OrdinalWeight, TropicalMatrix, TropicalMultivector, TropicalNumber,
+};
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::hint::black_box;
 
@@ -181,6 +183,68 @@ fn bench_batch_tropical(c: &mut Criterion) {
     group.finish();
 }
 
+/// Benchmark ordinal substrate operations
+fn bench_ordinal_substrate(c: &mut Criterion) {
+    let mut group = c.benchmark_group("ordinal_substrate");
+
+    group.bench_function("finite_construction", |b| {
+        let mut arena = OrdinalArena::new();
+        let mut next = 1_u64;
+        b.iter(|| {
+            let value = arena.finite(black_box(next));
+            next = next.wrapping_add(1);
+            black_box(value)
+        })
+    });
+
+    let mut compare_arena = OrdinalArena::new();
+    let one = compare_arena.one();
+    let omega = compare_arena.omega();
+    let omega_plus_one = compare_arena.add(omega, one).unwrap();
+    let omega_squared = compare_arena
+        .intern_cnf(vec![CnfTerm::new(omega, 1)])
+        .unwrap();
+
+    group.bench_function("compare_omega_vs_omega_squared", |b| {
+        b.iter(|| {
+            black_box(
+                compare_arena
+                    .compare(black_box(omega), black_box(omega_squared))
+                    .unwrap(),
+            )
+        })
+    });
+
+    let mut add_arena = compare_arena.clone();
+    group.bench_function("add_omega_and_one", |b| {
+        b.iter(|| black_box(add_arena.add(black_box(omega), black_box(one)).unwrap()))
+    });
+
+    let weights = [
+        OrdinalWeight::bottom(),
+        OrdinalWeight::from_ordinal(one),
+        OrdinalWeight::from_ordinal(omega),
+        OrdinalWeight::from_ordinal(omega_plus_one),
+        OrdinalWeight::from_ordinal(omega_squared),
+    ];
+
+    group.bench_function("best_weight", |b| {
+        b.iter(|| black_box(compare_arena.best_weight(black_box(&weights)).unwrap()))
+    });
+
+    let mut compose_arena = compare_arena.clone();
+    let path = [
+        OrdinalWeight::from_ordinal(omega),
+        OrdinalWeight::from_ordinal(one),
+        OrdinalWeight::from_ordinal(one),
+    ];
+    group.bench_function("compose_weights", |b| {
+        b.iter(|| black_box(compose_arena.compose_weights(black_box(&path)).unwrap()))
+    });
+
+    group.finish();
+}
+
 /// Benchmark tropical shortest path (Viterbi-style computation)
 fn bench_shortest_path(c: &mut Criterion) {
     let mut group = c.benchmark_group("shortest_path");
@@ -230,6 +294,7 @@ criterion_group!(
     bench_tropical_matmul,
     bench_tropical_multivector,
     bench_batch_tropical,
+    bench_ordinal_substrate,
     bench_shortest_path,
 );
 

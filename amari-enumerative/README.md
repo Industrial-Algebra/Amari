@@ -43,22 +43,22 @@ amari-enumerative = "0.19.1"
 amari-enumerative = "0.19.1"
 
 # With serialization
-amari-enumerative = { version = "0.19.1", features = ["serde"] }
+amari-enumerative = { version = "0.22.0", features = ["serde"] }
 
 # With parallel computation (Rayon)
-amari-enumerative = { version = "0.19.1", features = ["parallel"] }
+amari-enumerative = { version = "0.22.0", features = ["parallel"] }
 
 # With tropical Schubert calculus
-amari-enumerative = { version = "0.19.1", features = ["tropical-schubert"] }
+amari-enumerative = { version = "0.22.0", features = ["tropical-schubert"] }
 
 # With the amari-cgt enumeration bridge
-amari-enumerative = { version = "0.19.1", features = ["cgt-bridge"] }
+amari-enumerative = { version = "0.22.0", features = ["cgt-bridge"] }
 
 # For WASM targets
-amari-enumerative = { version = "0.19.1", features = ["wasm"] }
+amari-enumerative = { version = "0.22.0", features = ["wasm"] }
 
 # All performance features
-amari-enumerative = { version = "0.19.1", features = ["parallel", "tropical-schubert"] }
+amari-enumerative = { version = "0.22.0", features = ["parallel", "tropical-schubert"] }
 ```
 
 ## Quick Start

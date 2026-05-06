@@ -3,6 +3,14 @@
 //! This module provides GPU acceleration for Vector Symbolic Architecture (VSA)
 //! operations using WebGPU/wgpu compute shaders.
 //!
+//! The 0.20 public v1 surface is intentionally explicit about its validated
+//! scope: `GpuHolographic` operates on the canonical 256-dimensional
+//! `ProductCl3x32` representation, uses GPU kernels for batch binding and
+//! similarity when batch sizes cross the GPU heuristic, and keeps unbinding and
+//! bundling on the CPU correctness path. `GpuOpticalField` provides GPU-backed
+//! rotor binding, similarity reduction, and Lee encoding for finite optical
+//! fields with matching dimensions.
+//!
 //! # Supported Operations
 //!
 //! - **Batch Binding**: GPU-accelerated geometric product for many key-value pairs
@@ -25,6 +33,8 @@ use wgpu::util::DeviceExt;
 
 /// Type alias for commonly used ProductClifford algebra
 pub type ProductCl3x32 = ProductCliffordAlgebra<32>;
+
+const PRODUCT_CL3X32_DIMENSION: usize = ProductCl3x32::DIMENSION;
 
 /// Errors specific to GPU holographic operations
 #[derive(Error, Debug)]
@@ -65,8 +75,16 @@ impl GpuHolographic {
     /// Initialize GPU context for holographic operations
     ///
     /// # Arguments
-    /// * `dimension` - The dimension of the algebra (e.g., 256 for ProductCl3x32)
+    /// * `dimension` - The dimension of the algebra. The validated v1 GPU path supports
+    ///   only 256-dimensional `ProductCl3x32` vectors.
     pub async fn new(dimension: usize) -> GpuHolographicResult<Self> {
+        if dimension != PRODUCT_CL3X32_DIMENSION {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: PRODUCT_CL3X32_DIMENSION,
+                actual: dimension,
+            });
+        }
+
         let instance = wgpu::Instance::default();
 
         let adapter = instance
@@ -123,14 +141,7 @@ impl GpuHolographic {
     /// # Returns
     /// Flat array of bound pair coefficients
     pub async fn batch_bind(&self, keys: &[f64], values: &[f64]) -> GpuHolographicResult<Vec<f64>> {
-        let batch_size = keys.len() / self.dimension;
-
-        if keys.len() != values.len() {
-            return Err(GpuHolographicError::DimensionMismatch {
-                expected: keys.len(),
-                actual: values.len(),
-            });
-        }
+        let batch_size = self.validate_flat_pair_inputs(keys, values)?;
 
         // For small batches, use CPU
         if batch_size < 100 {
@@ -140,22 +151,17 @@ impl GpuHolographic {
         self.batch_bind_gpu(keys, values).await
     }
 
-    /// Batch unbinding operation
+    /// Batch unbinding operation.
     ///
-    /// Computes `result[i] = keys[i]⁻¹ ⊛ bounds[i]` for all i.
+    /// Computes `result[i] = keys[i]⁻¹ ⊛ bounds[i]` for all i. This path remains
+    /// CPU-backed for correctness because the GPU inverse kernel is not part of
+    /// the validated v1 surface.
     pub async fn batch_unbind(
         &self,
         keys: &[f64],
         bounds: &[f64],
     ) -> GpuHolographicResult<Vec<f64>> {
-        let batch_size = keys.len() / self.dimension;
-
-        if keys.len() != bounds.len() {
-            return Err(GpuHolographicError::DimensionMismatch {
-                expected: keys.len(),
-                actual: bounds.len(),
-            });
-        }
+        let batch_size = self.validate_flat_pair_inputs(keys, bounds)?;
 
         // For small batches, use CPU
         if batch_size < 100 {
@@ -182,14 +188,7 @@ impl GpuHolographic {
         a_batch: &[f64],
         b_batch: &[f64],
     ) -> GpuHolographicResult<Vec<f64>> {
-        let batch_size = a_batch.len() / self.dimension;
-
-        if a_batch.len() != b_batch.len() {
-            return Err(GpuHolographicError::DimensionMismatch {
-                expected: a_batch.len(),
-                actual: b_batch.len(),
-            });
-        }
+        let batch_size = self.validate_flat_pair_inputs(a_batch, b_batch)?;
 
         // For small batches, use CPU
         if batch_size < 100 {
@@ -199,29 +198,19 @@ impl GpuHolographic {
         self.batch_similarity_gpu(a_batch, b_batch).await
     }
 
-    /// Batch bundling operation
+    /// Batch bundling operation.
     ///
-    /// Computes element-wise sum for superposition.
+    /// Computes `ProductCl3x32::bundle(..., beta = 1.0)` for each pair. This is
+    /// intentionally CPU-backed in v1 so it matches `amari-holographic` soft
+    /// bundling semantics instead of the older experimental element-wise shader.
     pub async fn batch_bundle(
         &self,
         a_batch: &[f64],
         b_batch: &[f64],
     ) -> GpuHolographicResult<Vec<f64>> {
-        let batch_size = a_batch.len() / self.dimension;
+        let _batch_size = self.validate_flat_pair_inputs(a_batch, b_batch)?;
 
-        if a_batch.len() != b_batch.len() {
-            return Err(GpuHolographicError::DimensionMismatch {
-                expected: a_batch.len(),
-                actual: b_batch.len(),
-            });
-        }
-
-        // For small batches, use CPU
-        if batch_size < 100 {
-            return self.batch_bundle_cpu(a_batch, b_batch);
-        }
-
-        self.batch_bundle_gpu(a_batch, b_batch).await
+        self.batch_bundle_cpu(a_batch, b_batch)
     }
 
     /// Find most similar item in codebook (for resonator cleanup)
@@ -244,7 +233,15 @@ impl GpuHolographic {
             });
         }
 
+        self.validate_flat_input(query)?;
+        self.validate_flat_input(codebook)?;
         let codebook_size = codebook.len() / self.dimension;
+        if codebook_size == 0 {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: self.dimension,
+                actual: 0,
+            });
+        }
 
         // Compute similarities with all codebook items
         let queries = query.repeat(codebook_size);
@@ -264,6 +261,35 @@ impl GpuHolographic {
     /// Heuristic to determine if GPU should be used
     pub fn should_use_gpu(batch_size: usize) -> bool {
         batch_size >= 100
+    }
+
+    fn validate_flat_pair_inputs(&self, a: &[f64], b: &[f64]) -> GpuHolographicResult<usize> {
+        if a.len() != b.len() {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: a.len(),
+                actual: b.len(),
+            });
+        }
+        self.validate_flat_input(a)
+    }
+
+    fn validate_flat_input(&self, input: &[f64]) -> GpuHolographicResult<usize> {
+        if !input.len().is_multiple_of(self.dimension) {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: input.len().next_multiple_of(self.dimension),
+                actual: input.len(),
+            });
+        }
+        if let Some((index, _)) = input
+            .iter()
+            .enumerate()
+            .find(|(_, value)| !value.is_finite())
+        {
+            return Err(GpuHolographicError::BufferError(format!(
+                "holographic coefficient {index} is not finite"
+            )));
+        }
+        Ok(input.len() / self.dimension)
     }
 
     // ========================================================================
@@ -443,13 +469,13 @@ impl GpuHolographic {
         let buffer_slice = staging_buffer.slice(..);
         let (sender, receiver) = futures::channel::oneshot::channel();
         buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-            sender.send(result).unwrap();
+            let _ = sender.send(result);
         });
 
         self.device.poll(wgpu::Maintain::Wait);
         receiver
             .await
-            .unwrap()
+            .map_err(|_| GpuHolographicError::BufferError("Channel error".to_string()))?
             .map_err(|e| GpuHolographicError::BufferError(e.to_string()))?;
 
         let data = buffer_slice.get_mapped_range();
@@ -548,13 +574,13 @@ impl GpuHolographic {
         let buffer_slice = staging_buffer.slice(..);
         let (sender, receiver) = futures::channel::oneshot::channel();
         buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-            sender.send(result).unwrap();
+            let _ = sender.send(result);
         });
 
         self.device.poll(wgpu::Maintain::Wait);
         receiver
             .await
-            .unwrap()
+            .map_err(|_| GpuHolographicError::BufferError("Channel error".to_string()))?
             .map_err(|e| GpuHolographicError::BufferError(e.to_string()))?;
 
         let data = buffer_slice.get_mapped_range();
@@ -567,6 +593,7 @@ impl GpuHolographic {
         Ok(result)
     }
 
+    #[allow(dead_code)] // retained as redesign-pending shader path; public v1 uses CPU bundling
     async fn batch_bundle_gpu(&self, a: &[f64], b: &[f64]) -> GpuHolographicResult<Vec<f64>> {
         let batch_size = a.len() / self.dimension;
 
@@ -653,13 +680,13 @@ impl GpuHolographic {
         let buffer_slice = staging_buffer.slice(..);
         let (sender, receiver) = futures::channel::oneshot::channel();
         buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-            sender.send(result).unwrap();
+            let _ = sender.send(result);
         });
 
         self.device.poll(wgpu::Maintain::Wait);
         receiver
             .await
-            .unwrap()
+            .map_err(|_| GpuHolographicError::BufferError("Channel error".to_string()))?
             .map_err(|e| GpuHolographicError::BufferError(e.to_string()))?;
 
         let data = buffer_slice.get_mapped_range();
@@ -759,15 +786,19 @@ var<storage, read> values: array<f32>;
 @group(0) @binding(2)
 var<storage, read_write> output: array<f32>;
 
-// Cl3 geometric product sign table (simplified)
-fn cl3_product_sign(i: u32, j: u32) -> f32 {{
-    // This is a simplified version - full implementation would use proper Cayley table
-    return 1.0;
-}}
-
-fn cl3_product_index(i: u32, j: u32) -> u32 {{
-    // XOR for grade computation in Cl3
-    return i ^ j;
+fn cl3_geometric_product(a0: f32, a1: f32, a2: f32, a3: f32, a4: f32, a5: f32, a6: f32, a7: f32,
+                         b0: f32, b1: f32, b2: f32, b3: f32, b4: f32, b5: f32, b6: f32, b7: f32,
+                         component_offset: u32) {{
+    // Matches amari-holographic Cl3 coefficient order:
+    // [s, e1, e2, e3, e12, e13, e23, e123].
+    output[component_offset + 0u] = a0*b0 + a1*b1 + a2*b2 + a3*b3 - a4*b4 - a5*b5 - a6*b6 - a7*b7;
+    output[component_offset + 1u] = a0*b1 + a1*b0 - a2*b4 - a3*b5 + a4*b2 + a5*b3 - a6*b7 - a7*b6;
+    output[component_offset + 2u] = a0*b2 + a2*b0 + a1*b4 - a3*b6 - a4*b1 - a5*b7 + a6*b3 + a7*b5;
+    output[component_offset + 3u] = a0*b3 + a3*b0 + a1*b5 + a2*b6 + a4*b7 - a5*b1 - a6*b2 - a7*b4;
+    output[component_offset + 4u] = a0*b4 + a4*b0 + a1*b2 - a2*b1 - a3*b7 + a5*b6 - a6*b5 - a7*b3;
+    output[component_offset + 5u] = a0*b5 + a5*b0 + a1*b3 - a3*b1 + a2*b7 - a4*b6 + a6*b4 + a7*b2;
+    output[component_offset + 6u] = a0*b6 + a6*b0 + a2*b3 - a3*b2 - a1*b7 + a4*b5 - a5*b4 - a7*b1;
+    output[component_offset + 7u] = a0*b7 + a7*b0 + a1*b6 + a2*b5 + a3*b4 + a4*b3 + a5*b2 + a6*b1;
 }}
 
 @compute @workgroup_size(1)
@@ -779,29 +810,13 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {{
     for (var comp = 0u; comp < NUM_COMPONENTS; comp = comp + 1u) {{
         let comp_offset = offset + comp * CL3_DIM;
 
-        // Clear output for this component
-        for (var k = 0u; k < CL3_DIM; k = k + 1u) {{
-            output[comp_offset + k] = 0.0;
-        }}
-
-        // Compute Cl3 geometric product
-        for (var i = 0u; i < CL3_DIM; i = i + 1u) {{
-            let a = keys[comp_offset + i];
-            if (abs(a) < 1e-10) {{
-                continue;
-            }}
-
-            for (var j = 0u; j < CL3_DIM; j = j + 1u) {{
-                let b = values[comp_offset + j];
-                if (abs(b) < 1e-10) {{
-                    continue;
-                }}
-
-                let sign = cl3_product_sign(i, j);
-                let idx = cl3_product_index(i, j);
-                output[comp_offset + idx] += sign * a * b;
-            }}
-        }}
+        cl3_geometric_product(
+            keys[comp_offset + 0u], keys[comp_offset + 1u], keys[comp_offset + 2u], keys[comp_offset + 3u],
+            keys[comp_offset + 4u], keys[comp_offset + 5u], keys[comp_offset + 6u], keys[comp_offset + 7u],
+            values[comp_offset + 0u], values[comp_offset + 1u], values[comp_offset + 2u], values[comp_offset + 3u],
+            values[comp_offset + 4u], values[comp_offset + 5u], values[comp_offset + 6u], values[comp_offset + 7u],
+            comp_offset
+        );
     }}
 }}
 "#,
@@ -828,6 +843,9 @@ var<storage, read_write> output: array<f32>;
 @compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {{
     let batch_idx = global_id.x;
+    if (batch_idx >= arrayLength(&output)) {{
+        return;
+    }}
     let offset = batch_idx * DIMENSION;
 
     var dot_product: f32 = 0.0;
@@ -912,14 +930,22 @@ impl GpuHolographicMemory {
         self.memory.store(key, value);
     }
 
-    /// Store multiple key-value pairs with GPU acceleration
+    /// Store multiple key-value pairs.
+    ///
+    /// This wrapper currently delegates to `amari-holographic`'s validated CPU
+    /// memory implementation. It validates equal batch lengths instead of
+    /// silently dropping unpaired keys or values.
     pub async fn store_batch(
         &mut self,
         keys: &[ProductCl3x32],
         values: &[ProductCl3x32],
     ) -> GpuHolographicResult<()> {
-        // For batch storage, we could use GPU to compute bindings
-        // but for now, use the standard batch method
+        if keys.len() != values.len() {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: keys.len(),
+                actual: values.len(),
+            });
+        }
         let pairs: Vec<_> = keys.iter().cloned().zip(values.iter().cloned()).collect();
         self.memory.store_batch(&pairs);
         Ok(())
@@ -1010,6 +1036,13 @@ impl GpuOpticalField {
     ///
     /// * `dimensions` - Field dimensions (width, height)
     pub async fn new(dimensions: (usize, usize)) -> GpuHolographicResult<Self> {
+        if dimensions.0 == 0 || dimensions.1 == 0 {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: 1,
+                actual: 0,
+            });
+        }
+
         let instance = wgpu::Instance::default();
 
         let adapter = instance
@@ -1087,12 +1120,7 @@ impl GpuOpticalField {
         a: &OpticalRotorField,
         b: &OpticalRotorField,
     ) -> GpuHolographicResult<OpticalRotorField> {
-        if a.dimensions() != self.dimensions || b.dimensions() != self.dimensions {
-            return Err(GpuHolographicError::DimensionMismatch {
-                expected: self.field_size(),
-                actual: a.len().max(b.len()),
-            });
-        }
+        self.validate_field_pair(a, b)?;
 
         // For small fields, use CPU
         if !Self::should_use_gpu(self.field_size()) {
@@ -1193,45 +1221,18 @@ impl GpuOpticalField {
                 usage: wgpu::BufferUsages::STORAGE,
             });
 
-        let output_size = (n * std::mem::size_of::<f32>()) as u64;
+        let component_size = (n * std::mem::size_of::<f32>()) as u64;
+        let output_size = component_size * 3;
 
-        let out_scalar_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Output Scalar Buffer"),
+        let output_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Optical Bind Output Buffer"),
             size: output_size,
             usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
             mapped_at_creation: false,
         });
 
-        let out_biv_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Output Bivector Buffer"),
-            size: output_size,
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
-            mapped_at_creation: false,
-        });
-
-        let out_amp_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Output Amplitude Buffer"),
-            size: output_size,
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
-            mapped_at_creation: false,
-        });
-
-        let staging_scalar = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Staging Scalar"),
-            size: output_size,
-            usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
-
-        let staging_biv = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Staging Bivector"),
-            size: output_size,
-            usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
-
-        let staging_amp = self.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Staging Amplitude"),
+        let staging = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Optical Bind Staging"),
             size: output_size,
             usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
@@ -1269,15 +1270,7 @@ impl GpuOpticalField {
                 },
                 wgpu::BindGroupEntry {
                     binding: 6,
-                    resource: out_scalar_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 7,
-                    resource: out_biv_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 8,
-                    resource: out_amp_buffer.as_entire_binding(),
+                    resource: output_buffer.as_entire_binding(),
                 },
             ],
         });
@@ -1300,16 +1293,15 @@ impl GpuOpticalField {
             pass.dispatch_workgroups(workgroups, 1, 1);
         }
 
-        encoder.copy_buffer_to_buffer(&out_scalar_buffer, 0, &staging_scalar, 0, output_size);
-        encoder.copy_buffer_to_buffer(&out_biv_buffer, 0, &staging_biv, 0, output_size);
-        encoder.copy_buffer_to_buffer(&out_amp_buffer, 0, &staging_amp, 0, output_size);
+        encoder.copy_buffer_to_buffer(&output_buffer, 0, &staging, 0, output_size);
 
         self.queue.submit(Some(encoder.finish()));
 
-        // Read back results
-        let scalar_result = self.read_buffer(&staging_scalar, n).await?;
-        let bivector_result = self.read_buffer(&staging_biv, n).await?;
-        let amplitude_result = self.read_buffer(&staging_amp, n).await?;
+        // Read back results as [scalar..., bivector..., amplitude...]
+        let combined = self.read_buffer(&staging, n * 3).await?;
+        let scalar_result = &combined[0..n];
+        let bivector_result = &combined[n..2 * n];
+        let amplitude_result = combined[2 * n..3 * n].to_vec();
 
         // Convert to phase
         let phase: Vec<f32> = scalar_result
@@ -1337,12 +1329,7 @@ impl GpuOpticalField {
         a: &OpticalRotorField,
         b: &OpticalRotorField,
     ) -> GpuHolographicResult<f32> {
-        if a.dimensions() != self.dimensions || b.dimensions() != self.dimensions {
-            return Err(GpuHolographicError::DimensionMismatch {
-                expected: self.field_size(),
-                actual: a.len().max(b.len()),
-            });
-        }
+        self.validate_field_pair(a, b)?;
 
         // For small fields, use CPU
         if !Self::should_use_gpu(self.field_size()) {
@@ -1554,12 +1541,13 @@ impl GpuOpticalField {
         field: &OpticalRotorField,
         config: &LeeEncoderConfig,
     ) -> GpuHolographicResult<BinaryHologram> {
-        if field.dimensions() != config.dimensions {
+        if config.dimensions != self.dimensions {
             return Err(GpuHolographicError::DimensionMismatch {
-                expected: config.dimensions.0 * config.dimensions.1,
-                actual: field.len(),
+                expected: self.field_size(),
+                actual: config.dimensions.0 * config.dimensions.1,
             });
         }
+        self.validate_field(field)?;
 
         // For small fields, use CPU
         if !Self::should_use_gpu(field.len()) {
@@ -1747,6 +1735,10 @@ impl GpuOpticalField {
             });
         }
 
+        for (a, b) in a_batch.iter().zip(b_batch.iter()) {
+            self.validate_field_pair(a, b)?;
+        }
+
         let mut results = Vec::with_capacity(a_batch.len());
         for (a, b) in a_batch.iter().zip(b_batch.iter()) {
             results.push(self.bind(a, b).await?);
@@ -1769,6 +1761,10 @@ impl GpuOpticalField {
             });
         }
 
+        for (a, b) in a_batch.iter().zip(b_batch.iter()) {
+            self.validate_field_pair(a, b)?;
+        }
+
         let mut results = Vec::with_capacity(a_batch.len());
         for (a, b) in a_batch.iter().zip(b_batch.iter()) {
             results.push(self.similarity(a, b).await?);
@@ -1779,6 +1775,44 @@ impl GpuOpticalField {
     // ========================================================================
     // Helper Methods
     // ========================================================================
+
+    fn validate_field_pair(
+        &self,
+        a: &OpticalRotorField,
+        b: &OpticalRotorField,
+    ) -> GpuHolographicResult<()> {
+        self.validate_field(a)?;
+        self.validate_field(b)
+    }
+
+    fn validate_field(&self, field: &OpticalRotorField) -> GpuHolographicResult<()> {
+        if field.dimensions() != self.dimensions {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: self.field_size(),
+                actual: field.len(),
+            });
+        }
+        if field.len() != self.field_size() {
+            return Err(GpuHolographicError::DimensionMismatch {
+                expected: self.field_size(),
+                actual: field.len(),
+            });
+        }
+
+        let finite = field
+            .scalars()
+            .iter()
+            .chain(field.bivectors().iter())
+            .chain(field.amplitudes().iter())
+            .all(|value| value.is_finite());
+        if !finite {
+            return Err(GpuHolographicError::BufferError(
+                "optical field contains non-finite values".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
 
     async fn read_buffer(
         &self,
@@ -1924,14 +1958,13 @@ const OPTICAL_BIND_SHADER: &str = r#"
 @group(0) @binding(3) var<storage, read> b_scalar: array<f32>;
 @group(0) @binding(4) var<storage, read> b_bivector: array<f32>;
 @group(0) @binding(5) var<storage, read> b_amplitude: array<f32>;
-@group(0) @binding(6) var<storage, read_write> out_scalar: array<f32>;
-@group(0) @binding(7) var<storage, read_write> out_bivector: array<f32>;
-@group(0) @binding(8) var<storage, read_write> out_amplitude: array<f32>;
+@group(0) @binding(6) var<storage, read_write> output: array<f32>;
 
 @compute @workgroup_size(256)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let idx = global_id.x;
-    if (idx >= arrayLength(&a_scalar)) {
+    let n = arrayLength(&a_scalar);
+    if (idx >= n) {
         return;
     }
 
@@ -1940,10 +1973,11 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let b_s = b_scalar[idx];
     let b_b = b_bivector[idx];
 
-    // Rotor product: (a_s + a_b*e12)(b_s + b_b*e12)
-    out_scalar[idx] = a_s * b_s - a_b * b_b;
-    out_bivector[idx] = a_s * b_b + a_b * b_s;
-    out_amplitude[idx] = a_amplitude[idx] * b_amplitude[idx];
+    // Rotor product: (a_s + a_b*e12)(b_s + b_b*e12).
+    // Packed output layout: [scalar..., bivector..., amplitude...].
+    output[idx] = a_s * b_s - a_b * b_b;
+    output[n + idx] = a_s * b_b + a_b * b_s;
+    output[2u * n + idx] = a_amplitude[idx] * b_amplitude[idx];
 }
 "#;
 

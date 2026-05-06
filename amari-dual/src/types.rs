@@ -8,9 +8,26 @@
 //! - a is the real part (the function value)
 //! - b is the dual part (the derivative)
 
+use crate::{DualError, DualResult};
 use core::fmt;
 use core::ops::{Add, Div, Mul, Neg, Sub};
 use num_traits::{Float, One, Zero};
+
+/// Tie policy for branch-sensitive operations such as `max` and `min`.
+///
+/// These operations are not classically differentiable when both branches have
+/// equal real values, so the policy determines which derivative information is
+/// propagated in that equality case.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum BranchPolicy {
+    /// Preserve the left branch on ties.
+    #[default]
+    Left,
+    /// Preserve the right branch on ties.
+    Right,
+    /// Preserve the shared real value and average the derivative or gradient.
+    Average,
+}
 
 /// A dual number for automatic differentiation
 ///
@@ -205,21 +222,57 @@ impl<T: Float> DualNumber<T> {
         }
     }
 
-    /// Maximum of two dual numbers (non-differentiable at equality)
+    /// Maximum of two dual numbers.
+    ///
+    /// This method is **left-biased on ties** for backward compatibility:
+    /// if `self.real == other.real`, the left branch is preserved.
+    /// Use [`DualNumber::max_by_policy`] when equality behavior should be made explicit.
     pub fn max(self, other: Self) -> Self {
-        if self.real >= other.real {
+        self.max_by_policy(other, BranchPolicy::Left)
+    }
+
+    /// Minimum of two dual numbers.
+    ///
+    /// This method is **left-biased on ties** for backward compatibility:
+    /// if `self.real == other.real`, the left branch is preserved.
+    /// Use [`DualNumber::min_by_policy`] when equality behavior should be made explicit.
+    pub fn min(self, other: Self) -> Self {
+        self.min_by_policy(other, BranchPolicy::Left)
+    }
+
+    /// Maximum of two dual numbers with an explicit tie policy.
+    pub fn max_by_policy(self, other: Self, policy: BranchPolicy) -> Self {
+        if self.real > other.real {
             self
-        } else {
+        } else if self.real < other.real {
             other
+        } else {
+            match policy {
+                BranchPolicy::Left => self,
+                BranchPolicy::Right => other,
+                BranchPolicy::Average => Self {
+                    real: self.real,
+                    dual: (self.dual + other.dual) / T::from(2.0).unwrap(),
+                },
+            }
         }
     }
 
-    /// Minimum of two dual numbers (non-differentiable at equality)
-    pub fn min(self, other: Self) -> Self {
-        if self.real <= other.real {
+    /// Minimum of two dual numbers with an explicit tie policy.
+    pub fn min_by_policy(self, other: Self, policy: BranchPolicy) -> Self {
+        if self.real < other.real {
             self
-        } else {
+        } else if self.real > other.real {
             other
+        } else {
+            match policy {
+                BranchPolicy::Left => self,
+                BranchPolicy::Right => other,
+                BranchPolicy::Average => Self {
+                    real: self.real,
+                    dual: (self.dual + other.dual) / T::from(2.0).unwrap(),
+                },
+            }
         }
     }
 
@@ -355,6 +408,13 @@ pub type StandardMultiDual = MultiDualNumber<f64>;
 #[cfg(feature = "high-precision")]
 pub type ExtendedMultiDual = MultiDualNumber<crate::ExtendedFloat>;
 
+/// Standard-precision fixed-size multi-dual number (f64)
+pub type StandardStaticMultiDual<const N: usize> = StaticMultiDual<f64, N>;
+
+/// Extended-precision fixed-size multi-dual number (uses extended precision float from amari-core)
+#[cfg(feature = "high-precision")]
+pub type ExtendedStaticMultiDual<const N: usize> = StaticMultiDual<crate::ExtendedFloat, N>;
+
 /// Multi-variable dual number for computing gradients
 ///
 /// A MultiDualNumber represents a scalar function of multiple variables,
@@ -406,6 +466,18 @@ impl<T: Float> MultiDualNumber<T> {
         Self { value, gradient }
     }
 
+    /// Create a basis-seeded variable vector from raw values.
+    ///
+    /// This is a convenience helper for small optimization problems where the
+    /// caller wants one active variable per coordinate.
+    pub fn variables(values: &[T]) -> Vec<Self> {
+        values
+            .iter()
+            .enumerate()
+            .map(|(index, &value)| Self::variable(value, index, values.len()))
+            .collect()
+    }
+
     /// Get the number of variables
     pub fn n_vars(&self) -> usize {
         self.gradient.len()
@@ -419,6 +491,70 @@ impl<T: Float> MultiDualNumber<T> {
     /// Get the gradient
     pub fn get_gradient(&self) -> &[T] {
         &self.gradient
+    }
+
+    /// Maximum of two multi-dual numbers with an explicit tie policy.
+    pub fn max_by_policy(self, other: Self, policy: BranchPolicy) -> Self {
+        assert_eq!(
+            self.gradient.len(),
+            other.gradient.len(),
+            "Gradient dimension mismatch"
+        );
+
+        if self.value > other.value {
+            self
+        } else if self.value < other.value {
+            other
+        } else {
+            match policy {
+                BranchPolicy::Left => self,
+                BranchPolicy::Right => other,
+                BranchPolicy::Average => {
+                    let gradient = self
+                        .gradient
+                        .iter()
+                        .zip(&other.gradient)
+                        .map(|(&left, &right)| (left + right) / T::from(2.0).unwrap())
+                        .collect();
+                    Self {
+                        value: self.value,
+                        gradient,
+                    }
+                }
+            }
+        }
+    }
+
+    /// Minimum of two multi-dual numbers with an explicit tie policy.
+    pub fn min_by_policy(self, other: Self, policy: BranchPolicy) -> Self {
+        assert_eq!(
+            self.gradient.len(),
+            other.gradient.len(),
+            "Gradient dimension mismatch"
+        );
+
+        if self.value < other.value {
+            self
+        } else if self.value > other.value {
+            other
+        } else {
+            match policy {
+                BranchPolicy::Left => self,
+                BranchPolicy::Right => other,
+                BranchPolicy::Average => {
+                    let gradient = self
+                        .gradient
+                        .iter()
+                        .zip(&other.gradient)
+                        .map(|(&left, &right)| (left + right) / T::from(2.0).unwrap())
+                        .collect();
+                    Self {
+                        value: self.value,
+                        gradient,
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -521,6 +657,193 @@ impl<T: Float> Neg for MultiDualNumber<T> {
         Self {
             value: -self.value,
             gradient,
+        }
+    }
+}
+
+/// Fixed-size multi-variable dual number for small optimization loops.
+///
+/// This type stores gradients inline in an array, avoiding heap allocation for
+/// the common case of very small parameter sets.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct StaticMultiDual<T: Float, const N: usize> {
+    /// The function value.
+    pub value: T,
+    /// The fixed-size gradient array.
+    pub gradient: [T; N],
+}
+
+impl<T: Float, const N: usize> StaticMultiDual<T, N> {
+    /// Create a new fixed-size multi-dual number.
+    pub fn new(value: T, gradient: [T; N]) -> Self {
+        Self { value, gradient }
+    }
+
+    /// Create a constant with zero gradient.
+    pub fn constant(value: T) -> Self {
+        Self {
+            value,
+            gradient: [T::zero(); N],
+        }
+    }
+
+    /// Create a basis-seeded variable.
+    pub fn variable(value: T, var_index: usize) -> Self {
+        assert!(var_index < N, "Variable index out of bounds");
+        let mut gradient = [T::zero(); N];
+        gradient[var_index] = T::one();
+        Self { value, gradient }
+    }
+
+    /// Create one variable per coordinate from raw values.
+    pub fn variables(values: [T; N]) -> [Self; N] {
+        core::array::from_fn(|index| Self::variable(values[index], index))
+    }
+
+    /// Get the number of variables.
+    pub const fn n_vars(&self) -> usize {
+        N
+    }
+
+    /// Get the value.
+    pub fn get_value(&self) -> T {
+        self.value
+    }
+
+    /// Get the gradient.
+    pub fn get_gradient(&self) -> &[T; N] {
+        &self.gradient
+    }
+
+    /// Convert to the heap-backed [`MultiDualNumber`].
+    pub fn to_multi_dual(self) -> MultiDualNumber<T> {
+        MultiDualNumber::new(self.value, self.gradient.to_vec())
+    }
+
+    /// Convert from a heap-backed [`MultiDualNumber`], validating the dimension.
+    pub fn try_from_multi_dual(value: MultiDualNumber<T>) -> DualResult<Self> {
+        let actual = value.gradient.len();
+        if actual != N {
+            return Err(DualError::DimensionMismatch {
+                expected: N,
+                actual,
+            });
+        }
+
+        let gradient =
+            value
+                .gradient
+                .try_into()
+                .map_err(|gradient: Vec<T>| DualError::DimensionMismatch {
+                    expected: N,
+                    actual: gradient.len(),
+                })?;
+
+        Ok(Self {
+            value: value.value,
+            gradient,
+        })
+    }
+
+    /// Maximum of two fixed-size multi-dual numbers with an explicit tie policy.
+    pub fn max_by_policy(self, other: Self, policy: BranchPolicy) -> Self {
+        if self.value > other.value {
+            self
+        } else if self.value < other.value {
+            other
+        } else {
+            match policy {
+                BranchPolicy::Left => self,
+                BranchPolicy::Right => other,
+                BranchPolicy::Average => Self {
+                    value: self.value,
+                    gradient: core::array::from_fn(|index| {
+                        (self.gradient[index] + other.gradient[index]) / T::from(2.0).unwrap()
+                    }),
+                },
+            }
+        }
+    }
+
+    /// Minimum of two fixed-size multi-dual numbers with an explicit tie policy.
+    pub fn min_by_policy(self, other: Self, policy: BranchPolicy) -> Self {
+        if self.value < other.value {
+            self
+        } else if self.value > other.value {
+            other
+        } else {
+            match policy {
+                BranchPolicy::Left => self,
+                BranchPolicy::Right => other,
+                BranchPolicy::Average => Self {
+                    value: self.value,
+                    gradient: core::array::from_fn(|index| {
+                        (self.gradient[index] + other.gradient[index]) / T::from(2.0).unwrap()
+                    }),
+                },
+            }
+        }
+    }
+}
+
+impl<T: Float, const N: usize> Add for StaticMultiDual<T, N> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            value: self.value + other.value,
+            gradient: core::array::from_fn(|index| self.gradient[index] + other.gradient[index]),
+        }
+    }
+}
+
+impl<T: Float, const N: usize> Sub for StaticMultiDual<T, N> {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Self {
+            value: self.value - other.value,
+            gradient: core::array::from_fn(|index| self.gradient[index] - other.gradient[index]),
+        }
+    }
+}
+
+#[allow(clippy::suspicious_arithmetic_impl)]
+impl<T: Float, const N: usize> Mul for StaticMultiDual<T, N> {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        Self {
+            value: self.value * other.value,
+            gradient: core::array::from_fn(|index| {
+                self.gradient[index] * other.value + self.value * other.gradient[index]
+            }),
+        }
+    }
+}
+
+impl<T: Float, const N: usize> Div for StaticMultiDual<T, N> {
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        let denominator = other.value * other.value;
+        Self {
+            value: self.value / other.value,
+            gradient: core::array::from_fn(|index| {
+                (self.gradient[index] * other.value - self.value * other.gradient[index])
+                    / denominator
+            }),
+        }
+    }
+}
+
+impl<T: Float, const N: usize> Neg for StaticMultiDual<T, N> {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self {
+            value: -self.value,
+            gradient: core::array::from_fn(|index| -self.gradient[index]),
         }
     }
 }
@@ -653,5 +976,88 @@ mod tests {
         assert_relative_eq!(result.real, 1.0_f64.sin(), epsilon = 1e-10);
         // f'(1) = cos(1) * 2x = cos(1) * 2
         assert_relative_eq!(result.dual, 1.0_f64.cos() * 2.0, epsilon = 1e-10);
+    }
+
+    #[test]
+    fn test_dual_branch_policies() {
+        let left = DualNumber::new(1.0, 2.0);
+        let right = DualNumber::new(1.0, 6.0);
+
+        assert_eq!(left.max(right), left);
+        assert_eq!(left.max_by_policy(right, BranchPolicy::Left), left);
+        assert_eq!(left.max_by_policy(right, BranchPolicy::Right), right);
+        assert_eq!(
+            left.max_by_policy(right, BranchPolicy::Average),
+            DualNumber::new(1.0, 4.0)
+        );
+    }
+
+    #[test]
+    fn test_multi_dual_seed_helpers() {
+        let vars = MultiDualNumber::variables(&[2.0, 3.0, 5.0]);
+
+        assert_eq!(vars.len(), 3);
+        assert_eq!(vars[0].gradient, vec![1.0, 0.0, 0.0]);
+        assert_eq!(vars[1].gradient, vec![0.0, 1.0, 0.0]);
+        assert_eq!(vars[2].gradient, vec![0.0, 0.0, 1.0]);
+    }
+
+    #[test]
+    fn test_multi_dual_branch_policies() {
+        let left = MultiDualNumber::new(1.0, vec![1.0, 0.0]);
+        let right = MultiDualNumber::new(1.0, vec![0.0, 1.0]);
+
+        let averaged = left
+            .clone()
+            .max_by_policy(right.clone(), BranchPolicy::Average);
+
+        assert_eq!(
+            left.clone()
+                .max_by_policy(right.clone(), BranchPolicy::Left),
+            left
+        );
+        assert_eq!(
+            left.clone()
+                .max_by_policy(right.clone(), BranchPolicy::Right),
+            right
+        );
+        assert_eq!(averaged.value, 1.0);
+        assert_eq!(averaged.gradient, vec![0.5, 0.5]);
+    }
+
+    #[test]
+    fn test_static_multi_dual_arithmetic() {
+        let x = StaticMultiDual::<f64, 2>::variable(2.0, 0);
+        let y = StaticMultiDual::<f64, 2>::variable(3.0, 1);
+        let result = x * y + x;
+
+        assert_eq!(result.value, 8.0);
+        assert_eq!(result.gradient, [4.0, 2.0]);
+    }
+
+    #[test]
+    fn test_static_multi_dual_conversion() {
+        let static_value = StaticMultiDual::<f64, 3>::new(5.0, [1.0, 2.0, 3.0]);
+        let dynamic = static_value.to_multi_dual();
+        let recovered = StaticMultiDual::<f64, 3>::try_from_multi_dual(dynamic.clone()).unwrap();
+        let mismatch = StaticMultiDual::<f64, 2>::try_from_multi_dual(dynamic);
+
+        assert_eq!(recovered, static_value);
+        assert_eq!(
+            mismatch,
+            Err(DualError::DimensionMismatch {
+                expected: 2,
+                actual: 3,
+            })
+        );
+    }
+
+    #[test]
+    fn test_static_multi_dual_variables_helper() {
+        let vars = StaticMultiDual::<f64, 3>::variables([2.0, 3.0, 5.0]);
+
+        assert_eq!(vars[0].gradient, [1.0, 0.0, 0.0]);
+        assert_eq!(vars[1].gradient, [0.0, 1.0, 0.0]);
+        assert_eq!(vars[2].gradient, [0.0, 0.0, 1.0]);
     }
 }

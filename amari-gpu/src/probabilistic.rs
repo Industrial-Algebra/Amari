@@ -30,7 +30,9 @@
 //! - Monte Carlo with > 1000 samples
 //! - Multiple MCMC chains (> 4)
 //!
-//! For smaller operations, CPU fallback is used automatically.
+//! For smaller operations, CPU fallback is used automatically after GPU context
+//! creation. Public methods validate dimensions, finite values, sample counts,
+//! and distribution parameters before dispatch.
 
 use thiserror::Error;
 use wgpu::util::DeviceExt;
@@ -76,11 +78,17 @@ pub struct GpuProbabilistic {
 }
 
 impl GpuProbabilistic {
-    /// Create a new GPU probabilistic context
+    /// Create a new GPU probabilistic context.
     ///
     /// # Arguments
-    /// * `dimension` - Dimension of the multivector space (2^n for Cl(n,0,0))
+    /// * `dimension` - Dimension of the multivector space (2^n for Cl(n,0,0)); must be non-zero.
     pub async fn new(dimension: usize) -> GpuProbabilisticResult<Self> {
+        if dimension == 0 {
+            return Err(GpuProbabilisticError::InvalidParameters(
+                "dimension must be greater than zero".to_string(),
+            ));
+        }
+
         let instance = wgpu::Instance::default();
 
         let adapter = instance
@@ -125,6 +133,58 @@ impl GpuProbabilistic {
         self.dimension
     }
 
+    fn validate_distribution_inputs(
+        &self,
+        mean: &[f64],
+        std_dev: &[f64],
+    ) -> GpuProbabilisticResult<()> {
+        if mean.len() != self.dimension {
+            return Err(GpuProbabilisticError::DimensionMismatch {
+                expected: self.dimension,
+                actual: mean.len(),
+            });
+        }
+        if std_dev.len() != self.dimension {
+            return Err(GpuProbabilisticError::DimensionMismatch {
+                expected: self.dimension,
+                actual: std_dev.len(),
+            });
+        }
+        if mean.iter().any(|x| !x.is_finite()) {
+            return Err(GpuProbabilisticError::InvalidParameters(
+                "mean values must be finite".to_string(),
+            ));
+        }
+        if std_dev.iter().any(|x| !x.is_finite() || *x < 0.0) {
+            return Err(GpuProbabilisticError::InvalidParameters(
+                "standard deviations must be finite and non-negative".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    fn validate_samples(&self, samples: &[f64]) -> GpuProbabilisticResult<usize> {
+        if samples.is_empty() {
+            return Err(GpuProbabilisticError::InvalidParameters(
+                "at least one sample is required".to_string(),
+            ));
+        }
+        if !samples.len().is_multiple_of(self.dimension) {
+            return Err(GpuProbabilisticError::DimensionMismatch {
+                expected: self.dimension,
+                actual: samples.len(),
+            });
+        }
+        if samples.iter().any(|x| !x.is_finite()) {
+            return Err(GpuProbabilisticError::InvalidParameters(
+                "sample values must be finite".to_string(),
+            ));
+        }
+
+        Ok(samples.len() / self.dimension)
+    }
+
     /// Batch sample from a Gaussian distribution
     ///
     /// # Arguments
@@ -140,18 +200,7 @@ impl GpuProbabilistic {
         mean: &[f64],
         std_dev: &[f64],
     ) -> GpuProbabilisticResult<Vec<f64>> {
-        if mean.len() != self.dimension {
-            return Err(GpuProbabilisticError::DimensionMismatch {
-                expected: self.dimension,
-                actual: mean.len(),
-            });
-        }
-        if std_dev.len() != self.dimension {
-            return Err(GpuProbabilisticError::DimensionMismatch {
-                expected: self.dimension,
-                actual: std_dev.len(),
-            });
-        }
+        self.validate_distribution_inputs(mean, std_dev)?;
 
         // For small batches, use CPU
         if num_samples < 100 {
@@ -317,14 +366,7 @@ impl GpuProbabilistic {
     /// # Returns
     /// Mean vector (dimension coefficients)
     pub async fn batch_mean(&self, samples: &[f64]) -> GpuProbabilisticResult<Vec<f64>> {
-        if !samples.len().is_multiple_of(self.dimension) {
-            return Err(GpuProbabilisticError::DimensionMismatch {
-                expected: self.dimension,
-                actual: samples.len() % self.dimension,
-            });
-        }
-
-        let num_samples = samples.len() / self.dimension;
+        let num_samples = self.validate_samples(samples)?;
 
         // For small batches, use CPU
         if num_samples < 100 {
@@ -461,11 +503,11 @@ impl GpuProbabilistic {
         samples: &[f64],
         mean: &[f64],
     ) -> GpuProbabilisticResult<Vec<f64>> {
-        if !samples.len().is_multiple_of(self.dimension) {
-            return Err(GpuProbabilisticError::DimensionMismatch {
-                expected: self.dimension,
-                actual: samples.len() % self.dimension,
-            });
+        let num_samples = self.validate_samples(samples)?;
+        if num_samples < 2 {
+            return Err(GpuProbabilisticError::InvalidParameters(
+                "at least two samples are required for variance".to_string(),
+            ));
         }
         if mean.len() != self.dimension {
             return Err(GpuProbabilisticError::DimensionMismatch {
@@ -473,8 +515,11 @@ impl GpuProbabilistic {
                 actual: mean.len(),
             });
         }
-
-        let num_samples = samples.len() / self.dimension;
+        if mean.iter().any(|x| !x.is_finite()) {
+            return Err(GpuProbabilisticError::InvalidParameters(
+                "mean values must be finite".to_string(),
+            ));
+        }
 
         // For small batches, use CPU
         if num_samples < 100 {
@@ -634,8 +679,10 @@ const PI: f32 = 3.14159265359;
 @compute @workgroup_size(256)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {{
     let idx = id.x;
+    if (idx >= arrayLength(&output)) {{
+        return;
+    }}
     let dim_idx = idx % DIM;
-    let sample_idx = idx / DIM;
 
     // Box-Muller transform
     let u1 = random[idx * 2u];

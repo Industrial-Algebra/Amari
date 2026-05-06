@@ -15,6 +15,18 @@ This directory contains comprehensive documentation for the Amari mathematical c
 Current release process documentation:
 
 - **[v0.9.8 Release Process](releases/RELEASE_PROCESS_v0.9.8.md)** - Current release procedures and lessons learned
+- **[v0.21.0 Tropical / Dual Release Prep](releases/v0.21.0-tropical-dual-release-prep.md)** - Release notes, PR summary, publish-order notes, and hold conditions for the `0.21.0` cycle
+
+### 🗺️ Roadmaps
+
+Current planning and release-roadmap documentation:
+
+- **[v0.21.0 Tropical / Dual Roadmap](roadmap/v0.21.0-tropical-dual-roadmap.md)** - Planning for the optimization-oriented `amari-tropical` / `amari-dual` cycle
+- **[v0.21.0 Tropical / Dual Checklist](roadmap/v0.21.0-tropical-dual-checklist.md)** - Milestone tracker for the `0.21.0` extension cycle
+- **[Tropical / Dual Optimization Design](roadmap/amari-tropical-dual-optimization_design.md)** - Design notes for compiler/interpreter optimization use cases
+- **[Tropical Ordinal Substrate Design](roadmap/amari-tropical-ordinal-substrate_design.md)** - Design notes for the ordinal semiring substrate in `amari-tropical`
+- **[Tropical M1 Architecture Pass](roadmap/amari-tropical-m1-architecture.md)** - Concrete architecture decisions for semiring layering and the ordinal API surface
+- **[V1 Readiness Plan](roadmap/V1_READINESS_PLAN.md)** - Existing broader readiness tracker
 
 ### 🏗️ Architecture
 

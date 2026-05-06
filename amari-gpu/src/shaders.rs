@@ -529,40 +529,85 @@ struct TDC {
 @group(0) @binding(0) var<storage, read> keys: array<TDC>;
 @group(0) @binding(1) var<storage, read> values: array<TDC>;
 @group(0) @binding(2) var<storage, read_write> results: array<TDC>;
-@group(0) @binding(3) var<uniform> params: array<u32, 4>; // [count, 0, 0, 0]
+@group(0) @binding(3) var<uniform> params: vec4<u32>; // [count, 0, 0, 0]
 
-// Cayley table for 3D Clifford algebra Cl(3,0)
-// Product signs: e_i * e_j where i,j are grade indices
-fn cayley_sign(i: u32, j: u32) -> f32 {
-    // Simplified: for vectors e_i * e_i = 1, e_i * e_j = -e_j * e_i for i != j
-    let signs = array<array<f32, 8>, 8>(
-        // 1    e1   e2   e3   e12  e13  e23  e123
-        array<f32, 8>(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),   // 1
-        array<f32, 8>(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0),  // e1
-        array<f32, 8>(1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0), // e2
-        array<f32, 8>(1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0), // e3
-        array<f32, 8>(1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0), // e12
-        array<f32, 8>(1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0), // e13
-        array<f32, 8>(1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0), // e23
-        array<f32, 8>(1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0), // e123
-    );
-    return signs[i][j];
+// Storage order is [1, e1, e2, e3, e12, e13, e23, e123].
+// Convert to/from bitmask order for Euclidean Cl(3,0):
+// scalar=0, e1=1, e2=2, e12=3, e3=4, e13=5, e23=6, e123=7.
+fn storage_to_mask(idx: u32) -> u32 {
+    switch idx {
+        case 0u: { return 0u; }
+        case 1u: { return 1u; }
+        case 2u: { return 2u; }
+        case 3u: { return 4u; }
+        case 4u: { return 3u; }
+        case 5u: { return 5u; }
+        case 6u: { return 6u; }
+        default: { return 7u; }
+    }
 }
 
-// Result index for e_i * e_j
-fn cayley_index(i: u32, j: u32) -> u32 {
-    let indices = array<array<u32, 8>, 8>(
-        // 1    e1   e2   e3   e12  e13  e23  e123
-        array<u32, 8>(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u),   // 1
-        array<u32, 8>(1u, 0u, 4u, 5u, 2u, 3u, 7u, 6u),   // e1
-        array<u32, 8>(2u, 4u, 0u, 6u, 1u, 7u, 3u, 5u),   // e2
-        array<u32, 8>(3u, 5u, 6u, 0u, 7u, 1u, 2u, 4u),   // e3
-        array<u32, 8>(4u, 2u, 1u, 7u, 0u, 6u, 5u, 3u),   // e12
-        array<u32, 8>(5u, 3u, 7u, 1u, 6u, 0u, 4u, 2u),   // e13
-        array<u32, 8>(6u, 7u, 3u, 2u, 5u, 4u, 0u, 1u),   // e23
-        array<u32, 8>(7u, 6u, 5u, 4u, 3u, 2u, 1u, 0u),   // e123
-    );
-    return indices[i][j];
+fn mask_to_storage(mask: u32) -> u32 {
+    switch mask {
+        case 0u: { return 0u; }
+        case 1u: { return 1u; }
+        case 2u: { return 2u; }
+        case 3u: { return 4u; }
+        case 4u: { return 3u; }
+        case 5u: { return 5u; }
+        case 6u: { return 6u; }
+        default: { return 7u; }
+    }
+}
+
+fn blade_product_sign(storage_i: u32, storage_j: u32) -> f32 {
+    let a = storage_to_mask(storage_i);
+    let b = storage_to_mask(storage_j);
+    var swaps = 0u;
+
+    for (var bit = 0u; bit < 3u; bit = bit + 1u) {
+        if (((a >> bit) & 1u) == 1u) {
+            let lower_mask = (1u << bit) - 1u;
+            swaps = swaps + countOneBits(b & lower_mask);
+        }
+    }
+
+    if ((swaps & 1u) == 0u) {
+        return 1.0;
+    }
+    return -1.0;
+}
+
+fn blade_product_index(storage_i: u32, storage_j: u32) -> u32 {
+    let a = storage_to_mask(storage_i);
+    let b = storage_to_mask(storage_j);
+    return mask_to_storage(a ^ b);
+}
+
+fn read_clifford(v: TDC, idx: u32) -> f32 {
+    switch idx {
+        case 0u: { return v.clifford[0]; }
+        case 1u: { return v.clifford[1]; }
+        case 2u: { return v.clifford[2]; }
+        case 3u: { return v.clifford[3]; }
+        case 4u: { return v.clifford[4]; }
+        case 5u: { return v.clifford[5]; }
+        case 6u: { return v.clifford[6]; }
+        default: { return v.clifford[7]; }
+    }
+}
+
+fn add_clifford(result_ptr: ptr<function, TDC>, idx: u32, value: f32) {
+    switch idx {
+        case 0u: { (*result_ptr).clifford[0] = (*result_ptr).clifford[0] + value; }
+        case 1u: { (*result_ptr).clifford[1] = (*result_ptr).clifford[1] + value; }
+        case 2u: { (*result_ptr).clifford[2] = (*result_ptr).clifford[2] + value; }
+        case 3u: { (*result_ptr).clifford[3] = (*result_ptr).clifford[3] + value; }
+        case 4u: { (*result_ptr).clifford[4] = (*result_ptr).clifford[4] + value; }
+        case 5u: { (*result_ptr).clifford[5] = (*result_ptr).clifford[5] + value; }
+        case 6u: { (*result_ptr).clifford[6] = (*result_ptr).clifford[6] + value; }
+        default: { (*result_ptr).clifford[7] = (*result_ptr).clifford[7] + value; }
+    }
 }
 
 @compute @workgroup_size(64)
@@ -581,15 +626,21 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     // Binding uses geometric product on Clifford components
     // result = key * value (geometric product)
-    for (var i = 0u; i < 8u; i = i + 1u) {
-        result.clifford[i] = 0.0;
-    }
+    result.clifford[0] = 0.0;
+    result.clifford[1] = 0.0;
+    result.clifford[2] = 0.0;
+    result.clifford[3] = 0.0;
+    result.clifford[4] = 0.0;
+    result.clifford[5] = 0.0;
+    result.clifford[6] = 0.0;
+    result.clifford[7] = 0.0;
 
     for (var i = 0u; i < 8u; i = i + 1u) {
         for (var j = 0u; j < 8u; j = j + 1u) {
-            let target = cayley_index(i, j);
-            let sign = cayley_sign(i, j);
-            result.clifford[target] += sign * key.clifford[i] * value.clifford[j];
+            let target_idx = blade_product_index(i, j);
+            let sign = blade_product_sign(i, j);
+            let contribution = sign * read_clifford(key, i) * read_clifford(value, j);
+            add_clifford(&result, target_idx, contribution);
         }
     }
 
@@ -618,36 +669,38 @@ struct TDC {
 @group(0) @binding(0) var<storage, read> vectors_a: array<TDC>;
 @group(0) @binding(1) var<storage, read> vectors_b: array<TDC>;
 @group(0) @binding(2) var<storage, read_write> similarities: array<f32>;
-@group(0) @binding(3) var<uniform> params: array<u32, 4>; // [count_a, count_b, mode, 0]
+@group(0) @binding(3) var<uniform> params: vec4<u32>; // [count_a, count_b, mode, 0]
                                                           // mode: 0=pairwise (a[i] vs b[i]), 1=matrix (all pairs)
 
 // Compute reverse of multivector (flip sign of grades 2 and 3)
 fn reverse_sign(grade: u32) -> f32 {
-    // Grade 0: +1, Grade 1: +1, Grade 2: -1, Grade 3: -1
-    // For Cl(3,0): indices 0=scalar(g0), 1-3=vectors(g1), 4-6=bivectors(g2), 7=trivector(g3)
-    let signs = array<f32, 8>(1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0);
-    return signs[grade];
+    switch grade {
+        case 0u, 1u, 2u, 3u: { return 1.0; }
+        default: { return -1.0; }
+    }
 }
 
 // Compute scalar product <A B̃>₀ - the proper inner product for similarity
 fn scalar_product_with_reverse(a: TDC, b: TDC) -> f32 {
-    var result = 0.0;
-
-    // For each basis element, compute contribution to scalar part
-    // Using simplified formula: sum of a[i] * b[i] * reverse_sign(i) * cayley_contribution_to_scalar
-    // For diagonal elements (same basis): e_i * e_i contributes to scalar
-    for (var i = 0u; i < 8u; i = i + 1u) {
-        result += a.clifford[i] * b.clifford[i] * reverse_sign(i);
-    }
-
-    return result;
+    return a.clifford[0] * b.clifford[0] * reverse_sign(0u)
+         + a.clifford[1] * b.clifford[1] * reverse_sign(1u)
+         + a.clifford[2] * b.clifford[2] * reverse_sign(2u)
+         + a.clifford[3] * b.clifford[3] * reverse_sign(3u)
+         + a.clifford[4] * b.clifford[4] * reverse_sign(4u)
+         + a.clifford[5] * b.clifford[5] * reverse_sign(5u)
+         + a.clifford[6] * b.clifford[6] * reverse_sign(6u)
+         + a.clifford[7] * b.clifford[7] * reverse_sign(7u);
 }
 
 fn norm(v: TDC) -> f32 {
-    var sum = 0.0;
-    for (var i = 0u; i < 8u; i = i + 1u) {
-        sum += v.clifford[i] * v.clifford[i];
-    }
+    let sum = v.clifford[0] * v.clifford[0]
+            + v.clifford[1] * v.clifford[1]
+            + v.clifford[2] * v.clifford[2]
+            + v.clifford[3] * v.clifford[3]
+            + v.clifford[4] * v.clifford[4]
+            + v.clifford[5] * v.clifford[5]
+            + v.clifford[6] * v.clifford[6]
+            + v.clifford[7] * v.clifford[7];
     return sqrt(sum);
 }
 
@@ -827,26 +880,35 @@ struct ResonatorOutput {
 @group(0) @binding(0) var<storage, read> input: TDC;
 @group(0) @binding(1) var<storage, read> codebook: array<TDC>;
 @group(0) @binding(2) var<storage, read_write> output: ResonatorOutput;
-@group(0) @binding(3) var<uniform> params: array<u32, 4>; // [codebook_size, max_iterations, 0, 0]
+@group(0) @binding(3) var<uniform> params: vec4<u32>; // [codebook_size, max_iterations, 0, 0]
 
 fn reverse_sign(grade: u32) -> f32 {
-    let signs = array<f32, 8>(1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0);
-    return signs[grade];
+    switch grade {
+        case 0u, 1u, 2u, 3u: { return 1.0; }
+        default: { return -1.0; }
+    }
 }
 
 fn scalar_product_with_reverse(a: TDC, b: TDC) -> f32 {
-    var result = 0.0;
-    for (var i = 0u; i < 8u; i = i + 1u) {
-        result += a.clifford[i] * b.clifford[i] * reverse_sign(i);
-    }
-    return result;
+    return a.clifford[0] * b.clifford[0] * reverse_sign(0u)
+         + a.clifford[1] * b.clifford[1] * reverse_sign(1u)
+         + a.clifford[2] * b.clifford[2] * reverse_sign(2u)
+         + a.clifford[3] * b.clifford[3] * reverse_sign(3u)
+         + a.clifford[4] * b.clifford[4] * reverse_sign(4u)
+         + a.clifford[5] * b.clifford[5] * reverse_sign(5u)
+         + a.clifford[6] * b.clifford[6] * reverse_sign(6u)
+         + a.clifford[7] * b.clifford[7] * reverse_sign(7u);
 }
 
 fn norm(v: TDC) -> f32 {
-    var sum = 0.0;
-    for (var i = 0u; i < 8u; i = i + 1u) {
-        sum += v.clifford[i] * v.clifford[i];
-    }
+    let sum = v.clifford[0] * v.clifford[0]
+            + v.clifford[1] * v.clifford[1]
+            + v.clifford[2] * v.clifford[2]
+            + v.clifford[3] * v.clifford[3]
+            + v.clifford[4] * v.clifford[4]
+            + v.clifford[5] * v.clifford[5]
+            + v.clifford[6] * v.clifford[6]
+            + v.clifford[7] * v.clifford[7];
     return sqrt(sum);
 }
 
@@ -1687,7 +1749,7 @@ mod tests {
     fn test_holographic_shaders() {
         // Verify holographic shaders contain expected WGSL patterns
         assert!(HOLOGRAPHIC_BATCH_BIND.contains("@compute"));
-        assert!(HOLOGRAPHIC_BATCH_BIND.contains("cayley"));
+        assert!(HOLOGRAPHIC_BATCH_BIND.contains("blade_product_sign"));
 
         assert!(HOLOGRAPHIC_BATCH_SIMILARITY.contains("@compute"));
         assert!(HOLOGRAPHIC_BATCH_SIMILARITY.contains("similarity"));

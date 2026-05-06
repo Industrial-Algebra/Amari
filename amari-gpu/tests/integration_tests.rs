@@ -3,20 +3,20 @@
 //! These tests validate the complete multi-GPU pipeline but are designed
 //! to gracefully handle environments without GPU access.
 
+mod common;
+
 use amari_gpu::{
     AmariMultiGpuBenchmarks, BenchmarkConfig, BenchmarkRunner, ComputeIntensity, DeviceId,
     IntelligentLoadBalancer, LoadBalancingStrategy, MultiGpuPerformanceMonitor, SharedGpuContext,
     Workload,
 };
+use common::direct_gpu_runtime_available;
 use std::time::Duration;
 
 #[tokio::test]
 async fn test_multi_gpu_context_graceful_fallback() {
     // Skip GPU tests in CI environments where GPU is not available
-    if std::env::var("CI").is_ok()
-        || std::env::var("GITHUB_ACTIONS").is_ok()
-        || std::env::var("DISPLAY").is_err()
-    {
+    if !direct_gpu_runtime_available() {
         println!("Skipping GPU test in CI environment");
         return;
     }

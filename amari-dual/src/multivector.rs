@@ -449,7 +449,7 @@ impl<T: Float, const P: usize, const Q: usize, const R: usize> core::ops::Mul<Du
 pub struct MultiDualMultivector<T: Float> {
     /// Function values for each basis component
     pub values: Vec<T>,
-    /// Jacobian matrix: [basis_component][variable]
+    /// Jacobian matrix: `jacobian[basis_component][variable]`
     pub jacobian: Vec<Vec<T>>,
     pub n_vars: usize,
     pub basis_count: usize,

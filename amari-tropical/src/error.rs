@@ -1,5 +1,6 @@
 //! Error types for tropical algebra operations
 
+use crate::ordinal::OrdinalId;
 use thiserror::Error;
 
 /// Error types for tropical algebra operations
@@ -43,6 +44,14 @@ pub enum TropicalError {
     /// Generic dimension mismatch
     #[error("Dimension mismatch: {0}")]
     DimensionMismatch(String),
+
+    /// Invalid ordinal identifier for the current arena
+    #[error("Invalid ordinal id: {0:?}")]
+    InvalidOrdinalId(OrdinalId),
+
+    /// Invalid ordinal construction or normalization request
+    #[error("Invalid ordinal: {0}")]
+    InvalidOrdinal(String),
 }
 
 /// Result type for tropical operations
