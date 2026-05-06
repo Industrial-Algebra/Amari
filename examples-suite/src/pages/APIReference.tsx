@@ -421,7 +421,7 @@ console.log(a.tropicalMul(b).getValue()); // 3 + 5 = 8`
       },
       {
         name: "TropicalBatch",
-        description: "Batch tropical operations for ML workloads",
+        description: "Batch tropical operations for ML workloads, including 0.21.0 semiring folds",
         methods: [
           {
             name: "maxLogProb",
@@ -440,6 +440,107 @@ console.log(a.tropicalMul(b).getValue()); // 3 + 5 = 8`
             signature: "static batchTropicalAdd(values: Float64Array): number",
             description: "Batch tropical addition (max over all values)",
             isStatic: true
+          },
+          {
+            name: "foldOplus",
+            signature: "static foldOplus(values: Float64Array): number",
+            description: "Fold values with tropical addition / best-choice max-plus aggregation",
+            isStatic: true,
+            example: `const best = TropicalBatch.foldOplus(new Float64Array([3, 5, 2]));
+console.log(best); // 5`
+          },
+          {
+            name: "foldOtimes",
+            signature: "static foldOtimes(values: Float64Array): number",
+            description: "Fold values with tropical multiplication / max-plus composition",
+            isStatic: true,
+            example: `const composed = TropicalBatch.foldOtimes(new Float64Array([3, 5, 2]));
+console.log(composed); // 10`
+          }
+        ]
+      },
+      {
+        name: "WasmOrdinalArena",
+        description: "0.21.0 arena-backed ordinal handles below ε₀ for ordinal-weighted tropical optimization",
+        methods: [
+          {
+            name: "constructor",
+            signature: "new WasmOrdinalArena()",
+            description: "Create an ordinal arena that owns all ordinal handles"
+          },
+          {
+            name: "finite",
+            signature: "finite(n: number): WasmOrdinal",
+            description: "Create a finite ordinal"
+          },
+          {
+            name: "omega",
+            signature: "omega(): WasmOrdinal",
+            description: "Create ω, the first infinite ordinal below ε₀"
+          },
+          {
+            name: "add",
+            signature: "add(left: WasmOrdinal, right: WasmOrdinal): WasmOrdinal",
+            description: "Ordinal addition inside the arena"
+          },
+          {
+            name: "formatOrdinal",
+            signature: "formatOrdinal(ordinal: WasmOrdinal): string",
+            description: "Format an ordinal handle for display"
+          },
+          {
+            name: "weightFromOrdinal",
+            signature: "weightFromOrdinal(ordinal: WasmOrdinal): WasmOrdinalWeight",
+            description: "Lift an ordinal into an ordinal tropical weight"
+          },
+          {
+            name: "oplusWeight",
+            signature: "oplusWeight(left: WasmOrdinalWeight, right: WasmOrdinalWeight): WasmOrdinalWeight",
+            description: "Best-choice tropical addition for ordinal weights"
+          },
+          {
+            name: "otimesWeight",
+            signature: "otimesWeight(left: WasmOrdinalWeight, right: WasmOrdinalWeight): WasmOrdinalWeight",
+            description: "Composition tropical multiplication for ordinal weights"
+          },
+          {
+            name: "bestWeight2",
+            signature: "bestWeight2(left: WasmOrdinalWeight, right: WasmOrdinalWeight): WasmOrdinalWeight",
+            description: "Small fixed-arity best-weight helper for browser callers"
+          },
+          {
+            name: "composeWeight2",
+            signature: "composeWeight2(left: WasmOrdinalWeight, right: WasmOrdinalWeight): WasmOrdinalWeight",
+            description: "Small fixed-arity compose-weight helper for browser callers"
+          }
+        ]
+      },
+      {
+        name: "WasmOrdinalWeight",
+        description: "0.21.0 ordinal tropical weight wrapper with zero, one, bottom, and ordinal variants",
+        methods: [
+          {
+            name: "zero",
+            signature: "static zero(): WasmOrdinalWeight",
+            description: "Create the additive identity",
+            isStatic: true
+          },
+          {
+            name: "one",
+            signature: "static one(): WasmOrdinalWeight",
+            description: "Create the multiplicative identity",
+            isStatic: true
+          },
+          {
+            name: "bottom",
+            signature: "static bottom(): WasmOrdinalWeight",
+            description: "Create the bottom / impossible weight",
+            isStatic: true
+          },
+          {
+            name: "ordinalIndex",
+            signature: "ordinalIndex(): number | undefined",
+            description: "Return the backing ordinal arena index when this is an ordinal weight"
           }
         ]
       },
@@ -572,6 +673,16 @@ console.log(y.getDual()); // 4.0 (derivative: 2x at x=2)`
             description: "Softplus activation: ln(1 + e^x)"
           },
           {
+            name: "maxByPolicy",
+            signature: "maxByPolicy(other: WasmDualNumber, policy: WasmBranchPolicy): WasmDualNumber",
+            description: "0.21.0 branch-sensitive maximum with explicit derivative tie handling"
+          },
+          {
+            name: "minByPolicy",
+            signature: "minByPolicy(other: WasmDualNumber, policy: WasmBranchPolicy): WasmDualNumber",
+            description: "0.21.0 branch-sensitive minimum with explicit derivative tie handling"
+          },
+          {
             name: "getReal",
             signature: "getReal(): number",
             description: "Get the function value"
@@ -580,6 +691,27 @@ console.log(y.getDual()); // 4.0 (derivative: 2x at x=2)`
             name: "getDual",
             signature: "getDual(): number",
             description: "Get the derivative"
+          }
+        ]
+      },
+      {
+        name: "WasmBranchPolicy",
+        description: "0.21.0 enum controlling derivative tie behavior at non-smooth min/max branch points",
+        methods: [
+          {
+            name: "Left",
+            signature: "WasmBranchPolicy.Left",
+            description: "Preserve the left operand derivative on ties"
+          },
+          {
+            name: "Right",
+            signature: "WasmBranchPolicy.Right",
+            description: "Preserve the right operand derivative on ties"
+          },
+          {
+            name: "Average",
+            signature: "WasmBranchPolicy.Average",
+            description: "Average operand derivatives on ties"
           }
         ]
       },
@@ -610,6 +742,25 @@ console.log(f.getGradient()); // [2x+y, x] = [10, 3]`
             isStatic: true
           },
           {
+            name: "variables",
+            signature: "static variables(values: Float64Array): Array<WasmMultiDualNumber>",
+            description: "0.21.0 helper that creates one basis-seeded variable per input coordinate",
+            isStatic: true,
+            example: `const [x, y] = WasmMultiDualNumber.variables(new Float64Array([2, 3]));
+const f = x.mul(x).add(x.mul(y));
+console.log(f.getGradient()); // [7, 2]`
+          },
+          {
+            name: "maxByPolicy",
+            signature: "maxByPolicy(other: WasmMultiDualNumber, policy: WasmBranchPolicy): WasmMultiDualNumber",
+            description: "0.21.0 branch-sensitive maximum with explicit gradient tie handling"
+          },
+          {
+            name: "minByPolicy",
+            signature: "minByPolicy(other: WasmMultiDualNumber, policy: WasmBranchPolicy): WasmMultiDualNumber",
+            description: "0.21.0 branch-sensitive minimum with explicit gradient tie handling"
+          },
+          {
             name: "getGradient",
             signature: "getGradient(): Float64Array",
             description: "Get all partial derivatives"
@@ -618,6 +769,95 @@ console.log(f.getGradient()); // [2x+y, x] = [10, 3]`
             name: "getPartial",
             signature: "getPartial(index: number): number",
             description: "Get specific partial derivative"
+          }
+        ]
+      },
+      {
+        name: "WasmStaticMultiDual2",
+        description: "0.21.0 fixed-size two-variable forward-mode AD wrapper for small hot loops",
+        methods: [
+          {
+            name: "constructor",
+            signature: "new WasmStaticMultiDual2(value: number, gradient: Float64Array)",
+            description: "Create a fixed-size multi-dual number from a value and two partial derivatives"
+          },
+          {
+            name: "variable",
+            signature: "static variable(value: number, var_index: number): WasmStaticMultiDual2",
+            description: "Create a basis-seeded fixed-size variable",
+            isStatic: true
+          },
+          {
+            name: "variables",
+            signature: "static variables(values: Float64Array): Array<WasmStaticMultiDual2>",
+            description: "Create one fixed-size variable per coordinate",
+            isStatic: true
+          },
+          {
+            name: "add",
+            signature: "add(other: WasmStaticMultiDual2): WasmStaticMultiDual2",
+            description: "Fixed-size addition"
+          },
+          {
+            name: "mul",
+            signature: "mul(other: WasmStaticMultiDual2): WasmStaticMultiDual2",
+            description: "Fixed-size multiplication with gradient propagation"
+          },
+          {
+            name: "maxByPolicy",
+            signature: "maxByPolicy(other: WasmStaticMultiDual2, policy: WasmBranchPolicy): WasmStaticMultiDual2",
+            description: "Branch-sensitive maximum with explicit gradient tie handling"
+          },
+          {
+            name: "toMultiDual",
+            signature: "toMultiDual(): WasmMultiDualNumber",
+            description: "Convert to the heap-backed multi-dual wrapper"
+          }
+        ]
+      },
+      {
+        name: "WasmStaticMultiDual3",
+        description: "0.21.0 fixed-size three-variable forward-mode AD wrapper",
+        methods: [
+          {
+            name: "variable",
+            signature: "static variable(value: number, var_index: number): WasmStaticMultiDual3",
+            description: "Create a basis-seeded fixed-size variable",
+            isStatic: true
+          },
+          {
+            name: "variables",
+            signature: "static variables(values: Float64Array): Array<WasmStaticMultiDual3>",
+            description: "Create one fixed-size variable per coordinate",
+            isStatic: true
+          },
+          {
+            name: "toMultiDual",
+            signature: "toMultiDual(): WasmMultiDualNumber",
+            description: "Convert to the heap-backed multi-dual wrapper"
+          }
+        ]
+      },
+      {
+        name: "WasmStaticMultiDual4",
+        description: "0.21.0 fixed-size four-variable forward-mode AD wrapper",
+        methods: [
+          {
+            name: "variable",
+            signature: "static variable(value: number, var_index: number): WasmStaticMultiDual4",
+            description: "Create a basis-seeded fixed-size variable",
+            isStatic: true
+          },
+          {
+            name: "variables",
+            signature: "static variables(values: Float64Array): Array<WasmStaticMultiDual4>",
+            description: "Create one fixed-size variable per coordinate",
+            isStatic: true
+          },
+          {
+            name: "toMultiDual",
+            signature: "toMultiDual(): WasmMultiDualNumber",
+            description: "Convert to the heap-backed multi-dual wrapper"
           }
         ]
       },
