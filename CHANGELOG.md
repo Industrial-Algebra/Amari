@@ -123,6 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ordinal-weight helpers such as `OrdinalArena::{best_weight, compose_weights, inspect, inspect_weight}` plus curated ordinal examples and ordinal benchmarks.
 - `amari-dual::{BranchPolicy, StaticMultiDual, StandardStaticMultiDual, ExtendedStaticMultiDual}` for explicit branch handling and fixed-size gradient loops.
 - `MultiDualNumber::variables(...)` plus optimization-oriented examples and benchmark coverage for heap-backed and fixed-size AD workflows.
+- `amari-wasm` bindings for the new `0.21.0` tropical/dual surface, including ordinal arena/weight helpers, semiring folds, branch-policy max/min, multi-dual seeding, and fixed-size `StaticMultiDual` wrappers for small dimensions.
 - Stronger optimization-facing tests in `amari-tropical/tests/optimization.rs` and `amari-dual/tests/optimization.rs`.
 
 ### Documentation
