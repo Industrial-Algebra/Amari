@@ -3,6 +3,17 @@ import { fireEvent, render, screen } from '../test/test-utils';
 import { APIReference } from './APIReference';
 
 describe('APIReference page', () => {
+  it('lists the 0.22.0 CGT and surreal WASM APIs', () => {
+    render(<APIReference />);
+
+    fireEvent.click(screen.getByText('CGT & Short Surreals'));
+
+    expect(screen.getByText('WasmCgtArena')).toBeInTheDocument();
+    expect(screen.getByText('WasmGameInspection')).toBeInTheDocument();
+    expect(screen.getByText('WasmDyadic')).toBeInTheDocument();
+    expect(screen.getByText('WasmShortSurreal')).toBeInTheDocument();
+  });
+
   it('lists the 0.21.0 tropical WASM ordinal and semiring APIs', () => {
     render(<APIReference />);
 

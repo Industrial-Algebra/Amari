@@ -23,6 +23,7 @@ export function Home() {
                 <List.Item>Geometric Algebra (Clifford Algebra)</List.Item>
                 <List.Item>Tropical Algebra (Max-Plus Semiring)</List.Item>
                 <List.Item>Dual Number Automatic Differentiation</List.Item>
+                <List.Item>CGT & Short Surreals</List.Item>
                 <List.Item>Information Geometry</List.Item>
               </List>
               <Button component={Link} to="/geometric-algebra">

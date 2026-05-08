@@ -16,6 +16,7 @@ Enumerative geometry for counting geometric configurations.
 - **Tropical Schubert Calculus**: Fast intersection counting using tropical methods
 - **Moduli Spaces**: Computations on moduli spaces of curves
 - **Namespace/Capabilities**: Geometric access control via Schubert calculus
+- **CGT Bridge**: Growth-sequence adapters for small `amari-cgt` layer reports
 - **WDVV/Kontsevich Recursion**: Genus-0 rational curve counting via WDVV equations
 - **Equivariant Localization**: Atiyah-Bott fixed point formula on Grassmannians
 - **Matroid Theory**: Uniform/Schubert matroids, duality, deletion, contraction, Tutte polynomials
@@ -42,19 +43,22 @@ amari-enumerative = "0.19.1"
 amari-enumerative = "0.19.1"
 
 # With serialization
-amari-enumerative = { version = "0.19.1", features = ["serde"] }
+amari-enumerative = { version = "0.22.0", features = ["serde"] }
 
 # With parallel computation (Rayon)
-amari-enumerative = { version = "0.19.1", features = ["parallel"] }
+amari-enumerative = { version = "0.22.0", features = ["parallel"] }
 
 # With tropical Schubert calculus
-amari-enumerative = { version = "0.19.1", features = ["tropical-schubert"] }
+amari-enumerative = { version = "0.22.0", features = ["tropical-schubert"] }
+
+# With the amari-cgt enumeration bridge
+amari-enumerative = { version = "0.22.0", features = ["cgt-bridge"] }
 
 # For WASM targets
-amari-enumerative = { version = "0.19.1", features = ["wasm"] }
+amari-enumerative = { version = "0.22.0", features = ["wasm"] }
 
 # All performance features
-amari-enumerative = { version = "0.19.1", features = ["parallel", "tropical-schubert"] }
+amari-enumerative = { version = "0.22.0", features = ["parallel", "tropical-schubert"] }
 ```
 
 ## Quick Start
@@ -212,6 +216,36 @@ let tropical_classes: Vec<_> = classes.iter()
     .collect();
 assert!(tropical_convexity_check(&tropical_classes, 2, 4));
 ```
+
+### `amari-cgt` Bridge
+
+When the `cgt-bridge` feature is enabled, `amari-enumerative` can adapt
+small `amari-cgt` layer reports into enumerative growth sequences:
+
+```rust
+use amari_enumerative::cgt_birthday_growth_summary;
+
+let summary = cgt_birthday_growth_summary(1).unwrap();
+assert_eq!(summary.raw_sequence(), vec![(0, 1), (1, 3)]);
+assert_eq!(summary.numeric_sequence(), vec![(0, 1), (1, 2)]);
+assert_eq!(summary.cumulative_numeric_sequence(), vec![(0, 1), (1, 3)]);
+
+println!("{}", summary.render_layer_table());
+```
+
+This bridge also provides ergonomic helpers for:
+
+- entry lookup by layer
+- cumulative numeric/non-numeric/impartial/partizan sequences
+- aggregated outcome counts
+- lightweight printable text tables
+
+This is intended as a lightweight bridge for studying:
+
+- raw vs canonical class growth
+- numeric vs non-numeric short-game counts
+- impartial vs partizan layer counts
+- exact small-universe growth sequences by birthday or node count
 
 ### Gromov-Witten Invariants
 

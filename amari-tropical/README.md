@@ -38,13 +38,13 @@ amari-tropical = "0.21.0"
 amari-tropical = "0.21.0"
 
 # With serialization
-amari-tropical = { version = "0.21.0", features = ["serialize"] }
+amari-tropical = { version = "0.22.0", features = ["serialize"] }
 
 # With GPU acceleration
-amari-tropical = { version = "0.21.0", features = ["gpu"] }
+amari-tropical = { version = "0.22.0", features = ["gpu"] }
 
 # High-precision arithmetic
-amari-tropical = { version = "0.21.0", features = ["high-precision"] }
+amari-tropical = { version = "0.22.0", features = ["high-precision"] }
 ```
 
 ## Quick Start
