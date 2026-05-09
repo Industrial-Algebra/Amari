@@ -107,11 +107,11 @@ jobs:
             "amari-holographic"
             "amari-fusion"
             "amari-automata"
+            "amari-cgt"
+            "amari-surreal"
             "amari-enumerative"
             "amari-flynn-macros"
             "amari-flynn"
-            "amari-cgt"
-            "amari-surreal"
             "amari-measure"
             "amari-calculus"
             "amari-functional"
@@ -152,7 +152,7 @@ jobs:
               echo "$crate version $TARGET_VERSION already published, skipping..."
             else
               echo "Publishing $crate version $TARGET_VERSION..."
-              cargo publish --allow-dirty || echo "Failed to publish $crate, continuing..."
+              cargo publish --allow-dirty
               echo "Waiting for crates.io indexing and rate limit reset..."
               sleep 45
             fi

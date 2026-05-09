@@ -8,7 +8,7 @@ rust-version.workspace = true
 description = "Computational combinatorial game theory for the Amari library"
 repository = "https://github.com/justinelliottcobb/Amari"
 homepage = "https://github.com/justinelliottcobb/Amari"
-keywords = ["mathematics", "combinatorial-game-theory", "games", "nimber", "surreal"]
+keywords = ["mathematics", "game-theory", "games", "nimber", "surreal"]
 categories = ["mathematics", "science", "algorithms"]
 
 [dependencies]
