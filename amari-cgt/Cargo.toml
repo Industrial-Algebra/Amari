@@ -1,0 +1,28 @@
+[package]
+name = "amari-cgt"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Computational combinatorial game theory for the Amari library"
+repository = "https://github.com/justinelliottcobb/Amari"
+homepage = "https://github.com/justinelliottcobb/Amari"
+keywords = ["mathematics", "combinatorial-game-theory", "games", "nimber", "surreal"]
+categories = ["mathematics", "science", "algorithms"]
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+criterion = "0.8"
+
+[features]
+default = ["std"]
+std = []
+serialize = ["dep:serde"]
+
+[[bench]]
+name = "comparison"
+harness = false

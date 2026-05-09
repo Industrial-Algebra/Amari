@@ -28,6 +28,8 @@ getrandom = { version = "0.4", features = ["wasm_js"] }
 # Note: high-precision now uses pure Rust dashu-float (WASM-compatible)
 # Native users can opt-in to native-precision for rug backend
 amari-core = { path = "../amari-core", features = ["phantom-types"] }
+amari-cgt = { path = "../amari-cgt" }
+amari-surreal = { path = "../amari-surreal" }
 amari-network = { path = "../amari-network", features = ["high-precision"] }
 amari-tropical = { path = "../amari-tropical" }
 amari-dual = { path = "../amari-dual" }

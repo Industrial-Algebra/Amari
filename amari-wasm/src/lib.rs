@@ -71,6 +71,7 @@ use wasm_bindgen::prelude::*;
 // Optional modules - some enabled for expanded WASM functionality
 pub mod automata; // Enabled for v0.9.4 - Cellular automata, inverse design, self-assembly for web
 pub mod calculus; // Enabled for v0.11.0 - Differential calculus, manifolds, and Riemannian geometry for web
+pub mod cgt; // Enabled for v0.22.0 - Short combinatorial games, nimbers, and inspection helpers
 pub mod dual; // Enabled for v0.9.3 - automatic differentiation for machine learning in web
 pub mod enumerative; // Enabled for v0.9.4 - Enumerative geometry and intersection theory for web
 pub mod flynn; // Enabled for v0.19.0 - Probabilistic contracts, SMT-LIB2 proof obligations, Monte Carlo verification
@@ -84,6 +85,7 @@ pub mod optical; // Enabled for v0.15.1 - GA-native optical field operations and
 pub mod optimization; // Enabled for v0.9.7 - Advanced optimization algorithms for web
 pub mod probabilistic; // Enabled for v0.13.0 - Probability distributions on multivector spaces
 pub mod relativistic;
+pub mod surreal; // Enabled for v0.22.0 - Exact short surreal dyadics and game conversion helpers
 pub mod topology; // Enabled for v0.16.0 - Simplicial complexes, homology, persistent homology
 pub mod tropical; // Enabled for v0.9.3 - critical for optimization algorithms in web
 

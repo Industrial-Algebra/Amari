@@ -35,7 +35,7 @@ amari-flynn = "0.19"
 amari-flynn = "0.19"
 
 # Minimal, no-std compatible (disables file export)
-amari-flynn = { version = "0.19", default-features = false }
+amari-flynn = { version = "0.22", default-features = false }
 ```
 
 ## Quick Start

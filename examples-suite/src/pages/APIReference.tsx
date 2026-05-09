@@ -565,6 +565,187 @@ console.log(composed); // 10`
     ]
   },
   {
+    id: "cgt-surreal",
+    title: "CGT & Short Surreals",
+    description: "Short normal-play games, nimbers, exact dyadics, and short surreal conversion for v0.22.0",
+    icon: "⋆",
+    classes: [
+      {
+        name: "WasmCgtArena",
+        description: "Arena-backed short combinatorial game engine for browser use. Owns opaque WasmGameId handles and guards against cross-arena misuse.",
+        methods: [
+          {
+            name: "constructor",
+            signature: "new WasmCgtArena()",
+            description: "Create a new short-game arena"
+          },
+          {
+            name: "zero",
+            signature: "zero(): WasmGameId",
+            description: "Return the zero game { | }"
+          },
+          {
+            name: "one",
+            signature: "one(): WasmGameId",
+            description: "Return the game 1 = {0 | }"
+          },
+          {
+            name: "star",
+            signature: "star(): WasmGameId",
+            description: "Return the fuzzy game * = {0 | 0}"
+          },
+          {
+            name: "cut",
+            signature: "cut(left: WasmGameId, right: WasmGameId): WasmGameId",
+            description: "Build a focused one-left, one-right short-game cut"
+          },
+          {
+            name: "nimHeap",
+            signature: "nimHeap(size: number): WasmGameId",
+            description: "Build an impartial Nim heap and expose its Grundy value with grundy(...)"
+          },
+          {
+            name: "compare",
+            signature: "compare(left: WasmGameId, right: WasmGameId): 'less' | 'equal' | 'greater' | 'fuzzy'",
+            description: "Compare two games in the partizan order"
+          },
+          {
+            name: "outcome",
+            signature: "outcome(game: WasmGameId): string",
+            description: "Return left/right/next/previous-player win outcome class"
+          },
+          {
+            name: "isNumeric",
+            signature: "isNumeric(game: WasmGameId): boolean",
+            description: "Return whether a short game is numeric and convertible to a short surreal"
+          },
+          {
+            name: "formatGame",
+            signature: "formatGame(game: WasmGameId): string",
+            description: "Format a game as named small-game or recursive cut notation"
+          },
+          {
+            name: "inspect",
+            signature: "inspect(game: WasmGameId): WasmGameInspection",
+            description: "Return canonical, outcome, numeric, impartial, birthday, and size metadata"
+          }
+        ]
+      },
+      {
+        name: "WasmGameInspection",
+        description: "Inspection result for a short combinatorial game.",
+        methods: [
+          {
+            name: "birthday",
+            signature: "birthday(): number",
+            description: "Return the game birthday"
+          },
+          {
+            name: "canonicalForm",
+            signature: "canonicalForm(): string",
+            description: "Return the canonical structural form as cut notation"
+          },
+          {
+            name: "outcome",
+            signature: "outcome(): string",
+            description: "Return the normal-play outcome class"
+          },
+          {
+            name: "isImpartial",
+            signature: "isImpartial(): boolean",
+            description: "Return whether the inspected game is impartial"
+          },
+          {
+            name: "isNumeric",
+            signature: "isNumeric(): boolean",
+            description: "Return whether the inspected game is numeric"
+          },
+          {
+            name: "reachableNodeCount",
+            signature: "reachableNodeCount(): number",
+            description: "Return reachable arena-node count"
+          }
+        ]
+      },
+      {
+        name: "WasmDyadic",
+        description: "Exact dyadic rational numerator / 2^exponent used as the short-surreal scalar backend.",
+        methods: [
+          {
+            name: "constructor",
+            signature: "new WasmDyadic(numerator: number, exponent: number)",
+            description: "Create and normalize an exact dyadic"
+          },
+          {
+            name: "fromInteger",
+            signature: "static fromInteger(value: number): WasmDyadic",
+            description: "Create a dyadic integer",
+            isStatic: true
+          },
+          {
+            name: "add",
+            signature: "add(other: WasmDyadic): WasmDyadic",
+            description: "Exact dyadic addition"
+          },
+          {
+            name: "checkedDiv",
+            signature: "checkedDiv(other: WasmDyadic): WasmDyadic",
+            description: "Checked exact division that fails if the quotient leaves the dyadic layer"
+          },
+          {
+            name: "format",
+            signature: "format(): string",
+            description: "Format as an integer or dyadic rational"
+          }
+        ]
+      },
+      {
+        name: "WasmShortSurreal",
+        description: "Exact short surreal value backed by a dyadic and convertible to/from numeric CGT games.",
+        methods: [
+          {
+            name: "fromInteger",
+            signature: "static fromInteger(value: number): WasmShortSurreal",
+            description: "Create a short surreal integer",
+            isStatic: true
+          },
+          {
+            name: "fromDyadic",
+            signature: "static fromDyadic(value: WasmDyadic): WasmShortSurreal",
+            description: "Create a short surreal from an exact dyadic",
+            isStatic: true
+          },
+          {
+            name: "fromGame",
+            signature: "static fromGame(arena: WasmCgtArena, game: WasmGameId): WasmShortSurreal",
+            description: "Convert a numeric short game into an exact short surreal",
+            isStatic: true
+          },
+          {
+            name: "add",
+            signature: "add(other: WasmShortSurreal): WasmShortSurreal",
+            description: "Exact short-surreal addition"
+          },
+          {
+            name: "checkedDiv",
+            signature: "checkedDiv(other: WasmShortSurreal): WasmShortSurreal",
+            description: "Checked division within the dyadic short-surreal layer"
+          },
+          {
+            name: "toGameIn",
+            signature: "toGameIn(arena: WasmCgtArena): WasmGameId",
+            description: "Reconstruct the value as a numeric short game in the target arena"
+          },
+          {
+            name: "format",
+            signature: "format(): string",
+            description: "Format the exact short surreal"
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: "dual",
     title: "Dual Numbers & Autodiff",
     description: "Automatic differentiation using dual numbers for exact gradients",
