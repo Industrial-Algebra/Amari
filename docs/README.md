@@ -41,6 +41,21 @@ Development guides and procedures:
 - **[CI Setup](development/CI_SETUP.md)** - Continuous integration configuration
 - **[Publishing Guide](development/PUBLISHING.md)** - Publishing to npm and crates.io
 
+### 🗺️ Roadmap & Design Proposals
+
+Forward-looking planning and proposed crate designs:
+
+- **[v0.22.0 CGT + Surreal Roadmap](roadmap/v0.22.0-cgt-surreal-roadmap.md)** - Formal roadmap for releasing `amari-cgt` and `amari-surreal` at `0.22.0`
+- **[v0.22.0 CGT + Surreal Checklist](roadmap/v0.22.0-cgt-surreal-checklist.md)** - Execution checklist and milestone tracker for the `0.22.0` cycle
+- **[v0.22.0 CGT + Surreal Completeness Backlog](roadmap/v0.22.0-cgt-surreal-completeness-backlog.md)** - Additional backlog for deepening `amari-cgt` and `amari-surreal` while earlier release cycles are still in flight
+- **[Amari-CGT Design](roadmap/amari-cgt_design.md)** - Proposed combinatorial game theory crate
+- **[Amari-Surreal Design](roadmap/amari-surreal_design.md)** - Proposed surreal numbers crate built on numeric games
+- **[Amari-Surcomplex Design](roadmap/amari-surcomplex_design.md)** - Proposed later surreal-complex extension crate built on mature `amari-surreal`
+- **[CGT + Surreal Skeleton Proposal](roadmap/amari-cgt-surreal_skeleton.md)** - Workspace, module, and API skeleton for both crates
+- **[Amari-Calculus Design](roadmap/amari-calculus_design.md)** - Historical calculus crate design document
+- **[V1 Readiness Plan](roadmap/V1_READINESS_PLAN.md)** - Existing stabilization planning document
+- **[New Roadmap Proposal](roadmap/new_roadmap_proposal.md)** - Broader historical roadmap proposal
+
 ### 🧠 Claude Code
 
 AI-assisted development context:

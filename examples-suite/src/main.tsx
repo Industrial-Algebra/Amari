@@ -10,6 +10,7 @@ import '@mantine/code-highlight/styles.css'
 import App from './App'
 import { GeometricAlgebra } from './pages/GeometricAlgebra'
 import { TropicalAlgebra } from './pages/TropicalAlgebra'
+import { CgtSurreal } from './pages/CgtSurreal'
 import { DualNumbers } from './pages/DualNumbers'
 import { InformationGeometry } from './pages/InformationGeometry'
 import { WebGPU } from './pages/WebGPU'
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: "tropical-algebra",
         element: <TropicalAlgebra />,
+      },
+      {
+        path: "cgt-surreal",
+        element: <CgtSurreal />,
       },
       {
         path: "dual-numbers",

@@ -34,13 +34,13 @@ amari-dual = "0.21.0"
 amari-dual = "0.21.0"
 
 # With serialization
-amari-dual = { version = "0.21.0", features = ["serialize"] }
+amari-dual = { version = "0.22.0", features = ["serialize"] }
 
 # With GPU acceleration
-amari-dual = { version = "0.21.0", features = ["gpu"] }
+amari-dual = { version = "0.22.0", features = ["gpu"] }
 
 # High-precision arithmetic
-amari-dual = { version = "0.21.0", features = ["high-precision"] }
+amari-dual = { version = "0.22.0", features = ["high-precision"] }
 ```
 
 ## Quick Start

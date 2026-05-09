@@ -32,6 +32,11 @@ const navigationSections: NavSection[] = [
         description: "Automatic differentiation"
       },
       {
+        title: "CGT & Short Surreals",
+        href: "/cgt-surreal",
+        description: "Short games, nimbers, and exact dyadics"
+      },
+      {
         title: "Information Geometry",
         href: "/information-geometry",
         description: "Statistical manifolds and Fisher metrics"

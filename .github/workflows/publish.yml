@@ -110,6 +110,8 @@ jobs:
             "amari-enumerative"
             "amari-flynn-macros"
             "amari-flynn"
+            "amari-cgt"
+            "amari-surreal"
             "amari-measure"
             "amari-calculus"
             "amari-functional"

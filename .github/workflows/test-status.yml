@@ -74,7 +74,7 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
 
         # Count tests per module
-        for dir in amari-core amari-dual amari-tropical amari-info-geom amari-gpu amari-wasm amari-enumerative amari-fusion amari-automata amari-flynn-macros amari-flynn amari-relativistic amari-network amari-optimization; do
+        for dir in amari-core amari-dual amari-tropical amari-info-geom amari-gpu amari-wasm amari-enumerative amari-fusion amari-automata amari-flynn-macros amari-flynn amari-cgt amari-surreal amari-relativistic amari-network amari-optimization; do
           if [ -d "$dir" ]; then
             MODULE_COUNT=$(find "$dir" -name "*.rs" -type f -exec grep -h "^\s*#\[test\]" {} \; 2>/dev/null | wc -l || echo "0")
             if [ "$MODULE_COUNT" -gt "0" ]; then
