@@ -15,8 +15,7 @@ fn surcomplex_error(error: SurcomplexError) -> JsValue {
 /// error-path tests can verify `is_err()` — the message is irrelevant
 /// for these assertions.
 #[cfg(not(target_arch = "wasm32"))]
-fn surcomplex_error(error: SurcomplexError) -> JsValue {
-    let _ = error;
+fn surcomplex_error(#[allow(unused_variables)] error: SurcomplexError) -> JsValue {
     JsValue::undefined()
 }
 
@@ -228,7 +227,9 @@ mod tests {
         let a = WasmRationalSurcomplex::from_integer(2);
         let b = WasmRationalSurcomplex::from_integer(3);
         assert_eq!(a.add(&b).format(), "5");
+        assert_eq!(b.sub(&a).format(), "1");
         assert_eq!(a.mul(&b).format(), "6");
+        assert_eq!(a.neg().format(), "-2");
     }
 
     #[test]

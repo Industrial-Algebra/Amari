@@ -13,8 +13,7 @@ fn surreal_error(error: amari_surreal::SurrealError) -> JsValue {
 /// error-path tests can verify `is_err()` — the message is irrelevant
 /// for these assertions.
 #[cfg(not(target_arch = "wasm32"))]
-fn surreal_error(error: amari_surreal::SurrealError) -> JsValue {
-    let _ = error;
+fn surreal_error(#[allow(unused_variables)] error: amari_surreal::SurrealError) -> JsValue {
     JsValue::undefined()
 }
 
@@ -558,6 +557,9 @@ impl WasmExperimentalEpsilonRational {
     }
 
     /// A monomial rational function `coeff · ε^exp / 1`.
+    ///
+    /// WASM boundary note: `exponent` is currently exposed as a 32-bit signed
+    /// integer, matching the experimental Rust exponent representation.
     pub fn monomial(coeff: &WasmRationalSurreal, exponent: i32) -> Self {
         Self {
             inner: EpsilonRational::monomial(coeff.inner_ref().clone(), exponent),
