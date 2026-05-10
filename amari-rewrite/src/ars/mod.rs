@@ -4,10 +4,12 @@ use alloc::{boxed::Box, string::String, vec::Vec};
 
 use crate::{Path, Rewritable, RewriteError, RewriteResult};
 
+type RuleFn<T> = dyn Fn(&T) -> Option<T>;
+
 /// A single abstract rewrite rule over values of type `T`.
 pub struct Rule<T> {
     name: String,
-    apply: Box<dyn Fn(&T) -> Option<T>>,
+    apply: Box<RuleFn<T>>,
 }
 
 impl<T> Rule<T> {
@@ -31,9 +33,10 @@ impl<T> Rule<T> {
 }
 
 /// Strategy used when selecting a single rewrite step.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Strategy {
     /// Try outer positions before inner positions.
+    #[default]
     OuterFirst,
     /// Try inner positions before outer positions.
     InnerFirst,
@@ -41,12 +44,6 @@ pub enum Strategy {
     FirstRule,
     /// Enumerate all one-step successors rather than choosing one.
     All,
-}
-
-impl Default for Strategy {
-    fn default() -> Self {
-        Self::OuterFirst
-    }
 }
 
 /// A concrete rewrite step.

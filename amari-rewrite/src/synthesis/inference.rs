@@ -2,7 +2,10 @@
 
 use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
-use crate::{trs::{Rule, Term, Variable}, RewriteError, RewriteResult};
+use crate::{
+    trs::{Rule, Term, Variable},
+    RewriteError, RewriteResult,
+};
 
 /// Infer a single checked TRS rule from positive `(before, after)` examples.
 ///
@@ -21,8 +24,12 @@ pub fn infer_rule(examples: &[(Term, Term)]) -> RewriteResult<Rule> {
     let mut generalizer = PairGeneralizer::new();
     let lhs_terms: Vec<Term> = examples.iter().map(|(lhs, _)| lhs.clone()).collect();
     let rhs_terms: Vec<Term> = examples.iter().map(|(_, rhs)| rhs.clone()).collect();
-    let lhs = generalizer.anti_unify_all(&lhs_terms).expect("non-empty lhs terms");
-    let rhs = generalizer.anti_unify_all(&rhs_terms).expect("non-empty rhs terms");
+    let lhs = generalizer
+        .anti_unify_all(&lhs_terms)
+        .expect("non-empty lhs terms");
+    let rhs = generalizer
+        .anti_unify_all(&rhs_terms)
+        .expect("non-empty rhs terms");
 
     Rule::new(lhs, rhs)
 }

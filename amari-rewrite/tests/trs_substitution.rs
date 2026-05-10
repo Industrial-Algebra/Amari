@@ -12,6 +12,9 @@ fn substitution_replaces_variables_recursively() {
     let subst = Substitution::new().with("X", Term::sym("s", [Term::constant("0")]));
     assert_eq!(
         subst.apply(&term),
-        Term::sym("add", [Term::constant("0"), Term::sym("s", [Term::constant("0")])])
+        Term::sym(
+            "add",
+            [Term::constant("0"), Term::sym("s", [Term::constant("0")])]
+        )
     );
 }

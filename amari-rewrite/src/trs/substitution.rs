@@ -45,14 +45,11 @@ impl Substitution {
     /// Apply this substitution recursively to `term`.
     pub fn apply(&self, term: &Term) -> Term {
         match term {
-            Term::Var(var) => self
-                .map
-                .get(var)
-                .cloned()
-                .unwrap_or_else(|| term.clone()),
-            Term::Sym(symbol, args) => {
-                Term::Sym(symbol.clone(), args.iter().map(|arg| self.apply(arg)).collect())
-            }
+            Term::Var(var) => self.map.get(var).cloned().unwrap_or_else(|| term.clone()),
+            Term::Sym(symbol, args) => Term::Sym(
+                symbol.clone(),
+                args.iter().map(|arg| self.apply(arg)).collect(),
+            ),
         }
     }
 }

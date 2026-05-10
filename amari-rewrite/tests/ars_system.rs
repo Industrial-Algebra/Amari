@@ -1,4 +1,7 @@
-use amari_rewrite::{ars::{Rule, System}, Rewritable};
+use amari_rewrite::{
+    ars::{Rule, System},
+    Rewritable,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Expr {

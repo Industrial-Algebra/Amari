@@ -11,7 +11,9 @@ fn differentiable_rule_trait_can_be_implemented() {
         type Gradient = ();
         type Error = core::convert::Infallible;
 
-        fn forward(&self, state: &f64) -> Result<f64, Self::Error> { Ok(*state) }
+        fn forward(&self, state: &f64) -> Result<f64, Self::Error> {
+            Ok(*state)
+        }
         fn loss(&self, predicted: &f64, target: &f64) -> Result<f64, Self::Error> {
             Ok((predicted - target).abs())
         }

@@ -7,7 +7,10 @@ fn main() -> RewriteResult<()> {
             Term::constant("a"),
         ),
         (
-            Term::sym("add", [Term::constant("0"), Term::sym("s", [Term::constant("a")])]),
+            Term::sym(
+                "add",
+                [Term::constant("0"), Term::sym("s", [Term::constant("a")])],
+            ),
             Term::sym("s", [Term::constant("a")]),
         ),
     ];

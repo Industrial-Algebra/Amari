@@ -37,7 +37,10 @@ impl Rewritable for Expr {
 #[test]
 fn positions_include_root_and_descendants() {
     let expr = Expr::Add(Box::new(Expr::Lit(1)), Box::new(Expr::Lit(2)));
-    assert_eq!(expr.positions(), vec![Path::root(), Path::from([0]), Path::from([1])]);
+    assert_eq!(
+        expr.positions(),
+        vec![Path::root(), Path::from([0]), Path::from([1])]
+    );
 }
 
 #[test]

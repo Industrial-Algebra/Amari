@@ -8,7 +8,10 @@ fn infer_add_zero_rule_from_positive_examples() {
             Term::constant("a"),
         ),
         (
-            Term::sym("add", [Term::constant("0"), Term::sym("s", [Term::constant("a")])]),
+            Term::sym(
+                "add",
+                [Term::constant("0"), Term::sym("s", [Term::constant("a")])],
+            ),
             Term::sym("s", [Term::constant("a")]),
         ),
     ];
