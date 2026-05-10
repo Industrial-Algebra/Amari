@@ -14,7 +14,3 @@ categories = ["mathematics", "science", "algorithms"]
 [dependencies]
 amari-surreal = { workspace = true }
 thiserror = { workspace = true }
-num-bigint = "0.4"
-
-[dev-dependencies]
-criterion = "0.8"

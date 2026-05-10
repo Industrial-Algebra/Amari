@@ -45,9 +45,9 @@ impl RationalSurcomplex {
 
     /// Creates a real surcomplex from an integer.
     #[must_use]
-    pub fn from_integer<N: Into<num_bigint::BigInt>>(n: N) -> Self {
+    pub fn from_integer<N: Into<i128>>(n: N) -> Self {
         Self {
-            real: RationalSurreal::from_integer(n),
+            real: RationalSurreal::from_integer(n.into()),
             imag: RationalSurreal::zero(),
         }
     }
