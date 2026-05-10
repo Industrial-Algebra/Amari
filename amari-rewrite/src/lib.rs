@@ -8,6 +8,7 @@
 
 extern crate alloc;
 
+pub mod ars;
 pub mod error;
 pub mod prelude;
 pub mod rewritable;
