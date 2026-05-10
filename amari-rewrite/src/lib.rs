@@ -18,3 +18,9 @@ pub mod trs;
 
 pub use error::{RewriteError, RewriteResult};
 pub use rewritable::{Path, Rewritable};
+
+#[cfg(feature = "neural")]
+pub mod neural;
+
+#[cfg(feature = "smt")]
+pub mod smt;
