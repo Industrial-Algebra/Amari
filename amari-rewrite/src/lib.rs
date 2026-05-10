@@ -24,3 +24,6 @@ pub mod neural;
 
 #[cfg(feature = "smt")]
 pub mod smt;
+
+#[cfg(feature = "network")]
+pub mod network;
