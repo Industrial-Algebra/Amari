@@ -1,7 +1,7 @@
 //! Exact rational surcomplex numbers for Amari.
 //!
 //! This crate provides [`RationalSurcomplex`], an exact complex number
-//! backed by [`RationalSurreal`] from `amari-surreal`.  It supports
+//! backed by `RationalSurreal` from `amari-surreal`.  It supports
 //! addition, subtraction, multiplication, division, conjugation, and
 //! norm — all exact without floating-point rounding.
 //!
