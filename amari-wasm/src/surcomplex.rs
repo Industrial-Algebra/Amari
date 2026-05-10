@@ -2,11 +2,22 @@ use crate::surreal::WasmRationalSurreal;
 use amari_surcomplex::{RationalSurcomplex, SurcomplexError};
 use wasm_bindgen::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
 fn surcomplex_error(error: SurcomplexError) -> JsValue {
     match error {
         SurcomplexError::DivisionByZero => JsValue::from_str("division by zero"),
         SurcomplexError::Surreal(e) => JsValue::from_str(&e.to_string()),
     }
+}
+
+/// On native targets `JsValue::from_str` panics (wasm-bindgen internals
+/// are only available under wasm32).  Return `JsValue::undefined()` so
+/// error-path tests can verify `is_err()` — the message is irrelevant
+/// for these assertions.
+#[cfg(not(target_arch = "wasm32"))]
+fn surcomplex_error(error: SurcomplexError) -> JsValue {
+    let _ = error;
+    JsValue::undefined()
 }
 
 /// Exact rational surcomplex number `a + bi` with `a, b ∈ Q`.
@@ -229,14 +240,12 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_arch = "wasm32")]
     fn surcomplex_reciprocal_fails_for_zero() {
         let zero = WasmRationalSurcomplex::zero();
         assert!(zero.checked_reciprocal().is_err());
     }
 
     #[test]
-    #[cfg(target_arch = "wasm32")]
     fn surcomplex_div_fails_for_zero() {
         let one = WasmRationalSurcomplex::one();
         let zero = WasmRationalSurcomplex::zero();

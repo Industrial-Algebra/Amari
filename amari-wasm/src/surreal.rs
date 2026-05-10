@@ -3,8 +3,19 @@ use amari_surreal::epsilon::EpsilonRational;
 use amari_surreal::{Dyadic, RationalSurreal, ShortSurreal};
 use wasm_bindgen::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
 fn surreal_error(error: amari_surreal::SurrealError) -> JsValue {
     JsValue::from_str(&error.to_string())
+}
+
+/// On native targets `JsValue::from_str` panics (wasm-bindgen internals
+/// are only available under wasm32).  Return `JsValue::undefined()` so
+/// error-path tests can verify `is_err()` — the message is irrelevant
+/// for these assertions.
+#[cfg(not(target_arch = "wasm32"))]
+fn surreal_error(error: amari_surreal::SurrealError) -> JsValue {
+    let _ = error;
+    JsValue::undefined()
 }
 
 /// Exact dyadic rational `numerator / 2^exponent` for short surreal values.
@@ -345,7 +356,10 @@ impl WasmRationalSurreal {
         }
     }
 
-    /// Create a rational surreal from an integer.
+    /// Create a rational surreal from a 32-bit signed integer.
+    ///
+    /// WASM boundary note: the argument is an `i32` (JavaScript `number`
+    /// that must fit in 32-bit signed range).
     #[wasm_bindgen(js_name = fromInteger)]
     pub fn from_integer(value: i32) -> Self {
         Self {
@@ -353,7 +367,11 @@ impl WasmRationalSurreal {
         }
     }
 
-    /// Create a rational surreal from a numerator and denominator.
+    /// Create a rational surreal from a 32-bit signed numerator and
+    /// denominator.
+    ///
+    /// WASM boundary note: both arguments are `i32` (JavaScript `number`
+    /// that must fit in 32-bit signed range).
     ///
     /// Returns an error when the denominator is zero.
     #[wasm_bindgen(js_name = fromRatio)]
@@ -503,6 +521,7 @@ impl WasmRationalSurreal {
 /// **Experimental**: this API is behind the `experimental-epsilon`
 /// feature flag and may change without semver guarantees.
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct WasmExperimentalEpsilonRational {
     inner: EpsilonRational,
 }
@@ -784,16 +803,63 @@ mod tests {
     fn epsilon_arithmetic_basics() {
         let eps = WasmExperimentalEpsilonRational::epsilon();
         let one = WasmExperimentalEpsilonRational::one();
+        let zero = WasmExperimentalEpsilonRational::zero();
+
+        // 1 + ε > 1 (since ε > 0)
         let sum = one.add(&eps);
-        assert!(!sum.format().is_empty());
+        assert_eq!(sum.compare(&one), "greater");
 
+        // 1 - ε < 1
         let diff = one.sub(&eps);
-        assert!(!diff.format().is_empty());
+        assert_eq!(diff.compare(&one), "less");
+        // 1 - ε > 0
+        assert_eq!(diff.compare(&zero), "greater");
 
+        // -ε < 0
         let neg = eps.neg();
-        assert_eq!(
-            neg.compare(&WasmExperimentalEpsilonRational::zero()),
-            "less"
-        );
+        assert_eq!(neg.compare(&zero), "less");
+
+        // (1 + ε) + (-ε) == 1
+        let recomposed = sum.add(&neg);
+        assert_eq!(recomposed.compare(&one), "equal");
+    }
+
+    // ------------------------------------------------------------------
+    // WasmRationalSurreal error paths
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn rational_from_ratio_zero_denominator_is_err() {
+        assert!(WasmRationalSurreal::from_ratio(1, 0).is_err());
+    }
+
+    #[test]
+    fn rational_zero_reciprocal_is_err() {
+        let zero = WasmRationalSurreal::zero();
+        assert!(zero.checked_reciprocal().is_err());
+    }
+
+    #[test]
+    fn rational_div_by_zero_is_err() {
+        let one = WasmRationalSurreal::one();
+        let zero = WasmRationalSurreal::zero();
+        assert!(one.checked_div(&zero).is_err());
+    }
+
+    // ------------------------------------------------------------------
+    // WasmExperimentalEpsilonRational error paths
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn epsilon_zero_reciprocal_is_err() {
+        let zero = WasmExperimentalEpsilonRational::zero();
+        assert!(zero.checked_reciprocal().is_err());
+    }
+
+    #[test]
+    fn epsilon_div_by_zero_is_err() {
+        let one = WasmExperimentalEpsilonRational::one();
+        let zero = WasmExperimentalEpsilonRational::zero();
+        assert!(one.checked_div(&zero).is_err());
     }
 }
