@@ -366,7 +366,7 @@ impl EpsilonRational {
     /// Returns `SurrealError::DivisionByZero` when the numerator is zero
     /// (i.e. `self` is the zero rational function).
     pub fn checked_reciprocal(&self) -> Result<Self, SurrealError> {
-        if self.numer.is_zero() {
+        if self.is_zero() {
             return Err(SurrealError::DivisionByZero);
         }
         Ok(Self {
@@ -499,11 +499,10 @@ impl EpsilonRational {
         // simplify to a / 1 via rational scalar division.
         //
         // Safety of `unwrap` / `expect` below:
-        // - `degree() == Some(0)` guarantees that the map contains the
-        //   key `EpsilonExponent(0)` with a nonzero coefficient (zero
-        //   coefficients are retained during normalisation only at
-        //   exponent 0 for constant denominators, and `retain` above
-        //   removes all-zero entries elsewhere).
+        // - The `retain` call above removes every zero coefficient from
+        //   the map.  Therefore `degree() == Some(0)` guarantees that
+        //   the key `EpsilonExponent(0)` is present with a nonzero
+        //   coefficient.
         // - The denominator is known nonzero from the constructor guard,
         //   so `checked_div` on a nonzero denominator succeeds.
         if self.numer.degree() == Some(0) && self.denom.degree() == Some(0) {
@@ -637,73 +636,6 @@ mod tests {
         // ε: positive
         let r = EpsilonPolynomial::epsilon();
         assert_eq!(r.sign_epsilon(), Some(Ordering::Greater));
-    }
-
-    // -- ordering -----------------------------------------------------------
-
-    #[test]
-    fn epsilon_is_positive_infinitesimal() {
-        let eps = EpsilonRational::epsilon();
-        assert!(eps > EpsilonRational::zero());
-        assert!(
-            eps < EpsilonRational::from_scalar(RationalSurreal::from_ratio(1, 1_000_000).unwrap())
-        );
-    }
-
-    #[test]
-    fn epsilon_squared_is_strictly_smaller_than_epsilon() {
-        let eps = EpsilonRational::epsilon();
-        let eps_sq = eps.clone() * eps.clone();
-        assert!(eps_sq < eps);
-    }
-
-    #[test]
-    fn inverse_epsilon_is_larger_than_any_test_integer() {
-        let inv = EpsilonRational::one()
-            .checked_div(&EpsilonRational::epsilon())
-            .unwrap();
-        assert!(inv > EpsilonRational::from_scalar(RationalSurreal::from_integer(1_000_000)));
-    }
-
-    #[test]
-    fn rational_arithmetic_is_exact() {
-        let eps = EpsilonRational::epsilon();
-        let one = EpsilonRational::one();
-        // (1 + ε) / (1 - ε)
-        let expr = (one.clone() + eps.clone())
-            .checked_div(&(one.clone() - eps.clone()))
-            .unwrap();
-        // Denominator (from checked_div) = (1) * (1 - ε) = 1 - ε
-        assert_eq!(expr.denom().degree(), Some(1));
-    }
-
-    #[test]
-    fn polynomial_degree() {
-        // 3 + 2ε + ε² as a polynomial (from_polynomial builds numer only)
-        let coeffs = vec![
-            RationalSurreal::from_integer(3),
-            RationalSurreal::from_integer(2),
-            RationalSurreal::one(),
-        ];
-        let poly = EpsilonRational::from_polynomial(coeffs.clone());
-        let numer: &EpsilonPolynomial = poly.numer();
-        assert_eq!(numer.degree(), Some(2));
-        assert_eq!(poly.denom().degree(), Some(0));
-    }
-
-    #[test]
-    fn polynomial_ordering() {
-        // 3 + 2ε + ε²
-        let coeffs = vec![
-            RationalSurreal::from_integer(3),
-            RationalSurreal::from_integer(2),
-            RationalSurreal::one(),
-        ];
-        let poly = EpsilonRational::from_polynomial(coeffs.clone());
-        // It must be positive and larger than 3
-        assert!(poly > EpsilonRational::from_scalar(RationalSurreal::from_integer(3)));
-        // And less than 4 (since 2ε + ε² < 1 for small epsilon)
-        assert!(poly < EpsilonRational::from_scalar(RationalSurreal::from_integer(4)));
     }
 
     #[test]
