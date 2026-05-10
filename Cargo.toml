@@ -69,7 +69,7 @@ path = "examples/networked_physics.rs"
 required-features = ["deterministic"]
 
 [workspace]
-members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal"]
+members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal", "amari-rewrite"]
 resolver = "2"
 
 [workspace.package]
@@ -104,6 +104,7 @@ amari-topology = { path = "amari-topology", version = "0.22.0" }
 amari-dynamics = { path = "amari-dynamics", version = "0.22.0" }
 amari-cgt = { path = "amari-cgt", version = "0.22.0" }
 amari-surreal = { path = "amari-surreal", version = "0.22.0" }
+amari-rewrite = { path = "amari-rewrite", version = "0.22.0" }
 amari-wasm = { path = "amari-wasm", version = "0.22.0" }
 
 # External dependencies
