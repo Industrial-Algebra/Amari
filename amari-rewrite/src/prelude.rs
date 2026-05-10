@@ -3,3 +3,4 @@
 pub use crate::{Path, RewriteError, RewriteResult, Rewritable};
 
 pub use crate::ars::{Rule, Strategy, System};
+pub use crate::trs::{Substitution, Term};

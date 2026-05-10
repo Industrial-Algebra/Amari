@@ -12,6 +12,7 @@ pub mod ars;
 pub mod error;
 pub mod prelude;
 pub mod rewritable;
+pub mod trs;
 
 pub use error::{RewriteError, RewriteResult};
 pub use rewritable::{Path, Rewritable};
