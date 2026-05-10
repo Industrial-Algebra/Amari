@@ -21,6 +21,8 @@ Current release process documentation:
 
 Current planning and release-roadmap documentation:
 
+- **[v0.23.0 Rational Surreal / Surcomplex Roadmap](roadmap/v0.23.0-rational-surreal-surcomplex-roadmap.md)** - Planning for the `RationalSurreal`, epsilon rational, and `amari-surcomplex` cycle
+- **[v0.23.0 Rational Surreal / Surcomplex Checklist](roadmap/v0.23.0-rational-surreal-surcomplex-checklist.md)** - Release gates and publish-order audit for the `0.23.0` cycle
 - **[v0.21.0 Tropical / Dual Roadmap](roadmap/v0.21.0-tropical-dual-roadmap.md)** - Planning for the optimization-oriented `amari-tropical` / `amari-dual` cycle
 - **[v0.21.0 Tropical / Dual Checklist](roadmap/v0.21.0-tropical-dual-checklist.md)** - Milestone tracker for the `0.21.0` extension cycle
 - **[Tropical / Dual Optimization Design](roadmap/amari-tropical-dual-optimization_design.md)** - Design notes for compiler/interpreter optimization use cases

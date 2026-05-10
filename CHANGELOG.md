@@ -5,6 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] - Unreleased
+
+### Added
+
+#### amari-surreal — exact rational scalar layer
+
+- `RationalSurreal` type providing exact rational arithmetic (not limited to dyadics), bridging the gap between `ShortSurreal`'s dyadic layer and full surreal generality
+- `RationalSurreal` supports exact construction from integer ratios (`from_ratio`), exact comparison, addition, subtraction, multiplication, and checked division
+- `from_short` / `to_short_if_dyadic` conversion between `RationalSurreal` and `ShortSurreal` (partial: `to_short_if_dyadic` returns `None` for non-dyadic rational values)
+- Sign, ordering, and arithmetic utilities including `is_zero`, `is_positive`, `is_negative`, `abs`, `checked_reciprocal`, and `checked_div`
+
+#### amari-surreal — experimental epsilon rational functions
+
+- New `experimental-epsilon` feature gate exposing `EpsilonExponent`, `EpsilonRational`, `EpsilonPolynomial`, and supporting types
+- Polynomials and rational functions in a formal positive infinitesimal `ε` ordered by asymptotic behaviour as `ε → 0⁺`
+- This is **not** a nilpotent-dual-number system: `ε²` is a smaller positive infinitesimal, not zero
+- The exponent type (`EpsilonExponent`) is a newtype wrapper so that future Puiseux / Hahn series extensions can replace the exponent without changing the public API shape
+- Future extension path: Puiseux series (rational exponents), Hahn series (well-ordered monomials), and generalized ordered-series fields are deferred — not implemented in v0.23
+
+#### New crate: `amari-surcomplex`
+
+- Exact rational complex arithmetic over `RationalSurreal` coefficients
+- `RationalSurcomplex` type with exact addition, subtraction, multiplication, checked division, conjugation, and norm-square
+- `1 / (1 + 1/2 i) = 4/5 - 2/5i` demonstrates why dyadic `ShortSurreal` coefficients are insufficient and rational scalars are needed for surcomplex closure
+- Full `Debug`, `Clone`, `PartialEq`, `Eq`, `Hash`, and `Display` support
+
+#### WASM bindings (`amari-wasm`)
+
+- `WasmRationalSurreal` with exact rational construction, conversion, arithmetic, and comparison
+- `WasmRationalSurcomplex` with exact complex arithmetic, checked division, and component accessors
+- `WasmExperimentalEpsilonRational` behind an `experimental-epsilon` feature gate for epsilon-polynomial and epsilon-rational-function construction and evaluation
+
+#### Examples suite
+
+- Surcomplex interactive page with arithmetic, division, and identity demonstrations
+- WASM version-gated coverage for rational surreal, rational surcomplex, and experimental epsilon rational bindings
+
+### Changed
+
+- `amari-surreal` `ShortSurreal` remains the finite short/dyadic layer — it does **not** claim to represent arbitrary rationals or the full surreal universe
+- `amari-surreal` README updated to document `RationalSurreal`, the `experimental-epsilon` feature, and explicit scope boundaries
+
+### Documentation
+
+- Root `README.md` updated with v0.23.0 highlights, installation examples, and surcomplex umbrella feature
+- New `docs/roadmap/v0.23.0-rational-surreal-surcomplex-roadmap.md`
+- New `docs/roadmap/v0.23.0-rational-surreal-surcomplex-checklist.md`
+- `docs/roadmap/amari-surreal_design.md` updated to reflect `RationalSurreal` and epsilon module
+- `docs/roadmap/amari-surcomplex_design.md` updated to reflect v0.23.0 implementation
+
+---
+
 ## [0.22.0] - Unreleased
 
 ### Added

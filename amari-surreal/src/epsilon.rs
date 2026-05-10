@@ -3,7 +3,7 @@
 //! Polynomials and rational functions in a formal positive infinitesimal
 //! `ε`, ordered by asymptotic behaviour as `ε → 0⁺`.
 //!
-//! The coefficient field is [`RationalSurreal`](crate::RationalSurreal).
+//! The coefficient field is [`RationalSurreal`].
 //! A polynomial in ε is stored as a map from integer exponents to
 //! nonzero rational surreal coefficients.  A rational function is a
 //! pair of such polynomials with the denominator normalised to have a
