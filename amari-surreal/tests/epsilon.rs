@@ -1,7 +1,7 @@
 #![cfg(feature = "experimental-epsilon")]
 
 use amari_surreal::epsilon::{EpsilonPolynomial, EpsilonRational};
-use amari_surreal::RationalSurreal;
+use amari_surreal::{RationalSurreal, SurrealError};
 
 #[test]
 fn epsilon_is_positive_infinitesimal() {
@@ -63,4 +63,47 @@ fn epsilon_rational_polynomial_ordering() {
     assert!(poly > EpsilonRational::from_scalar(RationalSurreal::from_integer(3)));
     // And less than 4 (since 2ε + ε² < 1 for small epsilon)
     assert!(poly < EpsilonRational::from_scalar(RationalSurreal::from_integer(4)));
+}
+
+// -- from_parts with non-scalar denominator ---------------------------------
+
+#[test]
+fn from_parts_with_nonscalar_denominator() {
+    // ε / (1 + ε) — denominator has degree 1, not a scalar constant.
+    let numer = EpsilonPolynomial::epsilon();
+    let denom =
+        EpsilonPolynomial::from_coefficients(vec![RationalSurreal::one(), RationalSurreal::one()]);
+    let r = EpsilonRational::from_parts(numer, denom).unwrap();
+    // Denominator is not simplified to 1 because it has degree > 0.
+    assert_eq!(r.denom().degree(), Some(1));
+    // Value is positive and between 0 and ε (since ε/(1+ε) < ε).
+    assert!(r > EpsilonRational::zero());
+    assert!(r < EpsilonRational::epsilon());
+}
+
+// -- checked_reciprocal of non-scalar ---------------------------------------
+
+#[test]
+fn checked_reciprocal_of_nonscalar() {
+    // 1 + ε as a rational function (denominator 1).
+    let r = EpsilonRational::from_polynomial(vec![RationalSurreal::one(), RationalSurreal::one()]);
+    // reciprocal = 1 / (1 + ε). The denominator is (1 + ε), degree 1.
+    let recip = r.checked_reciprocal().unwrap();
+    assert_eq!(recip.denom().degree(), Some(1));
+    assert!(recip > EpsilonRational::zero());
+    assert!(recip < EpsilonRational::one());
+}
+
+// -- error paths ------------------------------------------------------------
+
+#[test]
+fn checked_reciprocal_of_zero_returns_division_by_zero() {
+    let result = EpsilonRational::zero().checked_reciprocal();
+    assert!(matches!(result, Err(SurrealError::DivisionByZero)));
+}
+
+#[test]
+fn checked_div_by_zero_returns_division_by_zero() {
+    let result = EpsilonRational::one().checked_div(&EpsilonRational::zero());
+    assert!(matches!(result, Err(SurrealError::DivisionByZero)));
 }

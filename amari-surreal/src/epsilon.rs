@@ -350,6 +350,12 @@ impl EpsilonRational {
     pub fn denom(&self) -> &EpsilonPolynomial {
         &self.denom
     }
+
+    /// Whether the rational function is identically zero.
+    #[must_use]
+    pub fn is_zero(&self) -> bool {
+        self.numer.is_zero()
+    }
 }
 
 // -- arithmetic -------------------------------------------------------------
@@ -420,6 +426,21 @@ impl Neg for EpsilonRational {
 }
 
 // -- equality (cross-multiplication) --------------------------------------
+//
+// IMPORTANT: Hash footgun warning.
+//
+// `PartialEq` / `Eq` compare rational functions via cross-multiplication
+//   N₁/D₁ == N₂/D₂  ⇔  N₁·D₂ == N₂·D₁
+// without first reducing to a canonical normal form (no polynomial GCD
+// normalisation is performed).  Equality is therefore representation-
+// independent, but the internal `numer` / `denom` fields may differ for
+// equal values.
+//
+// **Do NOT derive `Hash` structurally** on `EpsilonRational` unless a
+// canonical normal form is introduced.  A structural hash would violate
+// the `Hash` / `Eq` contract: two equal values with different internal
+// representations would produce different hashes, breaking `HashSet` and
+// `HashMap` correctness.
 
 impl PartialEq for EpsilonRational {
     fn eq(&self, other: &Self) -> bool {
@@ -476,10 +497,18 @@ impl EpsilonRational {
 
         // If both numerator and denominator are scalar constants,
         // simplify to a / 1 via rational scalar division.
+        //
+        // Safety of `unwrap` / `expect` below:
+        // - `degree() == Some(0)` guarantees that the map contains the
+        //   key `EpsilonExponent(0)` with a nonzero coefficient (zero
+        //   coefficients are retained during normalisation only at
+        //   exponent 0 for constant denominators, and `retain` above
+        //   removes all-zero entries elsewhere).
+        // - The denominator is known nonzero from the constructor guard,
+        //   so `checked_div` on a nonzero denominator succeeds.
         if self.numer.degree() == Some(0) && self.denom.degree() == Some(0) {
             let num_val = self.numer.terms().get(&EpsilonExponent(0)).unwrap();
             let den_val = self.denom.terms().get(&EpsilonExponent(0)).unwrap();
-            // denom is nonzero (already checked).
             let scalar = num_val
                 .clone()
                 .checked_div(den_val)
