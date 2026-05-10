@@ -30,8 +30,14 @@ pub mod prelude;
 pub mod rational;
 pub mod short;
 
+#[cfg(feature = "experimental-epsilon")]
+pub mod epsilon;
+
 pub use dyadic::Dyadic;
 pub use error::{Result, SurrealError};
 pub use numeric::NumericGame;
 pub use rational::RationalSurreal;
 pub use short::ShortSurreal;
+
+#[cfg(feature = "experimental-epsilon")]
+pub use epsilon::{EpsilonPolynomial, EpsilonRational};

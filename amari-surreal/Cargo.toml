@@ -27,6 +27,7 @@ criterion = "0.8"
 default = ["std"]
 std = []
 serialize = ["dep:serde"]
+experimental-epsilon = []
 
 [[bench]]
 name = "dyadic"
