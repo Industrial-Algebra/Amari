@@ -85,6 +85,7 @@ pub mod optical; // Enabled for v0.15.1 - GA-native optical field operations and
 pub mod optimization; // Enabled for v0.9.7 - Advanced optimization algorithms for web
 pub mod probabilistic; // Enabled for v0.13.0 - Probability distributions on multivector spaces
 pub mod relativistic;
+pub mod surcomplex; // Enabled for v0.23.0 - Exact rational surcomplex arithmetic
 pub mod surreal; // Enabled for v0.22.0 - Exact short surreal dyadics and game conversion helpers
 pub mod topology; // Enabled for v0.16.0 - Simplicial complexes, homology, persistent homology
 pub mod tropical; // Enabled for v0.9.3 - critical for optimization algorithms in web

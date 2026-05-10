@@ -1,4 +1,4 @@
-# @justinelliottcobb/amari-wasm v0.22.0
+# @justinelliottcobb/amari-wasm v0.23.0
 
 **Unified Mathematical Computing Library with High-Precision WebAssembly Support**
 
@@ -17,6 +17,9 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 | [Automatic Differentiation](docs/automatic-differentiation.md) | amari-dual | v0.9.3 | Forward-mode AD with `0.21.0` branch policies, multi-dual seeding, and fixed-size gradient wrappers |
 | Combinatorial Game Theory | amari-cgt | v0.22.0 | Short normal-play games, cuts, outcomes, comparison, nimbers, and inspection helpers |
 | Short Surreal Numbers | amari-surreal | v0.22.0 | Exact dyadic short-surreal arithmetic and conversion to/from numeric CGT games |
+| Rational Surreals | amari-surreal | v0.23.0 | Exact rational surreal arithmetic with true rational division |
+| Rational Surcomplex | amari-surcomplex | v0.23.0 | Exact rational surcomplex arithmetic `a + bi` with full field operations |
+| Epsilon Rationals (experimental) | amari-surreal | v0.23.0 | Formal infinitesimal `ε` polynomials and rational functions, ordered by asymptotic behaviour |
 | [Cellular Automata](docs/cellular-automata.md) | amari-automata | v0.9.4 | Geometric cellular automata with multivector states |
 | [Holographic Memory](docs/holographic-memory.md) | amari-fusion | v0.12.3 | Vector Symbolic Architecture for associative memory with binding and bundling |
 | [Measure Theory](docs/measure-theory.md) | amari-measure | v0.10.0 | Lebesgue integration, probability measures, and measure-theoretic foundations |
@@ -31,6 +34,27 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 | [Orbital Mechanics](docs/orbital-mechanics.md) | amari-relativistic | v0.9.4 | Spacetime algebra (Cl(1,3)) with high-precision trajectory calculations |
 
 Also includes bindings for: amari-network (geometric network analysis), amari-optimization (gradient descent, NSGA-II), amari-info-geom (Fisher metrics, statistical manifolds), amari-calculus (differential geometry, manifolds).
+
+### v0.23.0 Rational Surreal / Surcomplex WASM Surface
+
+The `0.23.0` release adds exact rational arithmetic and surcomplex numbers to the WASM surface:
+
+- `WasmRationalSurreal` — exact rational numbers backed by `BigRational`.
+  - `zero()`, `one()`, `fromInteger(i32)`, `fromRatio(numer, denom)`
+  - `numeratorString()`, `denominatorString()`, `format()`
+  - `isZero`, `isPositive`, `isNegative`, `sign()`, `abs`, `add`, `sub`, `mul`, `neg`
+  - `checkedReciprocal`, `checkedDiv`, `compare`
+  - `toShortIfDyadic()` — returns `Some` when the denominator is a power of two
+  - `fromShort(short)` — converts a `WasmShortSurreal` into a rational
+
+- `WasmRationalSurcomplex` — exact complex numbers `a + bi` with rational parts.
+  - `zero()`, `one()`, `i()`, `fromInteger(i32)`, `fromReal(real)`, `fromParts(real, imag)`
+  - `real()`, `imag()`, `format()`, `conjugate`, `normSq()`, `isZero`
+  - `add`, `sub`, `mul`, `neg`, `checkedReciprocal`, `checkedDiv`
+
+- `WasmExperimentalEpsilonRational` — rational functions in a formal infinitesimal `ε`.
+  - `zero()`, `one()`, `epsilon()`, `fromScalar(scalar)`, `monomial(coeff, exponent)`
+  - `format()`, `add`, `sub`, `mul`, `neg`, `checkedReciprocal`, `checkedDiv`, `compare`
 
 ### v0.22.0 CGT / Surreal WASM Surface
 
