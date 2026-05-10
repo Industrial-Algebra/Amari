@@ -54,6 +54,7 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **Probabilistic Contracts**: SMT-LIB2 proof obligation generation, Monte Carlo statistical verification, probabilistic value tracking, and rare event classification
 - **Combinatorial Game Theory** *(v0.22.0 extension focus)*: Short normal-play games, canonical forms, outcome classes, nimbers, and small exact-layer generation via `amari-cgt`
 - **Short Surreal Numbers** *(v0.22.0 extension focus)*: Exact dyadic arithmetic, numeric-game validation, simplest-number construction, and game/value round trips via `amari-surreal`
+- **Rewrite Systems** *(v0.23.0 development focus)*: Abstract rewriting systems, term rewriting systems, bounded inverse search, and anti-unification/rule inference via `amari-rewrite`
 - **GPU Backend Stabilization** *(v0.20.0 baseline)*: Hardware-validated WebGPU acceleration with public API tests, CPU-baseline correctness checks, benchmark/crossover documentation, and explicit GPU-backed vs GPU-recommended guidance
 
 ### GPU Acceleration & Multi-GPU Infrastructure
@@ -145,6 +146,7 @@ amari-network = "0.22.0"
 amari-enumerative = "0.22.0"
 amari-cgt = "0.22.0"         # short combinatorial games + nimbers
 amari-surreal = "0.22.0"    # exact short surreal numbers over numeric games
+amari-rewrite = "0.22.0"    # ARS/TRS rewriting, inverse search, and rule inference
 
 # Probabilistic verification contracts (SMT-LIB2, Monte Carlo)
 amari-flynn = "0.22.0"
@@ -675,6 +677,7 @@ main();
 - `amari-enumerative`: Enumerative geometry, Schubert calculus, WDVV curve counting, matroids, CSM classes, equivariant localization, and stability
 - `amari-optimization`: Gradient-based optimization algorithms
 - `amari-flynn`: Probabilistic verification contracts
+- `amari-rewrite`: Abstract and term rewriting systems, inverse search, and rule inference
 
 **Integration Crates** (consume domain APIs):
 - `amari-gpu`: Multi-GPU acceleration with WebGPU

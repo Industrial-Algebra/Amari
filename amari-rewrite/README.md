@@ -25,3 +25,36 @@ Experimental feature-gated surfaces:
 
 The default crate intentionally avoids external e-graph, SMT, neural, and tensor
 framework dependencies.
+
+
+## Quick start: TRS simplification
+
+```rust
+use amari_rewrite::{trs::{Rule, Term, TermSystem}, RewriteResult};
+
+fn main() -> RewriteResult<()> {
+    let system = TermSystem::new(vec![
+        Rule::new(
+            Term::sym("add", [Term::constant("0"), Term::var("X")]),
+            Term::var("X"),
+        )?,
+    ]);
+
+    let term = Term::sym("add", [Term::constant("0"), Term::constant("a")]);
+    assert_eq!(system.normalize_with_limit(&term, 4)?, Term::constant("a"));
+    Ok(())
+}
+```
+
+## Examples
+
+- `symbolic_simplification.rs`: implement `Rewritable` for a user-owned expression enum.
+- `peano_trs.rs`: normalize Peano-style terms with checked TRS rules.
+- `inverse_search.rs`: enumerate bounded predecessor terms.
+- `infer_rule_from_examples.rs`: infer a basic rewrite rule from positive examples.
+
+Run one with:
+
+```bash
+cargo run -p amari-rewrite --example peano_trs
+```
