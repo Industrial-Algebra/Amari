@@ -10,6 +10,7 @@ extern crate alloc;
 
 pub mod ars;
 pub mod error;
+pub mod inverse;
 pub mod prelude;
 pub mod rewritable;
 pub mod trs;
