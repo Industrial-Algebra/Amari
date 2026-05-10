@@ -1,0 +1,20 @@
+[package]
+name = "amari-surcomplex"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Exact rational surcomplex numbers for the Amari library"
+repository = "https://github.com/justinelliottcobb/Amari"
+homepage = "https://github.com/justinelliottcobb/Amari"
+keywords = ["mathematics", "surreal", "complex", "exact"]
+categories = ["mathematics", "science", "algorithms"]
+
+[dependencies]
+amari-surreal = { workspace = true }
+thiserror = { workspace = true }
+num-bigint = "0.4"
+
+[dev-dependencies]
+criterion = "0.8"
