@@ -24,6 +24,7 @@ describe('Navigation', () => {
     expect(screen.getByText('Geometric Algebra')).toBeInTheDocument();
     expect(screen.getByText('Tropical Algebra')).toBeInTheDocument();
     expect(screen.getByText('Dual Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Rational Surcomplex')).toBeInTheDocument();
     expect(screen.getByText('Information Geometry')).toBeInTheDocument();
     expect(screen.getByText('Enumerative Geometry')).toBeInTheDocument();
     expect(screen.getByText('Calculus')).toBeInTheDocument();
@@ -87,5 +88,8 @@ describe('Navigation', () => {
 
     const tropicalLink = screen.getByText('Tropical Algebra').closest('a');
     expect(tropicalLink).toHaveAttribute('href', '/tropical-algebra');
+
+    const surcomplexLink = screen.getByText('Rational Surcomplex').closest('a');
+    expect(surcomplexLink).toHaveAttribute('href', '/surcomplex');
   });
 });

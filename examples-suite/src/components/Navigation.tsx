@@ -37,6 +37,11 @@ const navigationSections: NavSection[] = [
         description: "Short games, nimbers, and exact dyadics"
       },
       {
+        title: "Rational Surcomplex",
+        href: "/surcomplex",
+        description: "Exact rational surreals and surcomplex division"
+      },
+      {
         title: "Information Geometry",
         href: "/information-geometry",
         description: "Statistical manifolds and Fisher metrics"
