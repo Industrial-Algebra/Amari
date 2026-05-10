@@ -13,6 +13,7 @@ pub mod error;
 pub mod inverse;
 pub mod prelude;
 pub mod rewritable;
+pub mod synthesis;
 pub mod trs;
 
 pub use error::{RewriteError, RewriteResult};
