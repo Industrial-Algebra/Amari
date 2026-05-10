@@ -138,6 +138,11 @@ impl RationalSurreal {
     ///
     /// Returns `Some` only when the normalized denominator is a power
     /// of two (dyadic rational); returns `None` for non-dyadic values.
+    ///
+    /// `BigRational` always stores the value in normalised form with
+    /// a positive denominator, so we only need to check whether that
+    /// denominator is a power of two.  The loop strips factors of two
+    /// and, if the residual is one, the denominator is a power of two.
     #[must_use]
     pub fn to_short_if_dyadic(&self) -> Option<ShortSurreal> {
         let denom = self.value.denom();
