@@ -107,6 +107,7 @@ amari-surreal = { path = "amari-surreal", version = "0.22.0" }
 amari-wasm = { path = "amari-wasm", version = "0.22.0" }
 
 # External dependencies
+num-rational = "0.4"
 bytemuck = "1.14"
 rayon = "1.8"
 thiserror = "2.0"

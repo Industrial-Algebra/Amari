@@ -27,9 +27,11 @@ pub mod dyadic;
 pub mod error;
 pub mod numeric;
 pub mod prelude;
+pub mod rational;
 pub mod short;
 
 pub use dyadic::Dyadic;
 pub use error::{Result, SurrealError};
 pub use numeric::NumericGame;
+pub use rational::RationalSurreal;
 pub use short::ShortSurreal;
