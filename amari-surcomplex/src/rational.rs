@@ -102,12 +102,14 @@ impl RationalSurcomplex {
 
     /// Returns a checked reciprocal (`1 / self`).
     ///
-    /// Returns `SurcomplexError::DivisionByZero` when the value is zero.
-    ///
     /// Uses the formula:
     /// ```text
     /// 1 / (a + bi) = (a - bi) / (a² + b²) = conjugate / norm_sq
     /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SurcomplexError::DivisionByZero`] when the value is zero.
     pub fn checked_reciprocal(&self) -> Result<Self> {
         let norm = self.norm_sq();
         if norm.is_zero() {
@@ -122,12 +124,14 @@ impl RationalSurcomplex {
 
     /// Returns `self / rhs`.
     ///
-    /// Returns `SurcomplexError::DivisionByZero` when `rhs` is zero.
-    ///
     /// Uses the formula:
     /// ```text
     /// (a + bi) / (c + di) = ((a + bi)(c - di)) / (c² + d²)
     /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SurcomplexError::DivisionByZero`] when `rhs` is zero.
     pub fn checked_div(&self, rhs: &Self) -> Result<Self> {
         let denom_norm = rhs.norm_sq();
         if denom_norm.is_zero() {
@@ -163,13 +167,23 @@ impl Hash for RationalSurcomplex {
 
 impl fmt::Display for RationalSurcomplex {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let one = RationalSurreal::one();
         match (self.real.is_zero(), self.imag.is_zero()) {
             (true, true) => write!(f, "0"),
             (false, true) => write!(f, "{}", self.real),
+            (true, false) if self.imag == one => write!(f, "i"),
+            (true, false) if self.imag == -one.clone() => write!(f, "-i"),
             (true, false) => write!(f, "{}i", self.imag),
             (false, false) => {
                 if self.imag.is_negative() {
-                    write!(f, "{} - {}i", self.real, self.imag.abs())
+                    let imag_abs = self.imag.abs();
+                    if imag_abs == one {
+                        write!(f, "{} - i", self.real)
+                    } else {
+                        write!(f, "{} - {}i", self.real, imag_abs)
+                    }
+                } else if self.imag == one {
+                    write!(f, "{} + i", self.real)
                 } else {
                     write!(f, "{} + {}i", self.real, self.imag)
                 }

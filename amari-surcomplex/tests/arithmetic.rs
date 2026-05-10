@@ -99,7 +99,8 @@ fn display_pure_real() {
 
 #[test]
 fn display_i() {
-    assert_eq!(RationalSurcomplex::i().to_string(), "1i");
+    assert_eq!(RationalSurcomplex::i().to_string(), "i");
+    assert_eq!((-RationalSurcomplex::i()).to_string(), "-i");
 }
 
 #[test]
@@ -109,4 +110,12 @@ fn display_full_complex() {
         RationalSurreal::from_ratio(-5, 3).unwrap(),
     );
     assert_eq!(z.to_string(), "3/2 - 5/3i");
+
+    let unit_imag =
+        RationalSurcomplex::from_parts(RationalSurreal::from_integer(2), RationalSurreal::one());
+    assert_eq!(unit_imag.to_string(), "2 + i");
+
+    let negative_unit_imag =
+        RationalSurcomplex::from_parts(RationalSurreal::from_integer(2), -RationalSurreal::one());
+    assert_eq!(negative_unit_imag.to_string(), "2 - i");
 }
