@@ -27,6 +27,7 @@ pub mod enumerative;
 pub mod flynn;
 pub mod functional;
 pub mod fusion;
+pub mod generic;
 pub mod gf2;
 pub mod info_geom;
 pub mod measure;
