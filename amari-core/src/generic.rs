@@ -84,14 +84,12 @@ pub fn generic_geometric_product(
     let basis_count = 1 << dim;
     let mut result = vec![0.0; basis_count];
 
-    for i in 0..basis_count {
-        let ai = a[i];
+    for (i, &ai) in a.iter().enumerate() {
         if ai.abs() < f64::MIN_POSITIVE {
             continue;
         }
 
-        for j in 0..basis_count {
-            let bj = b[j];
+        for (j, &bj) in b.iter().enumerate() {
             if bj.abs() < f64::MIN_POSITIVE {
                 continue;
             }

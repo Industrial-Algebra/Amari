@@ -48,13 +48,11 @@ impl CayleyTable {
         let n = self.basis_count;
         let mut result = vec![0.0; n];
 
-        for i in 0..n {
-            let ai = a[i];
+        for (i, &ai) in a.iter().enumerate() {
             if ai == 0.0 {
                 continue;
             }
-            for j in 0..n {
-                let bj = b[j];
+            for (j, &bj) in b.iter().enumerate() {
                 if bj == 0.0 {
                     continue;
                 }
@@ -92,20 +90,18 @@ fn cayley_inner_product(p: usize, q: usize, r: usize, a: &[f64], b: &[f64]) -> V
     let mut result = vec![0.0; n];
 
     // Inner product: keep only terms where |grade(a) - grade(b)| = grade(result)
-    for i in 0..n {
-        let ai = a[i];
+    for (i, &ai) in a.iter().enumerate() {
         if ai == 0.0 {
             continue;
         }
         let gi = i.count_ones() as isize;
-        for j in 0..n {
-            let bj = b[j];
+        for (j, &bj) in b.iter().enumerate() {
             if bj == 0.0 {
                 continue;
             }
             let gj = j.count_ones() as isize;
             let k = i ^ j;
-            let target_grade = (gi - gj).unsigned_abs() as usize;
+            let target_grade = (gi - gj).unsigned_abs();
             if k.count_ones() as usize != target_grade {
                 continue;
             }
@@ -123,14 +119,12 @@ fn cayley_outer_product(p: usize, q: usize, r: usize, a: &[f64], b: &[f64]) -> V
     let dim = p + q + r;
     let n = 1 << dim;
     let mut result = vec![0.0; n];
-    for i in 0..n {
-        let ai = a[i];
+    for (i, &ai) in a.iter().enumerate() {
         if ai == 0.0 {
             continue;
         }
         let gi = i.count_ones() as usize;
-        for j in 0..n {
-            let bj = b[j];
+        for (j, &bj) in b.iter().enumerate() {
             if bj == 0.0 {
                 continue;
             }
@@ -345,12 +339,11 @@ impl WasmGenericMultivector {
     // ---- unary operations ----
 
     pub fn reverse(&self) -> WasmGenericMultivector {
-        let n = self.coefficients.len();
         let mut reversed = self.coefficients.clone();
-        for i in 1..n {
+        for (i, c) in reversed.iter_mut().enumerate().skip(1) {
             let grade = i.count_ones() as usize;
             if (grade * (grade.wrapping_sub(1)) / 2) % 2 == 1 {
-                reversed[i] = -reversed[i];
+                *c = -*c;
             }
         }
         self.make_result(reversed)

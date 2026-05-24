@@ -43,16 +43,8 @@ fn main() {
             "                let mv_b = amari_core::Multivector::<{p}, {q}, {r}>::from_coefficients(b.to_vec());\n",
             p = p, q = q, r = r,
         ));
-        arms.push_str(&format!(
-            "                let mv_c = mv_a.__OP__(&mv_b);\n",
-        ));
-        arms.push_str(&format!(
-            "                let bc = amari_core::Multivector::<{p}, {q}, {r}>::BASIS_COUNT;\n",
-            p = p, q = q, r = r,
-        ));
-        arms.push_str(
-            "                for i in 0..bc { result[i] = mv_c.get(i); }\n",
-        );
+        arms.push_str("                let mv_c = mv_a.__OP__(&mv_b);\n");
+        arms.push_str("                for (i, r) in result.iter_mut().enumerate() { *r = mv_c.get(i); }\n");
         arms.push_str("            }\n");
     }
 
@@ -239,8 +231,7 @@ fn generate_unary_arms(sigs: &[(usize, usize, usize)], method: &str) -> String {
             "            ({p}, {q}, {r}) => {{\n\
                       let mv = amari_core::Multivector::<{p}, {q}, {r}>::from_coefficients(a.to_vec());\n\
                       let mv_r = mv.{method}();\n\
-                      let bc = amari_core::Multivector::<{p}, {q}, {r}>::BASIS_COUNT;\n\
-                      for i in 0..bc {{ result[i] = mv_r.get(i); }}\n\
+                      for (i, r) in result.iter_mut().enumerate() {{ *r = mv_r.get(i); }}\n\
              }}\n",
             p = p, q = q, r = r, method = method,
         ));
@@ -255,8 +246,7 @@ fn generate_unary_option_arms(sigs: &[(usize, usize, usize)], method: &str) -> S
             "            ({p}, {q}, {r}) => {{\n\
                       let mv = amari_core::Multivector::<{p}, {q}, {r}>::from_coefficients(a.to_vec());\n\
                       if let Some(mv_r) = mv.{method}() {{\n\
-                          let bc = amari_core::Multivector::<{p}, {q}, {r}>::BASIS_COUNT;\n\
-                          for i in 0..bc {{ result[i] = mv_r.get(i); }}\n\
+                          for (i, r) in result.iter_mut().enumerate() {{ *r = mv_r.get(i); }}\n\
                           true\n\
                       }} else {{\n\
                           false\n\
