@@ -287,7 +287,9 @@ mod tests {
 
         // Use a seeded RNG for deterministic results.
         let mut rng = rand::rngs::StdRng::seed_from_u64(42);
-        let estimate = sampler.estimate_with_rng(|x| x.get(0), 10000, &mut rng).unwrap();
+        let estimate = sampler
+            .estimate_with_rng(|x| x.get(0), 10000, &mut rng)
+            .unwrap();
         assert!((estimate - 2.0).abs() < 0.5);
     }
 }
