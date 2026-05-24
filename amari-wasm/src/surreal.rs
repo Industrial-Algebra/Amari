@@ -502,10 +502,6 @@ impl WasmRationalSurreal {
 }
 
 impl WasmRationalSurreal {
-    pub(crate) fn wrap(inner: RationalSurreal) -> Self {
-        Self { inner }
-    }
-
     pub(crate) fn inner_ref(&self) -> &RationalSurreal {
         &self.inner
     }

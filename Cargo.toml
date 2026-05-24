@@ -34,6 +34,7 @@ amari-dynamics = { workspace = true, optional = true }
 amari-cgt = { workspace = true, optional = true }
 amari-surreal = { workspace = true, optional = true }
 amari-surcomplex = { workspace = true, optional = true }
+amari-rewrite = { workspace = true, optional = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
@@ -56,10 +57,11 @@ dynamics = ["dep:amari-dynamics"]
 cgt = ["dep:amari-cgt", "amari-enumerative/cgt-bridge"]
 surreal = ["dep:amari-surreal", "cgt"]
 surcomplex = ["dep:amari-surcomplex", "surreal"]
+rewrite = ["dep:amari-rewrite"]
 # Deterministic mode for networked physics (~10-20% slower but bit-exact)
 deterministic = []
 # Enable all optional crates
-full = ["gpu", "optimization", "flynn", "measure", "calculus", "holographic", "probabilistic", "functional", "topology", "dynamics", "cgt", "surreal", "surcomplex"]
+full = ["gpu", "optimization", "flynn", "measure", "calculus", "holographic", "probabilistic", "functional", "topology", "dynamics", "cgt", "surreal", "surcomplex", "rewrite"]
 
 [[test]]
 name = "integration"
@@ -71,7 +73,7 @@ path = "examples/networked_physics.rs"
 required-features = ["deterministic"]
 
 [workspace]
-members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal", "amari-surcomplex"]
+members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal", "amari-surcomplex", "amari-rewrite"]
 resolver = "2"
 
 [workspace.package]
@@ -107,6 +109,7 @@ amari-dynamics = { path = "amari-dynamics", version = "0.23.0" }
 amari-cgt = { path = "amari-cgt", version = "0.23.0" }
 amari-surreal = { path = "amari-surreal", version = "0.23.0" }
 amari-surcomplex = { path = "amari-surcomplex", version = "0.23.0" }
+amari-rewrite = { path = "amari-rewrite", version = "0.23.0" }
 amari-wasm = { path = "amari-wasm", version = "0.23.0" }
 
 # External dependencies
