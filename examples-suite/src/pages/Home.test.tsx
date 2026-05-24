@@ -25,6 +25,9 @@ describe('Home Page', () => {
 
     const tropicalElements = screen.getAllByText(/Tropical/i);
     expect(tropicalElements.length).toBeGreaterThan(0);
+
+    const surcomplexElements = screen.getAllByText(/Rational Surcomplex/i);
+    expect(surcomplexElements.length).toBeGreaterThan(0);
   });
 
   it('renders quick start section', () => {

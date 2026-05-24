@@ -25,6 +25,21 @@ describe('APIReference page', () => {
     expect(screen.getByText('foldOtimes')).toBeInTheDocument();
   });
 
+  it('lists the 0.23.0 rational surreal and surcomplex WASM APIs', () => {
+    render(<APIReference />);
+
+    fireEvent.click(screen.getByText('Rational Surreal & Surcomplex'));
+
+    expect(screen.getByText('WasmRationalSurreal')).toBeInTheDocument();
+    expect(screen.getByText('WasmRationalSurcomplex')).toBeInTheDocument();
+    expect(screen.getByText('WasmExperimentalEpsilonRational')).toBeInTheDocument();
+    expect(screen.getByText('fromRatio')).toBeInTheDocument();
+    expect(screen.getByText('fromParts')).toBeInTheDocument();
+    expect(screen.getByText('fromScalar')).toBeInTheDocument();
+    expect(screen.getByText('checkedReciprocal')).toBeInTheDocument();
+    expect(screen.getAllByText('checkedDiv').length).toBe(2);
+  });
+
   it('lists the 0.21.0 dual WASM branch policy and static multi-dual APIs', () => {
     render(<APIReference />);
 

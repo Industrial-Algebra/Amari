@@ -1,6 +1,6 @@
 {
   "name": "amari-interactive-demos",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "Interactive web demonstrations of Amari mathematical computing library",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "wasm-pack": "wasm-pack build --target web --out-dir pkg ../../../amari-wasm"
   },
   "dependencies": {
-    "@justinelliottcobb/amari-wasm": "^0.22.0",
+    "@justinelliottcobb/amari-wasm": "^0.23.0",
     "three": "^0.158.0",
     "dat.gui": "^0.7.9",
     "katex": "^0.16.8",

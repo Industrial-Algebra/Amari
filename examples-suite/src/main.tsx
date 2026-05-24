@@ -11,6 +11,7 @@ import App from './App'
 import { GeometricAlgebra } from './pages/GeometricAlgebra'
 import { TropicalAlgebra } from './pages/TropicalAlgebra'
 import { CgtSurreal } from './pages/CgtSurreal'
+import { Surcomplex } from './pages/Surcomplex'
 import { DualNumbers } from './pages/DualNumbers'
 import { InformationGeometry } from './pages/InformationGeometry'
 import { WebGPU } from './pages/WebGPU'
@@ -81,6 +82,10 @@ const router = createBrowserRouter([
       {
         path: "cgt-surreal",
         element: <CgtSurreal />,
+      },
+      {
+        path: "surcomplex",
+        element: <Surcomplex />,
       },
       {
         path: "dual-numbers",
