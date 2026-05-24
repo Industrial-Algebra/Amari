@@ -159,16 +159,28 @@ where
     where
         F: Fn(&Multivector<P, Q, R>) -> f64,
     {
+        self.estimate_with_rng(f, num_samples, &mut rand::rng())
+    }
+
+    /// Estimate E_target[f(X)] using a caller-provided RNG (for deterministic tests).
+    pub fn estimate_with_rng<F, Rng: rand::Rng>(
+        &self,
+        f: F,
+        num_samples: usize,
+        rng: &mut Rng,
+    ) -> Result<f64>
+    where
+        F: Fn(&Multivector<P, Q, R>) -> f64,
+    {
         if num_samples == 0 {
             return Err(ProbabilisticError::insufficient_samples(1, 0));
         }
 
-        let mut rng = rand::rng();
         let mut weighted_sum = 0.0;
         let mut weight_sum = 0.0;
 
         for _ in 0..num_samples {
-            let x = self.proposal.sample(&mut rng);
+            let x = self.proposal.sample(rng);
 
             let log_target = self.target.log_prob(&x).unwrap_or(f64::NEG_INFINITY);
             let log_proposal = self.proposal.log_prob(&x).unwrap_or(f64::NEG_INFINITY);
@@ -266,13 +278,16 @@ mod tests {
 
     #[test]
     fn test_importance_sampling() {
+        use rand::SeedableRng;
+
         let target =
             GaussianMultivector::<2, 0, 0>::isotropic(Multivector::scalar(2.0), 1.0).unwrap();
         let proposal = GaussianMultivector::<2, 0, 0>::standard();
         let sampler = ImportanceSampler::new(&target, &proposal);
 
-        // Estimate E_target[scalar_part] - should be ~2
-        let estimate = sampler.estimate(|x| x.get(0), 10000).unwrap();
+        // Use a seeded RNG for deterministic results.
+        let mut rng = rand::rngs::StdRng::seed_from_u64(42);
+        let estimate = sampler.estimate_with_rng(|x| x.get(0), 10000, &mut rng).unwrap();
         assert!((estimate - 2.0).abs() < 0.5);
     }
 }
