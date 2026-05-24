@@ -6,18 +6,20 @@
 
 It should be introduced **as a separate crate after `amari-surreal` is mature**, not folded into the initial stable scope of `amari-surreal` itself.
 
-**Status:** Proposed for a later release after `0.22.0`  
-**Immediate prerequisite:** Mature `amari-surreal` short-surreal layer  
-**Primary dependency:** `amari-surreal`  
-**Transitive dependency:** `amari-cgt` via `amari-surreal`  
-**Role in Amari:** Opt-in extension crate for exact and later symbolic surcomplex computation
+**Status:** Implemented in `0.23.0`
+**Target Release:** `0.23.0`
+**Immediate prerequisite:** `RationalSurreal` in `amari-surreal`
+**Primary dependency:** `amari-surreal`
+**Transitive dependency:** `amari-cgt` via `amari-surreal`
+**Role in Amari:** Opt-in extension crate for exact rational surcomplex computation
 
-The crate should begin with a **disciplined short/exact layer**:
+The crate begins with a **disciplined exact rational layer**:
 
-- coefficients in `ShortSurreal`
+- coefficients in `RationalSurreal`
 - exact arithmetic for values of the form `a + b i`
 - conjugation and norm-square operations
 - checked division when the denominator is nonzero
+- `1 / (1 + 1/2 i) = 4/5 - 2/5i` demonstrates why dyadic `ShortSurreal` coefficients are insufficient and rational scalars are needed for surcomplex closure
 
 It should **not** begin by claiming support for the full complexification of the entire surreal proper class, nor a full analytic theory over all future symbolic surreal forms.
 
@@ -30,11 +32,11 @@ It should **not** begin by claiming support for the full complexification of the
    - Avoid expanding the `0.22.0` surreal API into a broader algebra package
 
 2. **Build on a mature surreal scalar layer**
-   - Reuse `ShortSurreal`, `Dyadic`, and later supported symbolic surreal forms
+   - Reuse `RationalSurreal` as the primary coefficient type, with `ShortSurreal`/`Dyadic` available through conversion and later symbolic surreal forms deferred
    - Avoid duplicating coefficient logic inside the complex layer
 
 3. **Start with exact, computationally honest arithmetic**
-   - Short surcomplex numbers over exact short surreal coefficients
+   - Rational surcomplex numbers over exact rational surreal coefficients
    - No hidden float approximation in the stable core
 
 4. **Leave room for later symbolic extensions**
@@ -58,7 +60,7 @@ It should **not** begin by claiming support for the full complexification of the
 - A drop-in replacement for ordinary complex arithmetic across all Amari crates
 - Any claim that `amari-surcomplex` is the algebraic closure of all supported future surreal constructions
 
-The first serious version should be about **correct exact arithmetic for short surcomplex values**, not maximal generality.
+The first serious version should be about **correct exact arithmetic for rational surcomplex values**, not maximal generality.
 
 ---
 
@@ -77,13 +79,13 @@ where:
 - `a` and `b` belong to a supported surreal coefficient domain
 - `i^2 = -1`
 
-For the initial release, the supported coefficient domain should be:
+For the `0.23.0` release, the supported coefficient domain is:
 
 ```text
-a, b ∈ ShortSurreal
+a, b ∈ RationalSurreal
 ```
 
-Since `ShortSurreal` is currently implemented via exact dyadics, the initial surcomplex layer is effectively an exact **Gaussian dyadic** layer with surreal provenance and future surreal extensibility.
+Since `RationalSurreal` supports exact rational arithmetic (not limited to dyadics), the surcomplex layer is an exact **Gaussian rational** layer. The earlier `ShortSurreal` dyadic layer is accessible via conversion but is not the primary coefficient type — dyadic-only coefficients cannot represent all surcomplex division results (e.g., `1 / (1 + 1/2 i) = 4/5 - 2/5i`), which is why `RationalSurreal` was introduced as the scalar foundation.
 
 ## Important Ordering Boundary
 
@@ -107,27 +109,28 @@ Division should be defined by the usual exact formula when the denominator is no
 (a + b i) / (c + d i) = ((a + b i)(c - d i)) / (c^2 + d^2)
 ```
 
-This fits naturally with `ShortSurreal` because:
+This fits naturally with `RationalSurreal` because:
 
-- `c^2 + d^2` is a short surreal
+- `c^2 + d^2` is an exact rational surreal scalar
 - zero-testing is exact
-- division can be delegated to supported exact surreal division when defined
+- division is total for nonzero rational denominators
 
 ---
 
 ## Strategic Scope
 
-## Stage A — Exact Short Surcomplex Layer
+## Stage A — Exact Rational Surcomplex Layer (shipped in v0.23.0)
 
-The first public version of `amari-surcomplex` should promise:
+The first public version of `amari-surcomplex` delivers:
 
-- coefficients in `ShortSurreal`
-- exact construction from integers, dyadics, or short surreal values
+- coefficients in `RationalSurreal`
+- exact construction from integers, rationals, dyadics, or `RationalSurreal` values
 - exact addition, subtraction, negation, multiplication
 - conjugation
 - exact norm-square
-- checked division for nonzero denominators
+- checked division for nonzero denominators (producing exact rational coefficients)
 - formatting and testable algebraic identities
+- `1 / (1 + 1/2 i) = 4/5 - 2/5i` demonstrating rational-closure necessity
 
 ## Stage B — Ergonomic Extensions
 
@@ -158,43 +161,25 @@ This stage should remain explicitly experimental until the coefficient story is 
 
 Instead, it should depend on:
 
-- `amari-surreal::ShortSurreal` for the stable initial coefficient layer
+- `amari-surreal::RationalSurreal` for the stable initial coefficient layer
 - later stable symbolic surreal types if and when they exist
 
 ## Recommended Core Type
 
-### `ShortSurcomplex`
+### `RationalSurcomplex` (shipped in v0.23.0)
 
 ```rust
-pub struct ShortSurcomplex {
-    real: ShortSurreal,
-    imag: ShortSurreal,
+pub struct RationalSurcomplex {
+    real: RationalSurreal,
+    imag: RationalSurreal,
 }
 ```
 
-This type should be the stable first-class value for the initial release.
+This is the stable first-class type for the `0.23.0` release. It uses `RationalSurreal` coefficients rather than `ShortSurreal` to support exact rational division results.
 
-### Why not make it generic immediately?
+### Why `RationalSurreal` rather than `ShortSurreal`?
 
-A generic type such as:
-
-```rust
-pub struct Surcomplex<T> {
-    real: T,
-    imag: T,
-}
-```
-
-is conceptually attractive, but it pushes typeclass/trait design questions too early.
-
-For the first serious version, a concrete `ShortSurcomplex` keeps the API:
-
-- simpler
-- easier to document
-- easier to test
-- tightly aligned with the current exact short-surreal scope
-
-A generic coefficient abstraction can be introduced later if it becomes clearly useful.
+Division in surcomplex arithmetic produces rational (not necessarily dyadic) coefficients: `1 / (1 + 1/2 i) = 4/5 - 2/5i`. The dyadic `ShortSurreal` layer cannot represent `4/5`, so `RationalSurreal` was introduced as the scalar foundation for surcomplex arithmetic. A generic coefficient type is deferred until the need for it becomes clear.
 
 ### Later / Experimental Types
 
@@ -202,7 +187,7 @@ If `amari-surreal` grows a symbolic layer, `amari-surcomplex` may later introduc
 
 ```rust
 pub enum SurcomplexExpr {
-    Short(ShortSurcomplex),
+    Rational(RationalSurcomplex),
     Symbolic {
         real: SurrealExpr,
         imag: SurrealExpr,
@@ -223,7 +208,7 @@ amari-surcomplex/
 ├── src/
 │   ├── lib.rs
 │   ├── error.rs
-│   ├── short.rs          # ShortSurcomplex core type
+│   ├── rational.rs       # RationalSurcomplex core type
 │   ├── arithmetic.rs     # +, -, *, checked_div, conjugation, norm_sq
 │   ├── convert.rs        # integer/dyadic/short-surreal conversions
 │   ├── prelude.rs
@@ -240,7 +225,7 @@ amari-surcomplex/
 
 The actual module layout can be simplified at first, but the main architectural point is:
 
-- exact short layer first
+- exact rational layer first
 - symbolic layer later and explicitly separated
 
 ---
@@ -248,42 +233,40 @@ The actual module layout can be simplified at first, but the main architectural 
 ## Public API Sketch
 
 ```rust
-use amari_surcomplex::ShortSurcomplex;
-use amari_surreal::ShortSurreal;
+use amari_surcomplex::RationalSurcomplex;
+use amari_surreal::RationalSurreal;
 
-let one = ShortSurcomplex::one();
-let i = ShortSurcomplex::i();
+let one = RationalSurcomplex::one();
+let i = RationalSurcomplex::i();
 let z = one.clone() + i.clone();
 let w = z.clone() * z.clone();
 
-assert_eq!(w.real(), ShortSurreal::zero());
-assert_eq!(w.imag(), ShortSurreal::from_integer(2));
+assert_eq!(w.real(), &RationalSurreal::zero());
+assert_eq!(w.imag(), &RationalSurreal::from_integer(2));
 assert_eq!(
     z.conjugate(),
-    ShortSurcomplex::from_parts(ShortSurreal::one(), -ShortSurreal::one())
+    RationalSurcomplex::from_parts(RationalSurreal::one(), -RationalSurreal::one())
 );
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-### Suggested public API
+### Actual public API (v0.23.0)
 
 ```rust
-impl ShortSurcomplex {
+impl RationalSurcomplex {
     pub fn zero() -> Self;
     pub fn one() -> Self;
     pub fn i() -> Self;
 
     pub fn from_integer(n: i64) -> Self;
-    pub fn from_dyadic(real: Dyadic) -> Self;
-    pub fn from_real(real: ShortSurreal) -> Self;
-    pub fn from_parts(real: ShortSurreal, imag: ShortSurreal) -> Self;
+    pub fn from_parts(real: RationalSurreal, imag: RationalSurreal) -> Self;
 
-    pub fn real(&self) -> ShortSurreal;
-    pub fn imag(&self) -> ShortSurreal;
+    pub fn real(&self) -> &RationalSurreal;
+    pub fn imag(&self) -> &RationalSurreal;
     pub fn conjugate(&self) -> Self;
-    pub fn norm_sq(&self) -> ShortSurreal;
+    pub fn norm_sq(&self) -> RationalSurreal;
 
-    pub fn checked_div(&self, rhs: &Self) -> Result<Self>;
+    pub fn checked_div(&self, rhs: &Self) -> Result<Self, SurcomplexError>;
 }
 ```
 
@@ -341,7 +324,7 @@ Keeping `amari-surcomplex` separate:
 
 ## Stable Initial Operations
 
-For `ShortSurcomplex`, the stable initial release should implement:
+For `RationalSurcomplex`, the stable initial release implements:
 
 - addition
 - subtraction
@@ -352,11 +335,11 @@ For `ShortSurcomplex`, the stable initial release should implement:
 - norm-square
 - checked division
 
-These operations can be expressed entirely in terms of `ShortSurreal` arithmetic.
+These operations are expressed in terms of exact `RationalSurreal` arithmetic.
 
 ## Scalar Embedding
 
-A short surreal value should embed naturally as a purely real surcomplex value:
+A rational surreal value embeds naturally as a purely real surcomplex value:
 
 ```text
 a ↦ a + 0i
@@ -383,7 +366,7 @@ A value is invertible exactly when:
 norm_sq(z) ≠ 0
 ```
 
-For the initial short/exact layer, this is an exact and efficiently testable condition.
+For the initial rational/exact layer, this is an exact and efficiently testable condition.
 
 ---
 
@@ -435,8 +418,8 @@ Build a test corpus for:
 ## Identity tests
 
 - `z * conjugate(z) = norm_sq(z)` as a purely real value
-- `norm_sq(z * w) = norm_sq(z) * norm_sq(w)` in the short exact layer
-- purely real embeddings behave like underlying `ShortSurreal` arithmetic
+- `norm_sq(z * w) = norm_sq(z) * norm_sq(w)` in the rational exact layer
+- purely real embeddings behave like underlying `RationalSurreal` arithmetic
 
 ## Failure tests
 
@@ -449,13 +432,13 @@ Build a test corpus for:
 
 Initial benchmark targets:
 
-- short surcomplex addition
+- rational surcomplex addition
 - multiplication
 - division
 - polynomial evaluation on small exact inputs
 - repeated conjugation/norm computations
 
-Benchmarks should stay focused on the exact short layer before any symbolic complexity is introduced.
+Benchmarks should stay focused on the exact rational layer before any symbolic complexity is introduced.
 
 ---
 
@@ -471,18 +454,18 @@ Indirect foundational dependency through `amari-surreal`.
 
 ## `amari-wasm`
 
-Natural later target for:
+Release target covered in v0.23.0 via `WasmRationalSurcomplex`, with later room for:
 
-- visualizing exact Gaussian-dyadic lattices
+- visualizing exact Gaussian-rational lattices
 - interactive multiplication/conjugation demos
-- educational views of exact surreal-complex arithmetic
+- educational views of exact rational-surcomplex arithmetic
 
 ## `amari-enumerative`
 
 Possible later connection for:
 
 - counting bounded exact coefficient families
-- studying distribution of norm values in small short-surcomplex corpora
+- studying distribution of norm values in small rational-surcomplex corpora
 
 These integrations should come only after the core surcomplex arithmetic is stable.
 
@@ -490,30 +473,28 @@ These integrations should come only after the core surcomplex arithmetic is stab
 
 ## Release Strategy
 
-`amari-surcomplex` should be introduced:
+`amari-surcomplex` was introduced in `0.23.0`:
 
 - as a separate workspace crate
 - as an **opt-in** extension
-- only after `amari-surreal` is stable enough to act as a reliable scalar dependency
-- **not** as part of the `0.22.0` CGT/surreal release scope
-
-Recommended umbrella feature later:
+- after `RationalSurreal` provided the exact rational scalar dependency
+- with the umbrella feature:
 
 ```toml
 surcomplex = ["dep:amari-surcomplex", "surreal"]
 ```
 
-No target release number needs to be locked yet. The gating condition is maturity, not calendar pressure.
+`surcomplex` implies `surreal`, which implies `cgt`.
 
 ---
 
 ## Proposed Implementation Phases
 
-## Phase 1 — Exact Short Surcomplex Core
+## Phase 1 — Exact Rational Surcomplex Core
 
 Deliver:
 
-- `ShortSurcomplex`
+- `RationalSurcomplex`
 - exact constructors
 - exact arithmetic
 - conjugation
@@ -552,19 +533,19 @@ Possible later extensions include:
 - visualization and educational tooling via WASM
 - connections to asymptotic or valuation-style abstractions later on
 
-All of these should come only after the exact short layer is unquestionably solid.
+All of these should come only after the exact rational layer is unquestionably solid.
 
 ---
 
 ## Summary
 
-`amari-surcomplex` should be a **separate later-release crate** that depends on a mature `amari-surreal`.
+`amari-surcomplex` is a **separate crate** that depends on the disciplined scalar layers in `amari-surreal`.
 
 Its first stable scope should be:
 
-- exact short surcomplex arithmetic
-- concrete `ShortSurcomplex` values
-- clean dependence on `ShortSurreal`
+- exact rational surcomplex arithmetic
+- concrete `RationalSurcomplex` values
+- clean dependence on `RationalSurreal`
 - mathematically honest boundaries around what is and is not implemented
 
-This keeps `amari-surreal` focused, gives Amari a clean future extension path, and lets surcomplex work arrive when the surreal scalar layer is ready to support it well.
+This keeps `amari-surreal` focused, gives Amari a clean future extension path, and lets future surcomplex work grow only when the surreal scalar layer is ready to support it well.

@@ -29,7 +29,8 @@ getrandom = { version = "0.4", features = ["wasm_js"] }
 # Native users can opt-in to native-precision for rug backend
 amari-core = { path = "../amari-core", features = ["phantom-types"] }
 amari-cgt = { path = "../amari-cgt" }
-amari-surreal = { path = "../amari-surreal" }
+amari-surreal = { path = "../amari-surreal", features = ["experimental-epsilon"] }
+amari-surcomplex = { path = "../amari-surcomplex" }
 amari-network = { path = "../amari-network", features = ["high-precision"] }
 amari-tropical = { path = "../amari-tropical" }
 amari-dual = { path = "../amari-dual" }

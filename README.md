@@ -1,8 +1,8 @@
-# Amari v0.22.0
+# Amari v0.23.0
 
 **Comprehensive Mathematical Computing Platform with Geometric Algebra, Differential Calculus, Measure Theory, Probability Theory, Functional Analysis, Algebraic Topology, Dynamical Systems, and Vector Symbolic Architectures**
 
-A unified mathematical computing library featuring geometric algebra, differential calculus, measure theory, probability theory on geometric spaces, functional analysis (Hilbert spaces, operators, spectral theory), algebraic topology (homology, persistent homology, Morse theory), dynamical systems analysis (ODE solvers, stability, bifurcations, chaos, Lyapunov exponents), relativistic physics, tropical algebra, automatic differentiation, holographic associative memory (Vector Symbolic Architectures), optical field operations for holographic displays, and information geometry. The library provides multi-GPU infrastructure with intelligent workload distribution and complete WebAssembly support for browser deployment. Version 0.22.0 releases the `amari-cgt` and `amari-surreal` exact game-theoretic crates while preserving the 0.21.0 tropical/dual extension surface and the 0.20.0 correctness-first GPU stabilization baseline.
+A unified mathematical computing library featuring geometric algebra, differential calculus, measure theory, probability theory on geometric spaces, functional analysis (Hilbert spaces, operators, spectral theory), algebraic topology (homology, persistent homology, Morse theory), dynamical systems analysis (ODE solvers, stability, bifurcations, chaos, Lyapunov exponents), relativistic physics, tropical algebra, automatic differentiation, holographic associative memory (Vector Symbolic Architectures), optical field operations for holographic displays, term rewriting (ARS/TRS), and information geometry. The library provides multi-GPU infrastructure with intelligent workload distribution and complete WebAssembly support for browser deployment. Version 0.23.0 releases the `RationalSurreal` exact rational scalar layer, experimental epsilon rational functions, the new `amari-surcomplex` exact rational complex crate, `WasmGenericMultivector` for arbitrary-signature Clifford algebra, and the `amari-rewrite` term-rewriting crate while preserving the v0.22.0 CGT/surreal surface and the v0.21.0 tropical/dual extension surface.
 
 [![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-Ready-blue.svg)](https://webassembly.org/)
@@ -11,6 +11,15 @@ A unified mathematical computing library featuring geometric algebra, differenti
 
 **[Live Examples Suite](https://amari-math.netlify.app)** | **[API Documentation](https://docs.rs/amari)** | **[MCP Server](https://github.com/justinelliottcobb/Amari-mcp)**
 
+
+## v0.23.0 Highlights
+
+- **`RationalSurreal`** in `amari-surreal` is now a stable exact rational scalar field backed by `BigRational`, going beyond the finite dyadic `ShortSurreal` layer. `ShortSurreal` remains the short/dyadic slice — it does not claim arbitrary rationals or the full surreal universe.
+- **`amari-surcomplex`** is a new crate providing exact rational complex arithmetic over `RationalSurreal`. Division `1 / (1 + 1/2 i) = 4/5 - 2/5i` demonstrates why dyadic `ShortSurreal` coefficients are insufficient for surcomplex closure and rational scalars are needed.
+- **Epsilon rational functions** are available behind `experimental-epsilon` in `amari-surreal` — polynomials and rational functions in a formal positive infinitesimal `ε`, ordered by asymptotic behaviour as `ε → 0⁺`. This is **not** a nilpotent-dual-number system. Puiseux series, Hahn series, and generalized ordered-series fields remain a future extension path, not implemented in v0.23.
+- **`amari-wasm`** exposes `WasmRationalSurreal`, `WasmRationalSurcomplex`, and `WasmExperimentalEpsilonRational` to TypeScript, with dynamic WASM version-gating in the examples suite.
+- **Arbitrary-signature WASM** — `WasmGenericMultivector(p, q, r)` lets users select any Clifford algebra signature at runtime. Operations for DIM ≤ 6 dispatch through a compile-time match table (84 signatures); larger dimensions fall back to a cached Cayley-table path. 8 fast-path aliases (`WasmMultivector300`, `210`, `310`, `200`, `030`, `410`, `500`, `110`) provide pre-built convenience for the most common physics/engineering signatures.
+- **`amari-rewrite`** is a new crate providing foundational ARS/TRS term-rewriting with `Rewritable` traits, path replacement, substitution/matching, bounded inverse rewriting, anti-unification, and rule inference scaffolding. Experimental `neural`, `smt`, and `amari-network` feature gates offer rewrite-search guidance hooks.
 
 ## v0.22.0 Highlights
 
@@ -55,6 +64,8 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **Combinatorial Game Theory** *(v0.22.0 extension focus)*: Short normal-play games, canonical forms, outcome classes, nimbers, and small exact-layer generation via `amari-cgt`
 - **Short Surreal Numbers** *(v0.22.0 extension focus)*: Exact dyadic arithmetic, numeric-game validation, simplest-number construction, and game/value round trips via `amari-surreal`
 - **GPU Backend Stabilization** *(v0.20.0 baseline)*: Hardware-validated WebGPU acceleration with public API tests, CPU-baseline correctness checks, benchmark/crossover documentation, and explicit GPU-backed vs GPU-recommended guidance
+- **Arbitrary-Signature GA** *(v0.23.0)*: Runtime Clifford algebra signature selection via `WasmGenericMultivector(p, q, r)` — all 84 DIM ≤ 6 signatures dispatched through a compile-time match table, with a Cayley-table fallback for larger signatures. 8 fast-path aliases cover the most common signatures (Euclidean, Minkowski, CGA, quaternion, etc.)
+- **Term Rewriting** *(v0.23.0)*: Foundational ARS/TRS term-rewriting crate with `Rewritable` traits, path replacement/traversal, substitution/matching, bounded inverse rewriting, anti-unification, and rule inference scaffolding via `amari-rewrite`
 
 ### GPU Acceleration & Multi-GPU Infrastructure
 
@@ -73,21 +84,22 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **TypeScript Support**: Complete TypeScript definitions included
 - **Cross-Platform**: Linux, macOS, Windows, browsers, Node.js, and edge computing environments
 
-## v0.22.0 Exact Game-Theoretic Extensions
+## v0.23.0 Rational Surreal & Surcomplex Extensions
 
-The workspace now includes two opt-in exact game-theoretic crates released for the `0.22.0` cycle:
+The workspace now includes the exact rational surreal scalar layer, experimental epsilon rational functions, and the new `amari-surcomplex` crate:
 
-- **`amari-cgt`**: computational combinatorial game theory for short normal-play games, including canonicalization, nimbers, and small exhaustive layer generation
-- **`amari-surreal`**: computable short surreal numbers built on validated numeric games from `amari-cgt`, with exact dyadic arithmetic
+- **`RationalSurreal`** in `amari-surreal`: exact rational scalar field bridging the gap between the dyadic `ShortSurreal` layer and full surreal generality. `ShortSurreal` remains the short/dyadic slice — it does not claim arbitrary rationals or the full surreal universe.
+- **`amari-surreal` experimental-epsilon**: epsilon polynomials and rational functions in a formal positive infinitesimal `ε` (not nilpotent dual numbers; Puiseux/Hahn/generalized series deferred to future extensions)
+- **`amari-surcomplex`**: exact rational complex arithmetic over `RationalSurreal`, separate crate from `amari-surreal`
 
 At the umbrella-crate level these are exposed through optional features:
 
 ```toml
 [dependencies]
-amari = { version = "0.22.0", features = ["cgt", "surreal"] }
+amari = { version = "0.23.0", features = ["surreal", "surcomplex"] }
 ```
 
-`surreal` implies `cgt`, while `cgt` also enables the lightweight `amari-enumerative` bridge for CGT layer-growth summaries.
+`surcomplex` implies `surreal`, which implies `cgt`. The `surreal` feature also gates `RationalSurreal` and the opt-in `experimental-epsilon` feature.
 
 ## Installation
 
@@ -98,71 +110,72 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 # Complete library with all features
-amari = "0.22.0"
+amari = "0.23.0"
 
 # Or individual crates:
 
 # Core geometric algebra and mathematical foundations
-amari-core = "0.22.0"
+amari-core = "0.23.0"
 
 # Differential calculus with geometric algebra
-amari-calculus = "0.22.0"
+amari-calculus = "0.23.0"
 
 # Measure theory and integration
-amari-measure = "0.22.0"
+amari-measure = "0.23.0"
 
 # Probability theory on geometric algebra spaces
-amari-probabilistic = "0.22.0"
+amari-probabilistic = "0.23.0"
 
 # Functional analysis: Hilbert spaces, operators, spectral theory
-amari-functional = "0.22.0"
+amari-functional = "0.23.0"
 
 # Algebraic topology: homology, persistent homology, Morse theory
-amari-topology = "0.22.0"
+amari-topology = "0.23.0"
 
 # Dynamical systems: ODE solvers, stability, bifurcations, Lyapunov exponents
-amari-dynamics = "0.22.0"
+amari-dynamics = "0.23.0"
 
 # Vector Symbolic Architectures, holographic memory, and optical fields
-amari-holographic = "0.22.0"
+amari-holographic = "0.23.0"
 
 # High-precision relativistic physics
-amari-relativistic = { version = "0.22.0", features = ["high-precision"] }
+amari-relativistic = { version = "0.23.0", features = ["high-precision"] }
 
 # GPU acceleration (includes optical field GPU operations)
-amari-gpu = "0.22.0"
+amari-gpu = "0.23.0"
 
 # Optimization algorithms
-amari-optimization = "0.22.0"
+amari-optimization = "0.23.0"
 
 # Additional mathematical systems
-amari-tropical = "0.22.0"    # max-plus semiring + ordinal weights below ε₀
-amari-dual = "0.22.0"        # forward-mode AD + branch policies + static gradients
-amari-info-geom = "0.22.0"
-amari-automata = "0.22.0"
-amari-fusion = "0.22.0"
-amari-network = "0.22.0"
-amari-enumerative = "0.22.0"
-amari-cgt = "0.22.0"         # short combinatorial games + nimbers
-amari-surreal = "0.22.0"    # exact short surreal numbers over numeric games
+amari-tropical = "0.23.0"    # max-plus semiring + ordinal weights below ε₀
+amari-dual = "0.23.0"        # forward-mode AD + branch policies + static gradients
+amari-info-geom = "0.23.0"
+amari-automata = "0.23.0"
+amari-fusion = "0.23.0"
+amari-network = "0.23.0"
+amari-enumerative = "0.23.0"
+amari-cgt = "0.23.0"         # short combinatorial games + nimbers
+amari-surreal = "0.23.0"    # exact rational surreal scalars + epsilon rationals
+amari-surcomplex = "0.23.0" # exact rational surcomplex arithmetic
 
 # Probabilistic verification contracts (SMT-LIB2, Monte Carlo)
-amari-flynn = "0.22.0"
+amari-flynn = "0.23.0"
 
 # Optional Rust-side WebAssembly crate
-amari-wasm = "0.22.0"
+amari-wasm = "0.23.0"
 ```
 
 ### JavaScript/TypeScript (WebAssembly)
 
 ```bash
-npm install @justinelliottcobb/amari-wasm@0.22.0
+npm install @justinelliottcobb/amari-wasm@0.23.0
 ```
 
 Or with yarn:
 
 ```bash
-yarn add @justinelliottcobb/amari-wasm@0.22.0
+yarn add @justinelliottcobb/amari-wasm@0.23.0
 ```
 
 ## Quick Start
@@ -826,12 +839,13 @@ The **[Amari Examples Suite](https://amari-math.netlify.app)** provides comprehe
 
 - **Interactive Playground**: Write and run JavaScript code with live WASM execution
 
-## Examples & Documentation (v0.22.0)
+## Examples & Documentation (v0.23.0)
 
-The examples suite is versioned for `0.22.0` and now includes release-focused CGT/surreal WebAssembly workflows alongside the broader mathematical catalog:
+The examples suite is versioned for `0.23.0` and now includes release-focused rational surreal / surcomplex workflows alongside the v0.22 CGT/surreal workflows and the broader mathematical catalog:
 
 - **CGT 0.22.0 WASM examples**: `WasmCgtArena`, short-game cuts, outcomes, comparison, nimbers, and `WasmGameInspection`
 - **Surreal 0.22.0 WASM examples**: `WasmDyadic`, `WasmShortSurreal`, exact dyadic arithmetic, checked division, and numeric-game conversion
+- **Rational surreal / surcomplex 0.23.0 WASM examples**: `WasmRationalSurreal`, `WasmRationalSurcomplex`, `WasmExperimentalEpsilonRational`, exact rational division, surcomplex division, and infinitesimal ordering
 - **Tropical 0.21.0 WASM examples**: `TropicalBatch.foldOplus`, `TropicalBatch.foldOtimes`, `WasmOrdinalArena`, and `WasmOrdinalWeight`
 - **Dual 0.21.0 WASM examples**: `WasmBranchPolicy`, `WasmMultiDualNumber.variables(...)`, and `WasmStaticMultiDual2` hot-loop gradients
 - **API reference coverage**: the new CGT/surreal and tropical/dual extension classes and methods are listed in the browser reference

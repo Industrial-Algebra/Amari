@@ -746,6 +746,157 @@ console.log(composed); // 10`
     ]
   },
   {
+    id: "surcomplex",
+    title: "Rational Surreal & Surcomplex",
+    description: "Exact rational surreal arithmetic, rational surcomplex division, and experimental epsilon infinitesimal ordering for v0.23.0",
+    icon: "ℂ",
+    classes: [
+      {
+        name: "WasmRationalSurreal",
+        description: "Exact rational surreal number backed by arbitrary-precision rational arithmetic. Supports fromRatio, add, and checkedDiv.",
+        methods: [
+          {
+            name: "fromRatio",
+            signature: "static fromRatio(numerator: number, denominator: number): WasmRationalSurreal",
+            description: "Create a rational surreal from a numerator and denominator.",
+            isStatic: true,
+            parameters: [
+              { name: "numerator", type: "number", description: "Rational numerator" },
+              { name: "denominator", type: "number", description: "Non-zero rational denominator" }
+            ],
+            returns: "WasmRationalSurreal representing the exact rational",
+            example: `const third = WasmRationalSurreal.fromRatio(1, 3);
+console.log(third.format()); // 1/3`
+          },
+          {
+            name: "add",
+            signature: "add(other: WasmRationalSurreal): WasmRationalSurreal",
+            description: "Exact rational surreal addition.",
+            parameters: [{ name: "other", type: "WasmRationalSurreal", description: "Addend" }],
+            returns: "Sum as a WasmRationalSurreal",
+            example: `const a = WasmRationalSurreal.fromRatio(1, 3);
+const b = WasmRationalSurreal.fromRatio(1, 6);
+console.log(a.add(b).format()); // 1/2`
+          },
+          {
+            name: "checkedDiv",
+            signature: "checkedDiv(other: WasmRationalSurreal): WasmRationalSurreal",
+            description: "Checked exact division that returns an error if the result falls outside the rational surreal layer.",
+            parameters: [{ name: "other", type: "WasmRationalSurreal", description: "Non-zero divisor" }],
+            returns: "Quotient as a WasmRationalSurreal"
+          },
+          {
+            name: "format",
+            signature: "format(): string",
+            description: "Format the rational surreal as a human-readable rational string.",
+            returns: "Formatted rational (e.g. '1/3' or '17/42')"
+          }
+        ]
+      },
+      {
+        name: "WasmRationalSurcomplex",
+        description: "Exact rational surcomplex number a + bi with a, b ∈ rational surreals. Supports pair construction and checked division.",
+        methods: [
+          {
+            name: "fromParts",
+            signature: "static fromParts(real: WasmRationalSurreal, imag: WasmRationalSurreal): WasmRationalSurcomplex",
+            description: "Create a rational surcomplex number from its real and imaginary parts.",
+            isStatic: true,
+            parameters: [
+              { name: "real", type: "WasmRationalSurreal", description: "Real part" },
+              { name: "imag", type: "WasmRationalSurreal", description: "Imaginary part" }
+            ],
+            returns: "WasmRationalSurcomplex representing real + imag·i",
+            example: `const one = WasmRationalSurreal.fromRatio(1, 1);
+const half = WasmRationalSurreal.fromRatio(1, 2);
+const z = WasmRationalSurcomplex.fromParts(one, half);
+console.log(z.format()); // 1 + 1/2i`
+          },
+          {
+            name: "add",
+            signature: "add(other: WasmRationalSurcomplex): WasmRationalSurcomplex",
+            description: "Component-wise exact rational surcomplex addition.",
+            parameters: [{ name: "other", type: "WasmRationalSurcomplex", description: "Addend" }],
+            returns: "Sum as a WasmRationalSurcomplex"
+          },
+          {
+            name: "checkedDiv",
+            signature: "checkedDiv(other: WasmRationalSurcomplex): WasmRationalSurcomplex",
+            description: "Checked exact complex division using the conjugate, returning 4/5 - 2/5i from 1 / (1 + 1/2i).",
+            parameters: [{ name: "other", type: "WasmRationalSurcomplex", description: "Non-zero divisor" }],
+            returns: "Exact quotient",
+            example: `const zero = WasmRationalSurreal.fromRatio(0, 1);
+const one = WasmRationalSurreal.fromRatio(1, 1);
+const half = WasmRationalSurreal.fromRatio(1, 2);
+const num = WasmRationalSurcomplex.fromParts(one, zero);
+const den = WasmRationalSurcomplex.fromParts(one, half);
+console.log(num.checkedDiv(den).format()); // 4/5 - 2/5i`
+          },
+          {
+            name: "format",
+            signature: "format(): string",
+            description: "Format the rational surcomplex as a + bi string.",
+            returns: "Formatted complex (e.g. '4/5 - 2/5i')"
+          }
+        ]
+      },
+      {
+        name: "WasmExperimentalEpsilonRational",
+        description: "Experimental infinitesimal rational surreal ε satisfying 0 < ε < 1/n for every finite positive n. ε² < ε and 1/ε is infinite-scale.",
+        methods: [
+          {
+            name: "epsilon",
+            signature: "static epsilon(): WasmExperimentalEpsilonRational",
+            description: "Return the fundamental infinitesimal ε.",
+            isStatic: true,
+            returns: "The infinitesimal ε value"
+          },
+          {
+            name: "fromScalar",
+            signature: "static fromScalar(value: WasmRationalSurreal): WasmExperimentalEpsilonRational",
+            description: "Embed a rational surreal scalar into the epsilon layer.",
+            isStatic: true,
+            parameters: [{ name: "value", type: "WasmRationalSurreal", description: "Rational surreal to embed" }],
+            returns: "WasmExperimentalEpsilonRational wrapping the rational"
+          },
+          {
+            name: "add",
+            signature: "add(other: WasmExperimentalEpsilonRational): WasmExperimentalEpsilonRational",
+            description: "Add two epsilon-layer values.",
+            parameters: [{ name: "other", type: "WasmExperimentalEpsilonRational", description: "Addend" }],
+            returns: "Sum"
+          },
+          {
+            name: "mul",
+            signature: "mul(other: WasmExperimentalEpsilonRational): WasmExperimentalEpsilonRational",
+            description: "Multiply two epsilon-layer values.",
+            parameters: [{ name: "other", type: "WasmExperimentalEpsilonRational", description: "Multiplier" }],
+            returns: "Product"
+          },
+          {
+            name: "compare",
+            signature: "compare(other: WasmExperimentalEpsilonRational): string",
+            description: "Compare two epsilon-layer values, returning 'less', 'equal', or 'greater'.",
+            parameters: [{ name: "other", type: "WasmExperimentalEpsilonRational", description: "Value to compare against" }],
+            returns: "Comparison result"
+          },
+          {
+            name: "checkedReciprocal",
+            signature: "checkedReciprocal(): WasmExperimentalEpsilonRational",
+            description: "Compute the checked multiplicative inverse. 1/ε is infinite-scale.",
+            returns: "Multiplicative inverse"
+          },
+          {
+            name: "format",
+            signature: "format(): string",
+            description: "Format the epsilon-layer value.",
+            returns: "Human-readable string"
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: "dual",
     title: "Dual Numbers & Autodiff",
     description: "Automatic differentiation using dual numbers for exact gradients",

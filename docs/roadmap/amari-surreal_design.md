@@ -4,14 +4,27 @@
 
 **`amari-surreal`** is a proposed Amari crate for **computable surreal numbers**, built on top of validated numeric games from `amari-cgt`. Its purpose is to extend Amari into a new algebraic and analytic direction while staying computationally grounded.
 
-**Status:** Planned for `0.22.0`  
-**Target Release:** `0.22.0`  
-**Role in Amari:** Opt-in mathematical extension crate with high-completeness release goals  
-**Primary Dependency:** `amari-cgt`  
-**Primary Goal:** Exact computation with short surreal numbers and a disciplined path toward restricted symbolic surreal extensions  
-**Roadmap:** `docs/roadmap/v0.22.0-cgt-surreal-roadmap.md`
+**Status:** Released in `0.22.0` (ShortSurreal); extended in `0.23.0` (RationalSurreal, experimental epsilon)
+**Target Release:** `0.22.0` (initial), `0.23.0` (rational + epsilon extension)
+**Role in Amari:** Opt-in mathematical extension crate with high-completeness release goals
+**Primary Dependency:** `amari-cgt`
+**Primary Goal:** Exact computation with short surreal numbers (dyadic layer), exact rational surreal scalars, and a disciplined path toward restricted symbolic surreal extensions
+**Roadmap:** `docs/roadmap/v0.22.0-cgt-surreal-roadmap.md`, `docs/roadmap/v0.23.0-rational-surreal-surcomplex-roadmap.md`
 
-The crate should begin with **short surreals** and only later expand toward carefully chosen symbolic subclasses. It should not begin by claiming support for the full class of all surreal numbers.
+The crate began with **short surreals** in `0.22.0` and expanded to **exact rational surreal scalars** in `0.23.0`. It should only later expand toward carefully chosen symbolic subclasses. It should not begin by claiming support for the full class of all surreal numbers.
+
+### What shipped in v0.22.0
+
+- `ShortSurreal` — finite short/dyadic layer (not arbitrary rationals, not the full surreal universe)
+- `Dyadic` — exact dyadic arithmetic backend
+- Numeric-game validation bridge from `amari-cgt`
+- Simplest-number construction for finite cuts
+
+### What shipped in v0.23.0
+
+- `RationalSurreal` — exact rational scalar field backed by `BigRational`, bridging the gap between the dyadic `ShortSurreal` layer and full surreal generality
+- `experimental-epsilon` feature — polynomials and rational functions in a formal positive infinitesimal `ε`, ordered by asymptotic behaviour as `ε → 0⁺`. This is **not** a nilpotent-dual-number system.
+- Puiseux series, Hahn series, and generalized ordered-series fields remain a future extension path, not implemented in v0.23.
 
 ---
 

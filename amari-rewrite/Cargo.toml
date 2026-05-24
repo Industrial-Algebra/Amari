@@ -1,0 +1,26 @@
+[package]
+name = "amari-rewrite"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Abstract and term rewriting systems for the Amari library"
+repository = "https://github.com/justinelliottcobb/Amari"
+homepage = "https://github.com/justinelliottcobb/Amari"
+keywords = ["mathematics", "rewriting", "trs", "rules", "synthesis"]
+categories = ["mathematics", "science", "algorithms"]
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true, optional = true }
+amari-network = { workspace = true, optional = true }
+
+[features]
+default = ["std"]
+std = []
+serialize = ["dep:serde"]
+macros = []
+smt = []
+neural = []
+network = ["dep:amari-network", "neural"]
