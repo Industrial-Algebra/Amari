@@ -118,6 +118,7 @@ jobs:
             "amari-topology"
             "amari-probabilistic"
             "amari-dynamics"
+            "amari-rewrite"
             "amari-gpu"
             "amari-optimization"
             "amari"
