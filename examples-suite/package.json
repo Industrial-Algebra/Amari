@@ -22,7 +22,7 @@
     "@mantine/code-highlight": "^8.3.16",
     "@mantine/core": "^8.3.15",
     "@mantine/hooks": "^8.3.15",
-    "shiki": "^3.4.2",
+    "shiki": "^4.0.2",
     "@vitejs/plugin-react": "^6.0.1",
     "postcss": "^8.4.49",
     "postcss-preset-mantine": "^1.18.0",
