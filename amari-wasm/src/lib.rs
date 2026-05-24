@@ -311,7 +311,9 @@ impl BatchOperations {
     /// Batch geometric product — generic signature.
     #[wasm_bindgen(js_name = batchGeometricProduct)]
     pub fn batch_geometric_product(
-        p: usize, q: usize, r: usize,
+        p: usize,
+        q: usize,
+        r: usize,
         a_batch: &[f64],
         b_batch: &[f64],
     ) -> Result<Vec<f64>, JsValue> {
@@ -368,8 +370,11 @@ impl PerformanceOperations {
     /// Fast geometric product for hot paths — generic signature.
     #[wasm_bindgen(js_name = fastGeometricProduct)]
     pub fn fast_geometric_product(
-        p: usize, q: usize, r: usize,
-        lhs: &[f64], rhs: &[f64],
+        p: usize,
+        q: usize,
+        r: usize,
+        lhs: &[f64],
+        rhs: &[f64],
     ) -> Result<Vec<f64>, JsValue> {
         let mv_a = WasmGenericMultivector::from_coefficients(p, q, r, lhs)?;
         let mv_b = WasmGenericMultivector::from_coefficients(p, q, r, rhs)?;

@@ -209,33 +209,54 @@ impl WasmGenericMultivector {
     // ---- accessors ----
 
     #[wasm_bindgen(getter)]
-    pub fn p(&self) -> usize { self.p }
+    pub fn p(&self) -> usize {
+        self.p
+    }
     #[wasm_bindgen(getter)]
-    pub fn q(&self) -> usize { self.q }
+    pub fn q(&self) -> usize {
+        self.q
+    }
     #[wasm_bindgen(getter)]
-    pub fn r(&self) -> usize { self.r }
+    pub fn r(&self) -> usize {
+        self.r
+    }
 
     #[wasm_bindgen(getter = dim)]
-    pub fn dim(&self) -> usize { self.p + self.q + self.r }
+    pub fn dim(&self) -> usize {
+        self.p + self.q + self.r
+    }
 
     #[wasm_bindgen(getter = basisCount)]
-    pub fn basis_count(&self) -> usize { 1 << (self.p + self.q + self.r) }
+    pub fn basis_count(&self) -> usize {
+        1 << (self.p + self.q + self.r)
+    }
 
     // ---- constructors ----
 
     #[wasm_bindgen(js_name = fromCoefficients)]
     pub fn from_coefficients(
-        p: usize, q: usize, r: usize,
+        p: usize,
+        q: usize,
+        r: usize,
         coefficients: &[f64],
     ) -> Result<WasmGenericMultivector, JsValue> {
         let expected = 1 << (p + q + r);
         if coefficients.len() != expected {
             return Err(JsValue::from_str(&format!(
                 "Cl({},{},{}) requires exactly {} coefficients, got {}",
-                p, q, r, expected, coefficients.len()
+                p,
+                q,
+                r,
+                expected,
+                coefficients.len()
             )));
         }
-        Ok(Self { coefficients: coefficients.to_vec(), p, q, r })
+        Ok(Self {
+            coefficients: coefficients.to_vec(),
+            p,
+            q,
+            r,
+        })
     }
 
     #[wasm_bindgen(js_name = scalar)]
@@ -281,45 +302,93 @@ impl WasmGenericMultivector {
     // ---- binary operations ----
 
     #[wasm_bindgen(js_name = geometricProduct)]
-    pub fn geometric_product(&self, other: &WasmGenericMultivector) -> Result<WasmGenericMultivector, JsValue> {
+    pub fn geometric_product(
+        &self,
+        other: &WasmGenericMultivector,
+    ) -> Result<WasmGenericMultivector, JsValue> {
         self.check_same_signature(other)?;
         let n = self.coefficients.len();
         let mut result = vec![0.0; n];
 
         if is_match_table(self.p, self.q, self.r) {
-            dispatch_geometric_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients, &mut result);
+            dispatch_geometric_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+                &mut result,
+            );
         } else {
-            result = cayley_geometric_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients);
+            result = cayley_geometric_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+            );
         }
 
         Ok(self.make_result(result))
     }
 
     #[wasm_bindgen(js_name = innerProduct)]
-    pub fn inner_product(&self, other: &WasmGenericMultivector) -> Result<WasmGenericMultivector, JsValue> {
+    pub fn inner_product(
+        &self,
+        other: &WasmGenericMultivector,
+    ) -> Result<WasmGenericMultivector, JsValue> {
         self.check_same_signature(other)?;
         let n = self.coefficients.len();
         let mut result = vec![0.0; n];
 
         if is_match_table(self.p, self.q, self.r) {
-            dispatch_inner_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients, &mut result);
+            dispatch_inner_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+                &mut result,
+            );
         } else {
-            result = cayley_inner_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients);
+            result = cayley_inner_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+            );
         }
 
         Ok(self.make_result(result))
     }
 
     #[wasm_bindgen(js_name = outerProduct)]
-    pub fn outer_product(&self, other: &WasmGenericMultivector) -> Result<WasmGenericMultivector, JsValue> {
+    pub fn outer_product(
+        &self,
+        other: &WasmGenericMultivector,
+    ) -> Result<WasmGenericMultivector, JsValue> {
         self.check_same_signature(other)?;
         let n = self.coefficients.len();
         let mut result = vec![0.0; n];
 
         if is_match_table(self.p, self.q, self.r) {
-            dispatch_outer_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients, &mut result);
+            dispatch_outer_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+                &mut result,
+            );
         } else {
-            result = cayley_outer_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients);
+            result = cayley_outer_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+            );
         }
 
         Ok(self.make_result(result))
@@ -329,9 +398,21 @@ impl WasmGenericMultivector {
     pub fn scalar_product(&self, other: &WasmGenericMultivector) -> Result<f64, JsValue> {
         self.check_same_signature(other)?;
         if is_match_table(self.p, self.q, self.r) {
-            Ok(dispatch_scalar_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients))
+            Ok(dispatch_scalar_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+            ))
         } else {
-            let gp = cayley_geometric_product(self.p, self.q, self.r, &self.coefficients, &other.coefficients);
+            let gp = cayley_geometric_product(
+                self.p,
+                self.q,
+                self.r,
+                &self.coefficients,
+                &other.coefficients,
+            );
             Ok(gp[0])
         }
     }
@@ -362,7 +443,9 @@ impl WasmGenericMultivector {
 
     pub fn exp(&self) -> Result<WasmGenericMultivector, JsValue> {
         if !is_match_table(self.p, self.q, self.r) {
-            return Err(JsValue::from_str("exp is only supported for DIM ≤ 6 in WASM"));
+            return Err(JsValue::from_str(
+                "exp is only supported for DIM ≤ 6 in WASM",
+            ));
         }
         let n = self.coefficients.len();
         let mut result = vec![0.0; n];
@@ -372,9 +455,16 @@ impl WasmGenericMultivector {
 
     pub fn magnitude(&self) -> Result<f64, JsValue> {
         if !is_match_table(self.p, self.q, self.r) {
-            return Err(JsValue::from_str("magnitude is only supported for DIM ≤ 6 in WASM"));
+            return Err(JsValue::from_str(
+                "magnitude is only supported for DIM ≤ 6 in WASM",
+            ));
         }
-        Ok(dispatch_magnitude(self.p, self.q, self.r, &self.coefficients))
+        Ok(dispatch_magnitude(
+            self.p,
+            self.q,
+            self.r,
+            &self.coefficients,
+        ))
     }
 
     pub fn norm(&self) -> Result<f64, JsValue> {
@@ -383,7 +473,9 @@ impl WasmGenericMultivector {
 
     pub fn normalize(&self) -> Result<WasmGenericMultivector, JsValue> {
         if !is_match_table(self.p, self.q, self.r) {
-            return Err(JsValue::from_str("normalize is only supported for DIM ≤ 6 in WASM"));
+            return Err(JsValue::from_str(
+                "normalize is only supported for DIM ≤ 6 in WASM",
+            ));
         }
         let n = self.coefficients.len();
         let mut result = vec![0.0; n];
@@ -396,7 +488,9 @@ impl WasmGenericMultivector {
 
     pub fn inverse(&self) -> Result<WasmGenericMultivector, JsValue> {
         if !is_match_table(self.p, self.q, self.r) {
-            return Err(JsValue::from_str("inverse is only supported for DIM ≤ 6 in WASM"));
+            return Err(JsValue::from_str(
+                "inverse is only supported for DIM ≤ 6 in WASM",
+            ));
         }
         let n = self.coefficients.len();
         let mut result = vec![0.0; n];
@@ -411,15 +505,23 @@ impl WasmGenericMultivector {
 
     pub fn add(&self, other: &WasmGenericMultivector) -> Result<WasmGenericMultivector, JsValue> {
         self.check_same_signature(other)?;
-        let coeffs: Vec<f64> = self.coefficients.iter()
-            .zip(&other.coefficients).map(|(a, b)| a + b).collect();
+        let coeffs: Vec<f64> = self
+            .coefficients
+            .iter()
+            .zip(&other.coefficients)
+            .map(|(a, b)| a + b)
+            .collect();
         Ok(self.make_result(coeffs))
     }
 
     pub fn sub(&self, other: &WasmGenericMultivector) -> Result<WasmGenericMultivector, JsValue> {
         self.check_same_signature(other)?;
-        let coeffs: Vec<f64> = self.coefficients.iter()
-            .zip(&other.coefficients).map(|(a, b)| a - b).collect();
+        let coeffs: Vec<f64> = self
+            .coefficients
+            .iter()
+            .zip(&other.coefficients)
+            .map(|(a, b)| a - b)
+            .collect();
         Ok(self.make_result(coeffs))
     }
 
@@ -457,7 +559,7 @@ impl WasmGenericRotor {
 
         if !is_match_table(p, q, r) {
             return Err(JsValue::from_str(
-                "Rotor creation is only supported for DIM ≤ 6 in WASM"
+                "Rotor creation is only supported for DIM ≤ 6 in WASM",
             ));
         }
 
@@ -467,7 +569,9 @@ impl WasmGenericRotor {
 
         Ok(WasmGenericRotor {
             inner: normalized,
-            p, q, r,
+            p,
+            q,
+            r,
         })
     }
 

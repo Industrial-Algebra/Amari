@@ -73,13 +73,7 @@ pub fn blade_product(
 ///
 /// `a` and `b` are coefficient slices of length 2^(p+q+r).  Returns a new
 /// coefficient vector of the same length.
-pub fn generic_geometric_product(
-    p: usize,
-    q: usize,
-    r: usize,
-    a: &[f64],
-    b: &[f64],
-) -> Vec<f64> {
+pub fn generic_geometric_product(p: usize, q: usize, r: usize, a: &[f64], b: &[f64]) -> Vec<f64> {
     let dim = p + q + r;
     let basis_count = 1 << dim;
     let mut result = vec![0.0; basis_count];
@@ -219,7 +213,9 @@ mod tests {
         // Cl(4,1,0) — 32 coefficients, CGA signature
         // Use deterministic values to avoid rand API version churn
         let a_coeffs: Vec<f64> = (0..32).map(|i| ((i as f64) * 0.137) % 1.5 - 0.75).collect();
-        let b_coeffs: Vec<f64> = (0..32).map(|i| ((i as f64 + 17.0) * 0.097) % 1.5 - 0.75).collect();
+        let b_coeffs: Vec<f64> = (0..32)
+            .map(|i| ((i as f64 + 17.0) * 0.097) % 1.5 - 0.75)
+            .collect();
 
         let mv_a = Multivector::<4, 1, 0>::from_coefficients(a_coeffs.clone());
         let mv_b = Multivector::<4, 1, 0>::from_coefficients(b_coeffs.clone());

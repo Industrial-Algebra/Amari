@@ -33,7 +33,9 @@ fn main() {
     for &(p, q, r) in &sigs {
         arms.push_str(&format!(
             "            ({p}, {q}, {r}) => {{\n",
-            p = p, q = q, r = r,
+            p = p,
+            q = q,
+            r = r,
         ));
         arms.push_str(&format!(
             "                let mv_a = amari_core::Multivector::<{p}, {q}, {r}>::from_coefficients(a.to_vec());\n",
@@ -44,7 +46,9 @@ fn main() {
             p = p, q = q, r = r,
         ));
         arms.push_str("                let mv_c = mv_a.__OP__(&mv_b);\n");
-        arms.push_str("                for (i, r) in result.iter_mut().enumerate() { *r = mv_c.get(i); }\n");
+        arms.push_str(
+            "                for (i, r) in result.iter_mut().enumerate() { *r = mv_c.get(i); }\n",
+        );
         arms.push_str("            }\n");
     }
 
