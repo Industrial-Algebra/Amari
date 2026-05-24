@@ -26,6 +26,7 @@ pub(crate) mod aligned_alloc;
 pub mod basis;
 pub mod cayley;
 pub mod error;
+pub mod generic;
 pub mod precision;
 pub mod rotor;
 pub mod unicode_ops;

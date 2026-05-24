@@ -1,4 +1,4 @@
-# @justinelliottcobb/amari-wasm v0.23.0
+# @justinelliottcobb/amari-wasm v0.22.0
 
 **Unified Mathematical Computing Library with High-Precision WebAssembly Support**
 
@@ -17,9 +17,6 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 | [Automatic Differentiation](docs/automatic-differentiation.md) | amari-dual | v0.9.3 | Forward-mode AD with `0.21.0` branch policies, multi-dual seeding, and fixed-size gradient wrappers |
 | Combinatorial Game Theory | amari-cgt | v0.22.0 | Short normal-play games, cuts, outcomes, comparison, nimbers, and inspection helpers |
 | Short Surreal Numbers | amari-surreal | v0.22.0 | Exact dyadic short-surreal arithmetic and conversion to/from numeric CGT games |
-| Rational Surreals | amari-surreal | v0.23.0 | Exact rational surreal arithmetic with true rational division |
-| Rational Surcomplex | amari-surcomplex | v0.23.0 | Exact rational surcomplex arithmetic `a + bi` with full field operations |
-| Epsilon Rationals (experimental) | amari-surreal | v0.23.0 | Formal infinitesimal `ε` polynomials and rational functions, ordered by asymptotic behaviour |
 | [Cellular Automata](docs/cellular-automata.md) | amari-automata | v0.9.4 | Geometric cellular automata with multivector states |
 | [Holographic Memory](docs/holographic-memory.md) | amari-fusion | v0.12.3 | Vector Symbolic Architecture for associative memory with binding and bundling |
 | [Measure Theory](docs/measure-theory.md) | amari-measure | v0.10.0 | Lebesgue integration, probability measures, and measure-theoretic foundations |
@@ -35,26 +32,29 @@ Amari is a comprehensive mathematical computing library that brings advanced alg
 
 Also includes bindings for: amari-network (geometric network analysis), amari-optimization (gradient descent, NSGA-II), amari-info-geom (Fisher metrics, statistical manifolds), amari-calculus (differential geometry, manifolds).
 
-### v0.23.0 Rational Surreal / Surcomplex WASM Surface
+### v0.23.0 Arbitrary-Signature GA (new in development)
 
-The `0.23.0` release adds exact rational arithmetic and surcomplex numbers to the WASM surface:
+The `0.23.0` release introduces generic runtime-signature multivector support:
 
-- `WasmRationalSurreal` — exact rational numbers backed by `BigRational`.
-  - `zero()`, `one()`, `fromInteger(i32)`, `fromRatio(numer, denom)`
-  - `numeratorString()`, `denominatorString()`, `format()`
-  - `isZero`, `isPositive`, `isNegative`, `sign()`, `abs`, `add`, `sub`, `mul`, `neg`
-  - `checkedReciprocal`, `checkedDiv`, `compare`
-  - `toShortIfDyadic()` — returns `Some` when the denominator is a power of two
-  - `fromShort(short)` — converts a `WasmShortSurreal` into a rational
+- `WasmGenericMultivector(p, q, r)` — create and operate on multivectors of any Clifford algebra signature Cl(p, q, r) at runtime. Signature is chosen at construction time and all operations (geometric product, inner product, outer product, reverse, grade projection, exp, normalize, inverse) automatically use the correct metric.
+- `WasmGenericRotor` — rotors for any signature, created from bivectors via the exponential map.
+- **Match-table dispatch** for all 84 signatures with total dimension ≤ 6 (compile-time optimized).
+- **Cayley-table fallback** for larger dimensions with thread-local caching.
 
-- `WasmRationalSurcomplex` — exact complex numbers `a + bi` with rational parts.
-  - `zero()`, `one()`, `i()`, `fromInteger(i32)`, `fromReal(real)`, `fromParts(real, imag)`
-  - `real()`, `imag()`, `format()`, `conjugate`, `normSq()`, `isZero`
-  - `add`, `sub`, `mul`, `neg`, `checkedReciprocal`, `checkedDiv`
+8 fast-path aliases provide pre-configured wrappers for the most common signatures:
 
-- `WasmExperimentalEpsilonRational` — rational functions in a formal infinitesimal `ε`.
-  - `zero()`, `one()`, `epsilon()`, `fromScalar(scalar)`, `monomial(coeff, exponent)`
-  - `format()`, `add`, `sub`, `mul`, `neg`, `checkedReciprocal`, `checkedDiv`, `compare`
+| Alias | Signature | Use case |
+|-------|-----------|----------|
+| `WasmMultivector300` / `GA` | Cl(3,0,0) | 3D Euclidean rotations, graphics |
+| `WasmMultivector210` / `ST` | Cl(2,1,0) | 2+1 spacetime physics |
+| `WasmMultivector310` / `MINK` | Cl(3,1,0) | 3+1 Minkowski relativity |
+| `WasmMultivector200` / `PL` | Cl(2,0,0) | 2D planar / complex numbers |
+| `WasmMultivector030` / `QUAT` | Cl(0,3,0) | Pure quaternion algebra |
+| `WasmMultivector410` / `CGA` | Cl(4,1,0) | Conformal GA (translations as rotors) |
+| `WasmMultivector500` / `P5D` | Cl(5,0,0) | 5D Euclidean / projective GA |
+| `WasmMultivector110` / `S2D` | Cl(1,1,0) | Split-complex / 1+1 spacetime |
+
+Backward compatibility: `WasmMultivector` and `WasmRotor` remain as aliases for `WasmMultivector300` and `WasmRotor300`.
 
 ### v0.22.0 CGT / Surreal WASM Surface
 
@@ -98,38 +98,46 @@ yarn add @justinelliottcobb/amari-wasm
 ## Quick Start
 
 ```typescript
-import init, { WasmMultivector, WasmRotor } from '@justinelliottcobb/amari-wasm';
+import init, {
+  WasmGenericMultivector,
+  WasmGenericRotor,
+  WasmMultivector,   // alias for WasmMultivector300 (Cl 3,0,0)
+  WasmRotor,
+} from '@justinelliottcobb/amari-wasm';
 
 async function main() {
   await init();
 
-  // Create basis vectors
-  const e1 = WasmMultivector.basis_vector(0);
-  const e2 = WasmMultivector.basis_vector(1);
+  // ── Generic API: any signature at runtime ──
 
-  // Compute geometric product
-  const product = e1.geometric_product(e2);
-  console.log(product.to_string()); // e12 (bivector)
+  // Cl(2,1,0) — 2+1 spacetime
+  const e1 = WasmGenericMultivector.basisVector(2, 1, 0, 0);
+  const e3 = WasmGenericMultivector.basisVector(2, 1, 0, 2);
 
-  // Create a rotor for 90-degree rotation
-  const rotor = WasmRotor.from_axis_angle(
-    WasmMultivector.basis_vector(2),
-    Math.PI / 2
-  );
+  // e3 squares to -1 in Cl(2,1,0) (negative metric signature)
+  const e3Sq = e3.geometric_product(e3);
+  console.log(e3Sq.getCoefficient(0)); // -1
 
-  // Rotate a vector
-  const vector = WasmMultivector.from_coefficients(
-    new Float64Array([1, 0, 0, 0, 0, 0, 0, 0])
-  );
-  const rotated = rotor.rotate_vector(vector);
+  // ── Fast-path alias: Cl(3,0,0) Euclidean ──
 
-  // Clean up WASM memory
-  e1.free(); e2.free(); product.free();
-  rotor.free(); vector.free(); rotated.free();
+  const a = WasmMultivector.basisVector(0);  // e1
+  const b = WasmMultivector.basisVector(1);  // e2
+  const product = a.geometric_product(b);
+  console.log(product.getCoefficients()); // [0, 0, 0, 1, 0, 0, 0, 0] = e12
+
+  // ── Rotor in Cl(3,0,0) ──
+
+  const bivector = a.outer_product(b); // e12 bivector plane
+  const rotor = WasmGenericRotor.fromBivector(bivector, Math.PI / 2);
+  const rotated = rotor.apply(a);
+  // 90° rotation in e12 plane: e1 → e2
+  console.log(Math.abs(rotated.getCoefficient(2))); // ≈ 1.0
 }
 
 main();
 ```
+
+**Fast-path aliases**: `WasmMultivector300`, `WasmMultivector210` (ST), `WasmMultivector310` (Minkowski), `WasmMultivector200` (planar), `WasmMultivector030` (quaternion), `WasmMultivector410` (CGA), `WasmMultivector500` (5D), `WasmMultivector110` (split). Each has a matching `WasmRotor*` and a TypeScript convenience export (`GA`, `ST`, `MINK`, `PL`, `QUAT`, `CGA`, `P5D`, `S2D`).
 
 See the [docs/](docs/) directory for detailed guides and API references for each module.
 

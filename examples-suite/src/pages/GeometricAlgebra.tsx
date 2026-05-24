@@ -205,6 +205,123 @@ console.log("Outer product:", outer.getCoefficients());`,
 
         return result;
       })
+    },
+    {
+      title: "Arbitrary Signature — Generic Multivector",
+      description: "Create and operate on multivectors in any Clifford algebra signature Cl(p,q,r) using the new WasmGenericMultivector (v0.23.0+)",
+      category: "v0.23.0",
+      code: `// Create multivectors in Cl(2,1,0) — 2+1 spacetime (e1²=+1, e2²=+1, e3²=-1)
+const e1 = amari.WasmGenericMultivector.basisVector(2, 1, 0, 0);
+const e2 = amari.WasmGenericMultivector.basisVector(2, 1, 0, 1);
+const e3 = amari.WasmGenericMultivector.basisVector(2, 1, 0, 2);
+
+// Spatial basis vectors square to +1
+const e1sq = e1.geometricProduct(e1);
+console.log("e1² =", e1sq.getCoefficient(0)); // +1
+
+// Temporal basis vector squares to -1
+const e3sq = e3.geometricProduct(e3);
+console.log("e3² =", e3sq.getCoefficient(0)); // -1
+
+// Mixed-signature bivector: e13² = +1 (positive * negative = +1)
+const e13 = e1.outerProduct(e3);
+const e13sq = e13.geometricProduct(e13);
+console.log("e13² =", e13sq.getCoefficient(0)); // +1`,
+      onRun: runExample(() => {
+        const e1 = amari!.WasmGenericMultivector.basisVector(2, 1, 0, 0);
+        const e2 = amari!.WasmGenericMultivector.basisVector(2, 1, 0, 1);
+        const e3 = amari!.WasmGenericMultivector.basisVector(2, 1, 0, 2);
+
+        const e1sq = e1.geometricProduct(e1);
+        const e3sq = e3.geometricProduct(e3);
+        const e13 = e1.outerProduct(e3);
+        const e13sq = e13.geometricProduct(e13);
+
+        const result = [
+          `e1² = ${e1sq.getCoefficient(0)}`,
+          `e2² = ${e2.geometricProduct(e2).getCoefficient(0)}`,
+          `e3² = ${e3sq.getCoefficient(0)}`,
+          `e13² = ${e13sq.getCoefficient(0)}`
+        ].join('\n');
+
+        return result;
+      })
+    },
+    {
+      title: "Minkowski Spacetime — Cl(3,1,0)",
+      description: "Use the Minkowski fast-path alias for 3+1 relativistic spacetime (v0.23.0+)",
+      category: "v0.23.0",
+      code: `// Cl(3,1,0): e0,e1,e2 = spatial (+1), e3 = temporal (-1)
+// Use the WasmMultivector310 fast-path alias
+const e0 = amari.WasmMultivector310.basisVector(0);  // spatial x
+const e1 = amari.WasmMultivector310.basisVector(1);  // spatial y
+const e2 = amari.WasmMultivector310.basisVector(2);  // spatial z
+const e3 = amari.WasmMultivector310.basisVector(3);  // time
+
+// Spatial vectors square to +1
+console.log("e0² =", e0.geometricProduct(e0).getCoefficient(0)); // +1
+
+// Time vector squares to -1
+console.log("e3² =", e3.geometricProduct(e3).getCoefficient(0)); // -1
+
+// Spacetime bivector: e0∧e3
+const e03 = e0.outerProduct(e3);
+console.log("e03² =", e03.geometricProduct(e03).getCoefficient(0)); // +1`,
+      onRun: runExample(() => {
+        const e0 = amari!.WasmMultivector310.basisVector(0);
+        const e3 = amari!.WasmMultivector310.basisVector(3);
+
+        const e0sq = e0.geometricProduct(e0).getCoefficient(0);
+        const e3sq = e3.geometricProduct(e3).getCoefficient(0);
+        const e03 = e0.outerProduct(e3);
+        const e03sq = e03.geometricProduct(e03).getCoefficient(0);
+
+        const result = [
+          `e0² = ${e0sq}`,
+          `e3² = ${e3sq}`,
+          `e03² = ${e03sq}`
+        ].join('\n');
+
+        return result;
+      })
+    },
+    {
+      title: "Quaternion Algebra — Cl(0,3,0)",
+      description: "All-negative signature produces the quaternion subalgebra (v0.23.0+)",
+      category: "v0.23.0",
+      code: `// Cl(0,3,0): all basis vectors square to -1 (quaternion algebra)
+const i = amari.WasmMultivector030.basisVector(0);
+const j = amari.WasmMultivector030.basisVector(1);
+const k = amari.WasmMultivector030.basisVector(2);
+
+// i² = j² = k² = -1
+console.log("i² =", i.geometricProduct(i).getCoefficient(0)); // -1
+console.log("j² =", j.geometricProduct(j).getCoefficient(0)); // -1
+console.log("k² =", k.geometricProduct(k).getCoefficient(0)); // -1
+
+// i*j = k (quaternion product)
+const ij = i.geometricProduct(j);
+console.log("i*j = k?", ij.getCoefficient(4)); // k component`,
+      onRun: runExample(() => {
+        const i = amari!.WasmMultivector030.basisVector(0);
+        const j = amari!.WasmMultivector030.basisVector(1);
+        const k = amari!.WasmMultivector030.basisVector(2);
+
+        const iSq = i.geometricProduct(i).getCoefficient(0);
+        const jSq = j.geometricProduct(j).getCoefficient(0);
+        const kSq = k.geometricProduct(k).getCoefficient(0);
+        const ij = i.geometricProduct(j);
+        const kComp = ij.getCoefficient(4);
+
+        const result = [
+          `i² = ${iSq}`,
+          `j² = ${jSq}`,
+          `k² = ${kSq}`,
+          `i*j k-component = ${kComp} (expected: ±1)`
+        ].join('\n');
+
+        return result;
+      })
     }
   ];
 
@@ -214,7 +331,8 @@ console.log("Outer product:", outer.getCoefficients());`,
         <div>
           <Title order={1} mb="sm">Geometric Algebra Examples</Title>
           <Text size="lg" c="dimmed">
-            Explore multivectors, geometric products, and rotors in Clifford algebra with interactive examples.
+            Explore multivectors, geometric products, and rotors in any Clifford algebra signature — from
+            3D Euclidean through Minkowski spacetime, conformal GA, and quaternion algebra.
           </Text>
         </div>
 
