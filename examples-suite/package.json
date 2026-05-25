@@ -50,7 +50,7 @@
     "globals": "^16.0.0",
     "jsdom": "^27.3.0",
     "netlify-cli": "^17.0.0",
-    "vitest": "^4.0.16"
+    "vitest": "^4.1.7"
   },
   "engines": {
     "node": ">=20.0.0"
