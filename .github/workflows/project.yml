@@ -1,0 +1,10 @@
+name: Add to IA project board
+on:
+  issues:
+    types: [opened]
+jobs:
+  route:
+    uses: Industrial-Algebra/.github/.github/workflows/auto-project.yml@main
+    with:
+      cluster: Foundation
+    secrets: inherit
