@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@justinelliottcobb/amari-wasm": "latest",
-    "@mantine/code-highlight": "^8.3.16",
+    "@mantine/code-highlight": "^9.4.0",
     "@mantine/core": "^8.3.15",
     "@mantine/hooks": "^8.3.15",
     "shiki": "^4.0.2",
