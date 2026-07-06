@@ -13,7 +13,7 @@ categories = ["mathematics", "science"]
 amari-core = { workspace = true }
 amari-cgt = { workspace = true, optional = true }
 num-rational = "0.4"
-num-bigint = "0.4"
+num-bigint = "0.5"
 num-traits = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true, optional = true }
