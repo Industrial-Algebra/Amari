@@ -2,6 +2,7 @@
 
 //! Embedded structural and semantic capability catalog.
 
+pub mod generator;
 mod model;
 
 use std::collections::{HashMap, HashSet};

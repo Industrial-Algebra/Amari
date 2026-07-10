@@ -1,0 +1,8 @@
+[package]
+name = "fixture-math"
+version.workspace = true
+description.workspace = true
+license.workspace = true
+
+[dependencies]
+ignored-missing-package = { path = "../does-not-exist" }

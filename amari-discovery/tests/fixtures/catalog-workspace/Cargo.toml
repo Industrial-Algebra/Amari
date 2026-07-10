@@ -1,0 +1,19 @@
+[package]
+name = "fixture-root"
+version.workspace = true
+description = "Fixture root package"
+license.workspace = true
+autobins = false
+
+[lib]
+name = "fixture_root"
+crate-type = ["rlib"]
+
+[workspace]
+members = ["crates/math", "crates/wasm", "crates/discovery"]
+resolver = "2"
+
+[workspace.package]
+version = "9.8.7"
+description = "Inherited fixture description"
+license = "Apache-2.0"
