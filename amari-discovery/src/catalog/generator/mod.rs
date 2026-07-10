@@ -2,9 +2,14 @@
 
 //! Deterministic source-workspace catalog generation.
 
+mod exports;
 mod inventory;
 mod modules;
 
+pub use exports::{
+    export_graph, ExportGraph, ExportItemKind, ExportRecord, ExportSource, ExportWarning,
+    ExportWarningReason,
+};
 pub use inventory::{
     inventory_workspace, DependencyInventoryRecord, DependencyKind, FeatureInventoryRecord,
     PackageInventoryRecord, TargetInventoryRecord, TargetKind, WorkspaceInventory,
