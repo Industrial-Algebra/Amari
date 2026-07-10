@@ -1,13 +1,13 @@
-# Amari 0.20.0 → 0.24.0 Release Sequence
+# Amari 0.20.0 → 0.25.0 Release Sequence
 
-Date: 2026-04-30
-Current planning baseline: `0.20.0` release candidate work is complete pending merge/release.
+Date: 2026-04-30, revised 2026-07-09
+Current planning baseline: `0.23.0` shipped (surcomplex, rational surreal, epsilon). `0.24.0` is next.
 
 ## Release posture
 
 The next releases should preserve the separation between stabilization, algebraic expansion, new crate introductions, rewrite-system foundations, tooling, and GPU follow-up work.
 
-The key planning change is that the `amari-gpu` follow-up issues raised after the 0.20.0 hardening pass are no longer planned as a `0.20.1` fast-follow. They are also no longer assigned to 0.23.0. Instead, they are deferred to the `0.24.0` cycle, where `amari-cli` and the accumulated new crate surface create a better context for GPU tooling, calibration, coverage review, and backend migration work.
+The `amari-gpu` follow-up issues raised after the 0.20.0 hardening pass are deferred to the `0.25.0` cycle, where Borsalino integration, the `wgpu` version bump, and accumulated new crate surface create the right context for GPU tooling, calibration, coverage review, and backend migration work.
 
 Patch releases between these milestones should remain bug-fix only.
 
@@ -72,41 +72,52 @@ Non-goals:
 - do not require immediate GPU acceleration for `amari-cgt` or `amari-surreal`
 - do not block these crates on `amari-gpu` follow-up work
 
-## 0.23.0 — `amari-surcomplex` and `amari-rewrite`
+## 0.23.0 — `amari-surcomplex` and `amari-rewrite` (shipped)
 
-Theme: surcomplex numbers plus rewrite-rule / term-rewriting foundations.
+Theme: surcomplex numbers, rational surreal arithmetic, and rewrite-system foundations.
+
+What shipped (PR #155):
+
+- stable `RationalSurreal` exact rational scalar layer in `amari-surreal`
+- experimental epsilon rational functions behind feature `experimental-epsilon`
+- new `amari-surcomplex` crate with `RationalSurcomplex` over `RationalSurreal`
+- new `amari-rewrite` crate: stable core (ARS, TRS, inverse search, synthesis/anti-unification) plus experimental `neural`, `smt`, and `network` scaffolding
+- workspace version bump to 0.23.0
+- WASM bindings (`WasmRationalSurreal`, `WasmRationalSurcomplex`, `WasmExperimentalEpsilonRational`)
+- examples-suite `/surcomplex` page and API reference
+- v0.23 roadmap/checklist docs
+
+## 0.24.0 — `amari-rewrite` expansion, `amari-cli`, and `BindingAlgebra::superpose`
+
+Theme: rewrite-system completion, CLI front door, and holographic trait fix.
 
 Primary outcome:
 
-- introduce `amari-surcomplex`
-- introduce `amari-rewrite` for rewrite rules and term-rewriting-system (TRS) workflows
-- define public APIs, tests, documentation, and examples for both crates
-- establish integration points with `amari-surreal`, `amari-cgt`, and existing algebraic crates where appropriate
-
-Potential `amari-rewrite` scope:
-
-- term and pattern representations
-- rewrite rules and strategies
-- normalization / reduction APIs
-- confluence / termination analysis scaffolding where practical
-- algebraic simplification examples that can later support CLI and optimization workflows
+- **`amari-rewrite` deferred features** (shipped in 0.23.0 with stable core; these were left experimental or unimplemented):
+  - `macros` feature: `derive(Rewritable)`, `term!`, `rule!` proc-macro helpers
+  - `neural` feature: flesh out `DifferentiableRule<State>` with `candle` as the tensor dependency
+  - `smt` feature: integrate a concrete solver behind the `RewriteSolver` trait
+  - `network` feature: expand beyond `RewriteGraphSummary` — geometric/learned strategy selection via `amari-network`
+  - confluence / termination analysis scaffolding
+  - `infer_rules` with negative-example filtering and heuristic specialization (currently only `infer_rule` with positive examples)
+- **`amari-cli`**: `amari gpu info/validate/benchmark/calibrate` subcommands
+- **`BindingAlgebra::superpose` + `scale`** (PR #176): additive superposition trait on `amari-holographic`, default implementations via existing trait methods, non-breaking. Unblocks Minuet `DenseTrace` recall-decay bug fix
 
 Non-goals:
 
-- do not require `amari-cli` in 0.23.0
-- do not require immediate GPU acceleration for `amari-surcomplex` or `amari-rewrite`
-- do not fold `amari-gpu` benchmark/dispatch/`wgpu` follow-up work into 0.23.0 unless a tiny compatibility fix is required
+- do not include GPU follow-up work in 0.24.0
+- do not include `wgpu` migration or Borsalino integration
 
-## 0.24.0 — `amari-cli` and `amari-gpu` follow-up
+## 0.25.0 — `amari-gpu` follow-up and Borsalino integration
 
-Theme: front-door tooling plus GPU revisit.
+Theme: GPU revisit, Borsalino integration, and wgpu modernization.
 
 Primary outcome:
 
-- introduce `amari-cli`
-- revisit `amari-gpu` in light of the 0.21.0, 0.22.0, and 0.23.0 crates
+- integrate Borsalino (Borsalino) for GPU acceleration
+- bump `wgpu` from 0.19 to current
+- revisit `amari-gpu` in light of the 0.21.0, 0.22.0, 0.23.0, and 0.24.0 crates
 - decide which new operations are practical GPU candidates
-- move benchmark/crossover and dispatch refinement work out of the 0.20.x patch lane and out of the 0.23.0 new-crate cycle
 
 GPU follow-up issues planned for this cycle:
 
@@ -117,23 +128,11 @@ GPU follow-up issues planned for this cycle:
 - #141 — Revisit `amari-gpu` coverage for upcoming crates and extensions
 - #142 — Plan dedicated migration from `wgpu 0.19` to `wgpu 29`
 
-`wgpu 29` migration note:
+`wgpu` migration note:
 
-- track it during 0.24.0 as a dedicated migration effort
-- allow it to slip to 0.25.0 if compile/API/runtime changes are too broad
+- track it during 0.25.0 as a dedicated migration effort
 - do not combine it with unrelated release work
 - rerun GB10 and RTX 5080 validation before claiming the migration complete
-
-Potential `amari-cli` GPU commands:
-
-```text
-amari gpu info
-amari gpu validate
-amari gpu benchmark
-amari gpu calibrate
-```
-
-These commands are a natural home for hardware-aware dispatch and benchmark calibration work.
 
 ## Summary table
 
@@ -142,5 +141,6 @@ These commands are a natural home for hardware-aware dispatch and benchmark cali
 | 0.20.0 | GPU stabilization | `amari-gpu` hardening, validation, benchmark docs | Establish known-good conservative baseline |
 | 0.21.0 | Algebra extension | `amari-tropical`, `amari-dual` | Defer broad GPU follow-up |
 | 0.22.0 | New mathematical foundations | `amari-cgt`, `amari-surreal` | No GPU blocker |
-| 0.23.0 | Surcomplex + rewrite systems | `amari-surcomplex`, `amari-rewrite` | No GPU blocker |
-| 0.24.0 | CLI + GPU revisit | `amari-cli`, GPU follow-up issues | Benchmark/calibration/backend migration cycle |
+| 0.23.0 | Surcomplex + rewrite systems | `amari-surcomplex`, `amari-rewrite`, `RationalSurreal`, experimental epsilon | No GPU blocker |
+| 0.24.0 | Rewrite completion + CLI + holographic fix | `amari-rewrite` expansion (macros, candle, SMT, network, confluence, negative-example inference), `amari-cli`, `BindingAlgebra::superpose` (PR #176) | No GPU blocker |
+| 0.25.0 | GPU revisit + Borsalino | `amari-gpu` follow-up, Borsalino integration, `wgpu` bump | Full GPU modernization cycle |
