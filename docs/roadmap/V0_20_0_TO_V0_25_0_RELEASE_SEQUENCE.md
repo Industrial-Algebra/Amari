@@ -1,7 +1,7 @@
 # Amari 0.20.0 → 0.25.0 Release Sequence
 
 Date: 2026-04-30, revised 2026-07-09
-Current planning baseline: `0.23.0` shipped (surcomplex, rational surreal, epsilon). `0.24.0` is next.
+Current planning baseline: `0.23.0` shipped (`amari-surcomplex`, `amari-rewrite`, rational surreal, and epsilon). `0.24.0` is next.
 
 ## Release posture
 
@@ -87,9 +87,9 @@ What shipped (PR #155):
 - examples-suite `/surcomplex` page and API reference
 - v0.23 roadmap/checklist docs
 
-## 0.24.0 — `amari-rewrite` expansion, `amari-cli`, and `BindingAlgebra::superpose`
+## 0.24.0 — `amari-rewrite` expansion, `amari-discovery`, and `BindingAlgebra::superpose`
 
-Theme: rewrite-system completion, CLI front door, and holographic trait fix.
+Theme: rewrite-system completion, agentic mathematical discovery, and holographic trait fix.
 
 Primary outcome:
 
@@ -100,8 +100,8 @@ Primary outcome:
   - `network` feature: expand beyond `RewriteGraphSummary` — geometric/learned strategy selection via `amari-network`
   - confluence / termination analysis scaffolding
   - `infer_rules` with negative-example filtering and heuristic specialization (currently only `infer_rule` with positive examples)
-- **`amari-cli`**: `amari gpu info/validate/benchmark/calibrate` subcommands
-- **`BindingAlgebra::superpose` + `scale`** (PR #176): additive superposition trait on `amari-holographic`, default implementations via existing trait methods, non-breaking. Unblocks Minuet `DenseTrace` recall-decay bug fix
+- **`amari-discovery`**: publish an agent-first discovery runtime with the installed `amari` command. It combines a generated API index and semantic capability catalog, read-only Rust/TypeScript project inspection, an Amari-native recommendation/planning engine, and bounded real probes. Human-readable output and a versioned JSON/NDJSON protocol share one typed core. See `docs/plans/2026-07-09-amari-discovery-design.md`
+- **`BindingAlgebra::superpose` + `scale`** (PR #176): additive superposition trait on `amari-holographic`, default implementations via existing trait methods, non-breaking. Unblocks Minuet `DenseTrace` recall-decay bug fix and supports correct holographic candidate accumulation in `amari-discovery`
 
 Non-goals:
 
@@ -142,5 +142,5 @@ GPU follow-up issues planned for this cycle:
 | 0.21.0 | Algebra extension | `amari-tropical`, `amari-dual` | Defer broad GPU follow-up |
 | 0.22.0 | New mathematical foundations | `amari-cgt`, `amari-surreal` | No GPU blocker |
 | 0.23.0 | Surcomplex + rewrite systems | `amari-surcomplex`, `amari-rewrite`, `RationalSurreal`, experimental epsilon | No GPU blocker |
-| 0.24.0 | Rewrite completion + CLI + holographic fix | `amari-rewrite` expansion (macros, candle, SMT, network, confluence, negative-example inference), `amari-cli`, `BindingAlgebra::superpose` (PR #176) | No GPU blocker |
+| 0.24.0 | Rewrite completion + agentic discovery + holographic fix | `amari-rewrite` expansion (macros, candle, SMT, network, confluence, negative-example inference), `amari-discovery` (`amari` command), `BindingAlgebra::superpose` (PR #176) | No GPU blocker |
 | 0.25.0 | GPU revisit + Borsalino | `amari-gpu` follow-up, Borsalino integration, `wgpu` bump | Full GPU modernization cycle |

@@ -96,4 +96,4 @@ Context: `amari-rewrite` shipped in 0.23.0 with stable core (ARS, TRS, inverse s
 - **Which features stabilize?** Candidates: `macros` (compile-time only, low risk). SMT and neural almost certainly stay experimental.
 - **Does the prelude change?** If `derive(Rewritable)` goes stable, it likely belongs in the prelude. Neural/SMT types should not.
 - **Any breaking changes to the 0.23.0 stable API?** The design says the existing core is stable. 0.24.0 should be additive only.
-- **WASM?** Does any of this need WASM bindings or examples-suite exposure? Probably not for 0.24.0 — CLI is the user-facing surface here.
+- **WASM?** Does any of this need WASM bindings or examples-suite exposure? Probably not for 0.24.0 — `amari-discovery` is the user-facing integration surface here.

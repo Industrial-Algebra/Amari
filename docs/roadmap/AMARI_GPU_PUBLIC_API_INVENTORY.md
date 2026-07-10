@@ -283,9 +283,9 @@ This is not necessarily bad, but it must be documented and tested honestly.
 
 ---
 
-## Post-0.20.0 GPU follow-up backlog — deferred to 0.24.0
+## Post-0.20.0 GPU follow-up backlog — deferred to 0.25.0
 
-The validated 0.20.0 `amari-gpu` baseline is sufficient for release. The items below are no longer planned as an immediate 0.20.1 fast-follow; they are deferred to the 0.24.0 `amari-cli` / GPU revisit cycle after 0.21.0 extends `amari-tropical`/`amari-dual`, 0.22.0 introduces `amari-cgt`/`amari-surreal`, and 0.23.0 introduces `amari-surcomplex`/`amari-rewrite`.
+The validated 0.20.0 `amari-gpu` baseline is sufficient for release. The items below are no longer planned as an immediate 0.20.1 fast-follow; they are deferred to the 0.25.0 GPU/Borsalino modernization cycle after the 0.24.0 `amari-discovery`, rewrite-expansion, and holographic-superposition release.
 
 Tracked GitHub issues for that cycle include #137, #138, #139, #140, #141, and #142.
 

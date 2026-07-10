@@ -1,6 +1,6 @@
 # Amari 0.20.0 / 0.21.0 Actionable Task List
 
-> Planning update: the broader release sequence through 0.24.0 is now captured in `docs/roadmap/V0_20_0_TO_V0_24_0_RELEASE_SEQUENCE.md`. In that plan, `0.20.0` ships the `amari-gpu` stabilization baseline, `0.21.0` focuses on substantial `amari-tropical` and `amari-dual` extensions, `0.22.0` introduces `amari-cgt` and `amari-surreal`, `0.23.0` introduces `amari-surcomplex` and `amari-rewrite`, and `0.24.0` introduces `amari-cli` while revisiting GPU benchmark, dispatch, coverage, and `wgpu` migration issues.
+> Planning update: the broader release sequence through 0.25.0 is now captured in `docs/roadmap/V0_20_0_TO_V0_25_0_RELEASE_SEQUENCE.md`. In that plan, `0.20.0` ships the `amari-gpu` stabilization baseline, `0.21.0` focuses on substantial `amari-tropical` and `amari-dual` extensions, `0.22.0` introduces `amari-cgt` and `amari-surreal`, `0.23.0` introduces `amari-surcomplex` and `amari-rewrite`, `0.24.0` expands rewrite systems and introduces `amari-discovery` plus holographic superposition, and `0.25.0` revisits GPU benchmark, dispatch, coverage, Borsalino integration, and `wgpu` modernization.
 
 Date: 2026-03-27
 Current version: 0.19.1
@@ -63,12 +63,19 @@ Primary outcome:
 - introduce `amari-surcomplex`
 - introduce `amari-rewrite` for rewrite rules and term-rewriting-system workflows
 
-### 0.24.0 — CLI / GPU revisit release
+### 0.24.0 — Rewrite expansion / agentic discovery / holographic superposition release
 
 Primary outcome:
-- introduce `amari-cli`
-- revisit `amari-gpu` follow-up issues after the 0.21.0, 0.22.0, and 0.23.0 crate work is available
-- defer benchmark-baseline completion, calibrated dispatch, high-upside kernel optimization, future crate GPU coverage, and `wgpu 29` migration planning from the 0.20.x patch lane to this cycle
+- expand the deferred `amari-rewrite` research surfaces
+- introduce `amari-discovery` with the installed `amari` command
+- add `BindingAlgebra::superpose` + `scale` to unblock correct Minuet trace accumulation
+
+### 0.25.0 — GPU / Borsalino modernization release
+
+Primary outcome:
+- revisit `amari-gpu` follow-up issues after the 0.21.0–0.24.0 work is available
+- integrate Borsalino and bring `wgpu` to the current supported version
+- complete benchmark baselines, calibrated dispatch, high-upside kernel optimization, and future-crate GPU coverage
 
 ---
 
@@ -459,7 +466,7 @@ The WASM and algebra-extension epics below are retained as deferred backlog, not
 - [ ] extend fusion examples only where they naturally consume new tropical/dual capabilities
 - [ ] prepare 0.22.0 crate plans for `amari-cgt` and `amari-surreal`
 - [ ] prepare 0.23.0 crate plans for `amari-surcomplex` and `amari-rewrite`
-- [ ] defer broad `amari-gpu` follow-up work to 0.24.0 alongside `amari-cli`
+- [ ] defer broad `amari-gpu` follow-up work to the 0.25.0 GPU/Borsalino modernization cycle
 - [ ] update wasm bindings and examples-suite where appropriate for each release train
 
 ---

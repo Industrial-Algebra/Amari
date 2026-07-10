@@ -21,6 +21,9 @@ Current release process documentation:
 
 Current planning and release-roadmap documentation:
 
+- **[0.20.0 → 0.25.0 Release Sequence](roadmap/V0_20_0_TO_V0_25_0_RELEASE_SEQUENCE.md)** - Current cross-release plan, including `amari-discovery` in 0.24.0 and GPU/Borsalino modernization in 0.25.0
+- **[v0.24.0 amari-discovery Design](plans/2026-07-09-amari-discovery-design.md)** - Agent-first discovery, planning, and bounded probe runtime installed as the `amari` command
+- **[v0.24.0 amari-rewrite Open Decisions](plans/2026-07-09-amari-rewrite-0.24-decisions.md)** - Decisions still needed for the deferred rewrite-system extensions
 - **[v0.23.0 Rational Surreal / Surcomplex Roadmap](roadmap/v0.23.0-rational-surreal-surcomplex-roadmap.md)** - Planning for the `RationalSurreal`, epsilon rational, and `amari-surcomplex` cycle
 - **[v0.23.0 Rational Surreal / Surcomplex Checklist](roadmap/v0.23.0-rational-surreal-surcomplex-checklist.md)** - Release gates and publish-order audit for the `0.23.0` cycle
 - **[v0.21.0 Tropical / Dual Roadmap](roadmap/v0.21.0-tropical-dual-roadmap.md)** - Planning for the optimization-oriented `amari-tropical` / `amari-dual` cycle
