@@ -5,3 +5,15 @@
 //! `amari-discovery` provides the typed engine behind the `amari` command.
 //! Its runtime authority is read-only: it may inspect projects, recommend
 //! capabilities, construct plans, and run registered bounded probes.
+
+#![deny(missing_docs)]
+
+pub mod error;
+pub mod protocol;
+
+pub use error::{DiscoveryError, DiscoveryResult};
+pub use protocol::{
+    CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,
+    ProbeBackend, ProbeId, ProbeResult, Provenance, ReplayMetadata, ResourceObservations,
+    SchemaVersion, SCHEMA_V1,
+};
