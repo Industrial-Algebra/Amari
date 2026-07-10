@@ -1,0 +1,9 @@
+# Self-contained fixture package for module-graph tests. Not a workspace member.
+[package]
+name = "fixture-module-graph"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+name = "fixture_module_graph"
+path = "src/lib.rs"
