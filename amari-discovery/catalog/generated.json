@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "version": "0.23.0",
+  "description": "Initial embedded structural catalog; full workspace generation lands in Task 5.",
+  "crates": [
+    {
+      "name": "amari-core",
+      "version": "0.23.0",
+      "description": "Core geometric algebra types and operations",
+      "features": [{ "name": "std" }, { "name": "phantom-types" }],
+      "items": [
+        { "path": "amari_core::Multivector::geometric_product", "kind": "method", "signature": "fn geometric_product(&self, rhs: &Self) -> Self" },
+        { "path": "amari_core::Rotor", "kind": "struct", "signature": null }
+      ],
+      "examples": [{ "name": "basic", "path": "amari-core/examples/basic.rs" }]
+    },
+    {
+      "name": "amari-tropical",
+      "version": "0.23.0",
+      "description": "Tropical semirings, path algebra, and sequence decoding",
+      "features": [{ "name": "std" }, { "name": "phantom-types" }],
+      "items": [
+        { "path": "amari_tropical::TropicalMatrix", "kind": "struct", "signature": null },
+        { "path": "amari_tropical::viterbi::TropicalViterbi::decode", "kind": "method", "signature": "fn decode(&self, observations: &[usize]) -> (Vec<usize>, TropicalNumber<T>)" }
+      ],
+      "examples": [{ "name": "max_plus_paths", "path": "amari-tropical/examples/max_plus_paths.rs" }]
+    },
+    {
+      "name": "amari-dual",
+      "version": "0.23.0",
+      "description": "Forward-mode automatic differentiation",
+      "features": [{ "name": "std" }, { "name": "phantom-types" }],
+      "items": [{ "path": "amari_dual::DualNumber::derivative", "kind": "method", "signature": "fn derivative(&self) -> T" }],
+      "examples": [{ "name": "gradient_seeding", "path": "amari-dual/examples/gradient_seeding.rs" }]
+    },
+    {
+      "name": "amari-network",
+      "version": "0.23.0",
+      "description": "Geometric and tropical network analysis",
+      "features": [{ "name": "std" }, { "name": "phantom-types" }],
+      "items": [{ "path": "amari_network::GeometricNetwork::shortest_path", "kind": "method", "signature": "fn shortest_path(&self, source: usize, target: usize) -> NetworkResult<Option<(Vec<usize>, f64)>>" }],
+      "examples": [{ "name": "tropical_pathfinding", "path": "amari-network/examples/tropical_pathfinding.rs" }]
+    },
+    {
+      "name": "amari-optimization",
+      "version": "0.23.0",
+      "description": "Single and multi-objective optimization",
+      "features": [{ "name": "std" }, { "name": "parallel" }],
+      "items": [{ "path": "amari_optimization::multiobjective::ParetoFront", "kind": "struct", "signature": null }],
+      "examples": [{ "name": "multi_objective_example", "path": "amari-optimization/examples/multi_objective_example.rs" }]
+    },
+    {
+      "name": "amari-holographic",
+      "version": "0.23.0",
+      "description": "Holographic reduced representations and vector symbolic architectures",
+      "features": [{ "name": "std" }, { "name": "parallel" }],
+      "items": [{ "path": "amari_holographic::HolographicMemory::retrieve", "kind": "method", "signature": "fn retrieve(&self, key: &A) -> RetrievalResult<A>" }],
+      "examples": []
+    },
+    {
+      "name": "amari-cgt",
+      "version": "0.23.0",
+      "description": "Combinatorial game theory for short games and nimbers",
+      "features": [{ "name": "std" }],
+      "items": [{ "path": "amari_cgt::GameArena::grundy", "kind": "method", "signature": "fn grundy(&mut self, game: GameId) -> Result<Nimber>" }],
+      "examples": [{ "name": "nimbers", "path": "amari-cgt/examples/nimbers.rs" }]
+    },
+    {
+      "name": "amari-surreal",
+      "version": "0.23.0",
+      "description": "Exact short and rational surreal numbers",
+      "features": [{ "name": "std" }, { "name": "experimental-epsilon" }],
+      "items": [{ "path": "amari_surreal::RationalSurreal", "kind": "struct", "signature": null }],
+      "examples": [{ "name": "dyadic_arithmetic", "path": "amari-surreal/examples/dyadic_arithmetic.rs" }]
+    },
+    {
+      "name": "amari-surcomplex",
+      "version": "0.23.0",
+      "description": "Exact rational surcomplex arithmetic",
+      "features": [],
+      "items": [{ "path": "amari_surcomplex::RationalSurcomplex", "kind": "struct", "signature": null }],
+      "examples": []
+    },
+    {
+      "name": "amari-rewrite",
+      "version": "0.23.0",
+      "description": "Abstract and term rewriting systems",
+      "features": [{ "name": "std" }, { "name": "network" }],
+      "items": [
+        { "path": "amari_rewrite::trs::TermSystem::apply_once", "kind": "method", "signature": "fn apply_once(&self, term: &Term) -> RewriteResult<Option<Term>>" },
+        { "path": "amari_rewrite::synthesis::infer_rule", "kind": "function", "signature": "fn infer_rule(examples: &[(Term, Term)]) -> RewriteResult<Rule>" }
+      ],
+      "examples": [
+        { "name": "symbolic_simplification", "path": "amari-rewrite/examples/symbolic_simplification.rs" },
+        { "name": "infer_rule_from_examples", "path": "amari-rewrite/examples/infer_rule_from_examples.rs" }
+      ]
+    }
+  ]
+}

@@ -56,16 +56,22 @@ fn capabilities_json_self_describes_schema_and_exit_codes() {
 }
 
 #[test]
-fn bootstrap_capabilities_do_not_forecast_catalog_or_probe_execution() {
+fn embedded_catalog_capabilities_do_not_forecast_probe_execution() {
     let value = capabilities_json();
 
-    assert_eq!(value["data"]["catalog"]["version"], "bootstrap");
-    assert_eq!(value["data"]["catalog"]["available"], false);
+    assert_eq!(value["data"]["catalog"]["version"], "0.23.0");
+    assert_eq!(value["data"]["catalog"]["available"], true);
     assert_eq!(
         value["provenance"]["catalog"]["hash"],
         value["data"]["catalog"]["hash"]
     );
-    assert_eq!(value["data"]["known_probes"].as_array().unwrap().len(), 0);
+    let probes = value["data"]["known_probes"].as_array().unwrap();
+    assert!(probes.len() >= 8);
+    for probe in probes {
+        assert_eq!(probe["known"], true);
+        assert_eq!(probe["available"], cfg!(feature = "standard-probes"));
+        assert_eq!(probe["executable"], false);
+    }
 
     for inspector in value["data"]["project_inspectors"].as_array().unwrap() {
         assert!(inspector["known"].is_boolean());
@@ -108,7 +114,7 @@ fn capabilities_human_output_is_concise() {
         .stderr(predicate::str::is_empty())
         .stdout(predicate::str::contains("Amari Discovery"))
         .stdout(predicate::str::contains("Project inspectors"))
-        .stdout(predicate::str::contains("Catalog: bootstrap"))
+        .stdout(predicate::str::contains("Catalog: 0.23.0 (available)"))
         .stdout(predicate::str::contains("schema_version").not());
 }
 

@@ -231,7 +231,7 @@ pub fn run() -> DiscoveryResult<()> {
     let cli = Cli::parse();
     match cli.command {
         Command::Capabilities => {
-            let envelope = Capabilities::envelope();
+            let envelope = Capabilities::envelope()?;
             let mut stdout = io::stdout().lock();
             if cli.json {
                 render::write_json(&mut stdout, &envelope)

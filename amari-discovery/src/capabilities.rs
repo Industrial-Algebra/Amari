@@ -6,15 +6,15 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{CatalogIdentity, Compatibility, DiscoveryError, Envelope, ReplayMetadata, SCHEMA_V1};
-
-const BOOTSTRAP_CATALOG_HASH: &str =
-    "c24c47368b1c638d66f464909d02ae8146194e82b0dc5340369d5875359f8c18";
+use crate::{
+    Catalog, CatalogIdentity, Compatibility, DiscoveryError, DiscoveryResult, Envelope,
+    ReplayMetadata, SCHEMA_V1,
+};
 
 /// Embedded catalog availability reported by the running binary.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct CatalogStatus {
-    /// Embedded catalog version or `bootstrap` before catalog integration.
+    /// Embedded Amari catalog version.
     pub version: String,
     /// Deterministic identity hash for the reported catalog state.
     pub hash: String,
@@ -167,6 +167,11 @@ fn detect_host() -> PlatformInfo {
     }
 }
 
+fn feature_is_compiled(feature: &str) -> bool {
+    (feature == "standard-probes" && cfg!(feature = "standard-probes"))
+        || (feature == "ai" && cfg!(feature = "ai"))
+}
+
 fn compilation_target() -> PlatformInfo {
     PlatformInfo {
         os: std::env::consts::OS.to_owned(),
@@ -179,17 +184,50 @@ fn compilation_target() -> PlatformInfo {
 
 impl Capabilities {
     /// Detects capabilities available in the running binary.
-    pub fn current() -> Self {
-        let unavailable_reason = Some("implementation is not available in bootstrap mode".into());
+    ///
+    /// # Errors
+    ///
+    /// Returns a catalog-corruption error when the embedded structural,
+    /// semantic, or probe documents fail validation.
+    pub fn current() -> DiscoveryResult<Self> {
+        let catalog = Catalog::embedded()?;
+        let unavailable_reason = Some("inspector implementation is not available yet".into());
+        let known_probes = catalog
+            .probes()
+            .iter()
+            .map(|probe| {
+                let missing_features: Vec<_> = probe
+                    .required_features
+                    .iter()
+                    .filter(|feature| !feature_is_compiled(feature))
+                    .cloned()
+                    .collect();
+                let available = missing_features.is_empty();
+                RuntimeCapabilityState {
+                    id: probe.id.to_string(),
+                    known: true,
+                    available,
+                    executable: false,
+                    reason: Some(if available {
+                        "required features are compiled; probe adapter is not registered yet".into()
+                    } else {
+                        format!(
+                            "required features are not compiled: {}",
+                            missing_features.join(", ")
+                        )
+                    }),
+                }
+            })
+            .collect();
 
-        Self {
+        Ok(Self {
             binary: "amari".into(),
             tool_version: env!("CARGO_PKG_VERSION").into(),
             protocol_versions: vec![SCHEMA_V1.into()],
             catalog: CatalogStatus {
-                version: "bootstrap".into(),
-                hash: BOOTSTRAP_CATALOG_HASH.into(),
-                available: false,
+                version: catalog.version().into(),
+                hash: catalog.content_hash().into(),
+                available: true,
             },
             output_modes: vec!["human".into(), "json".into()],
             resource_limits: ResourceLimits::default(),
@@ -211,7 +249,7 @@ impl Capabilities {
                     reason: unavailable_reason,
                 },
             ],
-            known_probes: Vec::new(),
+            known_probes,
             feature_gates: vec![
                 FeatureGate {
                     name: "standard-probes".into(),
@@ -231,28 +269,32 @@ impl Capabilities {
                 .iter()
                 .map(|(kind, code)| ((*kind).to_owned(), *code))
                 .collect(),
-        }
+        })
     }
 
     /// Wraps current capabilities in the shared versioned response envelope.
-    pub fn envelope() -> Envelope<Self> {
-        let capabilities = Self::current();
+    ///
+    /// # Errors
+    ///
+    /// Returns a catalog-corruption error when the embedded catalog is invalid.
+    pub fn envelope() -> DiscoveryResult<Envelope<Self>> {
+        let capabilities = Self::current()?;
         let catalog = CatalogIdentity {
             version: capabilities.catalog.version.clone(),
             hash: capabilities.catalog.hash.clone(),
         };
-        Envelope::new(
+        Ok(Envelope::new(
             capabilities,
             catalog,
             Compatibility {
-                status: "bootstrap".into(),
-                reasons: vec!["embedded capability catalog is not available yet".into()],
+                status: "compatible".into(),
+                reasons: vec![],
             },
             ReplayMetadata {
                 replayable: false,
                 required_hashes: vec![],
-                reasons: vec!["bootstrap capabilities are environment-specific".into()],
+                reasons: vec!["runtime capabilities are environment-specific".into()],
             },
-        )
+        ))
     }
 }

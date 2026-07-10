@@ -9,6 +9,7 @@
 #![deny(missing_docs)]
 
 pub mod capabilities;
+pub mod catalog;
 pub mod cli;
 pub mod error;
 pub mod protocol;
@@ -17,6 +18,11 @@ mod render;
 pub use capabilities::{
     AiAdapterStatus, Capabilities, CatalogStatus, FeatureGate, PlatformInfo, ResourceLimits,
     RuntimeCapabilityState,
+};
+pub use catalog::{
+    CapabilityRecord, CapabilityRelation, Catalog, CostHint, CrateRecord, ExampleRecord,
+    FeatureRecord, ItemRecord, ProbeDescriptor, ProbeLimits, ProbeManifest, SemanticCatalog,
+    SideEffectPolicy, StabilityTier, StructuralCatalog,
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use protocol::{
