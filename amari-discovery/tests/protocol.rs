@@ -252,6 +252,11 @@ fn discovery_errors_have_stable_kinds_and_exit_codes() {
             9,
         ),
         (
+            DiscoveryError::NotImplemented("future command".into()),
+            "not_implemented",
+            69,
+        ),
+        (
             DiscoveryError::Internal("invariant failed".into()),
             "internal",
             70,

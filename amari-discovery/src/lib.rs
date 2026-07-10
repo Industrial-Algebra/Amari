@@ -8,9 +8,16 @@
 
 #![deny(missing_docs)]
 
+pub mod capabilities;
+pub mod cli;
 pub mod error;
 pub mod protocol;
+mod render;
 
+pub use capabilities::{
+    AiAdapterStatus, Capabilities, CatalogStatus, FeatureGate, PlatformInfo, ResourceLimits,
+    RuntimeCapabilityState,
+};
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use protocol::{
     CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,

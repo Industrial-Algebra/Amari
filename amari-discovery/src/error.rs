@@ -54,12 +54,33 @@ pub enum DiscoveryError {
     #[error("serialization failure: {0}")]
     Serialization(#[from] serde_json::Error),
 
+    /// A valid command is not implemented in this build.
+    #[error("not implemented: {0}")]
+    NotImplemented(String),
+
     /// An internal invariant failed without a more specific classification.
     #[error("internal failure: {0}")]
     Internal(String),
 }
 
 impl DiscoveryError {
+    /// Returns every stable machine-readable error kind and process exit code.
+    pub const fn exit_codes() -> &'static [(&'static str, u8)] {
+        &[
+            ("invalid_id", 2),
+            ("invalid_input", 2),
+            ("catalog_corruption", 3),
+            ("inspection_failure", 4),
+            ("probe_unavailable", 5),
+            ("probe_failed", 6),
+            ("limit_exceeded", 7),
+            ("io", 8),
+            ("serialization", 9),
+            ("not_implemented", 69),
+            ("internal", 70),
+        ]
+    }
+
     /// Creates an invalid-identifier error.
     pub fn invalid_id(value: impl Into<String>, reason: impl Into<String>) -> Self {
         Self::InvalidId {
@@ -80,6 +101,7 @@ impl DiscoveryError {
             Self::LimitExceeded(_) => "limit_exceeded",
             Self::Io(_) => "io",
             Self::Serialization(_) => "serialization",
+            Self::NotImplemented(_) => "not_implemented",
             Self::Internal(_) => "internal",
         }
     }
@@ -95,6 +117,7 @@ impl DiscoveryError {
             Self::LimitExceeded(_) => 7,
             Self::Io(_) => 8,
             Self::Serialization(_) => 9,
+            Self::NotImplemented(_) => 69,
             Self::Internal(_) => 70,
         }
     }

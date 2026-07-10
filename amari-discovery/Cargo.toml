@@ -43,6 +43,9 @@ amari-surreal = { workspace = true, optional = true }
 amari-surcomplex = { workspace = true, optional = true }
 amari-rewrite = { workspace = true }
 
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "1", features = ["system"] }
+
 [features]
 default = ["standard-probes"]
 standard-probes = [
