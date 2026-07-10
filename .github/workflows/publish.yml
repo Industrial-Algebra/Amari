@@ -122,6 +122,7 @@ jobs:
             "amari-rewrite"
             "amari-gpu"
             "amari-optimization"
+            "amari-discovery"
             "amari"
           )
 
