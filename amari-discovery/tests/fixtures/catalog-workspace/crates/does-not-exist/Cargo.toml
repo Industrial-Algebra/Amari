@@ -1,0 +1,4 @@
+[package]
+name = "ignored-missing-package"
+version = "0.1.0"
+edition = "2021"

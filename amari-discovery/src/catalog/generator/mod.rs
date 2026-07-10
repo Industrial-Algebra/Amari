@@ -4,4 +4,7 @@
 
 mod inventory;
 
-pub use inventory::{inventory_workspace, PackageInventoryRecord, WorkspaceInventory};
+pub use inventory::{
+    inventory_workspace, DependencyInventoryRecord, DependencyKind, FeatureInventoryRecord,
+    PackageInventoryRecord, TargetInventoryRecord, TargetKind, WorkspaceInventory,
+};

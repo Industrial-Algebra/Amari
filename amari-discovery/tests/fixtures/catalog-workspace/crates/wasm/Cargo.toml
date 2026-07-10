@@ -3,6 +3,7 @@ name = "fixture-wasm"
 version.workspace = true
 description = "Fixture WASM package"
 license.workspace = true
+autoexamples = false
 
 [lib]
 name = "fixture_wasm"

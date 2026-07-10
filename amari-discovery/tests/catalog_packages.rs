@@ -34,16 +34,17 @@ fn fixture_inventory_resolves_inherited_metadata_and_library_targets() {
     let math = inventory.package("fixture-math").unwrap();
     assert_eq!(math.version, "9.8.7");
     assert_eq!(math.license, "Apache-2.0");
+    assert_eq!(math.edition, "2015");
     assert_eq!(math.description, "Inherited fixture description");
-    assert_eq!(math.targets, ["lib"]);
+    assert_eq!(math.library_outputs, ["lib"]);
     assert_eq!(math.manifest_path, "crates/math/Cargo.toml");
 
     let root = inventory.package("fixture-root").unwrap();
-    assert_eq!(root.targets, ["rlib"]);
+    assert_eq!(root.library_outputs, ["rlib"]);
     assert_eq!(root.manifest_path, "Cargo.toml");
 
     let wasm = inventory.package("fixture-wasm").unwrap();
-    assert_eq!(wasm.targets, ["cdylib", "rlib"]);
+    assert_eq!(wasm.library_outputs, ["cdylib", "rlib"]);
 }
 
 #[test]
@@ -52,7 +53,7 @@ fn real_inventory_includes_root_and_wasm_but_excludes_discovery() {
 
     assert!(inventory.package("amari").is_some());
     let wasm = inventory.package("amari-wasm").unwrap();
-    assert_eq!(wasm.targets, ["cdylib"]);
+    assert_eq!(wasm.library_outputs, ["cdylib"]);
     assert!(inventory.package("amari-discovery").is_none());
     let names: Vec<_> = inventory
         .packages
@@ -107,19 +108,23 @@ fn real_inventory_includes_root_and_wasm_but_excludes_discovery() {
         inventory.package("amari-wasm").unwrap().description,
         "WebAssembly bindings for Amari mathematical computing library - geometric algebra, tropical algebra, automatic differentiation, measure theory, fusion systems, and information geometry"
     );
-    assert_eq!(inventory.package("amari").unwrap().targets, ["lib"]);
+    assert_eq!(inventory.package("amari").unwrap().library_outputs, ["lib"]);
     assert_eq!(
-        inventory.package("amari-flynn-macros").unwrap().targets,
+        inventory
+            .package("amari-flynn-macros")
+            .unwrap()
+            .library_outputs,
         ["proc-macro"]
     );
     for package in &inventory.packages {
         if !matches!(package.name.as_str(), "amari-wasm" | "amari-flynn-macros") {
-            assert_eq!(package.targets, ["lib"], "{} targets", package.name);
+            assert_eq!(package.library_outputs, ["lib"], "{} targets", package.name);
         }
     }
 
     for package in &inventory.packages {
         assert_eq!(package.version, "0.23.0", "{} version", package.name);
+        assert_eq!(package.edition, "2021", "{} edition", package.name);
         assert_eq!(
             package.license, "MIT OR Apache-2.0",
             "{} license",
@@ -130,7 +135,11 @@ fn real_inventory_includes_root_and_wasm_but_excludes_discovery() {
             "{} description",
             package.name
         );
-        assert!(!package.targets.is_empty(), "{} targets", package.name);
+        assert!(
+            !package.library_outputs.is_empty(),
+            "{} targets",
+            package.name
+        );
         assert!(package.manifest_path.ends_with("Cargo.toml"));
         assert!(!package.manifest_path.starts_with('/'));
     }
@@ -147,7 +156,10 @@ fn inventory_is_deterministic_and_sorted() {
         .windows(2)
         .all(|pair| pair[0].name < pair[1].name));
     for package in &first.packages {
-        assert!(package.targets.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!(package
+            .library_outputs
+            .windows(2)
+            .all(|pair| pair[0] < pair[1]));
     }
 }
 

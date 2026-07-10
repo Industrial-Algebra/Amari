@@ -3,6 +3,15 @@ name = "fixture-math"
 version.workspace = true
 description.workspace = true
 license.workspace = true
+autobins = false
+
+[[bin]]
+name = "fixture-math"
+
+[features]
+default = ["fast"]
+fast = ["dep:ignored-missing-package"]
 
 [dependencies]
-ignored-missing-package = { path = "../does-not-exist" }
+ignored-missing-package = { path = "../does-not-exist", optional = true }
+shared = { workspace = true, optional = true, default-features = true, features = ["extra"] }

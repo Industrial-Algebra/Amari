@@ -3,15 +3,57 @@ name = "fixture-root"
 version.workspace = true
 description = "Fixture root package"
 license.workspace = true
-autobins = false
 
 [lib]
 name = "fixture_root"
 crate-type = ["rlib"]
 
+[[bin]]
+name = "fixture-tool"
+path = "tools/fixture-tool.rs"
+required-features = ["tooling"]
+
+[[bin]]
+name = "directory-tool"
+
+[[example]]
+name = "fixture_demo"
+path = "examples/fixture_demo.rs"
+required-features = ["std"]
+
+[[example]]
+name = "directory_demo"
+
+[features]
+default = ["std"]
+std = []
+tooling = ["dep:renamed-math", "renamed-math/fast"]
+
+[dependencies]
+renamed-math = { package = "fixture-math", path = "crates/math", optional = true }
+shared = { workspace = true }
+
+[dev-dependencies]
+dev-helper = "1"
+
+[build-dependencies]
+build-helper = { version = "1", optional = true, default-features = false }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-only = { package = "fixture-wasm-support", version = "3", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+target-dev = "1"
+
+[target.'cfg(target_arch = "wasm32")'.build-dependencies]
+target-build = { version = "1", optional = true }
+
 [workspace]
 members = ["crates/math", "crates/wasm", "crates/discovery"]
 resolver = "2"
+
+[workspace.dependencies]
+shared = { package = "fixture-shared", version = "2", path = "vendor/shared", features = ["base"], default-features = false }
 
 [workspace.package]
 version = "9.8.7"
