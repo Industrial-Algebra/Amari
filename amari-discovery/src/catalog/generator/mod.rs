@@ -2,12 +2,17 @@
 
 //! Deterministic source-workspace catalog generation.
 
+pub mod cfg;
 mod exports;
-mod inventory;
+pub mod inventory;
 mod modules;
 mod signatures;
 mod traits;
 
+pub use cfg::{
+    cfg_gates, evaluate_expr, feature_default_closure, CfgExpr, CfgGate, CfgGateRecord, CfgStatus,
+    CfgSurfaceKind,
+};
 pub use exports::{
     export_graph, ExportGraph, ExportItemKind, ExportRecord, ExportSource, ExportWarning,
     ExportWarningReason,

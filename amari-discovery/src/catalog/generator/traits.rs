@@ -1065,8 +1065,18 @@ fn index_named_item(
                 });
             *ordinal += 1;
         }
+        Item::Fn(_) => {
+            *ordinal += 1;
+        }
+        Item::Const(_) => {
+            *ordinal += 1;
+        }
+        Item::Static(_) => {
+            *ordinal += 1;
+        }
         Item::Type(item_type) => {
             register_type_name(scope, canonical, &item_type.ident);
+            *ordinal += 1;
         }
         Item::Impl(item_impl) => {
             index_impl_block(item_impl, canonical, source_path, index, *ordinal);
