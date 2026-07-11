@@ -5,6 +5,7 @@
 pub mod cfg;
 mod exports;
 pub mod inventory;
+pub mod macros;
 mod modules;
 mod signatures;
 mod traits;
@@ -20,6 +21,10 @@ pub use exports::{
 pub use inventory::{
     inventory_workspace, DependencyInventoryRecord, DependencyKind, FeatureInventoryRecord,
     PackageInventoryRecord, TargetInventoryRecord, TargetKind, WorkspaceInventory,
+};
+pub use macros::{
+    macro_catalog, MacroCatalog, MacroKind, MacroRecord, MacroSource, MacroWarning,
+    MacroWarningReason,
 };
 pub use modules::{module_graph, ModuleGraph, ModuleKind, ModuleRecord, ModuleVisibility};
 pub use signatures::{
