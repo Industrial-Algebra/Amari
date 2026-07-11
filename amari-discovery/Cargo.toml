@@ -31,6 +31,7 @@ walkdir = { workspace = true }
 sha2 = { workspace = true }
 hex = { workspace = true }
 syn = { workspace = true, features = ["full", "visit"] }
+quote = { workspace = true }
 thiserror = { workspace = true }
 amari-core = { workspace = true }
 amari-tropical = { workspace = true }

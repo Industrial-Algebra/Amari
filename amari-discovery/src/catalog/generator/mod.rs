@@ -5,6 +5,7 @@
 mod exports;
 mod inventory;
 mod modules;
+mod signatures;
 
 pub use exports::{
     export_graph, ExportGraph, ExportItemKind, ExportRecord, ExportSource, ExportWarning,
@@ -15,3 +16,8 @@ pub use inventory::{
     PackageInventoryRecord, TargetInventoryRecord, TargetKind, WorkspaceInventory,
 };
 pub use modules::{module_graph, ModuleGraph, ModuleKind, ModuleRecord, ModuleVisibility};
+pub use signatures::{
+    signature_catalog, AggregateShape, AssociatedItem, AssociatedKind, FieldLabel, FieldShape,
+    SignatureCatalog, SignatureKind, SignatureRecord, SignatureSource, VariantData, VariantField,
+    VariantShape,
+};
