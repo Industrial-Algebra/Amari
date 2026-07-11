@@ -6,6 +6,7 @@ mod exports;
 mod inventory;
 mod modules;
 mod signatures;
+mod traits;
 
 pub use exports::{
     export_graph, ExportGraph, ExportItemKind, ExportRecord, ExportSource, ExportWarning,
@@ -20,4 +21,8 @@ pub use signatures::{
     signature_catalog, AggregateShape, AssociatedItem, AssociatedKind, FieldLabel, FieldShape,
     SignatureCatalog, SignatureKind, SignatureRecord, SignatureSource, VariantData, VariantField,
     VariantShape,
+};
+pub use traits::{
+    trait_relationships, RelationshipEndpoint, SuperTraitConstraint, TraitAssociatedItem,
+    TraitCatalog, TraitDefinition, TraitImplementation, TraitItemStatus,
 };
