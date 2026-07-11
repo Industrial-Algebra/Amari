@@ -19,6 +19,11 @@ pub use capabilities::{
     AiAdapterStatus, Capabilities, CatalogStatus, FeatureGate, PlatformInfo, ResourceLimits,
     RuntimeCapabilityState,
 };
+pub use catalog::generator::wasm::{
+    default_capability_mappings, parse_wasm_surface, validate_capability_mappings,
+    WasmCapabilityMapping, WasmClass, WasmEnum, WasmEnumVariant, WasmFunction, WasmGetter,
+    WasmInterface, WasmInterfaceMember, WasmMethod, WasmSurface, WasmSurfaceWarning, WasmTypeAlias,
+};
 pub use catalog::{
     CapabilityRecord, CapabilityRelation, Catalog, CostHint, CrateRecord, ExampleRecord,
     FeatureRecord, ItemRecord, ProbeDescriptor, ProbeLimits, ProbeManifest, SemanticCatalog,

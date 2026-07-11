@@ -22,6 +22,10 @@ path = "src/lib.rs"
 name = "amari"
 path = "src/main.rs"
 
+[[example]]
+name = "generate_wasm_surface"
+path = "examples/generate_wasm_surface.rs"
+
 [dependencies]
 clap = { workspace = true }
 serde = { workspace = true }

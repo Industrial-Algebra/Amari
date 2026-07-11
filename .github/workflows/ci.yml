@@ -197,6 +197,20 @@ jobs:
           name: wasm-package
           path: amari-wasm/pkg/
 
+      - name: Check WASM surface drift
+        run: |
+          echo "==> Regenerating WASM discovery surface"
+          bash scripts/generate-discovery-wasm-surface.sh
+          echo "==> Checking for drift in catalog/generated-wasm.json"
+          if ! git diff --exit-code amari-discovery/catalog/generated-wasm.json; then
+            echo ""
+            echo "ERROR: catalog/generated-wasm.json is out of sync with the authoritative"
+            echo "wasm-bindgen surface. Run scripts/generate-discovery-wasm-surface.sh and"
+            echo "commit the updated catalog/generated-wasm.json."
+            exit 1
+          fi
+          echo "==> WASM surface catalog is up to date"
+
   benchmark:
     name: Performance Benchmarks
     runs-on: ubuntu-latest

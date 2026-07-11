@@ -36,3 +36,10 @@ pub use traits::{
     trait_relationships, RelationshipEndpoint, SuperTraitConstraint, TraitAssociatedItem,
     TraitCatalog, TraitDefinition, TraitImplementation, TraitItemStatus,
 };
+
+pub mod wasm;
+pub use wasm::{
+    default_capability_mappings, parse_wasm_surface, validate_capability_mappings,
+    WasmCapabilityMapping, WasmClass, WasmEnum, WasmEnumVariant, WasmFunction, WasmGetter,
+    WasmInterface, WasmInterfaceMember, WasmMethod, WasmSurface, WasmSurfaceWarning, WasmTypeAlias,
+};
