@@ -9,12 +9,16 @@ use std::collections::{HashMap, HashSet};
 
 use sha2::{Digest, Sha256};
 
-use crate::{DiscoveryError, DiscoveryResult};
+use crate::{CapabilityId, DiscoveryError, DiscoveryResult};
 
 pub use model::{
-    CapabilityRecord, CapabilityRelation, CostHint, CrateRecord, ExampleRecord, FeatureRecord,
-    ItemRecord, ProbeDescriptor, ProbeLimits, ProbeManifest, SemanticCatalog, SideEffectPolicy,
-    StabilityTier, StructuralCatalog,
+    AssociatedItemRecord, CapabilityRecord, CapabilityRelation, CfgGateRecord, CostHint,
+    CrateRecord, DependencyEdgeRecord, DependencyRecord, ExampleRecord, FeatureRecord, FieldRecord,
+    ItemRecord, ItemShape, ItemVariantRecord, MacroCatalogRecord, ProbeDescriptor, ProbeLimits,
+    ProbeManifest, RelationshipEndpointRecord, SemanticCatalog, SideEffectPolicy, StabilityTier,
+    StructuralCatalog, SuperTraitConstraintRecord, TargetRecord, TraitDefinitionRecord,
+    TraitImplementationRecord, TraitItemRecord, VariantDataRecord, VariantFieldRecord,
+    VariantRecord, WasmCapabilityMappingRef, WasmSurfaceRef,
 };
 
 const GENERATED: &str = include_str!("../../catalog/generated.json");
@@ -55,15 +59,20 @@ impl Catalog {
         semantic_toml: &str,
         probes_toml: &str,
     ) -> DiscoveryResult<Self> {
-        let structural = serde_json::from_str(structural_json).map_err(|error| {
-            DiscoveryError::CatalogCorruption(format!("invalid structural JSON: {error}"))
-        })?;
+        let structural: StructuralCatalog =
+            serde_json::from_str(structural_json).map_err(|error| {
+                DiscoveryError::CatalogCorruption(format!("invalid structural JSON: {error}"))
+            })?;
         let semantic = toml::from_str(semantic_toml).map_err(|error| {
             DiscoveryError::CatalogCorruption(format!("invalid semantic TOML: {error}"))
         })?;
         let probes = toml::from_str(probes_toml).map_err(|error| {
             DiscoveryError::CatalogCorruption(format!("invalid probe TOML: {error}"))
         })?;
+
+        // For schema2: the supplied content_hash from the JSON is preserved
+        // as-is. Catalog::validate() recomputes and verifies it, so tampered
+        // checked-in files are caught at validation time.
 
         let mut hasher = Sha256::new();
         for (label, source) in [
@@ -89,13 +98,18 @@ impl Catalog {
 
     /// Validates uniqueness, reference integrity, versions, and probe contracts.
     ///
+    /// For schema version 2, additionally validates:
+    /// - `content_hash` is present and matches canonical recomputation
+    /// - `probe_descriptors` exactly equal the separately loaded ProbeManifest.probes
+    /// - `wasm_surface` is Some with valid hash, counts, and capability mappings
+    ///
     /// # Errors
     ///
     /// Returns [`DiscoveryError::CatalogCorruption`] when any catalog invariant
     /// is violated.
     pub fn validate(&self) -> DiscoveryResult<()> {
-        if self.structural.schema_version != 1 {
-            return catalog_error("structural schema_version must be 1");
+        if self.structural.schema_version != 1 && self.structural.schema_version != 2 {
+            return catalog_error("structural schema_version must be 1 or 2");
         }
         if self.structural.version.is_empty()
             || self.structural.version != self.semantic.catalog_version
@@ -105,6 +119,95 @@ impl Catalog {
         }
         if self.structural.crates.is_empty() {
             return catalog_error("structural catalog must contain at least one crate");
+        }
+
+        // Schema2: validate content_hash by canonical recomputation.
+        if self.structural.schema_version == 2 {
+            let hash = self.structural.content_hash.as_ref().ok_or_else(|| {
+                DiscoveryError::CatalogCorruption(
+                    "schema2 requires content_hash to be present".into(),
+                )
+            })?;
+            if hash.len() != 64 || !hash.chars().all(|c| c.is_ascii_hexdigit()) {
+                return catalog_error("content_hash must be a 64-char hex string");
+            }
+            // Recompute hash and compare.
+            // Serialize without the hash field for canonical recomputation.
+            let mut hasher = Sha256::new();
+            let mut for_hash = self.structural.clone();
+            for_hash.content_hash = None;
+            let json_without_hash = serde_json::to_vec_pretty(&for_hash).map_err(|error| {
+                DiscoveryError::CatalogCorruption(format!(
+                    "cannot serialize catalog for content_hash verification: {error}"
+                ))
+            })?;
+            hasher.update(&json_without_hash);
+            let recomputed = hex::encode(hasher.finalize());
+            if hash != &recomputed {
+                return catalog_error(format!(
+                    "content_hash mismatch: expected {recomputed}, got {hash}"
+                ));
+            }
+
+            // Schema2: require wasm_surface to be Some.
+            let wasm = self.structural.wasm_surface.as_ref().ok_or_else(|| {
+                DiscoveryError::CatalogCorruption(
+                    "schema2 requires wasm_surface to be present".into(),
+                )
+            })?;
+            if wasm.path.is_empty() {
+                return catalog_error("wasm_surface.path must be nonempty");
+            }
+            if wasm.source_hash.len() != 64
+                || !wasm.source_hash.chars().all(|c| c.is_ascii_hexdigit())
+            {
+                return catalog_error("wasm_surface.source_hash must be a 64-char hex string");
+            }
+            if wasm.class_count == 0
+                && wasm.function_count == 0
+                && wasm.enum_count == 0
+                && wasm.interface_count == 0
+            {
+                return catalog_error("wasm_surface must have at least one export count");
+            }
+
+            // Schema2: WASM capability mapping integrity.
+            // Every wasm_path must be nonempty and unique; every capability_id
+            // must parse as a valid CapabilityId.
+            {
+                let mut wasm_paths = std::collections::HashSet::new();
+                for (i, mapping) in wasm.capability_mappings.iter().enumerate() {
+                    if mapping.wasm_path.is_empty() {
+                        return catalog_error(format!(
+                            "wasm_surface.capability_mappings[{i}]: wasm_path must be nonempty"
+                        ));
+                    }
+                    if !wasm_paths.insert(&mapping.wasm_path) {
+                        return catalog_error(format!(
+                            "wasm_surface.capability_mappings[{i}]: duplicate wasm_path '{}'",
+                            mapping.wasm_path
+                        ));
+                    }
+                    // Validate the capability_id parses.
+                    if mapping.capability_id.parse::<CapabilityId>().is_err() {
+                        return catalog_error(format!(
+                            "wasm_surface.capability_mappings[{i}]: invalid capability_id '{}'",
+                            mapping.capability_id
+                        ));
+                    }
+                }
+            }
+
+            // Schema2: probe_descriptors must exactly equal the separately loaded
+            // ProbeManifest.probes. Full structural equality, not just count+IDs,
+            // so that modified limits, features, or cost trigger corruption.
+            if self.structural.probe_descriptors != self.probes.probes {
+                return catalog_error(format!(
+                    "structural probe_descriptors must match probes.toml exactly ({} vs {} probes)",
+                    self.structural.probe_descriptors.len(),
+                    self.probes.probes.len(),
+                ));
+            }
         }
 
         let mut crate_names = HashSet::new();
@@ -125,11 +228,28 @@ impl Catalog {
                 }
             }
             for item in &crate_record.items {
-                if item.path.is_empty()
-                    || item.kind.is_empty()
-                    || !item_paths.insert(item.path.as_str())
-                {
+                if item.path.is_empty() || !item_paths.insert(item.path.as_str()) {
                     return catalog_error("item paths must be nonempty and globally unique");
+                }
+                // Single-variant items must have a non-empty kind; multi-variant
+                // items omit the canonical summary kind but must have variants.
+                if let Some(kind) = &item.kind {
+                    if kind.is_empty() {
+                        return catalog_error("item kind must be nonempty when present");
+                    }
+                } else if item.variants.len() < 2 {
+                    return catalog_error(format!(
+                        "item {}: kind absent but fewer than 2 variants ({})",
+                        item.path,
+                        item.variants.len()
+                    ));
+                }
+                // Variants must be non-empty.
+                if item.variants.is_empty() {
+                    return catalog_error(format!(
+                        "item {}: variants must not be empty",
+                        item.path
+                    ));
                 }
             }
             for example in &crate_record.examples {

@@ -24,10 +24,15 @@ pub use catalog::generator::wasm::{
     WasmCapabilityMapping, WasmClass, WasmEnum, WasmEnumVariant, WasmFunction, WasmGetter,
     WasmInterface, WasmInterfaceMember, WasmMethod, WasmSurface, WasmSurfaceWarning, WasmTypeAlias,
 };
+pub use catalog::generator::{generate_workspace_catalog, verify_checked_in};
 pub use catalog::{
-    CapabilityRecord, CapabilityRelation, Catalog, CostHint, CrateRecord, ExampleRecord,
-    FeatureRecord, ItemRecord, ProbeDescriptor, ProbeLimits, ProbeManifest, SemanticCatalog,
-    SideEffectPolicy, StabilityTier, StructuralCatalog,
+    AssociatedItemRecord, CapabilityRecord, CapabilityRelation, Catalog, CfgGateRecord, CostHint,
+    CrateRecord, DependencyEdgeRecord, DependencyRecord, ExampleRecord, FeatureRecord, FieldRecord,
+    ItemRecord, ItemShape, ItemVariantRecord, MacroCatalogRecord, ProbeDescriptor, ProbeLimits,
+    ProbeManifest, RelationshipEndpointRecord, SemanticCatalog, SideEffectPolicy, StabilityTier,
+    StructuralCatalog, SuperTraitConstraintRecord, TargetRecord, TraitDefinitionRecord,
+    TraitImplementationRecord, TraitItemRecord, VariantDataRecord, VariantFieldRecord,
+    VariantRecord, WasmCapabilityMappingRef, WasmSurfaceRef,
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use protocol::{

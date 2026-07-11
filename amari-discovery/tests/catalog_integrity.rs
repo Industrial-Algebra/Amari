@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use amari_discovery::{Catalog, SideEffectPolicy};
+use amari_discovery::{Catalog, SideEffectPolicy, StructuralCatalog};
 
 const STRUCTURAL: &str = include_str!("../catalog/generated.json");
 const SEMANTIC: &str = include_str!("../catalog/semantic/core.toml");
@@ -131,12 +131,21 @@ fn catalog_hash_is_deterministic_and_content_sensitive() {
         .bytes()
         .all(|byte| byte.is_ascii_hexdigit()));
 
-    let changed = Catalog::from_sources(
-        &STRUCTURAL.replace("Initial embedded", "Changed embedded"),
-        SEMANTIC,
-        PROBES,
-    )
-    .unwrap();
+    // Modify the structural content AND recompute the content_hash so
+    // validation passes. The composite Catalog.content_hash must differ.
+    let mut changed_structural: StructuralCatalog = serde_json::from_str(STRUCTURAL).unwrap();
+    changed_structural.description = "Changed structural catalog for Amari".to_string();
+    // Recompute content_hash for the modified structural JSON.
+    let mut for_hash = changed_structural.clone();
+    for_hash.content_hash = None;
+    use sha2::{Digest, Sha256};
+    let mut hasher = Sha256::new();
+    let json_without_hash = serde_json::to_vec_pretty(&for_hash).unwrap();
+    hasher.update(&json_without_hash);
+    changed_structural.content_hash = Some(hex::encode(hasher.finalize()));
+
+    let changed_json = serde_json::to_string_pretty(&changed_structural).unwrap();
+    let changed = Catalog::from_sources(&changed_json, SEMANTIC, PROBES).unwrap();
     assert_ne!(first.content_hash(), changed.content_hash());
 }
 

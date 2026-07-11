@@ -4,6 +4,7 @@
 
 pub mod cfg;
 mod exports;
+pub mod generate;
 pub mod inventory;
 pub mod macros;
 mod modules;
@@ -43,3 +44,5 @@ pub use wasm::{
     WasmCapabilityMapping, WasmClass, WasmEnum, WasmEnumVariant, WasmFunction, WasmGetter,
     WasmInterface, WasmInterfaceMember, WasmMethod, WasmSurface, WasmSurfaceWarning, WasmTypeAlias,
 };
+
+pub use generate::{generate_workspace_catalog, verify_checked_in};
