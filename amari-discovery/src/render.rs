@@ -67,6 +67,25 @@ pub(crate) fn write_capabilities_human(
             "not compiled"
         }
     )?;
+    writeln!(writer, "Resource limits:")?;
+    let rl = &capabilities.resource_limits;
+    writeln!(
+        writer,
+        "  max_inspection_files: {}",
+        rl.max_inspection_files
+    )?;
+    writeln!(
+        writer,
+        "  max_inspection_bytes: {}",
+        rl.max_inspection_bytes
+    )?;
+    writeln!(writer, "  max_traversal_depth: {}", rl.max_traversal_depth)?;
+    writeln!(writer, "  max_per_file_bytes: {}", rl.max_per_file_bytes)?;
+    writeln!(
+        writer,
+        "  max_inspection_wall_millis: {}",
+        rl.max_inspection_wall_millis
+    )?;
     Ok(())
 }
 

@@ -21,6 +21,7 @@ pub mod catalog;
 pub mod cli;
 pub mod commands;
 pub mod error;
+pub mod inspect;
 pub mod protocol;
 mod render;
 
@@ -48,6 +49,10 @@ pub use commands::discover::{
     SearchResults,
 };
 pub use error::{DiscoveryError, DiscoveryResult};
+pub use inspect::{
+    inspect_project, InspectionLimit, InspectionLimits, ProjectInspector, ProjectKind,
+    ProjectSignal, ProjectSnapshot, SnapshotState, SourceLocation,
+};
 pub use protocol::{
     CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,
     ProbeBackend, ProbeId, ProbeResult, Provenance, ReplayMetadata, ResourceObservations,

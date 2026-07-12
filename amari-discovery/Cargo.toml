@@ -49,7 +49,7 @@ amari-surcomplex = { workspace = true, optional = true }
 amari-rewrite = { workspace = true }
 
 [target.'cfg(unix)'.dependencies]
-rustix = { version = "1", features = ["system"] }
+rustix = { version = "1", features = ["system", "fs"] }
 
 [features]
 default = ["standard-probes"]

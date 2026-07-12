@@ -72,15 +72,20 @@ pub struct PlatformInfo {
     pub source: String,
 }
 
-/// Default resource ceilings enforced by future inspectors and probes.
+/// Default resource ceilings enforced by inspectors and probes.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ResourceLimits {
-    /// Maximum files considered by one project inspection.
+    /// Maximum files considered by one project inspection
+    /// (regular non-secret candidates, not only accepted files).
     pub max_inspection_files: u64,
-    /// Maximum aggregate bytes read by one project inspection.
+    /// Maximum aggregate bytes accepted by one project inspection.
     pub max_inspection_bytes: u64,
     /// Maximum recursive traversal depth.
     pub max_traversal_depth: u64,
+    /// Maximum bytes accepted from a single inspection file.
+    pub max_per_file_bytes: u64,
+    /// Maximum wall-clock time for inspection in milliseconds.
+    pub max_inspection_wall_millis: u64,
     /// Maximum bytes accepted as one probe request.
     pub max_probe_input_bytes: u64,
     /// Maximum bytes emitted by one probe response.
@@ -95,6 +100,8 @@ impl Default for ResourceLimits {
             max_inspection_files: 10_000,
             max_inspection_bytes: 16 * 1024 * 1024,
             max_traversal_depth: 32,
+            max_per_file_bytes: 1_048_576,      // 1 MiB
+            max_inspection_wall_millis: 60_000, // 60 seconds
             max_probe_input_bytes: 1024 * 1024,
             max_probe_output_bytes: 1024 * 1024,
             probe_timeout_millis: 5_000,
@@ -234,6 +241,13 @@ impl Capabilities {
             host: detect_host(),
             target: compilation_target(),
             project_inspectors: vec![
+                RuntimeCapabilityState {
+                    id: "generic-filesystem".into(),
+                    known: true,
+                    available: true,
+                    executable: true,
+                    reason: Some("generic read-only filesystem traversal is available".into()),
+                },
                 RuntimeCapabilityState {
                     id: "rust-cargo".into(),
                     known: true,
