@@ -5,6 +5,14 @@
 //! `amari-discovery` provides the typed engine behind the `amari` command.
 //! Its runtime authority is read-only: it may inspect projects, recommend
 //! capabilities, construct plans, and run registered bounded probes.
+//!
+//! ## Features
+//!
+//! - `standard-probes` (default): compiles the standard dual-number, game,
+//!   surreal, and surcomplex probe dependencies. Probe execution is added in
+//!   later discovery runtime phases.
+//! - `ai`: reserves the provider-neutral AI adapter contract. It does not
+//!   enable network access or an external provider transport.
 
 #![deny(missing_docs)]
 
