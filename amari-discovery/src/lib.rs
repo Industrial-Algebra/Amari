@@ -11,6 +11,7 @@
 pub mod capabilities;
 pub mod catalog;
 pub mod cli;
+pub mod commands;
 pub mod error;
 pub mod protocol;
 mod render;
@@ -33,6 +34,10 @@ pub use catalog::{
     StructuralCatalog, SuperTraitConstraintRecord, TargetRecord, TraitDefinitionRecord,
     TraitImplementationRecord, TraitItemRecord, VariantDataRecord, VariantFieldRecord,
     VariantRecord, WasmCapabilityMappingRef, WasmSurfaceRef,
+};
+pub use commands::discover::{
+    DiscoveredExample, ExampleResult, GraphRelationItem, GraphResult, SearchResultItem,
+    SearchResults,
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use protocol::{

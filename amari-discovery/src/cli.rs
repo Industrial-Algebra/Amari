@@ -6,7 +6,7 @@ use std::{io, path::PathBuf};
 
 use clap::{Parser, Subcommand, ValueEnum};
 
-use crate::{render, Capabilities, DiscoveryError, DiscoveryResult};
+use crate::{commands, render, Capabilities, Catalog, DiscoveryError, DiscoveryResult};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -239,9 +239,52 @@ pub fn run() -> DiscoveryResult<()> {
                 render::write_capabilities_human(&mut stdout, &envelope)
             }
         }
+        Command::Discover { command } => {
+            let catalog = Catalog::embedded()?;
+            run_discover(&catalog, command, cli.json)
+        }
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
             command.unavailable_name()
         ))),
+    }
+}
+
+/// Dispatches a discover subcommand against the embedded catalog and renders output.
+fn run_discover(catalog: &Catalog, command: DiscoverCommand, json: bool) -> DiscoveryResult<()> {
+    let mut stdout = io::stdout().lock();
+    match command {
+        DiscoverCommand::Search { query } => {
+            let envelope = commands::discover::search_envelope(catalog, &query);
+            if json {
+                render::write_json(&mut stdout, &envelope)
+            } else {
+                render::write_search_human(&mut stdout, &envelope)
+            }
+        }
+        DiscoverCommand::Detail { identifier } => {
+            let envelope = commands::discover::detail_envelope(catalog, &identifier)?;
+            if json {
+                render::write_json(&mut stdout, &envelope)
+            } else {
+                render::write_detail_human(&mut stdout, &envelope)
+            }
+        }
+        DiscoverCommand::Graph { identifier } => {
+            let envelope = commands::discover::graph_envelope(catalog, &identifier)?;
+            if json {
+                render::write_json(&mut stdout, &envelope)
+            } else {
+                render::write_graph_human(&mut stdout, &envelope)
+            }
+        }
+        DiscoverCommand::Example { identifier } => {
+            let envelope = commands::discover::example_envelope(catalog, &identifier)?;
+            if json {
+                render::write_json(&mut stdout, &envelope)
+            } else {
+                render::write_example_human(&mut stdout, &envelope)
+            }
+        }
     }
 }
