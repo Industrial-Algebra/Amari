@@ -183,11 +183,24 @@ fn classify_file(rel_path: &str, pkg_dir: &str, package_name: &str) -> RustFileK
         };
     }
 
-    if pkg_rel.starts_with("benches/") {
-        return RustFileKind::Bench {
-            package: package_name.to_string(),
-            path: rel_path.to_string(),
+    if let Some(rest) = pkg_rel.strip_prefix("benches/") {
+        // Conventional Cargo bench ROOTS only: `benches/<name>.rs` or
+        // `benches/<name>/main.rs`. Nested helper modules (e.g.
+        // `benches/<name>/helper.rs`) are NOT bench roots and fall through
+        // to `Other` so they are never fabricated as benchmarks.
+        let is_root = if rest.ends_with(".rs") && !rest.contains('/') {
+            true
+        } else if let Some((dir, file)) = rest.rsplit_once('/') {
+            file == "main.rs" && !dir.is_empty() && !dir.contains('/')
+        } else {
+            false
         };
+        if is_root {
+            return RustFileKind::Bench {
+                package: package_name.to_string(),
+                path: rel_path.to_string(),
+            };
+        }
     }
 
     RustFileKind::Other {

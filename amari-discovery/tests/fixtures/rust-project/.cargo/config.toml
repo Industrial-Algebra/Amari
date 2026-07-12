@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+#
+# Fixture `.cargo/config.toml` for Task 8B2 platform inspection tests.
+#
+# Exercises: build target (array, WASM + native), build rustflags (with a
+# secret-valued native link-arg that must never be persisted), build
+# rustdocflags, incremental, target-dir, a triple target table
+# (`wasm32-unknown-unknown`) with a configured linker and cfg-scoped
+# rustflags, a cfg target table (`cfg(unix)`) with a multi-token runner
+# and native link-arg rustflags, and a second native triple target table
+# (`x86_64-pc-windows-msvc`) with a linker. Secret/path/command values are
+# intentional: they verify sanitization in the typed output.
+
+[build]
+target = ["wasm32-unknown-unknown", "x86_64-unknown-linux-gnu"]
+rustflags = ["-C", "link-arg=--secret-native-flag", "-C", "target-feature=+atomics"]
+rustdocflags = ["--cfg", "docsrs"]
+incremental = true
+target-dir = "custom-target"
+
+[target.wasm32-unknown-unknown]
+linker = "rust-lld"
+rustflags = ["--cfg", "web_sys_unstable_apis"]
+
+[target.'cfg(unix)']
+runner = "valgrind --tool=memcheck"
+rustflags = ["-C", "link-arg=-lm"]
+
+[target.x86_64-pc-windows-msvc]
+linker = "link.exe"

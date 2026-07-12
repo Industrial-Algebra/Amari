@@ -37,6 +37,18 @@ pub enum InspectionLimit {
         /// Bytes accounted before the limit was hit.
         observed: u64,
     },
+    /// The per-file byte limit was reached for an individual file.
+    ///
+    /// This is distinct from [`InspectionLimit::TotalBytes`]: a single file
+    /// may exceed the per-file cap even when aggregate headroom remains. The
+    /// `observed` value is bounded evidence (`max + 1`), never the true file
+    /// size and never zero.
+    PerFileBytes {
+        /// Configured maximum bytes for a single file.
+        max: u64,
+        /// Bounded evidence of the overflow (`max + 1`).
+        observed: u64,
+    },
     /// The traversal depth limit truncated potential descendants.
     TraversalDepth {
         /// Configured maximum traversal depth.
@@ -134,7 +146,7 @@ pub enum ProjectSignal {
 /// line/column range, and a content hash — never the raw file bytes.
 /// This keeps snapshots compact and prevents accidental exposure of
 /// source text or environment secrets.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct SourceLocation {
     /// Normalized relative path from the project root, using `/` separators.
     pub path: String,

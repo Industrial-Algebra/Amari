@@ -14,8 +14,9 @@ use super::toml_helpers::{
     parse_dep_value, toml_bool, toml_string, toml_strings_opt, toml_strings_sorted,
 };
 use super::types::{
-    system_dep_kind, AmariDependencyEvidence, CargoBench, CargoInspectionWarning, CargoPackage,
-    DependencyKind, NativeLink, SystemDependencySignal, WorkspaceDependencyBase, WorkspaceMeta,
+    system_dep_kind, AmariDependencyEvidence, CargoBench, CargoDependencyRecord,
+    CargoInspectionWarning, CargoPackage, DependencyKind, NativeLink, SystemDependencySignal,
+    WorkspaceDependencyBase, WorkspaceMeta,
 };
 use super::ProvenanceAccumulator;
 
@@ -308,6 +309,39 @@ pub(super) fn parse_dep_table(
 }
 
 // ============================================================================
+// All-dependency records (Task 8C — non-Amari target deps)
+// ============================================================================
+
+/// Collect a lightweight [`CargoDependencyRecord`] for **every** dependency in
+/// a table (Amari and non-Amari), preserving the table kind and optional
+/// target selector. No version or feature data is retained.
+pub(super) fn collect_dependency_records(
+    table: &toml::value::Table,
+    kind: DependencyKind,
+    target: Option<&str>,
+    manifest_path: &str,
+    manifest_content: &[u8],
+    provenance: &ProvenanceAccumulator,
+) -> Vec<CargoDependencyRecord> {
+    let mut out = Vec::new();
+    for (alias, raw) in table {
+        let dep_table = match parse_dep_value(raw) {
+            Some(t) => t,
+            None => continue,
+        };
+        let pkg = toml_string(&dep_table, "package").unwrap_or_else(|| alias.clone());
+        out.push(CargoDependencyRecord {
+            alias: alias.clone(),
+            package: pkg,
+            kind,
+            target: target.map(String::from),
+            source: provenance.make_source(manifest_path, manifest_content, None),
+        });
+    }
+    out
+}
+
+// ============================================================================
 // System dependency detection
 // ============================================================================
 
@@ -567,10 +601,12 @@ pub(super) fn parse_manifest_from_value(
         parse_inherited_metadata(&package_table, ws_package_fields, &pkg_name, warnings);
     let native_link = parse_native_link(&package_table, manifest_path, content, provenance);
     let benches = parse_benches(manifest, manifest_path, content, provenance);
+    let autobenches = toml_bool(&package_table, "autobenches");
 
     // -- Parse dependencies from various tables
     let mut deps: Vec<AmariDependencyEvidence> = Vec::new();
     let mut sys_deps: Vec<SystemDependencySignal> = Vec::new();
+    let mut dep_records: Vec<CargoDependencyRecord> = Vec::new();
 
     let dep_sections: &[(_, DependencyKind)] = &[
         ("dependencies", DependencyKind::Normal),
@@ -592,6 +628,14 @@ pub(super) fn parse_manifest_from_value(
                 provenance,
             ));
             sys_deps.extend(scan_system_deps(
+                table,
+                *kind,
+                None,
+                manifest_path,
+                content,
+                provenance,
+            ));
+            dep_records.extend(collect_dependency_records(
                 table,
                 *kind,
                 None,
@@ -631,6 +675,14 @@ pub(super) fn parse_manifest_from_value(
                         content,
                         provenance,
                     ));
+                    dep_records.extend(collect_dependency_records(
+                        deps_table,
+                        *kind,
+                        Some(cfg_pred),
+                        manifest_path,
+                        content,
+                        provenance,
+                    ));
                 }
             }
         }
@@ -650,6 +702,16 @@ pub(super) fn parse_manifest_from_value(
             .cmp(&b.package)
             .then(a.alias.cmp(&b.alias))
             .then(a.dependency_kind.rank().cmp(&b.dependency_kind.rank()))
+    });
+
+    // Sort all-dependency records deterministically (by package, alias, kind,
+    // then target selector) — target selectors retained for platform derivation.
+    dep_records.sort_by(|a, b| {
+        a.package
+            .cmp(&b.package)
+            .then(a.alias.cmp(&b.alias))
+            .then(a.kind.rank().cmp(&b.kind.rank()))
+            .then(a.target.cmp(&b.target))
     });
 
     // -- Workspace metadata (only from root manifest)
@@ -680,6 +742,8 @@ pub(super) fn parse_manifest_from_value(
         native_link,
         inherited_metadata,
         system_dependencies: sys_deps,
+        dependency_records: dep_records,
+        autobenches,
     };
 
     Ok(ParsedManifest {

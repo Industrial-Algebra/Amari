@@ -93,6 +93,40 @@ pub struct CargoPackage {
     pub inherited_metadata: Vec<String>,
     /// System dependency signals detected in the manifest.
     pub system_dependencies: Vec<SystemDependencySignal>,
+    /// Lightweight records of **every** dependency (Amari and non-Amari) across
+    /// normal/dev/build tables, with optional target selectors. Used for
+    /// platform-derivation of target cfg constraints.
+    pub dependency_records: Vec<CargoDependencyRecord>,
+    /// `[package].autobenches` value when present. When `Some(false)`,
+    /// conventional `benches/*` discovery is suppressed (only explicit
+    /// `[[bench]]` targets are considered).
+    pub autobenches: Option<bool>,
+}
+
+// ============================================================================
+// CargoDependencyRecord — lightweight record of every dependency (Task 8C)
+// ============================================================================
+
+/// A lightweight record of a single Cargo dependency declaration, retaining
+/// only its identity, table kind, optional target selector, and provenance
+/// (no version or feature data).
+///
+/// Unlike [`AmariDependencyEvidence`], this records **every** dependency
+/// (Amari and non-Amari) across normal/dev/build tables so that platform
+/// derivation can see target-specific selectors for all dependencies.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CargoDependencyRecord {
+    /// The local alias used in the dependency declaration.
+    pub alias: String,
+    /// The resolved Cargo package name (after `package = "..."` renaming).
+    pub package: String,
+    /// Which dependency table this came from: `normal`, `dev`, or `build`.
+    pub kind: DependencyKind,
+    /// Optional Cargo target selector (`cfg(...)` or triple) when declared
+    /// under a `[target.<key>]` table.
+    pub target: Option<String>,
+    /// Location of this declaration in the manifest.
+    pub source: ManifestSource,
 }
 
 // ============================================================================
@@ -329,7 +363,7 @@ pub struct LockedPackage {
 /// error position via [`toml::de::Error::span`]. Extracting line numbers for
 /// successful syntax-tree entries requires adopting a span-preserving TOML
 /// parser, which is not yet integrated.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct ManifestSource {
     /// Relative path to the file.
     pub path: String,

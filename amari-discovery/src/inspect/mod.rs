@@ -21,6 +21,7 @@
 //!   from exceeding byte limits.
 
 pub mod cargo;
+pub mod cargo_config;
 mod limits;
 pub mod rust;
 mod snapshot;
@@ -35,10 +36,18 @@ use sha2::{Digest, Sha256};
 use crate::error::{DiscoveryError, DiscoveryResult};
 
 pub use cargo::{
-    inspect_cargo_project, AmariDependencyEvidence, CargoBench, CargoInspection,
-    CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind, LockedPackage, ManifestSource,
-    NativeLink, SystemDependencyKind, SystemDependencySignal, WorkspaceDependencyBase,
-    WorkspaceMeta,
+    inspect_cargo_project, AmariDependencyEvidence, CargoBench, CargoDependencyRecord,
+    CargoInspection, CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind,
+    LockedPackage, ManifestSource, NativeLink, SystemDependencyKind, SystemDependencySignal,
+    WorkspaceDependencyBase, WorkspaceMeta,
+};
+pub use cargo_config::{
+    inspect_cargo_platform, BenchmarkEvidence, BenchmarkStatus, CargoBuildSettings,
+    CargoPlatformInspection, CargoPlatformWarning, CargoTargetKey, CargoTargetSettings,
+    ConfigInputProvenance, ConfigSetting, ConfigSettingIssue, ConfigSource, ConfiguredLinker,
+    ConfiguredRunner, CustomTargetEvidence, NativeRequirement, NoStdEvidence, NoStdPackageEvidence,
+    RustflagCategory, RustflagCategoryCount, RustflagsEvidence, RustflagsScope,
+    TargetCfgConstraint, TargetCfgSource, WasmTargetEvidence, WasmTargetOrigin,
 };
 pub use limits::InspectionLimits;
 pub use rust::{
@@ -1057,6 +1066,15 @@ mod tests {
                     },
                 },
                 r#"{"kind":"limit_exceeded","detail":{"limit":{"kind":"total_bytes","detail":{"max":1000000,"observed":500000}}}}"#,
+            ),
+            (
+                SnapshotState::LimitExceeded {
+                    limit: InspectionLimit::PerFileBytes {
+                        max: 4096,
+                        observed: 4097,
+                    },
+                },
+                r#"{"kind":"limit_exceeded","detail":{"limit":{"kind":"per_file_bytes","detail":{"max":4096,"observed":4097}}}}"#,
             ),
             (
                 SnapshotState::LimitExceeded {

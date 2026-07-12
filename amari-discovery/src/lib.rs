@@ -50,12 +50,18 @@ pub use commands::discover::{
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{
-    inspect_cargo_project, inspect_project, inspect_rust_sources, AmariDependencyEvidence,
-    CargoBench, CargoInspection, CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind,
-    InspectionLimit, InspectionLimits, LockedPackage, ManifestSource, NativeLink, ProjectInspector,
-    ProjectKind, ProjectSignal, ProjectSnapshot, RustCfgEvidence, RustCrateAttribute, RustFileKind,
-    RustInspectionWarning, RustSourceInspection, RustUsage, RustUsageKind, SnapshotState,
-    SourceLocation, SystemDependencyKind, SystemDependencySignal, VocabularyEvidence,
+    inspect_cargo_platform, inspect_cargo_project, inspect_project, inspect_rust_sources,
+    AmariDependencyEvidence, BenchmarkEvidence, BenchmarkStatus, CargoBench, CargoBuildSettings,
+    CargoDependencyRecord, CargoInspection, CargoInspectionWarning, CargoLock, CargoPackage,
+    CargoPlatformInspection, CargoPlatformWarning, CargoTargetKey, CargoTargetSettings,
+    ConfigInputProvenance, ConfigSetting, ConfigSettingIssue, ConfigSource, ConfiguredLinker,
+    ConfiguredRunner, CustomTargetEvidence, DependencyKind, InspectionLimit, InspectionLimits,
+    LockedPackage, ManifestSource, NativeLink, NativeRequirement, NoStdEvidence,
+    NoStdPackageEvidence, ProjectInspector, ProjectKind, ProjectSignal, ProjectSnapshot,
+    RustCfgEvidence, RustCrateAttribute, RustFileKind, RustInspectionWarning, RustSourceInspection,
+    RustUsage, RustUsageKind, RustflagCategory, RustflagCategoryCount, RustflagsEvidence,
+    RustflagsScope, SnapshotState, SourceLocation, SystemDependencyKind, SystemDependencySignal,
+    TargetCfgConstraint, TargetCfgSource, VocabularyEvidence, WasmTargetEvidence, WasmTargetOrigin,
     WorkspaceDependencyBase, WorkspaceMeta,
 };
 pub use protocol::{

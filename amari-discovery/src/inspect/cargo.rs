@@ -31,9 +31,10 @@ mod toml_helpers;
 pub mod types;
 
 pub use types::{
-    AmariDependencyEvidence, CargoBench, CargoInspection, CargoInspectionWarning, CargoLock,
-    CargoPackage, DependencyKind, LockedPackage, ManifestSource, NativeLink, SystemDependencyKind,
-    SystemDependencySignal, WorkspaceDependencyBase, WorkspaceMeta,
+    AmariDependencyEvidence, CargoBench, CargoDependencyRecord, CargoInspection,
+    CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind, LockedPackage, ManifestSource,
+    NativeLink, SystemDependencyKind, SystemDependencySignal, WorkspaceDependencyBase,
+    WorkspaceMeta,
 };
 
 use std::path::{Component, Path};
