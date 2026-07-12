@@ -22,6 +22,7 @@
 
 pub mod cargo;
 mod limits;
+pub mod rust;
 mod snapshot;
 
 use std::fs;
@@ -40,6 +41,10 @@ pub use cargo::{
     WorkspaceMeta,
 };
 pub use limits::InspectionLimits;
+pub use rust::{
+    inspect_rust_sources, RustCfgEvidence, RustCrateAttribute, RustFileKind, RustInspectionWarning,
+    RustSourceInspection, RustUsage, RustUsageKind, VocabularyEvidence,
+};
 pub use snapshot::{
     InspectionLimit, ProjectInspector, ProjectKind, ProjectSignal, ProjectSnapshot, SnapshotState,
     SourceLocation,
@@ -50,14 +55,14 @@ pub use snapshot::{
 // ---------------------------------------------------------------------------
 
 /// Returns `true` when a directory name should be pruned from traversal.
-fn is_skipped_dir_name(name: &str) -> bool {
+pub(super) fn is_skipped_dir_name(name: &str) -> bool {
     // Exact match on well-known build / cache / version-control directories.
     name == ".git" || name == "target" || name == "node_modules" || name == ".worktrees"
 }
 
 /// Returns `true` when a directory or file name matches an environment-secret
 /// pattern (any name starting with `.env`).
-fn is_env_secret_name(name: &str) -> bool {
+pub(super) fn is_env_secret_name(name: &str) -> bool {
     name.starts_with(".env")
 }
 

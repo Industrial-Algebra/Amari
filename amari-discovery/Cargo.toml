@@ -36,6 +36,7 @@ sha2 = { workspace = true }
 hex = { workspace = true }
 syn = { workspace = true, features = ["full", "visit"] }
 quote = { workspace = true }
+proc-macro2 = { workspace = true, features = ["span-locations"] }
 thiserror = { workspace = true }
 amari-core = { workspace = true }
 amari-tropical = { workspace = true }

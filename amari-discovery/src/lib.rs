@@ -50,11 +50,13 @@ pub use commands::discover::{
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{
-    inspect_cargo_project, inspect_project, AmariDependencyEvidence, CargoBench, CargoInspection,
-    CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind, InspectionLimit,
-    InspectionLimits, LockedPackage, ManifestSource, NativeLink, ProjectInspector, ProjectKind,
-    ProjectSignal, ProjectSnapshot, SnapshotState, SourceLocation, SystemDependencyKind,
-    SystemDependencySignal, WorkspaceDependencyBase, WorkspaceMeta,
+    inspect_cargo_project, inspect_project, inspect_rust_sources, AmariDependencyEvidence,
+    CargoBench, CargoInspection, CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind,
+    InspectionLimit, InspectionLimits, LockedPackage, ManifestSource, NativeLink, ProjectInspector,
+    ProjectKind, ProjectSignal, ProjectSnapshot, RustCfgEvidence, RustCrateAttribute, RustFileKind,
+    RustInspectionWarning, RustSourceInspection, RustUsage, RustUsageKind, SnapshotState,
+    SourceLocation, SystemDependencyKind, SystemDependencySignal, VocabularyEvidence,
+    WorkspaceDependencyBase, WorkspaceMeta,
 };
 pub use protocol::{
     CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,
