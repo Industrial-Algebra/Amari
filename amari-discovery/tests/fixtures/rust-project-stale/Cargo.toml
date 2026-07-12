@@ -1,0 +1,9 @@
+[package]
+name = "rust-project-stale"
+version = "0.1.0"
+edition = "2021"
+description = "Stale fixture — uses Amari at 0.19.0, predating catalog"
+
+[dependencies]
+amari = "0.19.0"
+amari-core = "0.19.0"

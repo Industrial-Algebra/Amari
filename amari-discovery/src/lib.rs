@@ -50,8 +50,11 @@ pub use commands::discover::{
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{
-    inspect_project, InspectionLimit, InspectionLimits, ProjectInspector, ProjectKind,
-    ProjectSignal, ProjectSnapshot, SnapshotState, SourceLocation,
+    inspect_cargo_project, inspect_project, AmariDependencyEvidence, CargoBench, CargoInspection,
+    CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind, InspectionLimit,
+    InspectionLimits, LockedPackage, ManifestSource, NativeLink, ProjectInspector, ProjectKind,
+    ProjectSignal, ProjectSnapshot, SnapshotState, SourceLocation, SystemDependencyKind,
+    SystemDependencySignal, WorkspaceDependencyBase, WorkspaceMeta,
 };
 pub use protocol::{
     CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,

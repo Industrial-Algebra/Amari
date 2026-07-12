@@ -20,6 +20,7 @@
 //!   and wall-clock limits. Bounded reads prevent metadata/read races
 //!   from exceeding byte limits.
 
+pub mod cargo;
 mod limits;
 mod snapshot;
 
@@ -32,6 +33,12 @@ use sha2::{Digest, Sha256};
 
 use crate::error::{DiscoveryError, DiscoveryResult};
 
+pub use cargo::{
+    inspect_cargo_project, AmariDependencyEvidence, CargoBench, CargoInspection,
+    CargoInspectionWarning, CargoLock, CargoPackage, DependencyKind, LockedPackage, ManifestSource,
+    NativeLink, SystemDependencyKind, SystemDependencySignal, WorkspaceDependencyBase,
+    WorkspaceMeta,
+};
 pub use limits::InspectionLimits;
 pub use snapshot::{
     InspectionLimit, ProjectInspector, ProjectKind, ProjectSignal, ProjectSnapshot, SnapshotState,
@@ -60,7 +67,7 @@ fn is_env_secret_name(name: &str) -> bool {
 
 /// Result of opening a file with [`nofollow_open_readonly`].
 #[derive(Debug)]
-enum NofollowResult {
+pub(super) enum NofollowResult {
     /// The file was opened successfully and is a regular file.
     Opened(fs::File),
     /// The path was a symlink (or a replacement race was detected) —
@@ -87,7 +94,7 @@ enum NofollowResult {
 /// The caller is responsible for path-based containment checks before
 /// calling this function. Errors from this function never expose external
 /// symlink targets or absolute paths.
-fn nofollow_open_readonly(path: &Path) -> std::io::Result<NofollowResult> {
+pub(super) fn nofollow_open_readonly(path: &Path) -> std::io::Result<NofollowResult> {
     #[cfg(unix)]
     {
         use rustix::fs::{open, Mode, OFlags};
@@ -187,7 +194,7 @@ fn to_usize(value: u64) -> DiscoveryResult<usize> {
 // ---------------------------------------------------------------------------
 
 /// Outcome of [`bounded_read`].
-enum BoundedOutcome {
+pub(super) enum BoundedOutcome {
     /// File content fits within the per-file byte limit.
     Accepted(Vec<u8>),
     /// File content exceeds the per-file byte limit.
@@ -210,7 +217,7 @@ enum BoundedOutcome {
 ///
 /// Never allocates or reads beyond the declared bounds. All arithmetic
 /// uses saturating/checked operations to prevent overflow.
-fn bounded_read<R: Read>(
+pub(super) fn bounded_read<R: Read>(
     reader: &mut R,
     per_file_max: u64,
     remaining_aggregate: u64,
