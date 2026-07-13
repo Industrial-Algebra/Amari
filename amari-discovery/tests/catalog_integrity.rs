@@ -24,6 +24,44 @@ fn embedded_catalog_has_unique_valid_capabilities() {
 }
 
 #[test]
+fn semantic_capabilities_distinguish_planned_surfaces_from_current_examples() {
+    let catalog = Catalog::embedded().unwrap();
+    assert!(catalog.capabilities().iter().all(|capability| {
+        !capability.symbol_refs.is_empty()
+            || !capability.example_refs.is_empty()
+            || capability
+                .description
+                .to_ascii_lowercase()
+                .contains("planned")
+    }));
+
+    let superposition = catalog
+        .capabilities()
+        .iter()
+        .find(|capability| {
+            capability.id.to_string() == "amari:amari-holographic:algebra:superposition"
+        })
+        .expect("planned superposition capability must remain discoverable");
+    assert!(superposition
+        .description
+        .to_ascii_lowercase()
+        .contains("planned"));
+    assert!(superposition.symbol_refs.is_empty());
+
+    let rational = catalog
+        .capabilities()
+        .iter()
+        .find(|capability| {
+            capability.id.to_string() == "amari:amari-surreal:rational:exact-arithmetic"
+        })
+        .expect("rational surreal capability must exist");
+    assert!(!rational
+        .example_refs
+        .iter()
+        .any(|example| example == "amari-surreal:dyadic_arithmetic"));
+}
+
+#[test]
 fn semantic_references_resolve_to_structural_or_probe_records() {
     let catalog = Catalog::embedded().unwrap();
     let crate_names: HashSet<_> = catalog

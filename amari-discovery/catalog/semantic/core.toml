@@ -115,7 +115,7 @@ cost = "moderate"
 [[capabilities]]
 id = "amari:amari-holographic:algebra:superposition"
 name = "Additive holographic superposition"
-description = "Accumulate holographic candidates additively without attention-style normalization."
+description = "Planned for Amari 0.24; no public API is available in this catalog version. The capability will accumulate holographic candidates additively without attention-style normalization."
 aliases = ["VSA superposition", "additive bundling"]
 concepts = ["vector symbolic architecture", "superposition"]
 crate_refs = ["amari-holographic"]
@@ -149,7 +149,7 @@ concepts = ["surreal numbers", "exact arithmetic"]
 crate_refs = ["amari-surreal"]
 feature_refs = ["amari-surreal:std"]
 symbol_refs = ["amari_surreal::RationalSurreal"]
-example_refs = ["amari-surreal:dyadic_arithmetic"]
+example_refs = []
 probe_refs = ["amari-probe:surreal:rational-arithmetic:v1"]
 stability = "stable"
 cost = "low"
