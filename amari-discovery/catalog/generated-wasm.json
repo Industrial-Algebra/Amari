@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_hash": "43ec30313c0b035fdaf324f27564cbdfb044cc8af73700a473e4112a26b6c174",
+  "source_hash": "d9487f0fdc2055eb5a6f45505db8f1ac212a51396e36eb5af6bc52a90361e93c",
   "description": "153 classes, 30 functions, 2 enums, 1 interfaces, 2 type aliases",
   "classes": [
     {
@@ -10237,16 +10237,16 @@
           "type_signature": "readonly velocity_to_gamma: (a: number) => [number, number, number]"
         },
         {
-          "name": "wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___bool__true_",
-          "type_signature": "readonly wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___bool__true_: (a: number, b: number) => number"
+          "name": "wasm_bindgen_HASH___convert__closures_____invoke___bool__true_",
+          "type_signature": "readonly wasm_bindgen_HASH___convert__closures_____invoke___bool__true_: (a: number, b: number) => number"
         },
         {
-          "name": "wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___js_sys_dffea4e15b6a9c7b___Function_fn_wasm_bindgen_4b172f83b73aa3ee___JsValue_____wasm_bindgen_4b172f83b73aa3ee___sys__Undefined___js_sys_dffea4e15b6a9c7b___Function_fn_wasm_bindgen_4b172f83b73aa3ee___JsValue_____wasm_bindgen_4b172f83b73aa3ee___sys__Undefined_______true_",
-          "type_signature": "readonly wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___js_sys_dffea4e15b6a9c7b___Function_fn_wasm_bindgen_4b172f83b73aa3ee___JsValue_____wasm_bindgen_4b172f83b73aa3ee___sys__Undefined___js_sys_dffea4e15b6a9c7b___Function_fn_wasm_bindgen_4b172f83b73aa3ee___JsValue_____wasm_bindgen_4b172f83b73aa3ee___sys__Undefined_______true_: (a: number, b: number, c: any, d: any) => void"
+          "name": "wasm_bindgen_HASH___convert__closures_____invoke___js_sys_HASH___Function_fn_wasm_bindgen_HASH___JsValue_____wasm_bindgen_HASH___sys__Undefined___js_sys_HASH___Function_fn_wasm_bindgen_HASH___JsValue_____wasm_bindgen_HASH___sys__Undefined_______true_",
+          "type_signature": "readonly wasm_bindgen_HASH___convert__closures_____invoke___js_sys_HASH___Function_fn_wasm_bindgen_HASH___JsValue_____wasm_bindgen_HASH___sys__Undefined___js_sys_HASH___Function_fn_wasm_bindgen_HASH___JsValue_____wasm_bindgen_HASH___sys__Undefined_______true_: (a: number, b: number, c: any, d: any) => void"
         },
         {
-          "name": "wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___wasm_bindgen_4b172f83b73aa3ee___JsValue__core_e772e18dc9b1936e___result__Result_____wasm_bindgen_4b172f83b73aa3ee___JsError___true_",
-          "type_signature": "readonly wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___wasm_bindgen_4b172f83b73aa3ee___JsValue__core_e772e18dc9b1936e___result__Result_____wasm_bindgen_4b172f83b73aa3ee___JsError___true_: (a: number, b: number, c: any) => [number, number]"
+          "name": "wasm_bindgen_HASH___convert__closures_____invoke___wasm_bindgen_HASH___JsValue__core_HASH___result__Result_____wasm_bindgen_HASH___JsError___true_",
+          "type_signature": "readonly wasm_bindgen_HASH___convert__closures_____invoke___wasm_bindgen_HASH___JsValue__core_HASH___result__Result_____wasm_bindgen_HASH___JsError___true_: (a: number, b: number, c: any) => [number, number]"
         },
         {
           "name": "wasmalphaconnection_getAlpha",

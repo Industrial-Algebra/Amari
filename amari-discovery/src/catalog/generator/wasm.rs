@@ -23,7 +23,12 @@ use crate::{DiscoveryError, DiscoveryResult};
 pub struct WasmSurface {
     /// Schema version for the WASM surface format.
     pub schema_version: u32,
-    /// SHA-256 hex of the source `.d.ts` content.
+    /// SHA-256 hex of the normalized declaration surface.
+    ///
+    /// wasm-bindgen's low-level `InitOutput` names contain build-specific
+    /// crate disambiguator hashes. Those volatile hashes are normalized
+    /// before this identity is computed, while public declaration changes
+    /// still change the value.
     pub source_hash: String,
     /// Human-readable scope note.
     pub description: String,
@@ -176,6 +181,92 @@ pub struct WasmCapabilityMapping {
 }
 
 // ---------------------------------------------------------------------------
+// wasm-bindgen volatility normalization
+// ---------------------------------------------------------------------------
+
+/// Replaces build-specific 16-hex crate disambiguators in generated names.
+///
+/// wasm-bindgen exposes low-level `InitOutput` members containing fragments
+/// such as `wasm_bindgen_4b172f83b73aa3ee_`. The hexadecimal component is a
+/// compiler/build identity, not part of Amari's API, and changes across clean
+/// build environments. Only underscore-delimited 16-hex components are
+/// replaced, leaving ordinary public names and type signatures unchanged.
+fn normalize_disambiguators(value: &str) -> String {
+    let bytes = value.as_bytes();
+    let mut normalized = Vec::with_capacity(value.len());
+    let mut cursor = 0usize;
+
+    while cursor < bytes.len() {
+        let candidate_end = cursor.saturating_add(17);
+        let is_disambiguator = bytes[cursor] == b'_'
+            && candidate_end < bytes.len()
+            && bytes[cursor + 1..candidate_end]
+                .iter()
+                .all(u8::is_ascii_hexdigit)
+            && bytes[candidate_end] == b'_';
+        if is_disambiguator {
+            normalized.extend_from_slice(b"_HASH_");
+            cursor = candidate_end + 1;
+        } else {
+            normalized.push(bytes[cursor]);
+            cursor += 1;
+        }
+    }
+
+    // The transformation copies complete original UTF-8 byte sequences and
+    // substitutes ASCII only at an ASCII-delimited match, so failure is not
+    // expected. Preserve the original defensively rather than panic.
+    String::from_utf8(normalized).unwrap_or_else(|_| value.to_owned())
+}
+
+fn normalize_volatile_wasm_bindgen_names(
+    classes: &mut [WasmClass],
+    functions: &mut [WasmFunction],
+    interfaces: &mut [WasmInterface],
+    type_aliases: &mut [WasmTypeAlias],
+) {
+    for class in classes.iter_mut() {
+        class.name = normalize_disambiguators(&class.name);
+        class.constructor_signature = class
+            .constructor_signature
+            .as_deref()
+            .map(normalize_disambiguators);
+        for method in class.methods.iter_mut().chain(&mut class.static_methods) {
+            method.name = normalize_disambiguators(&method.name);
+            method.signature = normalize_disambiguators(&method.signature);
+        }
+        for getter in &mut class.getters {
+            getter.name = normalize_disambiguators(&getter.name);
+            getter.type_annotation = normalize_disambiguators(&getter.type_annotation);
+        }
+        class.methods.sort();
+        class.static_methods.sort();
+        class.getters.sort();
+    }
+    for function in functions.iter_mut() {
+        function.name = normalize_disambiguators(&function.name);
+        function.signature = normalize_disambiguators(&function.signature);
+    }
+    for interface in interfaces.iter_mut() {
+        interface.name = normalize_disambiguators(&interface.name);
+        for member in &mut interface.members {
+            member.name = normalize_disambiguators(&member.name);
+            member.type_signature = normalize_disambiguators(&member.type_signature);
+        }
+        interface.members.sort();
+        interface.members.dedup();
+    }
+    for alias in type_aliases.iter_mut() {
+        alias.name = normalize_disambiguators(&alias.name);
+        alias.target = normalize_disambiguators(&alias.target);
+    }
+    classes.sort();
+    functions.sort();
+    interfaces.sort();
+    type_aliases.sort();
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -198,14 +289,34 @@ pub fn parse_wasm_surface(source: &str) -> DiscoveryResult<WasmSurface> {
         return Err(DiscoveryError::InvalidInput("empty .d.ts source".into()));
     }
 
+    let mut parser = WasmSurfaceParser::new(source);
+    let (mut classes, mut functions, enums, mut interfaces, mut type_aliases, warnings) =
+        parser.parse();
+
+    normalize_volatile_wasm_bindgen_names(
+        &mut classes,
+        &mut functions,
+        &mut interfaces,
+        &mut type_aliases,
+    );
+
+    // Hash the normalized parsed surface rather than raw `.d.ts` bytes.
+    // wasm-bindgen embeds build-specific crate-disambiguator hashes in
+    // low-level `InitOutput` member names; hashing raw source made clean CI
+    // builds drift despite an unchanged public API.
     let source_hash = {
+        let canonical = serde_json::to_vec(&(
+            &classes,
+            &functions,
+            &enums,
+            &interfaces,
+            &type_aliases,
+            &warnings,
+        ))?;
         let mut hasher = Sha256::new();
-        hasher.update(source.as_bytes());
+        hasher.update(canonical);
         hex::encode(hasher.finalize())
     };
-
-    let mut parser = WasmSurfaceParser::new(source);
-    let (classes, functions, enums, interfaces, type_aliases, warnings) = parser.parse();
 
     if classes.is_empty()
         && functions.is_empty()
@@ -2208,5 +2319,45 @@ export class MultiDoc {
         let surface = parse_wasm_surface(src).unwrap();
         assert_eq!(surface.classes.len(), 1);
         assert!(surface.classes[0].doc.is_none());
+    }
+
+    #[test]
+    fn wasm_bindgen_disambiguator_hashes_do_not_change_the_surface() {
+        let first = r#"
+export class StableApi {
+    free(): void;
+}
+export interface InitOutput {
+    readonly wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___bool__true_: (a: number) => number;
+    readonly core_e772e18dc9b1936e___result__Result: number;
+}
+"#;
+        let second = r#"
+export class StableApi {
+    free(): void;
+}
+export interface InitOutput {
+    readonly wasm_bindgen_abc868e3374577bb___convert__closures_____invoke___bool__true_: (a: number) => number;
+    readonly core_4721bad40cb17f09___result__Result: number;
+}
+"#;
+
+        let first = parse_wasm_surface(first).unwrap();
+        let second = parse_wasm_surface(second).unwrap();
+
+        assert_eq!(first, second);
+        let serialized = serde_json::to_string(&first).unwrap();
+        assert!(!serialized.contains("4b172f83b73aa3ee"));
+        assert!(!serialized.contains("abc868e3374577bb"));
+    }
+
+    #[test]
+    fn public_wasm_signature_change_changes_the_surface_hash() {
+        let first =
+            parse_wasm_surface("export function stableApi(value: number): number;").unwrap();
+        let second =
+            parse_wasm_surface("export function stableApi(value: string): number;").unwrap();
+
+        assert_ne!(first.source_hash, second.source_hash);
     }
 }
