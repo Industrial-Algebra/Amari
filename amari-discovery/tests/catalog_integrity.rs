@@ -188,6 +188,28 @@ fn catalog_hash_is_deterministic_and_content_sensitive() {
 }
 
 #[test]
+fn validation_rejects_wasm_mapping_to_unknown_semantic_capability() {
+    let mut structural: StructuralCatalog = serde_json::from_str(STRUCTURAL).unwrap();
+    let wasm = structural
+        .wasm_surface
+        .as_mut()
+        .expect("schema 2 fixture must contain WASM summary");
+    wasm.capability_mappings[0].capability_id = "amari:missing:module:capability".parse().unwrap();
+
+    let mut for_hash = structural.clone();
+    for_hash.content_hash = None;
+    use sha2::{Digest, Sha256};
+    let canonical = serde_json::to_vec_pretty(&for_hash).unwrap();
+    structural.content_hash = Some(hex::encode(Sha256::digest(canonical)));
+    let modified = serde_json::to_string_pretty(&structural).unwrap();
+
+    let error = Catalog::from_sources(&modified, SEMANTIC, PROBES)
+        .expect_err("unknown semantic mapping must be rejected");
+    assert_eq!(error.kind(), "catalog_corruption");
+    assert!(error.to_string().contains("unknown capability"));
+}
+
+#[test]
 fn validation_rejects_dangling_semantic_and_relationship_references() {
     let bad_crate = SEMANTIC.replace(
         "crate_refs = [\"amari-core\"]",

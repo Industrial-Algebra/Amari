@@ -301,6 +301,26 @@ impl Catalog {
             }
         }
 
+        // Schema-2 WASM mappings are part of the semantic discovery surface,
+        // not merely syntactically valid identifiers. Reject mappings whose
+        // capability is absent from the curated semantic catalog.
+        if self.structural.schema_version == 2 {
+            let wasm = self.structural.wasm_surface.as_ref().ok_or_else(|| {
+                DiscoveryError::CatalogCorruption(
+                    "schema2 requires wasm_surface to be present".into(),
+                )
+            })?;
+            if wasm
+                .capability_mappings
+                .iter()
+                .any(|mapping| !capability_ids.contains(&mapping.capability_id.to_string()))
+            {
+                return catalog_error(
+                    "wasm_surface capability mapping references an unknown capability",
+                );
+            }
+        }
+
         let mut probe_ids = HashSet::new();
         let mut probe_owners = HashMap::new();
         for probe in &self.probes.probes {
