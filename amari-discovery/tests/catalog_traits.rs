@@ -365,6 +365,58 @@ fn local_trait_impl_is_recorded_as_local_endpoint() {
     );
 }
 
+#[test]
+fn reference_self_type_projects_the_local_type_without_becoming_the_module() {
+    let temp = TempDir::new().unwrap();
+    write_package(
+        temp.path(),
+        &[(
+            "src/lib.rs",
+            r#"
+pub trait Marker {}
+pub struct Local;
+impl Marker for &Local {}
+"#,
+        )],
+    );
+
+    let catalog = catalog_for(temp.path(), "src/lib.rs");
+    let implementations = find_impl_by_path(&catalog, "crate::Marker", "&crate::Local");
+    assert_eq!(implementations.len(), 1);
+    assert!(matches!(
+        &implementations[0].impl_type_endpoint,
+        RelationshipEndpoint::Local { module, ident }
+            if module == "crate" && ident == "Local"
+    ));
+}
+
+#[test]
+fn tuple_self_type_is_preserved_as_a_composite_external_type() {
+    let temp = TempDir::new().unwrap();
+    write_package(
+        temp.path(),
+        &[(
+            "src/lib.rs",
+            r#"
+pub trait Marker {}
+impl<A: Marker, B: Marker> Marker for (A, B) {}
+"#,
+        )],
+    );
+
+    let catalog = catalog_for(temp.path(), "src/lib.rs");
+    let implementation = catalog
+        .implementations
+        .iter()
+        .find(|implementation| implementation.trait_path == "crate::Marker")
+        .expect("tuple implementation must be retained");
+    assert_eq!(implementation.impl_type_path, "(A, B)");
+    assert!(matches!(
+        &implementation.impl_type_endpoint,
+        RelationshipEndpoint::External { path } if path == "(A, B)"
+    ));
+}
+
 // -------------------------------------------------------------------
 // 5. Unsafe and negative impl markers
 // -------------------------------------------------------------------
@@ -445,6 +497,29 @@ fn trait_relationships_are_preserved_through_re_export_aliases() {
         matches!(&imp.trait_endpoint, RelationshipEndpoint::Local { .. }),
         "trait endpoint should be local through alias"
     );
+}
+
+#[test]
+fn real_multivector_reference_operator_impl_resolves_to_multivector() {
+    let root = workspace_root();
+    let graph = module_graph(&root, "amari-core/src/lib.rs").unwrap();
+    let exports = export_graph(&graph, &root).unwrap();
+    let catalog = trait_relationships(&graph, &exports, &root).unwrap();
+
+    assert!(catalog.implementations.iter().any(|implementation| {
+        implementation.trait_path == "Add"
+            && implementation.impl_type_path == "&crate::Multivector"
+            && matches!(
+                &implementation.impl_type_endpoint,
+                RelationshipEndpoint::Local { ident, .. } if ident == "Multivector"
+            )
+    }));
+    assert!(!catalog.implementations.iter().any(|implementation| {
+        matches!(
+            &implementation.impl_type_endpoint,
+            RelationshipEndpoint::External { path } if path == "crate"
+        )
+    }));
 }
 
 // -------------------------------------------------------------------

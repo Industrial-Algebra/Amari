@@ -333,12 +333,14 @@ pub fn trait_relationships(
             &raw_impl.trait_segments,
             &mut visited,
         );
-        let type_ep = resolve_type_path(
-            &index,
-            &raw_impl.module,
-            &raw_impl.self_segments,
-            &mut visited,
-        );
+        let type_ep = match &raw_impl.self_type {
+            RawSelfType::Path { segments } | RawSelfType::Reference { segments, .. } => {
+                resolve_type_path(&index, &raw_impl.module, segments, &mut visited)
+            }
+            RawSelfType::External { display } => RelationshipEndpoint::External {
+                path: display.clone(),
+            },
+        };
 
         // Resolve trait export paths.
         let trait_paths: Vec<String> = match &trait_ep {
@@ -359,9 +361,16 @@ pub fn trait_relationships(
         let type_paths: Vec<String> = match &type_ep {
             RelationshipEndpoint::Local { module, ident } => type_exports
                 .get(&(module.clone(), ident.clone()))
-                .map(|paths| paths.iter().cloned().collect())
+                .map(|paths| {
+                    paths
+                        .iter()
+                        .map(|path| project_self_type_path(&raw_impl.self_type, path))
+                        .collect()
+                })
                 .unwrap_or_default(),
-            RelationshipEndpoint::External { path } => vec![path.clone()],
+            RelationshipEndpoint::External { path } => {
+                vec![project_self_type_path(&raw_impl.self_type, path)]
+            }
         };
         // Same rule: no fabricated paths for non-exported local types.
         if type_paths.is_empty() {
@@ -515,8 +524,9 @@ struct RawImplBlock {
     /// Path segments of the trait being implemented (e.g. `["Default"]` or
     /// `["crate", "MyTrait"]`).
     trait_segments: Vec<String>,
-    /// Path segments of the self type (e.g. `["MyStruct"]`).
-    self_segments: Vec<String>,
+    /// Parsed self-type shape, retaining reference/composite syntax while
+    /// allowing nominal local types to resolve through public aliases.
+    self_type: RawSelfType,
     /// Normalized generics clause.
     generics: String,
     /// Whether the impl block is `unsafe`.
@@ -527,6 +537,23 @@ struct RawImplBlock {
     source_path: String,
     /// Deterministic AST preorder ordinal for same-file cfg-gated variants.
     source_ordinal: usize,
+}
+
+/// Self-type syntax needed to project a trait implementation publicly.
+#[derive(Clone, Debug)]
+enum RawSelfType {
+    /// A nominal path such as `MyStruct<T>`.
+    Path { segments: Vec<String> },
+    /// A reference to a nominal path. The endpoint remains the referenced
+    /// local type, while the projected display preserves `&`, lifetime, and
+    /// mutability.
+    Reference {
+        segments: Vec<String>,
+        lifetime: Option<String>,
+        mutable: bool,
+    },
+    /// A composite or otherwise non-projectable type such as `(A, B)`.
+    External { display: String },
 }
 
 /// One variant of a type/enum/union declaration, including its derives
@@ -805,13 +832,12 @@ fn index_impl_block(
         .map(|seg| seg.ident.to_string())
         .collect();
 
-    // Extract self type segments.
-    let self_segments = self_type_segments(&item.self_ty);
+    let self_type = parse_self_type(&item.self_ty);
 
     index.impl_blocks.push(RawImplBlock {
         module: module.to_owned(),
         trait_segments,
-        self_segments: self_segments.unwrap_or_default(),
+        self_type,
         generics: generics_str,
         unsafe_trait: item.unsafety.is_some(),
         negative,
@@ -820,17 +846,57 @@ fn index_impl_block(
     });
 }
 
-/// Extracts leading path segments of a self type, stripping generic arguments.
-fn self_type_segments(self_ty: &Type) -> Option<Vec<String>> {
-    let Type::Path(TypePath { qself: None, path }) = self_ty else {
-        return None;
-    };
-    Some(
-        path.segments
-            .iter()
-            .map(|segment| segment.ident.to_string())
-            .collect(),
-    )
+/// Parses a self type without collapsing references or tuples to the
+/// containing module.
+fn parse_self_type(self_ty: &Type) -> RawSelfType {
+    match self_ty {
+        Type::Path(TypePath { qself: None, path }) => RawSelfType::Path {
+            segments: path
+                .segments
+                .iter()
+                .map(|segment| segment.ident.to_string())
+                .collect(),
+        },
+        Type::Reference(reference) => match reference.elem.as_ref() {
+            Type::Path(TypePath { qself: None, path }) => RawSelfType::Reference {
+                segments: path
+                    .segments
+                    .iter()
+                    .map(|segment| segment.ident.to_string())
+                    .collect(),
+                lifetime: reference.lifetime.as_ref().map(ToString::to_string),
+                mutable: reference.mutability.is_some(),
+            },
+            _ => RawSelfType::External {
+                display: normalize_type_display(self_ty),
+            },
+        },
+        _ => RawSelfType::External {
+            display: normalize_type_display(self_ty),
+        },
+    }
+}
+
+fn normalize_type_display(self_ty: &Type) -> String {
+    normalize(self_ty).replace(" ,", ",")
+}
+
+fn project_self_type_path(self_type: &RawSelfType, resolved_path: &str) -> String {
+    match self_type {
+        RawSelfType::Path { .. } => resolved_path.to_owned(),
+        RawSelfType::Reference {
+            lifetime, mutable, ..
+        } => {
+            let lifetime = lifetime.as_deref().unwrap_or("");
+            let mutable = if *mutable { "mut " } else { "" };
+            if lifetime.is_empty() {
+                format!("&{mutable}{resolved_path}")
+            } else {
+                format!("&{lifetime} {mutable}{resolved_path}")
+            }
+        }
+        RawSelfType::External { display } => display.clone(),
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ use super::{
     macros::macro_catalog,
     modules::module_graph,
     signatures::{signature_catalog, FieldLabel},
-    traits::trait_relationships,
+    traits::{trait_relationships, RelationshipEndpoint},
     wasm::{default_capability_mappings, WasmSurface},
     CfgGate, MacroKind, SignatureKind,
 };
@@ -470,7 +470,8 @@ pub fn generate_workspace_catalog(root: &Path) -> DiscoveryResult<StructuralCata
                 let source_rel = workspace_rel_path(&pkg_dir_rel, &ti.source_path);
                 // Package-qualify trait_path and impl_type_path for local endpoints.
                 let trait_path = qualify_local_path(&ti.trait_path, &crate_name);
-                let impl_type_path = qualify_local_path(&ti.impl_type_path, &crate_name);
+                let impl_type_path =
+                    qualify_impl_type_path(&ti.impl_type_path, &crate_name, &ti.impl_type_endpoint);
                 trait_impls.push(TraitImplementationRecord {
                     trait_path,
                     impl_type_path,
@@ -753,6 +754,19 @@ fn qualify_local_path(path: &str, crate_name: &str) -> String {
     }
 }
 
+/// Package-qualifies the nominal local path inside a projected self type,
+/// preserving wrappers such as `&`, lifetimes, and `mut`.
+fn qualify_impl_type_path(path: &str, crate_name: &str, endpoint: &RelationshipEndpoint) -> String {
+    if !matches!(endpoint, RelationshipEndpoint::Local { .. }) {
+        return path.to_owned();
+    }
+    let Some(crate_start) = path.find("crate") else {
+        return qualify_local_path(path, crate_name);
+    };
+    let (prefix, local_path) = path.split_at(crate_start);
+    format!("{prefix}{}", qualify_local_path(local_path, crate_name))
+}
+
 fn dependency_kind_str(kind: super::inventory::DependencyKind) -> String {
     match kind {
         super::inventory::DependencyKind::Normal => "normal".into(),
@@ -1014,6 +1028,18 @@ mod tests {
         assert_eq!(
             workspace_rel_path("amari-discovery", "catalog/generated.json"),
             "amari-discovery/catalog/generated.json"
+        );
+    }
+
+    #[test]
+    fn wrapped_local_impl_path_is_package_qualified() {
+        let endpoint = RelationshipEndpoint::Local {
+            module: "crate".into(),
+            ident: "Multivector".into(),
+        };
+        assert_eq!(
+            qualify_impl_type_path("&crate::Multivector", "amari-core", &endpoint),
+            "&amari_core::Multivector"
         );
     }
 
