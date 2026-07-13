@@ -760,7 +760,7 @@ fn qualify_impl_type_path(path: &str, crate_name: &str, endpoint: &RelationshipE
     if !matches!(endpoint, RelationshipEndpoint::Local { .. }) {
         return path.to_owned();
     }
-    let Some(crate_start) = path.find("crate") else {
+    let Some(crate_start) = path.find("crate::") else {
         return qualify_local_path(path, crate_name);
     };
     let (prefix, local_path) = path.split_at(crate_start);
@@ -1040,6 +1040,14 @@ mod tests {
         assert_eq!(
             qualify_impl_type_path("&crate::Multivector", "amari-core", &endpoint),
             "&amari_core::Multivector"
+        );
+        assert_eq!(
+            qualify_impl_type_path(
+                "&'crate_lifetime crate::Multivector",
+                "amari-core",
+                &endpoint,
+            ),
+            "&'crate_lifetime amari_core::Multivector"
         );
     }
 
