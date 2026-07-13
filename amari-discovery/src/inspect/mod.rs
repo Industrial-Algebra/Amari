@@ -41,6 +41,12 @@ pub use cargo::{
     LockedPackage, ManifestSource, NativeLink, SystemDependencyKind, SystemDependencySignal,
     WorkspaceDependencyBase, WorkspaceMeta,
 };
+/// Cooperative wall-clock-gated inspection with an injectable elapsed closure.
+///
+/// `#[doc(hidden)]`: internal testing surface for the post-phase wall-clock
+/// checkpoints; not part of the stable public API.
+#[doc(hidden)]
+pub use cargo_config::inspect_cargo_platform_with_elapsed;
 pub use cargo_config::{
     inspect_cargo_platform, BenchmarkEvidence, BenchmarkStatus, CargoBuildSettings,
     CargoPlatformInspection, CargoPlatformWarning, CargoTargetKey, CargoTargetSettings,

@@ -336,10 +336,14 @@ pub struct ConfiguredRunner {
 /// Evidence for one configured WASM target, with all origins.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct WasmTargetEvidence {
-    /// The WASM target triple (e.g. `wasm32-unknown-unknown`).
+    /// The WASM target triple (e.g. `wasm32-unknown-unknown`,
+    /// `wasm64-unknown-unknown`).
     pub target: String,
     /// Sorted, deduplicated origins of this target.
     pub origins: Vec<WasmTargetOrigin>,
+    /// Sorted, deduplicated direct [`ConfigSource`] provenance so every
+    /// evidence item resolves directly to an accepted config input.
+    pub sources: Vec<ConfigSource>,
 }
 
 /// The origin of a WASM target evidence item.
@@ -440,6 +444,11 @@ pub struct BenchmarkEvidence {
     pub path: String,
     /// The composed status.
     pub status: BenchmarkStatus,
+    /// Whether the bench uses the default libtest harness (`harness`, default
+    /// `true`).
+    pub harness: bool,
+    /// Sorted, deduplicated `required-features` for the bench.
+    pub required_features: Vec<String>,
     /// Source location of the bench file (when accepted), with content hash.
     pub source: Option<SourceLocation>,
     /// Manifest provenance of the `[[bench]]` declaration, when declared.
@@ -646,6 +655,18 @@ pub enum CargoPlatformWarning {
         /// Stable typed reason (never contains the raw identifier).
         reason: String,
     },
+    /// Two `[target.<key>]` tables normalized to the same target key but with
+    /// conflicting settings (rustflags/linker/runner differ). The first
+    /// occurrence wins deterministically; subsequent conflicting occurrences
+    /// are dropped and reported here. `key_display` is the redacted display
+    /// form (never a secret); `count` is the number of dropped conflicting
+    /// occurrences.
+    DuplicateTargetSetting {
+        /// Redacted display form of the conflicting target key.
+        key_display: String,
+        /// Number of additional occurrences with conflicting settings.
+        count: usize,
+    },
     /// A Cargo config setting has a wrong type, mixed array, empty value, or
     /// invalid value. Identifies only a fixed setting/category and issue
     /// category — never the offending value.
@@ -661,5 +682,25 @@ pub enum CargoPlatformWarning {
     LimitExceeded {
         /// The typed limit that was exceeded.
         limit: InspectionLimit,
+    },
+    /// `.cargo/config.toml` exists but is not a regular file (e.g. a
+    /// directory, FIFO, or device node). Never followed; never exposes its
+    /// contents. The path is the fixed `.cargo/config.toml` relative path.
+    UnsupportedConfigFile {
+        /// Relative path.
+        path: String,
+        /// Stable typed reason (never the raw type).
+        reason: String,
+    },
+    /// Cooperative wall-clock enforcement observed elapsed time at or above
+    /// the configured budget after a bounded phase (open/read, parse, or
+    /// derivation). The inspection cooperatively stops further phases rather
+    /// than interrupting mid-operation; phases already completed are
+    /// reflected in the returned state.
+    WallClock {
+        /// The wall-clock budget in milliseconds.
+        max_millis: u64,
+        /// Observed elapsed milliseconds at the cooperative checkpoint.
+        observed_millis: u64,
     },
 }

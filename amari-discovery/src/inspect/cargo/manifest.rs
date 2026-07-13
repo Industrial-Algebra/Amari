@@ -315,12 +315,25 @@ pub(super) fn parse_dep_table(
 /// Collect a lightweight [`CargoDependencyRecord`] for **every** dependency in
 /// a table (Amari and non-Amari), preserving the table kind and optional
 /// target selector. No version or feature data is retained.
+///
+/// # Workspace inheritance
+///
+/// A member declaration `foo = { workspace = true }` is resolved through the
+/// `[workspace.dependencies]` base keyed by the **alias** `foo`. The canonical
+/// Cargo package name comes from the base `package = "..."` rename when set,
+/// otherwise the alias. An illegal member `package = "..."` override on a
+/// `workspace = true` dependency is **never** honored (Cargo rejects it at
+/// build time). A `workspace = true` declaration whose base is missing falls
+/// back conservatively to the alias (the record is retained so platform
+/// constraints still surface; no warning is emitted here to avoid duplicating
+/// the `InheritedBaseMissing` warning produced by the Amari-aware path).
 pub(super) fn collect_dependency_records(
     table: &toml::value::Table,
     kind: DependencyKind,
     target: Option<&str>,
     manifest_path: &str,
     manifest_content: &[u8],
+    workspace_bases: &BTreeMap<String, WorkspaceDependencyBase>,
     provenance: &ProvenanceAccumulator,
 ) -> Vec<CargoDependencyRecord> {
     let mut out = Vec::new();
@@ -329,7 +342,17 @@ pub(super) fn collect_dependency_records(
             Some(t) => t,
             None => continue,
         };
-        let pkg = toml_string(&dep_table, "package").unwrap_or_else(|| alias.clone());
+        let is_workspace = toml_bool(&dep_table, "workspace").unwrap_or(false);
+        let pkg = if is_workspace {
+            // Resolve the canonical name through the workspace base keyed by
+            // the alias. Never honor an illegal member `package` override.
+            workspace_bases
+                .get(alias)
+                .and_then(|base| base.package.clone())
+                .unwrap_or_else(|| alias.clone())
+        } else {
+            toml_string(&dep_table, "package").unwrap_or_else(|| alias.clone())
+        };
         out.push(CargoDependencyRecord {
             alias: alias.clone(),
             package: pkg,
@@ -390,10 +413,18 @@ pub(super) fn scan_system_deps(
 // ============================================================================
 
 /// Parse `[[bench]]` declarations from the root of a TOML manifest.
+///
+/// Each declared `path` is validated as a normalized package-relative path
+/// (rejecting absolute paths and parent-traversal `..`); invalid paths emit
+/// a sanitized [`CargoInspectionWarning::InvalidBenchPath`] and the bench is
+/// omitted conservatively (the raw path is never serialized). `harness`
+/// defaults to `true`; `required-features` is sorted and deduplicated.
 pub(super) fn parse_benches(
     manifest: &toml::Value,
     manifest_path: &str,
     manifest_content: &[u8],
+    pkg_name: &str,
+    warnings: &mut Vec<CargoInspectionWarning>,
     provenance: &ProvenanceAccumulator,
 ) -> Vec<CargoBench> {
     let mut benches = Vec::new();
@@ -409,14 +440,52 @@ pub(super) fn parse_benches(
             };
             let path = toml_string(table, "path")
                 .unwrap_or_else(|| "benches/".to_string() + &name + ".rs");
+            // Validate the declared/default path. Invalid paths are omitted
+            // conservatively (never serialized) with a sanitized warning that
+            // carries only the safe bench name, never the raw path.
+            if !is_normal_relative_path(&path) {
+                warnings.push(CargoInspectionWarning::InvalidBenchPath {
+                    bench_name: name,
+                    package: pkg_name.to_string(),
+                });
+                continue;
+            }
+            // Normalize both platform separator forms so inspection output and
+            // source joins are host-independent.
+            let path = path.replace('\\', "/");
+            let harness = toml_bool(table, "harness").unwrap_or(true);
+            let required_features = toml_strings_sorted(table, "required-features");
             benches.push(CargoBench {
                 name,
                 path,
+                harness,
+                required_features,
                 manifest_source: provenance.make_source(manifest_path, manifest_content, None),
             });
         }
     }
     benches
+}
+
+/// Returns `true` when `path` is a normalized package-relative path: not
+/// absolute, with no parent-traversal (`..`), curdir (`.`), or empty
+/// components. Forward and back slashes are both treated as separators.
+pub(super) fn is_normal_relative_path(path: &str) -> bool {
+    if path.is_empty() || path.starts_with(['/', '\\']) {
+        return false;
+    }
+
+    // Reject Windows drive prefixes on every host. `std::path::Path` follows
+    // host semantics, so it would otherwise treat `C:\\...` as a normal Unix
+    // filename when inspection runs on Unix.
+    let bytes = path.as_bytes();
+    if bytes.len() >= 2 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':' {
+        return false;
+    }
+
+    path.split(['/', '\\']).all(|component| {
+        !component.is_empty() && component != "." && component != ".." && !component.contains('\0')
+    })
 }
 
 /// Parse `[package].links` from the manifest.
@@ -600,7 +669,14 @@ pub(super) fn parse_manifest_from_value(
     let inherited_metadata =
         parse_inherited_metadata(&package_table, ws_package_fields, &pkg_name, warnings);
     let native_link = parse_native_link(&package_table, manifest_path, content, provenance);
-    let benches = parse_benches(manifest, manifest_path, content, provenance);
+    let benches = parse_benches(
+        manifest,
+        manifest_path,
+        content,
+        &pkg_name,
+        warnings,
+        provenance,
+    );
     let autobenches = toml_bool(&package_table, "autobenches");
 
     // -- Parse dependencies from various tables
@@ -641,6 +717,7 @@ pub(super) fn parse_manifest_from_value(
                 None,
                 manifest_path,
                 content,
+                workspace_bases,
                 provenance,
             ));
         }
@@ -681,6 +758,7 @@ pub(super) fn parse_manifest_from_value(
                         Some(cfg_pred),
                         manifest_path,
                         content,
+                        workspace_bases,
                         provenance,
                     ));
                 }

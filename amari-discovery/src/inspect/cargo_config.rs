@@ -57,6 +57,7 @@ pub use types::{
 use std::path::Path;
 
 use crate::error::DiscoveryResult;
+use crate::inspect::snapshot::{InspectionLimit, SnapshotState};
 use crate::inspect::{CargoInspection, InspectionLimits, RustSourceInspection};
 
 use self::config::{read_config, AcceptedConfig};
@@ -89,6 +90,18 @@ use self::derive::{
 /// [`crate::inspect::SnapshotState::LimitExceeded`] state without reading (or fully reading)
 /// the config. Derived Cargo/Rust evidence is still present in every case.
 ///
+/// # Wall-clock enforcement
+///
+/// The wall-clock budget is enforced **cooperatively** at four points — the
+/// entry zero gate (budget `== 0` returns before any read), and after each of
+/// the open/read, parse, and derivation phases — using an internal
+/// deterministic checkpoint helper. Enforcement never interrupts an in-flight
+/// operation: each phase runs to completion and the next phase is skipped when
+/// the elapsed time has reached the budget. The returned state and
+/// [`CargoPlatformWarning::WallClock`] carry the actual observed elapsed and
+/// the configured budget; accepted provenance and completed-phase evidence
+/// remain present and internally consistent.
+///
 /// # Errors
 ///
 /// Returns [`crate::DiscoveryError::InspectionFailure`] only when the project
@@ -114,16 +127,62 @@ pub fn inspect_cargo_platform(
     rust: &RustSourceInspection,
     limits: &InspectionLimits,
 ) -> DiscoveryResult<CargoPlatformInspection> {
+    let start = std::time::Instant::now();
+    inspect_cargo_platform_with_elapsed(root, cargo, rust, limits, move || start.elapsed())
+}
+
+/// Cooperative wall-clock-gated implementation of [`inspect_cargo_platform`],
+/// accepting an injectable `elapsed` closure so the post-phase checkpoints can
+/// be unit-tested with artificial [`std::time::Duration`]s (no flaky sleeps).
+///
+/// The closure is consulted after open/read, after parse, and after
+/// derivation; the entry zero gate (budget `== 0`) is enforced inside the
+/// bounded config reader using a real [`std::time::Instant`].
+pub fn inspect_cargo_platform_with_elapsed(
+    root: &Path,
+    cargo: &CargoInspection,
+    rust: &RustSourceInspection,
+    limits: &InspectionLimits,
+    elapsed: impl Fn() -> std::time::Duration,
+) -> DiscoveryResult<CargoPlatformInspection> {
     if !root.is_dir() {
         return Err(crate::error::DiscoveryError::InspectionFailure(
             "project root is not a directory".to_string(),
         ));
     }
 
-    // ---- Bounded read of .cargo/config.toml ----
+    let budget = limits.max_inspection_wall_millis;
+
+    // ---- Bounded read of .cargo/config.toml (open + read + accept) ----
+    // `read_config` enforces the entry **zero gate** (budget == 0) before any
+    // read, returning a `LimitExceeded(WallClock)` state with observed 0.
     let config_read = read_config(root, limits)?;
 
-    let (build_settings, target_settings, mut warnings) = match &config_read.accepted {
+    // Cooperative wall-clock check AFTER open/read. A nonzero elapsed at or
+    // over budget skips the parse phase: accepted provenance still reflects
+    // the bytes actually read (file_count/total_bytes/input_hash), build
+    // settings are empty (parse did not run), and only the cargo/rust-derived
+    // evidence (benchmarks, no_std, target cfg) plus empty config-derived
+    // evidence is present.
+    if let Some((max, observed)) = config::wall_clock_exceeded(elapsed(), budget) {
+        let empty_build = types::CargoBuildSettings::default();
+        let empty_targets: Vec<types::CargoTargetSettings> = Vec::new();
+        let wc = WallClockObs {
+            max_millis: max,
+            observed_millis: observed,
+        };
+        return Ok(assemble(
+            cargo,
+            rust,
+            &config_read,
+            empty_build,
+            empty_targets,
+            derive_benchmarks(cargo, rust),
+            &wc,
+        ));
+    }
+
+    let (build_settings, target_settings, parse_warnings) = match &config_read.accepted {
         Some(AcceptedConfig { source, bytes }) => {
             let parsed = config::parse_config(bytes, source);
             (
@@ -135,8 +194,27 @@ pub fn inspect_cargo_platform(
         None => (types::CargoBuildSettings::default(), Vec::new(), Vec::new()),
     };
 
+    // Cooperative wall-clock check AFTER parse. Parsed settings are retained
+    // and all derived evidence is computed.
+    if let Some((max, observed)) = config::wall_clock_exceeded(elapsed(), budget) {
+        let wc = WallClockObs {
+            max_millis: max,
+            observed_millis: observed,
+        };
+        return Ok(assemble_with_wall_clock_after_parse(
+            cargo,
+            rust,
+            &config_read,
+            build_settings,
+            target_settings,
+            parse_warnings,
+            &wc,
+        ));
+    }
+
     // Merge config-read warnings (missing/symlink/limit) with parse warnings.
-    warnings.extend(config_read.warnings);
+    let mut warnings = parse_warnings;
+    warnings.extend(config_read.warnings.clone());
     sort_dedup_warnings(&mut warnings);
 
     // ---- Derive composed evidence ----
@@ -146,14 +224,35 @@ pub fn inspect_cargo_platform(
     let no_std_evidence = derive_no_std(cargo, rust);
     let target_cfg_constraints = derive_target_cfg(cargo, rust);
 
-    // ---- Build provenance ----
-    let config_input = ConfigInputProvenance {
-        source: config_read.accepted.as_ref().map(|a| a.source.clone()),
-        input_hash: config_read.input_hash,
-        file_count: config_read.file_count,
-        total_bytes: config_read.total_bytes,
-    };
+    // Cooperative wall-clock check AFTER derivation. All evidence is present;
+    // the state records the cooperative stop and a WallClock warning is added.
+    if let Some((max, observed)) = config::wall_clock_exceeded(elapsed(), budget) {
+        warnings.push(CargoPlatformWarning::WallClock {
+            max_millis: max,
+            observed_millis: observed,
+        });
+        sort_dedup_warnings(&mut warnings);
+        let config_input = build_config_input(&config_read);
+        return Ok(CargoPlatformInspection {
+            build_settings,
+            target_settings,
+            wasm_targets,
+            native_requirements,
+            benchmarks,
+            no_std_evidence,
+            target_cfg_constraints,
+            warnings,
+            config_input,
+            state: SnapshotState::LimitExceeded {
+                limit: InspectionLimit::WallClock {
+                    max_millis: max,
+                    observed_millis: observed,
+                },
+            },
+        });
+    }
 
+    let config_input = build_config_input(&config_read);
     Ok(CargoPlatformInspection {
         build_settings,
         target_settings,
@@ -168,16 +267,176 @@ pub fn inspect_cargo_platform(
     })
 }
 
+/// Build [`ConfigInputProvenance`] from a completed config read.
+fn build_config_input(config_read: &config::ConfigRead) -> ConfigInputProvenance {
+    ConfigInputProvenance {
+        source: config_read.accepted.as_ref().map(|a| a.source.clone()),
+        input_hash: config_read.input_hash.clone(),
+        file_count: config_read.file_count,
+        total_bytes: config_read.total_bytes,
+    }
+}
+
+/// A cooperative wall-clock observation pair (budget + observed elapsed).
+struct WallClockObs {
+    max_millis: u64,
+    observed_millis: u64,
+}
+
+/// Assemble a [`CargoPlatformInspection`] for the post-read wall-clock trip:
+/// settings are empty (parse skipped) but accepted provenance and all
+/// cargo/rust-derived evidence are present and internally consistent.
+fn assemble(
+    cargo: &CargoInspection,
+    rust: &RustSourceInspection,
+    config_read: &config::ConfigRead,
+    build_settings: types::CargoBuildSettings,
+    target_settings: Vec<types::CargoTargetSettings>,
+    benchmarks: Vec<BenchmarkEvidence>,
+    wc: &WallClockObs,
+) -> CargoPlatformInspection {
+    let mut warnings = config_read.warnings.clone();
+    warnings.push(CargoPlatformWarning::WallClock {
+        max_millis: wc.max_millis,
+        observed_millis: wc.observed_millis,
+    });
+    sort_dedup_warnings(&mut warnings);
+    let wasm_targets = derive_wasm_targets(&build_settings, &target_settings);
+    let native_requirements = derive_native_requirements(cargo, &target_settings, &build_settings);
+    let no_std_evidence = derive_no_std(cargo, rust);
+    let target_cfg_constraints = derive_target_cfg(cargo, rust);
+    CargoPlatformInspection {
+        build_settings,
+        target_settings,
+        wasm_targets,
+        native_requirements,
+        benchmarks,
+        no_std_evidence,
+        target_cfg_constraints,
+        warnings,
+        config_input: build_config_input(config_read),
+        state: SnapshotState::LimitExceeded {
+            limit: InspectionLimit::WallClock {
+                max_millis: wc.max_millis,
+                observed_millis: wc.observed_millis,
+            },
+        },
+    }
+}
+
+/// Assemble a [`CargoPlatformInspection`] for the post-parse wall-clock trip:
+/// parsed settings are retained and all derived evidence is computed.
+fn assemble_with_wall_clock_after_parse(
+    cargo: &CargoInspection,
+    rust: &RustSourceInspection,
+    config_read: &config::ConfigRead,
+    build_settings: types::CargoBuildSettings,
+    target_settings: Vec<types::CargoTargetSettings>,
+    parse_warnings: Vec<CargoPlatformWarning>,
+    wc: &WallClockObs,
+) -> CargoPlatformInspection {
+    let mut warnings = parse_warnings;
+    warnings.extend(config_read.warnings.clone());
+    warnings.push(CargoPlatformWarning::WallClock {
+        max_millis: wc.max_millis,
+        observed_millis: wc.observed_millis,
+    });
+    sort_dedup_warnings(&mut warnings);
+    let wasm_targets = derive_wasm_targets(&build_settings, &target_settings);
+    let native_requirements = derive_native_requirements(cargo, &target_settings, &build_settings);
+    let benchmarks = derive_benchmarks(cargo, rust);
+    let no_std_evidence = derive_no_std(cargo, rust);
+    let target_cfg_constraints = derive_target_cfg(cargo, rust);
+    CargoPlatformInspection {
+        build_settings,
+        target_settings,
+        wasm_targets,
+        native_requirements,
+        benchmarks,
+        no_std_evidence,
+        target_cfg_constraints,
+        warnings,
+        config_input: build_config_input(config_read),
+        state: SnapshotState::LimitExceeded {
+            limit: InspectionLimit::WallClock {
+                max_millis: wc.max_millis,
+                observed_millis: wc.observed_millis,
+            },
+        },
+    }
+}
+
 /// Deterministically sort and deduplicate warnings by a total typed key.
 ///
 /// [`CargoPlatformWarning`] cannot derive `Ord` (it embeds
 /// [`crate::inspect::InspectionLimit`]); this helper preserves a stable,
 /// deterministic order by a typed sort key, not by insertion order or
 /// `Debug` formatting. Multiple distinct `(setting, issue)` issues are never
-/// collapsed.
+/// collapsed. `InvalidConfigSetting` warnings with the same `(setting, issue)`
+/// are aggregated by **summing** their counts into a single warning (so the
+/// same issue across multiple target tables is fully reported, never
+/// underreported by dedup).
 fn sort_dedup_warnings(warnings: &mut Vec<CargoPlatformWarning>) {
+    aggregate_invalid_config_settings(warnings);
     warnings.sort_by_key(warning_sort_key);
     warnings.dedup();
+}
+
+/// Merge all `InvalidConfigSetting` warnings sharing a `(setting, issue)` key
+/// into a single warning whose `count` is the SUM of the merged counts.
+/// Distinct `(setting, issue)` pairs remain separate. Deterministic order by
+/// typed `(setting, issue)` rank.
+fn aggregate_invalid_config_settings(warnings: &mut Vec<CargoPlatformWarning>) {
+    use std::collections::BTreeMap;
+    let mut totals: BTreeMap<(u8, u8), usize> = BTreeMap::new();
+    let mut kept: Vec<CargoPlatformWarning> = Vec::with_capacity(warnings.len());
+    for w in warnings.drain(..) {
+        if let CargoPlatformWarning::InvalidConfigSetting {
+            setting,
+            issue,
+            count,
+        } = w
+        {
+            *totals.entry((setting as u8, issue as u8)).or_insert(0) += count;
+        } else {
+            kept.push(w);
+        }
+    }
+    warnings.extend(kept);
+    for ((setting_rank, issue_rank), count) in totals {
+        // Reconstruct the typed enums from their stable discriminant ranks.
+        let setting = config_setting_from_rank(setting_rank);
+        let issue = config_setting_issue_from_rank(issue_rank);
+        warnings.push(CargoPlatformWarning::InvalidConfigSetting {
+            setting,
+            issue,
+            count,
+        });
+    }
+}
+
+/// Reconstruct a [`ConfigSetting`] from its stable definition-order rank.
+fn config_setting_from_rank(rank: u8) -> ConfigSetting {
+    match rank {
+        0 => ConfigSetting::BuildTarget,
+        1 => ConfigSetting::BuildRustflags,
+        2 => ConfigSetting::BuildRustdocflags,
+        3 => ConfigSetting::TargetTableKey,
+        4 => ConfigSetting::TargetTableRustflags,
+        5 => ConfigSetting::TargetTableRustdocflags,
+        6 => ConfigSetting::TargetTableLinker,
+        _ => ConfigSetting::TargetTableRunner,
+    }
+}
+
+/// Reconstruct a [`ConfigSettingIssue`] from its stable definition-order rank.
+fn config_setting_issue_from_rank(rank: u8) -> ConfigSettingIssue {
+    match rank {
+        0 => ConfigSettingIssue::WrongType,
+        1 => ConfigSettingIssue::InvalidValue,
+        2 => ConfigSettingIssue::MixedArray,
+        _ => ConfigSettingIssue::Empty,
+    }
 }
 
 /// A fully deterministic comparable sort key for a warning.
@@ -192,11 +451,16 @@ fn warning_sort_key(w: &CargoPlatformWarning) -> (u8, u8, u8, usize, String) {
         CargoPlatformWarning::InvalidUtf8Config { path, .. } => (2, 0, 0, 0, path.clone()),
         CargoPlatformWarning::SymlinkedConfig { path } => (3, 0, 0, 0, path.clone()),
         CargoPlatformWarning::InvalidTargetIdentifier { path, .. } => (4, 0, 0, 0, path.clone()),
+        CargoPlatformWarning::DuplicateTargetSetting { key_display, count } => {
+            (5, 0, 0, *count, key_display.clone())
+        }
         CargoPlatformWarning::InvalidConfigSetting {
             setting,
             issue,
             count,
-        } => (5, *setting as u8, *issue as u8, *count, String::new()),
-        CargoPlatformWarning::LimitExceeded { .. } => (6, 0, 0, 0, String::new()),
+        } => (6, *setting as u8, *issue as u8, *count, String::new()),
+        CargoPlatformWarning::LimitExceeded { .. } => (7, 0, 0, 0, String::new()),
+        CargoPlatformWarning::UnsupportedConfigFile { path, .. } => (8, 0, 0, 0, path.clone()),
+        CargoPlatformWarning::WallClock { .. } => (9, 0, 0, 0, String::new()),
     }
 }

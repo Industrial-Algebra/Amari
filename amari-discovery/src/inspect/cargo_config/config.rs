@@ -11,6 +11,9 @@ use std::path::Path;
 use std::time::Instant;
 
 use sha2::{Digest, Sha256};
+use syn::parse::Parser;
+use syn::punctuated::Punctuated;
+use syn::{Meta, Token};
 
 use crate::error::{DiscoveryError, DiscoveryResult};
 use crate::inspect::snapshot::{InspectionLimit, SnapshotState};
@@ -47,6 +50,9 @@ enum ConfigOpenOutcome {
     /// The `.cargo` directory or `config.toml` is a symlink / loop / not a
     /// directory — never followed.
     Symlink,
+    /// `config.toml` exists but is not a regular file (e.g. a directory,
+    /// FIFO, or device node) — never read.
+    Unsupported,
 }
 
 /// Open `.cargo/config.toml` for read-only access without ever following a
@@ -57,8 +63,9 @@ enum ConfigOpenOutcome {
 /// - **Unix**: descends via `openat` holding directory file descriptors.
 ///   The root is opened as a directory, then `.cargo` is opened relative to
 ///   the root fd with `O_DIRECTORY | O_NOFOLLOW`, then `config.toml` is
-///   opened relative to the `.cargo` fd with `O_NOFOLLOW`. Because each
-///   component is opened relative to a *held* parent directory descriptor,
+///   opened relative to the `.cargo` fd with `O_NOFOLLOW | O_NONBLOCK` so a
+///   FIFO/device entry cannot block before its file type is rejected. Because
+///   each component is opened relative to a *held* parent directory descriptor,
 ///   a `.cargo` name swapped between a metadata check and the open can never
 ///   be followed. The opened descriptor is verified to be a regular file.
 ///   `ENOENT` maps to [`ConfigOpenOutcome::Missing`]; `ELOOP`/`ENOTDIR`
@@ -91,7 +98,7 @@ fn open_config_unix(root: &Path) -> std::io::Result<ConfigOpenOutcome> {
     // directory; a failure here is an unrecoverable I/O error.
     let root_fd = open(
         root,
-        OFlags::DIRECTORY | OFlags::RDONLY | OFlags::CLOEXEC,
+        OFlags::DIRECTORY | OFlags::NONBLOCK | OFlags::RDONLY | OFlags::CLOEXEC,
         Mode::empty(),
     )?;
 
@@ -99,7 +106,7 @@ fn open_config_unix(root: &Path) -> std::io::Result<ConfigOpenOutcome> {
     let cargo_fd = match openat(
         &root_fd,
         CONFIG_DIR_REL,
-        OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::RDONLY | OFlags::CLOEXEC,
+        OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::RDONLY | OFlags::CLOEXEC,
         Mode::empty(),
     ) {
         Ok(fd) => fd,
@@ -116,7 +123,7 @@ fn open_config_unix(root: &Path) -> std::io::Result<ConfigOpenOutcome> {
     let config_fd = match openat(
         &cargo_fd,
         "config.toml",
-        OFlags::NOFOLLOW | OFlags::RDONLY | OFlags::CLOEXEC,
+        OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::RDONLY | OFlags::CLOEXEC,
         Mode::empty(),
     ) {
         Ok(fd) => fd,
@@ -130,10 +137,12 @@ fn open_config_unix(root: &Path) -> std::io::Result<ConfigOpenOutcome> {
     // Safe conversion: rustix OwnedFd → std File (stable since 1.63).
     let file: std::fs::File = config_fd.into();
 
-    // Reject non-regular files (e.g. device nodes) via fstat on the fd.
+    // Reject non-regular files (e.g. directories, FIFOs, device nodes) via
+    // fstat on the fd. Reported truthfully as `Unsupported`, distinct from a
+    // symlink.
     let metadata = file.metadata()?;
     if !metadata.file_type().is_file() {
-        return Ok(ConfigOpenOutcome::Symlink);
+        return Ok(ConfigOpenOutcome::Unsupported);
     }
 
     Ok(ConfigOpenOutcome::Opened(file))
@@ -155,9 +164,25 @@ fn open_config_conservative(root: &Path) -> std::io::Result<ConfigOpenOutcome> {
     }
     let config_path = cargo_dir.join("config.toml");
     match nofollow_open_readonly(&config_path) {
-        Ok(NofollowResult::Opened(f)) => Ok(ConfigOpenOutcome::Opened(f)),
+        Ok(NofollowResult::Opened(f)) => {
+            // Verify the opened entry is a regular file; a directory/FIFO/
+            // device is reported as `Unsupported`, not a symlink.
+            match f.metadata() {
+                Ok(m) if m.file_type().is_file() => Ok(ConfigOpenOutcome::Opened(f)),
+                Ok(_) => Ok(ConfigOpenOutcome::Unsupported),
+                Err(_) => Ok(ConfigOpenOutcome::Unsupported),
+            }
+        }
         Ok(NofollowResult::SymlinkOrRace) => Ok(ConfigOpenOutcome::Symlink),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(ConfigOpenOutcome::Missing),
+        // Opening a directory can succeed on some platforms (e.g. read-only);
+        // treat a directory-open ambiguity conservatively as Unsupported.
+        Err(e)
+            if e.kind() == std::io::ErrorKind::IsADirectory
+                || e.raw_os_error() == Some(21) /* EISDIR */ =>
+        {
+            Ok(ConfigOpenOutcome::Unsupported)
+        }
         Err(e) => Err(e),
     }
 }
@@ -222,26 +247,10 @@ pub(super) fn read_config(root: &Path, limits: &InspectionLimits) -> DiscoveryRe
         });
     }
 
-    // ---- max_inspection_files == 0 → typed partial without reading ----
-    // `observed = 1` reflects considered-file semantics: the config is one
-    // considered candidate, even though no content read occurs.
-    if limits.max_inspection_files == 0 {
-        return Ok(ConfigRead {
-            accepted: None,
-            input_hash: empty_input_hash(),
-            file_count: 0,
-            total_bytes: 0,
-            state: SnapshotState::LimitExceeded {
-                limit: InspectionLimit::FileCount {
-                    max: limits.max_inspection_files,
-                    observed: 1,
-                },
-            },
-            warnings,
-        });
-    }
-
     // ---- Fixed-path depth must respect max_traversal_depth ----
+    // Checked before the open (conservative pre-traversal gate): an
+    // insufficient depth budget prevents descending to `.cargo/config.toml`
+    // regardless of existence.
     if limits.max_traversal_depth < CONFIG_DEPTH {
         return Ok(ConfigRead {
             accepted: None,
@@ -291,12 +300,47 @@ pub(super) fn read_config(root: &Path, limits: &InspectionLimits) -> DiscoveryRe
                 warnings,
             });
         }
+        Ok(ConfigOpenOutcome::Unsupported) => {
+            warnings.push(CargoPlatformWarning::UnsupportedConfigFile {
+                path: CONFIG_REL_PATH.to_string(),
+                reason: "config path is not a regular file".to_string(),
+            });
+            return Ok(ConfigRead {
+                accepted: None,
+                input_hash: empty_input_hash(),
+                file_count: 0,
+                total_bytes: 0,
+                state: SnapshotState::Complete,
+                warnings,
+            });
+        }
         Err(_) => {
             return Err(DiscoveryError::InspectionFailure(
                 "cannot open project config".to_string(),
             ));
         }
     };
+
+    // ---- max_inspection_files == 0 → typed partial after existence is
+    // established, without reading content. The race-safe open is allowed (no
+    // content read) so a MISSING config yields Complete + MissingConfig +
+    // count 0 (it never consumes a file-count slot). An EXISTING regular
+    // config consumes the single considered slot: observed = 1. ----
+    if limits.max_inspection_files == 0 {
+        return Ok(ConfigRead {
+            accepted: None,
+            input_hash: empty_input_hash(),
+            file_count: 0,
+            total_bytes: 0,
+            state: SnapshotState::LimitExceeded {
+                limit: InspectionLimit::FileCount {
+                    max: limits.max_inspection_files,
+                    observed: 1,
+                },
+            },
+            warnings,
+        });
+    }
 
     // ---- bounded read against per-file + aggregate limits ----
     // `bounded_read` reads `min(per_file, aggregate) + 1` bytes. When the
@@ -367,6 +411,31 @@ pub(super) fn read_config(root: &Path, limits: &InspectionLimits) -> DiscoveryRe
         state: SnapshotState::Complete,
         warnings,
     })
+}
+
+// ===========================================================================
+// Cooperative wall-clock helper
+// ===========================================================================
+
+/// Deterministic wall-clock observation: returns `(max_millis, observed_millis)`
+/// when the nonzero `elapsed` time has reached or exceeded `budget_millis`.
+///
+/// Pure and deterministic — unit-testable with arbitrary [`Duration`]s without
+/// any wall-clock sleep. The cooperative checks in
+/// [`inspect_cargo_platform`](super::inspect_cargo_platform) call this with real
+/// [`Instant::elapsed`] after each bounded phase (open/read, parse, derivation).
+/// The entry **zero gate** (budget `== 0`) is handled separately before any
+/// read, so this helper always requires a nonzero observed elapsed.
+pub(super) fn wall_clock_exceeded(
+    elapsed: std::time::Duration,
+    budget_millis: u64,
+) -> Option<(u64, u64)> {
+    let observed = elapsed.as_millis() as u64;
+    if observed > 0 && observed >= budget_millis {
+        Some((budget_millis, observed))
+    } else {
+        None
+    }
 }
 
 // ===========================================================================
@@ -511,11 +580,17 @@ enum BuildTargetClass {
 /// A triple is `arch-vendor-os[-env]`: ASCII identifier characters and at
 /// least two dashes, no path separators, non-empty, bounded length.
 fn is_valid_triple(s: &str) -> bool {
-    !s.is_empty()
-        && s.len() <= 256
-        && s.chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
-        && s.matches('-').count() >= 2
+    if s.is_empty() || s.len() > 256 {
+        return false;
+    }
+    let segments: Vec<&str> = s.split('-').collect();
+    segments.len() >= 3
+        && segments.iter().all(|segment| {
+            !segment.is_empty()
+                && segment
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.')
+        })
 }
 
 /// Classify a single `[build].target` string entry.
@@ -672,23 +747,58 @@ fn parse_targets(
     }
 
     out.sort();
-    // Dedup by key: distinct TOML headers may normalize to the same
-    // `CargoTargetKey` (e.g. single- vs double-quoted cfg wrappers). Equal
-    // keys imply identical predicates (identity hash matches); we keep the
-    // first occurrence deterministically so no duplicate key survives.
-    out.dedup_by(|a, b| a.key == b.key);
-    out
+    // Merge by key: keep the first occurrence deterministically. Two
+    // normalized-equal keys with IDENTICAL settings are silently deduped; two
+    // with CONFLICTING settings (rustflags/rustdocflags/linker/runner differ)
+    // keep the first and emit a typed `DuplicateTargetSetting` warning so no
+    // conflict is silently discarded. The warning carries the redacted key
+    // display (never a secret).
+    let mut merged: Vec<CargoTargetSettings> = Vec::new();
+    let mut conflict_counts: BTreeMap<String, usize> = BTreeMap::new();
+    for entry in out {
+        if let Some(first) = merged.iter_mut().rev().find(|e| e.key == entry.key) {
+            if first.rustflags != entry.rustflags
+                || first.rustdocflags != entry.rustdocflags
+                || first.linker != entry.linker
+                || first.runner != entry.runner
+            {
+                *conflict_counts
+                    .entry(target_key_display(&entry.key))
+                    .or_insert(0) += 1;
+            }
+            // Identical → silent dedup; conflicting → already counted.
+        } else {
+            merged.push(entry);
+        }
+    }
+    for (key_display, count) in conflict_counts {
+        warnings.push(CargoPlatformWarning::DuplicateTargetSetting { key_display, count });
+    }
+    merged
+}
+
+/// Redacted, stable display form of a [`CargoTargetKey`] for use in warnings
+/// (never carries a secret — cfg values are already redacted in the stored
+/// display).
+pub(super) fn target_key_display(key: &CargoTargetKey) -> String {
+    match key {
+        CargoTargetKey::Triple { triple } => triple.clone(),
+        CargoTargetKey::Cfg { display, .. } => display.clone(),
+    }
 }
 
 /// Normalize a raw target table key into a validated [`CargoTargetKey`].
 ///
 /// Strips surrounding quotes and whitespace. Accepts:
-/// - `cfg(...)` expressions validated by a bounded tokenizer that accepts
-///   legitimate Cargo selectors (including `target_feature = "+atomics"`,
-///   nested `all`/`any`/`not`, and escaped string content) while rejecting
-///   unbalanced/injection input. Quoted values are redacted in the display
-///   form; a distinct SHA-256 identity preserves uniqueness.
-/// - target triples matching `[A-Za-z0-9._-]+` containing at least one `-`.
+/// - `cfg(...)` expressions validated by a bounded recursive grammar parser
+///   that accepts legitimate Cargo selectors (including
+///   `target_feature = "+atomics"`, nested `all`/`any`/`not`, and escaped
+///   string content) while rejecting unquoted values, malformed operators,
+///   trailing junk, and injection input. Quoted values are redacted in the
+///   display form; a distinct SHA-256 identity preserves uniqueness.
+/// - target triples validated by the SAME `>= 2`-dash rule as `[build].target`
+///   (`is_valid_triple`), so target-table triples and build targets accept an
+///   identical identifier class.
 fn normalize_target_key(raw: &str) -> Option<CargoTargetKey> {
     let trimmed = raw.trim_matches('\'').trim_matches('"').trim();
     if trimmed.is_empty() || trimmed.len() > 256 {
@@ -705,12 +815,8 @@ fn normalize_target_key(raw: &str) -> Option<CargoTargetKey> {
         return validate_and_redact_cfg(inner)
             .map(|(display, identity)| CargoTargetKey::Cfg { display, identity });
     }
-    // Target triple: only safe identifier characters and at least one dash.
-    if trimmed
-        .chars()
-        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
-        && trimmed.contains('-')
-    {
+    // Target triple: same >= 2-dash rule as build targets.
+    if is_valid_triple(trimmed) {
         return Some(CargoTargetKey::Triple {
             triple: trimmed.to_string(),
         });
@@ -722,85 +828,193 @@ fn normalize_target_key(raw: &str) -> Option<CargoTargetKey> {
 const CFG_MAX_LEN: usize = 1024;
 const CFG_MAX_DEPTH: i32 = 32;
 
-/// Validate a `cfg(...)` body with a bounded tokenizer and return the
-/// redacted display form plus a distinct SHA-256 identity.
+/// Validate a `cfg(...)` body with a bounded, recursive grammar parser and
+/// return the canonical redacted display form plus a distinct SHA-256
+/// identity.
 ///
-/// Accepts legitimate Cargo selectors: option names, `=`/`,`/`(`/`)`, `all`,
-/// `any`, `not`, quoted string values (including `+atomics`-style values and
-/// `\`-escaped content). Rejects unbalanced parens/quotes, excessive nesting
-/// or length, disallowed characters outside strings, and control characters
-/// inside strings. All quoted values are replaced with `<value>` in the
-/// display form (never leaking secrets); the identity is computed over the
-/// full original predicate so distinct selectors stay distinct.
+/// The grammar accepts exactly the Cargo/Rust cfg predicate subset:
+/// - top level: a comma-separated conjunction (implicit `all`) of one or more
+///   predicates;
+/// - `Meta::Path` — a single-segment identifier (e.g. `unix`, `windows`);
+/// - `Meta::NameValue` — `name = "<string literal>"` only (non-string
+///   literals, barewords after `=`, and malformed operators are rejected);
+/// - `Meta::List` — only `all`/`any` (≥1 element) or `not` (exactly 1
+///   element), recursively.
+///
+/// Bounded by length and depth. Trailing junk, unbalanced delimiters, and
+/// injection tokens (`;`, `/`, shell metacharacters) are rejected because the
+/// recursive parser requires strict comma separation and valid Rust tokens.
+///
+/// Whitespace is **normalized**: the display and identity are rebuilt from the
+/// parse tree with canonical spacing, so `cfg(a, b)` and `cfg(a,b)` (and any
+/// other whitespace variant) produce identical keys and merge. Quoted values
+/// are redacted to `<value>` in the display but **preserved verbatim** in the
+/// canonical form used for the identity hash, so distinct secret values remain
+/// distinct while no secret enters the display or serialized output.
 fn validate_and_redact_cfg(inner: &str) -> Option<(String, String)> {
     if inner.is_empty() || inner.len() > CFG_MAX_LEN {
         return None;
     }
-    let mut depth: i32 = 0;
-    let mut in_str = false;
-    let mut escape = false;
-    let mut display = String::with_capacity(inner.len());
-    for ch in inner.chars() {
-        if in_str {
-            if escape {
-                escape = false;
-                continue; // escaped char — redacted
-            }
-            match ch {
-                '\\' => escape = true,
-                '"' => in_str = false, // close (placeholder has closing quote)
-                c if (c as u32) < 0x20 || c == '\u{7f}' => return None, // control char
-                _ => {}                // content char — redacted
-            }
-            continue;
-        }
-        match ch {
-            '(' => {
-                depth += 1;
-                if depth > CFG_MAX_DEPTH {
-                    return None;
-                }
-                display.push('(');
-            }
-            ')' => {
-                depth -= 1;
-                if depth < 0 {
-                    return None;
-                }
-                display.push(')');
-            }
-            '"' => {
-                in_str = true;
-                display.push_str("\"<value>\"");
-            }
-            c if c.is_ascii_alphanumeric()
-                || matches!(c, '_' | '-' | '.' | '=' | ',' | ' ' | '+') =>
-            {
-                display.push(c);
-            }
-            _ => return None, // disallowed character outside a string
-        }
-    }
-    if depth != 0 || in_str || escape {
+    let tokens = <proc_macro2::TokenStream as std::str::FromStr>::from_str(inner).ok()?;
+    let list = Punctuated::<Meta, Token![,]>::parse_terminated
+        .parse2(tokens)
+        .ok()?;
+    if list.is_empty() {
         return None;
     }
-    let full = format!("cfg({inner})");
+    let mut display = String::with_capacity(inner.len());
+    let mut canonical = String::with_capacity(inner.len());
+    let mut first = true;
+    for m in &list {
+        if !first {
+            display.push_str(", ");
+            canonical.push(',');
+        }
+        first = false;
+        if !render_meta(m, 0, &mut display, &mut canonical) {
+            return None;
+        }
+    }
     let display = format!("cfg({display})");
-    Some((display, opaque_identity(&full)))
+    let identity = opaque_identity(&format!("cfg({canonical})"));
+    Some((display, identity))
+}
+
+/// Recursively render a parsed cfg predicate into a redacted display form and
+/// a value-preserving canonical form. Returns `false` on any grammar
+/// violation.
+fn render_meta(meta: &Meta, depth: i32, display: &mut String, canonical: &mut String) -> bool {
+    if depth > CFG_MAX_DEPTH {
+        return false;
+    }
+    match meta {
+        Meta::Path(path) => match single_ident(path) {
+            Some(name) => {
+                display.push_str(&name);
+                canonical.push_str(&name);
+                true
+            }
+            None => false,
+        },
+        Meta::NameValue(nv) => {
+            let Some(name) = single_ident(&nv.path) else {
+                return false;
+            };
+            // Value must be a STRING literal only.
+            let lit = match &nv.value {
+                syn::Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Str(s),
+                    ..
+                }) => s,
+                _ => return false,
+            };
+            display.push_str(&name);
+            display.push_str(" = \"<value>\"");
+            canonical.push_str(&name);
+            canonical.push_str(" = ");
+            // Re-tokenized literal value (normalized) preserves distinctness
+            // for the identity hash without leaking into the display.
+            canonical.push_str(&lit.token().to_string());
+            true
+        }
+        Meta::List(ml) => {
+            let Some(name) = single_ident(&ml.path) else {
+                return false;
+            };
+            match name.as_str() {
+                "all" | "any" => {
+                    let inner = Punctuated::<Meta, Token![,]>::parse_terminated
+                        .parse2(ml.tokens.clone())
+                        .ok();
+                    let Some(inner) = inner else { return false };
+                    if inner.is_empty() {
+                        return false;
+                    }
+                    display.push_str(&name);
+                    display.push('(');
+                    canonical.push_str(&name);
+                    canonical.push('(');
+                    let mut first = true;
+                    for m in inner {
+                        if !first {
+                            display.push_str(", ");
+                            canonical.push(',');
+                        }
+                        first = false;
+                        if !render_meta(&m, depth + 1, display, canonical) {
+                            return false;
+                        }
+                    }
+                    display.push(')');
+                    canonical.push(')');
+                    true
+                }
+                "not" => {
+                    let inner = Punctuated::<Meta, Token![,]>::parse_terminated
+                        .parse2(ml.tokens.clone())
+                        .ok();
+                    let Some(inner) = inner else { return false };
+                    // `not` requires exactly one argument.
+                    if inner.len() != 1 {
+                        return false;
+                    }
+                    display.push_str("not(");
+                    canonical.push_str("not(");
+                    if !render_meta(&inner[0], depth + 1, display, canonical) {
+                        return false;
+                    }
+                    display.push(')');
+                    canonical.push(')');
+                    true
+                }
+                _ => false,
+            }
+        }
+    }
+}
+
+/// Return the identifier text when `path` is a single unqualified segment with
+/// no path arguments (no leading `::`, no `a::b`, no turbofish). Otherwise
+/// `None`.
+fn single_ident(path: &syn::Path) -> Option<String> {
+    if path.leading_colon.is_some() {
+        return None;
+    }
+    if path.segments.len() != 1 {
+        return None;
+    }
+    let seg = path.segments.first()?;
+    if !matches!(seg.arguments, syn::PathArguments::None) {
+        return None;
+    }
+    Some(seg.ident.to_string())
 }
 
 /// Parse a `[target.<key>].linker` value into a sanitized
-/// [`ConfiguredLinker`], emitting a typed warning for wrong types.
+/// [`ConfiguredLinker`], emitting typed warnings for wrong types and empty
+/// values. An empty linker string yields a typed `Empty` warning and `None`
+/// (never `Some` with an empty basename).
 fn parse_linker(
     value: Option<&toml::Value>,
     warnings: &mut Vec<CargoPlatformWarning>,
 ) -> Option<ConfiguredLinker> {
     let raw = value?;
     match raw.as_str() {
-        Some(s) => Some(ConfiguredLinker {
-            basename: sanitize_basename(s),
-            identity: opaque_identity(s),
-        }),
+        Some(s) => {
+            let basename = sanitize_basename(s);
+            if basename.is_empty() {
+                push_setting_warning(
+                    warnings,
+                    ConfigSetting::TargetTableLinker,
+                    ConfigSettingIssue::Empty,
+                );
+                return None;
+            }
+            Some(ConfiguredLinker {
+                basename,
+                identity: opaque_identity(s),
+            })
+        }
         None => {
             push_setting_warning(
                 warnings,
@@ -862,10 +1076,26 @@ fn parse_runner(
         }
     };
     Some(ConfiguredRunner {
-        executable_basename: sanitize_basename(&first_token),
+        executable_basename: sanitize_basename_checked(&first_token, warnings, setting)?,
         token_count,
         identity,
     })
+}
+
+/// Sanitize the runner program token, returning `None` (with a typed `Empty`
+/// warning) when the resulting basename is empty — so no `Some` with an empty
+/// basename is ever produced for a mixed/empty runner array or empty program.
+fn sanitize_basename_checked(
+    raw: &str,
+    warnings: &mut Vec<CargoPlatformWarning>,
+    setting: ConfigSetting,
+) -> Option<String> {
+    let basename = sanitize_basename(raw);
+    if basename.is_empty() {
+        push_setting_warning(warnings, setting, ConfigSettingIssue::Empty);
+        return None;
+    }
+    Some(basename)
 }
 
 // ===========================================================================
@@ -1020,12 +1250,16 @@ fn classify_rustflag(token: &str) -> RustflagCategory {
 // ===========================================================================
 
 /// Sanitize an executable string to its basename (no path, no args).
+///
+/// Both `/` and `\\` are treated as separators regardless of the host OS so
+/// inspecting a Windows project on Unix (or vice versa) cannot persist the
+/// configured executable's directory path.
 pub(super) fn sanitize_basename(raw: &str) -> String {
     let first_token = raw.split_whitespace().next().unwrap_or("");
-    let p = Path::new(first_token);
-    p.file_name()
-        .and_then(|n| n.to_str())
-        .filter(|s| !s.is_empty())
+    first_token
+        .rsplit(['/', '\\'])
+        .next()
+        .filter(|name| !name.is_empty())
         .unwrap_or("")
         .to_string()
 }
@@ -1099,6 +1333,35 @@ fn malformed_reason(err: &toml::de::Error) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::Duration;
+
+    #[test]
+    fn wall_clock_exceeded_helper_is_deterministic() {
+        // Zero observed never trips (even at a zero budget) — the entry zero
+        // gate handles budget == 0 separately before any cooperative check.
+        assert_eq!(wall_clock_exceeded(Duration::ZERO, 0), None);
+        assert_eq!(wall_clock_exceeded(Duration::ZERO, 100), None);
+        // Nonzero observed at/above budget trips with actual observed value.
+        assert_eq!(
+            wall_clock_exceeded(Duration::from_millis(100), 50),
+            Some((50, 100))
+        );
+        // Boundary: observed exactly at budget (nonzero) still trips.
+        assert_eq!(
+            wall_clock_exceeded(Duration::from_millis(50), 50),
+            Some((50, 50))
+        );
+        // Below budget: no trip.
+        assert_eq!(wall_clock_exceeded(Duration::from_millis(10), 50), None);
+        // Sub-millisecond observed (rounds to 0) never trips via the helper.
+        assert_eq!(wall_clock_exceeded(Duration::from_micros(999), 0), None);
+    }
+
+    #[test]
+    fn wall_clock_exceeded_micros_round_to_zero() {
+        // 999 microseconds rounds down to 0 ms → no trip (no flaky sub-ms).
+        assert_eq!(wall_clock_exceeded(Duration::from_micros(999), 1), None);
+    }
 
     #[test]
     fn empty_input_hash_is_sha256_of_empty() {
@@ -1221,6 +1484,59 @@ mod tests {
         match open_config(dir.path()).unwrap() {
             ConfigOpenOutcome::Symlink => {}
             other => panic!("expected Symlink for config.toml symlink, got {other:?}"),
+        }
+    }
+
+    /// Child-process entry point used by [`open_config_fifo_never_blocks`].
+    #[cfg(unix)]
+    #[test]
+    fn open_config_fifo_child() {
+        let Ok(root) = std::env::var("AMARI_DISCOVERY_FIFO_TEST_ROOT") else {
+            return;
+        };
+        match open_config(std::path::Path::new(&root)).unwrap() {
+            ConfigOpenOutcome::Unsupported => {}
+            other => panic!("expected Unsupported for FIFO, got {other:?}"),
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn open_config_fifo_never_blocks() {
+        use rustix::fs::{mkfifoat, open, Mode, OFlags};
+        use std::process::Command;
+        use std::thread;
+        use std::time::{Duration, Instant};
+
+        let dir = tempfile::TempDir::new().unwrap();
+        let cargo_path = dir.path().join(".cargo");
+        std::fs::create_dir(&cargo_path).unwrap();
+        let cargo_fd = open(
+            &cargo_path,
+            OFlags::DIRECTORY | OFlags::RDONLY | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .unwrap();
+        mkfifoat(&cargo_fd, "config.toml", Mode::RUSR | Mode::WUSR).unwrap();
+
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .arg("open_config_fifo_child")
+            .arg("--nocapture")
+            .env("AMARI_DISCOVERY_FIFO_TEST_ROOT", dir.path())
+            .spawn()
+            .unwrap();
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            if let Some(status) = child.try_wait().unwrap() {
+                assert!(status.success(), "FIFO child failed: {status}");
+                break;
+            }
+            if Instant::now() >= deadline {
+                child.kill().unwrap();
+                child.wait().unwrap();
+                panic!("opening a FIFO config blocked beyond the bounded deadline");
+            }
+            thread::sleep(Duration::from_millis(20));
         }
     }
 

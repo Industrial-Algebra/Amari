@@ -14,7 +14,7 @@ use std::path::Path;
 use crate::inspect::cargo::CargoInspection;
 use crate::inspect::rust::types::RustFileKind;
 use crate::inspect::snapshot::SourceLocation;
-use crate::inspect::RustSourceInspection;
+use crate::inspect::{DependencyKind, RustSourceInspection, SystemDependencyKind};
 
 use super::types::{
     BenchmarkEvidence, BenchmarkStatus, CargoBuildSettings, CargoTargetKey, CargoTargetSettings,
@@ -27,41 +27,57 @@ use super::types::{
 // WASM targets
 // ===========================================================================
 
+/// Returns `true` for a validated WASM target triple (`wasm32-*` or
+/// `wasm64-*`). Build targets and target-table triples are already validated
+/// by the parser; this only classifies the validated result.
+fn is_wasm_target_triple(triple: &str) -> bool {
+    triple.starts_with("wasm32-") || triple.starts_with("wasm64-")
+}
+
 /// Derive configured WASM targets from build settings and target tables.
 ///
-/// Collects every `wasm32-` build target and target-table triple key,
-/// deduplicating by target and preserving sorted, deduplicated origins.
+/// Collects every validated `wasm32-*`/`wasm64-*` build target and
+/// target-table triple key, deduplicating by target and preserving sorted,
+/// deduplicated origins and direct [`ConfigSource`] provenance.
 pub(super) fn derive_wasm_targets(
     build: &CargoBuildSettings,
     targets: &[CargoTargetSettings],
 ) -> Vec<WasmTargetEvidence> {
-    let mut by_target: BTreeMap<String, Vec<WasmTargetOrigin>> = BTreeMap::new();
+    // (target -> (origins, sources))
+    let mut by_target: BTreeMap<String, (Vec<WasmTargetOrigin>, Vec<ConfigSource>)> =
+        BTreeMap::new();
 
     for t in &build.target {
-        if t.starts_with("wasm32-") {
-            by_target
-                .entry(t.clone())
-                .or_default()
-                .push(WasmTargetOrigin::BuildTarget);
+        if is_wasm_target_triple(t) {
+            let (origins, sources) = by_target.entry(t.clone()).or_default();
+            origins.push(WasmTargetOrigin::BuildTarget);
+            if let Some(src) = &build.source {
+                sources.push(src.clone());
+            }
         }
     }
     for ts in targets {
         if let CargoTargetKey::Triple { triple } = &ts.key {
-            if triple.starts_with("wasm32-") {
-                by_target
-                    .entry(triple.clone())
-                    .or_default()
-                    .push(WasmTargetOrigin::TargetTable);
+            if is_wasm_target_triple(triple) {
+                let (origins, sources) = by_target.entry(triple.clone()).or_default();
+                origins.push(WasmTargetOrigin::TargetTable);
+                sources.push(ts.source.clone());
             }
         }
     }
 
     let mut out: Vec<WasmTargetEvidence> = by_target
         .into_iter()
-        .map(|(target, mut origins)| {
+        .map(|(target, (mut origins, mut sources))| {
             origins.sort();
             origins.dedup();
-            WasmTargetEvidence { target, origins }
+            sources.sort();
+            sources.dedup();
+            WasmTargetEvidence {
+                target,
+                origins,
+                sources,
+            }
         })
         .collect();
     out.sort_by(|a, b| a.target.cmp(&b.target));
@@ -158,38 +174,124 @@ fn push_native_rustflags(
 }
 
 fn sort_dedup_native(out: &mut Vec<NativeRequirement>) {
-    out.sort_by_key(native_sort_key);
+    out.sort_by(native_cmp);
     out.dedup();
 }
 
-fn native_sort_key(nr: &NativeRequirement) -> String {
+/// Typed comparison for [`NativeRequirement`], never relying on `Debug`
+/// formatting. Variants are ordered by a fixed discriminant; within a variant
+/// by typed fields (package/alias/basename, enum ranks via stable matches,
+/// target-key/scope typed representations).
+fn native_cmp(a: &NativeRequirement, b: &NativeRequirement) -> std::cmp::Ordering {
+    let ka = native_sort_key(a);
+    let kb = native_sort_key(b);
+    ka.cmp(&kb)
+}
+
+/// Typed sort key tuple for a native requirement (no `Debug` strings).
+fn native_sort_key(nr: &NativeRequirement) -> (u8, String, String, u8, u8, String, u64) {
     match nr {
         NativeRequirement::CargoLinks {
-            links_key, package, ..
-        } => {
-            format!("cargo_links:{package}:{links_key}")
-        }
+            links_key,
+            package,
+            manifest_path,
+            ..
+        } => (
+            0,
+            package.clone(),
+            links_key.clone(),
+            0,
+            0,
+            manifest_path.clone(),
+            0,
+        ),
         NativeRequirement::SystemDependency {
             alias,
             package,
             system_kind,
             dependency_kind,
+            source,
             ..
-        } => format!(
-            "system_dep:{package}:{alias}:{:?}:{:?}",
-            system_kind, dependency_kind
+        } => (
+            1,
+            package.clone(),
+            alias.clone(),
+            system_dep_kind_rank(*system_kind),
+            dep_kind_rank(*dependency_kind),
+            source.path.clone(),
+            0,
         ),
         NativeRequirement::ConfiguredLinker {
             target_key,
             basename,
+            config,
             ..
         } => {
-            format!("configured_linker:{target_key:?}:{basename}")
+            let (kr, ks) = target_key_sort_repr(target_key);
+            (2, ks, basename.clone(), kr, 0, config.path.clone(), 0)
         }
         NativeRequirement::NativeRustflags {
-            scope, flag_count, ..
+            scope,
+            flag_count,
+            config,
+            ..
         } => {
-            format!("native_rustflags:{scope:?}:{flag_count}")
+            let (sr, ss) = scope_sort_repr(scope);
+            (
+                3,
+                ss,
+                String::new(),
+                sr,
+                0,
+                config.path.clone(),
+                *flag_count as u64,
+            )
+        }
+    }
+}
+
+/// Stable rank for [`SystemDependencyKind`] (definition order).
+fn system_dep_kind_rank(k: SystemDependencyKind) -> u8 {
+    match k {
+        SystemDependencyKind::PkgConfig => 0,
+        SystemDependencyKind::Cc => 1,
+        SystemDependencyKind::Bindgen => 2,
+        SystemDependencyKind::Cmake => 3,
+        SystemDependencyKind::Vcpkg => 4,
+        SystemDependencyKind::SystemDeps => 5,
+    }
+}
+
+/// Stable rank for [`DependencyKind`] (Normal < Dev < Build).
+fn dep_kind_rank(k: DependencyKind) -> u8 {
+    match k {
+        DependencyKind::Normal => 0,
+        DependencyKind::Dev => 1,
+        DependencyKind::Build => 2,
+    }
+}
+
+/// Typed `(rank, key-string)` representation of a [`CargoTargetKey`] for
+/// deterministic sorting (no `Debug`).
+fn target_key_sort_repr(key: &CargoTargetKey) -> (u8, String) {
+    match key {
+        CargoTargetKey::Triple { triple } => (0, triple.clone()),
+        CargoTargetKey::Cfg { display, identity } => {
+            // Unit separator delimits display from identity; both fields are
+            // bounded/redacted so this is a typed construction, not Debug.
+            (1, format!("{display}\u{1f}{identity}"))
+        }
+    }
+}
+
+/// Typed `(rank, repr)` representation of a [`RustflagsScope`] for
+/// deterministic sorting (no `Debug`).
+fn scope_sort_repr(scope: &ScopeType) -> (u8, String) {
+    match scope {
+        ScopeType::Build => (0, String::new()),
+        ScopeType::Target { key } => {
+            let (kr, ks) = target_key_sort_repr(key);
+            (1, format!("{kr}\u{1f}{ks}"))
         }
     }
 }
@@ -232,13 +334,15 @@ pub(super) fn derive_benchmarks(
             source_bench_paths.dedup();
         }
 
-        // Declared benches → join.
+        // Declared benches → join. An explicit [[bench]] path matches ANY
+        // exact accepted Rust input file (even outside `benches/`), not just
+        // RustFileKind::Bench classifications.
         let mut declared_project_paths: std::collections::BTreeSet<String> =
             std::collections::BTreeSet::new();
         for bench in &pkg.benches {
             let project_path = join_pkg_path(pkg_dir, &bench.path);
             declared_project_paths.insert(project_path.clone());
-            if source_bench_paths.contains(&project_path.as_str()) {
+            if input_by_path.contains_key(project_path.as_str()) {
                 let src = input_by_path
                     .get(project_path.as_str())
                     .map(|loc| (*loc).clone());
@@ -247,6 +351,8 @@ pub(super) fn derive_benchmarks(
                     name: bench.name.clone(),
                     path: project_path,
                     status: BenchmarkStatus::DeclaredWithSource,
+                    harness: bench.harness,
+                    required_features: bench.required_features.clone(),
                     source: src,
                     declaration_source: Some(bench.manifest_source.clone()),
                 });
@@ -258,6 +364,8 @@ pub(super) fn derive_benchmarks(
                     status: BenchmarkStatus::DeclaredMissingSource {
                         declared_path: bench.path.clone(),
                     },
+                    harness: bench.harness,
+                    required_features: bench.required_features.clone(),
                     source: None,
                     declaration_source: Some(bench.manifest_source.clone()),
                 });
@@ -280,6 +388,8 @@ pub(super) fn derive_benchmarks(
                     name,
                     path: sp.to_string(),
                     status: BenchmarkStatus::ConventionalUndeclared,
+                    harness: true,
+                    required_features: Vec::new(),
                     source: src,
                     declaration_source: None,
                 });
@@ -414,12 +524,16 @@ pub(super) fn derive_target_cfg(
 
     // Cargo target-specific dependency selectors (cfg(...) only) — across ALL
     // dependencies (Amari and non-Amari) via dependency_records, so platform
-    // constraints see non-Amari target deps too. No manifest re-read.
+    // constraints see non-Amari target deps too. No manifest re-read. The
+    // `cfg(...)` selector is normalized to the same canonical UNWRAPPED form
+    // as Rust cfg predicates (inner body, whitespace-collapsed) so equivalent
+    // Cargo/Rust constraints (e.g. `target_arch = "wasm32"`) merge sources.
     for pkg in std::iter::once(&cargo.root_package).chain(cargo.workspace_members.iter()) {
         for dep in &pkg.dependency_records {
             if let Some(target) = &dep.target {
                 if target.starts_with("cfg(") {
-                    by_pred.entry(target.clone()).or_default().push(
+                    let predicate = normalize_cargo_cfg_selector(target);
+                    by_pred.entry(predicate).or_default().push(
                         TargetCfgSource::CargoDependencySelector {
                             manifest_path: pkg.manifest_path.clone(),
                             alias: dep.alias.clone(),
@@ -459,6 +573,27 @@ pub(super) fn derive_target_cfg(
     out
 }
 
+/// Normalize a Cargo `[target.'cfg(...)']` dependency selector to the same
+/// canonical UNWRAPPED representation used for Rust cfg predicates: strip the
+/// `cfg(...)` wrapper and collapse internal whitespace (matching Rust's
+/// `split_whitespace().join(" ")`). Non-cfg selectors (target triples) are
+/// returned unchanged. Values are preserved per the existing extracted-signal
+/// contract (cfg constraint values like `"wasm32"` are useful signals, not
+/// secrets).
+///
+/// A malformed/unbalanced `cfg(` selector that cannot be unwrapped is returned
+/// unchanged so it never silently merges with a distinct predicate.
+fn normalize_cargo_cfg_selector(target: &str) -> String {
+    if let Some(inner) = target
+        .strip_prefix("cfg(")
+        .and_then(|s| s.strip_suffix(')'))
+    {
+        inner.split_whitespace().collect::<Vec<_>>().join(" ")
+    } else {
+        target.to_string()
+    }
+}
+
 /// A cfg predicate is a platform constraint if it mentions any `target_*`
 /// option or a bare `unix`/`windows` option name (outside quoted strings).
 ///
@@ -480,25 +615,40 @@ fn is_platform_cfg(predicate: &str) -> bool {
         "target_endian",
         "target_has_atomic",
     ];
-    if TARGET_KEYS.iter().any(|k| stripped.contains(k)) {
-        return true;
-    }
-    for word in stripped.split(|c: char| !c.is_alphanumeric() && c != '_') {
-        if word == "unix" || word == "windows" {
-            return true;
-        }
-    }
-    false
+    stripped
+        .split(|c: char| !c.is_alphanumeric() && c != '_')
+        .any(|word| TARGET_KEYS.contains(&word) || word == "unix" || word == "windows")
 }
 
+/// Strip quoted-string contents from `s`, replacing each character inside a
+/// double-quoted string (and the quotes themselves) with spaces.
+///
+/// Escape-aware: a backslash inside a string escapes the next character, so
+/// an escaped quote (`\"`) does NOT close the string. This prevents a quoted
+/// value containing `\"` followed by a target key from leaking the key as a
+/// bareword platform option.
 fn strip_quoted(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
+    let mut chars = s.chars().peekable();
     let mut in_str = false;
-    for ch in s.chars() {
-        if ch == '"' {
-            in_str = !in_str;
+    while let Some(ch) = chars.next() {
+        if in_str {
+            if ch == '\\' {
+                // Escaped next char: consume it, redact both backslash and
+                // the escaped character so neither can close the string.
+                chars.next();
+                out.push(' ');
+                out.push(' ');
+                continue;
+            }
+            if ch == '"' {
+                in_str = false;
+                out.push(' ');
+                continue;
+            }
             out.push(' ');
-        } else if in_str {
+        } else if ch == '"' {
+            in_str = true;
             out.push(' ');
         } else {
             out.push(ch);
@@ -526,6 +676,18 @@ mod tests {
     }
 
     #[test]
+    fn platform_option_names_require_exact_tokens() {
+        assert!(
+            !is_platform_cfg(r#"cfg(not_target_arch = "secret")"#),
+            "a custom cfg key containing target_arch is not a platform option"
+        );
+        assert!(
+            !is_platform_cfg(r#"target_architecture = "custom""#),
+            "target_architecture must not match target_arch"
+        );
+    }
+
+    #[test]
     fn nested_platform_predicates_positive() {
         assert!(
             is_platform_cfg(r#"cfg(all(target_arch = "x86_64", target_os = "linux"))"#),
@@ -545,5 +707,33 @@ mod tests {
     fn bare_unix_windows_positive() {
         assert!(is_platform_cfg("cfg(unix)"));
         assert!(is_platform_cfg("cfg(windows)"));
+    }
+
+    #[test]
+    fn escaped_quote_in_value_is_not_platform() {
+        // A quoted value containing an escaped quote followed by a target key
+        // must NOT leak the target key outside the string. Without
+        // escape-aware stripping, `\"` would close the string early and the
+        // `target_os` token would appear as a bareword platform key.
+        assert!(
+            !is_platform_cfg(r#"cfg(feature = "a\"target_os\"")"#),
+            "escaped-quote target_os value must not be a platform constraint"
+        );
+        assert!(
+            !is_platform_cfg(r#"feature = \"target_arch\""#),
+            "escaped leading-quote target_arch must not be a platform constraint"
+        );
+    }
+
+    #[test]
+    fn strip_quoted_handles_escaped_quotes() {
+        // Direct check of the helper: an escaped quote inside a value does not
+        // close the string, so a target key following it stays redacted.
+        use super::strip_quoted;
+        let stripped = strip_quoted(r#"feature = "a\"target_os""#);
+        assert!(
+            !stripped.contains("target_os"),
+            "escaped-quote value leaked target_os: {stripped}"
+        );
     }
 }

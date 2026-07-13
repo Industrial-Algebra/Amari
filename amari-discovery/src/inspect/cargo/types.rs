@@ -201,8 +201,14 @@ impl DependencyKind {
 pub struct CargoBench {
     /// The benchmark name.
     pub name: String,
-    /// The benchmark source path relative to the package.
+    /// The benchmark source path relative to the package, normalized and
+    /// validated (never absolute or parent-traversing).
     pub path: String,
+    /// Whether the bench uses the default libtest harness (`harness`, default
+    /// `true`). `false` indicates a custom `fn main`.
+    pub harness: bool,
+    /// Sorted, deduplicated `required-features` for the bench.
+    pub required_features: Vec<String>,
     /// Location of this bench declaration in the manifest.
     pub manifest_source: ManifestSource,
 }
@@ -486,5 +492,14 @@ pub enum CargoInspectionWarning {
         package: String,
         /// The overridden key.
         key: String,
+    },
+    /// A `[[bench]]` declaration has an invalid source path (absolute, parent
+    /// traversal, or non-normalized). The bench is omitted conservatively and
+    /// the raw path is never serialized.
+    InvalidBenchPath {
+        /// The bench name (safe identifier, not the path).
+        bench_name: String,
+        /// The package that declared it.
+        package: String,
     },
 }

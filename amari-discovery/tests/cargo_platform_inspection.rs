@@ -22,17 +22,21 @@
 use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+use std::time::Duration;
 
 use sha2::{Digest, Sha256};
 use tempfile::TempDir;
 
 use amari_discovery::inspect::{
-    inspect_cargo_platform, inspect_cargo_project, inspect_rust_sources, CargoPlatformWarning,
-    InspectionLimit, InspectionLimits, RustFileKind, SnapshotState,
+    inspect_cargo_platform, inspect_cargo_platform_with_elapsed, inspect_cargo_project,
+    inspect_rust_sources, CargoPlatformWarning, InspectionLimit, InspectionLimits, RustFileKind,
+    SnapshotState,
 };
 use amari_discovery::{
-    BenchmarkStatus, CargoPlatformInspection, CargoTargetKey, NativeRequirement, RustflagCategory,
-    TargetCfgSource, WasmTargetOrigin,
+    BenchmarkStatus, CargoPlatformInspection, CargoTargetKey, ConfigSetting, ConfigSettingIssue,
+    NativeRequirement, RustflagCategory, TargetCfgSource, WasmTargetOrigin,
 };
 
 // ===========================================================================
@@ -278,6 +282,58 @@ fn wasm_targets_deduped_with_origins() {
     assert_eq!(platform.wasm_targets, sorted);
 }
 
+#[test]
+fn wasm64_target_evidence_included() {
+    // wasm64-* targets must be included alongside wasm32-*.
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[build]\ntarget = [\"wasm64-unknown-unknown\"]\n[target.wasm64-unknown-unknown]\nlinker = \"rust-lld\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    let wasm64 = platform
+        .wasm_targets
+        .iter()
+        .find(|w| w.target == "wasm64-unknown-unknown")
+        .expect("wasm64 target evidence");
+    let origins: HashSet<&WasmTargetOrigin> = wasm64.origins.iter().collect();
+    assert!(origins.contains(&WasmTargetOrigin::BuildTarget));
+    assert!(origins.contains(&WasmTargetOrigin::TargetTable));
+}
+
+#[test]
+fn wasm_evidence_carries_resolving_config_source() {
+    // Every WasmTargetEvidence must carry a direct ConfigSource that resolves
+    // to the accepted config input (matching content hash/byte count).
+    let temp = materialize_fixture();
+    let cfg_bytes = fs::read(temp.path().join(".cargo").join("config.toml")).unwrap();
+    let expected_hash = sha256_hex(&cfg_bytes);
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        !platform.wasm_targets.is_empty(),
+        "fixture has wasm targets"
+    );
+    for w in &platform.wasm_targets {
+        assert!(
+            !w.sources.is_empty(),
+            "wasm target {} must carry resolving source",
+            w.target
+        );
+        for src in &w.sources {
+            assert_eq!(
+                src.content_hash, expected_hash,
+                "wasm source resolves to real config hash"
+            );
+            assert_eq!(
+                src.byte_count,
+                cfg_bytes.len() as u64,
+                "wasm source resolves to real config byte count"
+            );
+            assert_eq!(src.path, ".cargo/config.toml");
+        }
+    }
+}
+
 // ===========================================================================
 // 4 — Native requirements: links, linker, native rustflags
 // ===========================================================================
@@ -396,12 +452,14 @@ fn target_cfg_constraints_cargo_and_rust() {
     let temp = materialize_fixture();
     let (_, _, platform) = inspect_all(temp.path());
 
-    // Cargo selector cfg(unix) from [target.'cfg(unix)'.dependencies]
+    // Cargo selector cfg(unix) from [target.'cfg(unix)'.dependencies],
+    // normalized to the canonical unwrapped form `unix` (matching Rust cfg
+    // predicate representation) so equivalent Cargo/Rust constraints merge.
     let unix = platform
         .target_cfg_constraints
         .iter()
-        .find(|c| c.predicate == "cfg(unix)")
-        .expect("cfg(unix) constraint from Cargo");
+        .find(|c| c.predicate == "unix")
+        .expect("cfg(unix) constraint from Cargo (unwrapped)");
     assert!(
         unix.sources
             .iter()
@@ -420,6 +478,63 @@ fn target_cfg_constraints_cargo_and_rust() {
             .iter()
             .any(|s| matches!(s, TargetCfgSource::RustAttribute { .. })),
         "target_arch must trace to a Rust cfg/cfg_attr attribute"
+    );
+}
+
+#[test]
+fn cargo_and_rust_cfg_constraints_merge_by_canonical_predicate() {
+    // A Cargo [target.'cfg(target_arch = "wasm32")'.dependencies] selector
+    // and a Rust #[cfg_attr(target_arch = "wasm32", ...)] attribute must merge
+    // into ONE constraint (canonical unwrapped predicate) with BOTH a Cargo
+    // dependency-selector source and a Rust attribute source.
+    let temp = materialize_fixture();
+    let manifest_path = temp.path().join("Cargo.toml");
+    let manifest = fs::read_to_string(&manifest_path).unwrap();
+    let with_dep = manifest.replace(
+        "[features]",
+        "[target.'cfg(target_arch = \"wasm32\")'.dependencies]\nserde_json = \"1.0\"\n\n[features]",
+    );
+    fs::write(&manifest_path, with_dep).unwrap();
+    let (_, _, platform) = inspect_all(temp.path());
+
+    // Canonical unwrapped predicate (no cfg(...) wrapper), matching Rust form.
+    let merged = platform
+        .target_cfg_constraints
+        .iter()
+        .find(|c| c.predicate == "target_arch = \"wasm32\"")
+        .unwrap_or_else(|| {
+            panic!(
+                "merged unwrapped predicate missing; got predicates {:?}",
+                platform
+                    .target_cfg_constraints
+                    .iter()
+                    .map(|c| &c.predicate)
+                    .collect::<Vec<_>>()
+            )
+        });
+    let has_cargo = merged
+        .sources
+        .iter()
+        .any(|s| matches!(s, TargetCfgSource::CargoDependencySelector { .. }));
+    let has_rust = merged
+        .sources
+        .iter()
+        .any(|s| matches!(s, TargetCfgSource::RustAttribute { .. }));
+    assert!(
+        has_cargo,
+        "merged constraint must include a Cargo dependency selector source"
+    );
+    assert!(
+        has_rust,
+        "merged constraint must include a Rust attribute source"
+    );
+    // No separate wrapped cfg(...) duplicate remains.
+    assert!(
+        !platform
+            .target_cfg_constraints
+            .iter()
+            .any(|c| c.predicate == "cfg(target_arch = \"wasm32\")"),
+        "wrapped cfg(...) duplicate must not survive normalization"
     );
 }
 
@@ -821,9 +936,181 @@ fn wall_clock_zero_returns_partial() {
     assert_eq!(platform.config_input.file_count, 0);
 }
 
-// ===========================================================================
-// 20 — Deterministic config input hash
-// ===========================================================================
+/// Injectable step-clock: returns successive millisecond durations, clamping
+/// to the last value once exhausted. Lets the cooperative post-phase checks be
+/// exercised deterministically (no flaky sleeps).
+fn step_clock(steps: &[u64]) -> impl Fn() -> Duration {
+    let idx = Arc::new(AtomicU64::new(0));
+    let steps = steps.to_vec();
+    move || {
+        let i = idx.fetch_add(1, Ordering::SeqCst) as usize;
+        Duration::from_millis(steps[i.min(steps.len().saturating_sub(1))])
+    }
+}
+
+#[test]
+fn wall_clock_post_read_trip_skips_parse() {
+    // Clock trips at the first post-read checkpoint → parse is skipped.
+    let temp = materialize_fixture();
+    let mut limits = default_limits();
+    limits.max_inspection_wall_millis = 100;
+    let cargo = inspect_cargo_project(temp.path(), &default_limits()).unwrap();
+    let rust = inspect_rust_sources(temp.path(), &cargo, &default_limits()).unwrap();
+    let cfg_bytes = fs::read(temp.path().join(".cargo").join("config.toml")).unwrap();
+    let platform = inspect_cargo_platform_with_elapsed(
+        temp.path(),
+        &cargo,
+        &rust,
+        &limits,
+        step_clock(&[500]),
+    )
+    .unwrap();
+    // WallClock state with actual observed and configured budget.
+    match platform.state {
+        SnapshotState::LimitExceeded {
+            limit:
+                InspectionLimit::WallClock {
+                    max_millis,
+                    observed_millis,
+                },
+        } => {
+            assert_eq!(max_millis, 100);
+            assert_eq!(observed_millis, 500);
+        }
+        other => panic!("expected WallClock limit, got {other:?}"),
+    }
+    // WallClock warning present with the same observed/budget (consistent).
+    let wc = platform
+        .warnings
+        .iter()
+        .find_map(|w| match w {
+            CargoPlatformWarning::WallClock {
+                max_millis,
+                observed_millis,
+            } => Some((*max_millis, *observed_millis)),
+            _ => None,
+        })
+        .expect("WallClock warning present");
+    assert_eq!(wc, (100, 500));
+    // Provenance is internally consistent: the read happened.
+    assert_eq!(platform.config_input.file_count, 1);
+    assert_eq!(platform.config_input.total_bytes, cfg_bytes.len() as u64);
+    // Parse was skipped → build target settings empty (no wasm32 build target).
+    assert!(
+        platform.build_settings.target.is_empty(),
+        "parse skipped → no build targets"
+    );
+    // cargo/rust-derived evidence is still present.
+    assert!(
+        !platform.benchmarks.is_empty(),
+        "benchmarks derived from cargo"
+    );
+}
+
+#[test]
+fn wall_clock_post_parse_trip_retains_settings() {
+    // Clock passes post-read, trips post-parse → settings retained, all
+    // derived evidence computed.
+    let temp = materialize_fixture();
+    let mut limits = default_limits();
+    limits.max_inspection_wall_millis = 100;
+    let cargo = inspect_cargo_project(temp.path(), &default_limits()).unwrap();
+    let rust = inspect_rust_sources(temp.path(), &cargo, &default_limits()).unwrap();
+    let platform = inspect_cargo_platform_with_elapsed(
+        temp.path(),
+        &cargo,
+        &rust,
+        &limits,
+        step_clock(&[0, 500]),
+    )
+    .unwrap();
+    assert!(matches!(
+        platform.state,
+        SnapshotState::LimitExceeded {
+            limit: InspectionLimit::WallClock { .. }
+        }
+    ));
+    // Parsed settings retained: the wasm32 build target is present.
+    assert!(
+        platform
+            .build_settings
+            .target
+            .iter()
+            .any(|t| t == "wasm32-unknown-unknown"),
+        "post-parse trip retains parsed build targets"
+    );
+    // Derived wasm evidence computed from retained settings.
+    assert!(
+        platform
+            .wasm_targets
+            .iter()
+            .any(|w| w.target == "wasm32-unknown-unknown"),
+        "post-parse trip derives wasm evidence from retained settings"
+    );
+    assert!(platform
+        .warnings
+        .iter()
+        .any(|w| matches!(w, CargoPlatformWarning::WallClock { .. })));
+}
+
+#[test]
+fn wall_clock_post_derivation_trip() {
+    // Clock passes post-read and post-parse, trips post-derivation → full
+    // evidence present plus WallClock state/warning.
+    let temp = materialize_fixture();
+    let mut limits = default_limits();
+    limits.max_inspection_wall_millis = 100;
+    let cargo = inspect_cargo_project(temp.path(), &default_limits()).unwrap();
+    let rust = inspect_rust_sources(temp.path(), &cargo, &default_limits()).unwrap();
+    let platform = inspect_cargo_platform_with_elapsed(
+        temp.path(),
+        &cargo,
+        &rust,
+        &limits,
+        step_clock(&[0, 0, 500]),
+    )
+    .unwrap();
+    assert!(matches!(
+        platform.state,
+        SnapshotState::LimitExceeded {
+            limit: InspectionLimit::WallClock { .. }
+        }
+    ));
+    // Everything present.
+    assert!(platform
+        .build_settings
+        .target
+        .iter()
+        .any(|t| t == "wasm32-unknown-unknown"));
+    assert!(!platform.target_settings.is_empty());
+    assert!(!platform.wasm_targets.is_empty());
+    assert!(platform
+        .warnings
+        .iter()
+        .any(|w| matches!(w, CargoPlatformWarning::WallClock { .. })));
+}
+
+#[test]
+fn wall_clock_generous_budget_stays_complete() {
+    // A generous budget with a zero elapsed clock never trips → Complete, no
+    // WallClock warning (no false positive from the cooperative checks).
+    let temp = materialize_fixture();
+    let mut limits = default_limits();
+    limits.max_inspection_wall_millis = 1_000_000;
+    let cargo = inspect_cargo_project(temp.path(), &default_limits()).unwrap();
+    let rust = inspect_rust_sources(temp.path(), &cargo, &default_limits()).unwrap();
+    let platform =
+        inspect_cargo_platform_with_elapsed(temp.path(), &cargo, &rust, &limits, step_clock(&[0]))
+            .unwrap();
+    assert_eq!(platform.state, SnapshotState::Complete);
+    assert!(
+        !platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::WallClock { .. })),
+        "no false-positive WallClock warning"
+    );
+}
 
 #[test]
 fn config_hash_deterministic() {
@@ -895,6 +1182,60 @@ fn no_secret_or_absolute_leakage() {
     assert!(
         json.contains("valgrind"),
         "sanitized runner basename present"
+    );
+}
+
+#[test]
+fn windows_runner_and_linker_paths_do_not_leak_directories() {
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        r#"[target.x86_64-pc-windows-msvc]
+linker = 'C:\Users\SECRET-LINKER-DIR\link.exe'
+runner = ['C:\Users\SECRET-RUNNER-DIR\runner.exe', '--flag']
+"#,
+    );
+
+    let (_, _, platform) = inspect_all(temp.path());
+    let target = platform
+        .target_settings
+        .iter()
+        .find(|target| {
+            matches!(
+                &target.key,
+                CargoTargetKey::Triple { triple }
+                    if triple == "x86_64-pc-windows-msvc"
+            )
+        })
+        .expect("Windows target settings");
+
+    assert_eq!(
+        target
+            .linker
+            .as_ref()
+            .map(|linker| linker.basename.as_str()),
+        Some("link.exe")
+    );
+    assert_eq!(
+        target
+            .runner
+            .as_ref()
+            .map(|runner| runner.executable_basename.as_str()),
+        Some("runner.exe")
+    );
+
+    let json = serde_json::to_string(&platform).unwrap();
+    assert!(
+        !json.contains("SECRET-LINKER-DIR"),
+        "linker path leaked: {json}"
+    );
+    assert!(
+        !json.contains("SECRET-RUNNER-DIR"),
+        "runner path leaked: {json}"
+    );
+    assert!(
+        !json.contains("C:\\Users"),
+        "Windows directory leaked: {json}"
     );
 }
 
@@ -1039,6 +1380,17 @@ fn duplicate_evidence_deduped() {
 #[test]
 fn every_evidence_source_resolves() {
     let temp = materialize_fixture();
+    // Add an explicit arbitrary-path bench (outside benches/) with harness and
+    // required-features so its provenance is exercised too.
+    fs::create_dir_all(temp.path().join("perf")).unwrap();
+    fs::write(temp.path().join("perf").join("custom.rs"), "fn main() {}").unwrap();
+    let manifest_path = temp.path().join("Cargo.toml");
+    let manifest = fs::read_to_string(&manifest_path).unwrap();
+    let with_bench = format!(
+        "{manifest}\n[[bench]]\nname = \"custom\"\npath = \"perf/custom.rs\"\nharness = false\nrequired-features = [\"perf\"]\n"
+    );
+    fs::write(&manifest_path, with_bench).unwrap();
+
     let (cargo, rust, platform) = inspect_all(temp.path());
 
     // Exact upstream record sets.
@@ -1157,6 +1509,16 @@ fn every_evidence_source_resolves() {
             "wasm target {} must derive from a validated triple",
             w.target
         );
+        // Every direct ConfigSource on the wasm evidence resolves exactly to
+        // the accepted config input.
+        assert!(
+            !w.sources.is_empty(),
+            "wasm target {} must carry at least one resolving source",
+            w.target
+        );
+        for src in &w.sources {
+            resolve_config(src);
+        }
     }
 
     // --- Benchmarks: source resolves to a Rust input, declaration to a manifest ---
@@ -1177,6 +1539,20 @@ fn every_evidence_source_resolves() {
             resolve_manifest(decl);
         }
     }
+
+    // --- Explicit arbitrary-path bench (outside benches/) resolves directly ---
+    let custom = platform
+        .benchmarks
+        .iter()
+        .find(|b| b.name == "custom")
+        .expect("arbitrary-path perf/custom.rs bench present");
+    assert_eq!(custom.path, "perf/custom.rs");
+    assert!(
+        matches!(custom.status, BenchmarkStatus::DeclaredWithSource),
+        "arbitrary bench matches accepted input file"
+    );
+    assert!(!custom.harness);
+    assert_eq!(custom.required_features, vec!["perf".to_string()]);
 
     // --- no_std: sources resolve to Rust input files ---
     for pkg in &platform.no_std_evidence.packages {
@@ -1607,9 +1983,188 @@ fn config_warnings_deterministically_ordered() {
     );
 }
 
+#[test]
+fn empty_linker_warns_and_omitted() {
+    // An empty linker string must produce a typed Empty warning and NO
+    // ConfiguredLinker evidence (never `Some` with an empty basename).
+    let temp = materialize_fixture();
+    write_config(&temp, "[target.wasm32-unknown-unknown]\nlinker = \"\"\n");
+    let (_, _, platform) = inspect_all(temp.path());
+    let ts = platform
+        .target_settings
+        .iter()
+        .find(|t| matches!(&t.key, amari_discovery::CargoTargetKey::Triple { triple } if triple == "wasm32-unknown-unknown"))
+        .expect("wasm32 target table");
+    assert!(ts.linker.is_none(), "empty linker must yield None");
+    assert!(
+        platform.warnings.iter().any(|w| matches!(
+            w,
+            CargoPlatformWarning::InvalidConfigSetting {
+                setting: amari_discovery::ConfigSetting::TargetTableLinker,
+                issue: amari_discovery::ConfigSettingIssue::Empty,
+                ..
+            }
+        )),
+        "empty linker must produce Empty warning"
+    );
+    // No empty ConfiguredLinker in native_requirements either.
+    assert!(
+        !platform
+            .native_requirements
+            .iter()
+            .any(|n| matches!(n, NativeRequirement::ConfiguredLinker { basename, .. } if basename.is_empty())),
+        "no empty-basename ConfiguredLinker"
+    );
+}
+
+#[test]
+fn empty_runner_program_no_some_empty() {
+    // A runner array whose program is empty must NOT yield `Some` with an empty
+    // basename; it produces a typed Empty warning and None.
+    let temp = materialize_fixture();
+    write_config(&temp, "[target.'cfg(unix)']\nrunner = [\"\"]\n");
+    let (_, _, platform) = inspect_all(temp.path());
+    let ts = platform
+        .target_settings
+        .iter()
+        .find(|t| matches!(&t.key, amari_discovery::CargoTargetKey::Cfg { .. }))
+        .expect("cfg(unix) target table");
+    assert!(ts.runner.is_none(), "empty-program runner must yield None");
+    assert!(
+        platform.warnings.iter().any(|w| matches!(
+            w,
+            CargoPlatformWarning::InvalidConfigSetting {
+                setting: amari_discovery::ConfigSetting::TargetTableRunner,
+                issue: amari_discovery::ConfigSettingIssue::Empty,
+                ..
+            }
+        )),
+        "empty runner program must produce Empty warning"
+    );
+}
+
+#[test]
+fn invalid_config_setting_aggregated_by_sum_across_tables() {
+    // The same (setting, issue) across multiple target tables must be SUMMED
+    // into a single warning count, not deduped (which underreports).
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.wasm32-unknown-unknown]\nlinker = 1\n[target.x86_64-pc-windows-msvc]\nlinker = 2\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    let linker_wrongtype_total = platform
+        .warnings
+        .iter()
+        .filter_map(|w| match w {
+            CargoPlatformWarning::InvalidConfigSetting {
+                setting: amari_discovery::ConfigSetting::TargetTableLinker,
+                issue: amari_discovery::ConfigSettingIssue::WrongType,
+                count,
+            } => Some(*count),
+            _ => None,
+        })
+        .sum::<usize>();
+    assert_eq!(
+        linker_wrongtype_total, 2,
+        "two wrong-type linkers across tables must sum to 2, got {linker_wrongtype_total}"
+    );
+    // Exactly ONE aggregated warning for this (setting, issue).
+    let count_of_warnings = platform
+        .warnings
+        .iter()
+        .filter(|w| {
+            matches!(
+                w,
+                CargoPlatformWarning::InvalidConfigSetting {
+                    setting: amari_discovery::ConfigSetting::TargetTableLinker,
+                    issue: amari_discovery::ConfigSettingIssue::WrongType,
+                    ..
+                }
+            )
+        })
+        .count();
+    assert_eq!(
+        count_of_warnings, 1,
+        "(setting, issue) must aggregate to one warning, got {count_of_warnings}"
+    );
+}
+
 // ===========================================================================
-// B4 — cfg(...) target key validation: atomics/nested/redaction/injection
+// B4-correction — target-table triple validation & non-regular config
 // ===========================================================================
+
+#[test]
+fn target_triples_reject_empty_segments() {
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[build]\ntarget = [\"wasm32--unknown\"]\n[target.wasm32--unknown]\nlinker = \"rust-lld\"\n",
+    );
+
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(platform.build_settings.target.is_empty());
+    assert!(platform.target_settings.is_empty());
+    assert!(platform.wasm_targets.is_empty());
+    assert!(platform.warnings.iter().any(|warning| matches!(
+        warning,
+        CargoPlatformWarning::InvalidConfigSetting {
+            setting: ConfigSetting::BuildTarget,
+            issue: ConfigSettingIssue::InvalidValue,
+            ..
+        }
+    )));
+    assert!(platform.warnings.iter().any(|warning| matches!(
+        warning,
+        CargoPlatformWarning::InvalidTargetIdentifier { .. }
+    )));
+}
+
+#[test]
+fn target_table_single_dash_triple_rejected() {
+    // A target-table key with only ONE dash is not a valid triple
+    // (arch-vendor-os needs >= 2 dashes, matching the build-target rule).
+    let temp = materialize_fixture();
+    write_config(&temp, "[target.foo-bar]\nlinker = \"clang\"\n");
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::InvalidTargetIdentifier { .. })),
+        "single-dash target key must be rejected"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn non_regular_config_file_unsupported_warning() {
+    // A directory at `.cargo/config.toml` must produce a truthful
+    // UnsupportedConfigFile warning (not SymlinkedConfig) and Complete with
+    // count 0.
+    use amari_discovery::CargoPlatformWarning;
+    let temp = materialize_fixture();
+    // Replace the config file with a directory.
+    let cfg_path = temp.path().join(".cargo").join("config.toml");
+    fs::remove_file(&cfg_path).unwrap();
+    fs::create_dir(&cfg_path).unwrap();
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::UnsupportedConfigFile { .. })),
+        "non-regular config must produce UnsupportedConfigFile warning"
+    );
+    assert!(
+        !platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::SymlinkedConfig { .. })),
+        "non-regular config must NOT be reported as SymlinkedConfig"
+    );
+    assert_eq!(platform.config_input.file_count, 0);
+}
 
 #[test]
 fn target_key_target_feature_atomics_accepted() {
@@ -1773,6 +2328,184 @@ fn duplicate_target_keys_deduped() {
     assert_eq!(
         unix_count, 1,
         "duplicate-normalizing target keys must never leave a duplicate: got {unix_count}"
+    );
+}
+
+// ===========================================================================
+// B2-correction — cfg grammar validation via bounded recursive parser
+// ===========================================================================
+
+#[test]
+fn target_key_grammar_unquoted_value_rejected() {
+    // `cfg(target_arch = x86_64)` (bareword after `=`) is invalid Cargo cfg;
+    // values must be string literals. Must be rejected.
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(target_arch = x86_64)']\nlinker = \"clang\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::InvalidTargetIdentifier { .. })),
+        "unquoted cfg value must be rejected"
+    );
+}
+
+#[test]
+fn target_key_grammar_double_equals_rejected() {
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(target_arch == \"x86_64\")']\nlinker = \"clang\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::InvalidTargetIdentifier { .. })),
+        "malformed `==` operator must be rejected"
+    );
+}
+
+#[test]
+fn target_key_grammar_not_arity_enforced() {
+    // `cfg(not(unix, windows))` has arity > 1 for `not` — invalid.
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(not(unix, windows))']\nlinker = \"clang\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::InvalidTargetIdentifier { .. })),
+        "`not` with arity != 1 must be rejected"
+    );
+}
+
+#[test]
+fn target_key_grammar_numeric_value_rejected() {
+    // Non-string literal value (`64`) is invalid Cargo cfg.
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(target_pointer_width = 64)']\nlinker = \"clang\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::InvalidTargetIdentifier { .. })),
+        "non-string literal value must be rejected"
+    );
+}
+
+#[test]
+fn target_key_grammar_trailing_junk_rejected() {
+    // Missing comma / junk tokens inside cfg → reject.
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(unix extra junk)']\nlinker = \"clang\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::InvalidTargetIdentifier { .. })),
+        "trailing junk in cfg must be rejected"
+    );
+}
+
+#[test]
+fn target_key_grammar_single_segment_required() {
+    // Multi-segment path `cfg(a::b)` must be rejected (only single-segment ids).
+    let temp = materialize_fixture();
+    write_config(&temp, "[target.'cfg(a::b)']\nlinker = \"clang\"\n");
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::InvalidTargetIdentifier { .. })),
+        "multi-segment path must be rejected"
+    );
+}
+
+#[test]
+fn target_key_internal_whitespace_normalized_merges() {
+    // `cfg(target_arch = "x86_64")` and `cfg(target_arch="x86_64")` differ
+    // only in internal whitespace; they must merge into ONE target table.
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(target_arch = \"x86_64\")']\nlinker = \"clang\"\n[target.'cfg(target_arch=\"x86_64\")']\nlinker = \"clang\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    let arch_count = platform
+        .target_settings
+        .iter()
+        .filter(|t| {
+            matches!(
+                t.key,
+                amari_discovery::CargoTargetKey::Cfg { ref display, .. }
+                    if display.contains("target_arch")
+            )
+        })
+        .count();
+    assert_eq!(
+        arch_count, 1,
+        "internal-whitespace variants must merge by canonical normalization: got {arch_count}"
+    );
+}
+
+#[test]
+fn duplicate_target_conflicting_settings_warns() {
+    // Two raw target selectors that NORMALIZE to the same key but have
+    // CONFLICTING settings must emit a typed DuplicateTargetSetting warning
+    // (not silently discard). Distinct raw keys avoid a TOML duplicate error.
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(unix)']\nlinker = \"clang\"\n[target.'cfg( unix )']\nlinker = \"gcc\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::DuplicateTargetSetting { .. })),
+        "conflicting duplicate target settings must produce DuplicateTargetSetting warning"
+    );
+    // The warning must not leak the linker values or any secret.
+    let json = serde_json::to_string(&platform).unwrap();
+    assert!(!json.contains("SECRET"), "warning leaked secret: {json}");
+}
+
+#[test]
+fn duplicate_target_identical_settings_no_conflict_warning() {
+    // Two normalized-equal target selectors with IDENTICAL settings must NOT
+    // emit a DuplicateTargetSetting warning (silent dedup).
+    let temp = materialize_fixture();
+    write_config(
+        &temp,
+        "[target.'cfg(unix)']\nlinker = \"clang\"\n[target.'cfg( unix )']\nlinker = \"clang\"\n",
+    );
+    let (_, _, platform) = inspect_all(temp.path());
+    assert!(
+        !platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::DuplicateTargetSetting { .. })),
+        "identical duplicate target settings must not warn"
     );
 }
 
@@ -2092,6 +2825,157 @@ version = "0.1.0"
     );
 }
 
+#[test]
+fn benchmark_retains_harness_and_required_features() {
+    // An explicit [[bench]] outside benches/ with harness=false and
+    // required-features must be retained with those fields and match the
+    // accepted Rust input file at that exact path.
+    let temp = minimal_pkg_project();
+    fs::create_dir_all(temp.path().join("perf")).unwrap();
+    fs::write(temp.path().join("perf").join("custom.rs"), "fn main() {}").unwrap();
+    let manifest = fs::read_to_string(temp.path().join("Cargo.toml")).unwrap();
+    let with_bench = format!(
+        "{manifest}\n[[bench]]\nname = \"custom\"\npath = \"perf/custom.rs\"\nharness = false\nrequired-features = [\"zeta\", \"alpha\", \"alpha\"]\n"
+    );
+    fs::write(temp.path().join("Cargo.toml"), with_bench).unwrap();
+    let (_, _, platform) = inspect_all(temp.path());
+    let bench = platform
+        .benchmarks
+        .iter()
+        .find(|b| b.name == "custom")
+        .expect("custom bench present");
+    assert_eq!(bench.path, "perf/custom.rs");
+    assert!(
+        matches!(bench.status, BenchmarkStatus::DeclaredWithSource),
+        "explicit bench outside benches/ matches accepted input file"
+    );
+    assert!(!bench.harness, "harness=false retained");
+    assert_eq!(
+        bench.required_features,
+        vec!["alpha".to_string(), "zeta".to_string()],
+        "required-features sorted and deduped"
+    );
+}
+
+#[test]
+fn benchmark_harness_defaults_true() {
+    // A [[bench]] without harness defaults to true.
+    let temp = minimal_pkg_project();
+    fs::create_dir(temp.path().join("benches")).unwrap();
+    fs::write(temp.path().join("benches").join("d.rs"), "fn main() {}").unwrap();
+    let manifest = fs::read_to_string(temp.path().join("Cargo.toml")).unwrap();
+    let with_bench = format!("{manifest}\n[[bench]]\nname = \"d\"\npath = \"benches/d.rs\"\n");
+    fs::write(temp.path().join("Cargo.toml"), with_bench).unwrap();
+    let (_, _, platform) = inspect_all(temp.path());
+    let bench = platform
+        .benchmarks
+        .iter()
+        .find(|b| b.name == "d")
+        .expect("d bench present");
+    assert!(bench.harness, "harness defaults to true");
+    assert!(bench.required_features.is_empty());
+}
+
+#[test]
+fn benchmark_invalid_path_omitted_and_warned() {
+    // A declared bench with an escaping/absolute path must NOT be serialized
+    // (no secret/absolute leak) and must emit a typed sanitized warning.
+    use amari_discovery::CargoInspectionWarning;
+    let temp = minimal_pkg_project();
+    let manifest = fs::read_to_string(temp.path().join("Cargo.toml")).unwrap();
+    let with_bench = format!(
+        "{manifest}\n[[bench]]\nname = \"escape\"\npath = \"../../../../etc/SECRET-BENCH-PATH\"\n"
+    );
+    fs::write(temp.path().join("Cargo.toml"), with_bench).unwrap();
+    let (cargo, _, platform) = inspect_all(temp.path());
+    // The escaping bench must not appear in evidence.
+    assert!(
+        !platform.benchmarks.iter().any(|b| b.name == "escape"),
+        "escaping bench path must be omitted"
+    );
+    // A typed warning is emitted (never carrying the raw path).
+    assert!(
+        cargo
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoInspectionWarning::InvalidBenchPath { .. })),
+        "escaping bench path must produce InvalidBenchPath warning"
+    );
+    // No secret/absolute leak in serialized cargo output.
+    let json = serde_json::to_string(&cargo).unwrap();
+    assert!(!json.contains("SECRET-BENCH-PATH"), "leaked: {json}");
+}
+
+#[test]
+fn benchmark_absolute_path_omitted() {
+    use amari_discovery::CargoInspectionWarning;
+    let temp = minimal_pkg_project();
+    let manifest = fs::read_to_string(temp.path().join("Cargo.toml")).unwrap();
+    let with_bench =
+        format!("{manifest}\n[[bench]]\nname = \"abs\"\npath = \"/absolute/SECRET-ABS-BENCH\"\n");
+    fs::write(temp.path().join("Cargo.toml"), with_bench).unwrap();
+    let (cargo, _, platform) = inspect_all(temp.path());
+    assert!(!platform.benchmarks.iter().any(|b| b.name == "abs"));
+    assert!(cargo
+        .warnings
+        .iter()
+        .any(|w| matches!(w, CargoInspectionWarning::InvalidBenchPath { .. })));
+    let json = serde_json::to_string(&cargo).unwrap();
+    assert!(!json.contains("SECRET-ABS-BENCH"), "leaked: {json}");
+    assert!(
+        !json.contains("/absolute/"),
+        "absolute prefix leaked: {json}"
+    );
+}
+
+#[test]
+fn benchmark_paths_use_cross_platform_separator_rules() {
+    use amari_discovery::CargoInspectionWarning;
+
+    let temp = minimal_pkg_project();
+    fs::create_dir(temp.path().join("benches")).unwrap();
+    fs::write(
+        temp.path().join("benches").join("windows.rs"),
+        "fn main() {}",
+    )
+    .unwrap();
+    let manifest = fs::read_to_string(temp.path().join("Cargo.toml")).unwrap();
+    let with_benches = format!(
+        "{manifest}\n[[bench]]\nname = \"escape-windows\"\npath = '..\\SECRET-WINDOWS-BENCH\\bench.rs'\n\n[[bench]]\nname = \"windows\"\npath = 'benches\\windows.rs'\n"
+    );
+    fs::write(temp.path().join("Cargo.toml"), with_benches).unwrap();
+
+    let (cargo, _, platform) = inspect_all(temp.path());
+    assert!(
+        !platform
+            .benchmarks
+            .iter()
+            .any(|bench| bench.name == "escape-windows"),
+        "Windows parent traversal must be omitted"
+    );
+    assert!(cargo
+        .warnings
+        .iter()
+        .any(|warning| matches!(warning, CargoInspectionWarning::InvalidBenchPath { .. })));
+
+    let windows = platform
+        .benchmarks
+        .iter()
+        .find(|bench| bench.name == "windows")
+        .expect("valid Windows-separated bench");
+    assert_eq!(windows.path, "benches/windows.rs");
+    assert!(matches!(
+        windows.status,
+        BenchmarkStatus::DeclaredWithSource
+    ));
+
+    let json = serde_json::to_string(&cargo).unwrap();
+    assert!(
+        !json.contains("SECRET-WINDOWS-BENCH"),
+        "bench path leaked: {json}"
+    );
+}
+
 // ===========================================================================
 // B10 — Platform constraints see ALL target deps (incl. non-Amari)
 // ===========================================================================
@@ -2133,6 +3017,120 @@ fn non_amari_target_dep_appears_in_constraints() {
     assert!(
         packages.contains(&"cc"),
         "non-Amari cc target dep must appear in constraints: {packages:?}"
+    );
+}
+
+// ===========================================================================
+// B1 — Workspace-renamed all-dependency records (Task 8B2 correction)
+// ===========================================================================
+
+#[test]
+fn workspace_renamed_target_dep_resolves_base_package() {
+    // A workspace base `foo = { package = "serde_json" }` plus a member
+    // target-specific `[target.'cfg(...)'.dependencies] foo = { workspace = true }`
+    // must resolve the canonical Cargo package name `serde_json` (never the
+    // alias `foo`, never an illegal member `package` override).
+    let temp = materialize_fixture();
+    let manifest_path = temp.path().join("Cargo.toml");
+    let manifest = fs::read_to_string(&manifest_path).unwrap();
+    // Inject a renamed serde_json workspace base + an orphan alias with no
+    // package rename. Anchor on the stable `serde` base line (the version
+    // placeholder is already substituted by materialize_fixture).
+    let with_base = manifest.replace(
+        "serde = { version = \"1.0\", features = [\"derive\"] }",
+        "serde = { version = \"1.0\", features = [\"derive\"] }\nfoo = { package = \"serde_json\", version = \"1.0\" }\norphan-alias = { version = \"1.0\" }",
+    );
+    assert!(
+        with_base.contains("foo = { package = \"serde_json\""),
+        "workspace base substitution failed"
+    );
+    // Inject a target-specific workspace=true dependency using alias `foo`,
+    // plus an illegal member `package` override that must NOT be honored, and
+    // a `bar` reference whose base is missing (conservative fallback).
+    let with_dep = with_base.replace(
+        "[features]",
+        "[target.'cfg(target_arch = \"wasm32\")'.dependencies]\nfoo = { workspace = true }\nillegal = { workspace = true, package = \"should-be-ignored\" }\nbar = { workspace = true }\norphan-alias = { workspace = true }\n\n[features]",
+    );
+    assert!(
+        with_dep.contains("foo = { workspace = true }"),
+        "target dep substitution failed"
+    );
+    fs::write(&manifest_path, with_dep).unwrap();
+
+    let (cargo, _, platform) = inspect_all(temp.path());
+
+    // (a) CargoDependencyRecord resolves the canonical package name.
+    let foo_rec = cargo
+        .root_package
+        .dependency_records
+        .iter()
+        .find(|r| r.alias == "foo")
+        .unwrap_or_else(|| {
+            panic!(
+                "foo dependency record missing: {:?}",
+                cargo.root_package.dependency_records
+            )
+        });
+    assert_eq!(
+        foo_rec.package, "serde_json",
+        "workspace-renamed dep must resolve base package serde_json, not alias foo"
+    );
+    assert_eq!(
+        foo_rec.target.as_deref(),
+        Some("cfg(target_arch = \"wasm32\")"),
+        "target selector preserved"
+    );
+
+    // Illegal member `package` override is NOT honored: it resolves through
+    // the base (which has no package, since `illegal` is not a base) → alias.
+    let illegal_rec = cargo
+        .root_package
+        .dependency_records
+        .iter()
+        .find(|r| r.alias == "illegal");
+    if let Some(rec) = illegal_rec {
+        assert_ne!(
+            rec.package, "should-be-ignored",
+            "illegal member package override must not be honored"
+        );
+    }
+
+    // Missing base (`bar`) falls back conservatively to the alias.
+    let bar_rec = cargo
+        .root_package
+        .dependency_records
+        .iter()
+        .find(|r| r.alias == "bar")
+        .unwrap_or_else(|| panic!("bar dependency record missing"));
+    assert_eq!(
+        bar_rec.package, "bar",
+        "missing workspace base resolves conservatively to alias"
+    );
+
+    // (b) The TargetCfgSource for the cfg(target_arch = wasm32) constraint
+    // resolves package_name to serde_json (canonical), merged across sources.
+    let constraint = platform
+        .target_cfg_constraints
+        .iter()
+        .find(|c| c.predicate.contains("target_arch") && c.predicate.contains("wasm32"))
+        .unwrap_or_else(|| panic!("cfg(target_arch = wasm32) constraint missing"));
+    let serde_packages: Vec<&str> = constraint
+        .sources
+        .iter()
+        .filter_map(|s| match s {
+            TargetCfgSource::CargoDependencySelector { package_name, .. } => {
+                Some(package_name.as_str())
+            }
+            _ => None,
+        })
+        .collect();
+    assert!(
+        serde_packages.contains(&"serde_json"),
+        "TargetCfgSource must resolve canonical serde_json: {serde_packages:?}"
+    );
+    assert!(
+        !serde_packages.contains(&"foo"),
+        "alias foo must never appear as a canonical package name: {serde_packages:?}"
     );
 }
 
@@ -2194,6 +3192,34 @@ fn framed_hash(entries: &[(&str, &[u8])]) -> String {
         hasher.update(content);
     }
     hex::encode(hasher.finalize())
+}
+
+#[test]
+fn missing_config_with_max_files_zero_is_complete() {
+    // A missing config must NOT consume a file-count slot: with max_files == 0
+    // the race-safe open is allowed (no content read) to establish existence;
+    // a missing config yields Complete + MissingConfig + count 0, NOT a
+    // FileCount limit.
+    let temp = materialize_fixture();
+    fs::remove_file(temp.path().join(".cargo").join("config.toml")).unwrap();
+    let mut limits = default_limits();
+    limits.max_inspection_files = 0;
+    let cargo = inspect_cargo_project(temp.path(), &default_limits()).unwrap();
+    let rust = inspect_rust_sources(temp.path(), &cargo, &default_limits()).unwrap();
+    let platform = inspect_cargo_platform(temp.path(), &cargo, &rust, &limits).unwrap();
+    assert_eq!(
+        platform.state,
+        SnapshotState::Complete,
+        "missing config + max_files=0 must be Complete (does not consume a slot)"
+    );
+    assert!(
+        platform
+            .warnings
+            .iter()
+            .any(|w| matches!(w, CargoPlatformWarning::MissingConfig { .. })),
+        "missing config must produce MissingConfig warning"
+    );
+    assert_eq!(platform.config_input.file_count, 0);
 }
 
 // ===========================================================================
