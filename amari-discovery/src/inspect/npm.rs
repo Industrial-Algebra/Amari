@@ -14,10 +14,17 @@
 //! and nonblocking so FIFOs and device nodes cannot stall inspection.
 
 pub mod types;
+pub mod typescript;
 
 pub use types::{
     NpmDependencyEvidence, NpmDependencyKind, NpmInspection, NpmInspectionWarning, NpmLock,
     NpmLockedPackage, NpmPackage, NpmSource,
+};
+pub use typescript::{
+    inspect_typescript_sources, TypeScriptCapabilityEvidence, TypeScriptDeclarationExport,
+    TypeScriptExportKind, TypeScriptFileContext, TypeScriptFileRole, TypeScriptImport,
+    TypeScriptImportKind, TypeScriptInspection, TypeScriptInspectionWarning,
+    TypeScriptRuntimeEvidence, TypeScriptRuntimeSignal, TypeScriptVocabularyEvidence,
 };
 
 use std::collections::BTreeSet;

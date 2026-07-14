@@ -60,8 +60,12 @@ pub use cargo_config::{
 };
 pub use limits::InspectionLimits;
 pub use npm::{
-    inspect_npm_project, NpmDependencyEvidence, NpmDependencyKind, NpmInspection,
-    NpmInspectionWarning, NpmLock, NpmLockedPackage, NpmPackage, NpmSource,
+    inspect_npm_project, inspect_typescript_sources, NpmDependencyEvidence, NpmDependencyKind,
+    NpmInspection, NpmInspectionWarning, NpmLock, NpmLockedPackage, NpmPackage, NpmSource,
+    TypeScriptCapabilityEvidence, TypeScriptDeclarationExport, TypeScriptExportKind,
+    TypeScriptFileContext, TypeScriptFileRole, TypeScriptImport, TypeScriptImportKind,
+    TypeScriptInspection, TypeScriptInspectionWarning, TypeScriptRuntimeEvidence,
+    TypeScriptRuntimeSignal, TypeScriptVocabularyEvidence,
 };
 pub use rust::{
     inspect_rust_sources, RustCfgEvidence, RustCrateAttribute, RustFileKind, RustInspectionWarning,

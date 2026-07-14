@@ -420,6 +420,17 @@ impl Catalog {
         &self.probes.probes
     }
 
+    /// Returns authoritative WASM export-to-capability mappings.
+    ///
+    /// Schema-2 validation guarantees unique WASM paths and semantic IDs that
+    /// resolve within this catalog.
+    pub fn wasm_capability_mappings(&self) -> &[WasmCapabilityMappingRef] {
+        self.structural
+            .wasm_surface
+            .as_ref()
+            .map_or(&[], |surface| surface.capability_mappings.as_slice())
+    }
+
     /// Returns the Amari release version represented by the catalog.
     pub fn version(&self) -> &str {
         &self.structural.version
