@@ -16,6 +16,8 @@ jobs:
   test-count:
     name: Count and Report Tests
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
     outputs:
       test-count: ${{ steps.count.outputs.count }}
       verification-count: ${{ steps.count.outputs.verification }}
