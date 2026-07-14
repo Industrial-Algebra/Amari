@@ -23,6 +23,7 @@
 pub mod cargo;
 pub mod cargo_config;
 mod limits;
+pub mod npm;
 pub mod rust;
 mod snapshot;
 
@@ -58,6 +59,10 @@ pub use cargo_config::{
     TargetCfgConstraint, TargetCfgSource, WasmTargetEvidence, WasmTargetOrigin,
 };
 pub use limits::InspectionLimits;
+pub use npm::{
+    inspect_npm_project, NpmDependencyEvidence, NpmDependencyKind, NpmInspection,
+    NpmInspectionWarning, NpmLock, NpmLockedPackage, NpmPackage, NpmSource,
+};
 pub use rust::{
     inspect_rust_sources, RustCfgEvidence, RustCrateAttribute, RustFileKind, RustInspectionWarning,
     RustSourceInspection, RustUsage, RustUsageKind, VocabularyEvidence,

@@ -1,0 +1,12 @@
+{
+  "name": "amari-npm-project",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@justinelliottcobb/amari-wasm": "__AMARI_VERSION__",
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
