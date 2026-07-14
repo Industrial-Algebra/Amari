@@ -198,7 +198,6 @@ impl Capabilities {
     /// semantic, or probe documents fail validation.
     pub fn current() -> DiscoveryResult<Self> {
         let catalog = Catalog::embedded()?;
-        let unavailable_reason = Some("inspector implementation is not available yet".into());
         let known_probes = catalog
             .probes()
             .iter()
@@ -261,9 +260,12 @@ impl Capabilities {
                 RuntimeCapabilityState {
                     id: "npm-typescript".into(),
                     known: true,
-                    available: false,
-                    executable: false,
-                    reason: unavailable_reason,
+                    available: true,
+                    executable: true,
+                    reason: Some(
+                        "bounded offline npm and JavaScript/TypeScript inspection is available"
+                            .into(),
+                    ),
                 },
             ],
             known_probes,

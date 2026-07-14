@@ -366,7 +366,10 @@ fn file_content_hash(bytes: &[u8]) -> String {
 fn classify_file_signal(path: &str) -> Option<FileSignalKind> {
     if path.ends_with(".rs") {
         Some(FileSignalKind::Rust)
-    } else if path.ends_with(".ts") || path.ends_with(".tsx") {
+    } else if [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"]
+        .iter()
+        .any(|suffix| path.ends_with(suffix))
+    {
         Some(FileSignalKind::TypeScript)
     } else {
         None
@@ -503,6 +506,8 @@ impl TraversalState {
             cargo: None,
             rust: None,
             platform: None,
+            npm: None,
+            typescript: None,
             file_count,
             total_bytes: self.total_bytes,
             state: snapshot_state,
@@ -847,11 +852,47 @@ pub fn inspect_project(root: &Path, limits: &InspectionLimits) -> DiscoveryResul
     inspector.inspect(root, limits)
 }
 
+fn propagate_partial_state(snapshot: &mut ProjectSnapshot, states: &[&SnapshotState]) {
+    if matches!(snapshot.state, SnapshotState::Complete) {
+        if let Some(partial) = states.iter().find_map(|state| match state {
+            SnapshotState::Complete => None,
+            SnapshotState::LimitExceeded { .. } => Some((*state).clone()),
+        }) {
+            snapshot.state = partial;
+        }
+    }
+}
+
+fn enrich_rust_project(
+    snapshot: &mut ProjectSnapshot,
+    root: &Path,
+    limits: &InspectionLimits,
+) -> DiscoveryResult<()> {
+    let cargo = inspect_cargo_project(root, limits)?;
+    let rust = inspect_rust_sources(root, &cargo, limits)?;
+    let platform = inspect_cargo_platform(root, &cargo, &rust, limits)?;
+    propagate_partial_state(snapshot, &[&cargo.state, &rust.state, &platform.state]);
+    snapshot.cargo = Some(cargo);
+    snapshot.rust = Some(rust);
+    snapshot.platform = Some(platform);
+    Ok(())
+}
+
+fn enrich_npm_typescript_project(
+    snapshot: &mut ProjectSnapshot,
+    root: &Path,
+    limits: &InspectionLimits,
+) -> DiscoveryResult<()> {
+    let npm = inspect_npm_project(root, limits)?;
+    let catalog = Catalog::embedded()?;
+    let typescript = inspect_typescript_sources(root, &npm, &catalog, limits)?;
+    propagate_partial_state(snapshot, &[&npm.state, &typescript.state]);
+    snapshot.npm = Some(npm);
+    snapshot.typescript = Some(typescript);
+    Ok(())
+}
+
 /// Composes filesystem, Cargo, Rust-source, and platform evidence for a project.
-///
-/// Rust/Cargo projects are enriched with typed manifest, API-usage, benchmark,
-/// and platform evidence. Other project kinds retain the bounded generic
-/// filesystem snapshot; npm/TypeScript enrichment is added in Task 9C.
 ///
 /// # Safety
 ///
@@ -871,21 +912,53 @@ pub fn inspect_rust_project(
         snapshot.project_kind,
         ProjectKind::RustCargo | ProjectKind::Mixed
     ) {
-        let cargo = inspect_cargo_project(root, limits)?;
-        let rust = inspect_rust_sources(root, &cargo, limits)?;
-        let platform = inspect_cargo_platform(root, &cargo, &rust, limits)?;
-        if matches!(snapshot.state, SnapshotState::Complete) {
-            snapshot.state = [&cargo.state, &rust.state, &platform.state]
-                .into_iter()
-                .find_map(|state| match state {
-                    SnapshotState::Complete => None,
-                    SnapshotState::LimitExceeded { .. } => Some(state.clone()),
-                })
-                .unwrap_or(SnapshotState::Complete);
-        }
-        snapshot.cargo = Some(cargo);
-        snapshot.rust = Some(rust);
-        snapshot.platform = Some(platform);
+        enrich_rust_project(&mut snapshot, root, limits)?;
+    }
+    Ok(snapshot)
+}
+
+/// Composes filesystem, npm package, JavaScript/TypeScript source, and generated
+/// declaration evidence for a project.
+///
+/// # Safety
+///
+/// This function is read-only and offline. It never invokes npm, Node.js,
+/// bundlers, lifecycle scripts, project code, a shell, or the network.
+///
+/// # Errors
+///
+/// Returns an inspection error when required project inputs cannot be read
+/// safely or the embedded capability catalog is invalid.
+pub fn inspect_npm_typescript_project(
+    root: &Path,
+    limits: &InspectionLimits,
+) -> DiscoveryResult<ProjectSnapshot> {
+    let mut snapshot = inspect_project(root, limits)?;
+    if matches!(
+        snapshot.project_kind,
+        ProjectKind::NpmTypeScript | ProjectKind::Mixed
+    ) {
+        enrich_npm_typescript_project(&mut snapshot, root, limits)?;
+    }
+    Ok(snapshot)
+}
+
+fn inspect_supported_project(
+    root: &Path,
+    limits: &InspectionLimits,
+) -> DiscoveryResult<ProjectSnapshot> {
+    let mut snapshot = inspect_project(root, limits)?;
+    if matches!(
+        snapshot.project_kind,
+        ProjectKind::RustCargo | ProjectKind::Mixed
+    ) {
+        enrich_rust_project(&mut snapshot, root, limits)?;
+    }
+    if matches!(
+        snapshot.project_kind,
+        ProjectKind::NpmTypeScript | ProjectKind::Mixed
+    ) {
+        enrich_npm_typescript_project(&mut snapshot, root, limits)?;
     }
     Ok(snapshot)
 }
@@ -904,7 +977,7 @@ pub fn inspect_project_envelope(
     root: &Path,
     limits: &InspectionLimits,
 ) -> DiscoveryResult<Envelope<ProjectSnapshot>> {
-    let snapshot = inspect_rust_project(root, limits)?;
+    let snapshot = inspect_supported_project(root, limits)?;
     let catalog = Catalog::embedded()?;
     let compatibility = snapshot_compatibility(&snapshot);
     let project_hash = snapshot.project_hash.clone();
@@ -938,6 +1011,24 @@ pub fn inspect_project_envelope(
             ));
         }
     }
+    if let Some(npm) = &snapshot.npm {
+        required_hashes.push("npm.input_hash".to_string());
+        if !npm.warnings.is_empty() {
+            warnings.push(format!(
+                "npm package inspection reported {} warning(s)",
+                npm.warnings.len()
+            ));
+        }
+    }
+    if let Some(typescript) = &snapshot.typescript {
+        required_hashes.push("typescript.input_hash".to_string());
+        if !typescript.warnings.is_empty() {
+            warnings.push(format!(
+                "JavaScript/TypeScript inspection reported {} warning(s)",
+                typescript.warnings.len()
+            ));
+        }
+    }
 
     let mut envelope = Envelope::new(
         snapshot,
@@ -959,24 +1050,29 @@ pub fn inspect_project_envelope(
 
 /// Aggregate dependency compatibility into one project-level verdict.
 fn snapshot_compatibility(snapshot: &ProjectSnapshot) -> Compatibility {
-    let Some(cargo) = &snapshot.cargo else {
-        return Compatibility {
-            status: "compatible".to_string(),
-            reasons: vec!["no Rust/Cargo dependency compatibility was required".to_string()],
-        };
-    };
-
-    let dependencies = std::iter::once(&cargo.root_package)
-        .chain(cargo.workspace_members.iter())
-        .flat_map(|package| package.dependencies.iter());
     let mut saw_dependency = false;
     let mut saw_unknown_version = false;
     let mut reasons = Vec::new();
-    for dependency in dependencies {
-        saw_dependency = true;
-        if dependency.compatibility.status != "applicable" {
-            saw_unknown_version = true;
-            reasons.extend(dependency.compatibility.reasons.iter().cloned());
+
+    if let Some(cargo) = &snapshot.cargo {
+        for dependency in std::iter::once(&cargo.root_package)
+            .chain(cargo.workspace_members.iter())
+            .flat_map(|package| package.dependencies.iter())
+        {
+            saw_dependency = true;
+            if dependency.compatibility.status != "applicable" {
+                saw_unknown_version = true;
+                reasons.extend(dependency.compatibility.reasons.iter().cloned());
+            }
+        }
+    }
+    if let Some(npm) = &snapshot.npm {
+        for dependency in &npm.package.dependencies {
+            saw_dependency = true;
+            if dependency.compatibility.status != "applicable" {
+                saw_unknown_version = true;
+                reasons.extend(dependency.compatibility.reasons.iter().cloned());
+            }
         }
     }
     reasons.sort();

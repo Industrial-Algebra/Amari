@@ -99,12 +99,12 @@ fn embedded_catalog_capabilities_do_not_forecast_probe_execution() {
             }
             "npm-typescript" => {
                 assert_eq!(
-                    inspector["available"], false,
-                    "npm/TypeScript inspector must not claim availability"
+                    inspector["available"], true,
+                    "npm/TypeScript inspector must report availability"
                 );
                 assert_eq!(
-                    inspector["executable"], false,
-                    "npm/TypeScript inspector must not claim executable"
+                    inspector["executable"], true,
+                    "npm/TypeScript inspector must report executable implementation"
                 );
             }
             _ => {

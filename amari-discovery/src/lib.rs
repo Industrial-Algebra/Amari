@@ -50,14 +50,15 @@ pub use commands::discover::{
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{
-    inspect_cargo_platform, inspect_cargo_project, inspect_npm_project, inspect_project,
-    inspect_project_envelope, inspect_rust_project, inspect_rust_sources,
-    inspect_typescript_sources, AmariDependencyEvidence, BenchmarkEvidence, BenchmarkStatus,
-    CargoBench, CargoBuildSettings, CargoDependencyRecord, CargoInspection, CargoInspectionWarning,
-    CargoLock, CargoPackage, CargoPlatformInspection, CargoPlatformWarning, CargoTargetKey,
-    CargoTargetSettings, ConfigInputProvenance, ConfigSetting, ConfigSettingIssue, ConfigSource,
-    ConfiguredLinker, ConfiguredRunner, CustomTargetEvidence, DependencyKind, InspectionLimit,
-    InspectionLimits, LockedPackage, ManifestSource, NativeLink, NativeRequirement, NoStdEvidence,
+    inspect_cargo_platform, inspect_cargo_project, inspect_npm_project,
+    inspect_npm_typescript_project, inspect_project, inspect_project_envelope,
+    inspect_rust_project, inspect_rust_sources, inspect_typescript_sources,
+    AmariDependencyEvidence, BenchmarkEvidence, BenchmarkStatus, CargoBench, CargoBuildSettings,
+    CargoDependencyRecord, CargoInspection, CargoInspectionWarning, CargoLock, CargoPackage,
+    CargoPlatformInspection, CargoPlatformWarning, CargoTargetKey, CargoTargetSettings,
+    ConfigInputProvenance, ConfigSetting, ConfigSettingIssue, ConfigSource, ConfiguredLinker,
+    ConfiguredRunner, CustomTargetEvidence, DependencyKind, InspectionLimit, InspectionLimits,
+    LockedPackage, ManifestSource, NativeLink, NativeRequirement, NoStdEvidence,
     NoStdPackageEvidence, NpmDependencyEvidence, NpmDependencyKind, NpmInspection,
     NpmInspectionWarning, NpmLock, NpmLockedPackage, NpmPackage, NpmSource, ProjectInspector,
     ProjectKind, ProjectSignal, ProjectSnapshot, RustCfgEvidence, RustCrateAttribute, RustFileKind,

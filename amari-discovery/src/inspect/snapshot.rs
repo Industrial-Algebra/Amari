@@ -11,6 +11,7 @@ use crate::DiscoveryResult;
 use super::cargo::CargoInspection;
 use super::cargo_config::CargoPlatformInspection;
 use super::limits::InspectionLimits;
+use super::npm::{NpmInspection, TypeScriptInspection};
 use super::rust::RustSourceInspection;
 
 // ---------------------------------------------------------------------------
@@ -132,9 +133,9 @@ pub enum ProjectSignal {
         /// Number of Rust source files detected.
         count: u64,
     },
-    /// One or more TypeScript source files (.ts, .tsx) were accepted.
+    /// One or more JavaScript/TypeScript source files were accepted.
     TypeScriptSource {
-        /// Number of TypeScript source files detected.
+        /// Number of JavaScript/TypeScript source files detected.
         count: u64,
     },
 }
@@ -190,6 +191,12 @@ pub struct ProjectSnapshot {
     /// Composed target, benchmark, and platform evidence.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub platform: Option<CargoPlatformInspection>,
+    /// Composed npm manifest and lockfile evidence.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub npm: Option<NpmInspection>,
+    /// Composed JavaScript/TypeScript source and generated declaration evidence.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub typescript: Option<TypeScriptInspection>,
     /// Number of files **accepted** (i.e. fully read and within all limits).
     /// This is always equal to `files.len()`.
     pub file_count: u64,
