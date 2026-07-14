@@ -34,6 +34,8 @@ use std::time::Instant;
 use sha2::{Digest, Sha256};
 
 use crate::error::{DiscoveryError, DiscoveryResult};
+use crate::protocol::{CatalogIdentity, Compatibility, Envelope, ReplayMetadata};
+use crate::Catalog;
 
 pub use cargo::{
     inspect_cargo_project, AmariDependencyEvidence, CargoBench, CargoDependencyRecord,
@@ -489,6 +491,9 @@ impl TraversalState {
             project_hash,
             project_kind,
             signals,
+            cargo: None,
+            rust: None,
+            platform: None,
             file_count,
             total_bytes: self.total_bytes,
             state: snapshot_state,
@@ -831,6 +836,162 @@ impl ProjectInspector for DefaultInspector {
 pub fn inspect_project(root: &Path, limits: &InspectionLimits) -> DiscoveryResult<ProjectSnapshot> {
     let inspector = DefaultInspector;
     inspector.inspect(root, limits)
+}
+
+/// Composes filesystem, Cargo, Rust-source, and platform evidence for a project.
+///
+/// Rust/Cargo projects are enriched with typed manifest, API-usage, benchmark,
+/// and platform evidence. Other project kinds retain the bounded generic
+/// filesystem snapshot; npm/TypeScript enrichment is added in Task 9C.
+///
+/// # Safety
+///
+/// This function is read-only and offline. It never invokes Cargo, rustc,
+/// runners, linkers, build scripts, project code, a shell, or the network.
+///
+/// # Errors
+///
+/// Returns [`DiscoveryError::InspectionFailure`] when a required project input
+/// cannot be inspected safely.
+pub fn inspect_rust_project(
+    root: &Path,
+    limits: &InspectionLimits,
+) -> DiscoveryResult<ProjectSnapshot> {
+    let mut snapshot = inspect_project(root, limits)?;
+    if matches!(
+        snapshot.project_kind,
+        ProjectKind::RustCargo | ProjectKind::Mixed
+    ) {
+        let cargo = inspect_cargo_project(root, limits)?;
+        let rust = inspect_rust_sources(root, &cargo, limits)?;
+        let platform = inspect_cargo_platform(root, &cargo, &rust, limits)?;
+        if matches!(snapshot.state, SnapshotState::Complete) {
+            snapshot.state = [&cargo.state, &rust.state, &platform.state]
+                .into_iter()
+                .find_map(|state| match state {
+                    SnapshotState::Complete => None,
+                    SnapshotState::LimitExceeded { .. } => Some(state.clone()),
+                })
+                .unwrap_or(SnapshotState::Complete);
+        }
+        snapshot.cargo = Some(cargo);
+        snapshot.rust = Some(rust);
+        snapshot.platform = Some(platform);
+    }
+    Ok(snapshot)
+}
+
+/// Produces the shared versioned envelope for `amari inspect`.
+///
+/// The envelope binds the embedded catalog identity to the deterministic
+/// project hash and reports aggregate compatibility across resolved Amari
+/// dependencies. Matching hashes make the read-only snapshot replayable.
+///
+/// # Errors
+///
+/// Returns an inspection error for unsafe/unreadable project inputs or catalog
+/// corruption when the embedded catalog cannot be validated.
+pub fn inspect_project_envelope(
+    root: &Path,
+    limits: &InspectionLimits,
+) -> DiscoveryResult<Envelope<ProjectSnapshot>> {
+    let snapshot = inspect_rust_project(root, limits)?;
+    let catalog = Catalog::embedded()?;
+    let compatibility = snapshot_compatibility(&snapshot);
+    let project_hash = snapshot.project_hash.clone();
+
+    let mut required_hashes = vec!["project_hash".to_string()];
+    let mut warnings = snapshot.warnings.clone();
+    if let Some(cargo) = &snapshot.cargo {
+        required_hashes.push("cargo.input_hash".to_string());
+        if !cargo.warnings.is_empty() {
+            warnings.push(format!(
+                "Cargo inspection reported {} warning(s)",
+                cargo.warnings.len()
+            ));
+        }
+    }
+    if let Some(rust) = &snapshot.rust {
+        required_hashes.push("rust.input_hash".to_string());
+        if !rust.warnings.is_empty() {
+            warnings.push(format!(
+                "Rust source inspection reported {} warning(s)",
+                rust.warnings.len()
+            ));
+        }
+    }
+    if let Some(platform) = &snapshot.platform {
+        required_hashes.push("platform.config_input.input_hash".to_string());
+        if !platform.warnings.is_empty() {
+            warnings.push(format!(
+                "Cargo platform inspection reported {} warning(s)",
+                platform.warnings.len()
+            ));
+        }
+    }
+
+    let mut envelope = Envelope::new(
+        snapshot,
+        CatalogIdentity {
+            version: catalog.version().to_string(),
+            hash: catalog.content_hash().to_string(),
+        },
+        compatibility,
+        ReplayMetadata {
+            replayable: true,
+            required_hashes,
+            reasons: Vec::new(),
+        },
+    );
+    envelope.provenance.project_hash = Some(project_hash);
+    envelope.warnings = warnings;
+    Ok(envelope)
+}
+
+/// Aggregate dependency compatibility into one project-level verdict.
+fn snapshot_compatibility(snapshot: &ProjectSnapshot) -> Compatibility {
+    let Some(cargo) = &snapshot.cargo else {
+        return Compatibility {
+            status: "compatible".to_string(),
+            reasons: vec!["no Rust/Cargo dependency compatibility was required".to_string()],
+        };
+    };
+
+    let dependencies = std::iter::once(&cargo.root_package)
+        .chain(cargo.workspace_members.iter())
+        .flat_map(|package| package.dependencies.iter());
+    let mut saw_dependency = false;
+    let mut saw_unknown_version = false;
+    let mut reasons = Vec::new();
+    for dependency in dependencies {
+        saw_dependency = true;
+        if dependency.compatibility.status != "applicable" {
+            saw_unknown_version = true;
+            reasons.extend(dependency.compatibility.reasons.iter().cloned());
+        }
+    }
+    reasons.sort();
+    reasons.dedup();
+
+    if saw_unknown_version {
+        if reasons.is_empty() {
+            reasons.push("one or more Amari dependency versions are unknown".to_string());
+        }
+        Compatibility {
+            status: "unknown_version".to_string(),
+            reasons,
+        }
+    } else if saw_dependency {
+        Compatibility {
+            status: "applicable".to_string(),
+            reasons: vec!["resolved Amari dependencies match the embedded catalog".to_string()],
+        }
+    } else {
+        Compatibility {
+            status: "compatible".to_string(),
+            reasons: vec!["no direct Amari dependencies were detected".to_string()],
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

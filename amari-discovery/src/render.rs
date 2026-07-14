@@ -8,7 +8,7 @@ use serde::Serialize;
 
 use crate::{
     commands::discover::{ExampleResult, GraphResult, SearchResults},
-    Capabilities, CapabilityRecord, DiscoveryResult, Envelope,
+    Capabilities, CapabilityRecord, DiscoveryResult, Envelope, ProjectKind, ProjectSnapshot,
 };
 
 pub(crate) fn write_json<T: Serialize>(
@@ -86,6 +86,58 @@ pub(crate) fn write_capabilities_human(
         "  max_inspection_wall_millis: {}",
         rl.max_inspection_wall_millis
     )?;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Project inspection
+// ---------------------------------------------------------------------------
+
+pub(crate) fn write_inspection_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProjectSnapshot>,
+) -> DiscoveryResult<()> {
+    let snapshot = &envelope.data;
+    let kind = match snapshot.project_kind {
+        ProjectKind::RustCargo => "Rust/Cargo project",
+        ProjectKind::NpmTypeScript => "npm/TypeScript project",
+        ProjectKind::Mixed => "mixed Rust/Cargo and npm/TypeScript project",
+        ProjectKind::Unknown => "unknown project",
+    };
+    writeln!(writer, "{kind}")?;
+    writeln!(writer, "  Project hash: {}", snapshot.project_hash)?;
+    writeln!(writer, "  Files: {}", snapshot.file_count)?;
+    writeln!(writer, "  Bytes: {}", snapshot.total_bytes)?;
+    writeln!(
+        writer,
+        "  Compatibility: {}",
+        envelope.provenance.compatibility.status
+    )?;
+
+    if let Some(cargo) = &snapshot.cargo {
+        let packages = std::iter::once(&cargo.root_package).chain(cargo.workspace_members.iter());
+        let dependency_count: usize = packages.map(|package| package.dependencies.len()).sum();
+        writeln!(writer, "  Amari dependencies: {dependency_count}")?;
+    }
+    if let Some(rust) = &snapshot.rust {
+        writeln!(writer, "  API usages: {}", rust.usages.len())?;
+        writeln!(writer, "  Domain vocabulary: {}", rust.vocabulary.len())?;
+    }
+    if let Some(platform) = &snapshot.platform {
+        writeln!(writer, "  Benchmarks: {}", platform.benchmarks.len())?;
+        writeln!(writer, "  WASM targets: {}", platform.wasm_targets.len())?;
+        writeln!(
+            writer,
+            "  Native requirements: {}",
+            platform.native_requirements.len()
+        )?;
+        writeln!(
+            writer,
+            "  no_std packages: {}",
+            platform.no_std_evidence.packages.len()
+        )?;
+    }
+    writeln!(writer, "  Warnings: {}", envelope.warnings.len())?;
     Ok(())
 }
 

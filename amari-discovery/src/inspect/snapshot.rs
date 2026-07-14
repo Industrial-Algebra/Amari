@@ -8,7 +8,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::DiscoveryResult;
 
+use super::cargo::CargoInspection;
+use super::cargo_config::CargoPlatformInspection;
 use super::limits::InspectionLimits;
+use super::rust::RustSourceInspection;
 
 // ---------------------------------------------------------------------------
 // InspectionLimit — typed limit exceeded reason
@@ -178,6 +181,15 @@ pub struct ProjectSnapshot {
     pub project_kind: ProjectKind,
     /// Typed structural signals found during traversal.
     pub signals: Vec<ProjectSignal>,
+    /// Composed Cargo manifest and lockfile evidence for a Rust project.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cargo: Option<CargoInspection>,
+    /// Composed Rust API-usage and domain-vocabulary evidence.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rust: Option<RustSourceInspection>,
+    /// Composed target, benchmark, and platform evidence.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub platform: Option<CargoPlatformInspection>,
     /// Number of files **accepted** (i.e. fully read and within all limits).
     /// This is always equal to `files.len()`.
     pub file_count: u64,

@@ -251,9 +251,12 @@ impl Capabilities {
                 RuntimeCapabilityState {
                     id: "rust-cargo".into(),
                     known: true,
-                    available: false,
-                    executable: false,
-                    reason: unavailable_reason.clone(),
+                    available: true,
+                    executable: true,
+                    reason: Some(
+                        "bounded offline Cargo, Rust-source, and platform inspection is available"
+                            .into(),
+                    ),
                 },
                 RuntimeCapabilityState {
                     id: "npm-typescript".into(),

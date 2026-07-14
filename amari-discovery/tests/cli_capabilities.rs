@@ -87,14 +87,24 @@ fn embedded_catalog_capabilities_do_not_forecast_probe_execution() {
                     "generic-filesystem traversal must be executable"
                 );
             }
-            "rust-cargo" | "npm-typescript" => {
+            "rust-cargo" => {
+                assert_eq!(
+                    inspector["available"], true,
+                    "Rust/Cargo inspector must report availability"
+                );
+                assert_eq!(
+                    inspector["executable"], true,
+                    "Rust/Cargo inspector must report executable implementation"
+                );
+            }
+            "npm-typescript" => {
                 assert_eq!(
                     inspector["available"], false,
-                    "semantic inspector {id} must not claim availability"
+                    "npm/TypeScript inspector must not claim availability"
                 );
                 assert_eq!(
                     inspector["executable"], false,
-                    "semantic inspector {id} must not claim executable"
+                    "npm/TypeScript inspector must not claim executable"
                 );
             }
             _ => {
@@ -191,7 +201,7 @@ fn help_exposes_the_approved_command_families() {
 fn unavailable_commands_use_a_typed_non_internal_failure() {
     Command::cargo_bin("amari")
         .unwrap()
-        .args(["inspect", "--json"])
+        .args(["recommend", "--goal", "test goal", "--json"])
         .assert()
         .code(69)
         .stdout(predicate::str::is_empty())

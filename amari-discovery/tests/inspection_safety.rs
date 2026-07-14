@@ -464,16 +464,16 @@ fn capabilities_reports_generic_traversal_inspector() {
     let traversal = traversal.unwrap();
     assert_eq!(traversal["known"], true, "generic-filesystem must be known");
 
-    // Rust/npm semantic inspectors must still report unavailable/not executable
+    // Rust/Cargo is executable in Task 8C; npm remains planned for Task 9C.
     let rust = inspectors.iter().find(|i| i["id"] == "rust-cargo").unwrap();
     assert_eq!(rust["known"], true, "rust-cargo must be known");
     assert_eq!(
-        rust["available"], false,
-        "rust-cargo must not claim availability"
+        rust["available"], true,
+        "rust-cargo must report availability"
     );
     assert_eq!(
-        rust["executable"], false,
-        "rust-cargo must not claim executable"
+        rust["executable"], true,
+        "rust-cargo must report executable implementation"
     );
 
     let npm = inspectors
