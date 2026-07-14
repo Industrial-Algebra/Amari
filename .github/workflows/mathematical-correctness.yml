@@ -15,6 +15,9 @@ jobs:
     name: Mathematical Correctness Check
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # Prevent rust-toolchain.toml from overriding the installed stable toolchain.
+      RUSTUP_TOOLCHAIN: stable
 
     steps:
     - name: Checkout code

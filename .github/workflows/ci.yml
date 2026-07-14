@@ -13,6 +13,9 @@ jobs:
   test-native:
     name: Test Suite (Native Precision)
     runs-on: ubuntu-latest
+    env:
+      # Override rust-toolchain.toml so the stable/nightly matrix is truthful.
+      RUSTUP_TOOLCHAIN: ${{ matrix.rust }}
     strategy:
       matrix:
         rust: [stable, nightly]
@@ -81,6 +84,8 @@ jobs:
   test-wasm-compat:
     name: Test Suite (WASM-Compatible Precision)
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
       - uses: actions/checkout@v7
 
@@ -109,6 +114,8 @@ jobs:
   wasm:
     name: WASM Build
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
       - uses: actions/checkout@v7
 
@@ -230,6 +237,8 @@ jobs:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
       - uses: actions/checkout@v7
 
