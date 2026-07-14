@@ -10,6 +10,7 @@ repository = "https://github.com/justinelliottcobb/Amari"
 homepage = "https://github.com/justinelliottcobb/Amari"
 keywords = ["mathematics", "geometric-algebra", "tropical-algebra", "autodiff", "wasm"]
 categories = ["mathematics", "science", "algorithms"]
+autobins = false
 
 [dependencies]
 amari-core = { workspace = true, features = ["std", "phantom-types", "high-precision"] }
@@ -73,7 +74,7 @@ path = "examples/networked_physics.rs"
 required-features = ["deterministic"]
 
 [workspace]
-members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal", "amari-surcomplex", "amari-rewrite"]
+members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal", "amari-surcomplex", "amari-rewrite", "amari-discovery"]
 resolver = "2"
 
 [workspace.package]
@@ -126,6 +127,12 @@ rand_distr = "0.6"
 syn = "2.0"
 quote = "1.0"
 proc-macro2 = "1.0"
+clap = { version = "4", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+walkdir = "2"
+sha2 = "0.10"
+hex = "0.4"
 
 [profile.release]
 opt-level = 3

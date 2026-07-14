@@ -1,0 +1,196 @@
+catalog_version = "0.23.0"
+
+[[probes]]
+id = "amari-probe:core:geometric-product:v1"
+capability_id = "amari:amari-core:product:geometric-product"
+input_schema = "amari.discovery/probe/core-geometric-product/input/v1"
+output_schema = "amari.discovery/probe/core-geometric-product/output/v1"
+required_features = ["standard-probes"]
+cost = "low"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 4096
+max_output_bytes = 4096
+max_operations = 1024
+timeout_millis = 1000
+
+[[probes]]
+id = "amari-probe:tropical:shortest-path:v1"
+capability_id = "amari:amari-tropical:paths:shortest-path"
+input_schema = "amari.discovery/probe/tropical-shortest-path/input/v1"
+output_schema = "amari.discovery/probe/tropical-shortest-path/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:tropical:viterbi:v1"
+capability_id = "amari:amari-tropical:sequence:viterbi"
+input_schema = "amari.discovery/probe/tropical-viterbi/input/v1"
+output_schema = "amari.discovery/probe/tropical-viterbi/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:dual:polynomial-derivative:v1"
+capability_id = "amari:amari-dual:autodiff:forward-derivative"
+input_schema = "amari.discovery/probe/dual-polynomial-derivative/input/v1"
+output_schema = "amari.discovery/probe/dual-polynomial-derivative/output/v1"
+required_features = ["standard-probes"]
+cost = "low"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 16384
+max_output_bytes = 4096
+max_operations = 10000
+timeout_millis = 1000
+
+[[probes]]
+id = "amari-probe:network:shortest-path:v1"
+capability_id = "amari:amari-network:paths:geometric-shortest-path"
+input_schema = "amari.discovery/probe/network-shortest-path/input/v1"
+output_schema = "amari.discovery/probe/network-shortest-path/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:optimization:pareto-front:v1"
+capability_id = "amari:amari-optimization:multiobjective:pareto-front"
+input_schema = "amari.discovery/probe/optimization-pareto-front/input/v1"
+output_schema = "amari.discovery/probe/optimization-pareto-front/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:holographic:recall:v1"
+capability_id = "amari:amari-holographic:memory:retrieval"
+input_schema = "amari.discovery/probe/holographic-recall/input/v1"
+output_schema = "amari.discovery/probe/holographic-recall/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:holographic:superposition:v1"
+capability_id = "amari:amari-holographic:algebra:superposition"
+input_schema = "amari.discovery/probe/holographic-superposition/input/v1"
+output_schema = "amari.discovery/probe/holographic-superposition/output/v1"
+required_features = ["standard-probes"]
+cost = "low"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:cgt:nim-sum:v1"
+capability_id = "amari:amari-cgt:nim:grundy-sum"
+input_schema = "amari.discovery/probe/cgt-nim-sum/input/v1"
+output_schema = "amari.discovery/probe/cgt-nim-sum/output/v1"
+required_features = ["standard-probes"]
+cost = "low"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 16384
+max_output_bytes = 4096
+max_operations = 10000
+timeout_millis = 1000
+
+[[probes]]
+id = "amari-probe:surreal:rational-arithmetic:v1"
+capability_id = "amari:amari-surreal:rational:exact-arithmetic"
+input_schema = "amari.discovery/probe/surreal-rational-arithmetic/input/v1"
+output_schema = "amari.discovery/probe/surreal-rational-arithmetic/output/v1"
+required_features = ["standard-probes"]
+cost = "low"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 16384
+max_output_bytes = 16384
+max_operations = 10000
+timeout_millis = 1000
+
+[[probes]]
+id = "amari-probe:surcomplex:rational-division:v1"
+capability_id = "amari:amari-surcomplex:rational:exact-division"
+input_schema = "amari.discovery/probe/surcomplex-rational-division/input/v1"
+output_schema = "amari.discovery/probe/surcomplex-rational-division/output/v1"
+required_features = ["standard-probes"]
+cost = "low"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 16384
+max_output_bytes = 16384
+max_operations = 10000
+timeout_millis = 1000
+
+[[probes]]
+id = "amari-probe:rewrite:normalize:v1"
+capability_id = "amari:amari-rewrite:trs:normalization"
+input_schema = "amari.discovery/probe/rewrite-normalize/input/v1"
+output_schema = "amari.discovery/probe/rewrite-normalize/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:rewrite:infer-rule:v1"
+capability_id = "amari:amari-rewrite:synthesis:infer-rule"
+input_schema = "amari.discovery/probe/rewrite-infer-rule/input/v1"
+output_schema = "amari.discovery/probe/rewrite-infer-rule/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000

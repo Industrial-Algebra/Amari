@@ -21,3 +21,6 @@ wasm-pack.log
 .netlify
 /docs/prompts/
 
+# Allow checked-in .d.ts test fixtures (overrides *.d.ts above)
+!amari-discovery/tests/fixtures/wasm-surface/*.d.ts
+

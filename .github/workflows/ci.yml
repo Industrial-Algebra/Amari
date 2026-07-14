@@ -63,6 +63,21 @@ jobs:
         run: ./scripts/verify-workflow-crates.sh
         if: matrix.rust == 'stable'
 
+      - name: Verify catalog structural drift
+        run: |
+          echo "==> Regenerating structural catalog"
+          cargo run -p amari-discovery --example generate_catalog -- .
+          echo "==> Checking for drift in catalog/generated.json"
+          if ! git diff --exit-code amari-discovery/catalog/generated.json; then
+            echo ""
+            echo "ERROR: catalog/generated.json is out of sync. Run:"
+            echo "  cargo run -p amari-discovery --example generate_catalog -- ."
+            echo "and commit the updated catalog/generated.json."
+            exit 1
+          fi
+          echo "==> Structural catalog is up to date"
+        if: matrix.rust == 'stable'
+
   test-wasm-compat:
     name: Test Suite (WASM-Compatible Precision)
     runs-on: ubuntu-latest
@@ -196,6 +211,20 @@ jobs:
         with:
           name: wasm-package
           path: amari-wasm/pkg/
+
+      - name: Check WASM surface drift
+        run: |
+          echo "==> Regenerating WASM discovery surface"
+          bash scripts/generate-discovery-wasm-surface.sh
+          echo "==> Checking for drift in catalog/generated-wasm.json"
+          if ! git diff --exit-code amari-discovery/catalog/generated-wasm.json; then
+            echo ""
+            echo "ERROR: catalog/generated-wasm.json is out of sync with the authoritative"
+            echo "wasm-bindgen surface. Run scripts/generate-discovery-wasm-surface.sh and"
+            echo "commit the updated catalog/generated-wasm.json."
+            exit 1
+          fi
+          echo "==> WASM surface catalog is up to date"
 
   benchmark:
     name: Performance Benchmarks

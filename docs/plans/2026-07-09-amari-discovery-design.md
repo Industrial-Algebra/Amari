@@ -90,7 +90,7 @@ amari discover example <capability-or-symbol>
 amari inspect [PATH]
 amari recommend [PATH] --goal <text>
 amari recommend [PATH] --goal-file <goal.json>
-amari plan <candidate-id> --project PATH
+amari plan <candidate-id> --recommendation <recommendation.json> --project PATH
 
 amari probe list
 amari probe describe <probe-id>
@@ -203,7 +203,7 @@ These states must never be conflated.
 
 ### 8.1 Generated structural index
 
-CI generates structural metadata from Amari source and manifests:
+CI generates structural metadata from every Amari workspace package except the `amari-discovery` tool itself (which is excluded to avoid self-index drift):
 
 - workspace crates and descriptions;
 - dependency and feature graph;
@@ -340,6 +340,8 @@ Catalog records may describe other Amari domains even when no compiled probe exi
 
 GPU and Borsalino probes are deferred to 0.25.0.
 
+The public library exposes cooperative in-process probe execution with typed operation/node/iteration/byte limits and an explicit `isolation = cooperative` marker. It cannot promise crash or hard wall-clock isolation. The `amari` CLI adds a private fixed worker/supervisor layer (`isolation = process`) for timeout, crash, and output isolation; callers cannot select an executable. Mathematical output and validation must remain parity-tested across both paths.
+
 Probe output includes:
 
 - typed result;
@@ -367,7 +369,7 @@ It may not:
 - edit target projects;
 - hide uncertainty or missing evidence.
 
-The library defines a provider-neutral adapter trait. A reversible first implementation may use a structured stdin/stdout external-command adapter, allowing any agent harness or local model to participate without embedding provider credentials in the core.
+The library defines a provider-neutral adapter trait and validation wrapper. v0.24 ships no concrete external-process/provider transport: an unsandboxed child could mutate the project or access the network. External agents can provide typed `GoalSpec` input directly; a concrete adapter requires a separately approved sandbox design.
 
 All AI use is explicit in output provenance. The tool remains fully useful offline without it.
 
