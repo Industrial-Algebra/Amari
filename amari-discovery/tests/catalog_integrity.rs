@@ -24,7 +24,7 @@ fn embedded_catalog_has_unique_valid_capabilities() {
 }
 
 #[test]
-fn semantic_capabilities_distinguish_planned_surfaces_from_current_examples() {
+fn semantic_capabilities_distinguish_planned_and_implemented_surfaces() {
     let catalog = Catalog::embedded().unwrap();
     assert!(catalog.capabilities().iter().all(|capability| {
         !capability.symbol_refs.is_empty()
@@ -41,12 +41,18 @@ fn semantic_capabilities_distinguish_planned_surfaces_from_current_examples() {
         .find(|capability| {
             capability.id.to_string() == "amari:amari-holographic:algebra:superposition"
         })
-        .expect("planned superposition capability must remain discoverable");
-    assert!(superposition
+        .expect("implemented superposition capability must be discoverable");
+    assert!(!superposition
         .description
         .to_ascii_lowercase()
         .contains("planned"));
-    assert!(superposition.symbol_refs.is_empty());
+    assert_eq!(
+        superposition.symbol_refs,
+        [
+            "amari_holographic::BindingAlgebra::scale",
+            "amari_holographic::BindingAlgebra::superpose",
+        ]
+    );
 
     let rational = catalog
         .capabilities()

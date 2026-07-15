@@ -115,12 +115,12 @@ cost = "moderate"
 [[capabilities]]
 id = "amari:amari-holographic:algebra:superposition"
 name = "Additive holographic superposition"
-description = "Planned for Amari 0.24; no public API is available in this catalog version. The capability will accumulate holographic candidates additively without attention-style normalization."
+description = "Accumulate holographic candidates additively without attention-style normalization, with scalar weighting for memory traces."
 aliases = ["VSA superposition", "additive bundling"]
 concepts = ["vector symbolic architecture", "superposition"]
 crate_refs = ["amari-holographic"]
 feature_refs = ["amari-holographic:std"]
-symbol_refs = []
+symbol_refs = ["amari_holographic::BindingAlgebra::scale", "amari_holographic::BindingAlgebra::superpose"]
 example_refs = []
 probe_refs = ["amari-probe:holographic:superposition:v1"]
 stability = "experimental"
