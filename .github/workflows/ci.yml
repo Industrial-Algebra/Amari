@@ -13,6 +13,10 @@ jobs:
   test-native:
     name: Test Suite (Native Precision)
     runs-on: ubuntu-latest
+    env:
+      # Override rust-toolchain.toml and pin nightly around rust-lang/rust# ICEs.
+      # Keep matrix.rust as the display key so required check names stay stable.
+      RUSTUP_TOOLCHAIN: ${{ matrix.rust == 'nightly' && 'nightly-2026-07-13' || 'stable' }}
     strategy:
       matrix:
         rust: [stable, nightly]
@@ -22,7 +26,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: ${{ matrix.rust == 'nightly' && 'nightly-2026-07-13' || 'stable' }}
           components: rustfmt, clippy
 
       - name: Cache cargo registry
@@ -81,6 +85,8 @@ jobs:
   test-wasm-compat:
     name: Test Suite (WASM-Compatible Precision)
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
       - uses: actions/checkout@v7
 
@@ -109,6 +115,8 @@ jobs:
   wasm:
     name: WASM Build
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
       - uses: actions/checkout@v7
 
@@ -230,6 +238,8 @@ jobs:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
       - uses: actions/checkout@v7
 

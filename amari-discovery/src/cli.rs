@@ -6,6 +6,7 @@ use std::{io, path::PathBuf};
 
 use clap::{Parser, Subcommand, ValueEnum};
 
+use crate::inspect::{inspect_project_envelope, InspectionLimits};
 use crate::{commands, render, Capabilities, Catalog, DiscoveryError, DiscoveryResult};
 
 #[derive(Debug, Parser)]
@@ -243,10 +244,26 @@ pub fn run() -> DiscoveryResult<()> {
             let catalog = Catalog::embedded()?;
             run_discover(&catalog, command, cli.json)
         }
+        Command::Inspect { path } => run_inspect(path, cli.json),
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
             command.unavailable_name()
         ))),
+    }
+}
+
+/// Runs bounded project inspection and renders the shared typed snapshot.
+fn run_inspect(path: Option<PathBuf>, json: bool) -> DiscoveryResult<()> {
+    let root = match path {
+        Some(path) => path,
+        None => std::env::current_dir()?,
+    };
+    let envelope = inspect_project_envelope(&root, &InspectionLimits::default())?;
+    let mut stdout = io::stdout().lock();
+    if json {
+        render::write_json(&mut stdout, &envelope)
+    } else {
+        render::write_inspection_human(&mut stdout, &envelope)
     }
 }
 

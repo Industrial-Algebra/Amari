@@ -1,0 +1,17 @@
+[package]
+name = "member-a"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Fixture workspace member A"
+
+[dependencies]
+amari-core = { workspace = true }
+amari-tropical = { workspace = true }
+# amari-cgt as an optional normal dep so dep:amari-cgt feature is legal
+amari-cgt = { workspace = true, optional = true, features = ["faster"] }
+
+[features]
+dev-tools = ["dep:amari-cgt"]

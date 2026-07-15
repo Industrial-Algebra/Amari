@@ -75,16 +75,57 @@ fn embedded_catalog_capabilities_do_not_forecast_probe_execution() {
 
     for inspector in value["data"]["project_inspectors"].as_array().unwrap() {
         assert!(inspector["known"].is_boolean());
-        assert_eq!(inspector["available"], false);
-        assert_eq!(inspector["executable"], false);
+        let id = inspector["id"].as_str().unwrap();
+        match id {
+            "generic-filesystem" => {
+                assert_eq!(
+                    inspector["available"], true,
+                    "generic-filesystem traversal must be available"
+                );
+                assert_eq!(
+                    inspector["executable"], true,
+                    "generic-filesystem traversal must be executable"
+                );
+            }
+            "rust-cargo" => {
+                assert_eq!(
+                    inspector["available"], true,
+                    "Rust/Cargo inspector must report availability"
+                );
+                assert_eq!(
+                    inspector["executable"], true,
+                    "Rust/Cargo inspector must report executable implementation"
+                );
+            }
+            "npm-typescript" => {
+                assert_eq!(
+                    inspector["available"], false,
+                    "npm/TypeScript inspector must not claim availability"
+                );
+                assert_eq!(
+                    inspector["executable"], false,
+                    "npm/TypeScript inspector must not claim executable"
+                );
+            }
+            _ => {
+                panic!("unknown inspector id: {id}");
+            }
+        }
     }
 
     assert_eq!(
         value["data"]["output_modes"],
         serde_json::json!(["human", "json"])
     );
-    assert!(value["data"]["resource_limits"]["max_inspection_files"].is_number());
-    assert!(value["data"]["resource_limits"]["max_probe_output_bytes"].is_number());
+    // Assert all five inspection resource limit fields are present with defaults
+    let rl = &value["data"]["resource_limits"];
+    assert_eq!(rl["max_inspection_files"], 10_000);
+    assert_eq!(rl["max_inspection_bytes"], 16 * 1024 * 1024);
+    assert_eq!(rl["max_traversal_depth"], 32);
+    assert_eq!(rl["max_per_file_bytes"], 1_048_576);
+    assert_eq!(rl["max_inspection_wall_millis"], 60_000);
+    assert!(rl["max_probe_input_bytes"].is_number());
+    assert!(rl["max_probe_output_bytes"].is_number());
 }
 
 #[test]
@@ -115,6 +156,9 @@ fn capabilities_human_output_is_concise() {
         .stdout(predicate::str::contains("Amari Discovery"))
         .stdout(predicate::str::contains("Project inspectors"))
         .stdout(predicate::str::contains("Catalog: 0.23.0 (available)"))
+        .stdout(predicate::str::contains("Resource limits"))
+        .stdout(predicate::str::contains("max_per_file_bytes"))
+        .stdout(predicate::str::contains("max_inspection_wall_millis"))
         .stdout(predicate::str::contains("schema_version").not());
 }
 
@@ -157,7 +201,7 @@ fn help_exposes_the_approved_command_families() {
 fn unavailable_commands_use_a_typed_non_internal_failure() {
     Command::cargo_bin("amari")
         .unwrap()
-        .args(["inspect", "--json"])
+        .args(["recommend", "--goal", "test goal", "--json"])
         .assert()
         .code(69)
         .stdout(predicate::str::is_empty())
