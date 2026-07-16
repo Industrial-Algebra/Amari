@@ -22,6 +22,7 @@ pub mod cli;
 pub mod commands;
 pub mod error;
 pub mod inspect;
+pub mod planner;
 pub mod protocol;
 mod render;
 
@@ -71,6 +72,7 @@ pub use inspect::{
     TypeScriptRuntimeSignal, TypeScriptVocabularyEvidence, VocabularyEvidence, WasmTargetEvidence,
     WasmTargetOrigin, WorkspaceDependencyBase, WorkspaceMeta,
 };
+pub use planner::{CandidateRetriever, RecallConfig, RetrievalSource, RetrievedCandidate};
 pub use protocol::{
     CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,
     ProbeBackend, ProbeId, ProbeResult, Provenance, ReplayMetadata, ResourceObservations,
