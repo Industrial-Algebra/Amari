@@ -23,6 +23,10 @@ pub struct RecallConfig {
     /// Maximum number of candidates returned.
     pub max_candidates: usize,
     /// Minimum leading holographic score before lexical fallback is used.
+    ///
+    /// MAP cosine similarity normally lies in `[-1.0, 1.0]`. Values above
+    /// `1.0` intentionally force lexical fallback; values below `-1.0`
+    /// intentionally force holographic ordering.
     pub minimum_holographic_score: f64,
 }
 
@@ -185,7 +189,7 @@ impl CandidateRetriever {
     fn encode(&self, tokens: &BTreeMap<String, f64>) -> DiscoveryResult<RecallVector> {
         let mut accumulated = RecallVector::map_zero();
         for (token, weight) in tokens {
-            let token_vector = RecallVector::from_seed(token_seed(self.config.seed, token));
+            let token_vector = deterministic_token_vector(self.config.seed, token);
             let weighted = <RecallVector as BindingAlgebra>::scale(&token_vector, *weight)
                 .map_err(algebra_error)?;
             accumulated = <RecallVector as BindingAlgebra>::superpose(&accumulated, &weighted)
@@ -308,6 +312,22 @@ fn lexical_score(query: &BTreeMap<String, f64>, capability: &BTreeMap<String, f6
     matched / total
 }
 
+// Keep the mixer local and golden-tested so dependency upgrades cannot change
+// replayable rankings. These constants are the fixed SplitMix64 finalizer.
+fn deterministic_token_vector(seed: u64, token: &str) -> RecallVector {
+    let mut state = token_seed(seed, token);
+    let mut components = [0.0; RECALL_DIMENSIONS];
+    for component in &mut components {
+        state = state.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut mixed = state;
+        mixed = (mixed ^ (mixed >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        mixed = (mixed ^ (mixed >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        mixed ^= mixed >> 31;
+        *component = if mixed & 1 == 0 { -1.0 } else { 1.0 };
+    }
+    RecallVector::new(components)
+}
+
 fn token_seed(seed: u64, token: &str) -> u64 {
     let mut digest = Sha256::new();
     digest.update(seed.to_le_bytes());
@@ -317,4 +337,18 @@ fn token_seed(seed: u64, token: &str) -> u64 {
         .try_into()
         .expect("SHA-256 prefix always has eight bytes");
     u64::from_le_bytes(bytes)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deterministic_token_vector_has_frozen_prefix() {
+        let vector = deterministic_token_vector(RecallConfig::default().seed, "geometric");
+        assert_eq!(
+            &vector.components()[..8],
+            &[1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0]
+        );
+    }
 }
