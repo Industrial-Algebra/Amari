@@ -72,7 +72,11 @@ pub use inspect::{
     TypeScriptRuntimeSignal, TypeScriptVocabularyEvidence, VocabularyEvidence, WasmTargetEvidence,
     WasmTargetOrigin, WorkspaceDependencyBase, WorkspaceMeta,
 };
-pub use planner::{CandidateRetriever, RecallConfig, RetrievalSource, RetrievedCandidate};
+pub use planner::{
+    CandidateRetriever, CapabilityGraphExpander, GraphConstraints, GraphExpansion,
+    GraphExpansionState, GraphLimit, GraphLimits, GraphPath, GraphStep, RecallConfig,
+    RelationCostPolicy, RetrievalSource, RetrievedCandidate,
+};
 pub use protocol::{
     CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,
     ProbeBackend, ProbeId, ProbeResult, Provenance, ReplayMetadata, ResourceObservations,
