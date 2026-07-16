@@ -464,7 +464,7 @@ fn capabilities_reports_generic_traversal_inspector() {
     let traversal = traversal.unwrap();
     assert_eq!(traversal["known"], true, "generic-filesystem must be known");
 
-    // Rust/Cargo is executable in Task 8C; npm remains planned for Task 9C.
+    // Both language-specific inspectors are executable after Task 9C.
     let rust = inspectors.iter().find(|i| i["id"] == "rust-cargo").unwrap();
     assert_eq!(rust["known"], true, "rust-cargo must be known");
     assert_eq!(
@@ -482,12 +482,12 @@ fn capabilities_reports_generic_traversal_inspector() {
         .unwrap();
     assert_eq!(npm["known"], true, "npm-typescript must be known");
     assert_eq!(
-        npm["available"], false,
-        "npm-typescript must not claim availability"
+        npm["available"], true,
+        "npm-typescript must report availability"
     );
     assert_eq!(
-        npm["executable"], false,
-        "npm-typescript must not claim executable"
+        npm["executable"], true,
+        "npm-typescript must report executable implementation"
     );
 
     // Resource limits must include all five inspection fields

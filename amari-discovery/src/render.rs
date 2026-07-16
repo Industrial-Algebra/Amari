@@ -137,6 +137,36 @@ pub(crate) fn write_inspection_human(
             platform.no_std_evidence.packages.len()
         )?;
     }
+    if let Some(npm) = &snapshot.npm {
+        writeln!(
+            writer,
+            "  Amari npm dependencies: {}",
+            npm.package.dependencies.len()
+        )?;
+    }
+    if let Some(typescript) = &snapshot.typescript {
+        writeln!(writer, "  JS/TS imports: {}", typescript.imports.len())?;
+        writeln!(
+            writer,
+            "  Declaration exports: {}",
+            typescript.declaration_exports.len()
+        )?;
+        writeln!(
+            writer,
+            "  WASM capabilities: {}",
+            typescript.capabilities.len()
+        )?;
+        writeln!(
+            writer,
+            "  Runtime signals: {}",
+            typescript.runtime_signals.len()
+        )?;
+        writeln!(
+            writer,
+            "  Domain vocabulary: {}",
+            typescript.vocabulary.len()
+        )?;
+    }
     writeln!(writer, "  Warnings: {}", envelope.warnings.len())?;
     Ok(())
 }

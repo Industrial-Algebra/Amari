@@ -9,16 +9,14 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  # Prevent rust-toolchain.toml from overriding the installed stable toolchain.
+  RUSTUP_TOOLCHAIN: stable
 
 jobs:
-  mathematical-correctness:
-    name: Mathematical Correctness Check
+  code-quality:
+    name: Mathematical Code Quality
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      # Prevent rust-toolchain.toml from overriding the installed stable toolchain.
-      RUSTUP_TOOLCHAIN: stable
-
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v7
@@ -43,33 +41,42 @@ jobs:
         echo "🔍 Running Clippy lints..."
         cargo clippy --all-targets --all-features -- -D warnings
 
+  core-mathematics:
+    name: Core Mathematical Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: mathematical-correctness
+
     - name: Run core mathematical tests
       run: |
         echo "🧪 Running core mathematical tests..."
-        cargo test --all --lib --bins
+        cargo test --workspace --lib --bins
         echo "✅ Core mathematical properties verified"
       env:
-        # Disable GPU tests in CI environment
         RUST_TEST_NOCAPTURE: 1
 
     - name: Run formal verification tests
       run: |
         echo "🔬 Running formal verification tests..."
-        cargo test --all --lib --bins --features formal-verification
+        cargo test --workspace --lib --bins --features formal-verification
         echo "✅ Formal verification contracts validated"
       env:
         RUST_TEST_NOCAPTURE: 1
 
-    - name: Run integration tests
-      run: |
-        echo "🔗 Running integration tests..."
-        cargo test --all --tests
-        echo "✅ Integration correctness confirmed"
-
     - name: Run documentation tests
       run: |
         echo "📖 Running documentation tests..."
-        cargo test --all --doc
+        cargo test --workspace --doc
         echo "✅ Documentation examples verified"
 
     - name: Verify geometric algebra axioms
@@ -89,38 +96,120 @@ jobs:
     - name: Mathematical property analysis
       run: |
         echo "🔍 Analyzing mathematical properties..."
-        # Count total tests
-        TOTAL_TESTS=$(cargo test --all --lib --bins -- --list 2>/dev/null | grep -c ": test$" || echo "0")
-        VERIFICATION_TESTS=$(cargo test --all --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+        TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+        VERIFICATION_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
 
         echo "📊 Test Coverage Summary:"
         echo "  Total tests: $TOTAL_TESTS"
         echo "  Verification tests: $VERIFICATION_TESTS"
         echo "  Mathematical rigor: 100%"
 
-        # Ensure we have meaningful test coverage
         if [ "$TOTAL_TESTS" -lt 300 ]; then
           echo "❌ Insufficient test coverage for mathematical library"
           exit 1
         fi
 
+  workspace-integration:
+    name: Workspace Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: mathematical-correctness
+
+    - name: Run workspace integration tests
+      run: |
+        echo "🔗 Running workspace integration tests..."
+        cargo test --workspace --exclude amari-discovery --tests
+        echo "✅ Workspace integration correctness confirmed"
+
+  discovery-integration:
+    name: Discovery Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: mathematical-correctness
+
+    - name: Run discovery integration tests
+      run: |
+        echo "🔎 Running discovery integration tests..."
+        cargo test --package amari-discovery --tests
+        echo "✅ Discovery integration correctness confirmed"
+
+  documentation:
+    name: Mathematical Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: mathematical-correctness
+
     - name: Check documentation builds
       run: |
         echo "📚 Checking documentation builds..."
-        cargo doc --all --no-deps --document-private-items
+        cargo doc --workspace --no-deps --document-private-items
 
-    - name: Mathematical correctness summary
-      if: success()
+  mathematical-correctness:
+    name: Mathematical Correctness Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always()
+    needs:
+      - code-quality
+      - core-mathematics
+      - workspace-integration
+      - discovery-integration
+      - documentation
+    steps:
+    - name: Report mathematical correctness
+      env:
+        CODE_QUALITY: ${{ needs.code-quality.result }}
+        CORE_MATHEMATICS: ${{ needs.core-mathematics.result }}
+        WORKSPACE_INTEGRATION: ${{ needs.workspace-integration.result }}
+        DISCOVERY_INTEGRATION: ${{ needs.discovery-integration.result }}
+        DOCUMENTATION: ${{ needs.documentation.result }}
       run: |
+        echo "Code quality: $CODE_QUALITY"
+        echo "Core mathematics: $CORE_MATHEMATICS"
+        echo "Workspace integration: $WORKSPACE_INTEGRATION"
+        echo "Discovery integration: $DISCOVERY_INTEGRATION"
+        echo "Documentation: $DOCUMENTATION"
+
+        if [ "$CODE_QUALITY" != "success" ] || \
+           [ "$CORE_MATHEMATICS" != "success" ] || \
+           [ "$WORKSPACE_INTEGRATION" != "success" ] || \
+           [ "$DISCOVERY_INTEGRATION" != "success" ] || \
+           [ "$DOCUMENTATION" != "success" ]; then
+          echo "❌ Mathematical integrity compromised!"
+          exit 1
+        fi
+
         echo "✨ Mathematical correctness maintained ✨"
         echo "All geometric algebra properties verified"
         echo "All tropical semiring axioms confirmed"
         echo "All phantom type constraints validated"
-
-    - name: Mathematical integrity failure
-      if: failure()
-      run: |
-        echo "❌ Mathematical integrity compromised!"
-        echo "Please fix the failing tests before merging"
-        echo "Mathematical libraries require 100% test success"
-        exit 1

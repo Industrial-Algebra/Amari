@@ -1,0 +1,13 @@
+{
+  "name": "amari-typescript-project",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@justinelliottcobb/amari-wasm": "__AMARI_VERSION__"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^7.0.0"
+  }
+}
