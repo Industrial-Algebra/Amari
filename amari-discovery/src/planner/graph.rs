@@ -92,7 +92,7 @@ pub enum GraphLimit {
     NodeCount {
         /// Configured maximum retained nodes.
         max: usize,
-        /// Bounded attempted count (`max + 1`).
+        /// Bounded attempted count (`max.saturating_add(1)`).
         observed: usize,
     },
     /// The traversal-depth limit left an unvisited frontier.
@@ -197,7 +197,6 @@ impl CapabilityGraphExpander {
         seeds: &[CapabilityId],
         constraints: &GraphConstraints,
     ) -> DiscoveryResult<GraphExpansion> {
-        self.costs.validate()?;
         let catalog_ids: BTreeSet<_> = catalog
             .capabilities()
             .iter()
@@ -487,11 +486,13 @@ fn min_plus_path_cost(steps: &[GraphStep]) -> f64 {
 }
 
 fn path_precedes(candidate: &GraphPath, current: &GraphPath) -> bool {
-    let selected = MinPlusNumber::new(candidate.total_cost)
-        .tropical_add(MinPlusNumber::new(current.total_cost))
-        .value();
     match candidate.total_cost.total_cmp(&current.total_cost) {
-        Ordering::Less => selected == candidate.total_cost,
+        Ordering::Less => {
+            let selected = MinPlusNumber::new(candidate.total_cost)
+                .tropical_add(MinPlusNumber::new(current.total_cost))
+                .value();
+            selected == candidate.total_cost
+        }
         Ordering::Greater => false,
         Ordering::Equal => {
             (&candidate.source_seed, &candidate.capabilities)
@@ -539,7 +540,10 @@ fn is_reversible(kind: &str) -> bool {
 }
 
 fn is_invalidating(kind: &str) -> bool {
-    matches!(kind, "invalidates" | "conflicts_with" | "incompatible_with")
+    matches!(
+        kind,
+        "invalid_when" | "invalidates" | "conflicts_with" | "incompatible_with"
+    )
 }
 
 #[cfg(test)]
@@ -558,6 +562,11 @@ mod tests {
             reverse: false,
             cost,
         }
+    }
+
+    #[test]
+    fn design_invalid_when_relation_is_not_traversable() {
+        assert!(is_invalidating("invalid_when"));
     }
 
     #[test]

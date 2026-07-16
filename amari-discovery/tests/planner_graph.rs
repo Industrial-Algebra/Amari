@@ -58,6 +58,41 @@ fn prerequisite_and_composition_relations_expand_candidates() {
 }
 
 #[test]
+fn empty_seeds_yield_empty_complete_expansion() {
+    let expansion = CapabilityGraphExpander::default()
+        .expand(
+            &Catalog::embedded().unwrap(),
+            &[],
+            &GraphConstraints::default(),
+        )
+        .unwrap();
+
+    assert!(expansion.paths.is_empty());
+    assert!(expansion.blocked_capabilities.is_empty());
+    assert_eq!(expansion.state, GraphExpansionState::Complete);
+}
+
+#[test]
+fn all_seeds_blocked_yield_empty_complete_expansion() {
+    let seed = id("amari:amari-tropical:paths:shortest-path");
+    let constraints = GraphConstraints {
+        blocked_capabilities: BTreeSet::from([seed.clone()]),
+    };
+
+    let expansion = CapabilityGraphExpander::default()
+        .expand(
+            &Catalog::embedded().unwrap(),
+            std::slice::from_ref(&seed),
+            &constraints,
+        )
+        .unwrap();
+
+    assert!(expansion.paths.is_empty());
+    assert_eq!(expansion.blocked_capabilities, vec![seed]);
+    assert_eq!(expansion.state, GraphExpansionState::Complete);
+}
+
+#[test]
 fn invalidating_constraints_block_capabilities() {
     let catalog = Catalog::embedded().unwrap();
     let blocked = id("amari:amari-network:paths:geometric-shortest-path");
