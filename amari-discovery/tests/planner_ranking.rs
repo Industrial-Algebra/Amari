@@ -304,6 +304,17 @@ fn pareto_alternatives_survive_and_preference_is_deterministic() {
         .unwrap();
 
     assert!(first.pareto.len() >= 2);
+    let geometric = ranked(&first, &seeds[0]);
+    let surreal = ranked(&first, &seeds[1]);
+    assert_eq!(geometric.objectives, surreal.objectives);
+    assert!(first
+        .pareto
+        .iter()
+        .any(|candidate| candidate.capability_id == seeds[0]));
+    assert!(first
+        .pareto
+        .iter()
+        .any(|candidate| candidate.capability_id == seeds[1]));
     assert_eq!(
         serde_json::to_vec(&first).unwrap(),
         serde_json::to_vec(&second).unwrap()
@@ -365,6 +376,44 @@ fn matching_probe_improves_verification_and_mismatched_provenance_is_ignored() {
             },
         )
         .unwrap();
+    let mut wrong_catalog_probe = probe(
+        &catalog,
+        &project.project_hash,
+        &["derivative_matches"],
+        &[],
+    );
+    wrong_catalog_probe.catalog_hash = "wrong-catalog".to_owned();
+    let wrong_catalog = CandidateRanker::default()
+        .rank(
+            &catalog,
+            &graph,
+            &recalled,
+            &project,
+            &RankingContext {
+                probe_results: vec![wrong_catalog_probe],
+                ..RankingContext::default()
+            },
+        )
+        .unwrap();
+    let mut unknown_probe = probe(
+        &catalog,
+        &project.project_hash,
+        &["derivative_matches"],
+        &[],
+    );
+    unknown_probe.probe_id = "amari-probe:dual:unknown:v1".parse().unwrap();
+    let unknown = CandidateRanker::default()
+        .rank(
+            &catalog,
+            &graph,
+            &recalled,
+            &project,
+            &RankingContext {
+                probe_results: vec![unknown_probe],
+                ..RankingContext::default()
+            },
+        )
+        .unwrap();
 
     assert!(
         ranked(&matching, &target).components.verification
@@ -379,6 +428,22 @@ fn matching_probe_improves_verification_and_mismatched_provenance_is_ignored() {
         .warnings
         .iter()
         .any(|warning| warning.contains("project_hash_mismatch")));
+    assert_eq!(
+        ranked(&wrong_catalog, &target).components.verification,
+        ranked(&baseline, &target).components.verification
+    );
+    assert!(wrong_catalog
+        .warnings
+        .iter()
+        .any(|warning| warning.contains("catalog_hash_mismatch")));
+    assert_eq!(
+        ranked(&unknown, &target).components.verification,
+        ranked(&baseline, &target).components.verification
+    );
+    assert!(unknown
+        .warnings
+        .iter()
+        .any(|warning| warning.contains("unknown_probe")));
 }
 
 #[test]
@@ -416,4 +481,70 @@ fn refuted_probe_assumptions_block_only_the_same_capability() {
         .iter()
         .chain(&result.dominated)
         .any(|candidate| candidate.capability_id == other));
+}
+
+#[test]
+fn malformed_public_inputs_are_rejected() {
+    let catalog = Catalog::embedded().unwrap();
+    let target = id("amari:amari-dual:autodiff:forward-derivative");
+    let graph = expansion(&catalog, std::slice::from_ref(&target));
+    let project = snapshot("project-invalid");
+    let ranker = CandidateRanker::default();
+
+    let mut invalid_cost_graph = graph.clone();
+    invalid_cost_graph.paths[0].total_cost = f64::NAN;
+    assert!(ranker
+        .rank(
+            &catalog,
+            &invalid_cost_graph,
+            &[],
+            &project,
+            &RankingContext::default(),
+        )
+        .is_err());
+
+    let invalid_signal = RankingContext {
+        signals: vec![RankingSignal {
+            capability_id: target.clone(),
+            kind: RankingSignalKind::Evidence,
+            strength: 1.1,
+            summary: "invalid".to_owned(),
+        }],
+        ..RankingContext::default()
+    };
+    assert!(ranker
+        .rank(&catalog, &graph, &[], &project, &invalid_signal)
+        .is_err());
+
+    let invalid_recall = [recalled(target.clone(), f64::INFINITY)];
+    assert!(ranker
+        .rank(
+            &catalog,
+            &graph,
+            &invalid_recall,
+            &project,
+            &RankingContext::default(),
+        )
+        .is_err());
+
+    let unknown = id("amari:unknown:ranking:candidate");
+    let mut unknown_graph = graph.clone();
+    unknown_graph.paths[0].target = unknown.clone();
+    assert!(ranker
+        .rank(
+            &catalog,
+            &unknown_graph,
+            &[],
+            &project,
+            &RankingContext::default(),
+        )
+        .is_err());
+
+    let unknown_context = RankingContext {
+        prerequisites_satisfied: BTreeSet::from([unknown]),
+        ..RankingContext::default()
+    };
+    assert!(ranker
+        .rank(&catalog, &graph, &[], &project, &unknown_context)
+        .is_err());
 }

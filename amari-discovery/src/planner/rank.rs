@@ -206,9 +206,17 @@ impl CandidateRanker {
         let signals_by_id = ranking_signals(context);
         let (probe_effects, mut warnings) =
             probe_effects(catalog, snapshot, &context.probe_results);
-        let mut blocked = initial_blocked(graph, context, &capability_records)?;
+        let graph_candidate_ids: BTreeSet<_> = graph
+            .paths
+            .iter()
+            .map(|path| path.target.clone())
+            .chain(graph.blocked_capabilities.iter().cloned())
+            .collect();
+        let mut blocked =
+            initial_blocked(graph, context, &capability_records, &graph_candidate_ids)?;
         for (capability_id, effect) in &probe_effects {
-            if !effect.refuted_assumptions.is_empty() {
+            if graph_candidate_ids.contains(capability_id) && !effect.refuted_assumptions.is_empty()
+            {
                 blocked.entry(capability_id.clone()).or_default().extend(
                     effect
                         .refuted_assumptions
@@ -221,6 +229,7 @@ impl CandidateRanker {
         let graph_is_partial = matches!(graph.state, GraphExpansionState::Partial { .. });
         let mut candidates = Vec::new();
         for path in &graph.paths {
+            validate_graph_path(path)?;
             let capability = capability_records.get(&path.target).ok_or_else(|| {
                 DiscoveryError::InvalidInput(format!(
                     "graph capability `{}` is absent from the catalog",
@@ -509,6 +518,26 @@ fn preferred_order(left: &RankedCandidate, right: &RankedCandidate) -> Ordering 
         .then_with(|| left.capability_id.cmp(&right.capability_id))
 }
 
+fn validate_graph_path(path: &GraphPath) -> DiscoveryResult<()> {
+    if !path.total_cost.is_finite() || path.total_cost < 0.0 {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "graph path for `{}` requires a finite nonnegative total cost",
+            path.target
+        )));
+    }
+    if path
+        .steps
+        .iter()
+        .any(|step| !step.cost.is_finite() || step.cost < 0.0)
+    {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "graph path for `{}` contains an invalid step cost",
+            path.target
+        )));
+    }
+    Ok(())
+}
+
 fn validate_context(
     context: &RankingContext,
     capabilities: &BTreeMap<CapabilityId, &crate::CapabilityRecord>,
@@ -658,12 +687,17 @@ fn probe_effects(
             } else {
                 0.25
             });
-        effect
-            .validated_assumptions
-            .extend(result.validated_assumptions.iter().cloned());
-        effect
-            .refuted_assumptions
-            .extend(result.refuted_assumptions.iter().cloned());
+        effect.validated_assumptions.extend(
+            result
+                .validated_assumptions
+                .iter()
+                .map(|assumption| sanitize_assumption(assumption)),
+        );
+        effect.refuted_assumptions.extend(
+            result.refuted_assumptions.iter().map(|assumption| {
+                format!("{}:{}", result.probe_id, sanitize_assumption(assumption))
+            }),
+        );
     }
     (effects, warnings)
 }
@@ -672,6 +706,7 @@ fn initial_blocked(
     graph: &GraphExpansion,
     context: &RankingContext,
     capabilities: &BTreeMap<CapabilityId, &crate::CapabilityRecord>,
+    graph_candidate_ids: &BTreeSet<CapabilityId>,
 ) -> DiscoveryResult<BTreeMap<CapabilityId, BTreeSet<String>>> {
     let mut blocked = BTreeMap::<CapabilityId, BTreeSet<String>>::new();
     for id in &graph.blocked_capabilities {
@@ -682,12 +717,24 @@ fn initial_blocked(
             .insert("graph_constraint".to_owned());
     }
     for id in &context.prerequisites_blocked {
-        blocked
-            .entry(id.clone())
-            .or_default()
-            .insert("prerequisites_blocked".to_owned());
+        if graph_candidate_ids.contains(id) {
+            blocked
+                .entry(id.clone())
+                .or_default()
+                .insert("prerequisites_blocked".to_owned());
+        }
     }
     Ok(blocked)
+}
+
+fn sanitize_assumption(value: &str) -> String {
+    let normalized = value.split_whitespace().collect::<Vec<_>>().join(" ");
+    let bounded: String = normalized.chars().take(128).collect();
+    if bounded.is_empty() {
+        "unspecified".to_owned()
+    } else {
+        bounded
+    }
 }
 
 fn boost(current: f64, strength: f64) -> f64 {
