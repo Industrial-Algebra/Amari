@@ -75,12 +75,14 @@ pub use inspect::{
 pub use planner::{
     BlockedCandidate, CandidateRanker, CandidateRetriever, CapabilityGraphExpander,
     GraphConstraints, GraphExpansion, GraphExpansionState, GraphLimit, GraphLimits, GraphPath,
-    GraphStep, RankedCandidate, RankingComponents, RankingContext, RankingProvenance,
-    RankingResult, RankingSignal, RankingSignalKind, RecallConfig, RelationCostPolicy,
-    RetrievalSource, RetrievedCandidate, RANKING_OBJECTIVE_ORDER,
+    GraphStep, NormalizationLimits, PlanGenerator, PlanNormalizer, RankedCandidate,
+    RankingComponents, RankingContext, RankingProvenance, RankingResult, RankingSignal,
+    RankingSignalKind, RecallConfig, RelationCostPolicy, RetrievalSource, RetrievedCandidate,
+    RANKING_OBJECTIVE_ORDER,
 };
 pub use protocol::{
-    CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,
-    ProbeBackend, ProbeId, ProbeResult, Provenance, ReplayMetadata, ResourceObservations,
-    SchemaVersion, SCHEMA_V1,
+    CandidatePlan, CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope,
+    Evidence, GoalSpec, NormalizationTrace, PlanCompatibility, PlanNormalization, PlanStep,
+    PlanTestTarget, PlanningContext, ProbeBackend, ProbeId, ProbeReplayHash, ProbeResult,
+    Provenance, Recommendation, ReplayMetadata, ResourceObservations, SchemaVersion, SCHEMA_V1,
 };

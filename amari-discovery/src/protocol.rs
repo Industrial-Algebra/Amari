@@ -6,7 +6,7 @@ use std::{fmt, str::FromStr};
 
 use serde::{de::Error as _, Deserialize, Deserializer, Serialize};
 
-use crate::DiscoveryError;
+use crate::{DiscoveryError, ProjectSnapshot};
 
 fn is_canonical_id_segment(segment: &str) -> bool {
     let bytes = segment.as_bytes();
@@ -290,6 +290,187 @@ pub struct Evidence {
     pub source: Option<String>,
     /// Relative evidence weight used by ranking.
     pub weight: f64,
+}
+
+/// A normalized user goal supplied to the discovery planner.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct GoalSpec {
+    /// Concise statement of the mathematical or integration goal.
+    pub statement: String,
+    /// Explicit deterministic constraints applied to the goal.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub constraints: Vec<String>,
+}
+
+/// Typed project, goal, and saved-probe inputs used to construct plans.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PlanningContext {
+    /// Sanitized read-only project snapshot.
+    pub snapshot: ProjectSnapshot,
+    /// Explicit planner goal.
+    pub goal: GoalSpec,
+    /// Saved bounded probe results considered during planning.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub probe_results: Vec<ProbeResult>,
+}
+
+/// Replay hash for one saved probe result consumed by planning.
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct ProbeReplayHash {
+    /// Registered probe identifier.
+    pub probe_id: ProbeId,
+    /// Canonical probe input hash.
+    pub input_hash: String,
+    /// SHA-256 hash of the serialized saved result.
+    pub result_hash: String,
+}
+
+/// Provenance that must match before a plan can be replayed.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PlanCompatibility {
+    /// Catalog version and content hash used to construct the plan.
+    pub catalog: CatalogIdentity,
+    /// Inspected project hash used to construct the plan.
+    pub project_hash: String,
+    /// Canonical hash of the goal and saved probe inputs.
+    pub input_hash: String,
+    /// Canonical saved-probe result hashes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub probe_results: Vec<ProbeReplayHash>,
+}
+
+/// Static test scope emitted by a plan.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PlanTestTarget {
+    /// Run every target belonging to the selected package.
+    AllTargets,
+}
+
+/// One read-only integration instruction in a candidate plan.
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum PlanStep {
+    /// Add an exact Amari package dependency.
+    Dependency {
+        /// Capability requiring this step.
+        capability_id: CapabilityId,
+        /// Cargo package name.
+        package: String,
+        /// Exact catalog package version.
+        version: String,
+    },
+    /// Enable one exact package feature.
+    Feature {
+        /// Capability requiring this step.
+        capability_id: CapabilityId,
+        /// Cargo package name.
+        package: String,
+        /// Cargo feature name.
+        feature: String,
+    },
+    /// Integrate one exact public symbol.
+    Symbol {
+        /// Capability requiring this step.
+        capability_id: CapabilityId,
+        /// Fully qualified public symbol path.
+        path: String,
+    },
+    /// Consult or reproduce one checked-in example.
+    Example {
+        /// Capability requiring this step.
+        capability_id: CapabilityId,
+        /// Cargo package name.
+        package: String,
+        /// Cargo example target name.
+        example: String,
+    },
+    /// Run one registered bounded probe.
+    Probe {
+        /// Capability requiring this step.
+        capability_id: CapabilityId,
+        /// Registered probe identifier.
+        probe_id: ProbeId,
+    },
+    /// Verify one exact package test scope.
+    Test {
+        /// Capability requiring this step.
+        capability_id: CapabilityId,
+        /// Cargo package name.
+        package: String,
+        /// Static package test scope.
+        target: PlanTestTarget,
+    },
+}
+
+impl PlanStep {
+    /// Returns the capability that requires this integration step.
+    pub const fn capability_id(&self) -> &CapabilityId {
+        match self {
+            Self::Dependency { capability_id, .. }
+            | Self::Feature { capability_id, .. }
+            | Self::Symbol { capability_id, .. }
+            | Self::Example { capability_id, .. }
+            | Self::Probe { capability_id, .. }
+            | Self::Test { capability_id, .. } => capability_id,
+        }
+    }
+}
+
+/// One deterministic rewrite applied during plan normalization.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct NormalizationTrace {
+    /// Plan steps immediately before the rewrite.
+    pub before: Vec<PlanStep>,
+    /// Plan steps immediately after the rewrite.
+    pub after: Vec<PlanStep>,
+}
+
+/// Completion and trace metadata for plan normalization.
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PlanNormalization {
+    /// Whether the plan reached a rewrite fixed point within its limits.
+    pub normalized: bool,
+    /// Maximum rewrites allowed for this normalization attempt.
+    pub max_rewrites: usize,
+    /// Applied rewrites in deterministic order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub trace: Vec<NormalizationTrace>,
+}
+
+/// A deterministic replayable plan for one ranked capability path.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CandidatePlan {
+    /// Preferred catalog capability implemented by this plan.
+    pub capability_id: CapabilityId,
+    /// Canonical prerequisite-first capability order.
+    pub prerequisite_order: Vec<CapabilityId>,
+    /// Canonical deduplicated integration instructions.
+    pub steps: Vec<PlanStep>,
+    /// Required replay provenance.
+    pub compatibility: PlanCompatibility,
+    /// Bounded rewrite-normalization metadata.
+    pub normalization: PlanNormalization,
+    /// SHA-256 hash of canonical plan content excluding trace metadata.
+    pub plan_hash: String,
+}
+
+/// A preferred replayable plan and its Pareto alternatives.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Recommendation {
+    /// Goal used to generate the recommendation.
+    pub goal: GoalSpec,
+    /// Deterministically preferred plan.
+    pub preferred: CandidatePlan,
+    /// Other retained Pareto plans.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub alternatives: Vec<CandidatePlan>,
+    /// Evidence shared by the recommendation.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence: Vec<Evidence>,
+    /// Non-fatal planner warnings.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub warnings: Vec<String>,
 }
 
 /// A successful typed domain outcome.
