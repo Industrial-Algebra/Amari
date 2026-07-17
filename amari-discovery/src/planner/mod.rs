@@ -7,10 +7,15 @@
 //! rank trade-offs, and normalize replayable plans.
 
 mod graph;
+mod rank;
 mod recall;
 
 pub use graph::{
     CapabilityGraphExpander, GraphConstraints, GraphExpansion, GraphExpansionState, GraphLimit,
     GraphLimits, GraphPath, GraphStep, RelationCostPolicy,
+};
+pub use rank::{
+    BlockedCandidate, CandidateRanker, RankedCandidate, RankingComponents, RankingContext,
+    RankingProvenance, RankingResult, RankingSignal, RankingSignalKind, RANKING_OBJECTIVE_ORDER,
 };
 pub use recall::{CandidateRetriever, RecallConfig, RetrievalSource, RetrievedCandidate};
