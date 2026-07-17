@@ -98,7 +98,7 @@ pub(super) fn is_env_secret_name(name: &str) -> bool {
 
 /// Result of opening a file with [`nofollow_open_readonly`].
 #[derive(Debug)]
-pub(super) enum NofollowResult {
+pub(crate) enum NofollowResult {
     /// The file was opened successfully and is a regular file.
     Opened(fs::File),
     /// The path was a symlink (or a replacement race was detected) —
@@ -125,7 +125,7 @@ pub(super) enum NofollowResult {
 /// The caller is responsible for path-based containment checks before
 /// calling this function. Errors from this function never expose external
 /// symlink targets or absolute paths.
-pub(super) fn nofollow_open_readonly(path: &Path) -> std::io::Result<NofollowResult> {
+pub(crate) fn nofollow_open_readonly(path: &Path) -> std::io::Result<NofollowResult> {
     #[cfg(unix)]
     {
         use rustix::fs::{open, Mode, OFlags};
@@ -1049,7 +1049,7 @@ pub fn inspect_project_envelope(
 }
 
 /// Aggregate dependency compatibility into one project-level verdict.
-fn snapshot_compatibility(snapshot: &ProjectSnapshot) -> Compatibility {
+pub(crate) fn snapshot_compatibility(snapshot: &ProjectSnapshot) -> Compatibility {
     let mut saw_dependency = false;
     let mut saw_unknown_version = false;
     let mut reasons = Vec::new();

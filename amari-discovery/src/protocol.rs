@@ -455,6 +455,45 @@ pub struct CandidatePlan {
     pub plan_hash: String,
 }
 
+/// Transparent normalized score components for one recommended capability.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RecommendationScoreComponents {
+    /// Project and prerequisite applicability; higher is better.
+    pub applicability: f64,
+    /// Recall, project, and probe evidence strength; higher is better.
+    pub evidence: f64,
+    /// Relative integration effort; lower is better.
+    pub effort: f64,
+    /// API maturity; higher is better.
+    pub maturity: f64,
+    /// Relative runtime cost; lower is better.
+    pub runtime: f64,
+    /// Project platform compatibility; higher is better.
+    pub platform: f64,
+    /// Matching bounded verification strength; higher is better.
+    pub verification: f64,
+    /// Uncertainty and integration risk; lower is better.
+    pub risk: f64,
+}
+
+/// Score, evidence, and assumptions for one recommendation candidate.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RecommendationScore {
+    /// Stable catalog capability ID.
+    pub capability_id: CapabilityId,
+    /// Human-facing normalized score components.
+    pub components: RecommendationScoreComponents,
+    /// Canonical all-minimization Pareto objective vector.
+    pub objectives: [f64; 8],
+    /// Deterministic confidence summary.
+    pub confidence: f64,
+    /// Typed evidence contributing to this score.
+    pub evidence: Vec<Evidence>,
+    /// Probe assumptions validated for this candidate.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub validated_assumptions: Vec<String>,
+}
+
 /// A preferred replayable plan and its Pareto alternatives.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Recommendation {
@@ -462,12 +501,23 @@ pub struct Recommendation {
     pub goal: GoalSpec,
     /// Deterministically preferred plan.
     pub preferred: CandidatePlan,
-    /// Other retained Pareto plans.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    /// Other retained Pareto plans (empty when the front is a singleton).
+    #[serde(default)]
     pub alternatives: Vec<CandidatePlan>,
-    /// Evidence shared by the recommendation.
+    /// Transparent scores for the preferred plan and emitted alternatives.
+    pub scores: Vec<RecommendationScore>,
+    /// Evidence supporting the preferred recommendation.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub evidence: Vec<Evidence>,
+    /// Evidence or validation still needed for the preferred plan.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub missing_information: Vec<String>,
+    /// Registered probes suggested for the preferred plan.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub suggested_probes: Vec<ProbeId>,
+    /// Static package tests suggested for the preferred plan.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub suggested_tests: Vec<PlanStep>,
     /// Non-fatal planner warnings.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub warnings: Vec<String>,

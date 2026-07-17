@@ -201,7 +201,15 @@ fn help_exposes_the_approved_command_families() {
 fn unavailable_commands_use_a_typed_non_internal_failure() {
     Command::cargo_bin("amari")
         .unwrap()
-        .args(["recommend", "--goal", "test goal", "--json"])
+        .args([
+            "plan",
+            "amari:amari-dual:autodiff:forward-derivative",
+            "--recommendation",
+            "missing.json",
+            "--project",
+            ".",
+            "--json",
+        ])
         .assert()
         .code(69)
         .stdout(predicate::str::is_empty())

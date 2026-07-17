@@ -8,7 +8,8 @@ use serde::Serialize;
 
 use crate::{
     commands::discover::{ExampleResult, GraphResult, SearchResults},
-    Capabilities, CapabilityRecord, DiscoveryResult, Envelope, ProjectKind, ProjectSnapshot,
+    Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope, PlanStep,
+    ProjectKind, ProjectSnapshot, Recommendation,
 };
 
 pub(crate) fn write_json<T: Serialize>(
@@ -168,6 +169,104 @@ pub(crate) fn write_inspection_human(
         )?;
     }
     writeln!(writer, "  Warnings: {}", envelope.warnings.len())?;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Recommend
+// ---------------------------------------------------------------------------
+
+pub(crate) fn write_recommendation_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<DiscoveryOutcome<Recommendation>>,
+) -> DiscoveryResult<()> {
+    match &envelope.data {
+        DiscoveryOutcome::Recommended(recommendation) => {
+            writeln!(
+                writer,
+                "Recommendation for: {}",
+                recommendation.goal.statement
+            )?;
+            writeln!(
+                writer,
+                "Preferred: {}",
+                recommendation.preferred.capability_id
+            )?;
+            writeln!(writer, "Plan hash: {}", recommendation.preferred.plan_hash)?;
+            if let Some(score) = recommendation
+                .scores
+                .iter()
+                .find(|score| score.capability_id == recommendation.preferred.capability_id)
+            {
+                writeln!(writer, "Confidence: {:.12}", score.confidence)?;
+                writeln!(writer, "Scores:")?;
+                writeln!(
+                    writer,
+                    "  applicability: {:.12}",
+                    score.components.applicability
+                )?;
+                writeln!(writer, "  evidence: {:.12}", score.components.evidence)?;
+                writeln!(writer, "  effort: {:.12}", score.components.effort)?;
+                writeln!(writer, "  maturity: {:.12}", score.components.maturity)?;
+                writeln!(writer, "  runtime: {:.12}", score.components.runtime)?;
+                writeln!(writer, "  platform: {:.12}", score.components.platform)?;
+                writeln!(
+                    writer,
+                    "  verification: {:.12}",
+                    score.components.verification
+                )?;
+                writeln!(writer, "  risk: {:.12}", score.components.risk)?;
+            }
+            writeln!(writer, "Evidence:")?;
+            for evidence in &recommendation.evidence {
+                writeln!(writer, "  {}", evidence.summary)?;
+            }
+            writeln!(writer, "Missing information:")?;
+            for missing in &recommendation.missing_information {
+                writeln!(writer, "  {missing}")?;
+            }
+            writeln!(writer, "Suggested probes:")?;
+            for probe_id in &recommendation.suggested_probes {
+                writeln!(writer, "  {probe_id}")?;
+            }
+            writeln!(writer, "Suggested tests:")?;
+            for step in &recommendation.suggested_tests {
+                if let PlanStep::Test {
+                    package, target, ..
+                } = step
+                {
+                    let target = match target {
+                        crate::PlanTestTarget::AllTargets => "all targets",
+                    };
+                    writeln!(writer, "  {package}: {target}")?;
+                }
+            }
+            if !recommendation.alternatives.is_empty() {
+                writeln!(writer, "Alternatives:")?;
+                for alternative in &recommendation.alternatives {
+                    writeln!(writer, "  {}", alternative.capability_id)?;
+                }
+            }
+        }
+        DiscoveryOutcome::NoApplicableCapability { evidence } => {
+            writeln!(writer, "No applicable Amari capability.")?;
+            for item in evidence {
+                writeln!(writer, "  {}", item.summary)?;
+            }
+        }
+        DiscoveryOutcome::InsufficientEvidence { missing } => {
+            writeln!(writer, "Insufficient evidence for a recommendation.")?;
+            for item in missing {
+                writeln!(writer, "  {item}")?;
+            }
+        }
+        DiscoveryOutcome::Blocked { reasons } => {
+            writeln!(writer, "Recommendation blocked.")?;
+            for reason in reasons {
+                writeln!(writer, "  {reason}")?;
+            }
+        }
+    }
     Ok(())
 }
 

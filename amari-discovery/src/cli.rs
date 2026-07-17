@@ -7,7 +7,7 @@ use std::{io, path::PathBuf};
 use clap::{Parser, Subcommand, ValueEnum};
 
 use crate::inspect::{inspect_project_envelope, InspectionLimits};
-use crate::{commands, render, Capabilities, Catalog, DiscoveryError, DiscoveryResult};
+use crate::{commands, render, Capabilities, Catalog, DiscoveryError, DiscoveryResult, GoalSpec};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -51,6 +51,9 @@ enum Command {
         /// Path to a typed goal JSON document.
         #[arg(long, conflicts_with = "goal")]
         goal_file: Option<PathBuf>,
+        /// Path to a bounded JSON array of saved probe results.
+        #[arg(long, value_name = "FILE")]
+        probe_results: Option<PathBuf>,
     },
     /// Normalize a saved recommendation candidate into a replayable plan.
     Plan {
@@ -153,8 +156,9 @@ impl Command {
                 path,
                 goal,
                 goal_file,
+                probe_results,
             } => {
-                let _ = (path, goal, goal_file);
+                let _ = (path, goal, goal_file, probe_results);
                 "recommend"
             }
             Self::Plan {
@@ -245,6 +249,12 @@ pub fn run() -> DiscoveryResult<()> {
             run_discover(&catalog, command, cli.json)
         }
         Command::Inspect { path } => run_inspect(path, cli.json),
+        Command::Recommend {
+            path,
+            goal,
+            goal_file,
+            probe_results,
+        } => run_recommend(path, goal, goal_file, probe_results, cli.json),
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
             command.unavailable_name()
@@ -264,6 +274,49 @@ fn run_inspect(path: Option<PathBuf>, json: bool) -> DiscoveryResult<()> {
         render::write_json(&mut stdout, &envelope)
     } else {
         render::write_inspection_human(&mut stdout, &envelope)
+    }
+}
+
+/// Runs deterministic recommendation for a Rust/Cargo project.
+fn run_recommend(
+    path: Option<PathBuf>,
+    goal: Option<String>,
+    goal_file: Option<PathBuf>,
+    probe_results: Option<PathBuf>,
+    json: bool,
+) -> DiscoveryResult<()> {
+    if goal_file.is_some() {
+        return Err(DiscoveryError::NotImplemented(
+            "recommend --goal-file is added in the TypeScript parity slice".to_owned(),
+        ));
+    }
+    let statement = goal.ok_or_else(|| {
+        DiscoveryError::InvalidInput("recommend requires an inline --goal".to_owned())
+    })?;
+    let root = match path {
+        Some(path) => path,
+        None => std::env::current_dir()?,
+    };
+    let saved_probes = match probe_results {
+        Some(path) => commands::recommend::read_probe_results(&path)?,
+        None => Vec::new(),
+    };
+    let catalog = Catalog::embedded()?;
+    let envelope = commands::recommend::recommend_rust_envelope(
+        &catalog,
+        &root,
+        GoalSpec {
+            statement,
+            constraints: Vec::new(),
+        },
+        saved_probes,
+        &InspectionLimits::default(),
+    )?;
+    let mut stdout = io::stdout().lock();
+    if json {
+        render::write_json(&mut stdout, &envelope)
+    } else {
+        render::write_recommendation_human(&mut stdout, &envelope)
     }
 }
 
