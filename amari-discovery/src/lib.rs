@@ -73,9 +73,11 @@ pub use inspect::{
     WasmTargetOrigin, WorkspaceDependencyBase, WorkspaceMeta,
 };
 pub use planner::{
-    CandidateRetriever, CapabilityGraphExpander, GraphConstraints, GraphExpansion,
-    GraphExpansionState, GraphLimit, GraphLimits, GraphPath, GraphStep, RecallConfig,
-    RelationCostPolicy, RetrievalSource, RetrievedCandidate,
+    BlockedCandidate, CandidateRanker, CandidateRetriever, CapabilityGraphExpander,
+    GraphConstraints, GraphExpansion, GraphExpansionState, GraphLimit, GraphLimits, GraphPath,
+    GraphStep, RankedCandidate, RankingComponents, RankingContext, RankingProvenance,
+    RankingResult, RankingSignal, RankingSignalKind, RecallConfig, RelationCostPolicy,
+    RetrievalSource, RetrievedCandidate, RANKING_OBJECTIVE_ORDER,
 };
 pub use protocol::{
     CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope, Evidence,
