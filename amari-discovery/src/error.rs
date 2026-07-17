@@ -42,6 +42,17 @@ pub enum DiscoveryError {
     #[error("probe failed: {0}")]
     ProbeFailed(String),
 
+    /// A replay-required hash differs from the plan artifact.
+    #[error("replay drift for {field}: expected `{expected}`, found `{actual}`")]
+    ReplayDrift {
+        /// Stable hash field name.
+        field: String,
+        /// Hash stored in the plan artifact.
+        expected: String,
+        /// Hash observed for the replay request.
+        actual: String,
+    },
+
     /// A bounded operation exceeded a declared resource limit.
     #[error("resource limit exceeded: {0}")]
     LimitExceeded(String),
@@ -93,7 +104,7 @@ impl DiscoveryError {
     pub const fn kind(&self) -> &'static str {
         match self {
             Self::InvalidId { .. } => "invalid_id",
-            Self::InvalidInput(_) => "invalid_input",
+            Self::InvalidInput(_) | Self::ReplayDrift { .. } => "invalid_input",
             Self::CatalogCorruption(_) => "catalog_corruption",
             Self::InspectionFailure(_) => "inspection_failure",
             Self::ProbeUnavailable(_) => "probe_unavailable",
@@ -109,7 +120,7 @@ impl DiscoveryError {
     /// Returns the stable process exit code for this failure class.
     pub const fn exit_code(&self) -> u8 {
         match self {
-            Self::InvalidId { .. } | Self::InvalidInput(_) => 2,
+            Self::InvalidId { .. } | Self::InvalidInput(_) | Self::ReplayDrift { .. } => 2,
             Self::CatalogCorruption(_) => 3,
             Self::InspectionFailure(_) => 4,
             Self::ProbeUnavailable(_) => 5,
