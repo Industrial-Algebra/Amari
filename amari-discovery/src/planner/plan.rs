@@ -10,9 +10,11 @@ use sha2::{Digest, Sha256};
 use super::normalize::{NormalizationLimits, PlanNormalizer};
 use crate::{
     CandidatePlan, CapabilityId, Catalog, CatalogIdentity, DiscoveryError, DiscoveryResult,
-    GoalSpec, PlanCompatibility, PlanNormalization, PlanStep, PlanTestTarget, PlanningContext,
-    ProbeReplayHash, RankedCandidate,
+    PlanCompatibility, PlanNormalization, PlanStep, PlanTestTarget, PlanningContext,
+    ProbeReplayHash, ProjectKind, RankedCandidate,
 };
+
+const AMARI_WASM_PACKAGE: &str = "@justinelliottcobb/amari-wasm";
 
 /// Deterministic catalog-backed candidate-plan generator.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -50,7 +52,7 @@ impl PlanGenerator {
         context: &PlanningContext,
         candidate: &RankedCandidate,
     ) -> DiscoveryResult<CandidatePlan> {
-        validate_goal(&context.goal)?;
+        context.goal.validate()?;
         let prerequisite_order = prerequisite_order(candidate)?;
         let capabilities: BTreeMap<_, _> = catalog
             .capabilities()
@@ -63,6 +65,20 @@ impl PlanGenerator {
             .map(|record| (record.name.as_str(), record))
             .collect();
 
+        let rust_project = matches!(
+            context.snapshot.project_kind,
+            ProjectKind::RustCargo | ProjectKind::Mixed
+        );
+        let npm_project = matches!(
+            context.snapshot.project_kind,
+            ProjectKind::NpmTypeScript | ProjectKind::Mixed
+        );
+        if !rust_project && !npm_project {
+            return Err(DiscoveryError::InvalidInput(
+                "candidate plan requires Rust/Cargo or npm project evidence".to_owned(),
+            ));
+        }
+
         let mut steps = Vec::new();
         for capability_id in &prerequisite_order {
             let capability = capabilities.get(capability_id).ok_or_else(|| {
@@ -70,52 +86,34 @@ impl PlanGenerator {
                     "candidate path references unknown capability `{capability_id}`"
                 ))
             })?;
-            for package in &capability.crate_refs {
-                let record = crates.get(package.as_str()).ok_or_else(|| {
-                    DiscoveryError::CatalogCorruption(format!(
-                        "capability `{capability_id}` references unknown crate `{package}`"
-                    ))
-                })?;
-                steps.push(PlanStep::Dependency {
-                    capability_id: capability_id.clone(),
-                    package: package.clone(),
-                    version: record.version.clone(),
-                });
+            let mut actionable = false;
+            if rust_project {
+                let previous_len = steps.len();
+                append_rust_steps(&mut steps, capability_id, capability, &crates)?;
+                actionable |= steps.len() > previous_len;
             }
-            for reference in &capability.feature_refs {
-                let (package, feature) = split_catalog_reference(reference, "feature")?;
-                steps.push(PlanStep::Feature {
-                    capability_id: capability_id.clone(),
-                    package: package.to_owned(),
-                    feature: feature.to_owned(),
-                });
+            if npm_project {
+                let wasm_paths = context
+                    .snapshot
+                    .typescript
+                    .as_ref()
+                    .into_iter()
+                    .flat_map(|typescript| &typescript.capabilities)
+                    .filter(|evidence| evidence.capability_id == *capability_id)
+                    .map(|evidence| evidence.wasm_path.clone())
+                    .collect::<BTreeSet<_>>();
+                if !wasm_paths.is_empty() {
+                    append_npm_steps(&mut steps, capability_id, catalog.version(), wasm_paths);
+                    actionable = true;
+                }
             }
-            for path in &capability.symbol_refs {
-                steps.push(PlanStep::Symbol {
-                    capability_id: capability_id.clone(),
-                    path: path.clone(),
-                });
-            }
-            for reference in &capability.example_refs {
-                let (package, example) = split_catalog_reference(reference, "example")?;
-                steps.push(PlanStep::Example {
-                    capability_id: capability_id.clone(),
-                    package: package.to_owned(),
-                    example: example.to_owned(),
-                });
-            }
-            for probe_id in &capability.probe_refs {
-                steps.push(PlanStep::Probe {
-                    capability_id: capability_id.clone(),
-                    probe_id: probe_id.clone(),
-                });
-            }
-            for package in &capability.crate_refs {
-                steps.push(PlanStep::Test {
-                    capability_id: capability_id.clone(),
-                    package: package.clone(),
-                    target: PlanTestTarget::AllTargets,
-                });
+            if actionable {
+                for probe_id in &capability.probe_refs {
+                    steps.push(PlanStep::Probe {
+                        capability_id: capability_id.clone(),
+                        probe_id: probe_id.clone(),
+                    });
+                }
             }
         }
 
@@ -205,22 +203,76 @@ fn prerequisite_order(candidate: &RankedCandidate) -> DiscoveryResult<Vec<Capabi
         .collect())
 }
 
-fn validate_goal(goal: &GoalSpec) -> DiscoveryResult<()> {
-    if goal.statement.trim().is_empty() {
-        return Err(DiscoveryError::InvalidInput(
-            "planning goal statement must not be empty".to_owned(),
-        ));
+fn append_rust_steps(
+    steps: &mut Vec<PlanStep>,
+    capability_id: &CapabilityId,
+    capability: &crate::CapabilityRecord,
+    crates: &BTreeMap<&str, &crate::CrateRecord>,
+) -> DiscoveryResult<()> {
+    for package in &capability.crate_refs {
+        let record = crates.get(package.as_str()).ok_or_else(|| {
+            DiscoveryError::CatalogCorruption(format!(
+                "capability `{capability_id}` references unknown crate `{package}`"
+            ))
+        })?;
+        steps.push(PlanStep::Dependency {
+            capability_id: capability_id.clone(),
+            package: package.clone(),
+            version: record.version.clone(),
+        });
     }
-    if goal
-        .constraints
-        .iter()
-        .any(|constraint| constraint.trim().is_empty())
-    {
-        return Err(DiscoveryError::InvalidInput(
-            "planning goal constraints must not be empty".to_owned(),
-        ));
+    for reference in &capability.feature_refs {
+        let (package, feature) = split_catalog_reference(reference, "feature")?;
+        steps.push(PlanStep::Feature {
+            capability_id: capability_id.clone(),
+            package: package.to_owned(),
+            feature: feature.to_owned(),
+        });
+    }
+    for path in &capability.symbol_refs {
+        steps.push(PlanStep::Symbol {
+            capability_id: capability_id.clone(),
+            path: path.clone(),
+        });
+    }
+    for reference in &capability.example_refs {
+        let (package, example) = split_catalog_reference(reference, "example")?;
+        steps.push(PlanStep::Example {
+            capability_id: capability_id.clone(),
+            package: package.to_owned(),
+            example: example.to_owned(),
+        });
+    }
+    for package in &capability.crate_refs {
+        steps.push(PlanStep::Test {
+            capability_id: capability_id.clone(),
+            package: package.clone(),
+            target: PlanTestTarget::AllTargets,
+        });
     }
     Ok(())
+}
+
+fn append_npm_steps(
+    steps: &mut Vec<PlanStep>,
+    capability_id: &CapabilityId,
+    version: &str,
+    wasm_paths: BTreeSet<String>,
+) {
+    steps.push(PlanStep::Dependency {
+        capability_id: capability_id.clone(),
+        package: AMARI_WASM_PACKAGE.to_owned(),
+        version: version.to_owned(),
+    });
+    steps.extend(wasm_paths.into_iter().map(|path| PlanStep::Symbol {
+        capability_id: capability_id.clone(),
+        path,
+    }));
+    steps.push(PlanStep::Test {
+        capability_id: capability_id.clone(),
+        package: AMARI_WASM_PACKAGE.to_owned(),
+        target: PlanTestTarget::NpmPackage,
+    });
 }
 
 fn split_catalog_reference<'a>(

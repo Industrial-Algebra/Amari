@@ -237,6 +237,7 @@ pub(crate) fn write_recommendation_human(
                 {
                     let target = match target {
                         crate::PlanTestTarget::AllTargets => "all targets",
+                        crate::PlanTestTarget::NpmPackage => "npm package tests",
                     };
                     writeln!(writer, "  {package}: {target}")?;
                 }

@@ -326,15 +326,21 @@ fn encode_step(step: &PlanStep) -> Term {
         PlanStep::Test {
             capability_id,
             package,
-            target: PlanTestTarget::AllTargets,
-        } => Term::sym(
-            "test",
-            [
-                constant(capability_id.to_string()),
-                constant(package),
-                constant("all_targets"),
-            ],
-        ),
+            target,
+        } => {
+            let target = match target {
+                PlanTestTarget::AllTargets => "all_targets",
+                PlanTestTarget::NpmPackage => "npm_package",
+            };
+            Term::sym(
+                "test",
+                [
+                    constant(capability_id.to_string()),
+                    constant(package),
+                    constant(target),
+                ],
+            )
+        }
     }
 }
 
@@ -409,11 +415,18 @@ fn decode_step(term: &Term) -> DiscoveryResult<PlanStep> {
                 DiscoveryError::Internal(format!("cannot decode normalized probe ID: {error}"))
             })?,
         }),
-        ("test", [id, package, "all_targets"]) => Ok(PlanStep::Test {
-            capability_id: capability(id)?,
-            package: (*package).to_owned(),
-            target: PlanTestTarget::AllTargets,
-        }),
+        ("test", [id, package, target @ ("all_targets" | "npm_package")]) => {
+            let target = if *target == "all_targets" {
+                PlanTestTarget::AllTargets
+            } else {
+                PlanTestTarget::NpmPackage
+            };
+            Ok(PlanStep::Test {
+                capability_id: capability(id)?,
+                package: (*package).to_owned(),
+                target,
+            })
+        }
         _ => invalid_encoded_plan(),
     }
 }

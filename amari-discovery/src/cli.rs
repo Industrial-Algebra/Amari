@@ -277,7 +277,7 @@ fn run_inspect(path: Option<PathBuf>, json: bool) -> DiscoveryResult<()> {
     }
 }
 
-/// Runs deterministic recommendation for a Rust/Cargo project.
+/// Runs deterministic recommendation for a supported project.
 fn run_recommend(
     path: Option<PathBuf>,
     goal: Option<String>,
@@ -285,14 +285,18 @@ fn run_recommend(
     probe_results: Option<PathBuf>,
     json: bool,
 ) -> DiscoveryResult<()> {
-    if goal_file.is_some() {
-        return Err(DiscoveryError::NotImplemented(
-            "recommend --goal-file is added in the TypeScript parity slice".to_owned(),
-        ));
-    }
-    let statement = goal.ok_or_else(|| {
-        DiscoveryError::InvalidInput("recommend requires an inline --goal".to_owned())
-    })?;
+    let goal = match (goal, goal_file) {
+        (Some(statement), None) => GoalSpec {
+            statement,
+            constraints: Vec::new(),
+        },
+        (None, Some(path)) => commands::recommend::read_goal_spec(&path)?,
+        _ => {
+            return Err(DiscoveryError::InvalidInput(
+                "recommend requires exactly one of --goal or --goal-file".to_owned(),
+            ));
+        }
+    };
     let root = match path {
         Some(path) => path,
         None => std::env::current_dir()?,
@@ -302,13 +306,10 @@ fn run_recommend(
         None => Vec::new(),
     };
     let catalog = Catalog::embedded()?;
-    let envelope = commands::recommend::recommend_rust_envelope(
+    let envelope = commands::recommend::recommend_project_envelope(
         &catalog,
         &root,
-        GoalSpec {
-            statement,
-            constraints: Vec::new(),
-        },
+        goal,
         saved_probes,
         &InspectionLimits::default(),
     )?;

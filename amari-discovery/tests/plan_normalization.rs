@@ -296,6 +296,42 @@ fn generator_threads_explicit_normalization_limits() {
 }
 
 #[test]
+fn mixed_project_keeps_rust_actions_when_wasm_mapping_is_absent() {
+    let catalog = Catalog::embedded().unwrap();
+    let target = id("amari:amari-dual:autodiff:forward-derivative");
+    let mut mixed = context("project-mixed-rust-action");
+    mixed.snapshot.project_kind = ProjectKind::Mixed;
+
+    let plan = PlanGenerator::default()
+        .generate(&catalog, &mixed, &ranked(std::slice::from_ref(&target)))
+        .unwrap();
+
+    assert!(plan.steps.iter().any(|step| {
+        matches!(
+            step,
+            PlanStep::Dependency {
+                capability_id,
+                package,
+                ..
+            } if capability_id == &target && package == "amari-dual"
+        )
+    }));
+}
+
+#[test]
+fn direct_plan_generation_enforces_shared_goal_limits() {
+    let catalog = Catalog::embedded().unwrap();
+    let target = id("amari:amari-dual:autodiff:forward-derivative");
+    let mut oversized = context("project-goal-limit");
+    oversized.goal.constraints = vec!["constraint".to_owned(); GoalSpec::MAX_CONSTRAINTS + 1];
+
+    assert!(matches!(
+        PlanGenerator::default().generate(&catalog, &oversized, &ranked(&[target])),
+        Err(DiscoveryError::LimitExceeded(message)) if message.contains("goal constraints")
+    ));
+}
+
+#[test]
 fn generation_and_normalization_are_byte_deterministic() {
     let first = generated_dual_plan();
     let second = generated_dual_plan();
