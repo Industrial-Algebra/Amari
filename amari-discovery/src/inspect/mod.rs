@@ -943,7 +943,7 @@ pub fn inspect_npm_typescript_project(
     Ok(snapshot)
 }
 
-fn inspect_supported_project(
+pub(crate) fn inspect_supported_project(
     root: &Path,
     limits: &InspectionLimits,
 ) -> DiscoveryResult<ProjectSnapshot> {

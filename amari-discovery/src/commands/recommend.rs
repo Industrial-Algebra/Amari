@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Typed Rust-project recommendation pipeline.
+//! Typed Rust/Cargo and npm/TypeScript recommendation pipeline.
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::io::Read;
 use std::path::Path;
 
 use crate::inspect::{
-    inspect_rust_project, nofollow_open_readonly, snapshot_compatibility, InspectionLimits,
+    inspect_supported_project, nofollow_open_readonly, snapshot_compatibility, InspectionLimits,
     NofollowResult,
 };
 use crate::{
@@ -15,12 +16,13 @@ use crate::{
     DiscoveryError, DiscoveryOutcome, DiscoveryResult, Envelope, Evidence, GoalSpec,
     GraphConstraints, GraphExpansionState, PlanCompatibility, PlanGenerator, PlanStep,
     PlanningContext, ProbeId, ProbeResult, ProjectKind, RankedCandidate, RankingContext,
-    RecallConfig, Recommendation, RecommendationScore, RecommendationScoreComponents,
-    ReplayMetadata, SnapshotState, SCHEMA_V1,
+    RankingSignal, RankingSignalKind, RecallConfig, Recommendation, RecommendationScore,
+    RecommendationScoreComponents, ReplayMetadata, SnapshotState, SCHEMA_V1,
 };
 
 const MAX_PROBE_RESULTS_BYTES: u64 = 1_048_576;
 const MAX_PROBE_RESULTS: usize = 256;
+const MAX_GOAL_BYTES: u64 = 65_536;
 const MAX_ALTERNATIVES: usize = 7;
 
 /// Reads a bounded JSON array of saved [`ProbeResult`] values.
@@ -34,36 +36,7 @@ const MAX_ALTERNATIVES: usize = 7;
 /// inputs, an I/O error when the file cannot be read, or a serialization error
 /// for malformed JSON.
 pub fn read_probe_results(path: &Path) -> DiscoveryResult<Vec<ProbeResult>> {
-    let metadata = fs::symlink_metadata(path)?;
-    if !metadata.file_type().is_file() {
-        return Err(DiscoveryError::InvalidInput(
-            "probe-results input must be a regular file".to_owned(),
-        ));
-    }
-    if metadata.len() > MAX_PROBE_RESULTS_BYTES {
-        return Err(DiscoveryError::LimitExceeded(format!(
-            "probe-results bytes {} exceed limit {MAX_PROBE_RESULTS_BYTES}",
-            metadata.len()
-        )));
-    }
-    let mut file = match nofollow_open_readonly(path)? {
-        NofollowResult::Opened(file) => file,
-        NofollowResult::SymlinkOrRace => {
-            return Err(DiscoveryError::InvalidInput(
-                "probe-results input must not be a symlink or replaced file".to_owned(),
-            ));
-        }
-    };
-    let mut bytes = Vec::with_capacity(metadata.len() as usize);
-    file.by_ref()
-        .take(MAX_PROBE_RESULTS_BYTES + 1)
-        .read_to_end(&mut bytes)?;
-    if bytes.len() as u64 > MAX_PROBE_RESULTS_BYTES {
-        return Err(DiscoveryError::LimitExceeded(format!(
-            "probe-results bytes {} exceed limit {MAX_PROBE_RESULTS_BYTES}",
-            bytes.len()
-        )));
-    }
+    let bytes = read_bounded_input(path, MAX_PROBE_RESULTS_BYTES, "probe-results")?;
     let results: Vec<ProbeResult> = serde_json::from_slice(&bytes)?;
     if results.len() > MAX_PROBE_RESULTS {
         return Err(DiscoveryError::LimitExceeded(format!(
@@ -74,7 +47,52 @@ pub fn read_probe_results(path: &Path) -> DiscoveryResult<Vec<ProbeResult>> {
     Ok(results)
 }
 
-/// Runs the deterministic Rust inspect → recall → graph → rank → plan pipeline.
+/// Reads and validates a bounded typed [`GoalSpec`] JSON document.
+///
+/// # Errors
+///
+/// Returns a typed I/O, limit, serialization, or semantic input error. Symlinks
+/// and replacement races are rejected without exposing their targets.
+pub fn read_goal_spec(path: &Path) -> DiscoveryResult<GoalSpec> {
+    let bytes = read_bounded_input(path, MAX_GOAL_BYTES, "goal")?;
+    let goal: GoalSpec = serde_json::from_slice(&bytes)?;
+    goal.validate()?;
+    Ok(goal)
+}
+
+fn read_bounded_input(path: &Path, max_bytes: u64, kind: &str) -> DiscoveryResult<Vec<u8>> {
+    let metadata = fs::symlink_metadata(path)?;
+    if !metadata.file_type().is_file() {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "{kind} input must be a regular file"
+        )));
+    }
+    if metadata.len() > max_bytes {
+        return Err(DiscoveryError::LimitExceeded(format!(
+            "{kind} bytes {} exceed limit {max_bytes}",
+            metadata.len()
+        )));
+    }
+    let mut file = match nofollow_open_readonly(path)? {
+        NofollowResult::Opened(file) => file,
+        NofollowResult::SymlinkOrRace => {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "{kind} input must not be a symlink or replaced file"
+            )));
+        }
+    };
+    let mut bytes = Vec::with_capacity(metadata.len() as usize);
+    file.by_ref().take(max_bytes + 1).read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > max_bytes {
+        return Err(DiscoveryError::LimitExceeded(format!(
+            "{kind} bytes {} exceed limit {max_bytes}",
+            bytes.len()
+        )));
+    }
+    Ok(bytes)
+}
+
+/// Runs the deterministic project inspect → recall → graph → rank → plan pipeline.
 ///
 /// The operation is read-only and offline. It does not invoke Cargo, rustc,
 /// build scripts, project code, a shell, providers, probes, or the network.
@@ -82,28 +100,21 @@ pub fn read_probe_results(path: &Path) -> DiscoveryResult<Vec<ProbeResult>> {
 ///
 /// # Errors
 ///
-/// Returns a typed inspection, planner, catalog, or normalization error. npm-only
-/// and unknown project roots are rejected until their dedicated vertical slice.
-pub fn recommend_rust_envelope(
+/// Returns a typed inspection, planner, catalog, or normalization error.
+/// Unknown project roots are rejected without attempting project execution.
+pub fn recommend_project_envelope(
     catalog: &Catalog,
     project_root: &Path,
     goal: GoalSpec,
     probe_results: Vec<ProbeResult>,
     limits: &InspectionLimits,
 ) -> DiscoveryResult<Envelope<DiscoveryOutcome<Recommendation>>> {
-    if goal.statement.trim().is_empty() {
-        return Err(DiscoveryError::InvalidInput(
-            "recommendation goal must not be empty".to_owned(),
-        ));
-    }
+    goal.validate()?;
 
-    let snapshot = inspect_rust_project(project_root, limits)?;
-    if !matches!(
-        snapshot.project_kind,
-        ProjectKind::RustCargo | ProjectKind::Mixed
-    ) {
+    let snapshot = inspect_supported_project(project_root, limits)?;
+    if matches!(snapshot.project_kind, ProjectKind::Unknown) {
         return Err(DiscoveryError::InvalidInput(
-            "recommend currently requires a Rust/Cargo project".to_owned(),
+            "recommend requires a Rust/Cargo or npm/TypeScript project".to_owned(),
         ));
     }
     let compatibility = snapshot_compatibility(&snapshot);
@@ -138,17 +149,14 @@ pub fn recommend_rust_envelope(
         .iter()
         .map(|candidate| candidate.capability_id.clone())
         .collect::<Vec<_>>();
-    let graph =
-        CapabilityGraphExpander::default().expand(catalog, &seeds, &GraphConstraints::default())?;
+    let graph_constraints = graph_constraints(catalog, &planning_context);
+    let graph = CapabilityGraphExpander::default().expand(catalog, &seeds, &graph_constraints)?;
     let ranking = CandidateRanker::default().rank(
         catalog,
         &graph,
         &recalled,
         &planning_context.snapshot,
-        &RankingContext {
-            probe_results: planning_context.probe_results.clone(),
-            ..RankingContext::default()
-        },
+        &ranking_context(&planning_context),
     )?;
 
     let Some(preferred_ranked) = ranking.preferred.as_ref() else {
@@ -265,6 +273,97 @@ pub fn recommend_rust_envelope(
         warnings,
         DiscoveryOutcome::Recommended(recommendation),
     ))
+}
+
+/// Backward-compatible Task 14A entry point for recommendation.
+///
+/// The pipeline now also supports npm/TypeScript projects; new callers should
+/// prefer [`recommend_project_envelope`].
+///
+/// # Errors
+///
+/// Returns the same typed errors as [`recommend_project_envelope`].
+pub fn recommend_rust_envelope(
+    catalog: &Catalog,
+    project_root: &Path,
+    goal: GoalSpec,
+    probe_results: Vec<ProbeResult>,
+    limits: &InspectionLimits,
+) -> DiscoveryResult<Envelope<DiscoveryOutcome<Recommendation>>> {
+    recommend_project_envelope(catalog, project_root, goal, probe_results, limits)
+}
+
+fn mapped_typescript_capabilities(context: &PlanningContext) -> BTreeSet<crate::CapabilityId> {
+    context
+        .snapshot
+        .typescript
+        .as_ref()
+        .into_iter()
+        .flat_map(|typescript| &typescript.capabilities)
+        .map(|evidence| evidence.capability_id.clone())
+        .collect()
+}
+
+fn graph_constraints(catalog: &Catalog, context: &PlanningContext) -> GraphConstraints {
+    let mapped = mapped_typescript_capabilities(context);
+    let blocked_capabilities = match context.snapshot.project_kind {
+        ProjectKind::NpmTypeScript => catalog
+            .capabilities()
+            .iter()
+            .filter(|capability| !mapped.contains(&capability.id))
+            .map(|capability| capability.id.clone())
+            .collect(),
+        ProjectKind::Mixed => catalog
+            .capabilities()
+            .iter()
+            .filter(|capability| {
+                capability.crate_refs.is_empty() && !mapped.contains(&capability.id)
+            })
+            .map(|capability| capability.id.clone())
+            .collect(),
+        ProjectKind::RustCargo | ProjectKind::Unknown => BTreeSet::new(),
+    };
+    GraphConstraints {
+        blocked_capabilities,
+    }
+}
+
+fn ranking_context(context: &PlanningContext) -> RankingContext {
+    let mut ranking = RankingContext {
+        probe_results: context.probe_results.clone(),
+        ..RankingContext::default()
+    };
+    let npm_current = context.snapshot.npm.as_ref().is_some_and(|npm| {
+        npm.package.dependencies.iter().any(|dependency| {
+            dependency.package_name == "@justinelliottcobb/amari-wasm"
+                && dependency.compatibility.status == "applicable"
+        })
+    });
+    for capability_id in mapped_typescript_capabilities(context) {
+        ranking.signals.push(RankingSignal {
+            capability_id: capability_id.clone(),
+            kind: RankingSignalKind::Evidence,
+            strength: 0.9,
+            summary: "installed generated WASM declarations map this capability".to_owned(),
+        });
+        ranking.signals.push(RankingSignal {
+            capability_id: capability_id.clone(),
+            kind: RankingSignalKind::Platform,
+            strength: if npm_current { 0.95 } else { 0.6 },
+            summary: "generated WASM API is available to the TypeScript project".to_owned(),
+        });
+        if npm_current {
+            ranking.prerequisites_satisfied.insert(capability_id);
+        } else {
+            ranking.signals.push(RankingSignal {
+                capability_id,
+                kind: RankingSignalKind::Risk,
+                strength: 0.2,
+                summary: "installed Amari WASM version does not match the catalog".to_owned(),
+            });
+        }
+    }
+    ranking
 }
 
 fn recommendation_score(candidate: &RankedCandidate) -> RecommendationScore {

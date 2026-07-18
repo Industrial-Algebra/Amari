@@ -294,12 +294,49 @@ pub struct Evidence {
 
 /// A normalized user goal supplied to the discovery planner.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct GoalSpec {
     /// Concise statement of the mathematical or integration goal.
     pub statement: String,
     /// Explicit deterministic constraints applied to the goal.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<String>,
+}
+
+impl GoalSpec {
+    /// Maximum explicit constraints accepted by the v1 planner protocol.
+    pub const MAX_CONSTRAINTS: usize = 64;
+
+    /// Validates semantic goal invariants shared by CLI and library planning.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DiscoveryError::InvalidInput`] for an empty statement or
+    /// constraint, and [`DiscoveryError::LimitExceeded`] above 64 constraints.
+    pub fn validate(&self) -> Result<(), DiscoveryError> {
+        if self.statement.trim().is_empty() {
+            return Err(DiscoveryError::InvalidInput(
+                "planning goal statement must not be empty".to_owned(),
+            ));
+        }
+        if self.constraints.len() > Self::MAX_CONSTRAINTS {
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "goal constraints {} exceed limit {}",
+                self.constraints.len(),
+                Self::MAX_CONSTRAINTS
+            )));
+        }
+        if self
+            .constraints
+            .iter()
+            .any(|constraint| constraint.trim().is_empty())
+        {
+            return Err(DiscoveryError::InvalidInput(
+                "planning goal constraints must not be empty".to_owned(),
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// Typed project, goal, and saved-probe inputs used to construct plans.
@@ -343,19 +380,21 @@ pub struct PlanCompatibility {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PlanTestTarget {
-    /// Run every target belonging to the selected package.
+    /// Run every Cargo target belonging to the selected package.
     AllTargets,
+    /// Run the npm package's declared project test suite.
+    NpmPackage,
 }
 
 /// One read-only integration instruction in a candidate plan.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum PlanStep {
-    /// Add an exact Amari package dependency.
+    /// Add an exact Amari Cargo or npm package dependency.
     Dependency {
         /// Capability requiring this step.
         capability_id: CapabilityId,
-        /// Cargo package name.
+        /// Cargo or npm package name.
         package: String,
         /// Exact catalog package version.
         version: String,
@@ -396,7 +435,7 @@ pub enum PlanStep {
     Test {
         /// Capability requiring this step.
         capability_id: CapabilityId,
-        /// Cargo package name.
+        /// Cargo or npm package name.
         package: String,
         /// Static package test scope.
         target: PlanTestTarget,

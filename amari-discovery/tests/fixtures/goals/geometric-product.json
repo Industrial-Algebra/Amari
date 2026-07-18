@@ -1,0 +1,4 @@
+{
+  "statement": "compute the geometric product of multivectors in browser WebAssembly",
+  "constraints": ["browser", "wasm"]
+}
