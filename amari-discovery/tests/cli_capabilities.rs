@@ -56,7 +56,7 @@ fn capabilities_json_self_describes_schema_and_exit_codes() {
 }
 
 #[test]
-fn embedded_catalog_capabilities_do_not_forecast_probe_execution() {
+fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
     let value = capabilities_json();
 
     assert_eq!(value["data"]["catalog"]["version"], "0.23.0");
@@ -70,7 +70,9 @@ fn embedded_catalog_capabilities_do_not_forecast_probe_execution() {
     for probe in probes {
         assert_eq!(probe["known"], true);
         assert_eq!(probe["available"], cfg!(feature = "standard-probes"));
-        assert_eq!(probe["executable"], false);
+        let expected_executable =
+            cfg!(feature = "standard-probes") && probe["id"] == "amari-probe:tropical:viterbi:v1";
+        assert_eq!(probe["executable"], expected_executable);
     }
 
     for inspector in value["data"]["project_inspectors"].as_array().unwrap() {

@@ -8,9 +8,8 @@
 //!
 //! ## Features
 //!
-//! - `standard-probes` (default): compiles the standard dual-number, game,
-//!   surreal, and surcomplex probe dependencies. Probe execution is added in
-//!   later discovery runtime phases.
+//! - `standard-probes` (default): compiles registered deterministic probe
+//!   adapters, beginning with bounded tropical Viterbi decoding.
 //! - `ai`: reserves the provider-neutral AI adapter contract. It does not
 //!   enable network access or an external provider transport.
 
@@ -23,6 +22,7 @@ pub mod commands;
 pub mod error;
 pub mod inspect;
 pub mod planner;
+mod probes;
 pub mod protocol;
 mod render;
 
@@ -79,6 +79,10 @@ pub use planner::{
     RankingComponents, RankingContext, RankingProvenance, RankingResult, RankingSignal,
     RankingSignalKind, RecallConfig, RelationCostPolicy, RetrievalSource, RetrievedCandidate,
     RANKING_OBJECTIVE_ORDER,
+};
+pub use probes::{
+    ProbeEngine, ProbeEngineLimits, ProbeExecution, ProbeIsolation, TropicalViterbiOutput,
+    TropicalViterbiRequest,
 };
 pub use protocol::{
     CandidatePlan, CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope,
