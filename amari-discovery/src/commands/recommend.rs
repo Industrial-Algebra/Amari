@@ -60,7 +60,11 @@ pub fn read_goal_spec(path: &Path) -> DiscoveryResult<GoalSpec> {
     Ok(goal)
 }
 
-fn read_bounded_input(path: &Path, max_bytes: u64, kind: &str) -> DiscoveryResult<Vec<u8>> {
+pub(super) fn read_bounded_input(
+    path: &Path,
+    max_bytes: u64,
+    kind: &str,
+) -> DiscoveryResult<Vec<u8>> {
     let metadata = fs::symlink_metadata(path)?;
     if !metadata.file_type().is_file() {
         return Err(DiscoveryError::InvalidInput(format!(

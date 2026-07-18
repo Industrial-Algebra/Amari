@@ -255,6 +255,11 @@ pub fn run() -> DiscoveryResult<()> {
             goal_file,
             probe_results,
         } => run_recommend(path, goal, goal_file, probe_results, cli.json),
+        Command::Plan {
+            candidate_id,
+            recommendation,
+            project,
+        } => run_plan(candidate_id, recommendation, project, cli.json),
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
             command.unavailable_name()
@@ -318,6 +323,30 @@ fn run_recommend(
         render::write_json(&mut stdout, &envelope)
     } else {
         render::write_recommendation_human(&mut stdout, &envelope)
+    }
+}
+
+/// Replays one candidate from a saved recommendation artifact.
+fn run_plan(
+    candidate_id: String,
+    recommendation: PathBuf,
+    project: PathBuf,
+    json: bool,
+) -> DiscoveryResult<()> {
+    let artifact = commands::plan::read_recommendation(&recommendation)?;
+    let catalog = Catalog::embedded()?;
+    let envelope = commands::plan::replay_plan_envelope(
+        &catalog,
+        &project,
+        &candidate_id,
+        artifact,
+        &InspectionLimits::default(),
+    )?;
+    let mut stdout = io::stdout().lock();
+    if json {
+        render::write_json(&mut stdout, &envelope)
+    } else {
+        render::write_plan_human(&mut stdout, &envelope)
     }
 }
 

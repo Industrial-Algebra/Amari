@@ -7,4 +7,5 @@
 //! in the render module.
 
 pub mod discover;
+pub mod plan;
 pub mod recommend;

@@ -17,6 +17,7 @@ pub use graph::{
     GraphLimits, GraphPath, GraphStep, RelationCostPolicy,
 };
 pub use normalize::{NormalizationLimits, PlanNormalizer};
+pub(crate) use plan::catalog_plan_steps;
 pub use plan::PlanGenerator;
 pub use rank::{
     BlockedCandidate, CandidateRanker, RankedCandidate, RankingComponents, RankingContext,
