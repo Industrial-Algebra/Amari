@@ -119,7 +119,7 @@ impl PlanGenerator {
             }
         }
 
-        let compatibility = compatibility(catalog, context)?;
+        let compatibility = PlanCompatibility::from_context(catalog, context)?;
         let draft = CandidatePlan {
             capability_id: candidate.capability_id.clone(),
             prerequisite_order,
@@ -129,6 +129,21 @@ impl PlanGenerator {
             plan_hash: String::new(),
         };
         self.normalizer.normalize(&draft)
+    }
+}
+
+impl PlanCompatibility {
+    /// Computes canonical catalog, project, goal, and saved-probe replay hashes.
+    ///
+    /// This constructor is shared by recommendation envelopes and generated
+    /// plans so every outcome uses one stable `input_hash` definition.
+    ///
+    /// # Errors
+    ///
+    /// Returns a serialization error if typed goal or probe evidence cannot be
+    /// encoded for deterministic hashing.
+    pub fn from_context(catalog: &Catalog, context: &PlanningContext) -> DiscoveryResult<Self> {
+        compatibility(catalog, context)
     }
 }
 

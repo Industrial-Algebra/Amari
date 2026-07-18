@@ -84,5 +84,6 @@ pub use protocol::{
     CandidatePlan, CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope,
     Evidence, GoalSpec, NormalizationTrace, PlanCompatibility, PlanNormalization, PlanStep,
     PlanTestTarget, PlanningContext, ProbeBackend, ProbeId, ProbeReplayHash, ProbeResult,
-    Provenance, Recommendation, ReplayMetadata, ResourceObservations, SchemaVersion, SCHEMA_V1,
+    Provenance, Recommendation, RecommendationScore, RecommendationScoreComponents, ReplayMetadata,
+    ResourceObservations, SchemaVersion, SCHEMA_V1,
 };
