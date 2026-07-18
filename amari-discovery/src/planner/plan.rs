@@ -54,69 +54,7 @@ impl PlanGenerator {
     ) -> DiscoveryResult<CandidatePlan> {
         context.goal.validate()?;
         let prerequisite_order = prerequisite_order(candidate)?;
-        let capabilities: BTreeMap<_, _> = catalog
-            .capabilities()
-            .iter()
-            .map(|record| (record.id.clone(), record))
-            .collect();
-        let crates: BTreeMap<_, _> = catalog
-            .crates()
-            .iter()
-            .map(|record| (record.name.as_str(), record))
-            .collect();
-
-        let rust_project = matches!(
-            context.snapshot.project_kind,
-            ProjectKind::RustCargo | ProjectKind::Mixed
-        );
-        let npm_project = matches!(
-            context.snapshot.project_kind,
-            ProjectKind::NpmTypeScript | ProjectKind::Mixed
-        );
-        if !rust_project && !npm_project {
-            return Err(DiscoveryError::InvalidInput(
-                "candidate plan requires Rust/Cargo or npm project evidence".to_owned(),
-            ));
-        }
-
-        let mut steps = Vec::new();
-        for capability_id in &prerequisite_order {
-            let capability = capabilities.get(capability_id).ok_or_else(|| {
-                DiscoveryError::InvalidInput(format!(
-                    "candidate path references unknown capability `{capability_id}`"
-                ))
-            })?;
-            let mut actionable = false;
-            if rust_project {
-                let previous_len = steps.len();
-                append_rust_steps(&mut steps, capability_id, capability, &crates)?;
-                actionable |= steps.len() > previous_len;
-            }
-            if npm_project {
-                let wasm_paths = context
-                    .snapshot
-                    .typescript
-                    .as_ref()
-                    .into_iter()
-                    .flat_map(|typescript| &typescript.capabilities)
-                    .filter(|evidence| evidence.capability_id == *capability_id)
-                    .map(|evidence| evidence.wasm_path.clone())
-                    .collect::<BTreeSet<_>>();
-                if !wasm_paths.is_empty() {
-                    append_npm_steps(&mut steps, capability_id, catalog.version(), wasm_paths);
-                    actionable = true;
-                }
-            }
-            if actionable {
-                for probe_id in &capability.probe_refs {
-                    steps.push(PlanStep::Probe {
-                        capability_id: capability_id.clone(),
-                        probe_id: probe_id.clone(),
-                    });
-                }
-            }
-        }
-
+        let steps = catalog_plan_steps(catalog, &context.snapshot, &prerequisite_order)?;
         let compatibility = PlanCompatibility::from_context(catalog, context)?;
         let draft = CandidatePlan {
             capability_id: candidate.capability_id.clone(),
@@ -142,6 +80,25 @@ impl PlanCompatibility {
     /// encoded for deterministic hashing.
     pub fn from_context(catalog: &Catalog, context: &PlanningContext) -> DiscoveryResult<Self> {
         compatibility(catalog, context)
+    }
+
+    /// Reconstructs canonical replay compatibility from saved probe hashes.
+    ///
+    /// This constructor lets a fresh process validate a saved recommendation
+    /// without embedding or re-reading the original probe outputs.
+    ///
+    /// # Errors
+    ///
+    /// Returns a semantic goal error or a serialization error while hashing
+    /// canonical replay inputs.
+    pub fn from_replay_hashes(
+        catalog: &Catalog,
+        project_hash: impl Into<String>,
+        goal: &crate::GoalSpec,
+        probe_results: Vec<ProbeReplayHash>,
+    ) -> DiscoveryResult<Self> {
+        goal.validate()?;
+        compatibility_from_hashes(catalog, project_hash.into(), goal, probe_results)
     }
 }
 
@@ -182,6 +139,74 @@ impl CandidatePlan {
         }
         Ok(())
     }
+}
+
+pub(crate) fn catalog_plan_steps(
+    catalog: &Catalog,
+    snapshot: &crate::ProjectSnapshot,
+    prerequisite_order: &[CapabilityId],
+) -> DiscoveryResult<Vec<PlanStep>> {
+    let capabilities: BTreeMap<_, _> = catalog
+        .capabilities()
+        .iter()
+        .map(|record| (record.id.clone(), record))
+        .collect();
+    let crates: BTreeMap<_, _> = catalog
+        .crates()
+        .iter()
+        .map(|record| (record.name.as_str(), record))
+        .collect();
+    let rust_project = matches!(
+        snapshot.project_kind,
+        ProjectKind::RustCargo | ProjectKind::Mixed
+    );
+    let npm_project = matches!(
+        snapshot.project_kind,
+        ProjectKind::NpmTypeScript | ProjectKind::Mixed
+    );
+    if !rust_project && !npm_project {
+        return Err(DiscoveryError::InvalidInput(
+            "candidate plan requires Rust/Cargo or npm project evidence".to_owned(),
+        ));
+    }
+
+    let mut steps = Vec::new();
+    for capability_id in prerequisite_order {
+        let capability = capabilities.get(capability_id).ok_or_else(|| {
+            DiscoveryError::InvalidInput(format!(
+                "candidate path references unknown capability `{capability_id}`"
+            ))
+        })?;
+        let mut actionable = false;
+        if rust_project {
+            let previous_len = steps.len();
+            append_rust_steps(&mut steps, capability_id, capability, &crates)?;
+            actionable |= steps.len() > previous_len;
+        }
+        if npm_project {
+            let wasm_paths = snapshot
+                .typescript
+                .as_ref()
+                .into_iter()
+                .flat_map(|typescript| &typescript.capabilities)
+                .filter(|evidence| evidence.capability_id == *capability_id)
+                .map(|evidence| evidence.wasm_path.clone())
+                .collect::<BTreeSet<_>>();
+            if !wasm_paths.is_empty() {
+                append_npm_steps(&mut steps, capability_id, catalog.version(), wasm_paths);
+                actionable = true;
+            }
+        }
+        if actionable {
+            for probe_id in &capability.probe_refs {
+                steps.push(PlanStep::Probe {
+                    capability_id: capability_id.clone(),
+                    probe_id: probe_id.clone(),
+                });
+            }
+        }
+    }
+    Ok(steps)
 }
 
 fn prerequisite_order(candidate: &RankedCandidate) -> DiscoveryResult<Vec<CapabilityId>> {
@@ -291,7 +316,7 @@ fn compatibility(
     catalog: &Catalog,
     context: &PlanningContext,
 ) -> DiscoveryResult<PlanCompatibility> {
-    let mut probe_results = context
+    let probe_results = context
         .probe_results
         .iter()
         .map(|result| {
@@ -302,14 +327,28 @@ fn compatibility(
             })
         })
         .collect::<DiscoveryResult<Vec<_>>>()?;
+    compatibility_from_hashes(
+        catalog,
+        context.snapshot.project_hash.clone(),
+        &context.goal,
+        probe_results,
+    )
+}
+
+fn compatibility_from_hashes(
+    catalog: &Catalog,
+    project_hash: String,
+    goal: &crate::GoalSpec,
+    mut probe_results: Vec<ProbeReplayHash>,
+) -> DiscoveryResult<PlanCompatibility> {
     probe_results.sort();
     probe_results.dedup();
 
-    let mut constraints = context.goal.constraints.clone();
+    let mut constraints = goal.constraints.clone();
     constraints.sort();
     constraints.dedup();
     let canonical_goal = CanonicalGoal {
-        statement: context.goal.statement.trim(),
+        statement: goal.statement.trim(),
         constraints: &constraints,
         probe_results: &probe_results,
     };
@@ -319,7 +358,7 @@ fn compatibility(
             version: catalog.version().to_owned(),
             hash: catalog.content_hash().to_owned(),
         },
-        project_hash: context.snapshot.project_hash.clone(),
+        project_hash,
         input_hash: hash_serializable(&canonical_goal)?,
         probe_results,
     })

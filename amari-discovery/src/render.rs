@@ -8,8 +8,8 @@ use serde::Serialize;
 
 use crate::{
     commands::discover::{ExampleResult, GraphResult, SearchResults},
-    Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope, PlanStep,
-    ProjectKind, ProjectSnapshot, Recommendation,
+    CandidatePlan, Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope,
+    PlanStep, ProjectKind, ProjectSnapshot, Recommendation,
 };
 
 pub(crate) fn write_json<T: Serialize>(
@@ -265,6 +265,45 @@ pub(crate) fn write_recommendation_human(
             writeln!(writer, "Recommendation blocked.")?;
             for reason in reasons {
                 writeln!(writer, "  {reason}")?;
+            }
+        }
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Plan replay
+// ---------------------------------------------------------------------------
+
+pub(crate) fn write_plan_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<CandidatePlan>,
+) -> DiscoveryResult<()> {
+    let plan = &envelope.data;
+    writeln!(writer, "Plan for: {}", plan.capability_id)?;
+    writeln!(writer, "Plan hash: {}", plan.plan_hash)?;
+    writeln!(writer, "Steps:")?;
+    for step in &plan.steps {
+        match step {
+            PlanStep::Dependency {
+                package, version, ..
+            } => writeln!(writer, "  dependency: {package} = {version}")?,
+            PlanStep::Feature {
+                package, feature, ..
+            } => writeln!(writer, "  feature: {package}/{feature}")?,
+            PlanStep::Symbol { path, .. } => writeln!(writer, "  symbol: {path}")?,
+            PlanStep::Example {
+                package, example, ..
+            } => writeln!(writer, "  example: {package}/{example}")?,
+            PlanStep::Probe { probe_id, .. } => writeln!(writer, "  probe: {probe_id}")?,
+            PlanStep::Test {
+                package, target, ..
+            } => {
+                let target = match target {
+                    crate::PlanTestTarget::AllTargets => "all targets",
+                    crate::PlanTestTarget::NpmPackage => "npm package tests",
+                };
+                writeln!(writer, "  test: {package} ({target})")?;
             }
         }
     }
