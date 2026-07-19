@@ -131,10 +131,10 @@ jobs:
         cargo test --workspace --exclude amari-discovery --tests
         echo "✅ Workspace integration correctness confirmed"
 
-  discovery-integration:
-    name: Discovery Integration Tests
+  discovery-catalog:
+    name: Discovery Catalog Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
     - name: Checkout code
       uses: actions/checkout@v7
@@ -145,12 +145,74 @@ jobs:
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
       with:
-        key: mathematical-correctness
+        key: mathematical-correctness-discovery-catalog
 
-    - name: Run discovery integration tests
+    - name: Run discovery catalog tests
+      run: python3 scripts/run-discovery-test-shard.py catalog
+
+  discovery-inspection:
+    name: Discovery Inspection Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: mathematical-correctness-discovery-inspection
+
+    - name: Run discovery inspection tests
+      run: python3 scripts/run-discovery-test-shard.py inspection
+
+  discovery-planner:
+    name: Discovery Planner and CLI Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: mathematical-correctness-discovery-planner
+
+    - name: Run discovery planner and CLI tests
+      run: python3 scripts/run-discovery-test-shard.py planner
+
+  discovery-integration:
+    name: Discovery Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always()
+    needs:
+      - discovery-catalog
+      - discovery-inspection
+      - discovery-planner
+    steps:
+    - name: Report discovery integration status
+      env:
+        CATALOG: ${{ needs.discovery-catalog.result }}
+        INSPECTION: ${{ needs.discovery-inspection.result }}
+        PLANNER: ${{ needs.discovery-planner.result }}
       run: |
-        echo "🔎 Running discovery integration tests..."
-        cargo test --package amari-discovery --tests
+        echo "Catalog tests: $CATALOG"
+        echo "Inspection tests: $INSPECTION"
+        echo "Planner and CLI tests: $PLANNER"
+        if [ "$CATALOG" != "success" ] || \
+           [ "$INSPECTION" != "success" ] || \
+           [ "$PLANNER" != "success" ]; then
+          echo "❌ Discovery integration checks failed"
+          exit 1
+        fi
         echo "✅ Discovery integration correctness confirmed"
 
   documentation:

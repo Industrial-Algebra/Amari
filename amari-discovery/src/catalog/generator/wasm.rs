@@ -184,29 +184,34 @@ pub struct WasmCapabilityMapping {
 // wasm-bindgen volatility normalization
 // ---------------------------------------------------------------------------
 
-/// Replaces build-specific 16-hex crate disambiguators in generated names.
+/// Replaces build-specific 15- or 16-hex crate disambiguators in generated names.
 ///
 /// wasm-bindgen exposes low-level `InitOutput` members containing fragments
 /// such as `wasm_bindgen_4b172f83b73aa3ee_`. The hexadecimal component is a
 /// compiler/build identity, not part of Amari's API, and changes across clean
-/// build environments. Only underscore-delimited 16-hex components are
-/// replaced, leaving ordinary public names and type signatures unchanged.
+/// build environments. Rust may omit a leading zero and emit 15 digits, so
+/// both underscore-delimited lengths are replaced while ordinary public names
+/// and type signatures remain unchanged.
 fn normalize_disambiguators(value: &str) -> String {
     let bytes = value.as_bytes();
     let mut normalized = Vec::with_capacity(value.len());
     let mut cursor = 0usize;
 
     while cursor < bytes.len() {
-        let candidate_end = cursor.saturating_add(17);
-        let is_disambiguator = bytes[cursor] == b'_'
-            && candidate_end < bytes.len()
-            && bytes[cursor + 1..candidate_end]
-                .iter()
-                .all(u8::is_ascii_hexdigit)
-            && bytes[candidate_end] == b'_';
-        if is_disambiguator {
+        let disambiguator_len = [16usize, 15].into_iter().find(|hash_len| {
+            let Some(candidate_end) = cursor.checked_add(hash_len + 1) else {
+                return false;
+            };
+            bytes[cursor] == b'_'
+                && candidate_end < bytes.len()
+                && bytes[cursor + 1..candidate_end]
+                    .iter()
+                    .all(u8::is_ascii_hexdigit)
+                && bytes[candidate_end] == b'_'
+        });
+        if let Some(hash_len) = disambiguator_len {
             normalized.extend_from_slice(b"_HASH_");
-            cursor = candidate_end + 1;
+            cursor += hash_len + 2;
         } else {
             normalized.push(bytes[cursor]);
             cursor += 1;
@@ -2330,6 +2335,7 @@ export class StableApi {
 export interface InitOutput {
     readonly wasm_bindgen_4b172f83b73aa3ee___convert__closures_____invoke___bool__true_: (a: number) => number;
     readonly core_e772e18dc9b1936e___result__Result: number;
+    readonly js_sys_04ca85c3a4d57ed9___Function: number;
 }
 "#;
         let second = r#"
@@ -2339,6 +2345,7 @@ export class StableApi {
 export interface InitOutput {
     readonly wasm_bindgen_abc868e3374577bb___convert__closures_____invoke___bool__true_: (a: number) => number;
     readonly core_4721bad40cb17f09___result__Result: number;
+    readonly js_sys_4ca85c3a4d57ed9___Function: number;
 }
 "#;
 
@@ -2349,6 +2356,7 @@ export interface InitOutput {
         let serialized = serde_json::to_string(&first).unwrap();
         assert!(!serialized.contains("4b172f83b73aa3ee"));
         assert!(!serialized.contains("abc868e3374577bb"));
+        assert!(!serialized.contains("4ca85c3a4d57ed9"));
     }
 
     #[test]
