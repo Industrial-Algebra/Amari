@@ -70,8 +70,11 @@ fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
     for probe in probes {
         assert_eq!(probe["known"], true);
         assert_eq!(probe["available"], cfg!(feature = "standard-probes"));
-        let expected_executable =
-            cfg!(feature = "standard-probes") && probe["id"] == "amari-probe:tropical:viterbi:v1";
+        let expected_executable = cfg!(feature = "standard-probes")
+            && matches!(
+                probe["id"].as_str(),
+                Some("amari-probe:core:geometric-product:v1" | "amari-probe:tropical:viterbi:v1")
+            );
         assert_eq!(probe["executable"], expected_executable);
     }
 
