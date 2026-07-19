@@ -8,6 +8,7 @@
 //! in-process API does not provide crash or wall-clock isolation.
 
 mod core;
+mod dual;
 mod registry;
 mod tropical;
 
@@ -15,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub use core::{Cl3ProductOutput, Cl3ProductRequest};
+pub use dual::{PolynomialDerivativeOutput, PolynomialDerivativeRequest};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
@@ -240,7 +242,11 @@ fn enforce_limit(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()>
 
 #[cfg(feature = "standard-probes")]
 fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
-    Ok(vec![core::registration()?, tropical::registration()?])
+    Ok(vec![
+        core::registration()?,
+        dual::registration()?,
+        tropical::registration()?,
+    ])
 }
 
 #[cfg(not(feature = "standard-probes"))]
