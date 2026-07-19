@@ -9,6 +9,7 @@
 
 mod core;
 mod dual;
+mod network;
 mod registry;
 mod tropical;
 
@@ -17,6 +18,7 @@ use serde_json::Value;
 
 pub use core::{Cl3ProductOutput, Cl3ProductRequest};
 pub use dual::{PolynomialDerivativeOutput, PolynomialDerivativeRequest};
+pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathRequest};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
@@ -245,6 +247,7 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
     Ok(vec![
         core::registration()?,
         dual::registration()?,
+        network::registration()?,
         tropical::registration()?,
     ])
 }
