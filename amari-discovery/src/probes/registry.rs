@@ -217,6 +217,23 @@ mod tests {
         assert_eq!(registry.executable_ids(), vec![id]);
     }
 
+    #[cfg(feature = "standard-probes")]
+    #[test]
+    fn compiled_registry_contains_exactly_completed_probe_slices() {
+        let catalog = Catalog::embedded().unwrap();
+        let registry =
+            ProbeRegistry::build(&catalog, super::super::compiled_registrations().unwrap())
+                .unwrap();
+
+        assert_eq!(
+            registry.executable_ids(),
+            vec![
+                "amari-probe:core:geometric-product:v1".parse().unwrap(),
+                "amari-probe:tropical:viterbi:v1".parse().unwrap(),
+            ]
+        );
+    }
+
     #[test]
     fn duplicate_and_unknown_adapters_are_rejected() {
         let duplicate = registration();

@@ -7,12 +7,14 @@
 //! deterministic operation, node, iteration, and byte ceilings, but this
 //! in-process API does not provide crash or wall-clock isolation.
 
+mod core;
 mod registry;
 mod tropical;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub use core::{Cl3ProductOutput, Cl3ProductRequest};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
@@ -238,7 +240,7 @@ fn enforce_limit(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()>
 
 #[cfg(feature = "standard-probes")]
 fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
-    Ok(vec![tropical::registration()?])
+    Ok(vec![core::registration()?, tropical::registration()?])
 }
 
 #[cfg(not(feature = "standard-probes"))]

@@ -81,8 +81,8 @@ pub use planner::{
     RANKING_OBJECTIVE_ORDER,
 };
 pub use probes::{
-    ProbeEngine, ProbeEngineLimits, ProbeExecution, ProbeIsolation, TropicalViterbiOutput,
-    TropicalViterbiRequest,
+    Cl3ProductOutput, Cl3ProductRequest, ProbeEngine, ProbeEngineLimits, ProbeExecution,
+    ProbeIsolation, TropicalViterbiOutput, TropicalViterbiRequest,
 };
 pub use protocol::{
     CandidatePlan, CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope,
