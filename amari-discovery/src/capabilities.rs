@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     Catalog, CatalogIdentity, Compatibility, DiscoveryError, DiscoveryResult, Envelope,
-    ReplayMetadata, SCHEMA_V1,
+    ProbeEngine, ReplayMetadata, SCHEMA_V1,
 };
 
 /// Embedded catalog availability reported by the running binary.
@@ -194,10 +194,12 @@ impl Capabilities {
     ///
     /// # Errors
     ///
-    /// Returns a catalog-corruption error when the embedded structural,
-    /// semantic, or probe documents fail validation.
+    /// Returns a catalog-corruption error when embedded documents fail
+    /// validation or a compiled adapter diverges from its probe descriptor.
     pub fn current() -> DiscoveryResult<Self> {
         let catalog = Catalog::embedded()?;
+        let probe_engine =
+            ProbeEngine::with_catalog(&catalog, crate::ProbeEngineLimits::default())?;
         let known_probes = catalog
             .probes()
             .iter()
@@ -209,18 +211,24 @@ impl Capabilities {
                     .cloned()
                     .collect();
                 let available = missing_features.is_empty();
+                let executable = available && probe_engine.is_executable(&probe.id);
                 RuntimeCapabilityState {
                     id: probe.id.to_string(),
                     known: true,
                     available,
-                    executable: false,
-                    reason: Some(if available {
-                        "required features are compiled; probe adapter is not registered yet".into()
-                    } else {
+                    executable,
+                    reason: Some(if !available {
                         format!(
                             "required features are not compiled: {}",
                             missing_features.join(", ")
                         )
+                    } else if executable && probe.deterministic {
+                        "registered deterministic adapter is available with cooperative isolation"
+                            .into()
+                    } else if executable {
+                        "registered adapter is available with cooperative isolation".into()
+                    } else {
+                        "required features are compiled; probe adapter is not registered yet".into()
                     }),
                 }
             })
