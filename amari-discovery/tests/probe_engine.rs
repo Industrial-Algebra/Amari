@@ -8,8 +8,9 @@ use amari_discovery::{DiscoveryError, ProbeEngine, TropicalViterbiRequest};
 use serde_json::json;
 
 const CORE_PRODUCT: &str = "amari-probe:core:geometric-product:v1";
+const POLYNOMIAL_DERIVATIVE: &str = "amari-probe:dual:polynomial-derivative:v1";
 const VITERBI: &str = "amari-probe:tropical:viterbi:v1";
-const KNOWN_UNREGISTERED: &str = "amari-probe:dual:polynomial-derivative:v1";
+const KNOWN_UNREGISTERED: &str = "amari-probe:network:shortest-path:v1";
 
 fn request() -> TropicalViterbiRequest {
     TropicalViterbiRequest {
@@ -23,11 +24,16 @@ fn request() -> TropicalViterbiRequest {
 fn engine_derives_executable_state_from_the_private_registry() {
     let engine = ProbeEngine::new().unwrap();
     let core = CORE_PRODUCT.parse().unwrap();
+    let dual = POLYNOMIAL_DERIVATIVE.parse().unwrap();
     let viterbi = VITERBI.parse().unwrap();
     let unregistered = KNOWN_UNREGISTERED.parse().unwrap();
 
     assert_eq!(
         engine.is_executable(&core),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
+        engine.is_executable(&dual),
         cfg!(feature = "standard-probes")
     );
     assert_eq!(
@@ -38,7 +44,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
     assert_eq!(
         engine.executable_probe_ids(),
         if cfg!(feature = "standard-probes") {
-            vec![core, viterbi]
+            vec![core, dual, viterbi]
         } else {
             Vec::new()
         }

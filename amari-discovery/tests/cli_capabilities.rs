@@ -73,7 +73,11 @@ fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
         let expected_executable = cfg!(feature = "standard-probes")
             && matches!(
                 probe["id"].as_str(),
-                Some("amari-probe:core:geometric-product:v1" | "amari-probe:tropical:viterbi:v1")
+                Some(
+                    "amari-probe:core:geometric-product:v1"
+                        | "amari-probe:dual:polynomial-derivative:v1"
+                        | "amari-probe:tropical:viterbi:v1"
+                )
             );
         assert_eq!(probe["executable"], expected_executable);
     }
