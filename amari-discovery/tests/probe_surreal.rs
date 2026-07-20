@@ -5,13 +5,16 @@
 #![cfg(feature = "standard-probes")]
 
 use amari_discovery::{
-    DecimalRational, DiscoveryError, ProbeEngine, ProbeEngineLimits, ProbeExecution,
+    DecimalRational, DecimalSurcomplex, DiscoveryError, ProbeEngine, ProbeEngineLimits,
+    ProbeExecution, RationalSurcomplexDivisionOutput, RationalSurcomplexDivisionRequest,
     RationalSurrealArithmeticOutput, RationalSurrealArithmeticRequest,
 };
+use amari_surcomplex::RationalSurcomplex;
 use amari_surreal::RationalSurreal;
 use serde_json::json;
 
 const RATIONAL_ARITHMETIC: &str = "amari-probe:surreal:rational-arithmetic:v1";
+const SURCOMPLEX_DIVISION: &str = "amari-probe:surcomplex:rational-division:v1";
 
 fn rational(numerator: &str, denominator: &str) -> DecimalRational {
     DecimalRational {
@@ -45,6 +48,29 @@ fn output(value: &RationalSurreal) -> DecimalRational {
         numerator: value.numer().to_string(),
         denominator: value.denom().to_string(),
     }
+}
+
+fn surcomplex(real: DecimalRational, imaginary: DecimalRational) -> DecimalSurcomplex {
+    DecimalSurcomplex { real, imaginary }
+}
+
+fn direct_surcomplex(value: &DecimalSurcomplex) -> RationalSurcomplex {
+    RationalSurcomplex::from_parts(
+        RationalSurreal::from_ratio(
+            value.real.numerator.parse::<i128>().unwrap(),
+            value.real.denominator.parse::<i128>().unwrap(),
+        )
+        .unwrap(),
+        RationalSurreal::from_ratio(
+            value.imaginary.numerator.parse::<i128>().unwrap(),
+            value.imaginary.denominator.parse::<i128>().unwrap(),
+        )
+        .unwrap(),
+    )
+}
+
+fn surcomplex_output(value: &RationalSurcomplex) -> DecimalSurcomplex {
+    surcomplex(output(value.real()), output(value.imag()))
 }
 
 #[test]
@@ -209,6 +235,162 @@ fn rational_arithmetic_cooperative_limits_are_enforced() {
         let error = ProbeEngine::with_limits(limits)
             .unwrap()
             .execute(&RATIONAL_ARITHMETIC.parse().unwrap(), &input)
+            .unwrap_err();
+        assert!(
+            matches!(error, DiscoveryError::LimitExceeded(ref message) if message.contains(expected)),
+            "unexpected error for {expected}: {error}"
+        );
+    }
+}
+
+#[test]
+fn surcomplex_division_matches_exact_api_and_known_reciprocal() {
+    let request = RationalSurcomplexDivisionRequest {
+        dividend: surcomplex(rational("1", "1"), rational("0", "1")),
+        divisor: surcomplex(rational("1", "1"), rational("1", "2")),
+    };
+    let expected = direct_surcomplex(&request.dividend)
+        .checked_div(&direct_surcomplex(&request.divisor))
+        .unwrap();
+    let input = serde_json::to_value(&request).unwrap();
+    let engine = ProbeEngine::new().unwrap();
+    let first = engine
+        .execute(&SURCOMPLEX_DIVISION.parse().unwrap(), &input)
+        .unwrap();
+    let second = engine
+        .execute(&SURCOMPLEX_DIVISION.parse().unwrap(), &input)
+        .unwrap();
+    let actual: RationalSurcomplexDivisionOutput =
+        serde_json::from_value(first.output.clone()).unwrap();
+
+    assert_eq!(first, second);
+    assert_eq!(actual.quotient, surcomplex_output(&expected));
+    assert_eq!(
+        actual.quotient,
+        surcomplex(rational("4", "5"), rational("-2", "5"))
+    );
+}
+
+#[test]
+fn surcomplex_zero_divisor_is_rejected() {
+    let input = json!({
+        "dividend": {
+            "real": { "numerator": "1", "denominator": "1" },
+            "imaginary": { "numerator": "0", "denominator": "1" }
+        },
+        "divisor": {
+            "real": { "numerator": "0", "denominator": "1" },
+            "imaginary": { "numerator": "0", "denominator": "1" }
+        }
+    });
+
+    assert!(matches!(
+        ProbeEngine::new()
+            .unwrap()
+            .execute(&SURCOMPLEX_DIVISION.parse().unwrap(), &input),
+        Err(DiscoveryError::InvalidInput(message)) if message.contains("division by zero")
+    ));
+}
+
+#[test]
+fn surcomplex_components_reuse_bounded_decimal_validation() {
+    for (input, expected) in [
+        (
+            json!({
+                "dividend": {
+                    "real": { "numerator": "00000000000000000000000000000000000000000", "denominator": "1" },
+                    "imaginary": { "numerator": "0", "denominator": "1" }
+                },
+                "divisor": {
+                    "real": { "numerator": "1", "denominator": "1" },
+                    "imaginary": { "numerator": "0", "denominator": "1" }
+                }
+            }),
+            "length",
+        ),
+        (
+            json!({
+                "dividend": {
+                    "real": { "numerator": "1", "denominator": "0" },
+                    "imaginary": { "numerator": "0", "denominator": "1" }
+                },
+                "divisor": {
+                    "real": { "numerator": "1", "denominator": "1" },
+                    "imaginary": { "numerator": "0", "denominator": "1" }
+                }
+            }),
+            "denominator",
+        ),
+        (
+            json!({
+                "dividend": {
+                    "real": { "numerator": "170141183460469231731687303715884105728", "denominator": "1" },
+                    "imaginary": { "numerator": "0", "denominator": "1" }
+                },
+                "divisor": {
+                    "real": { "numerator": "1", "denominator": "1" },
+                    "imaginary": { "numerator": "0", "denominator": "1" }
+                }
+            }),
+            "i128",
+        ),
+    ] {
+        assert!(matches!(
+            ProbeEngine::new()
+                .unwrap()
+                .execute(&SURCOMPLEX_DIVISION.parse().unwrap(), &input),
+            Err(DiscoveryError::InvalidInput(message)) if message.contains(expected)
+        ));
+    }
+}
+
+#[test]
+fn surcomplex_division_cooperative_limits_are_enforced() {
+    let input = serde_json::to_value(RationalSurcomplexDivisionRequest {
+        dividend: surcomplex(rational("1", "1"), rational("0", "1")),
+        divisor: surcomplex(rational("1", "1"), rational("1", "2")),
+    })
+    .unwrap();
+    for (limits, expected) in [
+        (
+            ProbeEngineLimits {
+                max_input_bytes: 8,
+                ..ProbeEngineLimits::default()
+            },
+            "input bytes",
+        ),
+        (
+            ProbeEngineLimits {
+                max_operations: 11,
+                ..ProbeEngineLimits::default()
+            },
+            "operations",
+        ),
+        (
+            ProbeEngineLimits {
+                max_nodes: 6,
+                ..ProbeEngineLimits::default()
+            },
+            "nodes",
+        ),
+        (
+            ProbeEngineLimits {
+                max_iterations: 7,
+                ..ProbeEngineLimits::default()
+            },
+            "iterations",
+        ),
+        (
+            ProbeEngineLimits {
+                max_output_bytes: 1,
+                ..ProbeEngineLimits::default()
+            },
+            "output bytes",
+        ),
+    ] {
+        let error = ProbeEngine::with_limits(limits)
+            .unwrap()
+            .execute(&SURCOMPLEX_DIVISION.parse().unwrap(), &input)
             .unwrap_err();
         assert!(
             matches!(error, DiscoveryError::LimitExceeded(ref message) if message.contains(expected)),

@@ -82,13 +82,14 @@ pub use planner::{
 };
 pub use probes::{
     CgtNimSumOutput, CgtNimSumRequest, Cl3ProductOutput, Cl3ProductRequest, DecimalRational,
-    HolographicAttribution, HolographicCapacity, HolographicEntry, HolographicRecallOutput,
-    HolographicRecallRequest, HolographicSuperpositionOutput, HolographicSuperpositionRequest,
-    NetworkPath, NetworkShortestPathOutput, NetworkShortestPathRequest, ObjectiveDirection,
-    ParetoFrontOutput, ParetoFrontRequest, ParetoPoint, PolynomialDerivativeOutput,
-    PolynomialDerivativeRequest, ProbeEngine, ProbeEngineLimits, ProbeExecution, ProbeIsolation,
-    RationalSurrealArithmeticOutput, RationalSurrealArithmeticRequest, TropicalViterbiOutput,
-    TropicalViterbiRequest,
+    DecimalSurcomplex, HolographicAttribution, HolographicCapacity, HolographicEntry,
+    HolographicRecallOutput, HolographicRecallRequest, HolographicSuperpositionOutput,
+    HolographicSuperpositionRequest, NetworkPath, NetworkShortestPathOutput,
+    NetworkShortestPathRequest, ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest,
+    ParetoPoint, PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeEngine,
+    ProbeEngineLimits, ProbeExecution, ProbeIsolation, RationalSurcomplexDivisionOutput,
+    RationalSurcomplexDivisionRequest, RationalSurrealArithmeticOutput,
+    RationalSurrealArithmeticRequest, TropicalViterbiOutput, TropicalViterbiRequest,
 };
 pub use protocol::{
     CandidatePlan, CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope,

@@ -15,8 +15,9 @@ const PARETO_FRONT: &str = "amari-probe:optimization:pareto-front:v1";
 const RECALL: &str = "amari-probe:holographic:recall:v1";
 const SUPERPOSITION: &str = "amari-probe:holographic:superposition:v1";
 const RATIONAL_ARITHMETIC: &str = "amari-probe:surreal:rational-arithmetic:v1";
+const SURCOMPLEX_DIVISION: &str = "amari-probe:surcomplex:rational-division:v1";
 const VITERBI: &str = "amari-probe:tropical:viterbi:v1";
-const KNOWN_UNREGISTERED: &str = "amari-probe:surcomplex:rational-division:v1";
+const KNOWN_UNREGISTERED: &str = "amari-probe:rewrite:normalize:v1";
 
 fn request() -> TropicalViterbiRequest {
     TropicalViterbiRequest {
@@ -37,6 +38,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
     let recall = RECALL.parse().unwrap();
     let superposition = SUPERPOSITION.parse().unwrap();
     let surreal = RATIONAL_ARITHMETIC.parse().unwrap();
+    let surcomplex = SURCOMPLEX_DIVISION.parse().unwrap();
     let viterbi = VITERBI.parse().unwrap();
     let unregistered = KNOWN_UNREGISTERED.parse().unwrap();
 
@@ -73,6 +75,10 @@ fn engine_derives_executable_state_from_the_private_registry() {
         cfg!(feature = "standard-probes")
     );
     assert_eq!(
+        engine.is_executable(&surcomplex),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
         engine.is_executable(&viterbi),
         cfg!(feature = "standard-probes")
     );
@@ -88,6 +94,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
                 superposition,
                 network,
                 optimization,
+                surcomplex,
                 surreal,
                 viterbi,
             ]

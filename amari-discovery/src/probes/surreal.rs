@@ -5,6 +5,8 @@
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "standard-probes")]
+use amari_surcomplex::RationalSurcomplex;
+#[cfg(feature = "standard-probes")]
 use amari_surreal::RationalSurreal;
 #[cfg(feature = "standard-probes")]
 use serde_json::Value;
@@ -20,6 +22,10 @@ const MAX_DECIMAL_LENGTH: usize = 40;
 const RATIONAL_ARITHMETIC_OPERATIONS: u64 = 6;
 #[cfg(feature = "standard-probes")]
 const RATIONAL_ARITHMETIC_NODES: u64 = 6;
+#[cfg(feature = "standard-probes")]
+const SURCOMPLEX_DIVISION_OPERATIONS: u64 = 12;
+#[cfg(feature = "standard-probes")]
+const SURCOMPLEX_DIVISION_NODES: u64 = 7;
 
 /// Exact rational encoded as bounded base-ten numerator and denominator strings.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -54,6 +60,33 @@ pub struct RationalSurrealArithmeticOutput {
     pub quotient: DecimalRational,
 }
 
+/// Exact rational surcomplex value encoded as real and imaginary parts.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DecimalSurcomplex {
+    /// Exact real component.
+    pub real: DecimalRational,
+    /// Exact imaginary component.
+    pub imaginary: DecimalRational,
+}
+
+/// Typed input for exact rational-surcomplex division.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RationalSurcomplexDivisionRequest {
+    /// Rational-surcomplex dividend.
+    pub dividend: DecimalSurcomplex,
+    /// Nonzero rational-surcomplex divisor.
+    pub divisor: DecimalSurcomplex,
+}
+
+/// Exact normalized result of rational-surcomplex division.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct RationalSurcomplexDivisionOutput {
+    /// Exact quotient `dividend / divisor`.
+    pub quotient: DecimalSurcomplex,
+}
+
 #[cfg(feature = "standard-probes")]
 pub(super) fn rational_arithmetic_registration() -> DiscoveryResult<AdapterRegistration> {
     Ok(AdapterRegistration {
@@ -72,6 +105,27 @@ pub(super) fn rational_arithmetic_registration() -> DiscoveryResult<AdapterRegis
         side_effects: SideEffectPolicy::None,
         network: false,
         execute: execute_rational_arithmetic,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn surcomplex_division_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:surcomplex:rational-division:v1".parse()?,
+        capability_id: "amari:amari-surcomplex:rational:exact-division".parse()?,
+        input_schema: "amari.discovery/probe/surcomplex-rational-division/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/surcomplex-rational-division/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 16_384,
+            max_output_bytes: 16_384,
+            max_operations: 10_000,
+            timeout_millis: 1_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_surcomplex_division,
     })
 }
 
@@ -106,6 +160,32 @@ fn execute_rational_arithmetic(
 }
 
 #[cfg(feature = "standard-probes")]
+fn execute_surcomplex_division(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RationalSurcomplexDivisionRequest = serde_json::from_value(input.clone())
+        .map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "rational surcomplex division requires decimal component strings: {error}"
+            ))
+        })?;
+    let resources = validate_surcomplex_division(&request, limits)?;
+    let dividend = parse_surcomplex(&request.dividend, "dividend")?;
+    let divisor = parse_surcomplex(&request.divisor, "divisor")?;
+    let quotient = dividend.checked_div(&divisor).map_err(|_| {
+        DiscoveryError::InvalidInput("rational surcomplex division by zero".to_owned())
+    })?;
+
+    Ok(AdapterOutput {
+        resources,
+        output: serde_json::to_value(RationalSurcomplexDivisionOutput {
+            quotient: decimal_surcomplex(&quotient),
+        })?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
 fn validate_rational_arithmetic(
     request: &RationalSurrealArithmeticRequest,
     limits: &EffectiveProbeLimits,
@@ -113,21 +193,11 @@ fn validate_rational_arithmetic(
     let iterations = [&request.lhs, &request.rhs]
         .into_iter()
         .try_fold(0_u64, |total, value| {
-            validate_decimal(&value.numerator, "numerator")?;
-            validate_decimal(&value.denominator, "denominator")?;
-            let value_length = value
-                .numerator
-                .len()
-                .checked_add(value.denominator.len())
+            total
+                .checked_add(validated_decimal_length(value)?)
                 .ok_or_else(|| {
                     DiscoveryError::LimitExceeded("rational decimal length overflow".to_owned())
-                })?;
-            let value_length = u64::try_from(value_length).map_err(|_| {
-                DiscoveryError::LimitExceeded("rational decimal length overflow".to_owned())
-            })?;
-            total.checked_add(value_length).ok_or_else(|| {
-                DiscoveryError::LimitExceeded("rational decimal length overflow".to_owned())
-            })
+                })
         })?;
 
     enforce(
@@ -144,6 +214,57 @@ fn validate_rational_arithmetic(
         iterations,
         bytes: 0,
     })
+}
+
+#[cfg(feature = "standard-probes")]
+fn validate_surcomplex_division(
+    request: &RationalSurcomplexDivisionRequest,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<ResourceObservations> {
+    let iterations = [
+        &request.dividend.real,
+        &request.dividend.imaginary,
+        &request.divisor.real,
+        &request.divisor.imaginary,
+    ]
+    .into_iter()
+    .try_fold(0_u64, |total, value| {
+        total
+            .checked_add(validated_decimal_length(value)?)
+            .ok_or_else(|| {
+                DiscoveryError::LimitExceeded("surcomplex decimal length overflow".to_owned())
+            })
+    })?;
+
+    enforce_surcomplex(
+        "operations",
+        SURCOMPLEX_DIVISION_OPERATIONS,
+        limits.max_operations,
+    )?;
+    enforce_surcomplex("nodes", SURCOMPLEX_DIVISION_NODES, limits.max_nodes)?;
+    enforce_surcomplex("iterations", iterations, limits.max_iterations)?;
+
+    Ok(ResourceObservations {
+        operations: SURCOMPLEX_DIVISION_OPERATIONS,
+        nodes: SURCOMPLEX_DIVISION_NODES,
+        iterations,
+        bytes: 0,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn validated_decimal_length(value: &DecimalRational) -> DiscoveryResult<u64> {
+    validate_decimal(&value.numerator, "numerator")?;
+    validate_decimal(&value.denominator, "denominator")?;
+    let length = value
+        .numerator
+        .len()
+        .checked_add(value.denominator.len())
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("rational decimal length overflow".to_owned())
+        })?;
+    u64::try_from(length)
+        .map_err(|_| DiscoveryError::LimitExceeded("rational decimal length overflow".to_owned()))
 }
 
 #[cfg(feature = "standard-probes")]
@@ -178,6 +299,17 @@ fn parse_rational(value: &DecimalRational, operand: &str) -> DiscoveryResult<Rat
 }
 
 #[cfg(feature = "standard-probes")]
+fn parse_surcomplex(
+    value: &DecimalSurcomplex,
+    operand: &str,
+) -> DiscoveryResult<RationalSurcomplex> {
+    Ok(RationalSurcomplex::from_parts(
+        parse_rational(&value.real, &format!("{operand} real"))?,
+        parse_rational(&value.imaginary, &format!("{operand} imaginary"))?,
+    ))
+}
+
+#[cfg(feature = "standard-probes")]
 fn parse_i128(value: &str, operand: &str, field: &str) -> DiscoveryResult<i128> {
     value.parse::<i128>().map_err(|_| {
         DiscoveryError::InvalidInput(format!(
@@ -195,12 +327,31 @@ fn decimal_rational(value: &RationalSurreal) -> DecimalRational {
 }
 
 #[cfg(feature = "standard-probes")]
+fn decimal_surcomplex(value: &RationalSurcomplex) -> DecimalSurcomplex {
+    DecimalSurcomplex {
+        real: decimal_rational(value.real()),
+        imaginary: decimal_rational(value.imag()),
+    }
+}
+
+#[cfg(feature = "standard-probes")]
 fn enforce(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()> {
     if observed <= maximum {
         Ok(())
     } else {
         Err(DiscoveryError::LimitExceeded(format!(
             "rational arithmetic {kind} {observed} exceeds limit {maximum}"
+        )))
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn enforce_surcomplex(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()> {
+    if observed <= maximum {
+        Ok(())
+    } else {
+        Err(DiscoveryError::LimitExceeded(format!(
+            "rational surcomplex division {kind} {observed} exceeds limit {maximum}"
         )))
     }
 }
