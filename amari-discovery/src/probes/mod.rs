@@ -14,6 +14,7 @@ mod holographic;
 mod network;
 mod optimization;
 mod registry;
+mod surreal;
 mod tropical;
 
 use serde::{Deserialize, Serialize};
@@ -29,6 +30,9 @@ pub use holographic::{
 pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathRequest};
 pub use optimization::{ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest, ParetoPoint};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
+pub use surreal::{
+    DecimalRational, RationalSurrealArithmeticOutput, RationalSurrealArithmeticRequest,
+};
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
 use crate::{
@@ -261,6 +265,7 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
         holographic::superposition_registration()?,
         network::registration()?,
         optimization::registration()?,
+        surreal::rational_arithmetic_registration()?,
         tropical::registration()?,
     ])
 }
