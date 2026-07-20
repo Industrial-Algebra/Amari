@@ -81,8 +81,8 @@ pub use planner::{
     RANKING_OBJECTIVE_ORDER,
 };
 pub use probes::{
-    Cl3ProductOutput, Cl3ProductRequest, HolographicAttribution, HolographicCapacity,
-    HolographicEntry, HolographicRecallOutput, HolographicRecallRequest,
+    CgtNimSumOutput, CgtNimSumRequest, Cl3ProductOutput, Cl3ProductRequest, HolographicAttribution,
+    HolographicCapacity, HolographicEntry, HolographicRecallOutput, HolographicRecallRequest,
     HolographicSuperpositionOutput, HolographicSuperpositionRequest, NetworkPath,
     NetworkShortestPathOutput, NetworkShortestPathRequest, ObjectiveDirection, ParetoFrontOutput,
     ParetoFrontRequest, ParetoPoint, PolynomialDerivativeOutput, PolynomialDerivativeRequest,

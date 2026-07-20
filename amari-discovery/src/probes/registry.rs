@@ -228,6 +228,7 @@ mod tests {
         assert_eq!(
             registry.executable_ids(),
             vec![
+                "amari-probe:cgt:nim-sum:v1".parse().unwrap(),
                 "amari-probe:core:geometric-product:v1".parse().unwrap(),
                 "amari-probe:dual:polynomial-derivative:v1".parse().unwrap(),
                 "amari-probe:holographic:recall:v1".parse().unwrap(),

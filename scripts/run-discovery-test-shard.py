@@ -48,6 +48,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "planner_graph",
         "planner_ranking",
         "planner_recall",
+        "probe_cgt",
         "probe_core",
         "probe_dual",
         "probe_engine",

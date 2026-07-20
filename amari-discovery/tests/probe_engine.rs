@@ -7,6 +7,7 @@ use amari_discovery::ProbeIsolation;
 use amari_discovery::{DiscoveryError, ProbeEngine, TropicalViterbiRequest};
 use serde_json::json;
 
+const CGT_NIM_SUM: &str = "amari-probe:cgt:nim-sum:v1";
 const CORE_PRODUCT: &str = "amari-probe:core:geometric-product:v1";
 const POLYNOMIAL_DERIVATIVE: &str = "amari-probe:dual:polynomial-derivative:v1";
 const SHORTEST_PATH: &str = "amari-probe:network:shortest-path:v1";
@@ -14,7 +15,7 @@ const PARETO_FRONT: &str = "amari-probe:optimization:pareto-front:v1";
 const RECALL: &str = "amari-probe:holographic:recall:v1";
 const SUPERPOSITION: &str = "amari-probe:holographic:superposition:v1";
 const VITERBI: &str = "amari-probe:tropical:viterbi:v1";
-const KNOWN_UNREGISTERED: &str = "amari-probe:cgt:nim-sum:v1";
+const KNOWN_UNREGISTERED: &str = "amari-probe:surreal:rational-arithmetic:v1";
 
 fn request() -> TropicalViterbiRequest {
     TropicalViterbiRequest {
@@ -27,6 +28,7 @@ fn request() -> TropicalViterbiRequest {
 #[test]
 fn engine_derives_executable_state_from_the_private_registry() {
     let engine = ProbeEngine::new().unwrap();
+    let cgt = CGT_NIM_SUM.parse().unwrap();
     let core = CORE_PRODUCT.parse().unwrap();
     let dual = POLYNOMIAL_DERIVATIVE.parse().unwrap();
     let network = SHORTEST_PATH.parse().unwrap();
@@ -36,6 +38,10 @@ fn engine_derives_executable_state_from_the_private_registry() {
     let viterbi = VITERBI.parse().unwrap();
     let unregistered = KNOWN_UNREGISTERED.parse().unwrap();
 
+    assert_eq!(
+        engine.is_executable(&cgt),
+        cfg!(feature = "standard-probes")
+    );
     assert_eq!(
         engine.is_executable(&core),
         cfg!(feature = "standard-probes")
@@ -69,6 +75,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
         engine.executable_probe_ids(),
         if cfg!(feature = "standard-probes") {
             vec![
+                cgt,
                 core,
                 dual,
                 recall,
