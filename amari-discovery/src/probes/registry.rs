@@ -228,12 +228,19 @@ mod tests {
         assert_eq!(
             registry.executable_ids(),
             vec![
+                "amari-probe:cgt:nim-sum:v1".parse().unwrap(),
                 "amari-probe:core:geometric-product:v1".parse().unwrap(),
                 "amari-probe:dual:polynomial-derivative:v1".parse().unwrap(),
                 "amari-probe:holographic:recall:v1".parse().unwrap(),
                 "amari-probe:holographic:superposition:v1".parse().unwrap(),
                 "amari-probe:network:shortest-path:v1".parse().unwrap(),
                 "amari-probe:optimization:pareto-front:v1".parse().unwrap(),
+                "amari-probe:surcomplex:rational-division:v1"
+                    .parse()
+                    .unwrap(),
+                "amari-probe:surreal:rational-arithmetic:v1"
+                    .parse()
+                    .unwrap(),
                 "amari-probe:tropical:viterbi:v1".parse().unwrap(),
             ]
         );

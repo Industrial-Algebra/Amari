@@ -7,17 +7,20 @@
 //! deterministic operation, node, iteration, and byte ceilings, but this
 //! in-process API does not provide crash or wall-clock isolation.
 
+mod cgt;
 mod core;
 mod dual;
 mod holographic;
 mod network;
 mod optimization;
 mod registry;
+mod surreal;
 mod tropical;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub use cgt::{CgtNimSumOutput, CgtNimSumRequest};
 pub use core::{Cl3ProductOutput, Cl3ProductRequest};
 pub use dual::{PolynomialDerivativeOutput, PolynomialDerivativeRequest};
 pub use holographic::{
@@ -27,6 +30,11 @@ pub use holographic::{
 pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathRequest};
 pub use optimization::{ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest, ParetoPoint};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
+pub use surreal::{
+    DecimalRational, DecimalSurcomplex, RationalSurcomplexDivisionOutput,
+    RationalSurcomplexDivisionRequest, RationalSurrealArithmeticOutput,
+    RationalSurrealArithmeticRequest,
+};
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
 use crate::{
@@ -252,12 +260,15 @@ fn enforce_limit(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()>
 #[cfg(feature = "standard-probes")]
 fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
     Ok(vec![
+        cgt::registration()?,
         core::registration()?,
         dual::registration()?,
         holographic::recall_registration()?,
         holographic::superposition_registration()?,
         network::registration()?,
         optimization::registration()?,
+        surreal::surcomplex_division_registration()?,
+        surreal::rational_arithmetic_registration()?,
         tropical::registration()?,
     ])
 }
