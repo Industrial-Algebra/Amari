@@ -230,6 +230,7 @@ mod tests {
             vec![
                 "amari-probe:core:geometric-product:v1".parse().unwrap(),
                 "amari-probe:dual:polynomial-derivative:v1".parse().unwrap(),
+                "amari-probe:holographic:superposition:v1".parse().unwrap(),
                 "amari-probe:network:shortest-path:v1".parse().unwrap(),
                 "amari-probe:optimization:pareto-front:v1".parse().unwrap(),
                 "amari-probe:tropical:viterbi:v1".parse().unwrap(),

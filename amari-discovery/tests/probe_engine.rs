@@ -11,8 +11,9 @@ const CORE_PRODUCT: &str = "amari-probe:core:geometric-product:v1";
 const POLYNOMIAL_DERIVATIVE: &str = "amari-probe:dual:polynomial-derivative:v1";
 const SHORTEST_PATH: &str = "amari-probe:network:shortest-path:v1";
 const PARETO_FRONT: &str = "amari-probe:optimization:pareto-front:v1";
+const SUPERPOSITION: &str = "amari-probe:holographic:superposition:v1";
 const VITERBI: &str = "amari-probe:tropical:viterbi:v1";
-const KNOWN_UNREGISTERED: &str = "amari-probe:holographic:superposition:v1";
+const KNOWN_UNREGISTERED: &str = "amari-probe:holographic:recall:v1";
 
 fn request() -> TropicalViterbiRequest {
     TropicalViterbiRequest {
@@ -29,6 +30,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
     let dual = POLYNOMIAL_DERIVATIVE.parse().unwrap();
     let network = SHORTEST_PATH.parse().unwrap();
     let optimization = PARETO_FRONT.parse().unwrap();
+    let superposition = SUPERPOSITION.parse().unwrap();
     let viterbi = VITERBI.parse().unwrap();
     let unregistered = KNOWN_UNREGISTERED.parse().unwrap();
 
@@ -38,6 +40,10 @@ fn engine_derives_executable_state_from_the_private_registry() {
     );
     assert_eq!(
         engine.is_executable(&dual),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
+        engine.is_executable(&superposition),
         cfg!(feature = "standard-probes")
     );
     assert_eq!(
@@ -56,7 +62,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
     assert_eq!(
         engine.executable_probe_ids(),
         if cfg!(feature = "standard-probes") {
-            vec![core, dual, network, optimization, viterbi]
+            vec![core, dual, superposition, network, optimization, viterbi]
         } else {
             Vec::new()
         }
