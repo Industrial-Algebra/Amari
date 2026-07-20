@@ -81,7 +81,8 @@ pub use planner::{
     RANKING_OBJECTIVE_ORDER,
 };
 pub use probes::{
-    Cl3ProductOutput, Cl3ProductRequest, PolynomialDerivativeOutput, PolynomialDerivativeRequest,
+    Cl3ProductOutput, Cl3ProductRequest, NetworkPath, NetworkShortestPathOutput,
+    NetworkShortestPathRequest, PolynomialDerivativeOutput, PolynomialDerivativeRequest,
     ProbeEngine, ProbeEngineLimits, ProbeExecution, ProbeIsolation, TropicalViterbiOutput,
     TropicalViterbiRequest,
 };
