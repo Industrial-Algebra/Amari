@@ -20,7 +20,10 @@ use serde_json::Value;
 
 pub use core::{Cl3ProductOutput, Cl3ProductRequest};
 pub use dual::{PolynomialDerivativeOutput, PolynomialDerivativeRequest};
-pub use holographic::{HolographicSuperpositionOutput, HolographicSuperpositionRequest};
+pub use holographic::{
+    HolographicAttribution, HolographicCapacity, HolographicEntry, HolographicRecallOutput,
+    HolographicRecallRequest, HolographicSuperpositionOutput, HolographicSuperpositionRequest,
+};
 pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathRequest};
 pub use optimization::{ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest, ParetoPoint};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
@@ -251,6 +254,7 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
     Ok(vec![
         core::registration()?,
         dual::registration()?,
+        holographic::recall_registration()?,
         holographic::superposition_registration()?,
         network::registration()?,
         optimization::registration()?,

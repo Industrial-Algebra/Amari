@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "standard-probes")]
-use amari_holographic::{algebra::map::MAP256, BindingAlgebra};
+use amari_holographic::{algebra::map::MAP256, AlgebraConfig, BindingAlgebra, HolographicMemory};
 #[cfg(feature = "standard-probes")]
 use serde_json::Value;
 
@@ -18,6 +18,12 @@ use crate::{DiscoveryError, DiscoveryResult, ProbeLimits, ResourceObservations, 
 const MAP_DIMENSION: u64 = 256;
 #[cfg(feature = "standard-probes")]
 const MAX_SUPERPOSITION_SEEDS: u64 = 256;
+#[cfg(feature = "standard-probes")]
+const MAX_RECALL_ENTRIES: u64 = 32;
+#[cfg(feature = "standard-probes")]
+const RECALL_PASSES_PER_ENTRY: u64 = 11;
+#[cfg(feature = "standard-probes")]
+const RECALL_FIXED_PASSES: u64 = 6;
 
 /// Typed request for deterministic additive MAP256 superposition.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -32,6 +38,90 @@ pub struct HolographicSuperpositionRequest {
 pub struct HolographicSuperpositionOutput {
     /// Additive trace coefficients in MAP component order.
     pub coefficients: Vec<f64>,
+}
+
+/// One deterministic key-value entry for holographic memory.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HolographicEntry {
+    /// Seed for the MAP256 key.
+    pub key_seed: u64,
+    /// Seed for the MAP256 value.
+    pub value_seed: u64,
+}
+
+/// Typed request for MAP256 associative-memory retrieval.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HolographicRecallRequest {
+    /// Ordered key-value entries stored with existing memory semantics.
+    pub entries: Vec<HolographicEntry>,
+    /// Seed for the query key.
+    pub query_seed: u64,
+}
+
+/// One normalized key-attribution weight.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct HolographicAttribution {
+    /// Entry index in storage order.
+    pub index: usize,
+    /// Nonnegative normalized attribution weight.
+    pub weight: f64,
+}
+
+/// Capacity metrics reported by `HolographicMemory<MAP256>`.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct HolographicCapacity {
+    /// Number of stored entries.
+    pub item_count: usize,
+    /// Theoretical MAP256 capacity estimate.
+    pub theoretical_capacity: usize,
+    /// Current estimated signal-to-noise ratio.
+    pub estimated_snr: f64,
+    /// Recommended minimum signal-to-noise ratio.
+    pub snr_threshold: f64,
+    /// Whether storage exceeds half the theoretical capacity.
+    pub near_capacity: bool,
+}
+
+/// Typed output from MAP256 associative-memory retrieval.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct HolographicRecallOutput {
+    /// Retrieved value after configured cleanup.
+    pub value_coefficients: Vec<f64>,
+    /// Raw value before configured cleanup.
+    pub raw_coefficients: Vec<f64>,
+    /// Deterministic confidence derived from entry count and dimension.
+    pub confidence: f64,
+    /// Similarity between the retrieved value and query key.
+    pub query_similarity: f64,
+    /// Significant tracked-key attributions in memory order semantics.
+    pub attribution: Vec<HolographicAttribution>,
+    /// Capacity metrics from the underlying memory.
+    pub capacity: HolographicCapacity,
+    /// Deterministic bounded warnings.
+    pub warnings: Vec<String>,
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn recall_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:holographic:recall:v1".parse()?,
+        capability_id: "amari:amari-holographic:memory:retrieval".parse()?,
+        input_schema: "amari.discovery/probe/holographic-recall/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/holographic-recall/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_recall,
+    })
 }
 
 #[cfg(feature = "standard-probes")]
@@ -52,6 +142,75 @@ pub(super) fn superposition_registration() -> DiscoveryResult<AdapterRegistratio
         side_effects: SideEffectPolicy::None,
         network: false,
         execute: execute_superposition,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_recall(input: &Value, limits: &EffectiveProbeLimits) -> DiscoveryResult<AdapterOutput> {
+    let request: HolographicRecallRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "holographic recall request requires bounded entries with integer seeds: {error}"
+            ))
+        })?;
+    let resources = validate_recall(&request, limits)?;
+
+    let mut memory = HolographicMemory::<MAP256>::with_key_tracking(AlgebraConfig::default());
+    for entry in request.entries {
+        memory.store(
+            &MAP256::from_seed(entry.key_seed),
+            &MAP256::from_seed(entry.value_seed),
+        );
+    }
+    let retrieval = memory.retrieve(&MAP256::from_seed(request.query_seed));
+    let capacity = memory.capacity_info();
+    let value_coefficients = retrieval.value.components().to_vec();
+    let raw_coefficients = retrieval.raw_value.components().to_vec();
+    if value_coefficients
+        .iter()
+        .chain(&raw_coefficients)
+        .any(|coefficient| !coefficient.is_finite())
+        || !retrieval.confidence.is_finite()
+        || !retrieval.query_similarity.is_finite()
+        || retrieval
+            .attribution
+            .iter()
+            .any(|(_, weight)| !weight.is_finite())
+        || !capacity.estimated_snr.is_finite()
+        || !capacity.snr_threshold.is_finite()
+    {
+        return Err(DiscoveryError::ProbeFailed(
+            "MAP256 recall produced a non-finite result".to_owned(),
+        ));
+    }
+    let attribution = retrieval
+        .attribution
+        .into_iter()
+        .map(|(index, weight)| HolographicAttribution { index, weight })
+        .collect();
+    let warnings = if capacity.near_capacity {
+        vec!["MAP256 memory is near or above recommended capacity".to_owned()]
+    } else {
+        Vec::new()
+    };
+
+    Ok(AdapterOutput {
+        resources,
+        output: serde_json::to_value(HolographicRecallOutput {
+            value_coefficients,
+            raw_coefficients,
+            confidence: retrieval.confidence,
+            query_similarity: retrieval.query_similarity,
+            attribution,
+            capacity: HolographicCapacity {
+                item_count: capacity.item_count,
+                theoretical_capacity: capacity.theoretical_capacity,
+                estimated_snr: capacity.estimated_snr,
+                snr_threshold: capacity.snr_threshold,
+                near_capacity: capacity.near_capacity,
+            },
+            warnings,
+        })?,
     })
 }
 
@@ -87,6 +246,57 @@ fn execute_superposition(
     Ok(AdapterOutput {
         resources,
         output: serde_json::to_value(HolographicSuperpositionOutput { coefficients })?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn validate_recall(
+    request: &HolographicRecallRequest,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<ResourceObservations> {
+    if request.entries.is_empty() {
+        return Err(DiscoveryError::InvalidInput(
+            "holographic recall requires at least one entry".to_owned(),
+        ));
+    }
+    let entry_count = u64::try_from(request.entries.len()).map_err(|_| {
+        DiscoveryError::LimitExceeded("holographic entry count overflow".to_owned())
+    })?;
+    if entry_count > MAX_RECALL_ENTRIES {
+        return Err(DiscoveryError::LimitExceeded(format!(
+            "holographic entry count {entry_count} exceeds limit {MAX_RECALL_ENTRIES}"
+        )));
+    }
+    let operations = entry_count
+        .checked_mul(RECALL_PASSES_PER_ENTRY)
+        .and_then(|passes| passes.checked_add(RECALL_FIXED_PASSES))
+        .and_then(|passes| passes.checked_mul(MAP_DIMENSION))
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("holographic recall operation count overflow".to_owned())
+        })?;
+    let nodes = entry_count
+        .checked_mul(2)
+        .and_then(|count| count.checked_add(3))
+        .and_then(|count| count.checked_mul(MAP_DIMENSION))
+        .and_then(|count| count.checked_add(entry_count))
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("holographic recall node count overflow".to_owned())
+        })?;
+    let iterations = entry_count
+        .checked_mul(2)
+        .and_then(|count| count.checked_add(1))
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("holographic recall iteration count overflow".to_owned())
+        })?;
+    enforce("operations", operations, limits.max_operations)?;
+    enforce("nodes", nodes, limits.max_nodes)?;
+    enforce("iterations", iterations, limits.max_iterations)?;
+
+    Ok(ResourceObservations {
+        operations,
+        nodes,
+        iterations,
+        bytes: 0,
     })
 }
 
