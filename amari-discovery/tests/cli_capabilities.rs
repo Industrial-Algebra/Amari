@@ -77,6 +77,7 @@ fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
                     "amari-probe:core:geometric-product:v1"
                         | "amari-probe:dual:polynomial-derivative:v1"
                         | "amari-probe:network:shortest-path:v1"
+                        | "amari-probe:optimization:pareto-front:v1"
                         | "amari-probe:tropical:viterbi:v1"
                 )
             );

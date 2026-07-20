@@ -82,8 +82,9 @@ pub use planner::{
 };
 pub use probes::{
     Cl3ProductOutput, Cl3ProductRequest, NetworkPath, NetworkShortestPathOutput,
-    NetworkShortestPathRequest, PolynomialDerivativeOutput, PolynomialDerivativeRequest,
-    ProbeEngine, ProbeEngineLimits, ProbeExecution, ProbeIsolation, TropicalViterbiOutput,
+    NetworkShortestPathRequest, ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest,
+    ParetoPoint, PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeEngine,
+    ProbeEngineLimits, ProbeExecution, ProbeIsolation, TropicalViterbiOutput,
     TropicalViterbiRequest,
 };
 pub use protocol::{
