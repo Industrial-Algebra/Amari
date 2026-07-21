@@ -243,7 +243,7 @@ impl Capabilities {
                 hash: catalog.content_hash().into(),
                 available: true,
             },
-            output_modes: vec!["human".into(), "json".into()],
+            output_modes: vec!["human".into(), "json".into(), "ndjson".into()],
             resource_limits: ResourceLimits::default(),
             host: detect_host(),
             target: compilation_target(),

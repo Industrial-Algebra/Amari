@@ -12,8 +12,16 @@ use crate::{
         probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult},
     },
     CandidatePlan, Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope,
-    PlanStep, ProbeIsolation, ProjectKind, ProjectSnapshot, Recommendation,
+    NdjsonWriter, PlanStep, ProbeIsolation, ProjectKind, ProjectSnapshot, ProtocolSchema,
+    Recommendation, SchemaCatalog,
 };
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum OutputMode {
+    Human,
+    Json,
+    Ndjson,
+}
 
 pub(crate) fn write_json<T: Serialize>(
     writer: &mut impl Write,
@@ -22,6 +30,24 @@ pub(crate) fn write_json<T: Serialize>(
     serde_json::to_writer(&mut *writer, envelope)?;
     writeln!(writer)?;
     Ok(())
+}
+
+pub(crate) fn write_envelope<T, W, F>(
+    writer: &mut W,
+    envelope: &Envelope<T>,
+    mode: OutputMode,
+    human: F,
+) -> DiscoveryResult<()>
+where
+    T: Serialize,
+    W: Write,
+    F: FnOnce(&mut W, &Envelope<T>) -> DiscoveryResult<()>,
+{
+    match mode {
+        OutputMode::Human => human(writer, envelope),
+        OutputMode::Json => write_json(writer, envelope),
+        OutputMode::Ndjson => NdjsonWriter::new(writer)?.write(envelope),
+    }
 }
 
 pub(crate) fn write_capabilities_human(
@@ -90,6 +116,31 @@ pub(crate) fn write_capabilities_human(
         "  max_inspection_wall_millis: {}",
         rl.max_inspection_wall_millis
     )?;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Schemas
+// ---------------------------------------------------------------------------
+
+pub(crate) fn write_schema_catalog_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<SchemaCatalog>,
+) -> DiscoveryResult<()> {
+    writeln!(writer, "Available schemas:")?;
+    for schema in &envelope.data.schemas {
+        writeln!(writer, "  {}: {}", schema.kind, schema.id)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn write_schema_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProtocolSchema>,
+) -> DiscoveryResult<()> {
+    writeln!(writer, "Schema: {}", envelope.data.kind)?;
+    writeln!(writer, "ID: {}", envelope.data.id)?;
+    writeln!(writer, "Protocol: {}", envelope.data.protocol_version)?;
     Ok(())
 }
 

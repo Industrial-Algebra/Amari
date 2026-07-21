@@ -107,4 +107,7 @@ pub use protocol::{
     Provenance, Recommendation, RecommendationScore, RecommendationScoreComponents, ReplayMetadata,
     ResourceObservations, SchemaVersion, SCHEMA_V1,
 };
-pub use schema::{protocol_schema, ProtocolSchema, SchemaKind};
+pub use schema::{
+    protocol_schema, protocol_schema_catalog, ProtocolSchema, SchemaCatalog, SchemaKind,
+    SchemaSummary,
+};

@@ -69,6 +69,24 @@ impl fmt::Display for SchemaKind {
     }
 }
 
+/// Compact identity for one available protocol schema.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct SchemaSummary {
+    /// Schema family.
+    pub kind: SchemaKind,
+    /// Stable JSON Schema `$id`.
+    pub id: String,
+    /// Discovery protocol version described by the schema.
+    pub protocol_version: String,
+}
+
+/// Deterministically ordered catalog of available protocol schemas.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct SchemaCatalog {
+    /// All five v1 schema identities.
+    pub schemas: Vec<SchemaSummary>,
+}
+
 /// One parsed curated protocol schema and its stable identity.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ProtocolSchema {
@@ -93,6 +111,26 @@ impl ProtocolSchema {
         bytes.push(b'\n');
         Ok(bytes)
     }
+}
+
+/// Returns all available schema identities in deterministic order.
+///
+/// # Errors
+///
+/// Returns catalog corruption when any embedded schema is invalid.
+pub fn protocol_schema_catalog() -> DiscoveryResult<SchemaCatalog> {
+    let schemas = SchemaKind::ALL
+        .into_iter()
+        .map(|kind| {
+            let schema = protocol_schema(kind)?;
+            Ok(SchemaSummary {
+                kind,
+                id: schema.id,
+                protocol_version: schema.protocol_version,
+            })
+        })
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    Ok(SchemaCatalog { schemas })
 }
 
 /// Loads and validates one embedded curated protocol schema.

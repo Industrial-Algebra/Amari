@@ -10,7 +10,10 @@ use std::{
 use clap::{Parser, Subcommand, ValueEnum};
 
 use crate::inspect::{inspect_project_envelope, InspectionLimits};
-use crate::{commands, render, Capabilities, Catalog, DiscoveryError, DiscoveryResult, GoalSpec};
+use crate::{
+    commands, render, Capabilities, Catalog, CatalogIdentity, Compatibility, DiscoveryError,
+    DiscoveryResult, Envelope, GoalSpec, ReplayMetadata,
+};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -22,8 +25,21 @@ struct Cli {
     #[command(subcommand)]
     command: Command,
 
-    #[arg(long, global = true, help = "Emit a versioned JSON response")]
+    #[arg(
+        long,
+        global = true,
+        conflicts_with = "ndjson",
+        help = "Emit a versioned JSON response"
+    )]
     json: bool,
+
+    #[arg(
+        long,
+        global = true,
+        conflicts_with = "json",
+        help = "Emit one versioned NDJSON response record"
+    )]
+    ndjson: bool,
 }
 
 #[derive(Debug, Subcommand)]
@@ -240,33 +256,42 @@ impl ProbeCommand {
 /// not executable in the current bootstrap implementation.
 pub fn run() -> DiscoveryResult<()> {
     let cli = Cli::parse();
+    let mode = if cli.ndjson {
+        render::OutputMode::Ndjson
+    } else if cli.json {
+        render::OutputMode::Json
+    } else {
+        render::OutputMode::Human
+    };
     match cli.command {
         Command::Capabilities => {
             let envelope = Capabilities::envelope()?;
             let mut stdout = io::stdout().lock();
-            if cli.json {
-                render::write_json(&mut stdout, &envelope)
-            } else {
-                render::write_capabilities_human(&mut stdout, &envelope)
-            }
+            render::write_envelope(
+                &mut stdout,
+                &envelope,
+                mode,
+                render::write_capabilities_human,
+            )
         }
         Command::Discover { command } => {
             let catalog = Catalog::embedded()?;
-            run_discover(&catalog, command, cli.json)
+            run_discover(&catalog, command, mode)
         }
-        Command::Inspect { path } => run_inspect(path, cli.json),
+        Command::Inspect { path } => run_inspect(path, mode),
         Command::Recommend {
             path,
             goal,
             goal_file,
             probe_results,
-        } => run_recommend(path, goal, goal_file, probe_results, cli.json),
+        } => run_recommend(path, goal, goal_file, probe_results, mode),
         Command::Plan {
             candidate_id,
             recommendation,
             project,
-        } => run_plan(candidate_id, recommendation, project, cli.json),
-        Command::Probe { command } => run_probe(command, cli.json),
+        } => run_plan(candidate_id, recommendation, project, mode),
+        Command::Probe { command } => run_probe(command, mode),
+        Command::Schema { kind } => run_schema(kind, mode),
         Command::ProbeWorker => crate::probes::worker::run_stdio(),
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
@@ -281,9 +306,10 @@ pub fn run() -> DiscoveryResult<()> {
 /// stable error kind and message. Rendering failures are intentionally ignored
 /// because the original process error determines the exit status.
 pub fn report_error(error: &DiscoveryError) {
-    let json = std::env::args_os().any(|argument| argument == "--json");
+    let machine =
+        std::env::args_os().any(|argument| argument == "--json" || argument == "--ndjson");
     let mut stderr = io::stderr().lock();
-    if json {
+    if machine {
         let payload = serde_json::json!({
             "kind": error.kind(),
             "message": error.to_string(),
@@ -296,26 +322,69 @@ pub fn report_error(error: &DiscoveryError) {
     }
 }
 
-fn run_probe(command: ProbeCommand, json: bool) -> DiscoveryResult<()> {
+fn run_schema(kind: Option<SchemaKind>, mode: render::OutputMode) -> DiscoveryResult<()> {
+    let catalog = Catalog::embedded()?;
+    let mut stdout = io::stdout().lock();
+    match kind {
+        Some(kind) => {
+            let kind = match kind {
+                SchemaKind::Request => crate::SchemaKind::Request,
+                SchemaKind::Response => crate::SchemaKind::Response,
+                SchemaKind::Goal => crate::SchemaKind::Goal,
+                SchemaKind::Plan => crate::SchemaKind::Plan,
+                SchemaKind::Probe => crate::SchemaKind::Probe,
+            };
+            let envelope = schema_envelope(&catalog, crate::protocol_schema(kind)?);
+            render::write_envelope(&mut stdout, &envelope, mode, render::write_schema_human)
+        }
+        None => {
+            let envelope = schema_envelope(&catalog, crate::protocol_schema_catalog()?);
+            render::write_envelope(
+                &mut stdout,
+                &envelope,
+                mode,
+                render::write_schema_catalog_human,
+            )
+        }
+    }
+}
+
+fn schema_envelope<T>(catalog: &Catalog, data: T) -> Envelope<T> {
+    Envelope::new(
+        data,
+        CatalogIdentity {
+            version: catalog.version().to_owned(),
+            hash: catalog.content_hash().to_owned(),
+        },
+        Compatibility {
+            status: "compatible".to_owned(),
+            reasons: Vec::new(),
+        },
+        ReplayMetadata {
+            replayable: false,
+            required_hashes: Vec::new(),
+            reasons: vec!["schema discovery is catalog-independent".to_owned()],
+        },
+    )
+}
+
+fn run_probe(command: ProbeCommand, mode: render::OutputMode) -> DiscoveryResult<()> {
     let catalog = Catalog::embedded()?;
     let mut stdout = io::stdout().lock();
     match command {
         ProbeCommand::List => {
             let envelope = commands::probe::list_envelope(&catalog)?;
-            if json {
-                render::write_json(&mut stdout, &envelope)
-            } else {
-                render::write_probe_list_human(&mut stdout, &envelope)
-            }
+            render::write_envelope(&mut stdout, &envelope, mode, render::write_probe_list_human)
         }
         ProbeCommand::Describe { probe_id } => {
             let probe_id = probe_id.parse()?;
             let envelope = commands::probe::describe_envelope(&catalog, &probe_id)?;
-            if json {
-                render::write_json(&mut stdout, &envelope)
-            } else {
-                render::write_probe_description_human(&mut stdout, &envelope)
-            }
+            render::write_envelope(
+                &mut stdout,
+                &envelope,
+                mode,
+                render::write_probe_description_human,
+            )
         }
         ProbeCommand::Run {
             probe_id,
@@ -334,20 +403,22 @@ fn run_probe(command: ProbeCommand, json: bool) -> DiscoveryResult<()> {
                 )),
                 (Some(path), None, false) => {
                     let envelope = commands::probe::run_input_envelope(&catalog, &probe_id, &path)?;
-                    if json {
-                        render::write_json(&mut stdout, &envelope)
-                    } else {
-                        render::write_probe_run_human(&mut stdout, &envelope)
-                    }
+                    render::write_envelope(
+                        &mut stdout,
+                        &envelope,
+                        mode,
+                        render::write_probe_run_human,
+                    )
                 }
                 (None, Some(path), true) => {
                     let envelope =
                         commands::probe::dry_run_plan_envelope(&catalog, &probe_id, &path)?;
-                    if json {
-                        render::write_json(&mut stdout, &envelope)
-                    } else {
-                        render::write_probe_dry_run_human(&mut stdout, &envelope)
-                    }
+                    render::write_envelope(
+                        &mut stdout,
+                        &envelope,
+                        mode,
+                        render::write_probe_dry_run_human,
+                    )
                 }
                 _ => Err(DiscoveryError::InvalidInput(
                     "probe run requires exactly one of --input or --plan".to_owned(),
@@ -358,18 +429,14 @@ fn run_probe(command: ProbeCommand, json: bool) -> DiscoveryResult<()> {
 }
 
 /// Runs bounded project inspection and renders the shared typed snapshot.
-fn run_inspect(path: Option<PathBuf>, json: bool) -> DiscoveryResult<()> {
+fn run_inspect(path: Option<PathBuf>, mode: render::OutputMode) -> DiscoveryResult<()> {
     let root = match path {
         Some(path) => path,
         None => std::env::current_dir()?,
     };
     let envelope = inspect_project_envelope(&root, &InspectionLimits::default())?;
     let mut stdout = io::stdout().lock();
-    if json {
-        render::write_json(&mut stdout, &envelope)
-    } else {
-        render::write_inspection_human(&mut stdout, &envelope)
-    }
+    render::write_envelope(&mut stdout, &envelope, mode, render::write_inspection_human)
 }
 
 /// Runs deterministic recommendation for a supported project.
@@ -378,7 +445,7 @@ fn run_recommend(
     goal: Option<String>,
     goal_file: Option<PathBuf>,
     probe_results: Option<PathBuf>,
-    json: bool,
+    mode: render::OutputMode,
 ) -> DiscoveryResult<()> {
     let goal = match (goal, goal_file) {
         (Some(statement), None) => GoalSpec {
@@ -409,11 +476,12 @@ fn run_recommend(
         &InspectionLimits::default(),
     )?;
     let mut stdout = io::stdout().lock();
-    if json {
-        render::write_json(&mut stdout, &envelope)
-    } else {
-        render::write_recommendation_human(&mut stdout, &envelope)
-    }
+    render::write_envelope(
+        &mut stdout,
+        &envelope,
+        mode,
+        render::write_recommendation_human,
+    )
 }
 
 /// Replays one candidate from a saved recommendation artifact.
@@ -421,7 +489,7 @@ fn run_plan(
     candidate_id: String,
     recommendation: PathBuf,
     project: PathBuf,
-    json: bool,
+    mode: render::OutputMode,
 ) -> DiscoveryResult<()> {
     let artifact = commands::plan::read_recommendation(&recommendation)?;
     let catalog = Catalog::embedded()?;
@@ -433,48 +501,32 @@ fn run_plan(
         &InspectionLimits::default(),
     )?;
     let mut stdout = io::stdout().lock();
-    if json {
-        render::write_json(&mut stdout, &envelope)
-    } else {
-        render::write_plan_human(&mut stdout, &envelope)
-    }
+    render::write_envelope(&mut stdout, &envelope, mode, render::write_plan_human)
 }
 
 /// Dispatches a discover subcommand against the embedded catalog and renders output.
-fn run_discover(catalog: &Catalog, command: DiscoverCommand, json: bool) -> DiscoveryResult<()> {
+fn run_discover(
+    catalog: &Catalog,
+    command: DiscoverCommand,
+    mode: render::OutputMode,
+) -> DiscoveryResult<()> {
     let mut stdout = io::stdout().lock();
     match command {
         DiscoverCommand::Search { query } => {
             let envelope = commands::discover::search_envelope(catalog, &query);
-            if json {
-                render::write_json(&mut stdout, &envelope)
-            } else {
-                render::write_search_human(&mut stdout, &envelope)
-            }
+            render::write_envelope(&mut stdout, &envelope, mode, render::write_search_human)
         }
         DiscoverCommand::Detail { identifier } => {
             let envelope = commands::discover::detail_envelope(catalog, &identifier)?;
-            if json {
-                render::write_json(&mut stdout, &envelope)
-            } else {
-                render::write_detail_human(&mut stdout, &envelope)
-            }
+            render::write_envelope(&mut stdout, &envelope, mode, render::write_detail_human)
         }
         DiscoverCommand::Graph { identifier } => {
             let envelope = commands::discover::graph_envelope(catalog, &identifier)?;
-            if json {
-                render::write_json(&mut stdout, &envelope)
-            } else {
-                render::write_graph_human(&mut stdout, &envelope)
-            }
+            render::write_envelope(&mut stdout, &envelope, mode, render::write_graph_human)
         }
         DiscoverCommand::Example { identifier } => {
             let envelope = commands::discover::example_envelope(catalog, &identifier)?;
-            if json {
-                render::write_json(&mut stdout, &envelope)
-            } else {
-                render::write_example_human(&mut stdout, &envelope)
-            }
+            render::write_envelope(&mut stdout, &envelope, mode, render::write_example_human)
         }
     }
 }

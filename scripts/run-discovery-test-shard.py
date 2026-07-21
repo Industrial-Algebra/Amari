@@ -41,6 +41,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "ts_source_inspection",
     ),
     "planner": (
+        "agent_contract",
         "cli_capabilities",
         "cli_discover",
         "cli_plan_replay",

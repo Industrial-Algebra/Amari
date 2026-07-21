@@ -291,7 +291,7 @@ fn symlinked_probe_result_file_is_rejected_without_project_mutation() {
         .assert()
         .code(2)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::str::starts_with("invalid_input:"));
+        .stderr(predicate::str::contains("\"kind\":\"invalid_input\""));
 
     assert_eq!(tree_contents(fixture.path()), before);
 }
@@ -313,7 +313,7 @@ fn malformed_probe_result_file_is_rejected_without_project_mutation() {
         .assert()
         .code(9)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::str::starts_with("serialization:"));
+        .stderr(predicate::str::contains("\"kind\":\"serialization\""));
 
     assert_eq!(tree_contents(fixture.path()), before);
 }
