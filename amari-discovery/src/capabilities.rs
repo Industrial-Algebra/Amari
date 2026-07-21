@@ -223,10 +223,10 @@ impl Capabilities {
                             missing_features.join(", ")
                         )
                     } else if executable && probe.deterministic {
-                        "registered deterministic adapter is available with cooperative isolation"
+                        "registered deterministic adapter is available; library execution is cooperative and CLI execution is process-isolated"
                             .into()
                     } else if executable {
-                        "registered adapter is available with cooperative isolation".into()
+                        "registered adapter is available; library execution is cooperative and CLI execution is process-isolated".into()
                     } else {
                         "required features are compiled; probe adapter is not registered yet".into()
                     }),

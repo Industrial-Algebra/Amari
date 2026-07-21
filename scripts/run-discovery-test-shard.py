@@ -42,6 +42,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "cli_capabilities",
         "cli_discover",
         "cli_plan_replay",
+        "cli_probes",
         "cli_recommend_rust",
         "cli_recommend_ts",
         "plan_normalization",

@@ -15,8 +15,6 @@ mod network;
 mod optimization;
 mod registry;
 mod rewrite;
-// Task 21C wires this private process-isolation foundation into CLI dispatch.
-#[allow(dead_code)]
 mod supervisor;
 mod surreal;
 mod tropical;
@@ -255,6 +253,15 @@ impl ProbeEngine {
             output: result.output,
         })
     }
+}
+
+pub(crate) fn execute_isolated(
+    id: &ProbeId,
+    input: &Value,
+    limits: ProbeEngineLimits,
+    provenance: crate::Provenance,
+) -> DiscoveryResult<ProbeExecution> {
+    supervisor::execute_isolated(id, input, limits, provenance)
 }
 
 fn enforce_limit(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()> {

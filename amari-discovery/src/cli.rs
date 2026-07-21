@@ -2,7 +2,10 @@
 
 //! Command-line parsing and dispatch for the `amari` binary.
 
-use std::{io, path::PathBuf};
+use std::{
+    io::{self, Write},
+    path::PathBuf,
+};
 
 use clap::{Parser, Subcommand, ValueEnum};
 
@@ -263,11 +266,94 @@ pub fn run() -> DiscoveryResult<()> {
             recommendation,
             project,
         } => run_plan(candidate_id, recommendation, project, cli.json),
+        Command::Probe { command } => run_probe(command, cli.json),
         Command::ProbeWorker => crate::probes::worker::run_stdio(),
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
             command.unavailable_name()
         ))),
+    }
+}
+
+/// Renders a process-level error according to the selected machine mode.
+///
+/// JSON mode emits one structured object on stderr. Human mode emits the
+/// stable error kind and message. Rendering failures are intentionally ignored
+/// because the original process error determines the exit status.
+pub fn report_error(error: &DiscoveryError) {
+    let json = std::env::args_os().any(|argument| argument == "--json");
+    let mut stderr = io::stderr().lock();
+    if json {
+        let payload = serde_json::json!({
+            "kind": error.kind(),
+            "message": error.to_string(),
+            "details": { "exit_code": error.exit_code() }
+        });
+        let _ = serde_json::to_writer(&mut stderr, &payload);
+        let _ = writeln!(stderr);
+    } else {
+        let _ = writeln!(stderr, "{}: {error}", error.kind());
+    }
+}
+
+fn run_probe(command: ProbeCommand, json: bool) -> DiscoveryResult<()> {
+    let catalog = Catalog::embedded()?;
+    let mut stdout = io::stdout().lock();
+    match command {
+        ProbeCommand::List => {
+            let envelope = commands::probe::list_envelope(&catalog)?;
+            if json {
+                render::write_json(&mut stdout, &envelope)
+            } else {
+                render::write_probe_list_human(&mut stdout, &envelope)
+            }
+        }
+        ProbeCommand::Describe { probe_id } => {
+            let probe_id = probe_id.parse()?;
+            let envelope = commands::probe::describe_envelope(&catalog, &probe_id)?;
+            if json {
+                render::write_json(&mut stdout, &envelope)
+            } else {
+                render::write_probe_description_human(&mut stdout, &envelope)
+            }
+        }
+        ProbeCommand::Run {
+            probe_id,
+            input,
+            plan,
+            dry_run,
+        } => {
+            let probe_id = probe_id.parse()?;
+            match (input, plan, dry_run) {
+                (Some(_), None, true) => Err(DiscoveryError::InvalidInput(
+                    "probe dry-run requires --plan and never accepts --input".to_owned(),
+                )),
+                (None, Some(_), false) => Err(DiscoveryError::InvalidInput(
+                    "probe plan execution is disabled; provide explicit typed input with --input"
+                        .to_owned(),
+                )),
+                (Some(path), None, false) => {
+                    let envelope = commands::probe::run_input_envelope(&catalog, &probe_id, &path)?;
+                    if json {
+                        render::write_json(&mut stdout, &envelope)
+                    } else {
+                        render::write_probe_run_human(&mut stdout, &envelope)
+                    }
+                }
+                (None, Some(path), true) => {
+                    let envelope =
+                        commands::probe::dry_run_plan_envelope(&catalog, &probe_id, &path)?;
+                    if json {
+                        render::write_json(&mut stdout, &envelope)
+                    } else {
+                        render::write_probe_dry_run_human(&mut stdout, &envelope)
+                    }
+                }
+                _ => Err(DiscoveryError::InvalidInput(
+                    "probe run requires exactly one of --input or --plan".to_owned(),
+                )),
+            }
+        }
     }
 }
 

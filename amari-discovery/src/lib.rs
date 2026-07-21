@@ -49,6 +49,9 @@ pub use commands::discover::{
     DiscoveredExample, ExampleResult, GraphRelationItem, GraphResult, SearchResultItem,
     SearchResults,
 };
+pub use commands::probe::{
+    ProbeDescription, ProbeDryRun, ProbeList, ProbeListItem, ProbeRunResult,
+};
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{
     inspect_cargo_platform, inspect_cargo_project, inspect_npm_project,

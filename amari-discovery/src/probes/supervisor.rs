@@ -15,7 +15,10 @@ use super::{
     worker::{self, WorkerRequest, WorkerResponse},
     ProbeIsolation,
 };
-use crate::{DiscoveryError, DiscoveryResult, Provenance};
+use crate::{
+    DiscoveryError, DiscoveryResult, ProbeEngineLimits, ProbeExecution, ProbeId, Provenance,
+    ResourceLimits,
+};
 
 const PROCESS_POLL_INTERVAL: Duration = Duration::from_millis(5);
 
@@ -61,14 +64,10 @@ enum DrainOutcome {
     Failed(io::Error),
 }
 
-// This private foundation is wired into command dispatch by Task 21C.
-#[allow(dead_code)]
 trait WorkerLauncher {
     fn command(&self) -> DiscoveryResult<Command>;
 }
 
-// This private foundation is wired into command dispatch by Task 21C.
-#[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub(super) struct ProductionWorkerLauncher;
 
@@ -80,8 +79,6 @@ impl WorkerLauncher for ProductionWorkerLauncher {
     }
 }
 
-// This private foundation is wired into command dispatch by Task 21C.
-#[allow(dead_code)]
 fn spawn_restricted(launcher: &impl WorkerLauncher) -> DiscoveryResult<Child> {
     let mut command = launcher.command()?;
     command
@@ -96,6 +93,30 @@ fn spawn_restricted(launcher: &impl WorkerLauncher) -> DiscoveryResult<Child> {
 fn neutral_working_directory() -> PathBuf {
     let temporary = std::env::temp_dir();
     temporary.canonicalize().unwrap_or(temporary)
+}
+
+pub(super) fn execute_isolated(
+    probe_id: &ProbeId,
+    input: &serde_json::Value,
+    limits: ProbeEngineLimits,
+    provenance: Provenance,
+) -> DiscoveryResult<ProbeExecution> {
+    let defaults = ResourceLimits::default();
+    let response = supervise_worker(
+        &ProductionWorkerLauncher,
+        &WorkerRequest {
+            probe_id: probe_id.clone(),
+            input: input.clone(),
+            limits,
+            provenance,
+        },
+        SupervisorIoLimits {
+            max_stdout_bytes: 2 * 1024 * 1024,
+            max_stderr_bytes: 64 * 1024,
+        },
+        Duration::from_millis(defaults.probe_timeout_millis),
+    )?;
+    Ok(response.execution)
 }
 
 fn supervise_worker(
@@ -148,6 +169,11 @@ fn map_worker_outcome(
         });
     }
 
+    if !captured.stderr.is_empty() {
+        return Err(DiscoveryError::ProbeWorkerProtocol(
+            "successful worker emitted unexpected diagnostics".to_owned(),
+        ));
+    }
     let mut response = decode_worker_response(&captured.stdout).map_err(|error| {
         DiscoveryError::ProbeWorkerProtocol(format!("invalid framed response ({})", error.kind()))
     })?;

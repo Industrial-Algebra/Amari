@@ -7,9 +7,12 @@ use std::io::Write;
 use serde::Serialize;
 
 use crate::{
-    commands::discover::{ExampleResult, GraphResult, SearchResults},
+    commands::{
+        discover::{ExampleResult, GraphResult, SearchResults},
+        probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult},
+    },
     CandidatePlan, Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope,
-    PlanStep, ProjectKind, ProjectSnapshot, Recommendation,
+    PlanStep, ProbeIsolation, ProjectKind, ProjectSnapshot, Recommendation,
 };
 
 pub(crate) fn write_json<T: Serialize>(
@@ -88,6 +91,106 @@ pub(crate) fn write_capabilities_human(
         rl.max_inspection_wall_millis
     )?;
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Probes
+// ---------------------------------------------------------------------------
+
+pub(crate) fn write_probe_list_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProbeList>,
+) -> DiscoveryResult<()> {
+    writeln!(writer, "Registered probes:")?;
+    for probe in &envelope.data.probes {
+        let state = if probe.executable {
+            "executable"
+        } else if probe.available {
+            "available, not executable"
+        } else {
+            "unavailable"
+        };
+        writeln!(writer, "  {}: {state}", probe.id)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn write_probe_description_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProbeDescription>,
+) -> DiscoveryResult<()> {
+    let description = &envelope.data;
+    writeln!(writer, "Probe: {}", description.descriptor.id)?;
+    writeln!(
+        writer,
+        "Capability: {}",
+        description.descriptor.capability_id
+    )?;
+    writeln!(
+        writer,
+        "Input schema: {}",
+        description.descriptor.input_schema
+    )?;
+    writeln!(
+        writer,
+        "Output schema: {}",
+        description.descriptor.output_schema
+    )?;
+    writeln!(writer, "Executable: {}", yes_no(description.executable))?;
+    writeln!(writer, "Process isolation: yes")?;
+    writeln!(writer, "Hard timeout: {}", yes_no(description.hard_timeout))?;
+    writeln!(
+        writer,
+        "Crash isolation: {}",
+        yes_no(description.crash_isolation)
+    )?;
+    Ok(())
+}
+
+pub(crate) fn write_probe_dry_run_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProbeDryRun>,
+) -> DiscoveryResult<()> {
+    let dry_run = &envelope.data;
+    writeln!(writer, "Probe dry-run: {}", dry_run.probe_id)?;
+    writeln!(writer, "Compatible: {}", yes_no(dry_run.compatible))?;
+    writeln!(writer, "Would execute: no")?;
+    writeln!(writer, "Plan hash: {}", dry_run.plan_hash)?;
+    writeln!(writer, "Planned isolation: process")?;
+    Ok(())
+}
+
+pub(crate) fn write_probe_run_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProbeRunResult>,
+) -> DiscoveryResult<()> {
+    let run = &envelope.data;
+    writeln!(writer, "Probe: {}", run.result.probe_id)?;
+    writeln!(writer, "Isolation: {}", isolation_name(run.isolation))?;
+    writeln!(writer, "Hard timeout: {}", yes_no(run.hard_timeout))?;
+    writeln!(writer, "Crash isolation: {}", yes_no(run.crash_isolation))?;
+    writeln!(writer, "Duration (micros): {}", run.result.duration_micros)?;
+    writeln!(
+        writer,
+        "Result: {}",
+        serde_json::to_string(&run.result.output)?
+    )?;
+    Ok(())
+}
+
+fn isolation_name(isolation: ProbeIsolation) -> &'static str {
+    match isolation {
+        ProbeIsolation::Cooperative => "cooperative",
+        ProbeIsolation::Process => "process",
+    }
+}
+
+const fn yes_no(value: bool) -> &'static str {
+    if value {
+        "yes"
+    } else {
+        "no"
+    }
 }
 
 // ---------------------------------------------------------------------------
