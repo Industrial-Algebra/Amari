@@ -8,7 +8,7 @@ use std::{
     process::{Child, Command, ExitStatus, Stdio},
     sync::mpsc::{self, Sender},
     thread::{self, JoinHandle},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use super::worker::{self, WorkerResponse};
@@ -98,7 +98,15 @@ fn neutral_working_directory() -> PathBuf {
 fn capture_bounded(
     mut child: Child,
     limits: SupervisorIoLimits,
+    deadline: Duration,
 ) -> DiscoveryResult<CapturedOutput> {
+    if deadline.is_zero() {
+        terminate_and_wait(&mut child)?;
+        return Err(DiscoveryError::InvalidInput(
+            "probe worker deadline must be greater than zero".to_owned(),
+        ));
+    }
+    let started = Instant::now();
     let stdout = child.stdout.take().ok_or_else(|| {
         DiscoveryError::Internal("probe worker stdout pipe is unavailable".to_owned())
     })?;
@@ -126,6 +134,15 @@ fn capture_bounded(
         }
         if let Some(status) = child.try_wait()? {
             break status;
+        }
+        if started.elapsed() >= deadline {
+            terminate_and_wait(&mut child)?;
+            let _ = join_drain(stdout_drain);
+            let _ = join_drain(stderr_drain);
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "probe worker wall-clock deadline of {} milliseconds exceeded",
+                deadline.as_millis()
+            )));
         }
         thread::sleep(PROCESS_POLL_INTERVAL);
     };
@@ -219,6 +236,7 @@ fn decode_worker_response(bytes: &[u8]) -> DiscoveryResult<WorkerResponse> {
 struct TestWorkerLauncher {
     fixture: PathBuf,
     mode: String,
+    arguments: Vec<PathBuf>,
     poison_context: Option<PathBuf>,
 }
 
@@ -228,6 +246,7 @@ impl TestWorkerLauncher {
         Self {
             fixture,
             mode: mode.to_owned(),
+            arguments: Vec::new(),
             poison_context: None,
         }
     }
@@ -236,13 +255,21 @@ impl TestWorkerLauncher {
         self.poison_context = Some(PathBuf::from(path));
         self
     }
+
+    fn with_arguments(mut self, arguments: impl IntoIterator<Item = PathBuf>) -> Self {
+        self.arguments.extend(arguments);
+        self
+    }
 }
 
 #[cfg(test)]
 impl WorkerLauncher for TestWorkerLauncher {
     fn command(&self) -> DiscoveryResult<Command> {
         let mut command = Command::new("python3");
-        command.arg(&self.fixture).arg(&self.mode);
+        command
+            .arg(&self.fixture)
+            .arg(&self.mode)
+            .args(&self.arguments);
         if let Some(poison) = &self.poison_context {
             command
                 .current_dir(poison)
@@ -330,6 +357,7 @@ mod tests {
                 max_stdout_bytes: 64 * 1024,
                 max_stderr_bytes: 512 * 1024,
             },
+            Duration::from_secs(5),
         )
         .unwrap();
 
@@ -356,6 +384,7 @@ mod tests {
                 max_stdout_bytes: 4096,
                 max_stderr_bytes: 4096,
             },
+            Duration::from_secs(5),
         )
         .unwrap_err();
 
@@ -375,6 +404,7 @@ mod tests {
                 max_stdout_bytes: 4096,
                 max_stderr_bytes: 4096,
             },
+            Duration::from_secs(5),
         )
         .unwrap_err();
 
@@ -393,6 +423,7 @@ mod tests {
                 max_stdout_bytes: 64 * 1024,
                 max_stderr_bytes: 64 * 1024,
             },
+            Duration::from_secs(5),
         )
         .unwrap();
 
@@ -401,6 +432,55 @@ mod tests {
         assert_eq!(
             response.execution.probe_id.to_string(),
             "amari-probe:tropical:viterbi:v1"
+        );
+    }
+
+    #[test]
+    fn deadline_kills_waits_and_reaps_slow_worker_without_orphan() {
+        let temporary = tempfile::tempdir().unwrap();
+        let pid_file = temporary.path().join("worker.pid");
+        let orphan_marker = temporary.path().join("worker-survived");
+        let launcher = TestWorkerLauncher::new(fixture_path(), "slow")
+            .with_arguments([pid_file.clone(), orphan_marker.clone()]);
+        let started = Instant::now();
+        let error = capture_bounded(
+            spawn_restricted(&launcher).unwrap(),
+            SupervisorIoLimits {
+                max_stdout_bytes: 4096,
+                max_stderr_bytes: 4096,
+            },
+            Duration::from_secs(1),
+        )
+        .unwrap_err();
+
+        assert!(
+            matches!(error, crate::DiscoveryError::LimitExceeded(message) if message.contains("wall-clock"))
+        );
+        assert!(started.elapsed() < Duration::from_secs(3));
+        assert!(!orphan_marker.exists());
+        let pid = std::fs::read_to_string(pid_file).unwrap();
+        #[cfg(target_os = "linux")]
+        assert!(
+            !Path::new("/proc").join(pid.trim()).exists(),
+            "timed-out worker must be killed and reaped"
+        );
+    }
+
+    #[test]
+    fn zero_deadline_is_rejected_before_waiting() {
+        let launcher = TestWorkerLauncher::new(fixture_path(), "slow");
+        let error = capture_bounded(
+            spawn_restricted(&launcher).unwrap(),
+            SupervisorIoLimits {
+                max_stdout_bytes: 4096,
+                max_stderr_bytes: 4096,
+            },
+            Duration::ZERO,
+        )
+        .unwrap_err();
+
+        assert!(
+            matches!(error, crate::DiscoveryError::InvalidInput(message) if message.contains("deadline"))
         );
     }
 }

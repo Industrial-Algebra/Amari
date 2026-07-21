@@ -9,6 +9,7 @@ import json
 import os
 import struct
 import sys
+import time
 
 
 def write_frame(value: object) -> None:
@@ -72,6 +73,16 @@ def main() -> int:
         while True:
             sys.stderr.buffer.write(b"e" * 8192)
             sys.stderr.buffer.flush()
+    if mode == "slow":
+        pid_file = sys.argv[2]
+        orphan_marker = sys.argv[3]
+        with open(pid_file, "w", encoding="ascii") as handle:
+            handle.write(str(os.getpid()))
+            handle.flush()
+        time.sleep(5.0)
+        with open(orphan_marker, "w", encoding="ascii") as handle:
+            handle.write("worker-survived-timeout")
+        return 0
     print(f"unknown fixture mode: {mode}", file=sys.stderr)
     return 2
 
