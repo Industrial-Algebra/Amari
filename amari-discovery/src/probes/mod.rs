@@ -17,6 +17,7 @@ mod registry;
 mod rewrite;
 mod surreal;
 mod tropical;
+pub(crate) mod worker;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
