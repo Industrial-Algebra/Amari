@@ -217,14 +217,17 @@ fn help_exposes_the_approved_command_families() {
 }
 
 #[test]
-fn unavailable_commands_use_a_typed_non_internal_failure() {
+fn shell_rejects_unknown_machine_commands_with_a_typed_non_internal_failure() {
     Command::cargo_bin("amari")
         .unwrap()
         .args(["shell", "--json"])
+        .write_stdin(
+            r#"{"schema_version":"amari.discovery/v1","command":"unknown","arguments":{}}"#,
+        )
         .assert()
-        .code(69)
+        .code(2)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::str::contains("not_implemented"))
+        .stderr(predicate::str::contains("invalid_input"))
         .stderr(predicate::str::contains("internal failure").not());
 }
 

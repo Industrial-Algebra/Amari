@@ -160,7 +160,7 @@ fn machine_errors_are_single_structured_stderr_records_with_stable_codes() {
 }
 
 #[test]
-fn json_and_ndjson_are_mutually_exclusive_and_shell_remains_deferred() {
+fn json_and_ndjson_are_mutually_exclusive() {
     Command::cargo_bin("amari")
         .unwrap()
         .args(["capabilities", "--json", "--ndjson"])
@@ -168,20 +168,4 @@ fn json_and_ndjson_are_mutually_exclusive_and_shell_remains_deferred() {
         .failure()
         .code(2)
         .stdout(predicate::str::is_empty());
-
-    for mode in ["--json", "--ndjson"] {
-        let output = Command::cargo_bin("amari")
-            .unwrap()
-            .args(["shell", mode])
-            .assert()
-            .failure()
-            .code(69)
-            .stdout(predicate::str::is_empty())
-            .get_output()
-            .stderr
-            .clone();
-        let error: Value = serde_json::from_slice(&output).unwrap();
-        assert_eq!(error["kind"], "not_implemented");
-        assert_eq!(error["details"]["exit_code"], 69);
-    }
 }

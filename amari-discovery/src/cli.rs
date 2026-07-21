@@ -260,18 +260,41 @@ pub fn run() -> DiscoveryResult<()> {
     let mode = output_mode(cli.json, cli.ndjson);
     match cli.command {
         Command::Shell { project } => {
-            if mode != render::OutputMode::Human {
-                return Err(DiscoveryError::NotImplemented(
-                    "shell machine output is deferred until its request/response contract is enabled"
-                        .to_owned(),
-                ));
-            }
             let stdin = io::stdin();
             let mut reader = stdin.lock();
             let mut stdout = io::stdout().lock();
-            crate::shell::run_human(&mut reader, &mut stdout, |arguments, writer| {
-                run_shell_command(arguments, project.as_deref(), writer)
-            })
+            match mode {
+                render::OutputMode::Human => {
+                    crate::shell::run_human(&mut reader, &mut stdout, |arguments, writer| {
+                        run_shell_command(
+                            arguments,
+                            project.as_deref(),
+                            render::OutputMode::Human,
+                            writer,
+                        )
+                    })
+                }
+                render::OutputMode::Json => {
+                    crate::shell::run_json(&mut reader, &mut stdout, |arguments, writer| {
+                        run_shell_command(
+                            arguments,
+                            project.as_deref(),
+                            render::OutputMode::Json,
+                            writer,
+                        )
+                    })
+                }
+                render::OutputMode::Ndjson => {
+                    crate::shell::run_ndjson(&mut reader, &mut stdout, |arguments, writer| {
+                        run_shell_command(
+                            arguments,
+                            project.as_deref(),
+                            render::OutputMode::Ndjson,
+                            writer,
+                        )
+                    })
+                }
+            }
         }
         Command::ProbeWorker => crate::probes::worker::run_stdio(),
         command => {
@@ -294,6 +317,7 @@ fn output_mode(json: bool, ndjson: bool) -> render::OutputMode {
 fn run_shell_command<W: Write>(
     mut arguments: Vec<OsString>,
     session_project: Option<&Path>,
+    mode: render::OutputMode,
     writer: &mut W,
 ) -> DiscoveryResult<()> {
     apply_session_project(&mut arguments, session_project);
@@ -308,7 +332,7 @@ fn run_shell_command<W: Write>(
         Command::Shell { .. } | Command::ProbeWorker => Err(DiscoveryError::InvalidInput(
             "nested shell and worker commands are unavailable inside the shell".to_owned(),
         )),
-        command => dispatch_command(command, render::OutputMode::Human, writer),
+        command => dispatch_command(command, mode, writer),
     }
 }
 
