@@ -67,6 +67,14 @@ def main() -> int:
     if not RUNNER.is_file():
         errors.append("scripts/run-discovery-test-shard.py must exist")
     else:
+        runner = RUNNER.read_text(encoding="utf-8")
+        require(runner, 'if shard == "planner":', RUNNER, errors)
+        require(
+            runner,
+            'command.extend(("--features", "ai"))',
+            RUNNER,
+            errors,
+        )
         result = subprocess.run(
             [sys.executable, str(RUNNER), "--verify"],
             cwd=ROOT,

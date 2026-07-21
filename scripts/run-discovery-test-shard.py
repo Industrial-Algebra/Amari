@@ -101,6 +101,8 @@ def run(shard: str) -> int:
     command = ["cargo", "test", "--package", "amari-discovery"]
     if shard == "catalog":
         command.extend(("--lib", "--bins"))
+    if shard == "planner":
+        command.extend(("--features", "ai"))
     for test in tests:
         command.extend(("--test", test))
     print(f"Running discovery {shard} shard ({len(tests)} integration targets)...", flush=True)

@@ -340,7 +340,7 @@ fn tokenize(line: &str) -> DiscoveryResult<Vec<String>> {
 
 #[cfg(test)]
 mod tests {
-    use super::tokenize;
+    use super::{ensure_bounded_input, tokenize, MAX_SHELL_INPUT_BYTES};
 
     #[test]
     fn tokenizer_preserves_quoted_and_escaped_arguments() {
@@ -359,5 +359,13 @@ mod tests {
     fn tokenizer_rejects_incomplete_input() {
         assert!(tokenize("recommend --goal 'missing").is_err());
         assert!(tokenize("inspect missing\\").is_err());
+    }
+
+    #[test]
+    fn shell_input_limit_accepts_exact_boundary_and_rejects_one_more_byte() {
+        let exact = vec![b'x'; MAX_SHELL_INPUT_BYTES as usize];
+        assert!(ensure_bounded_input(&exact).is_ok());
+        let oversized = vec![b'x'; MAX_SHELL_INPUT_BYTES as usize + 1];
+        assert!(ensure_bounded_input(&oversized).is_err());
     }
 }
