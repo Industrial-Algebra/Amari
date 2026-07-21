@@ -32,8 +32,9 @@ pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathReq
 pub use optimization::{ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest, ParetoPoint};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
 pub use rewrite::{
-    RewriteNormalizeOutput, RewriteNormalizeRequest, RewritePredecessorsOutput,
-    RewritePredecessorsRequest, RewriteRule, RewriteTerm,
+    RewriteExample, RewriteInferRuleOutput, RewriteInferRuleRequest, RewriteNormalizeOutput,
+    RewriteNormalizeRequest, RewritePredecessorsOutput, RewritePredecessorsRequest, RewriteRule,
+    RewriteTerm,
 };
 pub use surreal::{
     DecimalRational, DecimalSurcomplex, RationalSurcomplexDivisionOutput,
@@ -272,6 +273,7 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
         holographic::superposition_registration()?,
         network::registration()?,
         optimization::registration()?,
+        rewrite::infer_rule_registration()?,
         rewrite::normalize_registration()?,
         rewrite::predecessors_registration()?,
         surreal::surcomplex_division_registration()?,

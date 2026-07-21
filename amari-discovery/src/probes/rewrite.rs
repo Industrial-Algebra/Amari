@@ -2,15 +2,14 @@
 
 //! Bounded DTO validation shared by registered rewrite probes.
 
-// Task 20A intentionally lands validation primitives before the executable
-// adapters in Tasks 20B-20D; remove this transition allowance once registered.
-#![cfg_attr(any(not(test), not(feature = "standard-probes")), allow(dead_code))]
-
 #[cfg(feature = "standard-probes")]
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 #[cfg(feature = "standard-probes")]
-use amari_rewrite::trs::{match_pattern, Rule, Term, TermSystem};
+use amari_rewrite::{
+    synthesis::infer_rule,
+    trs::{match_pattern, Rule, Term, TermSystem},
+};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "standard-probes")]
 use serde_json::Value;
@@ -36,6 +35,8 @@ const MAX_PREDECESSOR_DEPTH: u64 = 16;
 const MAX_PREDECESSOR_RESULTS: u64 = 1_024;
 #[cfg(feature = "standard-probes")]
 const MAX_PREDECESSOR_FRONTIER: u64 = 1_024;
+#[cfg(feature = "standard-probes")]
+const MAX_INFERENCE_EXAMPLES: u64 = 256;
 
 /// Serializable first-order term accepted by rewrite probes.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -106,6 +107,13 @@ impl RewriteRule {
             )
         })
     }
+
+    fn from_rule(rule: &Rule) -> Self {
+        Self {
+            lhs: RewriteTerm::from_term(rule.lhs()),
+            rhs: RewriteTerm::from_term(rule.rhs()),
+        }
+    }
 }
 
 /// Typed input for bounded ordered term normalization.
@@ -154,6 +162,31 @@ pub struct RewritePredecessorsOutput {
     pub truncated: bool,
 }
 
+/// One positive before/after rewrite example.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteExample {
+    /// Concrete term before rewriting.
+    pub before: RewriteTerm,
+    /// Concrete term after rewriting.
+    pub after: RewriteTerm,
+}
+
+/// Typed input for bounded single-rule inference.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteInferRuleRequest {
+    /// Positive rewrite examples used for anti-unification.
+    pub examples: Vec<RewriteExample>,
+}
+
+/// Exact checked rule inferred from positive examples.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct RewriteInferRuleOutput {
+    /// Inferred checked first-order rewrite rule.
+    pub rule: RewriteRule,
+}
+
 #[cfg(feature = "standard-probes")]
 pub(super) fn normalize_registration() -> DiscoveryResult<AdapterRegistration> {
     Ok(AdapterRegistration {
@@ -172,6 +205,27 @@ pub(super) fn normalize_registration() -> DiscoveryResult<AdapterRegistration> {
         side_effects: SideEffectPolicy::None,
         network: false,
         execute: execute_normalize,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn infer_rule_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:infer-rule:v1".parse()?,
+        capability_id: "amari:amari-rewrite:synthesis:infer-rule".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-infer-rule/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-infer-rule/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_infer_rule,
     })
 }
 
@@ -292,6 +346,98 @@ fn execute_normalize(
         current = next;
         current_dto = RewriteTerm::from_term(&current);
     }
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_infer_rule(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewriteInferRuleRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "rewrite inference request has an invalid example shape: {error}"
+            ))
+        })?;
+    if request.examples.is_empty() {
+        return Err(DiscoveryError::InvalidInput(
+            "rewrite inference requires at least one example".to_owned(),
+        ));
+    }
+    let example_count = u64::try_from(request.examples.len()).map_err(|_| {
+        DiscoveryError::LimitExceeded("rewrite inference example count overflow".to_owned())
+    })?;
+    enforce(
+        "inference example count",
+        example_count,
+        MAX_INFERENCE_EXAMPLES,
+    )?;
+
+    let bounds = effective_bounds(limits);
+    let terms = request
+        .examples
+        .iter()
+        .flat_map(|example| [&example.before, &example.after]);
+    let analysis = validate_rewrite_request(&request, terms, &[], bounds)?;
+    enforce(
+        "inference input nodes",
+        analysis.input_nodes,
+        limits.max_nodes,
+    )?;
+    let operations = analysis
+        .input_nodes
+        .checked_mul(example_count)
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("rewrite inference operation count overflow".to_owned())
+        })?;
+    enforce("operations", operations, limits.max_operations)?;
+    enforce("iterations", example_count, limits.max_iterations)?;
+
+    let examples = request
+        .examples
+        .iter()
+        .map(|example| Ok((example.before.to_term()?, example.after.to_term()?)))
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let inferred = infer_rule(&examples).map_err(|_| {
+        DiscoveryError::ProbeFailed("bounded rewrite rule inference failed".to_owned())
+    })?;
+    let inferred = RewriteRule::from_rule(&inferred);
+    let lhs = term_stats(&inferred.lhs, bounds.max_term_depth, bounds.max_term_nodes)?;
+    let rhs = term_stats(&inferred.rhs, bounds.max_term_depth, bounds.max_term_nodes)?;
+    inferred.to_rule()?;
+    let growth = analyze_rule_growth(&inferred)?;
+    if growth.rhs_duplicates_variable {
+        return Err(DiscoveryError::InvalidInput(
+            "inferred rewrite rule RHS duplicates variable occurrences".to_owned(),
+        ));
+    }
+    let generated_nodes = lhs.nodes.checked_add(rhs.nodes).ok_or_else(|| {
+        DiscoveryError::LimitExceeded("generated rewrite rule node count overflow".to_owned())
+    })?;
+    let total_nodes = analysis
+        .input_nodes
+        .checked_add(generated_nodes)
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("generated rewrite rule node count overflow".to_owned())
+        })?;
+    if total_nodes > limits.max_nodes {
+        return Err(DiscoveryError::LimitExceeded(format!(
+            "rewrite generated rule nodes raise cumulative nodes {total_nodes} above limit {}",
+            limits.max_nodes
+        )));
+    }
+
+    let output = RewriteInferRuleOutput { rule: inferred };
+    validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations,
+            nodes: total_nodes,
+            iterations: example_count,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
 }
 
 #[cfg(feature = "standard-probes")]

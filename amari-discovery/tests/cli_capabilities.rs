@@ -81,6 +81,7 @@ fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
                         | "amari-probe:holographic:superposition:v1"
                         | "amari-probe:network:shortest-path:v1"
                         | "amari-probe:optimization:pareto-front:v1"
+                        | "amari-probe:rewrite:infer-rule:v1"
                         | "amari-probe:rewrite:normalize:v1"
                         | "amari-probe:rewrite:predecessors:v1"
                         | "amari-probe:surcomplex:rational-division:v1"

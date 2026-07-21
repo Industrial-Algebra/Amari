@@ -89,7 +89,8 @@ pub use probes::{
     ParetoPoint, PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeEngine,
     ProbeEngineLimits, ProbeExecution, ProbeIsolation, RationalSurcomplexDivisionOutput,
     RationalSurcomplexDivisionRequest, RationalSurrealArithmeticOutput,
-    RationalSurrealArithmeticRequest, RewriteNormalizeOutput, RewriteNormalizeRequest,
+    RationalSurrealArithmeticRequest, RewriteExample, RewriteInferRuleOutput,
+    RewriteInferRuleRequest, RewriteNormalizeOutput, RewriteNormalizeRequest,
     RewritePredecessorsOutput, RewritePredecessorsRequest, RewriteRule, RewriteTerm,
     TropicalViterbiOutput, TropicalViterbiRequest,
 };
