@@ -183,6 +183,20 @@ stability = "stable"
 cost = "moderate"
 
 [[capabilities]]
+id = "amari:amari-rewrite:inverse:predecessors"
+name = "Bounded predecessor search"
+description = "Enumerate deterministic inverse-rewrite predecessors under explicit depth, frontier, node, and byte limits."
+aliases = ["inverse rewriting", "backward search"]
+concepts = ["term rewriting system", "predecessor search"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::inverse::BackwardSearch"]
+example_refs = ["amari-rewrite:inverse_search"]
+probe_refs = ["amari-probe:rewrite:predecessors:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
 id = "amari:amari-rewrite:synthesis:infer-rule"
 name = "Rule inference from examples"
 description = "Infer a conservative rewrite rule from bounded positive examples."

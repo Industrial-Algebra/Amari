@@ -402,8 +402,8 @@ timeout_millis = 1000
 fn probe_descriptors_equal_manifest() {
     let catalog = generate_workspace_catalog(workspace_root()).unwrap();
 
-    // probes.toml has 13 probes.
-    assert_eq!(catalog.probe_descriptors.len(), 13);
+    // probes.toml has 14 probes.
+    assert_eq!(catalog.probe_descriptors.len(), 14);
 
     let ids: BTreeSet<String> = catalog
         .probe_descriptors
@@ -413,6 +413,7 @@ fn probe_descriptors_equal_manifest() {
     assert!(ids.contains("amari-probe:core:geometric-product:v1"));
     assert!(ids.contains("amari-probe:tropical:shortest-path:v1"));
     assert!(ids.contains("amari-probe:tropical:viterbi:v1"));
+    assert!(ids.contains("amari-probe:rewrite:predecessors:v1"));
 }
 
 // ============================================================================

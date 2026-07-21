@@ -12,12 +12,15 @@ const CORE_PRODUCT: &str = "amari-probe:core:geometric-product:v1";
 const POLYNOMIAL_DERIVATIVE: &str = "amari-probe:dual:polynomial-derivative:v1";
 const SHORTEST_PATH: &str = "amari-probe:network:shortest-path:v1";
 const PARETO_FRONT: &str = "amari-probe:optimization:pareto-front:v1";
+const REWRITE_INFER_RULE: &str = "amari-probe:rewrite:infer-rule:v1";
+const REWRITE_NORMALIZE: &str = "amari-probe:rewrite:normalize:v1";
+const REWRITE_PREDECESSORS: &str = "amari-probe:rewrite:predecessors:v1";
 const RECALL: &str = "amari-probe:holographic:recall:v1";
 const SUPERPOSITION: &str = "amari-probe:holographic:superposition:v1";
 const RATIONAL_ARITHMETIC: &str = "amari-probe:surreal:rational-arithmetic:v1";
 const SURCOMPLEX_DIVISION: &str = "amari-probe:surcomplex:rational-division:v1";
 const VITERBI: &str = "amari-probe:tropical:viterbi:v1";
-const KNOWN_UNREGISTERED: &str = "amari-probe:rewrite:normalize:v1";
+const KNOWN_UNREGISTERED: &str = "amari-probe:tropical:shortest-path:v1";
 
 fn request() -> TropicalViterbiRequest {
     TropicalViterbiRequest {
@@ -35,6 +38,9 @@ fn engine_derives_executable_state_from_the_private_registry() {
     let dual = POLYNOMIAL_DERIVATIVE.parse().unwrap();
     let network = SHORTEST_PATH.parse().unwrap();
     let optimization = PARETO_FRONT.parse().unwrap();
+    let rewrite_infer_rule = REWRITE_INFER_RULE.parse().unwrap();
+    let rewrite_normalize = REWRITE_NORMALIZE.parse().unwrap();
+    let rewrite_predecessors = REWRITE_PREDECESSORS.parse().unwrap();
     let recall = RECALL.parse().unwrap();
     let superposition = SUPERPOSITION.parse().unwrap();
     let surreal = RATIONAL_ARITHMETIC.parse().unwrap();
@@ -71,6 +77,18 @@ fn engine_derives_executable_state_from_the_private_registry() {
         cfg!(feature = "standard-probes")
     );
     assert_eq!(
+        engine.is_executable(&rewrite_infer_rule),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
+        engine.is_executable(&rewrite_normalize),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
+        engine.is_executable(&rewrite_predecessors),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
         engine.is_executable(&surreal),
         cfg!(feature = "standard-probes")
     );
@@ -94,6 +112,9 @@ fn engine_derives_executable_state_from_the_private_registry() {
                 superposition,
                 network,
                 optimization,
+                rewrite_infer_rule,
+                rewrite_normalize,
+                rewrite_predecessors,
                 surcomplex,
                 surreal,
                 viterbi,

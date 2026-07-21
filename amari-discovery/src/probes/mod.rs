@@ -14,6 +14,7 @@ mod holographic;
 mod network;
 mod optimization;
 mod registry;
+mod rewrite;
 mod surreal;
 mod tropical;
 
@@ -30,6 +31,11 @@ pub use holographic::{
 pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathRequest};
 pub use optimization::{ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest, ParetoPoint};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
+pub use rewrite::{
+    RewriteExample, RewriteInferRuleOutput, RewriteInferRuleRequest, RewriteNormalizeOutput,
+    RewriteNormalizeRequest, RewritePredecessorsOutput, RewritePredecessorsRequest, RewriteRule,
+    RewriteTerm,
+};
 pub use surreal::{
     DecimalRational, DecimalSurcomplex, RationalSurcomplexDivisionOutput,
     RationalSurcomplexDivisionRequest, RationalSurrealArithmeticOutput,
@@ -267,6 +273,9 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
         holographic::superposition_registration()?,
         network::registration()?,
         optimization::registration()?,
+        rewrite::infer_rule_registration()?,
+        rewrite::normalize_registration()?,
+        rewrite::predecessors_registration()?,
         surreal::surcomplex_division_registration()?,
         surreal::rational_arithmetic_registration()?,
         tropical::registration()?,

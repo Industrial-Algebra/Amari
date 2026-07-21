@@ -68,6 +68,34 @@ fn semantic_capabilities_distinguish_planned_and_implemented_surfaces() {
 }
 
 #[test]
+fn inverse_predecessor_probe_has_explicit_catalog_authority() {
+    let catalog = Catalog::embedded().unwrap();
+    let capability = catalog
+        .capabilities()
+        .iter()
+        .find(|capability| capability.id.to_string() == "amari:amari-rewrite:inverse:predecessors")
+        .expect("bounded inverse-search capability must exist");
+    assert_eq!(
+        capability.probe_refs[0].to_string(),
+        "amari-probe:rewrite:predecessors:v1"
+    );
+    let probe = catalog
+        .probes()
+        .iter()
+        .find(|probe| probe.id.to_string() == "amari-probe:rewrite:predecessors:v1")
+        .expect("bounded predecessor descriptor must exist");
+    assert_eq!(probe.capability_id, capability.id);
+    assert_eq!(
+        probe.input_schema,
+        "amari.discovery/probe/rewrite-predecessors/input/v1"
+    );
+    assert_eq!(
+        probe.output_schema,
+        "amari.discovery/probe/rewrite-predecessors/output/v1"
+    );
+}
+
+#[test]
 fn semantic_references_resolve_to_structural_or_probe_records() {
     let catalog = Catalog::embedded().unwrap();
     let crate_names: HashSet<_> = catalog
