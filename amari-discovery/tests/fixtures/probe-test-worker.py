@@ -7,7 +7,39 @@ from __future__ import annotations
 
 import json
 import os
+import struct
 import sys
+
+
+def write_frame(value: object) -> None:
+    body = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    sys.stdout.buffer.write(struct.pack(">I", len(body)))
+    sys.stdout.buffer.write(body)
+    sys.stdout.buffer.flush()
+
+
+def success_response() -> dict[str, object]:
+    return {
+        "provenance": {
+            "tool_version": "fixture",
+            "catalog": {"version": "fixture", "hash": "fixture-catalog"},
+            "compatibility": {"status": "compatible", "reasons": []},
+            "replay": {"replayable": True, "required_hashes": [], "reasons": []},
+            "project_hash": None,
+            "input_hash": "fixture-input",
+            "seed": None,
+        },
+        "execution": {
+            "probe_id": "amari-probe:tropical:viterbi:v1",
+            "input_schema": "fixture/input/v1",
+            "output_schema": "fixture/output/v1",
+            "backend": "cpu",
+            "isolation": "cooperative",
+            "deterministic": True,
+            "resources": {"operations": 1, "nodes": 1, "iterations": 1, "bytes": 1},
+            "output": {"fixture": True},
+        },
+    }
 
 
 def main() -> int:
@@ -24,6 +56,22 @@ def main() -> int:
             )
         )
         return 0
+    if mode == "valid":
+        write_frame(success_response())
+        return 0
+    if mode == "simultaneous":
+        sys.stderr.buffer.write(b"d" * (256 * 1024))
+        sys.stderr.buffer.flush()
+        write_frame(success_response())
+        return 0
+    if mode == "flood-stdout":
+        while True:
+            sys.stdout.buffer.write(b"o" * 8192)
+            sys.stdout.buffer.flush()
+    if mode == "flood-stderr":
+        while True:
+            sys.stderr.buffer.write(b"e" * 8192)
+            sys.stderr.buffer.flush()
     print(f"unknown fixture mode: {mode}", file=sys.stderr)
     return 2
 

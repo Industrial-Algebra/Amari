@@ -22,10 +22,10 @@ struct WorkerRequest {
     provenance: Provenance,
 }
 
-#[derive(Debug, Serialize)]
-struct WorkerResponse {
-    provenance: Provenance,
-    execution: ProbeExecution,
+#[derive(Debug, Deserialize, Serialize)]
+pub(super) struct WorkerResponse {
+    pub(super) provenance: Provenance,
+    pub(super) execution: ProbeExecution,
 }
 
 pub(crate) fn run_stdio() -> DiscoveryResult<()> {
@@ -50,6 +50,15 @@ fn read_request(reader: &mut impl Read) -> DiscoveryResult<WorkerRequest> {
 fn write_response(writer: &mut impl Write, response: &WorkerResponse) -> DiscoveryResult<()> {
     let body = serde_json::to_vec(response)?;
     write_frame(writer, &body)
+}
+
+// Task 21C consumes supervised worker responses through this decoder.
+#[allow(dead_code)]
+pub(super) fn decode_response_frame(bytes: &[u8]) -> DiscoveryResult<WorkerResponse> {
+    let mut reader = io::Cursor::new(bytes);
+    let body = read_frame(&mut reader)?;
+    reject_trailing_bytes(&mut reader)?;
+    Ok(serde_json::from_slice(&body)?)
 }
 
 fn read_frame(reader: &mut impl Read) -> DiscoveryResult<Vec<u8>> {
