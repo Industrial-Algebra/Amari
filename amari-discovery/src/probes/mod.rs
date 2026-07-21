@@ -15,6 +15,7 @@ mod network;
 mod optimization;
 mod registry;
 mod rewrite;
+mod supervisor;
 mod surreal;
 mod tropical;
 pub(crate) mod worker;
