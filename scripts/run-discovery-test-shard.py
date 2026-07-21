@@ -55,6 +55,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "probe_holographic",
         "probe_network",
         "probe_optimization",
+        "probe_rewrite_normalize",
         "probe_surreal",
         "probe_tropical",
     ),

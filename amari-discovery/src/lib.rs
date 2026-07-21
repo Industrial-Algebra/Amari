@@ -89,7 +89,8 @@ pub use probes::{
     ParetoPoint, PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeEngine,
     ProbeEngineLimits, ProbeExecution, ProbeIsolation, RationalSurcomplexDivisionOutput,
     RationalSurcomplexDivisionRequest, RationalSurrealArithmeticOutput,
-    RationalSurrealArithmeticRequest, TropicalViterbiOutput, TropicalViterbiRequest,
+    RationalSurrealArithmeticRequest, RewriteNormalizeOutput, RewriteNormalizeRequest, RewriteRule,
+    RewriteTerm, TropicalViterbiOutput, TropicalViterbiRequest,
 };
 pub use protocol::{
     CandidatePlan, CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope,

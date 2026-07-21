@@ -10,14 +10,26 @@
 use std::collections::BTreeMap;
 
 #[cfg(feature = "standard-probes")]
-use amari_rewrite::trs::{Rule, Term};
+use amari_rewrite::trs::{Rule, Term, TermSystem};
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "standard-probes")]
+use serde_json::Value;
 
 #[cfg(feature = "standard-probes")]
-use crate::{DiscoveryError, DiscoveryResult};
+use super::registry::{AdapterOutput, AdapterRegistration, EffectiveProbeLimits};
+#[cfg(feature = "standard-probes")]
+use crate::{DiscoveryError, DiscoveryResult, ProbeLimits, ResourceObservations, SideEffectPolicy};
 
 #[cfg(feature = "standard-probes")]
 const MAX_NAME_BYTES: usize = 256;
+#[cfg(feature = "standard-probes")]
+const MAX_TERM_DEPTH: u64 = 64;
+#[cfg(feature = "standard-probes")]
+const MAX_TERM_NODES: u64 = 4_096;
+#[cfg(feature = "standard-probes")]
+const MAX_RULES: u64 = 256;
+#[cfg(feature = "standard-probes")]
+const MAX_NORMALIZATION_STEPS: u64 = 4_096;
 
 /// Serializable first-order term accepted by rewrite probes.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -55,6 +67,18 @@ impl RewriteTerm {
             }
         }
     }
+
+    fn from_term(term: &Term) -> Self {
+        match term {
+            Term::Var(variable) => Self::Variable {
+                name: variable.as_str().to_owned(),
+            },
+            Term::Sym(symbol, arguments) => Self::Symbol {
+                name: symbol.as_str().to_owned(),
+                arguments: arguments.iter().map(Self::from_term).collect(),
+            },
+        }
+    }
 }
 
 /// Serializable checked first-order rewrite rule.
@@ -75,6 +99,157 @@ impl RewriteRule {
                 "rewrite rule RHS variable does not occur in its LHS".to_owned(),
             )
         })
+    }
+}
+
+/// Typed input for bounded ordered term normalization.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteNormalizeRequest {
+    /// Initial first-order term.
+    pub term: RewriteTerm,
+    /// Ordered checked rewrite rules.
+    pub rules: Vec<RewriteRule>,
+    /// Maximum successful rewrite steps.
+    pub max_steps: u64,
+}
+
+/// Typed fixed-point result from bounded term normalization.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct RewriteNormalizeOutput {
+    /// Reached normal form.
+    pub normal_form: RewriteTerm,
+    /// Number of successful rewrite steps.
+    pub steps: u64,
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn normalize_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:normalize:v1".parse()?,
+        capability_id: "amari:amari-rewrite:trs:normalization".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-normalize/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-normalize/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_normalize,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_normalize(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewriteNormalizeRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "rewrite normalization request has an invalid term, rule, or limit shape: {error}"
+            ))
+        })?;
+    if request.max_steps == 0 {
+        return Err(DiscoveryError::InvalidInput(
+            "rewrite normalization max steps must be greater than zero".to_owned(),
+        ));
+    }
+    enforce(
+        "normalization steps",
+        request.max_steps,
+        MAX_NORMALIZATION_STEPS,
+    )?;
+
+    let bounds = effective_bounds(limits);
+    let analysis = validate_rewrite_request(&request, [&request.term], &request.rules, bounds)?;
+    if analysis.max_forward_constant > 0 {
+        return Err(DiscoveryError::InvalidInput(
+            "rewrite normalization rejects expanding rules".to_owned(),
+        ));
+    }
+    let predicted_nodes = checked_growth_bound(
+        analysis.input_nodes,
+        request.max_steps,
+        analysis.max_forward_constant,
+    )?;
+    enforce("term nodes", predicted_nodes, bounds.max_term_nodes)?;
+
+    let rules = request
+        .rules
+        .iter()
+        .map(RewriteRule::to_rule)
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let system = TermSystem::new(rules);
+    let mut current = request.term.to_term()?;
+    let mut current_dto = request.term;
+    let mut steps = 0_u64;
+    let mut operations = 0_u64;
+    let mut iterations = 0_u64;
+    let mut observed_nodes = analysis.input_nodes;
+    let rule_factor = analysis.rule_count.max(1);
+
+    loop {
+        let stats = term_stats(&current_dto, bounds.max_term_depth, bounds.max_term_nodes)?;
+        observed_nodes = observed_nodes.max(stats.nodes);
+        let attempt_operations = stats.nodes.checked_mul(rule_factor).ok_or_else(|| {
+            DiscoveryError::LimitExceeded("rewrite operation count overflow".to_owned())
+        })?;
+        operations = operations.checked_add(attempt_operations).ok_or_else(|| {
+            DiscoveryError::LimitExceeded("rewrite operation count overflow".to_owned())
+        })?;
+        iterations = iterations.checked_add(1).ok_or_else(|| {
+            DiscoveryError::LimitExceeded("rewrite iteration count overflow".to_owned())
+        })?;
+        enforce("operations", operations, limits.max_operations)?;
+        enforce("iterations", iterations, limits.max_iterations)?;
+
+        let next = system.apply_once(&current).map_err(|_| {
+            DiscoveryError::ProbeFailed("bounded rewrite normalization failed".to_owned())
+        })?;
+        let Some(next) = next else {
+            let output = RewriteNormalizeOutput {
+                normal_form: current_dto,
+                steps,
+            };
+            validate_encoded_output(&output, bounds)?;
+            return Ok(AdapterOutput {
+                resources: ResourceObservations {
+                    operations,
+                    nodes: observed_nodes,
+                    iterations,
+                    bytes: 0,
+                },
+                output: serde_json::to_value(output)?,
+            });
+        };
+        if steps == request.max_steps {
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "rewrite normalization step limit {} reached before fixed point",
+                request.max_steps
+            )));
+        }
+        steps = steps.checked_add(1).ok_or_else(|| {
+            DiscoveryError::LimitExceeded("rewrite normalization step count overflow".to_owned())
+        })?;
+        current = next;
+        current_dto = RewriteTerm::from_term(&current);
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn effective_bounds(limits: &EffectiveProbeLimits) -> RewriteBounds {
+    RewriteBounds {
+        max_request_bytes: limits.max_input_bytes,
+        max_output_bytes: limits.max_output_bytes,
+        max_term_depth: MAX_TERM_DEPTH,
+        max_term_nodes: MAX_TERM_NODES.min(limits.max_nodes),
+        max_rules: MAX_RULES,
     }
 }
 
