@@ -14,6 +14,7 @@ mod holographic;
 mod network;
 mod optimization;
 mod registry;
+mod rewrite;
 mod surreal;
 mod tropical;
 

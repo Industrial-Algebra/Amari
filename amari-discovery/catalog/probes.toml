@@ -181,6 +181,21 @@ max_operations = 100000
 timeout_millis = 2000
 
 [[probes]]
+id = "amari-probe:rewrite:predecessors:v1"
+capability_id = "amari:amari-rewrite:inverse:predecessors"
+input_schema = "amari.discovery/probe/rewrite-predecessors/input/v1"
+output_schema = "amari.discovery/probe/rewrite-predecessors/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
 id = "amari-probe:rewrite:infer-rule:v1"
 capability_id = "amari:amari-rewrite:synthesis:infer-rule"
 input_schema = "amari.discovery/probe/rewrite-infer-rule/input/v1"
