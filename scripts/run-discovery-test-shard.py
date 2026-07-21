@@ -26,6 +26,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "catalog_signatures",
         "catalog_traits",
         "catalog_wasm",
+        "ndjson",
         "protocol",
         "schema_contract",
     ),

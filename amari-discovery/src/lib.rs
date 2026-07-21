@@ -21,6 +21,7 @@ pub mod cli;
 pub mod commands;
 pub mod error;
 pub mod inspect;
+pub mod ndjson;
 pub mod planner;
 mod probes;
 pub mod protocol;
@@ -76,6 +77,7 @@ pub use inspect::{
     TypeScriptRuntimeSignal, TypeScriptVocabularyEvidence, VocabularyEvidence, WasmTargetEvidence,
     WasmTargetOrigin, WorkspaceDependencyBase, WorkspaceMeta,
 };
+pub use ndjson::{NdjsonWriter, DEFAULT_MAX_NDJSON_RECORD_BYTES};
 pub use planner::{
     BlockedCandidate, CandidateRanker, CandidateRetriever, CapabilityGraphExpander,
     GraphConstraints, GraphExpansion, GraphExpansionState, GraphLimit, GraphLimits, GraphPath,
