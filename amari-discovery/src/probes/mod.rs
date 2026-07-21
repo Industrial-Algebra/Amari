@@ -15,8 +15,12 @@ mod network;
 mod optimization;
 mod registry;
 mod rewrite;
+// Task 21C wires this private process-isolation foundation into CLI dispatch.
+#[allow(dead_code)]
+mod supervisor;
 mod surreal;
 mod tropical;
+pub(crate) mod worker;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

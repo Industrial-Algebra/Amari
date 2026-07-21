@@ -42,6 +42,24 @@ pub enum DiscoveryError {
     #[error("probe failed: {0}")]
     ProbeFailed(String),
 
+    /// The isolated probe worker terminated without an exit code.
+    #[error("probe worker crashed (signal: {signal:?})")]
+    ProbeWorkerCrashed {
+        /// Terminating signal on platforms that expose it.
+        signal: Option<i32>,
+    },
+
+    /// The isolated probe worker returned a nonzero exit code.
+    #[error("probe worker exited with code {code}")]
+    ProbeWorkerExited {
+        /// Stable process exit code reported by the operating system.
+        code: i32,
+    },
+
+    /// The isolated probe worker returned an invalid framed response.
+    #[error("probe worker protocol failure: {0}")]
+    ProbeWorkerProtocol(String),
+
     /// A replay-required hash differs from the plan artifact.
     #[error("replay drift for {field}: expected `{expected}`, found `{actual}`")]
     ReplayDrift {
@@ -108,7 +126,10 @@ impl DiscoveryError {
             Self::CatalogCorruption(_) => "catalog_corruption",
             Self::InspectionFailure(_) => "inspection_failure",
             Self::ProbeUnavailable(_) => "probe_unavailable",
-            Self::ProbeFailed(_) => "probe_failed",
+            Self::ProbeFailed(_)
+            | Self::ProbeWorkerCrashed { .. }
+            | Self::ProbeWorkerExited { .. }
+            | Self::ProbeWorkerProtocol(_) => "probe_failed",
             Self::LimitExceeded(_) => "limit_exceeded",
             Self::Io(_) => "io",
             Self::Serialization(_) => "serialization",
@@ -124,7 +145,10 @@ impl DiscoveryError {
             Self::CatalogCorruption(_) => 3,
             Self::InspectionFailure(_) => 4,
             Self::ProbeUnavailable(_) => 5,
-            Self::ProbeFailed(_) => 6,
+            Self::ProbeFailed(_)
+            | Self::ProbeWorkerCrashed { .. }
+            | Self::ProbeWorkerExited { .. }
+            | Self::ProbeWorkerProtocol(_) => 6,
             Self::LimitExceeded(_) => 7,
             Self::Io(_) => 8,
             Self::Serialization(_) => 9,

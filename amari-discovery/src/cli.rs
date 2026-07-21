@@ -83,6 +83,8 @@ enum Command {
         #[arg(value_enum)]
         kind: Option<SchemaKind>,
     },
+    #[command(name = "__probe-worker", hide = true)]
+    ProbeWorker,
 }
 
 #[derive(Debug, Subcommand)]
@@ -178,6 +180,7 @@ impl Command {
                 let _ = kind;
                 "schema"
             }
+            Self::ProbeWorker => "__probe-worker",
         }
     }
 }
@@ -260,6 +263,7 @@ pub fn run() -> DiscoveryResult<()> {
             recommendation,
             project,
         } => run_plan(candidate_id, recommendation, project, cli.json),
+        Command::ProbeWorker => crate::probes::worker::run_stdio(),
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
             command.unavailable_name()

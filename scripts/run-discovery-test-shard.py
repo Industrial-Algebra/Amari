@@ -60,6 +60,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "probe_rewrite_predecessors",
         "probe_surreal",
         "probe_tropical",
+        "probe_worker_protocol",
     ),
 }
 
