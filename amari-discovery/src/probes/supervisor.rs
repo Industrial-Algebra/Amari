@@ -3,7 +3,7 @@
 //! Private fixed-launch process supervisor for CLI probe isolation.
 
 use std::{
-    io::{self, Read},
+    io::{self, Read, Write},
     path::PathBuf,
     process::{Child, Command, ExitStatus, Stdio},
     sync::mpsc::{self, Sender},
@@ -11,8 +11,11 @@ use std::{
     time::{Duration, Instant},
 };
 
-use super::worker::{self, WorkerResponse};
-use crate::{DiscoveryError, DiscoveryResult};
+use super::{
+    worker::{self, WorkerRequest, WorkerResponse},
+    ProbeIsolation,
+};
+use crate::{DiscoveryError, DiscoveryResult, Provenance};
 
 const PROCESS_POLL_INTERVAL: Duration = Duration::from_millis(5);
 
@@ -93,6 +96,79 @@ fn spawn_restricted(launcher: &impl WorkerLauncher) -> DiscoveryResult<Child> {
 fn neutral_working_directory() -> PathBuf {
     let temporary = std::env::temp_dir();
     temporary.canonicalize().unwrap_or(temporary)
+}
+
+fn supervise_worker(
+    launcher: &impl WorkerLauncher,
+    request: &WorkerRequest,
+    io_limits: SupervisorIoLimits,
+    deadline: Duration,
+) -> DiscoveryResult<WorkerResponse> {
+    if deadline.is_zero() {
+        return Err(DiscoveryError::InvalidInput(
+            "probe worker deadline must be greater than zero".to_owned(),
+        ));
+    }
+    if io_limits.max_stdout_bytes == 0 || io_limits.max_stderr_bytes == 0 {
+        return Err(DiscoveryError::InvalidInput(
+            "probe worker stream limits must be greater than zero".to_owned(),
+        ));
+    }
+
+    let mut child = spawn_restricted(launcher)?;
+    if let Err(error) = send_worker_request(&mut child, request) {
+        terminate_and_wait(&mut child)?;
+        return Err(error);
+    }
+    let captured = capture_bounded(child, io_limits, deadline)?;
+    map_worker_outcome(captured, &request.provenance)
+}
+
+fn send_worker_request(child: &mut Child, request: &WorkerRequest) -> DiscoveryResult<()> {
+    let frame = worker::encode_request_frame(request)?;
+    let mut stdin = child.stdin.take().ok_or_else(|| {
+        DiscoveryError::Internal("probe worker stdin pipe is unavailable".to_owned())
+    })?;
+    stdin.write_all(&frame)?;
+    stdin.flush()?;
+    drop(stdin);
+    Ok(())
+}
+
+fn map_worker_outcome(
+    captured: CapturedOutput,
+    expected_provenance: &Provenance,
+) -> DiscoveryResult<WorkerResponse> {
+    if !captured.status.success() {
+        if let Some(code) = captured.status.code() {
+            return Err(DiscoveryError::ProbeWorkerExited { code });
+        }
+        return Err(DiscoveryError::ProbeWorkerCrashed {
+            signal: exit_signal(&captured.status),
+        });
+    }
+
+    let mut response = decode_worker_response(&captured.stdout).map_err(|error| {
+        DiscoveryError::ProbeWorkerProtocol(format!("invalid framed response ({})", error.kind()))
+    })?;
+    if &response.provenance != expected_provenance {
+        return Err(DiscoveryError::ProbeWorkerProtocol(
+            "worker response provenance differs from the request".to_owned(),
+        ));
+    }
+    response.execution.isolation = ProbeIsolation::Process;
+    Ok(response)
+}
+
+#[cfg(unix)]
+fn exit_signal(status: &ExitStatus) -> Option<i32> {
+    use std::os::unix::process::ExitStatusExt;
+    status.signal()
+}
+
+#[cfg(not(unix))]
+fn exit_signal(_status: &ExitStatus) -> Option<i32> {
+    None
 }
 
 fn capture_bounded(
@@ -297,6 +373,49 @@ mod tests {
         Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/probe-test-worker.py")
     }
 
+    fn fixture_provenance() -> crate::Provenance {
+        crate::Provenance {
+            tool_version: "fixture".to_owned(),
+            catalog: crate::CatalogIdentity {
+                version: "fixture".to_owned(),
+                hash: "fixture-catalog".to_owned(),
+            },
+            compatibility: crate::Compatibility {
+                status: "compatible".to_owned(),
+                reasons: Vec::new(),
+            },
+            replay: crate::ReplayMetadata {
+                replayable: true,
+                required_hashes: Vec::new(),
+                reasons: Vec::new(),
+            },
+            project_hash: None,
+            input_hash: Some("fixture-input".to_owned()),
+            seed: None,
+        }
+    }
+
+    fn fixture_request() -> worker::WorkerRequest {
+        worker::WorkerRequest {
+            probe_id: "amari-probe:tropical:viterbi:v1".parse().unwrap(),
+            input: serde_json::json!({"fixture": true}),
+            limits: super::super::ProbeEngineLimits::default(),
+            provenance: fixture_provenance(),
+        }
+    }
+
+    fn run_fixture(mode: &str) -> DiscoveryResult<WorkerResponse> {
+        supervise_worker(
+            &TestWorkerLauncher::new(fixture_path(), mode),
+            &fixture_request(),
+            SupervisorIoLimits {
+                max_stdout_bytes: 64 * 1024,
+                max_stderr_bytes: 64 * 1024,
+            },
+            Duration::from_secs(5),
+        )
+    }
+
     #[test]
     fn production_command_and_arguments_are_fixed_internally() {
         let launcher = ProductionWorkerLauncher;
@@ -481,6 +600,57 @@ mod tests {
 
         assert!(
             matches!(error, crate::DiscoveryError::InvalidInput(message) if message.contains("deadline"))
+        );
+    }
+
+    #[test]
+    fn successful_worker_preserves_provenance_and_reports_process_isolation() {
+        let response = run_fixture("valid").unwrap();
+
+        assert_eq!(response.provenance, fixture_provenance());
+        assert_eq!(
+            response.execution.isolation,
+            super::super::ProbeIsolation::Process
+        );
+        assert_eq!(
+            response.execution.output,
+            serde_json::json!({"fixture": true})
+        );
+    }
+
+    #[test]
+    fn crashing_worker_maps_to_typed_crash_without_protocol_decode() {
+        let error = run_fixture("crash").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerCrashed { .. }
+        ));
+    }
+
+    #[test]
+    fn nonzero_worker_maps_exit_code_without_leaking_stderr() {
+        let error = run_fixture("nonzero").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerExited { code: 17 }
+        ));
+        assert!(!error.to_string().contains("SECRET_DIAGNOSTIC"));
+    }
+
+    #[test]
+    fn malformed_success_result_maps_to_typed_protocol_failure() {
+        let error = run_fixture("malformed").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerProtocol(_)
+        ));
+    }
+
+    #[test]
+    fn changed_worker_provenance_is_rejected() {
+        let error = run_fixture("wrong-provenance").unwrap_err();
+        assert!(
+            matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if message.contains("provenance"))
         );
     }
 }

@@ -15,11 +15,11 @@ const MAX_FRAME_BYTES: usize = 2 * 1024 * 1024;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-struct WorkerRequest {
-    probe_id: ProbeId,
-    input: Value,
-    limits: ProbeEngineLimits,
-    provenance: Provenance,
+pub(super) struct WorkerRequest {
+    pub(super) probe_id: ProbeId,
+    pub(super) input: Value,
+    pub(super) limits: ProbeEngineLimits,
+    pub(super) provenance: Provenance,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -50,6 +50,15 @@ fn read_request(reader: &mut impl Read) -> DiscoveryResult<WorkerRequest> {
 fn write_response(writer: &mut impl Write, response: &WorkerResponse) -> DiscoveryResult<()> {
     let body = serde_json::to_vec(response)?;
     write_frame(writer, &body)
+}
+
+// Task 21C constructs this private request from explicit typed CLI input.
+#[allow(dead_code)]
+pub(super) fn encode_request_frame(request: &WorkerRequest) -> DiscoveryResult<Vec<u8>> {
+    let body = serde_json::to_vec(request)?;
+    let mut frame = Vec::with_capacity(FRAME_HEADER_BYTES.saturating_add(body.len()));
+    write_frame(&mut frame, &body)?;
+    Ok(frame)
 }
 
 // Task 21C consumes supervised worker responses through this decoder.

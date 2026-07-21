@@ -60,6 +60,20 @@ def main() -> int:
     if mode == "valid":
         write_frame(success_response())
         return 0
+    if mode == "wrong-provenance":
+        response = success_response()
+        response["provenance"]["input_hash"] = "wrong-input"
+        write_frame(response)
+        return 0
+    if mode == "malformed":
+        sys.stdout.buffer.write(struct.pack(">I", 8) + b"not-json")
+        sys.stdout.buffer.flush()
+        return 0
+    if mode == "nonzero":
+        print("SECRET_DIAGNOSTIC_MUST_NOT_LEAK", file=sys.stderr)
+        return 17
+    if mode == "crash":
+        os.abort()
     if mode == "simultaneous":
         sys.stderr.buffer.write(b"d" * (256 * 1024))
         sys.stderr.buffer.flush()
