@@ -7,10 +7,10 @@
 #![cfg_attr(any(not(test), not(feature = "standard-probes")), allow(dead_code))]
 
 #[cfg(feature = "standard-probes")]
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 #[cfg(feature = "standard-probes")]
-use amari_rewrite::trs::{Rule, Term, TermSystem};
+use amari_rewrite::trs::{match_pattern, Rule, Term, TermSystem};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "standard-probes")]
 use serde_json::Value;
@@ -30,6 +30,12 @@ const MAX_TERM_NODES: u64 = 4_096;
 const MAX_RULES: u64 = 256;
 #[cfg(feature = "standard-probes")]
 const MAX_NORMALIZATION_STEPS: u64 = 4_096;
+#[cfg(feature = "standard-probes")]
+const MAX_PREDECESSOR_DEPTH: u64 = 16;
+#[cfg(feature = "standard-probes")]
+const MAX_PREDECESSOR_RESULTS: u64 = 1_024;
+#[cfg(feature = "standard-probes")]
+const MAX_PREDECESSOR_FRONTIER: u64 = 1_024;
 
 /// Serializable first-order term accepted by rewrite probes.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -123,6 +129,31 @@ pub struct RewriteNormalizeOutput {
     pub steps: u64,
 }
 
+/// Typed input for bounded inverse-rewrite predecessor search.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RewritePredecessorsRequest {
+    /// Target term whose predecessors are requested.
+    pub target: RewriteTerm,
+    /// Ordered checked forward rules explored in reverse.
+    pub rules: Vec<RewriteRule>,
+    /// Maximum backward-search depth.
+    pub max_depth: u64,
+    /// Maximum returned predecessor terms.
+    pub max_results: u64,
+    /// Maximum queued search terms at one time.
+    pub max_frontier: u64,
+}
+
+/// Deterministic bounded predecessor-search result.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct RewritePredecessorsOutput {
+    /// Unique predecessor terms in canonical DTO order.
+    pub predecessors: Vec<RewriteTerm>,
+    /// Whether the requested result cap omitted at least one predecessor.
+    pub truncated: bool,
+}
+
 #[cfg(feature = "standard-probes")]
 pub(super) fn normalize_registration() -> DiscoveryResult<AdapterRegistration> {
     Ok(AdapterRegistration {
@@ -141,6 +172,27 @@ pub(super) fn normalize_registration() -> DiscoveryResult<AdapterRegistration> {
         side_effects: SideEffectPolicy::None,
         network: false,
         execute: execute_normalize,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn predecessors_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:predecessors:v1".parse()?,
+        capability_id: "amari:amari-rewrite:inverse:predecessors".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-predecessors/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-predecessors/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_predecessors,
     })
 }
 
@@ -240,6 +292,174 @@ fn execute_normalize(
         current = next;
         current_dto = RewriteTerm::from_term(&current);
     }
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_predecessors(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewritePredecessorsRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "rewrite predecessor request has an invalid term, rule, or limit shape: {error}"
+            ))
+        })?;
+    if request.max_results == 0 || request.max_frontier == 0 {
+        return Err(DiscoveryError::InvalidInput(
+            "rewrite predecessor results and frontier limits must be greater than zero".to_owned(),
+        ));
+    }
+    enforce(
+        "predecessor depth",
+        request.max_depth,
+        MAX_PREDECESSOR_DEPTH,
+    )?;
+    enforce(
+        "predecessor results",
+        request.max_results,
+        MAX_PREDECESSOR_RESULTS,
+    )?;
+    enforce(
+        "predecessor frontier",
+        request.max_frontier,
+        MAX_PREDECESSOR_FRONTIER,
+    )?;
+
+    let bounds = effective_bounds(limits);
+    let analysis = validate_rewrite_request(&request, [&request.target], &request.rules, bounds)?;
+    if analysis.lhs_duplicates_variable {
+        return Err(DiscoveryError::InvalidInput(
+            "reverse rewrite rejects a rule whose LHS duplicates variable occurrences".to_owned(),
+        ));
+    }
+    let predicted_term_nodes = checked_growth_bound(
+        analysis.input_nodes,
+        request.max_depth,
+        analysis.max_backward_constant,
+    )?;
+    enforce(
+        "predecessor term nodes",
+        predicted_term_nodes,
+        bounds.max_term_nodes,
+    )?;
+
+    let rules = request
+        .rules
+        .iter()
+        .map(RewriteRule::to_rule)
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let target = request.target.to_term()?;
+    let mut queue = VecDeque::from([(target.clone(), 0_u64)]);
+    let mut visited = BTreeSet::from([target]);
+    let mut predecessors = BTreeSet::new();
+    let mut operations = 0_u64;
+    let mut iterations = 0_u64;
+    let mut cumulative_nodes = analysis.input_nodes;
+    let mut encoded_result_bytes = 0_u64;
+    let mut truncated = false;
+
+    'search: while let Some((term, depth)) = queue.pop_front() {
+        if depth >= request.max_depth {
+            continue;
+        }
+        iterations = iterations.checked_add(1).ok_or_else(|| {
+            DiscoveryError::LimitExceeded("rewrite predecessor iteration overflow".to_owned())
+        })?;
+        enforce("iterations", iterations, limits.max_iterations)?;
+
+        for path in term.positions() {
+            let subterm = term.subterm(&path).ok_or_else(|| {
+                DiscoveryError::ProbeFailed(
+                    "bounded predecessor search produced an invalid term path".to_owned(),
+                )
+            })?;
+            for rule in &rules {
+                operations = operations.checked_add(1).ok_or_else(|| {
+                    DiscoveryError::LimitExceeded(
+                        "rewrite predecessor operation count overflow".to_owned(),
+                    )
+                })?;
+                enforce("operations", operations, limits.max_operations)?;
+                let Some(substitution) = match_pattern(rule.rhs(), subterm) else {
+                    continue;
+                };
+                let replacement = substitution.apply(rule.lhs());
+                let candidate = term.replace_at(&path, replacement).map_err(|_| {
+                    DiscoveryError::ProbeFailed("bounded predecessor replacement failed".to_owned())
+                })?;
+                if candidate == term || visited.contains(&candidate) {
+                    continue;
+                }
+                if u64::try_from(predecessors.len()).map_err(|_| {
+                    DiscoveryError::LimitExceeded(
+                        "rewrite predecessor result count overflow".to_owned(),
+                    )
+                })? >= request.max_results
+                {
+                    truncated = true;
+                    break 'search;
+                }
+
+                let candidate_dto = RewriteTerm::from_term(&candidate);
+                let stats =
+                    term_stats(&candidate_dto, bounds.max_term_depth, bounds.max_term_nodes)?;
+                cumulative_nodes = cumulative_nodes.checked_add(stats.nodes).ok_or_else(|| {
+                    DiscoveryError::LimitExceeded(
+                        "rewrite predecessor cumulative node count overflow".to_owned(),
+                    )
+                })?;
+                enforce("predecessor nodes", cumulative_nodes, limits.max_nodes)?;
+                encoded_result_bytes = encoded_result_bytes
+                    .checked_add(encoded_bytes(&candidate_dto, "rewrite predecessor")?)
+                    .ok_or_else(|| {
+                        DiscoveryError::LimitExceeded(
+                            "rewrite predecessor output byte count overflow".to_owned(),
+                        )
+                    })?;
+                enforce(
+                    "predecessor output bytes",
+                    encoded_result_bytes,
+                    bounds.max_output_bytes,
+                )?;
+
+                visited.insert(candidate.clone());
+                predecessors.insert(candidate_dto);
+                let next_depth = depth.checked_add(1).ok_or_else(|| {
+                    DiscoveryError::LimitExceeded("rewrite predecessor depth overflow".to_owned())
+                })?;
+                if next_depth < request.max_depth {
+                    let next_frontier = queue.len().checked_add(1).ok_or_else(|| {
+                        DiscoveryError::LimitExceeded(
+                            "rewrite predecessor frontier overflow".to_owned(),
+                        )
+                    })?;
+                    let next_frontier = u64::try_from(next_frontier).map_err(|_| {
+                        DiscoveryError::LimitExceeded(
+                            "rewrite predecessor frontier overflow".to_owned(),
+                        )
+                    })?;
+                    enforce("predecessor frontier", next_frontier, request.max_frontier)?;
+                    queue.push_back((candidate, next_depth));
+                }
+            }
+        }
+    }
+
+    let output = RewritePredecessorsOutput {
+        predecessors: predecessors.into_iter().collect(),
+        truncated,
+    };
+    validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations,
+            nodes: cumulative_nodes,
+            iterations,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
 }
 
 #[cfg(feature = "standard-probes")]
