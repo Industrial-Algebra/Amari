@@ -223,10 +223,10 @@ impl Capabilities {
                             missing_features.join(", ")
                         )
                     } else if executable && probe.deterministic {
-                        "registered deterministic adapter is available with cooperative isolation"
+                        "registered deterministic adapter is available; library execution is cooperative and CLI execution is process-isolated"
                             .into()
                     } else if executable {
-                        "registered adapter is available with cooperative isolation".into()
+                        "registered adapter is available; library execution is cooperative and CLI execution is process-isolated".into()
                     } else {
                         "required features are compiled; probe adapter is not registered yet".into()
                     }),
@@ -243,7 +243,7 @@ impl Capabilities {
                 hash: catalog.content_hash().into(),
                 available: true,
             },
-            output_modes: vec!["human".into(), "json".into()],
+            output_modes: vec!["human".into(), "json".into(), "ndjson".into()],
             resource_limits: ResourceLimits::default(),
             host: detect_host(),
             target: compilation_target(),

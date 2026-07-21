@@ -8,4 +8,5 @@
 
 pub mod discover;
 pub mod plan;
+pub mod probe;
 pub mod recommend;

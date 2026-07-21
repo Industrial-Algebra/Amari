@@ -22,15 +22,22 @@ fn discover_json(args: &[&str]) -> Value {
 }
 
 fn discover_fails(args: &[&str], expected_code: i32, expected_kind: &str) {
-    Command::cargo_bin("amari")
+    let stderr = Command::cargo_bin("amari")
         .unwrap()
         .args(args)
         .assert()
         .code(expected_code)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::str::starts_with(expected_kind))
-        .stderr(predicate::str::contains(": "))
-        .stderr(predicate::str::contains("internal").not());
+        .get_output()
+        .stderr
+        .clone();
+    let error: Value = serde_json::from_slice(&stderr).unwrap();
+    assert_eq!(error["kind"], expected_kind);
+    assert_eq!(error["details"]["exit_code"], expected_code);
+    assert!(!error["message"]
+        .as_str()
+        .unwrap()
+        .contains("internal failure"));
 }
 
 // ---------------------------------------------------------------------------
@@ -703,7 +710,7 @@ fn search_exact_id_still_case_sensitive() {
 // ---------------------------------------------------------------------------
 
 #[test]
-fn error_stderr_starts_with_stable_kind_prefix() {
+fn error_stderr_contains_stable_structured_kind() {
     // Every structured error must print "{kind}: {message}" to stderr.
     for (args, expected_kind) in [
         (

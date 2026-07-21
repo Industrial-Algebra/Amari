@@ -26,7 +26,9 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "catalog_signatures",
         "catalog_traits",
         "catalog_wasm",
+        "ndjson",
         "protocol",
+        "schema_contract",
     ),
     "inspection": (
         "cargo_inspection",
@@ -39,9 +41,11 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "ts_source_inspection",
     ),
     "planner": (
+        "agent_contract",
         "cli_capabilities",
         "cli_discover",
         "cli_plan_replay",
+        "cli_probes",
         "cli_recommend_rust",
         "cli_recommend_ts",
         "plan_normalization",

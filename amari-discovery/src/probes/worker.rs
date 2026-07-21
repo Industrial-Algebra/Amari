@@ -52,8 +52,6 @@ fn write_response(writer: &mut impl Write, response: &WorkerResponse) -> Discove
     write_frame(writer, &body)
 }
 
-// Task 21C constructs this private request from explicit typed CLI input.
-#[allow(dead_code)]
 pub(super) fn encode_request_frame(request: &WorkerRequest) -> DiscoveryResult<Vec<u8>> {
     let body = serde_json::to_vec(request)?;
     let mut frame = Vec::with_capacity(FRAME_HEADER_BYTES.saturating_add(body.len()));
@@ -61,8 +59,6 @@ pub(super) fn encode_request_frame(request: &WorkerRequest) -> DiscoveryResult<V
     Ok(frame)
 }
 
-// Task 21C consumes supervised worker responses through this decoder.
-#[allow(dead_code)]
 pub(super) fn decode_response_frame(bytes: &[u8]) -> DiscoveryResult<WorkerResponse> {
     let mut reader = io::Cursor::new(bytes);
     let body = read_frame(&mut reader)?;

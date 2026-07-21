@@ -351,7 +351,7 @@ fn malformed_and_semantically_empty_goal_files_are_typed_errors() {
         .assert()
         .code(9)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::str::starts_with("serialization:"));
+        .stderr(predicate::str::contains("\"kind\":\"serialization\""));
 
     Command::cargo_bin("amari")
         .unwrap()
@@ -363,5 +363,5 @@ fn malformed_and_semantically_empty_goal_files_are_typed_errors() {
         .assert()
         .code(2)
         .stdout(predicate::str::is_empty())
-        .stderr(predicate::str::starts_with("invalid_input:"));
+        .stderr(predicate::str::contains("\"kind\":\"invalid_input\""));
 }

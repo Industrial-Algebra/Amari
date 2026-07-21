@@ -134,7 +134,7 @@ fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
 
     assert_eq!(
         value["data"]["output_modes"],
-        serde_json::json!(["human", "json"])
+        serde_json::json!(["human", "json", "ndjson"])
     );
     // Assert all five inspection resource limit fields are present with defaults
     let rl = &value["data"]["resource_limits"];

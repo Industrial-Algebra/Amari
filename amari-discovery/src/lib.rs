@@ -21,10 +21,12 @@ pub mod cli;
 pub mod commands;
 pub mod error;
 pub mod inspect;
+pub mod ndjson;
 pub mod planner;
 mod probes;
 pub mod protocol;
 mod render;
+pub mod schema;
 
 pub use capabilities::{
     AiAdapterStatus, Capabilities, CatalogStatus, FeatureGate, PlatformInfo, ResourceLimits,
@@ -49,6 +51,9 @@ pub use commands::discover::{
     DiscoveredExample, ExampleResult, GraphRelationItem, GraphResult, SearchResultItem,
     SearchResults,
 };
+pub use commands::probe::{
+    ProbeDescription, ProbeDryRun, ProbeList, ProbeListItem, ProbeRunResult,
+};
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{
     inspect_cargo_platform, inspect_cargo_project, inspect_npm_project,
@@ -72,6 +77,7 @@ pub use inspect::{
     TypeScriptRuntimeSignal, TypeScriptVocabularyEvidence, VocabularyEvidence, WasmTargetEvidence,
     WasmTargetOrigin, WorkspaceDependencyBase, WorkspaceMeta,
 };
+pub use ndjson::{NdjsonWriter, DEFAULT_MAX_NDJSON_RECORD_BYTES};
 pub use planner::{
     BlockedCandidate, CandidateRanker, CandidateRetriever, CapabilityGraphExpander,
     GraphConstraints, GraphExpansion, GraphExpansionState, GraphLimit, GraphLimits, GraphPath,
@@ -100,4 +106,8 @@ pub use protocol::{
     PlanTestTarget, PlanningContext, ProbeBackend, ProbeId, ProbeReplayHash, ProbeResult,
     Provenance, Recommendation, RecommendationScore, RecommendationScoreComponents, ReplayMetadata,
     ResourceObservations, SchemaVersion, SCHEMA_V1,
+};
+pub use schema::{
+    protocol_schema, protocol_schema_catalog, ProtocolSchema, SchemaCatalog, SchemaKind,
+    SchemaSummary,
 };

@@ -1,0 +1,106 @@
+{
+  "$id": "https://industrialalgebra.com/schemas/amari.discovery/probe/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "backend": {
+      "const": "cpu"
+    },
+    "catalog_hash": {
+      "type": "string"
+    },
+    "duration_micros": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "input_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "output": true,
+    "probe_id": {
+      "pattern": "^amari-probe:[a-z0-9][a-z0-9_-]*:[a-z0-9][a-z0-9_-]*:v[1-9][0-9]*$",
+      "type": "string"
+    },
+    "project_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "refuted_assumptions": {
+      "items": {
+        "maxLength": 4096,
+        "type": "string"
+      },
+      "maxItems": 256,
+      "type": "array"
+    },
+    "resources": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "iterations": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "nodes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "operations": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "operations",
+        "nodes",
+        "iterations",
+        "bytes"
+      ],
+      "type": "object"
+    },
+    "seed": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "validated_assumptions": {
+      "items": {
+        "maxLength": 4096,
+        "type": "string"
+      },
+      "maxItems": 256,
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "maxLength": 4096,
+        "type": "string"
+      },
+      "maxItems": 256,
+      "type": "array"
+    }
+  },
+  "required": [
+    "probe_id",
+    "backend",
+    "duration_micros",
+    "resources",
+    "catalog_hash",
+    "input_hash",
+    "validated_assumptions",
+    "refuted_assumptions",
+    "warnings",
+    "output"
+  ],
+  "title": "Amari Discovery Probe Result v1",
+  "type": "object",
+  "x-amari-protocol-version": "amari.discovery/v1"
+}
