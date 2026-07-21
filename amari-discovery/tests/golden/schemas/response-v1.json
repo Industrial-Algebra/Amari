@@ -1,0 +1,134 @@
+{
+  "$defs": {
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "catalog": {
+          "additionalProperties": false,
+          "properties": {
+            "hash": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "version",
+            "hash"
+          ],
+          "type": "object"
+        },
+        "compatibility": {
+          "additionalProperties": false,
+          "properties": {
+            "reasons": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 256,
+              "type": "array"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "reasons"
+          ],
+          "type": "object"
+        },
+        "input_hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project_hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "replay": {
+          "additionalProperties": false,
+          "properties": {
+            "reasons": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 256,
+              "type": "array"
+            },
+            "replayable": {
+              "type": "boolean"
+            },
+            "required_hashes": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 64,
+              "type": "array"
+            }
+          },
+          "required": [
+            "replayable",
+            "required_hashes",
+            "reasons"
+          ],
+          "type": "object"
+        },
+        "seed": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tool_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_version",
+        "catalog",
+        "compatibility",
+        "replay",
+        "project_hash",
+        "input_hash",
+        "seed"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://industrialalgebra.com/schemas/amari.discovery/response/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "data": true,
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "schema_version": {
+      "const": "amari.discovery/v1"
+    },
+    "warnings": {
+      "items": {
+        "maxLength": 4096,
+        "type": "string"
+      },
+      "maxItems": 256,
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "provenance",
+    "warnings",
+    "data"
+  ],
+  "title": "Amari Discovery Response Envelope v1",
+  "type": "object",
+  "x-amari-protocol-version": "amari.discovery/v1"
+}

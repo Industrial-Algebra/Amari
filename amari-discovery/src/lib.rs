@@ -25,6 +25,7 @@ pub mod planner;
 mod probes;
 pub mod protocol;
 mod render;
+pub mod schema;
 
 pub use capabilities::{
     AiAdapterStatus, Capabilities, CatalogStatus, FeatureGate, PlatformInfo, ResourceLimits,
@@ -104,3 +105,4 @@ pub use protocol::{
     Provenance, Recommendation, RecommendationScore, RecommendationScoreComponents, ReplayMetadata,
     ResourceObservations, SchemaVersion, SCHEMA_V1,
 };
+pub use schema::{protocol_schema, ProtocolSchema, SchemaKind};

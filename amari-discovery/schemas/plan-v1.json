@@ -1,0 +1,254 @@
+{
+  "$defs": {
+    "capability_id": {
+      "pattern": "^amari:[a-z0-9][a-z0-9_-]*:[a-z0-9][a-z0-9_-]*:[a-z0-9][a-z0-9_-]*",
+      "type": "string"
+    },
+    "compatibility": {
+      "additionalProperties": false,
+      "properties": {
+        "catalog": {
+          "additionalProperties": false,
+          "properties": {
+            "hash": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "version",
+            "hash"
+          ],
+          "type": "object"
+        },
+        "input_hash": {
+          "type": "string"
+        },
+        "probe_results": {
+          "maxItems": 256,
+          "type": "array"
+        },
+        "project_hash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "catalog",
+        "project_hash",
+        "input_hash"
+      ],
+      "type": "object"
+    },
+    "plan_step": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "capability_id": {
+              "$ref": "#/$defs/capability_id"
+            },
+            "kind": {
+              "const": "dependency"
+            },
+            "package": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "capability_id",
+            "package",
+            "version"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "capability_id": {
+              "$ref": "#/$defs/capability_id"
+            },
+            "feature": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "feature"
+            },
+            "package": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "capability_id",
+            "package",
+            "feature"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "capability_id": {
+              "$ref": "#/$defs/capability_id"
+            },
+            "kind": {
+              "const": "symbol"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "capability_id",
+            "path"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "capability_id": {
+              "$ref": "#/$defs/capability_id"
+            },
+            "example": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "example"
+            },
+            "package": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "capability_id",
+            "package",
+            "example"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "capability_id": {
+              "$ref": "#/$defs/capability_id"
+            },
+            "kind": {
+              "const": "probe"
+            },
+            "probe_id": {
+              "$ref": "#/$defs/probe_id"
+            }
+          },
+          "required": [
+            "kind",
+            "capability_id",
+            "probe_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "capability_id": {
+              "$ref": "#/$defs/capability_id"
+            },
+            "kind": {
+              "const": "test"
+            },
+            "package": {
+              "type": "string"
+            },
+            "target": {
+              "enum": [
+                "all_targets",
+                "npm_package"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "capability_id",
+            "package",
+            "target"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "probe_id": {
+      "pattern": "^amari-probe:[a-z0-9][a-z0-9_-]*:[a-z0-9][a-z0-9_-]*:v[1-9][0-9]*$",
+      "type": "string"
+    }
+  },
+  "$id": "https://industrialalgebra.com/schemas/amari.discovery/plan/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "capability_id": {
+      "$ref": "#/$defs/capability_id"
+    },
+    "compatibility": {
+      "$ref": "#/$defs/compatibility"
+    },
+    "normalization": {
+      "additionalProperties": false,
+      "properties": {
+        "max_rewrites": {
+          "maximum": 4096,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "normalized": {
+          "type": "boolean"
+        },
+        "trace": {
+          "maxItems": 4096,
+          "type": "array"
+        }
+      },
+      "required": [
+        "normalized",
+        "max_rewrites"
+      ],
+      "type": "object"
+    },
+    "plan_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "prerequisite_order": {
+      "items": {
+        "$ref": "#/$defs/capability_id"
+      },
+      "maxItems": 64,
+      "type": "array"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/plan_step"
+      },
+      "maxItems": 64,
+      "type": "array"
+    }
+  },
+  "required": [
+    "capability_id",
+    "prerequisite_order",
+    "steps",
+    "compatibility",
+    "normalization",
+    "plan_hash"
+  ],
+  "title": "Amari Discovery Candidate Plan v1",
+  "type": "object",
+  "x-amari-protocol-version": "amari.discovery/v1"
+}
