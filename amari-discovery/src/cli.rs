@@ -3,8 +3,9 @@
 //! Command-line parsing and dispatch for the `amari` binary.
 
 use std::{
+    ffi::OsString,
     io::{self, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use clap::{Parser, Subcommand, ValueEnum};
@@ -256,43 +257,120 @@ impl ProbeCommand {
 /// not executable in the current bootstrap implementation.
 pub fn run() -> DiscoveryResult<()> {
     let cli = Cli::parse();
-    let mode = if cli.ndjson {
+    let mode = output_mode(cli.json, cli.ndjson);
+    match cli.command {
+        Command::Shell { project } => {
+            if mode != render::OutputMode::Human {
+                return Err(DiscoveryError::NotImplemented(
+                    "shell machine output is deferred until its request/response contract is enabled"
+                        .to_owned(),
+                ));
+            }
+            let stdin = io::stdin();
+            let mut reader = stdin.lock();
+            let mut stdout = io::stdout().lock();
+            crate::shell::run_human(&mut reader, &mut stdout, |arguments, writer| {
+                run_shell_command(arguments, project.as_deref(), writer)
+            })
+        }
+        Command::ProbeWorker => crate::probes::worker::run_stdio(),
+        command => {
+            let mut stdout = io::stdout().lock();
+            dispatch_command(command, mode, &mut stdout)
+        }
+    }
+}
+
+fn output_mode(json: bool, ndjson: bool) -> render::OutputMode {
+    if ndjson {
         render::OutputMode::Ndjson
-    } else if cli.json {
+    } else if json {
         render::OutputMode::Json
     } else {
         render::OutputMode::Human
-    };
+    }
+}
+
+fn run_shell_command<W: Write>(
+    mut arguments: Vec<OsString>,
+    session_project: Option<&Path>,
+    writer: &mut W,
+) -> DiscoveryResult<()> {
+    apply_session_project(&mut arguments, session_project);
+    let cli = Cli::try_parse_from(std::iter::once(OsString::from("amari")).chain(arguments))
+        .map_err(|error| DiscoveryError::InvalidInput(error.to_string()))?;
+    if cli.json || cli.ndjson {
+        return Err(DiscoveryError::InvalidInput(
+            "shell output mode is selected when the shell starts, not per command".to_owned(),
+        ));
+    }
     match cli.command {
+        Command::Shell { .. } | Command::ProbeWorker => Err(DiscoveryError::InvalidInput(
+            "nested shell and worker commands are unavailable inside the shell".to_owned(),
+        )),
+        command => dispatch_command(command, render::OutputMode::Human, writer),
+    }
+}
+
+fn apply_session_project(arguments: &mut Vec<OsString>, session_project: Option<&Path>) {
+    let Some(project) = session_project else {
+        return;
+    };
+    match arguments.first().and_then(|argument| argument.to_str()) {
+        Some("inspect") if arguments.len() == 1 => arguments.push(project.as_os_str().to_owned()),
+        Some("recommend") => {
+            let has_explicit_path = arguments
+                .get(1)
+                .and_then(|argument| argument.to_str())
+                .is_some_and(|argument| !argument.starts_with('-'));
+            if !has_explicit_path {
+                arguments.insert(1, project.as_os_str().to_owned());
+            }
+        }
+        Some("plan") => {
+            let has_explicit_project = arguments.iter().any(|argument| {
+                argument == "--project"
+                    || argument
+                        .to_str()
+                        .is_some_and(|argument| argument.starts_with("--project="))
+            });
+            if !has_explicit_project {
+                arguments.push(OsString::from("--project"));
+                arguments.push(project.as_os_str().to_owned());
+            }
+        }
+        _ => {}
+    }
+}
+
+fn dispatch_command<W: Write>(
+    command: Command,
+    mode: render::OutputMode,
+    writer: &mut W,
+) -> DiscoveryResult<()> {
+    match command {
         Command::Capabilities => {
             let envelope = Capabilities::envelope()?;
-            let mut stdout = io::stdout().lock();
-            render::write_envelope(
-                &mut stdout,
-                &envelope,
-                mode,
-                render::write_capabilities_human,
-            )
+            render::write_envelope(writer, &envelope, mode, render::write_capabilities_human)
         }
         Command::Discover { command } => {
             let catalog = Catalog::embedded()?;
-            run_discover(&catalog, command, mode)
+            run_discover(&catalog, command, mode, writer)
         }
-        Command::Inspect { path } => run_inspect(path, mode),
+        Command::Inspect { path } => run_inspect(path, mode, writer),
         Command::Recommend {
             path,
             goal,
             goal_file,
             probe_results,
-        } => run_recommend(path, goal, goal_file, probe_results, mode),
+        } => run_recommend(path, goal, goal_file, probe_results, mode, writer),
         Command::Plan {
             candidate_id,
             recommendation,
             project,
-        } => run_plan(candidate_id, recommendation, project, mode),
-        Command::Probe { command } => run_probe(command, mode),
-        Command::Schema { kind } => run_schema(kind, mode),
-        Command::ProbeWorker => crate::probes::worker::run_stdio(),
+        } => run_plan(candidate_id, recommendation, project, mode, writer),
+        Command::Probe { command } => run_probe(command, mode, writer),
+        Command::Schema { kind } => run_schema(kind, mode, writer),
         command => Err(DiscoveryError::NotImplemented(format!(
             "{} is not implemented in this build",
             command.unavailable_name()
@@ -322,9 +400,12 @@ pub fn report_error(error: &DiscoveryError) {
     }
 }
 
-fn run_schema(kind: Option<SchemaKind>, mode: render::OutputMode) -> DiscoveryResult<()> {
+fn run_schema<W: Write>(
+    kind: Option<SchemaKind>,
+    mode: render::OutputMode,
+    writer: &mut W,
+) -> DiscoveryResult<()> {
     let catalog = Catalog::embedded()?;
-    let mut stdout = io::stdout().lock();
     match kind {
         Some(kind) => {
             let kind = match kind {
@@ -335,16 +416,11 @@ fn run_schema(kind: Option<SchemaKind>, mode: render::OutputMode) -> DiscoveryRe
                 SchemaKind::Probe => crate::SchemaKind::Probe,
             };
             let envelope = schema_envelope(&catalog, crate::protocol_schema(kind)?);
-            render::write_envelope(&mut stdout, &envelope, mode, render::write_schema_human)
+            render::write_envelope(writer, &envelope, mode, render::write_schema_human)
         }
         None => {
             let envelope = schema_envelope(&catalog, crate::protocol_schema_catalog()?);
-            render::write_envelope(
-                &mut stdout,
-                &envelope,
-                mode,
-                render::write_schema_catalog_human,
-            )
+            render::write_envelope(writer, &envelope, mode, render::write_schema_catalog_human)
         }
     }
 }
@@ -368,19 +444,22 @@ fn schema_envelope<T>(catalog: &Catalog, data: T) -> Envelope<T> {
     )
 }
 
-fn run_probe(command: ProbeCommand, mode: render::OutputMode) -> DiscoveryResult<()> {
+fn run_probe<W: Write>(
+    command: ProbeCommand,
+    mode: render::OutputMode,
+    writer: &mut W,
+) -> DiscoveryResult<()> {
     let catalog = Catalog::embedded()?;
-    let mut stdout = io::stdout().lock();
     match command {
         ProbeCommand::List => {
             let envelope = commands::probe::list_envelope(&catalog)?;
-            render::write_envelope(&mut stdout, &envelope, mode, render::write_probe_list_human)
+            render::write_envelope(writer, &envelope, mode, render::write_probe_list_human)
         }
         ProbeCommand::Describe { probe_id } => {
             let probe_id = probe_id.parse()?;
             let envelope = commands::probe::describe_envelope(&catalog, &probe_id)?;
             render::write_envelope(
-                &mut stdout,
+                writer,
                 &envelope,
                 mode,
                 render::write_probe_description_human,
@@ -403,18 +482,13 @@ fn run_probe(command: ProbeCommand, mode: render::OutputMode) -> DiscoveryResult
                 )),
                 (Some(path), None, false) => {
                     let envelope = commands::probe::run_input_envelope(&catalog, &probe_id, &path)?;
-                    render::write_envelope(
-                        &mut stdout,
-                        &envelope,
-                        mode,
-                        render::write_probe_run_human,
-                    )
+                    render::write_envelope(writer, &envelope, mode, render::write_probe_run_human)
                 }
                 (None, Some(path), true) => {
                     let envelope =
                         commands::probe::dry_run_plan_envelope(&catalog, &probe_id, &path)?;
                     render::write_envelope(
-                        &mut stdout,
+                        writer,
                         &envelope,
                         mode,
                         render::write_probe_dry_run_human,
@@ -429,23 +503,27 @@ fn run_probe(command: ProbeCommand, mode: render::OutputMode) -> DiscoveryResult
 }
 
 /// Runs bounded project inspection and renders the shared typed snapshot.
-fn run_inspect(path: Option<PathBuf>, mode: render::OutputMode) -> DiscoveryResult<()> {
+fn run_inspect<W: Write>(
+    path: Option<PathBuf>,
+    mode: render::OutputMode,
+    writer: &mut W,
+) -> DiscoveryResult<()> {
     let root = match path {
         Some(path) => path,
         None => std::env::current_dir()?,
     };
     let envelope = inspect_project_envelope(&root, &InspectionLimits::default())?;
-    let mut stdout = io::stdout().lock();
-    render::write_envelope(&mut stdout, &envelope, mode, render::write_inspection_human)
+    render::write_envelope(writer, &envelope, mode, render::write_inspection_human)
 }
 
 /// Runs deterministic recommendation for a supported project.
-fn run_recommend(
+fn run_recommend<W: Write>(
     path: Option<PathBuf>,
     goal: Option<String>,
     goal_file: Option<PathBuf>,
     probe_results: Option<PathBuf>,
     mode: render::OutputMode,
+    writer: &mut W,
 ) -> DiscoveryResult<()> {
     let goal = match (goal, goal_file) {
         (Some(statement), None) => GoalSpec {
@@ -475,21 +553,16 @@ fn run_recommend(
         saved_probes,
         &InspectionLimits::default(),
     )?;
-    let mut stdout = io::stdout().lock();
-    render::write_envelope(
-        &mut stdout,
-        &envelope,
-        mode,
-        render::write_recommendation_human,
-    )
+    render::write_envelope(writer, &envelope, mode, render::write_recommendation_human)
 }
 
 /// Replays one candidate from a saved recommendation artifact.
-fn run_plan(
+fn run_plan<W: Write>(
     candidate_id: String,
     recommendation: PathBuf,
     project: PathBuf,
     mode: render::OutputMode,
+    writer: &mut W,
 ) -> DiscoveryResult<()> {
     let artifact = commands::plan::read_recommendation(&recommendation)?;
     let catalog = Catalog::embedded()?;
@@ -500,33 +573,32 @@ fn run_plan(
         artifact,
         &InspectionLimits::default(),
     )?;
-    let mut stdout = io::stdout().lock();
-    render::write_envelope(&mut stdout, &envelope, mode, render::write_plan_human)
+    render::write_envelope(writer, &envelope, mode, render::write_plan_human)
 }
 
 /// Dispatches a discover subcommand against the embedded catalog and renders output.
-fn run_discover(
+fn run_discover<W: Write>(
     catalog: &Catalog,
     command: DiscoverCommand,
     mode: render::OutputMode,
+    writer: &mut W,
 ) -> DiscoveryResult<()> {
-    let mut stdout = io::stdout().lock();
     match command {
         DiscoverCommand::Search { query } => {
             let envelope = commands::discover::search_envelope(catalog, &query);
-            render::write_envelope(&mut stdout, &envelope, mode, render::write_search_human)
+            render::write_envelope(writer, &envelope, mode, render::write_search_human)
         }
         DiscoverCommand::Detail { identifier } => {
             let envelope = commands::discover::detail_envelope(catalog, &identifier)?;
-            render::write_envelope(&mut stdout, &envelope, mode, render::write_detail_human)
+            render::write_envelope(writer, &envelope, mode, render::write_detail_human)
         }
         DiscoverCommand::Graph { identifier } => {
             let envelope = commands::discover::graph_envelope(catalog, &identifier)?;
-            render::write_envelope(&mut stdout, &envelope, mode, render::write_graph_human)
+            render::write_envelope(writer, &envelope, mode, render::write_graph_human)
         }
         DiscoverCommand::Example { identifier } => {
             let envelope = commands::discover::example_envelope(catalog, &identifier)?;
-            render::write_envelope(&mut stdout, &envelope, mode, render::write_example_human)
+            render::write_envelope(writer, &envelope, mode, render::write_example_human)
         }
     }
 }

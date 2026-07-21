@@ -27,6 +27,7 @@ mod probes;
 pub mod protocol;
 mod render;
 pub mod schema;
+mod shell;
 
 pub use capabilities::{
     AiAdapterStatus, Capabilities, CatalogStatus, FeatureGate, PlatformInfo, ResourceLimits,
