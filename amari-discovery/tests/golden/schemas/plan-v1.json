@@ -27,6 +27,9 @@
           "type": "string"
         },
         "probe_results": {
+          "items": {
+            "$ref": "#/$defs/probe_replay_hash"
+          },
           "maxItems": 256,
           "type": "array"
         },
@@ -38,6 +41,30 @@
         "catalog",
         "project_hash",
         "input_hash"
+      ],
+      "type": "object"
+    },
+    "normalization_trace": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "items": {
+            "$ref": "#/$defs/plan_step"
+          },
+          "maxItems": 64,
+          "type": "array"
+        },
+        "before": {
+          "items": {
+            "$ref": "#/$defs/plan_step"
+          },
+          "maxItems": 64,
+          "type": "array"
+        }
+      },
+      "required": [
+        "before",
+        "after"
       ],
       "type": "object"
     },
@@ -187,6 +214,28 @@
     "probe_id": {
       "pattern": "^amari-probe:[a-z0-9][a-z0-9_-]*:[a-z0-9][a-z0-9_-]*:v[1-9][0-9]*$",
       "type": "string"
+    },
+    "probe_replay_hash": {
+      "additionalProperties": false,
+      "properties": {
+        "input_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "probe_id": {
+          "$ref": "#/$defs/probe_id"
+        },
+        "result_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "probe_id",
+        "input_hash",
+        "result_hash"
+      ],
+      "type": "object"
     }
   },
   "$id": "https://industrialalgebra.com/schemas/amari.discovery/plan/v1",
@@ -211,13 +260,16 @@
           "type": "boolean"
         },
         "trace": {
+          "items": {
+            "$ref": "#/$defs/normalization_trace"
+          },
           "maxItems": 4096,
           "type": "array"
         }
       },
       "required": [
-        "normalized",
-        "max_rewrites"
+        "max_rewrites",
+        "normalized"
       ],
       "type": "object"
     },

@@ -131,6 +131,28 @@ fn plan_and_probe_schemas_reject_unbounded_or_ambiguous_core_shapes() {
         plan.document["properties"]["plan_hash"]["pattern"],
         "^[0-9a-f]{64}$"
     );
+    assert_eq!(
+        plan.document["properties"]["compatibility"]["$ref"],
+        "#/$defs/compatibility"
+    );
+    assert_eq!(
+        plan.document["$defs"]["compatibility"]["properties"]["probe_results"]["items"]["$ref"],
+        "#/$defs/probe_replay_hash"
+    );
+    assert_eq!(
+        plan.document["properties"]["normalization"]["properties"]["trace"]["items"]["$ref"],
+        "#/$defs/normalization_trace"
+    );
+    for side in ["before", "after"] {
+        assert_eq!(
+            plan.document["$defs"]["normalization_trace"]["properties"][side]["items"]["$ref"],
+            "#/$defs/plan_step"
+        );
+        assert_eq!(
+            plan.document["$defs"]["normalization_trace"]["properties"][side]["maxItems"],
+            64
+        );
+    }
 
     let probe = protocol_schema(SchemaKind::Probe).unwrap();
     assert_eq!(
