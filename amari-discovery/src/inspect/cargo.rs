@@ -164,6 +164,23 @@ fn safe_read_file(
 
 /// Normalize a workspace member path. Rejects glob patterns, absolute paths,
 /// parent/current components, non-UTF-8 components, or empty strings.
+fn invalid_member_hint(member: &str) -> String {
+    if member.is_empty() {
+        "<empty>".to_owned()
+    } else if member.contains('*') || member.contains('?') {
+        "<glob>".to_owned()
+    } else if Path::new(member).is_absolute() {
+        "<absolute>".to_owned()
+    } else if Path::new(member)
+        .components()
+        .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+    {
+        "<parent-or-current>".to_owned()
+    } else {
+        "<invalid>".to_owned()
+    }
+}
+
 fn normalize_member_path(member: &str) -> Option<String> {
     if member.is_empty() || member.contains('*') || member.contains('?') {
         return None;
@@ -342,7 +359,7 @@ pub fn inspect_cargo_project(
     )?;
 
     let mut root_pkg = parsed_root.package;
-    let ws_meta = parsed_root.ws_meta;
+    let mut ws_meta = parsed_root.ws_meta;
 
     // ---- Read Cargo.lock with limits ----
     let lock_path = root_canon.join("Cargo.lock");
@@ -419,7 +436,7 @@ pub fn inspect_cargo_project(
         for member in &meta.members {
             let Some(normalized) = normalize_member_path(member) else {
                 warnings.push(CargoInspectionWarning::IllegalMemberPath {
-                    member: member.clone(),
+                    member: invalid_member_hint(member),
                 });
                 continue;
             };
@@ -600,6 +617,17 @@ pub fn inspect_cargo_project(
                 }
             }
         }
+    }
+
+    // Keep only normalized, valid, deduplicated member paths in public evidence.
+    if let Some(meta) = &mut ws_meta {
+        meta.members = meta
+            .members
+            .iter()
+            .filter_map(|member| normalize_member_path(member))
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
     }
 
     // Sort members for determinism

@@ -2039,10 +2039,10 @@ members = ["*", "../escape", "/abs", ""]
             }
         })
         .collect();
-    assert!(member_texts.contains("*"));
-    assert!(member_texts.contains("../escape"));
-    assert!(member_texts.contains("/abs"));
-    assert!(member_texts.contains(""));
+    assert!(member_texts.contains("<glob>"));
+    assert!(member_texts.contains("<parent-or-current>"));
+    assert!(member_texts.contains("<absolute>"));
+    assert!(member_texts.contains("<empty>"));
 }
 
 // ===========================================================================

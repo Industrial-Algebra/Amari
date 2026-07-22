@@ -35,6 +35,9 @@ edition = "2021"
 
 [dependencies]
 amari-core = {{ git = "https://user:{CARGO_SECRET}@example.invalid/private.git" }}
+
+[workspace]
+members = ["../{CARGO_SECRET}"]
 "#
         )
         .as_bytes(),
@@ -54,6 +57,10 @@ name = "amari-core"
 version = "0.23.0"
 source = "git+https://user:{CARGO_SECRET}@example.invalid/private.git"
 checksum = "abc123"
+
+[[package]]
+name = "https://user:{CARGO_SECRET}@example.invalid/name"
+version = "0.1.0"
 "#
         )
         .as_bytes(),

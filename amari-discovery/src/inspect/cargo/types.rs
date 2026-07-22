@@ -465,7 +465,7 @@ pub enum CargoInspectionWarning {
     /// A workspace member path uses illegal patterns (glob, abs, parent
     /// components, or is empty).
     IllegalMemberPath {
-        /// The raw member path from the manifest.
+        /// Fixed diagnostic category; never the raw manifest value.
         member: String,
     },
     /// A listed member declares another workspace root and is omitted.

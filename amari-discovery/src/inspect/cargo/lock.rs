@@ -29,6 +29,14 @@ pub(super) struct ParsedLock {
 // Lock file parsing
 // ============================================================================
 
+fn is_safe_package_name(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 128
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+}
+
 /// Parse a `Cargo.lock` file content entirely offline using TOML.
 pub(super) fn parse_lock(content: &[u8], lock_path: &str) -> ParsedLock {
     let mut warnings = Vec::new();
@@ -69,8 +77,8 @@ pub(super) fn parse_lock(content: &[u8], lock_path: &str) -> ParsedLock {
                 Some(t) => t,
                 None => continue,
             };
-            let name = match toml_string(table, "name") {
-                Some(n) => n,
+            let name = match toml_string(table, "name").filter(|name| is_safe_package_name(name)) {
+                Some(name) => name,
                 None => continue,
             };
             let version = toml_string(table, "version")
