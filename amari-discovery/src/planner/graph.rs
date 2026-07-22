@@ -16,11 +16,42 @@ type MinPlusNumber = VerifiedTropicalNumber<f64, MinPlus>;
 
 /// Resource limits for capability-graph expansion.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct GraphLimits {
     /// Maximum number of distinct capability nodes retained.
     pub max_nodes: usize,
     /// Maximum number of relationship edges from any seed.
     pub max_depth: usize,
+}
+
+impl GraphLimits {
+    /// Hard ceiling for retained capability nodes, independent of caller input.
+    pub const MAX_ALLOWED_NODES: usize = 64;
+    /// Hard ceiling for semantic relationship traversal depth.
+    pub const MAX_ALLOWED_DEPTH: usize = 16;
+
+    fn validate(self) -> DiscoveryResult<()> {
+        if self.max_nodes == 0 {
+            return Err(DiscoveryError::InvalidInput(
+                "capability graph max_nodes must be greater than zero".to_owned(),
+            ));
+        }
+        if self.max_nodes > Self::MAX_ALLOWED_NODES {
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "capability graph max_nodes {} exceeds hard ceiling {}",
+                self.max_nodes,
+                Self::MAX_ALLOWED_NODES
+            )));
+        }
+        if self.max_depth > Self::MAX_ALLOWED_DEPTH {
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "capability graph max_depth {} exceeds hard ceiling {}",
+                self.max_depth,
+                Self::MAX_ALLOWED_DEPTH
+            )));
+        }
+        Ok(())
+    }
 }
 
 impl Default for GraphLimits {
@@ -171,9 +202,11 @@ impl CapabilityGraphExpander {
     ///
     /// # Errors
     ///
-    /// Returns [`DiscoveryError::InvalidInput`] if any relationship cost is
-    /// negative, non-finite, or keyed by an empty relationship kind.
+    /// Returns [`DiscoveryError::InvalidInput`] for a zero node limit or an
+    /// invalid relationship cost. Returns [`DiscoveryError::LimitExceeded`]
+    /// when caller-provided graph limits exceed the fixed hard ceilings.
     pub fn new(limits: GraphLimits, costs: RelationCostPolicy) -> DiscoveryResult<Self> {
+        limits.validate()?;
         costs.validate()?;
         Ok(Self { limits, costs })
     }

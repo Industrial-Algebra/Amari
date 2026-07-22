@@ -567,7 +567,12 @@ pub struct Recommendation {
 /// Non-recommendation variants communicate expected domain conditions and do
 /// not imply a nonzero process exit code.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "status", content = "data", rename_all = "snake_case")]
+#[serde(
+    tag = "status",
+    content = "data",
+    rename_all = "snake_case",
+    deny_unknown_fields
+)]
 pub enum DiscoveryOutcome<T> {
     /// A capability or plan can be recommended.
     Recommended(T),

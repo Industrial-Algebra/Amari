@@ -27,7 +27,9 @@ impl PlanGenerator {
     ///
     /// # Errors
     ///
-    /// Returns [`DiscoveryError::InvalidInput`] when either limit is zero.
+    /// Returns [`DiscoveryError::InvalidInput`] when either limit is zero and
+    /// [`DiscoveryError::LimitExceeded`] when a normalization hard ceiling is
+    /// exceeded.
     pub fn new(limits: NormalizationLimits) -> DiscoveryResult<Self> {
         Ok(Self {
             normalizer: PlanNormalizer::new(limits)?,

@@ -54,6 +54,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "cli_recommend_ts",
         "plan_normalization",
         "planner_graph",
+        "planner_limits",
         "planner_ranking",
         "planner_recall",
         "probe_cgt",
