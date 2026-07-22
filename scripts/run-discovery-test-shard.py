@@ -42,6 +42,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
     ),
     "planner": (
         "agent_contract",
+        "ai_contract",
         "cli_capabilities",
         "cli_discover",
         "cli_plan_replay",
@@ -65,6 +66,8 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "probe_surreal",
         "probe_tropical",
         "probe_worker_protocol",
+        "shell",
+        "shell_agent_contract",
     ),
 }
 
@@ -98,6 +101,8 @@ def run(shard: str) -> int:
     command = ["cargo", "test", "--package", "amari-discovery"]
     if shard == "catalog":
         command.extend(("--lib", "--bins"))
+    if shard == "planner":
+        command.extend(("--features", "ai"))
     for test in tests:
         command.extend(("--test", test))
     print(f"Running discovery {shard} shard ({len(tests)} integration targets)...", flush=True)

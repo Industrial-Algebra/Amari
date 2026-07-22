@@ -10,11 +10,13 @@
 //!
 //! - `standard-probes` (default): compiles registered deterministic probe
 //!   adapters, beginning with bounded tropical Viterbi decoding.
-//! - `ai`: reserves the provider-neutral AI adapter contract. It does not
-//!   enable network access or an external provider transport.
+//! - `ai`: compiles the provider-neutral AI validation contract. It does not
+//!   enable network access, an external provider transport, or execution authority.
 
 #![deny(missing_docs)]
 
+#[cfg(feature = "ai")]
+pub mod ai;
 pub mod capabilities;
 pub mod catalog;
 pub mod cli;
@@ -27,7 +29,13 @@ mod probes;
 pub mod protocol;
 mod render;
 pub mod schema;
+mod shell;
 
+#[cfg(feature = "ai")]
+pub use ai::{
+    AiContractLimits, AiExecutionRequest, GoalInterpretation, GoalInterpretationRequest,
+    GoalInterpreter, ValidatedGoalInterpreter,
+};
 pub use capabilities::{
     AiAdapterStatus, Capabilities, CatalogStatus, FeatureGate, PlatformInfo, ResourceLimits,
     RuntimeCapabilityState,
