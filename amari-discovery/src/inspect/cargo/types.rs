@@ -468,6 +468,11 @@ pub enum CargoInspectionWarning {
         /// The raw member path from the manifest.
         member: String,
     },
+    /// A listed member declares another workspace root and is omitted.
+    NestedWorkspaceRoot {
+        /// Normalized relative member manifest path.
+        path: String,
+    },
     /// An inherited workspace field (`workspace = true`) references a
     /// field that does not exist or is not `true` in `[workspace.package]`.
     WorkspaceFieldNotFound {

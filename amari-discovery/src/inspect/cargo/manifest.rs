@@ -631,6 +631,8 @@ pub(super) struct ParsedManifest {
     pub package: CargoPackage,
     /// Workspace metadata, only populated for the root manifest.
     pub ws_meta: Option<WorkspaceMeta>,
+    /// Whether this manifest declares a `[workspace]` table.
+    pub declares_workspace: bool,
 }
 
 /// Parse a single `Cargo.toml` manifest and extract the package info,
@@ -793,20 +795,18 @@ pub(super) fn parse_manifest_from_value(
     });
 
     // -- Workspace metadata (only from root manifest)
+    let workspace_table = manifest.get("workspace").and_then(|v| v.as_table());
     let ws_meta = if is_root {
-        manifest
-            .get("workspace")
-            .and_then(|v| v.as_table())
-            .map(|ws_table| {
-                let members = toml_strings_opt(ws_table, "members").unwrap_or_default();
-                let dep_bases = parse_workspace_deps(ws_table);
-                let pkg_fields = parse_workspace_package_fields(ws_table);
-                WorkspaceMeta {
-                    members,
-                    dependency_bases: dep_bases,
-                    package_fields: pkg_fields,
-                }
-            })
+        workspace_table.map(|ws_table| {
+            let members = toml_strings_opt(ws_table, "members").unwrap_or_default();
+            let dep_bases = parse_workspace_deps(ws_table);
+            let pkg_fields = parse_workspace_package_fields(ws_table);
+            WorkspaceMeta {
+                members,
+                dependency_bases: dep_bases,
+                package_fields: pkg_fields,
+            }
+        })
     } else {
         None
     };
@@ -827,6 +827,7 @@ pub(super) fn parse_manifest_from_value(
     Ok(ParsedManifest {
         package: pkg,
         ws_meta,
+        declares_workspace: workspace_table.is_some(),
     })
 }
 
