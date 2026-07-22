@@ -33,6 +33,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
     "inspection": (
         "cargo_inspection",
         "cargo_platform_inspection",
+        "inspection_paths",
         "inspection_safety",
         "npm_inspection",
         "npm_packages",

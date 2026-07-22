@@ -23,7 +23,7 @@ use crate::capabilities::ResourceLimits;
 /// assert_eq!(limits.max_per_file_bytes, rl.max_per_file_bytes);
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub struct InspectionLimits {
     /// Maximum files considered by one project inspection
     /// (regular non-secret candidates, not only accepted files).
