@@ -35,7 +35,7 @@ use sha2::{Digest, Sha256};
 
 use crate::error::{DiscoveryError, DiscoveryResult};
 use crate::inspect::snapshot::{InspectionLimit, SnapshotState};
-use crate::inspect::{bounded_read, BoundedOutcome, InspectionLimits};
+use crate::inspect::{bounded_read, is_safe_version_requirement, BoundedOutcome, InspectionLimits};
 use crate::protocol::Compatibility;
 
 #[cfg(not(unix))]
@@ -200,12 +200,17 @@ fn parse_package(bytes: &[u8], catalog_version: &str) -> DiscoveryResult<NpmPack
         else {
             continue;
         };
+        let declared_version = if is_safe_version_requirement(requirement) {
+            requirement.to_owned()
+        } else {
+            "unsupported".to_owned()
+        };
         dependencies.push(NpmDependencyEvidence {
             package_name: AMARI_WASM_PACKAGE.to_string(),
             kind,
-            declared_version: requirement.to_string(),
+            declared_version: declared_version.clone(),
             resolved_version: None,
-            compatibility: unresolved_compatibility(requirement, catalog_version),
+            compatibility: unresolved_compatibility(&declared_version, catalog_version),
             manifest_source: package_source.clone(),
             lock_source: None,
         });
@@ -267,7 +272,11 @@ fn parse_lock(bytes: &[u8]) -> Result<NpmLock, NpmInspectionWarning> {
         .and_then(|package| package.get("version"))
         .and_then(serde_json::Value::as_str)
     {
-        versions.insert(resolved.to_string());
+        versions.insert(if is_safe_version_requirement(resolved) {
+            resolved.to_owned()
+        } else {
+            "unknown".to_owned()
+        });
     }
     if let Some(resolved) = value
         .get("dependencies")
@@ -277,7 +286,11 @@ fn parse_lock(bytes: &[u8]) -> Result<NpmLock, NpmInspectionWarning> {
         .and_then(|package| package.get("version"))
         .and_then(serde_json::Value::as_str)
     {
-        versions.insert(resolved.to_string());
+        versions.insert(if is_safe_version_requirement(resolved) {
+            resolved.to_owned()
+        } else {
+            "unknown".to_owned()
+        });
     }
 
     let packages = versions

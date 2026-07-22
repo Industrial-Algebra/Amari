@@ -92,6 +92,25 @@ pub(super) fn is_env_secret_name(name: &str) -> bool {
     name.starts_with(".env")
 }
 
+/// Returns whether a registry version or requirement is safe to expose as
+/// structured evidence. URL/path-like and control-bearing values are rejected.
+pub(super) fn is_safe_version_requirement(value: &str) -> bool {
+    let value = value.trim();
+    !value.is_empty()
+        && value.len() <= 128
+        && value
+            .bytes()
+            .next()
+            .is_some_and(|byte| byte.is_ascii_digit() || b"<>=~^*vV".contains(&byte))
+        && value.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric()
+                || matches!(
+                    byte,
+                    b'.' | b'-' | b'+' | b'^' | b'~' | b'*' | b'<' | b'>' | b'=' | b'|' | b' '
+                )
+        })
+}
+
 // ---------------------------------------------------------------------------
 // No-follow read-only open — prevents symlink replacement races
 // ---------------------------------------------------------------------------
@@ -530,19 +549,14 @@ impl ProjectInspector for DefaultInspector {
     fn inspect(&self, root: &Path, limits: &InspectionLimits) -> DiscoveryResult<ProjectSnapshot> {
         // Validate root is a directory (before canonicalization)
         if !root.is_dir() {
-            return Err(DiscoveryError::InspectionFailure(format!(
-                "project root is not a directory: {}",
-                root.display()
-            )));
+            return Err(DiscoveryError::InspectionFailure(
+                "project root is not a directory".to_owned(),
+            ));
         }
 
-        // Canonicalize root once
-        let root_canon = root.canonicalize().map_err(|err| {
-            DiscoveryError::InspectionFailure(format!(
-                "cannot canonicalize project root {}: {}",
-                root.display(),
-                err
-            ))
+        // Canonicalize root once without exposing the caller's absolute path.
+        let root_canon = root.canonicalize().map_err(|_| {
+            DiscoveryError::InspectionFailure("cannot canonicalize project root".to_owned())
         })?;
 
         let start = Instant::now();

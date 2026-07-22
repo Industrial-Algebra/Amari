@@ -256,15 +256,14 @@ pub fn inspect_cargo_project(
 
     // Validate root is a directory
     if !root.is_dir() {
-        return Err(DiscoveryError::InspectionFailure(format!(
-            "project root is not a directory: {}",
-            root.display()
-        )));
+        return Err(DiscoveryError::InspectionFailure(
+            "project root is not a directory".to_owned(),
+        ));
     }
 
-    // Canonicalize root for containment checks
-    let root_canon = root.canonicalize().map_err(|err| {
-        DiscoveryError::InspectionFailure(format!("cannot canonicalize project root: {}", err))
+    // Canonicalize root for containment checks without exposing its path.
+    let root_canon = root.canonicalize().map_err(|_| {
+        DiscoveryError::InspectionFailure("cannot canonicalize project root".to_owned())
     })?;
 
     let start = Instant::now();

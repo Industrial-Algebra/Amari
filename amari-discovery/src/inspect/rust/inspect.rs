@@ -220,14 +220,13 @@ pub fn inspect_rust_sources(
     limits: &InspectionLimits,
 ) -> DiscoveryResult<RustSourceInspection> {
     if !root.is_dir() {
-        return Err(DiscoveryError::InspectionFailure(format!(
-            "project root is not a directory: {}",
-            root.display()
-        )));
+        return Err(DiscoveryError::InspectionFailure(
+            "project root is not a directory".to_owned(),
+        ));
     }
 
-    let root_canon = root.canonicalize().map_err(|err| {
-        DiscoveryError::InspectionFailure(format!("cannot canonicalize project root: {}", err))
+    let root_canon = root.canonicalize().map_err(|_| {
+        DiscoveryError::InspectionFailure("cannot canonicalize project root".to_owned())
     })?;
 
     let aliases_by_pkg = build_package_aliases(cargo);

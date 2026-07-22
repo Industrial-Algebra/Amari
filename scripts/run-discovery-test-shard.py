@@ -35,6 +35,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "cargo_platform_inspection",
         "inspection_malformed",
         "inspection_paths",
+        "inspection_privacy",
         "inspection_safety",
         "npm_inspection",
         "npm_packages",

@@ -7,7 +7,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::protocol::Compatibility;
+use crate::{inspect::is_safe_version_requirement, protocol::Compatibility};
 
 use super::toml_helpers::{toml_line_col_from_source, toml_malformed_reason, toml_string};
 use super::types::{AmariDependencyEvidence, CargoInspectionWarning, LockedPackage};
@@ -73,9 +73,21 @@ pub(super) fn parse_lock(content: &[u8], lock_path: &str) -> ParsedLock {
                 Some(n) => n,
                 None => continue,
             };
-            let version = toml_string(table, "version").unwrap_or_else(|| "unknown".to_string());
-            let checksum = toml_string(table, "checksum");
-            let source = toml_string(table, "source");
+            let version = toml_string(table, "version")
+                .filter(|value| is_safe_version_requirement(value))
+                .unwrap_or_else(|| "unknown".to_owned());
+            let checksum = toml_string(table, "checksum").filter(|value| {
+                value.len() <= 128 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+            });
+            let source = toml_string(table, "source").map(|value| {
+                if value.starts_with("registry+") {
+                    "registry".to_owned()
+                } else if value.starts_with("git+") {
+                    "git".to_owned()
+                } else {
+                    "other".to_owned()
+                }
+            });
 
             packages.push(LockedPackage {
                 name,
