@@ -10,6 +10,8 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::error::{DiscoveryError, DiscoveryResult};
 
+use crate::inspect::is_safe_version_requirement;
+
 use super::toml_helpers::{
     parse_dep_value, toml_bool, toml_string, toml_strings_opt, toml_strings_sorted,
 };
@@ -211,7 +213,11 @@ pub(super) fn parse_dep_table(
         if is_workspace {
             let resolved =
                 resolve_workspace_dep(alias, &dep_table, workspace_bases, package_name, warnings);
-            declared_version = resolved.version;
+            declared_version = if is_safe_version_requirement(&resolved.version) {
+                resolved.version
+            } else {
+                "unknown".to_owned()
+            };
 
             let final_pkg = if resolved.package_name != *alias {
                 resolved.package_name.clone()
@@ -258,13 +264,22 @@ pub(super) fn parse_dep_table(
                 continue;
             }
 
-            if let Some(v) = toml_string(&dep_table, "version") {
-                declared_version = v;
-            } else if let Some(git) = toml_string(&dep_table, "git") {
+            if let Some(version) = toml_string(&dep_table, "version") {
+                declared_version = if is_safe_version_requirement(&version) {
+                    version
+                } else {
+                    warnings.push(CargoInspectionWarning::UnsupportedRequirement {
+                        package: package_name.to_string(),
+                        dep: alias.clone(),
+                        reason: "version requirement is not safe registry syntax".to_owned(),
+                    });
+                    "unknown".to_owned()
+                };
+            } else if toml_string(&dep_table, "git").is_some() {
                 warnings.push(CargoInspectionWarning::UnsupportedRequirement {
                     package: package_name.to_string(),
                     dep: alias.clone(),
-                    reason: format!("git dependency '{}' cannot be resolved offline", git),
+                    reason: "git dependency cannot be resolved offline".to_owned(),
                 });
                 declared_version = "unknown".to_string();
             } else if toml_string(&dep_table, "path").is_some() {
@@ -631,6 +646,8 @@ pub(super) struct ParsedManifest {
     pub package: CargoPackage,
     /// Workspace metadata, only populated for the root manifest.
     pub ws_meta: Option<WorkspaceMeta>,
+    /// Whether this manifest declares a `[workspace]` table.
+    pub declares_workspace: bool,
 }
 
 /// Parse a single `Cargo.toml` manifest and extract the package info,
@@ -793,20 +810,18 @@ pub(super) fn parse_manifest_from_value(
     });
 
     // -- Workspace metadata (only from root manifest)
+    let workspace_table = manifest.get("workspace").and_then(|v| v.as_table());
     let ws_meta = if is_root {
-        manifest
-            .get("workspace")
-            .and_then(|v| v.as_table())
-            .map(|ws_table| {
-                let members = toml_strings_opt(ws_table, "members").unwrap_or_default();
-                let dep_bases = parse_workspace_deps(ws_table);
-                let pkg_fields = parse_workspace_package_fields(ws_table);
-                WorkspaceMeta {
-                    members,
-                    dependency_bases: dep_bases,
-                    package_fields: pkg_fields,
-                }
-            })
+        workspace_table.map(|ws_table| {
+            let members = toml_strings_opt(ws_table, "members").unwrap_or_default();
+            let dep_bases = parse_workspace_deps(ws_table);
+            let pkg_fields = parse_workspace_package_fields(ws_table);
+            WorkspaceMeta {
+                members,
+                dependency_bases: dep_bases,
+                package_fields: pkg_fields,
+            }
+        })
     } else {
         None
     };
@@ -827,6 +842,7 @@ pub(super) fn parse_manifest_from_value(
     Ok(ParsedManifest {
         package: pkg,
         ws_meta,
+        declares_workspace: workspace_table.is_some(),
     })
 }
 

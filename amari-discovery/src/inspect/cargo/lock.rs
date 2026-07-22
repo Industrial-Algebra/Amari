@@ -7,7 +7,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::protocol::Compatibility;
+use crate::{inspect::is_safe_version_requirement, protocol::Compatibility};
 
 use super::toml_helpers::{toml_line_col_from_source, toml_malformed_reason, toml_string};
 use super::types::{AmariDependencyEvidence, CargoInspectionWarning, LockedPackage};
@@ -28,6 +28,14 @@ pub(super) struct ParsedLock {
 // ============================================================================
 // Lock file parsing
 // ============================================================================
+
+fn is_safe_package_name(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 128
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+}
 
 /// Parse a `Cargo.lock` file content entirely offline using TOML.
 pub(super) fn parse_lock(content: &[u8], lock_path: &str) -> ParsedLock {
@@ -69,13 +77,25 @@ pub(super) fn parse_lock(content: &[u8], lock_path: &str) -> ParsedLock {
                 Some(t) => t,
                 None => continue,
             };
-            let name = match toml_string(table, "name") {
-                Some(n) => n,
+            let name = match toml_string(table, "name").filter(|name| is_safe_package_name(name)) {
+                Some(name) => name,
                 None => continue,
             };
-            let version = toml_string(table, "version").unwrap_or_else(|| "unknown".to_string());
-            let checksum = toml_string(table, "checksum");
-            let source = toml_string(table, "source");
+            let version = toml_string(table, "version")
+                .filter(|value| is_safe_version_requirement(value))
+                .unwrap_or_else(|| "unknown".to_owned());
+            let checksum = toml_string(table, "checksum").filter(|value| {
+                value.len() <= 128 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+            });
+            let source = toml_string(table, "source").map(|value| {
+                if value.starts_with("registry+") {
+                    "registry".to_owned()
+                } else if value.starts_with("git+") {
+                    "git".to_owned()
+                } else {
+                    "other".to_owned()
+                }
+            });
 
             packages.push(LockedPackage {
                 name,

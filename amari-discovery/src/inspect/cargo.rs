@@ -37,6 +37,7 @@ pub use types::{
     WorkspaceMeta,
 };
 
+use std::collections::BTreeSet;
 use std::path::{Component, Path};
 use std::time::Instant;
 
@@ -161,24 +162,46 @@ fn safe_read_file(
 // Workspace member path validation
 // ============================================================================
 
-/// Validate a workspace member path. Rejects glob patterns, absolute paths,
-/// parent components, or empty strings.
-fn validate_member_path(member: &str) -> bool {
+/// Normalize a workspace member path. Rejects glob patterns, absolute paths,
+/// parent/current components, non-UTF-8 components, or empty strings.
+fn invalid_member_hint(member: &str) -> String {
+    if member.is_empty() {
+        "<empty>".to_owned()
+    } else if member.contains('*') || member.contains('?') {
+        "<glob>".to_owned()
+    } else if Path::new(member).is_absolute() {
+        "<absolute>".to_owned()
+    } else if Path::new(member)
+        .components()
+        .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+    {
+        "<parent-or-current>".to_owned()
+    } else {
+        "<invalid>".to_owned()
+    }
+}
+
+fn normalize_member_path(member: &str) -> Option<String> {
     if member.is_empty() || member.contains('*') || member.contains('?') {
-        return false;
+        return None;
     }
     let path = Path::new(member);
     if path.is_absolute() {
-        return false;
+        return None;
     }
+    let mut parts = Vec::new();
     for component in path.components() {
         match component {
-            Component::ParentDir => return false,
-            Component::Normal(_) => {}
-            _ => return false, // RootDir, Prefix, CurDir are all fishy in member paths
+            Component::Normal(value) => parts.push(value.to_str()?),
+            Component::ParentDir
+            | Component::RootDir
+            | Component::Prefix(_)
+            | Component::CurDir => {
+                return None;
+            }
         }
     }
-    true
+    (!parts.is_empty()).then(|| parts.join("/"))
 }
 
 // ============================================================================
@@ -250,15 +273,14 @@ pub fn inspect_cargo_project(
 
     // Validate root is a directory
     if !root.is_dir() {
-        return Err(DiscoveryError::InspectionFailure(format!(
-            "project root is not a directory: {}",
-            root.display()
-        )));
+        return Err(DiscoveryError::InspectionFailure(
+            "project root is not a directory".to_owned(),
+        ));
     }
 
-    // Canonicalize root for containment checks
-    let root_canon = root.canonicalize().map_err(|err| {
-        DiscoveryError::InspectionFailure(format!("cannot canonicalize project root: {}", err))
+    // Canonicalize root for containment checks without exposing its path.
+    let root_canon = root.canonicalize().map_err(|_| {
+        DiscoveryError::InspectionFailure("cannot canonicalize project root".to_owned())
     })?;
 
     let start = Instant::now();
@@ -337,7 +359,7 @@ pub fn inspect_cargo_project(
     )?;
 
     let mut root_pkg = parsed_root.package;
-    let ws_meta = parsed_root.ws_meta;
+    let mut ws_meta = parsed_root.ws_meta;
 
     // ---- Read Cargo.lock with limits ----
     let lock_path = root_canon.join("Cargo.lock");
@@ -409,19 +431,17 @@ pub fn inspect_cargo_project(
     let mut member_state: Option<SnapshotState> = None;
 
     if let Some(ref meta) = ws_meta {
-        // Filter and validate member paths
-        let mut valid_members: Vec<&str> = Vec::new();
+        // Normalize, validate, and deduplicate member paths before any I/O.
+        let mut valid_members = BTreeSet::new();
         for member in &meta.members {
-            if !validate_member_path(member) {
+            let Some(normalized) = normalize_member_path(member) else {
                 warnings.push(CargoInspectionWarning::IllegalMemberPath {
-                    member: member.clone(),
+                    member: invalid_member_hint(member),
                 });
                 continue;
-            }
-            valid_members.push(member);
+            };
+            valid_members.insert(normalized);
         }
-        // Sort for deterministic order
-        valid_members.sort();
 
         for member_dir_name in valid_members {
             // Wall-clock check before each member
@@ -441,7 +461,7 @@ pub fn inspect_cargo_project(
                 break;
             }
 
-            let member_dir = root_canon.join(member_dir_name);
+            let member_dir = root_canon.join(&member_dir_name);
 
             // Check if member directory itself is a symlink
             if std::fs::symlink_metadata(&member_dir)
@@ -518,6 +538,12 @@ pub fn inspect_cargo_project(
                         &provenance,
                     ) {
                         Ok(parsed_member) => {
+                            if parsed_member.declares_workspace {
+                                warnings.push(CargoInspectionWarning::NestedWorkspaceRoot {
+                                    path: member_rel_manifest,
+                                });
+                                continue;
+                            }
                             let mut member_pkg = parsed_member.package;
                             lock::resolve_compatibility(
                                 &mut member_pkg.dependencies,
@@ -591,6 +617,17 @@ pub fn inspect_cargo_project(
                 }
             }
         }
+    }
+
+    // Keep only normalized, valid, deduplicated member paths in public evidence.
+    if let Some(meta) = &mut ws_meta {
+        meta.members = meta
+            .members
+            .iter()
+            .filter_map(|member| normalize_member_path(member))
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
     }
 
     // Sort members for determinism
