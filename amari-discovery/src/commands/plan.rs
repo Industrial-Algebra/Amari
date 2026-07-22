@@ -6,12 +6,12 @@ use std::collections::BTreeSet;
 use std::path::Path;
 
 use super::recommend::read_bounded_input;
-use crate::inspect::{inspect_supported_project, InspectionLimits};
-use crate::planner::catalog_plan_steps;
+use crate::inspect::{inspect_supported_project, snapshot_compatibility, InspectionLimits};
+use crate::planner::{catalog_plan_steps, validate_sha256_hash};
 use crate::{
-    CandidatePlan, CapabilityId, Catalog, DiscoveryError, DiscoveryOutcome, DiscoveryResult,
-    Envelope, PlanCompatibility, PlanNormalization, PlanNormalizer, ProjectKind, Recommendation,
-    SCHEMA_V1,
+    CandidatePlan, CapabilityId, Catalog, CatalogIdentity, DiscoveryError, DiscoveryOutcome,
+    DiscoveryResult, Envelope, PlanCompatibility, PlanNormalization, PlanNormalizer, ProjectKind,
+    Provenance, RecallConfig, Recommendation, ReplayMetadata, SCHEMA_V1,
 };
 
 const MAX_RECOMMENDATION_BYTES: u64 = 8 * 1_048_576;
@@ -58,13 +58,13 @@ pub fn replay_plan_envelope(
     let Envelope {
         schema_version,
         provenance,
-        warnings,
+        warnings: _,
         data,
     } = artifact;
     if schema_version != SCHEMA_V1 {
-        return Err(DiscoveryError::InvalidInput(format!(
-            "unsupported recommendation schema `{schema_version}`"
-        )));
+        return Err(DiscoveryError::InvalidInput(
+            "unsupported recommendation schema".to_owned(),
+        ));
     }
     if !provenance.replay.replayable {
         return Err(DiscoveryError::InvalidInput(
@@ -87,6 +87,14 @@ pub fn replay_plan_envelope(
         ));
     }
 
+    compare_untrusted(
+        "tool_version",
+        env!("CARGO_PKG_VERSION"),
+        &provenance.tool_version,
+    )?;
+    let expected_seed = RecallConfig::default().seed;
+    compare_seed(provenance.seed, expected_seed)?;
+
     let recommendation = match data {
         DiscoveryOutcome::Recommended(recommendation) => recommendation,
         DiscoveryOutcome::NoApplicableCapability { .. }
@@ -101,46 +109,62 @@ pub fn replay_plan_envelope(
     let candidate_id: CapabilityId = candidate_id.parse()?;
     let selected = select_candidate(&recommendation, &candidate_id)?;
 
-    compare_replay(
+    validate_sha256_hash("catalog_hash", &provenance.catalog.hash)?;
+    validate_sha256_hash("catalog_hash", &selected.compatibility.catalog.hash)?;
+    let provenance_project_hash = require_hash("project_hash", provenance.project_hash.as_deref())?;
+    let provenance_input_hash = require_hash("input_hash", provenance.input_hash.as_deref())?;
+    validate_sha256_hash("project_hash", &selected.compatibility.project_hash)?;
+    validate_sha256_hash("input_hash", &selected.compatibility.input_hash)?;
+    validate_sha256_hash("plan_hash", &selected.plan_hash)?;
+    for replay_hash in &selected.compatibility.probe_results {
+        validate_sha256_hash("probe_results", &replay_hash.input_hash)?;
+        validate_sha256_hash("probe_results", &replay_hash.result_hash)?;
+    }
+
+    compare_untrusted(
         "catalog_version",
         catalog.version(),
         &provenance.catalog.version,
     )?;
-    compare_replay(
+    compare_validated_hash(
         "catalog_hash",
         catalog.content_hash(),
         &provenance.catalog.hash,
     )?;
-    compare_replay(
+    compare_untrusted(
         "catalog_version",
         &provenance.catalog.version,
         &selected.compatibility.catalog.version,
     )?;
-    compare_replay(
+    compare_validated_hash(
         "catalog_hash",
         &provenance.catalog.hash,
         &selected.compatibility.catalog.hash,
     )?;
-    compare_optional_replay(
+    compare_validated_hash(
         "project_hash",
-        provenance.project_hash.as_deref(),
+        provenance_project_hash,
         &selected.compatibility.project_hash,
     )?;
-    compare_optional_replay(
+    compare_validated_hash(
         "input_hash",
-        provenance.input_hash.as_deref(),
+        provenance_input_hash,
         &selected.compatibility.input_hash,
     )?;
-    validate_sha256("plan_hash", &selected.plan_hash)?;
-    for replay_hash in &selected.compatibility.probe_results {
-        validate_sha256("probe_results", &replay_hash.result_hash)?;
-    }
 
     let snapshot = inspect_supported_project(project_root, limits)?;
     if matches!(snapshot.project_kind, ProjectKind::Unknown) {
         return Err(DiscoveryError::InvalidInput(
             "plan replay requires a Rust/Cargo or npm/TypeScript project".to_owned(),
         ));
+    }
+    let canonical_compatibility = snapshot_compatibility(&snapshot);
+    if provenance.compatibility != canonical_compatibility {
+        return Err(DiscoveryError::ReplayDrift {
+            field: "compatibility".to_owned(),
+            expected: "current project compatibility".to_owned(),
+            actual: "<mismatch>".to_owned(),
+        });
     }
     let actual = PlanCompatibility::from_replay_hashes(
         catalog,
@@ -181,9 +205,30 @@ pub fn replay_plan_envelope(
         });
     }
 
+    let mut warnings = snapshot.warnings.clone();
+    warnings.sort();
+    warnings.dedup();
     Ok(Envelope {
-        schema_version,
-        provenance,
+        schema_version: SCHEMA_V1.to_owned(),
+        provenance: Provenance {
+            tool_version: env!("CARGO_PKG_VERSION").to_owned(),
+            catalog: CatalogIdentity {
+                version: catalog.version().to_owned(),
+                hash: catalog.content_hash().to_owned(),
+            },
+            compatibility: canonical_compatibility,
+            replay: ReplayMetadata {
+                replayable: true,
+                required_hashes: REQUIRED_REPLAY_HASHES
+                    .iter()
+                    .map(|field| (*field).to_owned())
+                    .collect(),
+                reasons: Vec::new(),
+            },
+            project_hash: Some(snapshot.project_hash),
+            input_hash: Some(actual.input_hash),
+            seed: Some(expected_seed),
+        },
         warnings,
         data: expected,
     })
@@ -204,18 +249,16 @@ fn select_candidate(
         })
 }
 
-fn compare_optional_replay(
-    field: &str,
-    artifact: Option<&str>,
-    selected: &str,
-) -> DiscoveryResult<()> {
-    let artifact = artifact.ok_or_else(|| {
+fn require_hash<'a>(field: &str, value: Option<&'a str>) -> DiscoveryResult<&'a str> {
+    let value = value.ok_or_else(|| {
         DiscoveryError::InvalidInput(format!("recommendation provenance is missing `{field}`"))
     })?;
-    compare_replay(field, artifact, selected)
+    validate_sha256_hash(field, value)?;
+    Ok(value)
 }
 
-fn compare_replay(field: &str, expected: &str, actual: &str) -> DiscoveryResult<()> {
+/// Compares values only after both have passed `validate_sha256_hash`.
+fn compare_validated_hash(field: &str, expected: &str, actual: &str) -> DiscoveryResult<()> {
     if expected == actual {
         Ok(())
     } else {
@@ -227,18 +270,28 @@ fn compare_replay(field: &str, expected: &str, actual: &str) -> DiscoveryResult<
     }
 }
 
-fn validate_sha256(field: &str, value: &str) -> DiscoveryResult<()> {
-    if value.len() == 64
-        && value
-            .bytes()
-            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
-    {
+fn compare_untrusted(field: &str, expected: &str, actual: &str) -> DiscoveryResult<()> {
+    if expected == actual {
         Ok(())
     } else {
         Err(DiscoveryError::ReplayDrift {
             field: field.to_owned(),
-            expected: "64 lowercase hexadecimal SHA-256 characters".to_owned(),
-            actual: value.to_owned(),
+            expected: expected.to_owned(),
+            actual: "<mismatch>".to_owned(),
+        })
+    }
+}
+
+fn compare_seed(actual: Option<u64>, expected: u64) -> DiscoveryResult<()> {
+    if actual == Some(expected) {
+        Ok(())
+    } else {
+        Err(DiscoveryError::ReplayDrift {
+            field: "seed".to_owned(),
+            expected: expected.to_string(),
+            actual: actual
+                .map(|seed| seed.to_string())
+                .unwrap_or_else(|| "<missing>".to_owned()),
         })
     }
 }

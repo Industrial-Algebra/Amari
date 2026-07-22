@@ -219,7 +219,7 @@ fn matching_saved_probe_improves_typescript_candidate_verification() {
         seed: Some(11),
         project_hash: Some(snapshot.project_hash),
         catalog_hash: catalog.content_hash().to_owned(),
-        input_hash: "saved-geometric-product-input".to_owned(),
+        input_hash: "c".repeat(64),
         validated_assumptions: vec!["product_matches".to_owned()],
         refuted_assumptions: Vec::new(),
         warnings: Vec::new(),

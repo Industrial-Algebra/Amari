@@ -165,7 +165,7 @@ fn write_probe_results(root: &Path) -> NamedTempFile {
         seed: Some(7),
         project_hash: Some(snapshot.project_hash),
         catalog_hash: catalog.content_hash().to_owned(),
-        input_hash: "saved-dual-input".to_owned(),
+        input_hash: "a".repeat(64),
         validated_assumptions: vec!["derivative_matches".to_owned()],
         refuted_assumptions: Vec::new(),
         warnings: Vec::new(),
