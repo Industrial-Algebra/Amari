@@ -65,6 +65,22 @@ def main() -> int:
         response["provenance"]["input_hash"] = "wrong-input"
         write_frame(response)
         return 0
+    if mode == "extra-response-field":
+        response = success_response()
+        response["unbounded_authority"] = True
+        write_frame(response)
+        return 0
+    if mode == "extra-execution-field":
+        response = success_response()
+        response["execution"]["unbounded_authority"] = True
+        write_frame(response)
+        return 0
+    if mode == "max-frame":
+        frame_bytes = 2 * 1024 * 1024
+        sys.stdout.buffer.write(struct.pack(">I", frame_bytes))
+        sys.stdout.buffer.write(b"x" * frame_bytes)
+        sys.stdout.buffer.flush()
+        return 0
     if mode == "malformed":
         sys.stdout.buffer.write(struct.pack(">I", 8) + b"not-json")
         sys.stdout.buffer.flush()

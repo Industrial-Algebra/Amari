@@ -11,7 +11,8 @@ use super::{ProbeEngine, ProbeEngineLimits, ProbeExecution};
 use crate::{DiscoveryError, DiscoveryResult, ProbeId, Provenance};
 
 const FRAME_HEADER_BYTES: usize = 4;
-const MAX_FRAME_BYTES: usize = 2 * 1024 * 1024;
+pub(super) const MAX_FRAME_BYTES: usize = 2 * 1024 * 1024;
+pub(super) const MAX_ENCODED_FRAME_BYTES: usize = FRAME_HEADER_BYTES + MAX_FRAME_BYTES;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -23,6 +24,7 @@ pub(super) struct WorkerRequest {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct WorkerResponse {
     pub(super) provenance: Provenance,
     pub(super) execution: ProbeExecution,
