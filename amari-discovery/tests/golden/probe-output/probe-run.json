@@ -1,0 +1,61 @@
+{
+  "data": {
+    "crash_isolation": true,
+    "deterministic": true,
+    "hard_timeout": true,
+    "input_schema": "amari.discovery/probe/tropical-viterbi/input/v1",
+    "isolation": "process",
+    "output_schema": "amari.discovery/probe/tropical-viterbi/output/v1",
+    "result": {
+      "backend": "cpu",
+      "catalog_hash": "<catalog_hash>",
+      "duration_micros": 0,
+      "input_hash": "75453f57577a95c3134328e04aa4db014d7561cd3e67414bdaf01b875b56d723",
+      "output": {
+        "path": [
+          0,
+          0,
+          0
+        ],
+        "score": -7.0
+      },
+      "probe_id": "amari-probe:tropical:viterbi:v1",
+      "project_hash": null,
+      "refuted_assumptions": [],
+      "resources": {
+        "bytes": 131,
+        "iterations": 3,
+        "nodes": 14,
+        "operations": 14
+      },
+      "seed": null,
+      "validated_assumptions": [],
+      "warnings": []
+    },
+    "timeout_millis": 5000
+  },
+  "provenance": {
+    "catalog": {
+      "hash": "<catalog_hash>",
+      "version": "<catalog_version>"
+    },
+    "compatibility": {
+      "reasons": [],
+      "status": "compatible"
+    },
+    "input_hash": "75453f57577a95c3134328e04aa4db014d7561cd3e67414bdaf01b875b56d723",
+    "project_hash": null,
+    "replay": {
+      "reasons": [],
+      "replayable": true,
+      "required_hashes": [
+        "catalog_hash",
+        "input_hash"
+      ]
+    },
+    "seed": null,
+    "tool_version": "<tool_version>"
+  },
+  "schema_version": "amari.discovery/v1",
+  "warnings": []
+}

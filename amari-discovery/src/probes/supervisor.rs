@@ -21,6 +21,7 @@ use crate::{
 };
 
 const PROCESS_POLL_INTERVAL: Duration = Duration::from_millis(5);
+const MAX_WORKER_STDERR_BYTES: usize = 64 * 1024;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct SupervisorIoLimits {
@@ -95,6 +96,13 @@ fn neutral_working_directory() -> PathBuf {
     temporary.canonicalize().unwrap_or(temporary)
 }
 
+fn production_io_limits() -> SupervisorIoLimits {
+    SupervisorIoLimits {
+        max_stdout_bytes: worker::MAX_ENCODED_FRAME_BYTES,
+        max_stderr_bytes: MAX_WORKER_STDERR_BYTES,
+    }
+}
+
 pub(super) fn execute_isolated(
     probe_id: &ProbeId,
     input: &serde_json::Value,
@@ -110,10 +118,7 @@ pub(super) fn execute_isolated(
             limits,
             provenance,
         },
-        SupervisorIoLimits {
-            max_stdout_bytes: 2 * 1024 * 1024,
-            max_stderr_bytes: 64 * 1024,
-        },
+        production_io_limits(),
         Duration::from_millis(defaults.probe_timeout_millis),
     )?;
     Ok(response.execution)
@@ -520,6 +525,23 @@ mod tests {
     }
 
     #[test]
+    fn production_stdout_limit_includes_the_frame_header() {
+        let limits = production_io_limits();
+        assert_eq!(limits.max_stdout_bytes, worker::MAX_ENCODED_FRAME_BYTES);
+        let launcher = TestWorkerLauncher::new(fixture_path(), "max-frame");
+        let captured = capture_bounded(
+            spawn_restricted(&launcher).unwrap(),
+            limits,
+            Duration::from_secs(5),
+        )
+        .unwrap();
+
+        assert!(captured.status.success());
+        assert!(captured.stderr.is_empty());
+        assert_eq!(captured.stdout.len(), worker::MAX_ENCODED_FRAME_BYTES);
+    }
+
+    #[test]
     fn stdout_flood_exceeding_cap_terminates_the_worker() {
         let started = Instant::now();
         let launcher = TestWorkerLauncher::new(fixture_path(), "flood-stdout");
@@ -678,5 +700,45 @@ mod tests {
         assert!(
             matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if message.contains("provenance"))
         );
+    }
+
+    #[test]
+    fn successful_response_rejects_unknown_top_level_fields() {
+        let error = run_fixture("extra-response-field").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerProtocol(message)
+                if message.contains("serialization")
+        ));
+    }
+
+    #[test]
+    fn successful_response_rejects_unknown_execution_fields() {
+        let error = run_fixture("extra-execution-field").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerProtocol(message)
+                if message.contains("serialization")
+        ));
+    }
+
+    #[test]
+    fn repeated_crashes_and_protocol_failures_do_not_poison_recovery() {
+        for mode in ["crash", "nonzero", "malformed"]
+            .into_iter()
+            .cycle()
+            .take(9)
+        {
+            assert!(run_fixture(mode).is_err());
+            let recovered = run_fixture("valid").unwrap();
+            assert_eq!(
+                recovered.execution.output,
+                serde_json::json!({"fixture": true})
+            );
+            assert_eq!(
+                recovered.execution.isolation,
+                super::super::ProbeIsolation::Process
+            );
+        }
     }
 }

@@ -51,6 +51,7 @@ use crate::{
 
 /// Caller-selected ceilings for cooperative in-process probe execution.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ProbeEngineLimits {
     /// Maximum canonical request JSON bytes.
     pub max_input_bytes: u64,
@@ -88,6 +89,7 @@ pub enum ProbeIsolation {
 
 /// Deterministic mathematical output and resource accounting from one probe.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ProbeExecution {
     /// Stable executed probe ID.
     pub probe_id: ProbeId,

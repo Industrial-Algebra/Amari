@@ -12,8 +12,8 @@ use crate::{
         probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult},
     },
     CandidatePlan, Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope,
-    NdjsonWriter, PlanStep, ProbeIsolation, ProjectKind, ProjectSnapshot, ProtocolSchema,
-    Recommendation, SchemaCatalog,
+    NdjsonWriter, PlanStep, ProbeBackend, ProbeIsolation, ProjectKind, ProjectSnapshot,
+    ProtocolSchema, Recommendation, SchemaCatalog,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -216,17 +216,70 @@ pub(crate) fn write_probe_run_human(
     envelope: &Envelope<ProbeRunResult>,
 ) -> DiscoveryResult<()> {
     let run = &envelope.data;
-    writeln!(writer, "Probe: {}", run.result.probe_id)?;
+    let result = &run.result;
+    writeln!(writer, "Probe: {}", result.probe_id)?;
+    writeln!(writer, "Input schema: {}", run.input_schema)?;
+    writeln!(writer, "Output schema: {}", run.output_schema)?;
+    writeln!(writer, "Backend: {}", backend_name(result.backend))?;
     writeln!(writer, "Isolation: {}", isolation_name(run.isolation))?;
+    writeln!(writer, "Deterministic: {}", yes_no(run.deterministic))?;
     writeln!(writer, "Hard timeout: {}", yes_no(run.hard_timeout))?;
     writeln!(writer, "Crash isolation: {}", yes_no(run.crash_isolation))?;
-    writeln!(writer, "Duration (micros): {}", run.result.duration_micros)?;
+    writeln!(writer, "Timeout (millis): {}", run.timeout_millis)?;
+    writeln!(writer, "Duration (micros): {}", result.duration_micros)?;
+    writeln!(writer, "Resources:")?;
+    writeln!(writer, "  operations: {}", result.resources.operations)?;
+    writeln!(writer, "  nodes: {}", result.resources.nodes)?;
+    writeln!(writer, "  iterations: {}", result.resources.iterations)?;
+    writeln!(writer, "  bytes: {}", result.resources.bytes)?;
+    writeln!(writer, "Tool version: {}", envelope.provenance.tool_version)?;
     writeln!(
         writer,
-        "Result: {}",
-        serde_json::to_string(&run.result.output)?
+        "Catalog version: {}",
+        envelope.provenance.catalog.version
     )?;
+    writeln!(writer, "Catalog hash: {}", result.catalog_hash)?;
+    writeln!(
+        writer,
+        "Project hash: {}",
+        result.project_hash.as_deref().unwrap_or("none")
+    )?;
+    writeln!(writer, "Input hash: {}", result.input_hash)?;
+    match result.seed {
+        Some(seed) => writeln!(writer, "Seed: {seed}")?,
+        None => writeln!(writer, "Seed: none")?,
+    }
+    write_string_items(
+        writer,
+        "Validated assumptions",
+        &result.validated_assumptions,
+    )?;
+    write_string_items(writer, "Refuted assumptions", &result.refuted_assumptions)?;
+    write_string_items(writer, "Warnings", &result.warnings)?;
+    writeln!(writer, "Result: {}", serde_json::to_string(&result.output)?)?;
     Ok(())
+}
+
+fn write_string_items(
+    writer: &mut impl Write,
+    label: &str,
+    items: &[String],
+) -> DiscoveryResult<()> {
+    writeln!(writer, "{label}:")?;
+    if items.is_empty() {
+        writeln!(writer, "  none")?;
+    } else {
+        for item in items {
+            writeln!(writer, "  {item}")?;
+        }
+    }
+    Ok(())
+}
+
+const fn backend_name(backend: ProbeBackend) -> &'static str {
+    match backend {
+        ProbeBackend::Cpu => "cpu",
+    }
 }
 
 fn isolation_name(isolation: ProbeIsolation) -> &'static str {
