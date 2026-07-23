@@ -18,11 +18,42 @@ const MAX_ENCODED_PLAN_BYTES: usize = 1_048_576;
 
 /// Resource limits for deterministic plan normalization.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NormalizationLimits {
     /// Maximum input plan steps accepted by the normalizer.
     pub max_plan_steps: usize,
     /// Maximum successful `TermSystem::apply_once` rewrites retained in trace.
     pub max_rewrites: usize,
+}
+
+impl NormalizationLimits {
+    /// Hard ceiling for plan steps accepted by normalization.
+    pub const MAX_ALLOWED_PLAN_STEPS: usize = 64;
+    /// Hard ceiling for retained rewrite transitions.
+    pub const MAX_ALLOWED_REWRITES: usize = 4_096;
+
+    fn validate(self) -> DiscoveryResult<()> {
+        if self.max_plan_steps == 0 || self.max_rewrites == 0 {
+            return Err(DiscoveryError::InvalidInput(
+                "plan normalization limits must be greater than zero".to_owned(),
+            ));
+        }
+        if self.max_plan_steps > Self::MAX_ALLOWED_PLAN_STEPS {
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "plan normalization max_plan_steps {} exceeds hard ceiling {}",
+                self.max_plan_steps,
+                Self::MAX_ALLOWED_PLAN_STEPS
+            )));
+        }
+        if self.max_rewrites > Self::MAX_ALLOWED_REWRITES {
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "plan normalization max_rewrites {} exceeds hard ceiling {}",
+                self.max_rewrites,
+                Self::MAX_ALLOWED_REWRITES
+            )));
+        }
+        Ok(())
+    }
 }
 
 impl Default for NormalizationLimits {
@@ -45,13 +76,10 @@ impl PlanNormalizer {
     ///
     /// # Errors
     ///
-    /// Returns [`DiscoveryError::InvalidInput`] when either limit is zero.
+    /// Returns [`DiscoveryError::InvalidInput`] when either limit is zero and
+    /// [`DiscoveryError::LimitExceeded`] when a fixed hard ceiling is exceeded.
     pub fn new(limits: NormalizationLimits) -> DiscoveryResult<Self> {
-        if limits.max_plan_steps == 0 || limits.max_rewrites == 0 {
-            return Err(DiscoveryError::InvalidInput(
-                "plan normalization limits must be greater than zero".to_owned(),
-            ));
-        }
+        limits.validate()?;
         Ok(Self { limits })
     }
 

@@ -27,7 +27,9 @@ impl PlanGenerator {
     ///
     /// # Errors
     ///
-    /// Returns [`DiscoveryError::InvalidInput`] when either limit is zero.
+    /// Returns [`DiscoveryError::InvalidInput`] when either limit is zero and
+    /// [`DiscoveryError::LimitExceeded`] when a normalization hard ceiling is
+    /// exceeded.
     pub fn new(limits: NormalizationLimits) -> DiscoveryResult<Self> {
         Ok(Self {
             normalizer: PlanNormalizer::new(limits)?,
@@ -76,8 +78,8 @@ impl PlanCompatibility {
     ///
     /// # Errors
     ///
-    /// Returns a serialization error if typed goal or probe evidence cannot be
-    /// encoded for deterministic hashing.
+    /// Returns typed replay drift for a malformed saved-probe input hash, or a
+    /// serialization error when evidence cannot be encoded deterministically.
     pub fn from_context(catalog: &Catalog, context: &PlanningContext) -> DiscoveryResult<Self> {
         compatibility(catalog, context)
     }
@@ -89,8 +91,8 @@ impl PlanCompatibility {
     ///
     /// # Errors
     ///
-    /// Returns a semantic goal error or a serialization error while hashing
-    /// canonical replay inputs.
+    /// Returns a semantic goal error, typed replay drift for malformed hashes,
+    /// or a serialization error while hashing canonical replay inputs.
     pub fn from_replay_hashes(
         catalog: &Catalog,
         project_hash: impl Into<String>,
@@ -98,7 +100,13 @@ impl PlanCompatibility {
         probe_results: Vec<ProbeReplayHash>,
     ) -> DiscoveryResult<Self> {
         goal.validate()?;
-        compatibility_from_hashes(catalog, project_hash.into(), goal, probe_results)
+        let project_hash = project_hash.into();
+        validate_sha256_hash("project_hash", &project_hash)?;
+        for probe in &probe_results {
+            validate_sha256_hash("probe_input_hash", &probe.input_hash)?;
+            validate_sha256_hash("probe_result_hash", &probe.result_hash)?;
+        }
+        compatibility_from_hashes(catalog, project_hash, goal, probe_results)
     }
 }
 
@@ -320,6 +328,7 @@ fn compatibility(
         .probe_results
         .iter()
         .map(|result| {
+            validate_sha256_hash("probe_input_hash", &result.input_hash)?;
             Ok(ProbeReplayHash {
                 probe_id: result.probe_id.clone(),
                 input_hash: result.input_hash.clone(),
@@ -369,6 +378,22 @@ struct CanonicalGoal<'a> {
     statement: &'a str,
     constraints: &'a [String],
     probe_results: &'a [ProbeReplayHash],
+}
+
+pub(crate) fn validate_sha256_hash(field: &str, value: &str) -> DiscoveryResult<()> {
+    if value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        Ok(())
+    } else {
+        Err(DiscoveryError::ReplayDrift {
+            field: field.to_owned(),
+            expected: "64 lowercase hexadecimal SHA-256 characters".to_owned(),
+            actual: "<invalid_sha256>".to_owned(),
+        })
+    }
 }
 
 fn compare_replay(field: &str, expected: &str, actual: &str) -> DiscoveryResult<()> {

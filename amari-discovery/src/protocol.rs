@@ -145,6 +145,7 @@ impl fmt::Display for ProbeId {
 
 /// The catalog version and content hash used to produce a response.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CatalogIdentity {
     /// The Amari catalog version.
     pub version: String,
@@ -154,6 +155,7 @@ pub struct CatalogIdentity {
 
 /// Compatibility status and the evidence supporting it.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Compatibility {
     /// A stable compatibility status such as `compatible` or `unknown_version`.
     pub status: String,
@@ -163,6 +165,7 @@ pub struct Compatibility {
 
 /// Requirements for replaying a discovery response.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ReplayMetadata {
     /// Whether the response contains sufficient provenance for replay.
     pub replayable: bool,
@@ -174,6 +177,7 @@ pub struct ReplayMetadata {
 
 /// Provenance shared by every discovery response.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Provenance {
     /// The `amari-discovery` package version.
     pub tool_version: String,
@@ -193,6 +197,7 @@ pub struct Provenance {
 
 /// A versioned discovery response envelope.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Envelope<T> {
     /// The machine protocol schema version.
     pub schema_version: String,
@@ -239,6 +244,7 @@ pub enum ProbeBackend {
 
 /// Resource usage observed during a bounded probe.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ResourceObservations {
     /// Domain operations performed.
     pub operations: u64,
@@ -252,6 +258,7 @@ pub struct ResourceObservations {
 
 /// A typed result returned by a registered bounded probe.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ProbeResult {
     /// The stable probe identifier.
     pub probe_id: ProbeId,
@@ -281,6 +288,7 @@ pub struct ProbeResult {
 
 /// A discrete piece of evidence used by discovery and planning.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Evidence {
     /// Stable evidence category.
     pub kind: String,
@@ -341,6 +349,7 @@ impl GoalSpec {
 
 /// Typed project, goal, and saved-probe inputs used to construct plans.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlanningContext {
     /// Sanitized read-only project snapshot.
     pub snapshot: ProjectSnapshot,
@@ -353,6 +362,7 @@ pub struct PlanningContext {
 
 /// Replay hash for one saved probe result consumed by planning.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ProbeReplayHash {
     /// Registered probe identifier.
     pub probe_id: ProbeId,
@@ -364,6 +374,7 @@ pub struct ProbeReplayHash {
 
 /// Provenance that must match before a plan can be replayed.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlanCompatibility {
     /// Catalog version and content hash used to construct the plan.
     pub catalog: CatalogIdentity,
@@ -388,7 +399,7 @@ pub enum PlanTestTarget {
 
 /// One read-only integration instruction in a candidate plan.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum PlanStep {
     /// Add an exact Amari Cargo or npm package dependency.
     Dependency {
@@ -458,6 +469,7 @@ impl PlanStep {
 
 /// One deterministic rewrite applied during plan normalization.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NormalizationTrace {
     /// Plan steps immediately before the rewrite.
     pub before: Vec<PlanStep>,
@@ -467,6 +479,7 @@ pub struct NormalizationTrace {
 
 /// Completion and trace metadata for plan normalization.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlanNormalization {
     /// Whether the plan reached a rewrite fixed point within its limits.
     pub normalized: bool,
@@ -479,6 +492,7 @@ pub struct PlanNormalization {
 
 /// A deterministic replayable plan for one ranked capability path.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CandidatePlan {
     /// Preferred catalog capability implemented by this plan.
     pub capability_id: CapabilityId,
@@ -496,6 +510,7 @@ pub struct CandidatePlan {
 
 /// Transparent normalized score components for one recommended capability.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RecommendationScoreComponents {
     /// Project and prerequisite applicability; higher is better.
     pub applicability: f64,
@@ -517,6 +532,7 @@ pub struct RecommendationScoreComponents {
 
 /// Score, evidence, and assumptions for one recommendation candidate.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RecommendationScore {
     /// Stable catalog capability ID.
     pub capability_id: CapabilityId,
@@ -535,6 +551,7 @@ pub struct RecommendationScore {
 
 /// A preferred replayable plan and its Pareto alternatives.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Recommendation {
     /// Goal used to generate the recommendation.
     pub goal: GoalSpec,
@@ -567,7 +584,12 @@ pub struct Recommendation {
 /// Non-recommendation variants communicate expected domain conditions and do
 /// not imply a nonzero process exit code.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "status", content = "data", rename_all = "snake_case")]
+#[serde(
+    tag = "status",
+    content = "data",
+    rename_all = "snake_case",
+    deny_unknown_fields
+)]
 pub enum DiscoveryOutcome<T> {
     /// A capability or plan can be recommended.
     Recommended(T),

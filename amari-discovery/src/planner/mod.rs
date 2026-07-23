@@ -17,8 +17,8 @@ pub use graph::{
     GraphLimits, GraphPath, GraphStep, RelationCostPolicy,
 };
 pub use normalize::{NormalizationLimits, PlanNormalizer};
-pub(crate) use plan::catalog_plan_steps;
 pub use plan::PlanGenerator;
+pub(crate) use plan::{catalog_plan_steps, validate_sha256_hash};
 pub use rank::{
     BlockedCandidate, CandidateRanker, RankedCandidate, RankingComponents, RankingContext,
     RankingProvenance, RankingResult, RankingSignal, RankingSignalKind, RANKING_OBJECTIVE_ORDER,
