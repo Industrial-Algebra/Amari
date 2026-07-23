@@ -21,6 +21,30 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **Arbitrary-signature WASM** — `WasmGenericMultivector(p, q, r)` lets users select any Clifford algebra signature at runtime. Operations for DIM ≤ 6 dispatch through a compile-time match table (84 signatures); larger dimensions fall back to a cached Cayley-table path. 8 fast-path aliases (`WasmMultivector300`, `210`, `310`, `200`, `030`, `410`, `500`, `110`) provide pre-built convenience for the most common physics/engineering signatures.
 - **`amari-rewrite`** is a new crate providing foundational ARS/TRS term-rewriting with `Rewritable` traits, path replacement, substitution/matching, bounded inverse rewriting, anti-unification, and rule inference scaffolding. Experimental `neural`, `smt`, and `amari-network` feature gates offer rewrite-search guidance hooks.
 
+## v0.24.0 Development Preview: Amari Discovery
+
+The unreleased `amari-discovery` crate is the sole owner of the installed
+`amari` command. It provides deterministic catalog exploration, bounded
+read-only Rust/Cargo and npm TypeScript inspection, holographic candidate
+recall, Pareto ranking, replayable integration plans, registered mathematical
+probes, and shared human/JSON/NDJSON contracts.
+
+From a source checkout, install and inspect the available surface with:
+
+```bash
+cargo install --path amari-discovery
+amari capabilities
+amari discover search tropical
+amari inspect .
+```
+
+Discovery never edits inspected projects or runs their compilers, build
+scripts, lifecycle scripts, arbitrary commands, providers, or network access.
+See the [Amari Discovery Guide](docs/guide/amari-discovery.md) for the human and
+agent loops, privacy boundary, probe isolation, catalog maintenance, and
+release-status caveats. This preview is not a 0.24.0 publication claim; the
+workspace remains at 0.23.0 until aggregate release acceptance.
+
 ## v0.22.0 Highlights
 
 - **`amari-cgt`** is now a first-class short combinatorial game theory crate with arena-backed games, canonicalization, outcome/comparison helpers, nimbers, bounded/exact layer generation, and growth-reporting utilities.
@@ -999,6 +1023,7 @@ The library is optimized for high-performance applications:
 - **[API Reference](examples/DOCUMENTATION.md)**: Detailed API documentation
 - **[Migration Guide](docs/archive/MIGRATION_v0.12.0.md)**: Migrating from v0.11.x to v0.12.0+
 - **[Changelog](CHANGELOG.md)**: Version history and changes
+- **[Amari Discovery Guide](docs/guide/amari-discovery.md)**: Human and agent discovery, planning, probes, safety, and contributor workflows
 - **[docs.rs](https://docs.rs/amari)**: Complete API reference
 
 ## Contributing

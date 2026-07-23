@@ -9,12 +9,18 @@ This directory contains comprehensive documentation for the Amari mathematical c
 - **[Main README](../README.md)** - Project overview and quick start
 - **[Changelog](../CHANGELOG.md)** - Version history and changes
 - **[Version Management](../VERSION_MANAGEMENT.md)** - Version synchronization procedures
+- **[Amari Discovery Guide](guide/amari-discovery.md)** - Human and agent discovery, planning, probes, protocol, privacy, and contributor workflows
+
+### 📘 Guides
+
+- **[Amari Discovery](guide/amari-discovery.md)** - Complete `amari` command workflow and safety model for the 0.24.0 discovery runtime
 
 ### 📦 Releases
 
 Current release process documentation:
 
 - **[v0.9.8 Release Process](releases/RELEASE_PROCESS_v0.9.8.md)** - Current release procedures and lessons learned
+- **[v0.24.0 Aggregate Release Gates](releases/v0.24.0-aggregate-release-gates.md)** - Feature-branch evidence, hold conditions, publication order, verified packaging, and post-publication acceptance
 - **[v0.21.0 Tropical / Dual Release Prep](releases/v0.21.0-tropical-dual-release-prep.md)** - Release notes, PR summary, publish-order notes, and hold conditions for the `0.21.0` cycle
 
 ### 🗺️ Roadmaps
@@ -119,6 +125,7 @@ Historical and outdated documentation (kept for reference):
 
 Individual crates have their own documentation:
 
+- **[amari-discovery README](../amari-discovery/README.md)** - Agent-first discovery and planning runtime
 - **[amari-network README](../amari-network/README.md)** - Geometric network analysis
 - **[amari-network Mathematical Foundations](../amari-network/MATHEMATICAL_FOUNDATIONS.md)** - Mathematical background
 - **[amari-optimization README](../amari-optimization/README.md)** - Optimization algorithms

@@ -1,7 +1,7 @@
 //! Holographic memory using generalized binding algebras.
 //!
 //! This module provides Vector Symbolic Architecture (VSA) operations
-//! using the [`BindingAlgebra`] trait, enabling:
+//! using the [`crate::algebra::BindingAlgebra`] trait, enabling:
 //!
 //! - Compositional key-value storage in superposition
 //! - Content-addressable retrieval with automatic cleanup
