@@ -250,7 +250,7 @@ impl TropicalOpticalAlgebra {
     /// Given a current state and a set of attractor fields, computes
     /// one iteration of tropical dynamics:
     ///
-    /// new_state = tropical_add(attractors[0], tropical_add(attractors[1], ...))
+    /// `new_state = tropical_add(attractors[0], tropical_add(attractors[1], ...))`
     ///
     /// This drives the state toward the "nearest" attractor at each pixel.
     pub fn attractor_step(

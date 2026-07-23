@@ -21,8 +21,8 @@
 //! - **Inverse** (`⁻¹`): Enable unbinding to retrieve associated values
 //! - **Similarity**: Measure closeness between representations
 //!
-//! The [`BindingAlgebra`] trait abstracts these operations, allowing
-//! [`TropicalDual<A>`] to be generic over the underlying algebra.
+//! The [`BindingAlgebra`] trait abstracts these operations, allowing memory
+//! and retrieval algorithms to be generic over the underlying algebra.
 //!
 //! # Capacity Scaling
 //!
