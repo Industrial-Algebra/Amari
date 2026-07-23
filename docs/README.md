@@ -9,6 +9,11 @@ This directory contains comprehensive documentation for the Amari mathematical c
 - **[Main README](../README.md)** - Project overview and quick start
 - **[Changelog](../CHANGELOG.md)** - Version history and changes
 - **[Version Management](../VERSION_MANAGEMENT.md)** - Version synchronization procedures
+- **[Amari Discovery Guide](guide/amari-discovery.md)** - Human and agent discovery, planning, probes, protocol, privacy, and contributor workflows
+
+### 📘 Guides
+
+- **[Amari Discovery](guide/amari-discovery.md)** - Complete `amari` command workflow and safety model for the 0.24.0 discovery runtime
 
 ### 📦 Releases
 
@@ -119,6 +124,7 @@ Historical and outdated documentation (kept for reference):
 
 Individual crates have their own documentation:
 
+- **[amari-discovery README](../amari-discovery/README.md)** - Agent-first discovery and planning runtime
 - **[amari-network README](../amari-network/README.md)** - Geometric network analysis
 - **[amari-network Mathematical Foundations](../amari-network/MATHEMATICAL_FOUNDATIONS.md)** - Mathematical background
 - **[amari-optimization README](../amari-optimization/README.md)** - Optimization algorithms

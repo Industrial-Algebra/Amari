@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.0] - Unreleased
+
+### Added
+
+#### New crate: `amari-discovery`
+
+- Sole workspace owner of the installed `amari` command, replacing the root-package placeholder binary
+- Generated Rust API index, authoritative WASM declaration surface, curated semantic capabilities, relationships, examples, and declarative probe descriptors
+- Progressive `discover search`, `detail`, `graph`, and `example` catalog commands
+- Deterministic, bounded, read-only Rust/Cargo and npm TypeScript project inspection with typed partial outcomes and privacy-preserving evidence
+- Frozen holographic candidate recall, bounded capability-graph expansion, Pareto ranking, and normalized replayable plans
+- Registered bounded probes across geometric algebra, tropical algebra, dual numbers, networks, optimization, holographic memory, CGT, exact rational surreal/surcomplex arithmetic, and rewriting
+- Restricted process-isolated public probe execution with strict framed worker protocol, fixed launch authority, bounded concurrent output drains, deadlines, kill/reap handling, and validated provenance
+- Shared human, versioned JSON, and NDJSON contracts; interactive and machine shell modes; curated protocol schemas; stable structured errors and exit codes
+- Optional provider-neutral `ai` validation contract without a concrete provider, subprocess transport, network client, or execution authority
+
+### Changed
+
+- `BindingAlgebra` now provides canonical additive `superpose` and coefficient `scale` operations; FHRR overrides preserve its complete coefficient representation
+- Discovery planning uses additive holographic superposition rather than attention/cleanup bundling
+
+### Security
+
+- Inspection does not execute Cargo, rustc, npm, Node.js, build scripts, lifecycle scripts, project code, arbitrary shell commands, providers, or network requests
+- Traversal, parsing, planning, replay, probes, worker framing, output, and evidence are bounded and hardened against path escapes, untrusted artifact reflection, source/secret leakage, and authority smuggling
+
+### Documentation
+
+- Added `docs/guide/amari-discovery.md` and expanded `amari-discovery/README.md` with human, agent, contributor, protocol, privacy, AI, probe, and release workflows
+
+> Release status: 0.24.0 remains unreleased. The separately approved
+> `amari-rewrite` expansion, aggregate version bump, catalog regeneration,
+> registry-resolution checks, package/publish dry-runs, and post-publication
+> installation gates must complete before release acceptance.
+
+---
+
 ## [0.23.0] - Unreleased
 
 ### Added

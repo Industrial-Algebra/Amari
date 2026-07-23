@@ -101,7 +101,14 @@ Primary outcome:
   - confluence / termination analysis scaffolding
   - `infer_rules` with negative-example filtering and heuristic specialization (currently only `infer_rule` with positive examples)
 - **`amari-discovery`**: publish an agent-first discovery runtime with the installed `amari` command. It combines a generated API index and semantic capability catalog, read-only Rust/TypeScript project inspection, an Amari-native recommendation/planning engine, and bounded real probes. Human-readable output and a versioned JSON/NDJSON protocol share one typed core. See `docs/plans/2026-07-09-amari-discovery-design.md`
-- **`BindingAlgebra::superpose` + `scale`** (PR #176): additive superposition trait on `amari-holographic`, default implementations via existing trait methods, non-breaking. Unblocks Minuet `DenseTrace` recall-decay bug fix and supports correct holographic candidate accumulation in `amari-discovery`
+- **`BindingAlgebra::superpose` + `scale`** (PR #189): additive superposition trait on `amari-holographic`, canonical defaults via existing coefficient methods, and an FHRR correctness override. Supports correct holographic candidate accumulation in `amari-discovery`
+
+Verified status (2026-07-23):
+
+- additive superposition and scaling merged in PR #189
+- discovery implementation through planner/replay, inspection, probe isolation, agent contracts, fuzz/property hardening, and output goldens merged through PR #214
+- `amari-discovery` is the sole workspace owner of the `amari` command and the dependency-safe publish-order checks include it after every direct Amari dependency
+- public documentation, path-install/package evidence, functional budgets, the separately approved rewrite expansion, aggregate versioning/catalog regeneration, and registry package acceptance remain release gates; 0.24.0 is not yet released
 
 Non-goals:
 
