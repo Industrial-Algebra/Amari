@@ -1,99 +1,133 @@
-# amari-rewrite 0.24.0 — Open Decisions
+# amari-rewrite 0.24.0 — Decision Record
 
-Date: 2026-07-09
-Status: decisions needed before implementation planning
-Context: `amari-rewrite` shipped in 0.23.0 with stable core (ARS, TRS, inverse search, anti-unification, positive-example `infer_rule`) plus experimental scaffolding. 0.24.0 fills in the deferred features. `candle` is already chosen as the tensor dependency.
+- Date opened: 2026-07-09
+- Date resolved: 2026-07-23
+- Status: **Approved — research-heavy, bounded expansion**
+- Authoritative design: `2026-07-23-amari-rewrite-research-expansion-design.md`
+- Implementation plan: `2026-07-23-amari-rewrite-research-expansion-implementation-plan.md`
 
----
+## Context
 
-## 1. Macros — proc-macro crate architecture
+`amari-rewrite` shipped in 0.23.0 with stable ARS, TRS, inverse search,
+anti-unification, and positive-example inference, plus experimental trait-only
+neural/SMT and summary-only network scaffolds. The original 0.24 decision list
+left dependency, API, algorithm, and stability choices unresolved.
 
-**Current state:** `macros` feature exists in Cargo.toml but is empty — no module gated on it, no proc-macro crate.
+The approved profile intentionally chooses the deeper research implementation,
+but every operation remains bounded and every pre-existing stable API remains
+additive.
 
-**Decision needed:**
+## Decision 1: proc-macro architecture
 
-- `derive(Rewritable)` requires a proc macro, which means a separate crate (e.g., `amari-rewrite-macros`) following the existing `amari-flynn` / `amari-flynn-macros` pattern. Agreed?
-- Should `term!` and `rule!` also live in the proc-macro crate, or be `macro_rules!` in `amari-rewrite` itself?
-- Is `macros` a stable feature or experimental in 0.24.0? (Proc macros are compile-time only — no runtime cost — so a case can be made for stable.)
+Create a separate publishable `amari-rewrite-macros` proc-macro crate. It owns:
 
----
+- `#[derive(Rewritable)]` with explicit `#[rewritable(child)]` fields;
+- `term!(...)` first-order term syntax;
+- `rule!(lhs => rhs)` checked rule syntax.
 
-## 2. SMT — solver choice and integration point
+`amari-rewrite` re-exports all three behind `macros`. The feature is stable in
+0.24. Macro expansion resolves renamed crates hygienically and receives
+trybuild pass/fail coverage. The macro crate publishes before `amari-rewrite`.
 
-**Current state:** `RewriteSolver` trait exists (solver-agnostic) but no implementation. No solver dependency in Cargo.toml.
+## Decision 2: concrete SMT backend
 
-**Decisions needed:**
+Use exact `z3` `=0.20.2` inside `amari-rewrite` behind experimental feature
+`smt`. Enable vendored source builds, not an external executable or build-time
+GitHub-release binary download. Keep `RewriteSolver`; add a bounded
+`Z3RewriteSolver` for first-order equivalence under quantified rewrite axioms.
 
-- **Which solver?** Options: z3 (mature `z3` crate, best Rust bindings), cvc5, or something lighter. z3 is the obvious first choice but adds a native build dependency.
-- **Integration point:** keep the `RewriteSolver` trait in `amari-rewrite` and put the z3 implementation behind `smt` feature there, or create a separate `amari-rewrite-smt` bridge crate?
-- **What does it actually do?** Minimum: `prove_equivalent` for two terms under a rule set. Stretch: counterexample generation for negative-example inference (feeds into decision 6), or `check_satisfiability` for finding terms that satisfy a pattern.
-- **Experimental or stable?** Native solver dependency suggests experimental for 0.24.0.
+Results distinguish proved-equivalent, refuted, and unknown. Quantifier
+unknown/timeout is never promoted to proof. Raw Z3 diagnostics, paths, and
+unbounded model text are not public evidence.
 
----
+Current Z3 requires Rust 1.85, so the workspace MSRV rises to 1.85 as an
+explicit release-wide change.
 
-## 3. Neural — candle integration shape
+## Decision 3: Candle model and training
 
-**Current state:** `DifferentiableRule<State>` trait exists. No tensor dependency.
+Use exact `candle-core` and `candle-nn` `=0.11.0` behind experimental feature
+`neural`. Implement:
 
-**Decisions needed:**
+- deterministic structural term encoding;
+- a concrete CPU MLP rewrite ranker;
+- pairwise training-data derivation from real rewrite traces;
+- bounded AdamW training and typed partial reports;
+- safe-tensor checkpoint validation;
+- neural-guided successor selection.
 
-- **Concrete adapter vs trait-only?** Option A: provide a `CandleRewriteRule` struct wrapping a `candle::Module` with encode/decode to `Term`. Option B: keep `DifferentiableRule` as the sole interface and ship examples showing how to implement it with candle. Option B is lighter but less immediately useful.
-- **Integration with `Strategy`?** Should there be a `Strategy::Neural(model)` variant that selects rewrite steps via model inference? Or does neural rewriting live entirely outside the ARS/TRS systems as a separate `NeuralRewriter`?
-- **Training loop?** Does `amari-rewrite` own training infrastructure (data generation from rewrite traces, loss computation, optimizer step) or is that out of scope — users bring their own trained models?
-- **Experimental or stable?** `candle` is a heavy dependency. Should stay experimental.
+Training infrastructure belongs in `amari-rewrite`; arbitrary project data
+loading and GPU/CUDA/Metal backends do not. Existing `DifferentiableRule`
+remains available.
 
----
+## Decision 4: geometric and hybrid network guidance
 
-## 4. Network — geometric strategy selection
+Feature `network` continues to depend on `amari-network` and `neural`. Implement
+all three previously considered layers:
 
-**Current state:** `RewriteGraphSummary` (node/edge count) and `network_bridge_enabled()` stub. Feature `network` depends on `amari-network` + `neural`.
+1. a bounded rewrite search graph using `GeometricNetwork<3,0,0>`;
+2. deterministic network-guided frontier ranking;
+3. hybrid network/Candle scoring and trace-derived training examples.
 
-**Decisions needed:**
+Nodes are terms, edges are actual rule applications with provenance, and
+partial graphs preserve bounded frontier evidence. No implicit model or global
+mutable graph exists.
 
-- **What does "expansion" mean concretely?** 
-  - Option A: Model a rewrite search space as a `GeometricNetwork` (terms = nodes, rewrite steps = edges with rule labels) and provide graph algorithms (BFS/DFS frontier ranking, betweenness centrality for critical terms).
-  - Option B: Build a `NetworkGuidedStrategy` that uses graph properties to prioritize which terms to rewrite next.
-  - Option C: Feed network embeddings into the neural module for learned strategy selection (bridges decisions 3 and 4).
-- **Which graph?** Should this use `amari_network::GeometricNetwork` or a simpler purpose-built graph in the network module?
-- **Scope creep risk:** This could easily explode in scope. What's the MVP that ships in 0.24.0 vs what can wait?
+## Decision 5: confluence, termination, and completion
 
----
+Implement first-order unification with occurs check, critical-pair generation,
+bounded joinability/local-confluence reporting, and lexicographic path ordering
+(LPO). Add bounded Knuth–Bendix completion behind feature `completion`.
 
-## 5. Confluence / termination analysis
+LPO success is a sound termination certificate. Failure to orient is unknown,
+not proof of non-termination. Ordinary critical-pair local-confluence
+certification requires left-linear rules; non-left-linear systems remain
+unknown unless parallel critical pairs are added. Bounded unresolved pairs are
+partial/unknown, not proof of non-confluence. Completion has fixed
+rule/pair/iteration/operation ceilings and typed complete/partial/failed
+outcomes.
 
-**Current state:** Not implemented at all. No module, no traits.
+## Decision 6: negative-example specialization
 
-**Decisions needed:**
+Keep existing `infer_rule` and `infer_rules`. Add a bounded deterministic
+`RuleRefiner` that detects exact negative coverage, selects discriminating
+paths, partitions positives, infers specialized rules, and validates all
+returned rules against supplied examples.
 
-- **What form?** Options:
-  - A: Critical pair checking — compute all critical pairs from a rule set and check joinability. Small, well-defined, classic TRS theory.
-  - B: Knuth-Bendix completion — given a set of equations, attempt to produce a confluent terminating rewrite system. Much larger scope.
-  - C: Termination orderings — implement LPO (lexicographic path ordering) or RPO (recursive path ordering) as termination checkers.
-- **New module or ARS/TRS extension?** A `confluence` module at `amari-rewrite/src/confluence/` seems cleanest.
-- **How deep?** 0.24.0 suggestion: critical pair checking + LPO. Knuth-Bendix and full completion can wait.
+The result is refined, inconclusive, or limit-reached. It is heuristic, not a
+complete learner. With `smt`, optional counterexample evidence can refine or
+reject candidates; unknown solver outcomes preserve symbolic evidence.
 
----
+## Decision 7: stability, discovery, and release scope
 
-## 6. Negative-example inference — heuristic specialization
+- Existing 0.23 symbolic APIs remain stable.
+- Macros are stable in 0.24.
+- Completion, neural, SMT, network, and negative-example refinement are
+  explicitly experimental.
+- Default builds stay lightweight and do not activate macros, Candle, Z3, or
+  `amari-network`.
+- No new WASM bindings are required in 0.24.
+- Every public API receives generated structural and curated semantic discovery
+  records in its implementation cohort.
+- Process-isolated discovery probes are limited to bounded pure symbolic
+  analysis/completion/refinement. Candle training and Z3 solving are
+  discoverable but not executable through discovery.
+- The work ships as multiple moderate PRs with per-task RED→GREEN commits,
+  independent review, and explicit default/no-default/feature/all-feature
+  matrices.
+- Aggregate 0.24.0 acceptance remains blocked until all expansion cohorts merge
+  and discovery Task 31 completes versioning, catalog, packaging, publication,
+  and registry-install gates.
 
-**Current state:** `infer_rules` exists and rejects rules that cover any negative example. No specialization/refinement.
+## Rejected alternatives
 
-**Decisions needed:**
-
-- **What does specialization look like?** If `add(0, X) -> X` covers a negative example `add(0, 0) -> 1`, should we:
-  - A: Reject outright (current behavior) — done.
-  - B: Try anti-unifying the false-positive cases and synthesizing a more constrained rule.
-  - C: Split into multiple rules (e.g., `add(0, X) -> X` when X ≠ 0, plus an explicit rule for the counterexample).
-- **SMT integration?** Counterexample-guided refinement could use the SMT solver (decision 2) to find discriminating cases. Worth coupling these, or keep separate?
-- **API:** Currently `infer_rules(positives, negatives) -> Vec<Rule>`. Does this change, or do we add new functions like `specialize_rule`, `refine_rules`?
-
----
-
-## 7. Scope boundaries for 0.24.0
-
-**Decisions needed:**
-
-- **Which features stabilize?** Candidates: `macros` (compile-time only, low risk). SMT and neural almost certainly stay experimental.
-- **Does the prelude change?** If `derive(Rewritable)` goes stable, it likely belongs in the prelude. Neural/SMT types should not.
-- **Any breaking changes to the 0.23.0 stable API?** The design says the existing core is stable. 0.24.0 should be additive only.
-- **WASM?** Does any of this need WASM bindings or examples-suite exposure? Probably not for 0.24.0 — `amari-discovery` is the user-facing integration surface here.
+- Keeping Candle and SMT trait-only: inconsistent with the selected
+  research-heavy profile.
+- Deferring concrete neural/SMT work to 0.25: rejected for the same reason.
+- Latest Z3 via `gh-release`: rejected because it downloads a native binary at
+  build time.
+- Runtime external `z3` process: rejected because it adds undeclared executable
+  and shell/process authority.
+- GPU neural training in 0.24: rejected to preserve the separate 0.25 GPU,
+  Borsalino, and `wgpu` modernization track.
+- Unbounded completion, global confluence claims, or “failed LPO means
+  non-terminating”: rejected as mathematically unsound.

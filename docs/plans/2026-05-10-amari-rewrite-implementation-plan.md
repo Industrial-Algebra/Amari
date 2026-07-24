@@ -1,5 +1,7 @@
 # amari-rewrite Implementation Plan
 
+> **Status:** Implemented for 0.23.0. The research-heavy 0.24 continuation is `2026-07-23-amari-rewrite-research-expansion-implementation-plan.md`.
+>
 > **REQUIRED SUB-SKILL:** Use the executing-plans skill to implement this plan task-by-task.
 
 **Goal:** Add the `amari-rewrite` workspace crate for Amari 0.23.0 with a stable ARS/TRS/inverse/synthesis core and feature-gated experimental neural/SMT/network scaffolding.
