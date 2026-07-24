@@ -338,7 +338,7 @@ The standard v0.24 binary should ship representative CPU-safe probes for:
 
 Catalog records may describe other Amari domains even when no compiled probe exists. `amari capabilities` and `amari probe list` expose the distinction.
 
-GPU and Borsalino probes are deferred to 0.25.0.
+GPU and Borsalino probes are deferred to 0.26.0.
 
 The public library exposes cooperative in-process probe execution with typed operation/node/iteration/byte limits and an explicit `isolation = cooperative` marker. It cannot promise crash or hard wall-clock isolation. The `amari` CLI adds a private fixed worker/supervisor layer (`isolation = process`) for timeout, crash, and output isolation; callers cannot select an executable. Mathematical output and validation must remain parity-tested across both paths.
 
@@ -477,7 +477,7 @@ Excluded:
 
 ## 17. Future direction
 
-0.25.0 may add GPU/Borsalino capability and probe adapters after the `wgpu` modernization.
+0.26.0 may add GPU/Borsalino capability and probe adapters after the `wgpu` modernization.
 
 Later releases may federate Schubert, Karpal, and other IA discovery providers through the same protocol; add richer provider integrations; or expose the discovery engine through MCP or other transports. The CLI remains the universal baseline.
 

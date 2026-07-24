@@ -1,6 +1,6 @@
 # Amari 0.20.0 / 0.21.0 Actionable Task List
 
-> Planning update: the broader release sequence through 0.25.0 is now captured in `docs/roadmap/V0_20_0_TO_V0_25_0_RELEASE_SEQUENCE.md`. In that plan, `0.20.0` ships the `amari-gpu` stabilization baseline, `0.21.0` focuses on substantial `amari-tropical` and `amari-dual` extensions, `0.22.0` introduces `amari-cgt` and `amari-surreal`, `0.23.0` introduces `amari-surcomplex` and `amari-rewrite`, `0.24.0` expands rewrite systems and introduces `amari-discovery` plus holographic superposition, and `0.25.0` revisits GPU benchmark, dispatch, coverage, Borsalino integration, and `wgpu` modernization.
+> Planning update: the broader release sequence through 0.26.0 is now captured in `docs/roadmap/V0_20_0_TO_V0_26_0_RELEASE_SEQUENCE.md`. In that plan, `0.20.0` ships the `amari-gpu` stabilization baseline, `0.21.0` focuses on substantial `amari-tropical` and `amari-dual` extensions, `0.22.0` introduces `amari-cgt` and `amari-surreal`, `0.23.0` introduces `amari-surcomplex` and the stable `amari-rewrite` foundation, `0.24.0` introduces `amari-discovery` plus holographic superposition, `0.25.0` delivers comprehensive rewrite/inverse research, and `0.26.0` revisits GPU benchmark, dispatch, coverage, Borsalino integration, and `wgpu` modernization.
 
 Date: 2026-03-27
 Current version: 0.19.1
@@ -63,17 +63,23 @@ Primary outcome:
 - introduce `amari-surcomplex`
 - introduce `amari-rewrite` for rewrite rules and term-rewriting-system workflows
 
-### 0.24.0 — Rewrite expansion / agentic discovery / holographic superposition release
+### 0.24.0 — Agentic discovery / holographic superposition release
 
 Primary outcome:
-- expand the deferred `amari-rewrite` research surfaces
 - introduce `amari-discovery` with the installed `amari` command
 - add `BindingAlgebra::superpose` + `scale` to unblock correct Minuet trace accumulation
 
-### 0.25.0 — GPU / Borsalino modernization release
+### 0.25.0 — Comprehensive rewrite / inverse-rewrite research release
 
 Primary outcome:
-- revisit `amari-gpu` follow-up issues after the 0.21.0–0.24.0 work is available
+- expand symbolic analysis, completion, synthesis, macros, Candle, SMT, and network guidance
+- add constrained relational inverse semantics, reversible residuals, backward/bidirectional reasoning, and regular-language preimages
+- make all public rewrite capabilities truthfully discoverable
+
+### 0.26.0 — GPU / Borsalino modernization release
+
+Primary outcome:
+- revisit `amari-gpu` follow-up issues after the 0.21.0–0.25.0 work is available
 - integrate Borsalino and bring `wgpu` to the current supported version
 - complete benchmark baselines, calibrated dispatch, high-upside kernel optimization, and future-crate GPU coverage
 
@@ -466,7 +472,7 @@ The WASM and algebra-extension epics below are retained as deferred backlog, not
 - [ ] extend fusion examples only where they naturally consume new tropical/dual capabilities
 - [ ] prepare 0.22.0 crate plans for `amari-cgt` and `amari-surreal`
 - [ ] prepare 0.23.0 crate plans for `amari-surcomplex` and `amari-rewrite`
-- [ ] defer broad `amari-gpu` follow-up work to the 0.25.0 GPU/Borsalino modernization cycle
+- [ ] defer broad `amari-gpu` follow-up work to the 0.26.0 GPU/Borsalino modernization cycle
 - [ ] update wasm bindings and examples-suite where appropriate for each release train
 
 ---

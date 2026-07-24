@@ -4,7 +4,7 @@ Date: 2026-03-27
 Current workspace version: 0.19.1
 Target horizon: 0.20.0 → 0.21.0
 
-> Planning update: the broader 0.20.0 → 0.25.0 sequence is tracked in `docs/roadmap/V0_20_0_TO_V0_25_0_RELEASE_SEQUENCE.md`. This document remains the 0.21.0 algebra-extension analysis, but GPU benchmark/dispatch/`wgpu` follow-up work is now deferred to the 0.25.0 GPU/Borsalino modernization cycle.
+> Planning update: the broader 0.20.0 → 0.26.0 sequence is tracked in `docs/roadmap/V0_20_0_TO_V0_26_0_RELEASE_SEQUENCE.md`. This document remains the 0.21.0 algebra-extension analysis, but GPU benchmark/dispatch/`wgpu` follow-up work is now deferred to the 0.26.0 GPU/Borsalino modernization cycle.
 
 ## Executive Summary
 
@@ -26,8 +26,9 @@ Recommended release framing:
 - **0.21.0** = substantial `amari-tropical` and `amari-dual` extension release, with additive `amari-fusion` examples where appropriate
 - **0.22.0** = introduce `amari-cgt` and `amari-surreal`
 - **0.23.0** = introduce `amari-surcomplex` and `amari-rewrite`
-- **0.24.0** = expand `amari-rewrite`, introduce `amari-discovery`, and add `BindingAlgebra::superpose`
-- **0.25.0** = revisit `amari-gpu` benchmark, dispatch, coverage, optimization, Borsalino integration, and `wgpu` migration follow-ups
+- **0.24.0** = introduce `amari-discovery` and add `BindingAlgebra::superpose`/`scale`
+- **0.25.0** = comprehensive `amari-rewrite` and inverse-rewrite research expansion
+- **0.26.0** = revisit `amari-gpu` benchmark, dispatch, coverage, optimization, Borsalino integration, and `wgpu` migration follow-ups
 
 ---
 

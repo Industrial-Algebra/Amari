@@ -17,7 +17,7 @@ Secondary/additive 0.21.0 work:
 This work is intentionally separate from:
 
 - `amari-wasm` audit/hardening
-- `amari-gpu` redesign and hardware validation, now deferred to the 0.25.0 GPU/Borsalino modernization cycle after the 0.24.0 `amari-discovery`, rewrite-expansion, and holographic-superposition release
+- `amari-gpu` redesign and hardware validation, now deferred to the 0.26.0 GPU/Borsalino modernization cycle after the 0.24.0 discovery/holographic release and 0.25.0 rewrite/inverse expansion
 
 ## Guiding Rule
 

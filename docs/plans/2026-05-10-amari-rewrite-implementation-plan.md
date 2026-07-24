@@ -1,6 +1,6 @@
 # amari-rewrite Implementation Plan
 
-> **Status:** Implemented for 0.23.0. The research-heavy 0.24 continuation is `2026-07-23-amari-rewrite-research-expansion-implementation-plan.md`.
+> **Status:** Implemented for 0.23.0. The comprehensive 0.25 rewrite/inverse continuation is `2026-07-24-amari-rewrite-inverse-expansion-implementation-plan.md`.
 >
 > **REQUIRED SUB-SKILL:** Use the executing-plans skill to implement this plan task-by-task.
 

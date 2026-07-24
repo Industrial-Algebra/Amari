@@ -2,7 +2,7 @@
 
 Date: 2026-05-10
 Status: implemented for the stable 0.23 core
-0.24 continuation: `2026-07-23-amari-rewrite-research-expansion-design.md` (additive; the stable contracts below remain authoritative)
+0.25 continuation: `2026-07-24-amari-rewrite-inverse-expansion-design.md` (additive; the stable contracts below remain authoritative)
 Source context: `/home/lucien/working/industrial-algebra/IA-documents/Amari/rewrite/rewrite-ideation-session.md`
 
 ## Goal

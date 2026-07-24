@@ -27,11 +27,11 @@ Current release process documentation:
 
 Current planning and release-roadmap documentation:
 
-- **[0.20.0 → 0.25.0 Release Sequence](roadmap/V0_20_0_TO_V0_25_0_RELEASE_SEQUENCE.md)** - Current cross-release plan, including `amari-discovery` in 0.24.0 and GPU/Borsalino modernization in 0.25.0
+- **[0.20.0 → 0.26.0 Release Sequence](roadmap/V0_20_0_TO_V0_26_0_RELEASE_SEQUENCE.md)** - 0.24 discovery/holographic release, 0.25 comprehensive rewrite/inverse research, and 0.26 GPU/Borsalino modernization
 - **[v0.24.0 amari-discovery Design](plans/2026-07-09-amari-discovery-design.md)** - Agent-first discovery, planning, and bounded probe runtime installed as the `amari` command
-- **[v0.24.0 amari-rewrite Decision Record](plans/2026-07-09-amari-rewrite-0.24-decisions.md)** - Approved research-heavy, bounded macro/analysis/Candle/Z3/network scope
-- **[v0.24.0 amari-rewrite Research Design](plans/2026-07-23-amari-rewrite-research-expansion-design.md)** - Architecture, limits, safety boundaries, discovery integration, and non-goals
-- **[v0.24.0 amari-rewrite Research Implementation Plan](plans/2026-07-23-amari-rewrite-research-expansion-implementation-plan.md)** - Seven grouped cohorts with per-task RED→GREEN checkpoints
+- **[v0.25.0 amari-rewrite Decision Record](plans/2026-07-24-amari-rewrite-0.25-decisions.md)** - Approved comprehensive bounded rewrite and inverse-rewrite scope
+- **[v0.25.0 amari-rewrite/Inverse Design](plans/2026-07-24-amari-rewrite-inverse-expansion-design.md)** - Relational inverses, residual reversibility, language preimages, analysis, learned guidance, SMT, and discovery boundaries
+- **[v0.25.0 amari-rewrite/Inverse Implementation Plan](plans/2026-07-24-amari-rewrite-inverse-expansion-implementation-plan.md)** - 56 RED→GREEN tasks across eleven grouped cohorts
 - **[v0.23.0 Rational Surreal / Surcomplex Roadmap](roadmap/v0.23.0-rational-surreal-surcomplex-roadmap.md)** - Planning for the `RationalSurreal`, epsilon rational, and `amari-surcomplex` cycle
 - **[v0.23.0 Rational Surreal / Surcomplex Checklist](roadmap/v0.23.0-rational-surreal-surcomplex-checklist.md)** - Release gates and publish-order audit for the `0.23.0` cycle
 - **[v0.21.0 Tropical / Dual Roadmap](roadmap/v0.21.0-tropical-dual-roadmap.md)** - Planning for the optimization-oriented `amari-tropical` / `amari-dual` cycle

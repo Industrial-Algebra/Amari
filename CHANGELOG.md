@@ -35,10 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `docs/guide/amari-discovery.md` and expanded `amari-discovery/README.md` with human, agent, contributor, protocol, privacy, AI, probe, and release workflows
 
-> Release status: 0.24.0 remains unreleased. The separately approved
-> `amari-rewrite` expansion, aggregate version bump, catalog regeneration,
-> registry-resolution checks, package/publish dry-runs, and post-publication
-> installation gates must complete before release acceptance.
+> Release status: 0.24.0 remains unreleased. Aggregate version sync, catalog
+> regeneration, registry-resolution checks, package/publish dry-runs, and
+> post-publication installation gates must complete before release acceptance.
+> The comprehensive rewrite/inverse expansion is intentionally scoped to 0.25.0.
 
 ---
 

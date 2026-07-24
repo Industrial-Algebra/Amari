@@ -313,9 +313,10 @@ and dependency-safe publication order.
 
 Feature-branch completion proves source and path-install behavior only. It does
 not prove a registry package can resolve unpublished 0.24.0 dependencies.
-Aggregate release acceptance occurs after discovery, additive holographic
-superposition, and the separately approved rewrite expansion are merged. The
-release branch must then move every workspace package and internal constraint
+Aggregate release acceptance occurs after discovery and additive holographic
+superposition release-readiness work is merged. The comprehensive
+rewrite/inverse expansion is scoped separately to 0.25.0. The release branch
+must then move every workspace package and internal constraint
 to 0.24.0, regenerate both catalogs, run full package/publish dry-runs in
 actual dependency order, inspect and install the verified archive, publish,
 and repeat installation from the registry.

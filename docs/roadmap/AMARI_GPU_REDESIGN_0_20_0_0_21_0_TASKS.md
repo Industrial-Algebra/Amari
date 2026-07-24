@@ -25,7 +25,7 @@ Because there are currently no important downstream users constraining its shape
 
 Turn `amari-gpu` from a coverage-oriented integration crate into a robust, hardware-validated GPU platform layer for Amari.
 
-The 0.20.0 hardening pass establishes the known-good baseline. Broad follow-up work is now deferred to 0.25.0, after the 0.24.0 `amari-discovery`, rewrite-expansion, and holographic-superposition release. That lets `amari-gpu` be revisited in a better context alongside Borsalino integration, hardware-aware calibration, accumulated new crate coverage, and the dedicated `wgpu` migration investigation.
+The 0.20.0 hardening pass establishes the known-good baseline. Broad follow-up work is now deferred to 0.26.0, after the 0.24.0 discovery/holographic release and the 0.25.0 comprehensive rewrite/inverse expansion. That lets `amari-gpu` be revisited in a better context alongside Borsalino integration, hardware-aware calibration, accumulated new crate coverage, and the dedicated `wgpu` migration investigation.
 
 The long-term direction is for `amari-gpu` to expose as many Amari operations as are technically justified, ideally approaching the breadth of `amari-wasm`, while maintaining strong CPU-baseline validation and graceful fallback behavior.
 
@@ -163,11 +163,11 @@ Active release-plan note: the 0.20.0 implementation focus is now captured in `do
 
 ---
 
-# Deferred 0.25.0 GPU revisit
+# Deferred 0.26.0 GPU revisit
 
-The previous 0.21.0 GPU expansion focus is deferred. 0.21.0 stays centered on `amari-tropical` and `amari-dual`; 0.22.0 introduced `amari-cgt` and `amari-surreal`; 0.23.0 introduced `amari-surcomplex` and `amari-rewrite`; 0.24.0 focuses on `amari-discovery`, rewrite expansion, and holographic superposition. The GPU follow-up cycle resumes in 0.25.0 alongside Borsalino integration and the `wgpu` modernization.
+The previous 0.21.0 GPU expansion focus is deferred. 0.21.0 stays centered on `amari-tropical` and `amari-dual`; 0.22.0 introduced `amari-cgt` and `amari-surreal`; 0.23.0 introduced `amari-surcomplex` and the rewrite foundation; 0.24.0 focuses on `amari-discovery` and holographic superposition; 0.25.0 delivers comprehensive rewrite/inverse research. The GPU follow-up cycle resumes in 0.26.0 alongside Borsalino integration and the `wgpu` modernization.
 
-Tracked 0.25.0 GPU issues:
+Tracked 0.26.0 GPU issues:
 
 - #137 — Add missing CPU baseline timings to `amari-gpu` benchmark harnesses
 - #138 — Add release-mode or Criterion benchmarks for `amari-gpu`
@@ -232,7 +232,7 @@ This track depends on the additive 0.21.0 algebra extension work, but remains a 
 
 ---
 
-## 0.25.0 GPU revisit exit criteria
+## 0.26.0 GPU revisit exit criteria
 
 - [ ] missing CPU baseline timings are added for benchmark rows that are currently GPU-timing-only
 - [ ] release-mode or Criterion-style benchmark path exists for high-priority kernels
