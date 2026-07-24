@@ -91,7 +91,10 @@ fn search_tropical_json_returns_compact_results() {
     }
 
     // Provenance: catalog identity present, no project context
-    assert_eq!(value["provenance"]["catalog"]["version"], "0.23.0");
+    assert_eq!(
+        value["provenance"]["catalog"]["version"],
+        env!("CARGO_PKG_VERSION")
+    );
     assert!(value["provenance"]["catalog"]["hash"].is_string());
     assert_eq!(value["provenance"]["project_hash"], Value::Null);
     assert_eq!(value["provenance"]["input_hash"], Value::Null);
@@ -626,7 +629,10 @@ fn discover_provenance_identifies_embedded_catalog_and_non_project() {
     ]);
     for args in &args_sets {
         let value = discover_json(args);
-        assert_eq!(value["provenance"]["catalog"]["version"], "0.23.0");
+        assert_eq!(
+            value["provenance"]["catalog"]["version"],
+            env!("CARGO_PKG_VERSION")
+        );
         assert!(value["provenance"]["catalog"]["hash"].is_string());
         assert_eq!(value["provenance"]["project_hash"], Value::Null);
         assert_eq!(value["provenance"]["compatibility"]["status"], "compatible");

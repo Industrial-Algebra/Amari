@@ -123,7 +123,12 @@ fn real_inventory_includes_root_and_wasm_but_excludes_discovery() {
     }
 
     for package in &inventory.packages {
-        assert_eq!(package.version, "0.23.0", "{} version", package.name);
+        assert_eq!(
+            package.version,
+            env!("CARGO_PKG_VERSION"),
+            "{} version",
+            package.name
+        );
         assert_eq!(package.edition, "2021", "{} edition", package.name);
         assert_eq!(
             package.license, "MIT OR Apache-2.0",

@@ -6,10 +6,10 @@ checked-in capability catalog, bounded project inspection, deterministic
 candidate retrieval and ranking, replayable plans, and registered mathematical
 probes.
 
-This guide describes the 0.24.0 feature surface while the workspace is still at
-0.23.0. Passing feature-branch checks is not a 0.24.0 release claim; aggregate
-versioning, catalog regeneration, package verification, publication, and
-post-publication installation remain separate release gates. Every `bash`
+This guide describes the 0.24.0 feature surface. The workspace and catalogs are
+synchronized to the release candidate, but passing source checks is not a
+0.24.0 publication claim; package verification, publication, registry
+installation, and tagging remain separate release gates. Every `bash`
 block in this guide is runnable in the stated checkout or inspected-project
 context. Contributor commands with additional WASM/toolchain prerequisites use
 `text` blocks instead.

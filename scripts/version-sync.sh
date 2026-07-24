@@ -12,9 +12,22 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Default files to update
+# Version authorities and active JavaScript package metadata.
 CARGO_TOML="Cargo.toml"
 PACKAGE_JSON="amari-wasm/package.json"
+NPM_PACKAGE_FILES=(
+    "amari-wasm/package.json"
+    "amari-wasm/examples/package.json"
+    "typescript/package.json"
+    "examples/typescript/package.json"
+    "examples/web/interactive-demos/package.json"
+    "examples-suite/package.json"
+    "examples-suite/package-lock.json"
+)
+CATALOG_FILES=(
+    "amari-discovery/catalog/probes.toml"
+    "amari-discovery/catalog/semantic/core.toml"
+)
 
 # Function to print colored output
 print_status() {
@@ -83,19 +96,61 @@ update_cargo_version() {
     print_success "Updated Cargo.toml versions"
 }
 
-# Function to update package.json version
-update_package_json_version() {
+# Update every path dependency version in every workspace manifest.
+update_path_dependency_versions() {
     local new_version=$1
 
-    print_status "Updating package.json version to $new_version..."
+    while IFS= read -r -d '' manifest; do
+        sed -E -i.bak "/^[[:space:]]*amari(-[[:alnum:]-]+)?[[:space:]]*=.*path[[:space:]]*=/s/version = \"[0-9]+\.[0-9]+\.[0-9]+\"/version = \"$new_version\"/g" "$manifest"
+        rm -f "$manifest.bak"
+    done < <(find . -name Cargo.toml -not -path './target/*' -not -path './.worktrees/*' -print0)
+}
 
-    # Only update the main version field (not in scripts section)
-    sed -i.bak "/^\s*\"version\":/s/\"version\": \".*\"/\"version\": \"$new_version\"/" "$PACKAGE_JSON"
+# Update active JavaScript package versions without touching external packages.
+update_npm_versions() {
+    local new_version=$1
 
-    # Remove backup file
-    rm -f "$PACKAGE_JSON.bak"
+    print_status "Updating JavaScript package metadata to $new_version..."
+    python3 - "$new_version" "${NPM_PACKAGE_FILES[@]}" <<'PY'
+import json
+import pathlib
+import re
+import sys
 
-    print_success "Updated package.json version"
+new_version = sys.argv[1]
+for raw_path in sys.argv[2:]:
+    path = pathlib.Path(raw_path)
+    if not path.is_file():
+        continue
+    data = json.loads(path.read_text())
+    if "version" in data:
+        data["version"] = new_version
+    root_package = data.get("packages", {}).get("")
+    if isinstance(root_package, dict) and "version" in root_package:
+        root_package["version"] = new_version
+    for section in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+        dependencies = data.get(section)
+        if not isinstance(dependencies, dict):
+            continue
+        requirement = dependencies.get("@justinelliottcobb/amari-wasm")
+        if not isinstance(requirement, str) or requirement == "latest":
+            continue
+        match = re.fullmatch(r"([~^]?)[0-9]+\.[0-9]+\.[0-9]+", requirement)
+        if match:
+            dependencies["@justinelliottcobb/amari-wasm"] = f"{match.group(1)}{new_version}"
+    path.write_text(json.dumps(data, indent=2) + "\n")
+PY
+    print_success "Updated JavaScript package metadata"
+}
+
+update_catalog_versions() {
+    local new_version=$1
+
+    for catalog in "${CATALOG_FILES[@]}"; do
+        [[ -f "$catalog" ]] || continue
+        sed -E -i.bak "s/^catalog_version = \"[^\"]+\"/catalog_version = \"$new_version\"/" "$catalog"
+        rm -f "$catalog.bak"
+    done
 }
 
 # Function to verify all versions are synchronized
@@ -111,18 +166,63 @@ verify_versions() {
         return 1
     fi
 
-    # Check package.json version
-    local package_version=$(get_package_json_version)
-    if [[ "$package_version" != "$expected_version" ]]; then
-        print_error "package.json version mismatch: expected $expected_version, found $package_version"
+    # Check every path dependency in every manifest.
+    local stale_manifest_lines
+    stale_manifest_lines=$(find . -name Cargo.toml -not -path './target/*' -not -path './.worktrees/*' -print0 \
+        | xargs -0 grep -H -E '^[[:space:]]*amari(-[[:alnum:]-]+)?[[:space:]]*=.*path[[:space:]]*=' \
+        | grep 'version = ' \
+        | grep -v "version = \"$expected_version\"" || true)
+    if [[ -n "$stale_manifest_lines" ]]; then
+        print_error "Stale path dependency versions found:"
+        printf '%s\n' "$stale_manifest_lines" >&2
         return 1
     fi
 
-    # Check that all workspace dependencies have the correct version
-    local workspace_deps_count=$(grep -c "version = \"$expected_version\"" "$CARGO_TOML" || true)
-    if [[ $workspace_deps_count -lt 10 ]]; then  # We have 11+ internal crates
-        print_warning "Some workspace dependencies may not be updated (found $workspace_deps_count matches)"
+    # Check active JavaScript package metadata and internal requirements.
+    if ! python3 - "$expected_version" "${NPM_PACKAGE_FILES[@]}" <<'PY'
+import json
+import pathlib
+import re
+import sys
+
+expected = sys.argv[1]
+errors = []
+for raw_path in sys.argv[2:]:
+    path = pathlib.Path(raw_path)
+    if not path.is_file():
+        continue
+    data = json.loads(path.read_text())
+    if "version" in data and data["version"] != expected:
+        errors.append(f"{path}: top-level version {data['version']}")
+    root_package = data.get("packages", {}).get("")
+    if isinstance(root_package, dict) and "version" in root_package and root_package["version"] != expected:
+        errors.append(f"{path}: root lock package version {root_package['version']}")
+    for section in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+        dependencies = data.get(section)
+        if not isinstance(dependencies, dict):
+            continue
+        requirement = dependencies.get("@justinelliottcobb/amari-wasm")
+        if not isinstance(requirement, str) or requirement == "latest":
+            continue
+        match = re.fullmatch(r"[~^]?([0-9]+\.[0-9]+\.[0-9]+)", requirement)
+        if match and match.group(1) != expected:
+            errors.append(f"{path}: {section} amari-wasm requirement {requirement}")
+if errors:
+    print("\n".join(errors), file=sys.stderr)
+    raise SystemExit(1)
+PY
+    then
+        print_error "JavaScript package versions are not synchronized"
+        return 1
     fi
+
+    for catalog in "${CATALOG_FILES[@]}"; do
+        [[ -f "$catalog" ]] || continue
+        if ! grep -q "^catalog_version = \"$expected_version\"$" "$catalog"; then
+            print_error "$catalog catalog_version is not $expected_version"
+            return 1
+        fi
+    done
 
     print_success "All versions synchronized to $expected_version"
     return 0
@@ -209,8 +309,10 @@ Examples:
 
 This script synchronizes versions between:
 - Cargo.toml workspace.package.version
-- Cargo.toml workspace.dependencies versions
-- amari-wasm/package.json version
+- every internal path dependency version in workspace manifests
+- active JavaScript package and package-lock metadata
+- amari-wasm dependency requirements in examples
+- discovery semantic/probe catalog versions
 EOF
 }
 
@@ -239,7 +341,9 @@ main() {
 
             print_status "Setting all versions to $new_version"
             update_cargo_version "$new_version"
-            update_package_json_version "$new_version"
+            update_path_dependency_versions "$new_version"
+            update_npm_versions "$new_version"
+            update_catalog_versions "$new_version"
             verify_versions "$new_version"
             ;;
         bump)
@@ -255,7 +359,9 @@ main() {
 
             print_status "Bumping $bump_type version to $new_version"
             update_cargo_version "$new_version"
-            update_package_json_version "$new_version"
+            update_path_dependency_versions "$new_version"
+            update_npm_versions "$new_version"
+            update_catalog_versions "$new_version"
             verify_versions "$new_version"
             ;;
         verify)
