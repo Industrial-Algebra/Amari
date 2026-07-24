@@ -228,7 +228,7 @@ fn real_workspace_links_match_cargo_manifests() {
         .find(|dependency| dependency.alias == "amari-core")
         .unwrap();
     assert_eq!(core.package, "amari-core");
-    assert_eq!(core.version.as_deref(), Some("0.23.0"));
+    assert_eq!(core.version.as_deref(), Some(env!("CARGO_PKG_VERSION")));
     assert_eq!(core.path.as_deref(), Some("amari-core"));
     assert_eq!(core.kind, DependencyKind::Normal);
     assert!(!core.optional);

@@ -1,4 +1,4 @@
-catalog_version = "0.23.0"
+catalog_version = "0.24.0"
 
 [[capabilities]]
 id = "amari:amari-core:product:geometric-product"

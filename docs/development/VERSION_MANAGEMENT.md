@@ -7,8 +7,9 @@ This document describes the version management system for the Amari project, whi
 The Amari project consists of multiple components that need to stay version-synchronized:
 
 - **Rust Workspace**: Main workspace defined in `Cargo.toml`
-- **Individual Rust Crates**: All amari-* crates inherit from workspace version
-- **WebAssembly Package**: `amari-wasm/package.json` (npm package)
+- **Individual Rust Crates**: Workspace versions plus every versioned internal path dependency
+- **JavaScript Packages**: WASM, TypeScript, examples, and package-lock root metadata
+- **Discovery Catalogs**: Semantic and probe catalog versions
 
 ## Automated Version Synchronization
 
@@ -36,9 +37,15 @@ The `scripts/version-sync.sh` script provides automated version management:
 
 The script synchronizes versions across:
 
-1. **Cargo.toml workspace.package.version** - Main workspace version
-2. **Cargo.toml workspace.dependencies** - All internal crate references
-3. **amari-wasm/package.json version** - npm package version
+1. **Cargo workspace package/dependencies** - Main version and root internal references
+2. **Nested Cargo manifests** - Every versioned `amari-*` path dependency
+3. **JavaScript package metadata** - Published packages, examples, and package-lock root
+4. **Internal WASM requirements** - Versioned `@justinelliottcobb/amari-wasm` example dependencies
+5. **Discovery catalogs** - Semantic and probe `catalog_version` values
+
+Run `./scripts/test-version-sync.sh` after changing synchronization behavior.
+The legacy `scripts/bump-version.sh <version>` entry point delegates to
+`version-sync.sh set <version>` so there is only one synchronization authority.
 
 ## Release Process
 
@@ -66,8 +73,8 @@ The script synchronizes versions across:
 
 4. **Commit version changes**:
    ```bash
-   git add Cargo.toml amari-wasm/package.json
-   git commit -m "Bump version to 0.9.3"
+   git add -A
+   git commit -m "chore: bump version to 0.9.3"
    ```
 
 5. **Continue with normal release process** (PR, testing, merge, tag)

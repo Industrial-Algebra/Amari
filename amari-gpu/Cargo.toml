@@ -14,10 +14,10 @@ categories = ["mathematics", "science", "algorithms"]
 # Default to no high-precision for GPU (and WASM compatibility)
 # These are specified directly instead of via workspace inheritance so
 # `default-features = false` is honored without Cargo warnings.
-amari-core = { path = "../amari-core", version = "0.23.0", default-features = false, features = ["std", "phantom-types"] }
-amari-info-geom = { path = "../amari-info-geom", version = "0.23.0", default-features = false, features = ["std"] }
-amari-network = { path = "../amari-network", version = "0.23.0", default-features = false, features = ["std"] }
-amari-relativistic = { path = "../amari-relativistic", version = "0.23.0", default-features = false, features = ["std", "phantom-types"] }
+amari-core = { path = "../amari-core", version = "0.24.0", default-features = false, features = ["std", "phantom-types"] }
+amari-info-geom = { path = "../amari-info-geom", version = "0.24.0", default-features = false, features = ["std"] }
+amari-network = { path = "../amari-network", version = "0.24.0", default-features = false, features = ["std"] }
+amari-relativistic = { path = "../amari-relativistic", version = "0.24.0", default-features = false, features = ["std", "phantom-types"] }
 amari-measure = { workspace = true, optional = true }
 amari-calculus = { workspace = true, optional = true }
 amari-tropical = { workspace = true, optional = true }

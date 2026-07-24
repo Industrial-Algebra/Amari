@@ -59,7 +59,10 @@ fn capabilities_json_self_describes_schema_and_exit_codes() {
 fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
     let value = capabilities_json();
 
-    assert_eq!(value["data"]["catalog"]["version"], "0.23.0");
+    assert_eq!(
+        value["data"]["catalog"]["version"],
+        env!("CARGO_PKG_VERSION")
+    );
     assert_eq!(value["data"]["catalog"]["available"], true);
     assert_eq!(
         value["provenance"]["catalog"]["hash"],
@@ -174,7 +177,10 @@ fn capabilities_human_output_is_concise() {
         .stderr(predicate::str::is_empty())
         .stdout(predicate::str::contains("Amari Discovery"))
         .stdout(predicate::str::contains("Project inspectors"))
-        .stdout(predicate::str::contains("Catalog: 0.23.0 (available)"))
+        .stdout(predicate::str::contains(format!(
+            "Catalog: {} (available)",
+            env!("CARGO_PKG_VERSION")
+        )))
         .stdout(predicate::str::contains("Resource limits"))
         .stdout(predicate::str::contains("max_per_file_bytes"))
         .stdout(predicate::str::contains("max_inspection_wall_millis"))

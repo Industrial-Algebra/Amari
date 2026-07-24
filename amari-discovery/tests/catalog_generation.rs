@@ -489,11 +489,14 @@ fn modified_copy_produces_drift_error() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let temp_path = temp_dir.path().join("modified.json");
 
-    // Write a deliberately corrupted version.
-    let modified = String::from_utf8_lossy(&json).replace(
-        "\"version\": \"0.23.0\"",
+    // Write a deliberately corrupted version without coupling the test to a release.
+    let version_field = format!("\"version\": \"{}\"", catalog.version);
+    let modified = String::from_utf8_lossy(&json).replacen(
+        &version_field,
         "\"version\": \"0.0.0-corrupted\"",
+        1,
     );
+    assert_ne!(modified.as_bytes(), json, "test mutation must change bytes");
     fs::write(&temp_path, modified.as_bytes()).unwrap();
 
     let result = verify_checked_in(workspace_root(), &temp_path);
@@ -579,10 +582,13 @@ fn verify_checked_in_drift_message_includes_first_differing_line() {
     let temp_path = temp_dir.path().join("corrupted.json");
 
     // Corrupt the version string which appears early in the JSON.
-    let modified = String::from_utf8_lossy(&json).replace(
-        "\"version\": \"0.23.0\"",
+    let version_field = format!("\"version\": \"{}\"", catalog.version);
+    let modified = String::from_utf8_lossy(&json).replacen(
+        &version_field,
         "\"version\": \"0.0.0-corrupted\"",
+        1,
     );
+    assert_ne!(modified.as_bytes(), json, "test mutation must change bytes");
     fs::write(&temp_path, modified.as_bytes()).unwrap();
 
     let result = verify_checked_in(workspace_root(), &temp_path);
