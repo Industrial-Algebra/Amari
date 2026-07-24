@@ -1,0 +1,241 @@
+catalog_version = "0.24.0"
+
+[[capabilities]]
+id = "amari:amari-core:product:geometric-product"
+name = "Geometric product"
+description = "Compose multivectors with the metric-aware Clifford geometric product."
+aliases = ["clifford product", "multivector product"]
+concepts = ["geometric algebra", "clifford algebra"]
+crate_refs = ["amari-core"]
+feature_refs = ["amari-core:std"]
+symbol_refs = ["amari_core::Multivector::geometric_product"]
+example_refs = ["amari-core:basic"]
+probe_refs = ["amari-probe:core:geometric-product:v1"]
+stability = "stable"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-core:rotor:rotation"
+name = "Rotor transformations"
+description = "Represent and apply geometric-algebra rotations with normalized even multivectors."
+aliases = ["rotor", "sandwich rotation"]
+concepts = ["rotation", "geometric algebra"]
+crate_refs = ["amari-core"]
+feature_refs = ["amari-core:std"]
+symbol_refs = ["amari_core::Rotor"]
+example_refs = ["amari-core:basic"]
+probe_refs = []
+stability = "stable"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-tropical:paths:shortest-path"
+name = "Tropical shortest paths"
+description = "Express bounded shortest-path and dynamic-programming problems over tropical semirings."
+aliases = ["min-plus paths", "max-plus paths"]
+concepts = ["tropical algebra", "shortest path", "dynamic programming"]
+crate_refs = ["amari-tropical"]
+feature_refs = ["amari-tropical:std"]
+symbol_refs = ["amari_tropical::TropicalMatrix"]
+example_refs = ["amari-tropical:max_plus_paths"]
+probe_refs = ["amari-probe:tropical:shortest-path:v1"]
+stability = "stable"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-tropical:sequence:viterbi"
+name = "Tropical Viterbi decoding"
+description = "Decode the most likely bounded state sequence with tropical matrix operations."
+aliases = ["viterbi", "sequence decoding"]
+concepts = ["hidden Markov model", "tropical algebra"]
+crate_refs = ["amari-tropical"]
+feature_refs = ["amari-tropical:std"]
+symbol_refs = ["amari_tropical::viterbi::TropicalViterbi::decode"]
+example_refs = []
+probe_refs = ["amari-probe:tropical:viterbi:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-dual:autodiff:forward-derivative"
+name = "Forward automatic differentiation"
+description = "Compute exact first derivatives alongside scalar evaluation with dual numbers."
+aliases = ["dual numbers", "forward-mode AD"]
+concepts = ["automatic differentiation", "derivative"]
+crate_refs = ["amari-dual"]
+feature_refs = ["amari-dual:std"]
+symbol_refs = ["amari_dual::DualNumber::derivative"]
+example_refs = ["amari-dual:gradient_seeding"]
+probe_refs = ["amari-probe:dual:polynomial-derivative:v1"]
+stability = "stable"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-network:paths:geometric-shortest-path"
+name = "Geometric network shortest path"
+description = "Find paths in networks whose nodes and edges carry geometric-algebra data."
+aliases = ["geometric graph path"]
+concepts = ["network analysis", "shortest path", "geometric algebra"]
+crate_refs = ["amari-network"]
+feature_refs = ["amari-network:std"]
+symbol_refs = ["amari_network::GeometricNetwork::shortest_path"]
+example_refs = ["amari-network:tropical_pathfinding"]
+probe_refs = ["amari-probe:network:shortest-path:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-optimization:multiobjective:pareto-front"
+name = "Pareto-front analysis"
+description = "Maintain deterministic non-dominated alternatives for bounded multi-objective problems."
+aliases = ["pareto optimization", "multi-objective ranking"]
+concepts = ["optimization", "pareto front"]
+crate_refs = ["amari-optimization"]
+feature_refs = ["amari-optimization:std"]
+symbol_refs = ["amari_optimization::multiobjective::ParetoFront"]
+example_refs = ["amari-optimization:multi_objective_example"]
+probe_refs = ["amari-probe:optimization:pareto-front:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-holographic:memory:retrieval"
+name = "Holographic memory retrieval"
+description = "Retrieve approximately bound values from a bounded vector-symbolic memory."
+aliases = ["VSA recall", "holographic retrieval"]
+concepts = ["vector symbolic architecture", "associative memory"]
+crate_refs = ["amari-holographic"]
+feature_refs = ["amari-holographic:std"]
+symbol_refs = ["amari_holographic::HolographicMemory::retrieve"]
+example_refs = []
+probe_refs = ["amari-probe:holographic:recall:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-holographic:algebra:superposition"
+name = "Additive holographic superposition"
+description = "Accumulate holographic candidates additively without attention-style normalization, with scalar weighting for memory traces."
+aliases = ["VSA superposition", "additive bundling"]
+concepts = ["vector symbolic architecture", "superposition"]
+crate_refs = ["amari-holographic"]
+feature_refs = ["amari-holographic:std"]
+symbol_refs = ["amari_holographic::BindingAlgebra::scale", "amari_holographic::BindingAlgebra::superpose"]
+example_refs = []
+probe_refs = ["amari-probe:holographic:superposition:v1"]
+stability = "experimental"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-cgt:nim:grundy-sum"
+name = "Nim and Grundy analysis"
+description = "Compute bounded impartial-game Grundy values and disjunctive sums."
+aliases = ["nimbers", "sprague-grundy"]
+concepts = ["combinatorial game theory", "nim"]
+crate_refs = ["amari-cgt"]
+feature_refs = ["amari-cgt:std"]
+symbol_refs = ["amari_cgt::GameArena::grundy"]
+example_refs = ["amari-cgt:nimbers"]
+probe_refs = ["amari-probe:cgt:nim-sum:v1"]
+stability = "stable"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-surreal:rational:exact-arithmetic"
+name = "Exact rational surreal arithmetic"
+description = "Represent and calculate arbitrary exact rational surreal values."
+aliases = ["rational surreal"]
+concepts = ["surreal numbers", "exact arithmetic"]
+crate_refs = ["amari-surreal"]
+feature_refs = ["amari-surreal:std"]
+symbol_refs = ["amari_surreal::RationalSurreal"]
+example_refs = []
+probe_refs = ["amari-probe:surreal:rational-arithmetic:v1"]
+stability = "stable"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-surcomplex:rational:exact-division"
+name = "Exact rational surcomplex division"
+description = "Perform exact complex-style arithmetic with rational surreal coefficients."
+aliases = ["surcomplex", "exact complex division"]
+concepts = ["surcomplex numbers", "exact arithmetic"]
+crate_refs = ["amari-surcomplex", "amari-surreal"]
+feature_refs = []
+symbol_refs = ["amari_surcomplex::RationalSurcomplex"]
+example_refs = []
+probe_refs = ["amari-probe:surcomplex:rational-division:v1"]
+stability = "stable"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-rewrite:trs:normalization"
+name = "Bounded term normalization"
+description = "Apply ordered term-rewriting rules under explicit step and size limits."
+aliases = ["term rewriting", "normal form"]
+concepts = ["term rewriting system", "normalization"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::trs::TermSystem::apply_once"]
+example_refs = ["amari-rewrite:symbolic_simplification"]
+probe_refs = ["amari-probe:rewrite:normalize:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:inverse:predecessors"
+name = "Bounded predecessor search"
+description = "Enumerate deterministic inverse-rewrite predecessors under explicit depth, frontier, node, and byte limits."
+aliases = ["inverse rewriting", "backward search"]
+concepts = ["term rewriting system", "predecessor search"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::inverse::BackwardSearch"]
+example_refs = ["amari-rewrite:inverse_search"]
+probe_refs = ["amari-probe:rewrite:predecessors:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:synthesis:infer-rule"
+name = "Rule inference from examples"
+description = "Infer a conservative rewrite rule from bounded positive examples."
+aliases = ["anti-unification", "rewrite synthesis"]
+concepts = ["program synthesis", "term rewriting"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::synthesis::infer_rule"]
+example_refs = ["amari-rewrite:infer_rule_from_examples"]
+probe_refs = ["amari-probe:rewrite:infer-rule:v1"]
+stability = "experimental"
+cost = "moderate"
+
+[[relations]]
+from = "amari:amari-core:product:geometric-product"
+to = "amari:amari-core:rotor:rotation"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-tropical:paths:shortest-path"
+to = "amari:amari-network:paths:geometric-shortest-path"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-dual:autodiff:forward-derivative"
+to = "amari:amari-optimization:multiobjective:pareto-front"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-holographic:algebra:superposition"
+to = "amari:amari-holographic:memory:retrieval"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-surreal:rational:exact-arithmetic"
+to = "amari:amari-surcomplex:rational:exact-division"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:synthesis:infer-rule"
+to = "amari:amari-rewrite:trs:normalization"
+kind = "produces_input_for"

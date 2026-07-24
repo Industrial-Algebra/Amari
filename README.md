@@ -1,8 +1,8 @@
-# Amari v0.23.0
+# Amari
 
 **Comprehensive Mathematical Computing Platform with Geometric Algebra, Differential Calculus, Measure Theory, Probability Theory, Functional Analysis, Algebraic Topology, Dynamical Systems, and Vector Symbolic Architectures**
 
-A unified mathematical computing library featuring geometric algebra, differential calculus, measure theory, probability theory on geometric spaces, functional analysis (Hilbert spaces, operators, spectral theory), algebraic topology (homology, persistent homology, Morse theory), dynamical systems analysis (ODE solvers, stability, bifurcations, chaos, Lyapunov exponents), relativistic physics, tropical algebra, automatic differentiation, holographic associative memory (Vector Symbolic Architectures), optical field operations for holographic displays, term rewriting (ARS/TRS), and information geometry. The library provides multi-GPU infrastructure with intelligent workload distribution and complete WebAssembly support for browser deployment. Version 0.23.0 releases the `RationalSurreal` exact rational scalar layer, experimental epsilon rational functions, the new `amari-surcomplex` exact rational complex crate, `WasmGenericMultivector` for arbitrary-signature Clifford algebra, and the `amari-rewrite` term-rewriting crate while preserving the v0.22.0 CGT/surreal surface and the v0.21.0 tropical/dual extension surface.
+A unified mathematical computing library featuring geometric algebra, differential calculus, measure theory, probability theory on geometric spaces, functional analysis (Hilbert spaces, operators, spectral theory), algebraic topology (homology, persistent homology, Morse theory), dynamical systems analysis (ODE solvers, stability, bifurcations, chaos, Lyapunov exponents), relativistic physics, tropical algebra, automatic differentiation, holographic associative memory (Vector Symbolic Architectures), optical field operations for holographic displays, term rewriting (ARS/TRS), and information geometry. The library provides multi-GPU infrastructure with intelligent workload distribution and complete WebAssembly support for browser deployment. The 0.24.0 cycle adds the agent-first `amari-discovery` runtime and canonical additive holographic `superpose`/`scale` operations while preserving the 0.23 exact rational, surcomplex, arbitrary-signature WASM, and rewrite foundations.
 
 [![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-Ready-blue.svg)](https://webassembly.org/)
@@ -20,6 +20,31 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **`amari-wasm`** exposes `WasmRationalSurreal`, `WasmRationalSurcomplex`, and `WasmExperimentalEpsilonRational` to TypeScript, with dynamic WASM version-gating in the examples suite.
 - **Arbitrary-signature WASM** — `WasmGenericMultivector(p, q, r)` lets users select any Clifford algebra signature at runtime. Operations for DIM ≤ 6 dispatch through a compile-time match table (84 signatures); larger dimensions fall back to a cached Cayley-table path. 8 fast-path aliases (`WasmMultivector300`, `210`, `310`, `200`, `030`, `410`, `500`, `110`) provide pre-built convenience for the most common physics/engineering signatures.
 - **`amari-rewrite`** is a new crate providing foundational ARS/TRS term-rewriting with `Rewritable` traits, path replacement, substitution/matching, bounded inverse rewriting, anti-unification, and rule inference scaffolding. Experimental `neural`, `smt`, and `amari-network` feature gates offer rewrite-search guidance hooks.
+
+## v0.24.0: Amari Discovery
+
+The `amari-discovery` crate is the sole owner of the installed
+`amari` command. It provides deterministic catalog exploration, bounded
+read-only Rust/Cargo and npm TypeScript inspection, holographic candidate
+recall, Pareto ranking, replayable integration plans, registered mathematical
+probes, and shared human/JSON/NDJSON contracts.
+
+From a source checkout, install and inspect the available surface with:
+
+```bash
+cargo install --path amari-discovery
+amari capabilities
+amari discover search tropical
+amari inspect .
+```
+
+Discovery never edits inspected projects or runs their compilers, build
+scripts, lifecycle scripts, arbitrary commands, providers, or network access.
+See the [Amari Discovery Guide](docs/guide/amari-discovery.md) for the human and
+agent loops, privacy boundary, probe isolation, catalog maintenance, and
+release-status caveats. The workspace and catalogs are synchronized to 0.24.0;
+source metadata alone is not proof of crates.io/npm publication, registry
+installation, or the `v0.24.0` tag.
 
 ## v0.22.0 Highlights
 
@@ -96,7 +121,7 @@ At the umbrella-crate level these are exposed through optional features:
 
 ```toml
 [dependencies]
-amari = { version = "0.23.0", features = ["surreal", "surcomplex"] }
+amari = { version = "0.24.0", features = ["surreal", "surcomplex"] }
 ```
 
 `surcomplex` implies `surreal`, which implies `cgt`. The `surreal` feature also gates `RationalSurreal` and the opt-in `experimental-epsilon` feature.
@@ -110,72 +135,72 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 # Complete library with all features
-amari = "0.23.0"
+amari = "0.24.0"
 
 # Or individual crates:
 
 # Core geometric algebra and mathematical foundations
-amari-core = "0.23.0"
+amari-core = "0.24.0"
 
 # Differential calculus with geometric algebra
-amari-calculus = "0.23.0"
+amari-calculus = "0.24.0"
 
 # Measure theory and integration
-amari-measure = "0.23.0"
+amari-measure = "0.24.0"
 
 # Probability theory on geometric algebra spaces
-amari-probabilistic = "0.23.0"
+amari-probabilistic = "0.24.0"
 
 # Functional analysis: Hilbert spaces, operators, spectral theory
-amari-functional = "0.23.0"
+amari-functional = "0.24.0"
 
 # Algebraic topology: homology, persistent homology, Morse theory
-amari-topology = "0.23.0"
+amari-topology = "0.24.0"
 
 # Dynamical systems: ODE solvers, stability, bifurcations, Lyapunov exponents
-amari-dynamics = "0.23.0"
+amari-dynamics = "0.24.0"
 
 # Vector Symbolic Architectures, holographic memory, and optical fields
-amari-holographic = "0.23.0"
+amari-holographic = "0.24.0"
 
 # High-precision relativistic physics
-amari-relativistic = { version = "0.23.0", features = ["high-precision"] }
+amari-relativistic = { version = "0.24.0", features = ["high-precision"] }
 
 # GPU acceleration (includes optical field GPU operations)
-amari-gpu = "0.23.0"
+amari-gpu = "0.24.0"
 
 # Optimization algorithms
-amari-optimization = "0.23.0"
+amari-optimization = "0.24.0"
 
 # Additional mathematical systems
-amari-tropical = "0.23.0"    # max-plus semiring + ordinal weights below ε₀
-amari-dual = "0.23.0"        # forward-mode AD + branch policies + static gradients
-amari-info-geom = "0.23.0"
-amari-automata = "0.23.0"
-amari-fusion = "0.23.0"
-amari-network = "0.23.0"
-amari-enumerative = "0.23.0"
-amari-cgt = "0.23.0"         # short combinatorial games + nimbers
-amari-surreal = "0.23.0"    # exact rational surreal scalars + epsilon rationals
-amari-surcomplex = "0.23.0" # exact rational surcomplex arithmetic
+amari-tropical = "0.24.0"    # max-plus semiring + ordinal weights below ε₀
+amari-dual = "0.24.0"        # forward-mode AD + branch policies + static gradients
+amari-info-geom = "0.24.0"
+amari-automata = "0.24.0"
+amari-fusion = "0.24.0"
+amari-network = "0.24.0"
+amari-enumerative = "0.24.0"
+amari-cgt = "0.24.0"         # short combinatorial games + nimbers
+amari-surreal = "0.24.0"    # exact rational surreal scalars + epsilon rationals
+amari-surcomplex = "0.24.0" # exact rational surcomplex arithmetic
 
 # Probabilistic verification contracts (SMT-LIB2, Monte Carlo)
-amari-flynn = "0.23.0"
+amari-flynn = "0.24.0"
 
 # Optional Rust-side WebAssembly crate
-amari-wasm = "0.23.0"
+amari-wasm = "0.24.0"
 ```
 
 ### JavaScript/TypeScript (WebAssembly)
 
 ```bash
-npm install @justinelliottcobb/amari-wasm@0.23.0
+npm install @justinelliottcobb/amari-wasm@0.24.0
 ```
 
 Or with yarn:
 
 ```bash
-yarn add @justinelliottcobb/amari-wasm@0.23.0
+yarn add @justinelliottcobb/amari-wasm@0.24.0
 ```
 
 ## Quick Start
@@ -839,9 +864,9 @@ The **[Amari Examples Suite](https://amari-math.netlify.app)** provides comprehe
 
 - **Interactive Playground**: Write and run JavaScript code with live WASM execution
 
-## Examples & Documentation (v0.23.0)
+## Examples & Documentation (v0.24.0)
 
-The examples suite is versioned for `0.23.0` and now includes release-focused rational surreal / surcomplex workflows alongside the v0.22 CGT/surreal workflows and the broader mathematical catalog:
+The examples suite is versioned for `0.24.0` and includes discovery-era catalog workflows plus release-focused rational surreal / surcomplex examples, v0.22 CGT/surreal workflows, and the broader mathematical catalog:
 
 - **CGT 0.22.0 WASM examples**: `WasmCgtArena`, short-game cuts, outcomes, comparison, nimbers, and `WasmGameInspection`
 - **Surreal 0.22.0 WASM examples**: `WasmDyadic`, `WasmShortSurreal`, exact dyadic arithmetic, checked division, and numeric-game conversion
@@ -999,6 +1024,7 @@ The library is optimized for high-performance applications:
 - **[API Reference](examples/DOCUMENTATION.md)**: Detailed API documentation
 - **[Migration Guide](docs/archive/MIGRATION_v0.12.0.md)**: Migrating from v0.11.x to v0.12.0+
 - **[Changelog](CHANGELOG.md)**: Version history and changes
+- **[Amari Discovery Guide](docs/guide/amari-discovery.md)**: Human and agent discovery, planning, probes, safety, and contributor workflows
 - **[docs.rs](https://docs.rs/amari)**: Complete API reference
 
 ## Contributing

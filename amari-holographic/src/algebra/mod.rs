@@ -16,12 +16,13 @@
 //! The key insight is that all these algebras share common operations:
 //!
 //! - **Binding** (`⊛`): Associate two representations (like key-value pairs)
-//! - **Bundling** (`⊕`): Superpose multiple representations
+//! - **Superposition** (`+`): Accumulate representations additively
+//! - **Bundling** (`⊕`): Select or clean up representations with bounded magnitude
 //! - **Inverse** (`⁻¹`): Enable unbinding to retrieve associated values
 //! - **Similarity**: Measure closeness between representations
 //!
-//! The [`BindingAlgebra`] trait abstracts these operations, allowing
-//! [`TropicalDual<A>`] to be generic over the underlying algebra.
+//! The [`BindingAlgebra`] trait abstracts these operations, allowing memory
+//! and retrieval algorithms to be generic over the underlying algebra.
 //!
 //! # Capacity Scaling
 //!
@@ -182,7 +183,7 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
 
     /// Create the additive zero element.
     ///
-    /// This is the element `0` such that `x.bundle(&0, _) ≈ x` for bundling.
+    /// This is the element `0` such that `x.superpose(&0)? = x`.
     fn zero() -> Self;
 
     /// Bind two elements (association/structure-creation).
@@ -222,7 +223,12 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
         Ok(inv.bind(other))
     }
 
-    /// Bundle two elements (superposition/aggregation).
+    /// Bundle two elements for attention or cleanup.
+    ///
+    /// Bundling keeps magnitude bounded and may normalize or select between
+    /// candidates. Use [`superpose`](Self::superpose) instead when building an
+    /// additive holographic trace whose magnitude must grow with accumulated
+    /// evidence.
     ///
     /// The `beta` parameter controls soft vs hard bundling:
     /// - `beta = 1.0`: Soft bundling (weighted average / logsumexp)
@@ -230,6 +236,67 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
     ///
     /// The result should be similar to both inputs.
     fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self>;
+
+    /// Additively superpose two elements for holographic accumulation.
+    ///
+    /// This operation represents coefficient-wise addition and is intended for
+    /// memory traces such as `T = Σ keyᵢ ⊛ valueᵢ`. Unlike
+    /// [`bundle`](Self::bundle), it does not normalize or apply attention
+    /// weights, so repeated superposition preserves earlier contributions and
+    /// allows the trace magnitude to grow.
+    ///
+    /// The provided implementation reconstructs `Self` from the sum of its
+    /// coefficient representations. Existing implementors therefore receive
+    /// additive behavior without defining another required trait method.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`AlgebraError::DimensionMismatch`] when the operands or their
+    /// coefficient representations have different dimensions. Other errors are
+    /// propagated from [`from_coefficients`](Self::from_coefficients).
+    fn superpose(&self, other: &Self) -> AlgebraResult<Self> {
+        if self.dimension() != other.dimension() {
+            return Err(AlgebraError::DimensionMismatch {
+                expected: self.dimension(),
+                actual: other.dimension(),
+            });
+        }
+
+        let left = self.to_coefficients();
+        let right = other.to_coefficients();
+        if left.len() != right.len() {
+            return Err(AlgebraError::DimensionMismatch {
+                expected: left.len(),
+                actual: right.len(),
+            });
+        }
+        let coefficients: Vec<f64> = left
+            .into_iter()
+            .zip(right)
+            .map(|(left, right)| left + right)
+            .collect();
+        Self::from_coefficients(&coefficients)
+    }
+
+    /// Multiply every coefficient by `factor` for weighted superposition.
+    ///
+    /// Weighted accumulation composes this helper with
+    /// [`superpose`](Self::superpose). Trait-qualified calls such as
+    /// `<A as BindingAlgebra>::scale(binding, weight)` avoid shadowing by
+    /// concrete types that already expose an infallible inherent `scale`.
+    ///
+    /// # Errors
+    ///
+    /// Propagates coefficient reconstruction errors from
+    /// [`from_coefficients`](Self::from_coefficients).
+    fn scale(&self, factor: f64) -> AlgebraResult<Self> {
+        let coefficients: Vec<f64> = self
+            .to_coefficients()
+            .into_iter()
+            .map(|coefficient| coefficient * factor)
+            .collect();
+        Self::from_coefficients(&coefficients)
+    }
 
     /// Bundle multiple elements efficiently.
     ///

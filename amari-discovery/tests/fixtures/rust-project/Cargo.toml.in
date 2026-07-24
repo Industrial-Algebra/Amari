@@ -1,0 +1,60 @@
+[package]
+name = "rust-project"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Fixture project for Amari cargo inspection tests"
+links = "rust-project-native"
+
+[[bench]]
+name = "speed_bench"
+path = "benches/speed_bench.rs"
+harness = false
+
+[[bench]]
+name = "correctness_bench"
+path = "benches/correctness_bench.rs"
+
+[dependencies]
+amari = { workspace = true }
+amari-core = { workspace = true, features = ["std"] }
+amari-tropical = { workspace = true }
+renamed-tropical = { package = "amari-tropical", workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+amari-cgt = { workspace = true }
+
+[build-dependencies]
+amari-dual = { workspace = true, optional = true }
+
+[target.'cfg(unix)'.dependencies]
+amari-network = { workspace = true }
+
+[features]
+default = ["build-dual"]
+build-dual = ["dep:amari-dual"]
+
+[workspace]
+members = ["member-a", "member-b"]
+
+[workspace.package]
+version = "__AMARI_VERSION__"
+authors = ["Amari Contributors"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.75"
+
+[workspace.dependencies]
+amari = { version = "__AMARI_VERSION__" }
+amari-core = { version = "__AMARI_VERSION__" }
+amari-tropical = { version = "__AMARI_VERSION__" }
+amari-dual = { version = "__AMARI_VERSION__" }
+amari-cgt = { version = "__AMARI_VERSION__" }
+amari-network = { version = "__AMARI_VERSION__" }
+serde = { version = "1.0", features = ["derive"] }
+# Alias-based bases for renamed dependencies
+renamed-tropical = { package = "amari-tropical", version = "__AMARI_VERSION__" }
+renamed-core = { package = "amari-core", version = "__AMARI_VERSION__" }

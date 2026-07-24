@@ -13,16 +13,20 @@ jobs:
   test-native:
     name: Test Suite (Native Precision)
     runs-on: ubuntu-latest
+    env:
+      # Override rust-toolchain.toml and pin nightly around rust-lang/rust# ICEs.
+      # Keep matrix.rust as the display key so required check names stay stable.
+      RUSTUP_TOOLCHAIN: ${{ matrix.rust == 'nightly' && 'nightly-2026-07-13' || 'stable' }}
     strategy:
       matrix:
         rust: [stable, nightly]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: ${{ matrix.rust == 'nightly' && 'nightly-2026-07-13' || 'stable' }}
           components: rustfmt, clippy
 
       - name: Cache cargo registry
@@ -49,7 +53,7 @@ jobs:
           sudo apt-get install -y libgmp-dev libmpfr-dev
 
       - name: Run tests with native precision
-        run: cargo test --workspace --features native-precision
+        run: cargo test --workspace --exclude amari-discovery --features native-precision
 
       - name: Run clippy
         run: cargo clippy --workspace --features native-precision -- -D warnings
@@ -63,11 +67,32 @@ jobs:
         run: ./scripts/verify-workflow-crates.sh
         if: matrix.rust == 'stable'
 
+      - name: Verify discovery CI sharding
+        run: python3 scripts/verify-discovery-ci-sharding.py
+        if: matrix.rust == 'stable'
+
+      - name: Verify catalog structural drift
+        run: |
+          echo "==> Regenerating structural catalog"
+          cargo run -p amari-discovery --example generate_catalog -- .
+          echo "==> Checking for drift in catalog/generated.json"
+          if ! git diff --exit-code amari-discovery/catalog/generated.json; then
+            echo ""
+            echo "ERROR: catalog/generated.json is out of sync. Run:"
+            echo "  cargo run -p amari-discovery --example generate_catalog -- ."
+            echo "and commit the updated catalog/generated.json."
+            exit 1
+          fi
+          echo "==> Structural catalog is up to date"
+        if: matrix.rust == 'stable'
+
   test-wasm-compat:
     name: Test Suite (WASM-Compatible Precision)
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -81,7 +106,7 @@ jobs:
           key: ${{ runner.os }}-cargo-wasm-compat-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests with WASM-compatible precision
-        run: cargo test --workspace --features high-precision
+        run: cargo test --workspace --exclude amari-discovery --features high-precision
 
       - name: Test individual crates
         run: |
@@ -94,8 +119,10 @@ jobs:
   wasm:
     name: WASM Build
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -197,12 +224,28 @@ jobs:
           name: wasm-package
           path: amari-wasm/pkg/
 
+      - name: Check WASM surface drift
+        run: |
+          echo "==> Regenerating WASM discovery surface"
+          bash scripts/generate-discovery-wasm-surface.sh
+          echo "==> Checking for drift in catalog/generated-wasm.json"
+          if ! git diff --exit-code amari-discovery/catalog/generated-wasm.json; then
+            echo ""
+            echo "ERROR: catalog/generated-wasm.json is out of sync with the authoritative"
+            echo "wasm-bindgen surface. Run scripts/generate-discovery-wasm-surface.sh and"
+            echo "commit the updated catalog/generated-wasm.json."
+            exit 1
+          fi
+          echo "==> WASM surface catalog is up to date"
+
   benchmark:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    env:
+      RUSTUP_TOOLCHAIN: stable
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable

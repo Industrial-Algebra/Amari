@@ -1,0 +1,1 @@
+// Fixture WASM library target.

@@ -217,7 +217,7 @@ Candidate expansion areas:
 
 ## Post-0.20.0 planning note
 
-The 0.20.0 goal is the validated `amari-gpu` stabilization baseline. Follow-up GPU issues are deferred to the 0.24.0 cycle rather than a planned 0.20.1 fast-follow:
+The 0.20.0 goal is the validated `amari-gpu` stabilization baseline. Follow-up GPU issues are deferred to the 0.26.0 GPU/Borsalino modernization cycle rather than a planned 0.20.1 fast-follow, after the 0.25.0 rewrite/inverse research cycle:
 
 - #137 benchmark CPU baseline completion
 - #138 release-mode/Criterion benchmark pass

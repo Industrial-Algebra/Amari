@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: dtolnay/rust-toolchain@stable
       with:
         components: rustfmt, clippy
@@ -37,7 +37,7 @@ jobs:
       matrix:
         crate: [amari-core, amari-tropical, amari-dual, amari-info-geom]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
 
@@ -52,7 +52,7 @@ jobs:
       matrix:
         crate: [amari-fusion, amari-enumerative, amari-automata, amari-flynn-macros, amari-flynn, amari-cgt, amari-surreal]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
 
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
 
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
 
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
 
@@ -108,7 +108,7 @@ jobs:
     timeout-minutes: 10
     needs: [code-quality, core-algebra, advanced-features, formal-verification]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
 

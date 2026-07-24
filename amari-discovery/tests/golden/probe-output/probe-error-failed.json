@@ -1,0 +1,7 @@
+{
+  "details": {
+    "exit_code": 6
+  },
+  "kind": "probe_failed",
+  "message": "probe worker exited with code 6"
+}

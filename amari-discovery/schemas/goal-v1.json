@@ -1,0 +1,27 @@
+{
+  "$id": "https://industrialalgebra.com/schemas/amari.discovery/goal/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "constraints": {
+      "items": {
+        "maxLength": 4096,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 64,
+      "type": "array"
+    },
+    "statement": {
+      "maxLength": 65536,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "statement"
+  ],
+  "title": "Amari Discovery Goal v1",
+  "type": "object",
+  "x-amari-protocol-version": "amari.discovery/v1"
+}

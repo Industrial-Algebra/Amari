@@ -1,0 +1,39 @@
+{
+  "$id": "https://industrialalgebra.com/schemas/amari.discovery/request/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "arguments": {
+      "maxProperties": 32,
+      "type": "object"
+    },
+    "command": {
+      "enum": [
+        "capabilities",
+        "discover.search",
+        "discover.detail",
+        "discover.graph",
+        "discover.example",
+        "inspect",
+        "recommend",
+        "plan",
+        "probe.list",
+        "probe.describe",
+        "probe.run",
+        "schema"
+      ],
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "amari.discovery/v1"
+    }
+  },
+  "required": [
+    "schema_version",
+    "command",
+    "arguments"
+  ],
+  "title": "Amari Discovery Request v1",
+  "type": "object",
+  "x-amari-protocol-version": "amari.discovery/v1"
+}

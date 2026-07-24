@@ -9,18 +9,29 @@ This directory contains comprehensive documentation for the Amari mathematical c
 - **[Main README](../README.md)** - Project overview and quick start
 - **[Changelog](../CHANGELOG.md)** - Version history and changes
 - **[Version Management](../VERSION_MANAGEMENT.md)** - Version synchronization procedures
+- **[Amari Discovery Guide](guide/amari-discovery.md)** - Human and agent discovery, planning, probes, protocol, privacy, and contributor workflows
+
+### 📘 Guides
+
+- **[Amari Discovery](guide/amari-discovery.md)** - Complete `amari` command workflow and safety model for the 0.24.0 discovery runtime
 
 ### 📦 Releases
 
 Current release process documentation:
 
 - **[v0.9.8 Release Process](releases/RELEASE_PROCESS_v0.9.8.md)** - Current release procedures and lessons learned
+- **[v0.24.0 Aggregate Release Gates](releases/v0.24.0-aggregate-release-gates.md)** - Feature-branch evidence, hold conditions, publication order, verified packaging, and post-publication acceptance
 - **[v0.21.0 Tropical / Dual Release Prep](releases/v0.21.0-tropical-dual-release-prep.md)** - Release notes, PR summary, publish-order notes, and hold conditions for the `0.21.0` cycle
 
 ### 🗺️ Roadmaps
 
 Current planning and release-roadmap documentation:
 
+- **[0.20.0 → 0.26.0 Release Sequence](roadmap/V0_20_0_TO_V0_26_0_RELEASE_SEQUENCE.md)** - 0.24 discovery/holographic release, 0.25 comprehensive rewrite/inverse research, and 0.26 GPU/Borsalino modernization
+- **[v0.24.0 amari-discovery Design](plans/2026-07-09-amari-discovery-design.md)** - Agent-first discovery, planning, and bounded probe runtime installed as the `amari` command
+- **[v0.25.0 amari-rewrite Decision Record](plans/2026-07-24-amari-rewrite-0.25-decisions.md)** - Approved comprehensive bounded rewrite and inverse-rewrite scope
+- **[v0.25.0 amari-rewrite/Inverse Design](plans/2026-07-24-amari-rewrite-inverse-expansion-design.md)** - Relational inverses, residual reversibility, language preimages, analysis, learned guidance, SMT, and discovery boundaries
+- **[v0.25.0 amari-rewrite/Inverse Implementation Plan](plans/2026-07-24-amari-rewrite-inverse-expansion-implementation-plan.md)** - 56 RED→GREEN tasks across eleven grouped cohorts
 - **[v0.23.0 Rational Surreal / Surcomplex Roadmap](roadmap/v0.23.0-rational-surreal-surcomplex-roadmap.md)** - Planning for the `RationalSurreal`, epsilon rational, and `amari-surcomplex` cycle
 - **[v0.23.0 Rational Surreal / Surcomplex Checklist](roadmap/v0.23.0-rational-surreal-surcomplex-checklist.md)** - Release gates and publish-order audit for the `0.23.0` cycle
 - **[v0.21.0 Tropical / Dual Roadmap](roadmap/v0.21.0-tropical-dual-roadmap.md)** - Planning for the optimization-oriented `amari-tropical` / `amari-dual` cycle
@@ -116,6 +127,7 @@ Historical and outdated documentation (kept for reference):
 
 Individual crates have their own documentation:
 
+- **[amari-discovery README](../amari-discovery/README.md)** - Agent-first discovery and planning runtime
 - **[amari-network README](../amari-network/README.md)** - Geometric network analysis
 - **[amari-network Mathematical Foundations](../amari-network/MATHEMATICAL_FOUNDATIONS.md)** - Mathematical background
 - **[amari-optimization README](../amari-optimization/README.md)** - Optimization algorithms

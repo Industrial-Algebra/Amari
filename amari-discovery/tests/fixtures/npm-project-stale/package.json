@@ -1,0 +1,8 @@
+{
+  "name": "amari-npm-project-stale",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@justinelliottcobb/amari-wasm": "0.19.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "details": {
+    "exit_code": 2
+  },
+  "kind": "invalid_input",
+  "message": "invalid input: unknown probe `amari-probe:tropical:does-not-exist:v1`"
+}

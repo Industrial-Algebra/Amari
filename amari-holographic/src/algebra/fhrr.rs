@@ -405,6 +405,18 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
         }
     }
 
+    fn superpose(&self, other: &Self) -> AlgebraResult<Self> {
+        // FHRR's public coefficient representation intentionally exposes only
+        // real parts, so use the complete complex representation here.
+        Ok(FHRRAlgebra::add(self, other))
+    }
+
+    fn scale(&self, factor: f64) -> AlgebraResult<Self> {
+        // Preserve both real and imaginary components; the coefficient default
+        // cannot reconstruct FHRR's imaginary parts.
+        Ok(FHRRAlgebra::scale(self, factor))
+    }
+
     fn similarity(&self, other: &Self) -> f64 {
         let self_norm = self.compute_norm();
         let other_norm = other.compute_norm();

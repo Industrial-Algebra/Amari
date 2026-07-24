@@ -1,0 +1,159 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+//! Structured failures for discovery operations.
+
+use thiserror::Error;
+
+/// A result produced by the discovery engine.
+pub type DiscoveryResult<T> = Result<T, DiscoveryError>;
+
+/// A process-level failure produced by the discovery engine.
+///
+/// Domain outcomes such as insufficient evidence are represented by
+/// [`crate::DiscoveryOutcome`], not by this error type.
+#[derive(Debug, Error)]
+pub enum DiscoveryError {
+    /// A protocol identifier is malformed or uses the wrong namespace.
+    #[error("invalid identifier `{value}`: {reason}")]
+    InvalidId {
+        /// The rejected identifier.
+        value: String,
+        /// The validation failure.
+        reason: String,
+    },
+
+    /// User or adapter input is malformed.
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
+
+    /// The generated or curated catalog violates an invariant.
+    #[error("catalog corruption: {0}")]
+    CatalogCorruption(String),
+
+    /// Project inspection could not be completed safely.
+    #[error("inspection failed: {0}")]
+    InspectionFailure(String),
+
+    /// A known probe has no executable adapter in this build.
+    #[error("probe unavailable: {0}")]
+    ProbeUnavailable(String),
+
+    /// A registered probe failed during execution.
+    #[error("probe failed: {0}")]
+    ProbeFailed(String),
+
+    /// The isolated probe worker terminated without an exit code.
+    #[error("probe worker crashed (signal: {signal:?})")]
+    ProbeWorkerCrashed {
+        /// Terminating signal on platforms that expose it.
+        signal: Option<i32>,
+    },
+
+    /// The isolated probe worker returned a nonzero exit code.
+    #[error("probe worker exited with code {code}")]
+    ProbeWorkerExited {
+        /// Stable process exit code reported by the operating system.
+        code: i32,
+    },
+
+    /// The isolated probe worker returned an invalid framed response.
+    #[error("probe worker protocol failure: {0}")]
+    ProbeWorkerProtocol(String),
+
+    /// A replay-required hash differs from the plan artifact.
+    #[error("replay drift for {field}: expected `{expected}`, found `{actual}`")]
+    ReplayDrift {
+        /// Stable hash field name.
+        field: String,
+        /// Hash stored in the plan artifact.
+        expected: String,
+        /// Hash observed for the replay request.
+        actual: String,
+    },
+
+    /// A bounded operation exceeded a declared resource limit.
+    #[error("resource limit exceeded: {0}")]
+    LimitExceeded(String),
+
+    /// A required read or write operation failed.
+    #[error("I/O failure: {0}")]
+    Io(#[from] std::io::Error),
+
+    /// JSON protocol encoding or decoding failed.
+    #[error("serialization failure: {0}")]
+    Serialization(#[from] serde_json::Error),
+
+    /// A valid command is not implemented in this build.
+    #[error("not implemented: {0}")]
+    NotImplemented(String),
+
+    /// An internal invariant failed without a more specific classification.
+    #[error("internal failure: {0}")]
+    Internal(String),
+}
+
+impl DiscoveryError {
+    /// Returns every stable machine-readable error kind and process exit code.
+    pub const fn exit_codes() -> &'static [(&'static str, u8)] {
+        &[
+            ("invalid_id", 2),
+            ("invalid_input", 2),
+            ("catalog_corruption", 3),
+            ("inspection_failure", 4),
+            ("probe_unavailable", 5),
+            ("probe_failed", 6),
+            ("limit_exceeded", 7),
+            ("io", 8),
+            ("serialization", 9),
+            ("not_implemented", 69),
+            ("internal", 70),
+        ]
+    }
+
+    /// Creates an invalid-identifier error.
+    pub fn invalid_id(value: impl Into<String>, reason: impl Into<String>) -> Self {
+        Self::InvalidId {
+            value: value.into(),
+            reason: reason.into(),
+        }
+    }
+
+    /// Returns the stable machine-readable error kind.
+    pub const fn kind(&self) -> &'static str {
+        match self {
+            Self::InvalidId { .. } => "invalid_id",
+            Self::InvalidInput(_) | Self::ReplayDrift { .. } => "invalid_input",
+            Self::CatalogCorruption(_) => "catalog_corruption",
+            Self::InspectionFailure(_) => "inspection_failure",
+            Self::ProbeUnavailable(_) => "probe_unavailable",
+            Self::ProbeFailed(_)
+            | Self::ProbeWorkerCrashed { .. }
+            | Self::ProbeWorkerExited { .. }
+            | Self::ProbeWorkerProtocol(_) => "probe_failed",
+            Self::LimitExceeded(_) => "limit_exceeded",
+            Self::Io(_) => "io",
+            Self::Serialization(_) => "serialization",
+            Self::NotImplemented(_) => "not_implemented",
+            Self::Internal(_) => "internal",
+        }
+    }
+
+    /// Returns the stable process exit code for this failure class.
+    pub const fn exit_code(&self) -> u8 {
+        match self {
+            Self::InvalidId { .. } | Self::InvalidInput(_) | Self::ReplayDrift { .. } => 2,
+            Self::CatalogCorruption(_) => 3,
+            Self::InspectionFailure(_) => 4,
+            Self::ProbeUnavailable(_) => 5,
+            Self::ProbeFailed(_)
+            | Self::ProbeWorkerCrashed { .. }
+            | Self::ProbeWorkerExited { .. }
+            | Self::ProbeWorkerProtocol(_) => 6,
+            Self::LimitExceeded(_) => 7,
+            Self::Io(_) => 8,
+            Self::Serialization(_) => 9,
+            Self::NotImplemented(_) => 69,
+            Self::Internal(_) => 70,
+        }
+    }
+}

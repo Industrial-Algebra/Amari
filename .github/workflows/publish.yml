@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -53,7 +53,14 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Run tests
-        run: cargo test --all-features --workspace
+        # Keep legacy opt-in GPU hardware execution out of the headless release
+        # validator until the planned 0.26 wgpu modernization. The complete
+        # default workspace and the 0.24 discovery/holographic feature surfaces
+        # still run, serialized to avoid concurrent EGL context initialization.
+        run: |
+          cargo test --workspace -- --test-threads=1
+          cargo test -p amari-discovery --all-features -- --test-threads=1
+          cargo test -p amari-holographic --all-features -- --test-threads=1
 
       - name: Run integration tests
         run: ./run_all_tests.sh
@@ -65,7 +72,7 @@ jobs:
     if: ${{ github.event.inputs.publish_crates == 'true' || startsWith(github.ref, 'refs/tags/v') }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -122,6 +129,7 @@ jobs:
             "amari-rewrite"
             "amari-gpu"
             "amari-optimization"
+            "amari-discovery"
             "amari"
           )
 
@@ -171,7 +179,7 @@ jobs:
     if: ${{ github.event.inputs.publish_npm == 'true' || startsWith(github.ref, 'refs/tags/v') }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -213,7 +221,7 @@ jobs:
     if: ${{ github.event.inputs.publish_npm == 'true' || startsWith(github.ref, 'refs/tags/v') }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable

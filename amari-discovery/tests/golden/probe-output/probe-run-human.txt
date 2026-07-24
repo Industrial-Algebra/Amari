@@ -1,0 +1,28 @@
+Probe: amari-probe:tropical:viterbi:v1
+Input schema: amari.discovery/probe/tropical-viterbi/input/v1
+Output schema: amari.discovery/probe/tropical-viterbi/output/v1
+Backend: cpu
+Isolation: process
+Deterministic: yes
+Hard timeout: yes
+Crash isolation: yes
+Timeout (millis): 5000
+Duration (micros): <duration_micros>
+Resources:
+  operations: 14
+  nodes: 14
+  iterations: 3
+  bytes: 131
+Tool version: <tool_version>
+Catalog version: <catalog_version>
+Catalog hash: <catalog_hash>
+Project hash: none
+Input hash: 75453f57577a95c3134328e04aa4db014d7561cd3e67414bdaf01b875b56d723
+Seed: none
+Validated assumptions:
+  none
+Refuted assumptions:
+  none
+Warnings:
+  none
+Result: {"path":[0,0,0],"score":-7.0}

@@ -420,10 +420,22 @@ pub trait BindingAlgebra: Clone + Send + Sync {
     fn random_versor(num_factors: usize) -> Self;
 
     // Provided methods
+    fn superpose(&self, other: &Self) -> AlgebraResult<Self>;
+    fn scale(&self, factor: f64) -> AlgebraResult<Self>;
     fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self>;
     fn estimate_snr(&self, num_items: usize) -> f64;
     fn theoretical_capacity(&self) -> usize;
 }
+```
+
+Use `superpose` for additive accumulation such as a holographic memory trace
+`T = Σ keyᵢ ⊛ valueᵢ`; its magnitude grows as evidence is added. Use `bundle`
+for attention or cleanup, where softmax weighting keeps the result bounded.
+Weighted accumulation composes `scale` and `superpose`:
+
+```rust
+let weighted = BindingAlgebra::scale(&binding, weight)?;
+trace = BindingAlgebra::superpose(&trace, &weighted)?;
 ```
 
 ### AlgebraConfig

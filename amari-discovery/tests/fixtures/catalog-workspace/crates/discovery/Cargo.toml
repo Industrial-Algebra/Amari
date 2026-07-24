@@ -1,0 +1,5 @@
+[package]
+name = "amari-discovery"
+version.workspace = true
+description = "Excluded discovery package"
+license.workspace = true
