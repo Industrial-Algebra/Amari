@@ -25,7 +25,7 @@
 - Catalog references must be validated against generated structural records.
 - Every public item needs rustdoc; all fallible APIs document errors.
 - Commit after every task or tightly coupled pair of steps.
-- Do not implement unresolved `amari-rewrite` decisions from `docs/plans/2026-07-09-amari-rewrite-0.24-decisions.md` here, except using the existing stable rewrite API.
+- Do not implement the separately planned 0.25 `amari-rewrite` research/inverse expansion here; use only the shipped stable rewrite API.
 
 ---
 
@@ -1360,7 +1360,7 @@ cargo test -p amari-discovery --test catalog_generation --test catalog_integrity
 - Modify: `README.md`
 - Modify: `CHANGELOG.md`
 - Modify: `docs/README.md`
-- Modify: `docs/roadmap/V0_20_0_TO_V0_25_0_RELEASE_SEQUENCE.md` only for verified status updates
+- Modify: `docs/roadmap/V0_20_0_TO_V0_26_0_RELEASE_SEQUENCE.md` only for verified status updates
 
 **Steps:**
 
@@ -1395,7 +1395,7 @@ cargo test -p amari-discovery --test catalog_generation --test catalog_integrity
 
 **Steps:**
 
-1. Document that the workspace version moves to 0.24.0 only after discovery/superpose and the separately decided rewrite expansion merge, the catalog is regenerated, and no stale internal 0.23 constraints remain.
+1. Document that the workspace version moves to 0.24.0 after discovery/superpose release readiness, catalog regeneration, and removal of stale internal 0.23 constraints. The rewrite/inverse research expansion is a separate 0.25 concern.
 2. Verify the local install contract against workspace paths, then inspect the unverified archive:
 
 ```bash
@@ -1450,11 +1450,11 @@ RUSTDOCFLAGS="-D warnings" cargo doc -p amari-discovery -p amari-holographic --a
 
 ### Task 31: Mandatory aggregate 0.24.0 release acceptance (post-merge)
 
-**Context:** Execute on the aggregate release branch only after discovery/superpose and the separately decided rewrite expansion have merged.
+**Context:** Execute on the aggregate release branch after discovery/superpose release readiness has merged. Do not include the 0.25 rewrite/inverse expansion.
 
 **Steps:**
 
-1. Rebase/merge all required 0.24 work; verify Task 10 is the sole canonical code implementation and PR #176 contributes documentation/handoff only.
+1. Rebase/merge all required 0.24 discovery/superposition work; verify Task 10 is the sole canonical code implementation and PR #176 contributes documentation/handoff only.
 2. Run `./scripts/version-sync.sh set 0.24.0`, audit all internal constraints/fixtures, and verify 0.24.0.
 3. Regenerate Rust and authoritative wasm-pack/d.ts catalogs; require zero drift and catalog identity 0.24.0.
 4. Run full workspace fmt/test/clippy/docs and all discovery feature combinations.
@@ -1488,7 +1488,7 @@ This task is mandatory before claiming v0.24.0 release acceptance; feature-branc
 
 ## Aggregate v0.24.0 release acceptance checklist
 
-- [ ] All required 0.24 branches are merged, including rewrite expansion and one canonical superpose implementation.
+- [ ] All required 0.24 discovery/release-readiness branches and one canonical superpose implementation are merged; no 0.25 rewrite/inverse work is included.
 - [ ] Workspace and package metadata are synchronized to 0.24.0 with no stale internal constraints.
 - [ ] Rust and generated WASM catalogs are regenerated at catalog identity 0.24.0.
 - [ ] Full `cargo package` verification succeeds after direct 0.24 dependencies are available.
