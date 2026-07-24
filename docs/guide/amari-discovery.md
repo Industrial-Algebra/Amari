@@ -7,8 +7,8 @@ candidate retrieval and ranking, replayable plans, and registered mathematical
 probes.
 
 This guide describes the 0.24.0 feature surface. The workspace and catalogs are
-synchronized to the release candidate, but passing source checks is not a
-0.24.0 publication claim; package verification, publication, registry
+synchronized to 0.24.0, but passing source checks is not proof of package
+publication; package verification, publication, registry
 installation, and tagging remain separate release gates. Every `bash`
 block in this guide is runnable in the stated checkout or inspected-project
 context. Contributor commands with additional WASM/toolchain prerequisites use
