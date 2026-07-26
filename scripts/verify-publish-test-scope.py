@@ -57,4 +57,16 @@ if clippy_commands != expected_clippy:
         f"lint exception, found: {clippy_commands!r}"
     )
 
-print("publish test scope excludes amari-gpu runtime execution")
+release_toolchain = "uses: dtolnay/rust-toolchain@1.97.1"
+toolchain_uses = [
+    line.strip()
+    for line in workflow.splitlines()
+    if line.strip().startswith("uses: dtolnay/rust-toolchain@")
+]
+if toolchain_uses != [release_toolchain] * 4:
+    raise AssertionError(
+        "all and only the four publish jobs must pin the verified Rust 1.97.1 "
+        f"toolchain; found: {toolchain_uses!r}"
+    )
+
+print("publish test scope and release toolchain are pinned")
