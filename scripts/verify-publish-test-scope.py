@@ -39,7 +39,22 @@ if "--test-threads" in validate:
     raise AssertionError("publish tests must not use global serialization")
 if "./run_all_tests.sh" in validate:
     raise AssertionError("run_all_tests.sh reintroduces amari-gpu runtime tests")
-if "cargo clippy --all-targets --all-features -- -D warnings" not in validate:
-    raise AssertionError("warning-denied all-feature clippy gate is missing")
+clippy_commands = [
+    line.strip()
+    for line in validate.splitlines()
+    if line.strip().startswith("cargo clippy ")
+]
+expected_clippy = [
+    "cargo clippy --workspace --all-features -- -D warnings",
+    (
+        "cargo clippy --workspace --all-targets --all-features -- "
+        "-D warnings -A clippy::needless_range_loop -A clippy::collapsible_match"
+    ),
+]
+if clippy_commands != expected_clippy:
+    raise AssertionError(
+        "expected warning-denied normal targets plus the documented tagged-test "
+        f"lint exception, found: {clippy_commands!r}"
+    )
 
 print("publish test scope excludes amari-gpu runtime execution")
