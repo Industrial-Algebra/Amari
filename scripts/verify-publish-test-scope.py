@@ -57,11 +57,14 @@ if clippy_commands != expected_clippy:
         f"lint exception, found: {clippy_commands!r}"
     )
 
+active_lines = [
+    line.split("#", 1)[0].strip()
+    for line in workflow.splitlines()
+    if line.split("#", 1)[0].strip()
+]
 release_toolchain = "uses: dtolnay/rust-toolchain@1.97.1"
 toolchain_uses = [
-    line.strip()
-    for line in workflow.splitlines()
-    if line.strip().startswith("uses: dtolnay/rust-toolchain@")
+    line for line in active_lines if line.startswith("uses: dtolnay/rust-toolchain@")
 ]
 if toolchain_uses != [release_toolchain] * 4:
     raise AssertionError(
@@ -69,4 +72,21 @@ if toolchain_uses != [release_toolchain] * 4:
         f"toolchain; found: {toolchain_uses!r}"
     )
 
-print("publish test scope and release toolchain are pinned")
+workflow_preamble = workflow.split("\njobs:", 1)[0]
+preamble_lines = [
+    line.split("#", 1)[0].strip()
+    for line in workflow_preamble.splitlines()
+    if line.split("#", 1)[0].strip()
+]
+release_override = "RUSTUP_TOOLCHAIN: 1.97.1"
+preamble_overrides = [
+    line for line in preamble_lines if line.startswith("RUSTUP_TOOLCHAIN:")
+]
+all_overrides = [line for line in active_lines if line.startswith("RUSTUP_TOOLCHAIN:")]
+if preamble_overrides != [release_override] or all_overrides != [release_override]:
+    raise AssertionError(
+        "publish workflow must have exactly one global rust-toolchain.toml "
+        f"override, RUSTUP_TOOLCHAIN 1.97.1; found: {all_overrides!r}"
+    )
+
+print("publish test scope and effective release toolchain are pinned")
