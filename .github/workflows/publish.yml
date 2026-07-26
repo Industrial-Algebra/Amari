@@ -31,7 +31,9 @@ jobs:
   validate:
     name: Validate and Test
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # A cold GitHub runner was canceled by the 45-minute limit near the end of
+    # the approved CPU matrix; retain a finite bound with enough headroom.
+    timeout-minutes: 90
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
