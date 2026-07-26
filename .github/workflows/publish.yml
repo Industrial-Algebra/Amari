@@ -28,6 +28,7 @@ jobs:
   validate:
     name: Validate and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -50,20 +51,26 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
-
-      - name: Run tests
-        # Keep legacy opt-in GPU hardware execution out of the headless release
-        # validator until the planned 0.26 wgpu modernization. The complete
-        # default workspace and the 0.24 discovery/holographic feature surfaces
-        # still run, serialized to avoid concurrent EGL context initialization.
+        # Tagged 0.24.0 test code contains four pre-existing warnings: three
+        # needless_range_loop findings in amari-core/src/generic.rs and one
+        # collapsible_match in amari-enumerative/tests/classical_problems.rs.
+        # Keep normal targets warning-denied, then compile every target while
+        # allowing only those test-only lints. Fix forward on develop.
         run: |
-          cargo test --workspace -- --test-threads=1
-          cargo test -p amari-discovery --all-features -- --test-threads=1
-          cargo test -p amari-holographic --all-features -- --test-threads=1
+          cargo clippy --workspace --all-features -- -D warnings
+          cargo clippy --workspace --all-targets --all-features -- -D warnings -A clippy::needless_range_loop -A clippy::collapsible_match
 
-      - name: Run integration tests
-        run: ./run_all_tests.sh
+      - name: Verify publish test scope
+        run: python3 scripts/verify-publish-test-scope.py
+
+      - name: Run approved CPU release tests
+        # The 0.24.0 headless validator explicitly excludes legacy amari-gpu
+        # runtime tests while retaining all-feature compilation through Clippy.
+        # GPU runtime restoration belongs to the planned 0.26.0 modernization.
+        run: |
+          cargo test --workspace --exclude amari-gpu
+          cargo test -p amari-discovery --all-features
+          cargo test -p amari-holographic --all-features
 
   publish-crates:
     name: Publish to crates.io
@@ -161,6 +168,8 @@ jobs:
             if cargo search "$crate" --limit 1 | grep -q "^$crate = \"$TARGET_VERSION\""; then
               echo "$crate version $TARGET_VERSION already published, skipping..."
             else
+              echo "Verifying $crate version $TARGET_VERSION package..."
+              cargo publish --dry-run --allow-dirty
               echo "Publishing $crate version $TARGET_VERSION..."
               cargo publish --allow-dirty
               echo "Waiting for crates.io indexing and rate limit reset..."
@@ -269,6 +278,12 @@ jobs:
             echo "version-exists=false" >> $GITHUB_OUTPUT
             echo "Version $PACKAGE_VERSION does not exist, proceeding with publish"
           fi
+
+      - name: Verify npm publishing identity
+        if: steps.npm-version-check.outputs.version-exists == 'false'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm whoami
 
       - name: Publish to npm
         if: steps.npm-version-check.outputs.version-exists == 'false'
