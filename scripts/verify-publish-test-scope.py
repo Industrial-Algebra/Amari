@@ -33,8 +33,16 @@ for required in (
     if required not in commands:
         raise AssertionError(f"missing required publish test: {required}")
 
-if "timeout-minutes:" not in validate:
-    raise AssertionError("validate job must have timeout-minutes")
+timeout_lines = [
+    line.strip()
+    for line in validate.splitlines()
+    if line.strip().startswith("timeout-minutes:")
+]
+if timeout_lines != ["timeout-minutes: 90"]:
+    raise AssertionError(
+        "validate job must use the empirically bounded 90-minute timeout; "
+        f"found: {timeout_lines!r}"
+    )
 if "--test-threads" in validate:
     raise AssertionError("publish tests must not use global serialization")
 if "./run_all_tests.sh" in validate:
