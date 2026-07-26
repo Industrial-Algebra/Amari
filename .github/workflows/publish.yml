@@ -23,6 +23,9 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # rust-toolchain.toml selects nightly for Creusot development. Publication
+  # must override that directory selection with the verified release toolchain.
+  RUSTUP_TOOLCHAIN: 1.97.1
 
 jobs:
   validate:
