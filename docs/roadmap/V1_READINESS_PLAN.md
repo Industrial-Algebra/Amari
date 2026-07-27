@@ -282,6 +282,7 @@ Review all 121 ignored tests:
 - [ ] CHANGELOG update
 - [ ] Migration guide from 0.x
 - [ ] Final CI/CD verification
+- [ ] Run a dedicated 1.0.0-polish spike to conform legacy publish workflows to current IA release doctrine, including explicit feature matrices and artifact evidence
 - [ ] Version bump and publish
 
 ---

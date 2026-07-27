@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.0] - Unreleased
+## [0.24.0] - 2026-07-24
 
 ### Added
 
@@ -35,14 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `docs/guide/amari-discovery.md` and expanded `amari-discovery/README.md` with human, agent, contributor, protocol, privacy, AI, probe, and release workflows
 
-> Release status: 0.24.0 remains unreleased. Aggregate version sync, catalog
-> regeneration, registry-resolution checks, package/publish dry-runs, and
-> post-publication installation gates must complete before release acceptance.
+> Release acceptance requires synchronized catalogs, registry-resolved packages,
+> successful publication, post-publication installation, and the `v0.24.0` tag.
 > The comprehensive rewrite/inverse expansion is intentionally scoped to 0.25.0.
 
 ---
 
-## [0.23.0] - Unreleased
+## [0.23.0] - 2026-05-23
 
 ### Added
 

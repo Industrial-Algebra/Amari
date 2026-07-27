@@ -21,7 +21,7 @@ A unified mathematical computing library featuring geometric algebra, differenti
 - **Arbitrary-signature WASM** — `WasmGenericMultivector(p, q, r)` lets users select any Clifford algebra signature at runtime. Operations for DIM ≤ 6 dispatch through a compile-time match table (84 signatures); larger dimensions fall back to a cached Cayley-table path. 8 fast-path aliases (`WasmMultivector300`, `210`, `310`, `200`, `030`, `410`, `500`, `110`) provide pre-built convenience for the most common physics/engineering signatures.
 - **`amari-rewrite`** is a new crate providing foundational ARS/TRS term-rewriting with `Rewritable` traits, path replacement, substitution/matching, bounded inverse rewriting, anti-unification, and rule inference scaffolding. Experimental `neural`, `smt`, and `amari-network` feature gates offer rewrite-search guidance hooks.
 
-## v0.24.0 Release Candidate: Amari Discovery
+## v0.24.0: Amari Discovery
 
 The `amari-discovery` crate is the sole owner of the installed
 `amari` command. It provides deterministic catalog exploration, bounded
@@ -42,9 +42,9 @@ Discovery never edits inspected projects or runs their compilers, build
 scripts, lifecycle scripts, arbitrary commands, providers, or network access.
 See the [Amari Discovery Guide](docs/guide/amari-discovery.md) for the human and
 agent loops, privacy boundary, probe isolation, catalog maintenance, and
-release-status caveats. The workspace and catalogs are synchronized to 0.24.0,
-but this release candidate is not a publication claim until crates.io/npm
-publication, registry installation, and the `v0.24.0` tag are verified.
+release-status caveats. The workspace and catalogs are synchronized to 0.24.0;
+source metadata alone is not proof of crates.io/npm publication, registry
+installation, or the `v0.24.0` tag.
 
 ## v0.22.0 Highlights
 
