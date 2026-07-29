@@ -68,6 +68,7 @@ fn real_inventory_includes_root_and_wasm_but_excludes_discovery() {
             "amari-calculus",
             "amari-cgt",
             "amari-core",
+            "amari-discovery-macros",
             "amari-dual",
             "amari-dynamics",
             "amari-enumerative",
@@ -105,6 +106,13 @@ fn real_inventory_includes_root_and_wasm_but_excludes_discovery() {
         "Procedural macros for amari-flynn probabilistic contracts"
     );
     assert_eq!(
+        inventory
+            .package("amari-discovery-macros")
+            .unwrap()
+            .description,
+        "Bounded wire-contract derive macros for amari-discovery probe DTOs"
+    );
+    assert_eq!(
         inventory.package("amari-wasm").unwrap().description,
         "WebAssembly bindings for Amari mathematical computing library - geometric algebra, tropical algebra, automatic differentiation, measure theory, fusion systems, and information geometry"
     );
@@ -117,7 +125,10 @@ fn real_inventory_includes_root_and_wasm_but_excludes_discovery() {
         ["proc-macro"]
     );
     for package in &inventory.packages {
-        if !matches!(package.name.as_str(), "amari-wasm" | "amari-flynn-macros") {
+        if !matches!(
+            package.name.as_str(),
+            "amari-wasm" | "amari-flynn-macros" | "amari-discovery-macros"
+        ) {
             assert_eq!(package.library_outputs, ["lib"], "{} targets", package.name);
         }
     }
