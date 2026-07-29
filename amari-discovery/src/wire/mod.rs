@@ -9,7 +9,7 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::{DiscoveryError, DiscoveryResult};
+use crate::{DiscoveryError, DiscoveryResult, SCHEMA_V1};
 
 /// Direction of a probe wire schema.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
@@ -171,10 +171,10 @@ impl ProbeSchemaDocument {
         let id = id.into();
         validate_schema_id(&id, role)?;
         let protocol_version = protocol_version.into();
-        if protocol_version.trim().is_empty() {
-            return Err(DiscoveryError::InvalidInput(
-                "wire schema protocol version must be nonempty".to_owned(),
-            ));
+        if protocol_version != SCHEMA_V1 {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "wire schema protocol version must be `{SCHEMA_V1}`"
+            )));
         }
         if !structural_schema.is_object() {
             return Err(DiscoveryError::InvalidInput(
@@ -308,7 +308,8 @@ fn validate_schema_id(id: &str, role: WireSchemaRole) -> DiscoveryResult<()> {
         && version.len() > 1
         && version[1..]
             .chars()
-            .all(|character| character.is_ascii_digit());
+            .all(|character| character.is_ascii_digit())
+        && version[1..].parse::<u64>().is_ok_and(|number| number > 0);
     if valid {
         Ok(())
     } else {
