@@ -74,7 +74,7 @@ path = "examples/networked_physics.rs"
 required-features = ["deterministic"]
 
 [workspace]
-members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal", "amari-surcomplex", "amari-rewrite", "amari-discovery"]
+members = ["amari-core", "amari-wasm", "amari-gpu", "amari-info-geom", "amari-tropical", "amari-dual", "amari-fusion", "amari-automata", "amari-enumerative", "amari-relativistic", "amari-network", "amari-optimization", "amari-flynn", "amari-flynn-macros", "amari-measure", "amari-calculus", "amari-holographic", "amari-probabilistic", "amari-functional", "amari-topology", "amari-dynamics", "amari-cgt", "amari-surreal", "amari-surcomplex", "amari-rewrite", "amari-discovery", "amari-discovery-macros"]
 resolver = "2"
 
 [workspace.package]
@@ -111,6 +111,7 @@ amari-cgt = { path = "amari-cgt", version = "0.24.0" }
 amari-surreal = { path = "amari-surreal", version = "0.24.0" }
 amari-surcomplex = { path = "amari-surcomplex", version = "0.24.0" }
 amari-rewrite = { path = "amari-rewrite", version = "0.24.0" }
+amari-discovery-macros = { path = "amari-discovery-macros", version = "0.24.0" }
 amari-wasm = { path = "amari-wasm", version = "0.24.0" }
 
 # External dependencies
@@ -129,6 +130,7 @@ quote = "1.0"
 proc-macro2 = "1.0"
 clap = { version = "4", features = ["derive"] }
 serde_json = "1"
+schemars = "1"
 toml = "0.8"
 walkdir = "2"
 sha2 = "0.10"
