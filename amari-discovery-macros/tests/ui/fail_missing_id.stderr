@@ -1,0 +1,5 @@
+error: WireContract requires #[wire_contract(id = "...", role = "input|output")]
+ --> tests/ui/fail_missing_id.rs:8:12
+  |
+8 | pub struct MissingId {
+  |            ^^^^^^^^^

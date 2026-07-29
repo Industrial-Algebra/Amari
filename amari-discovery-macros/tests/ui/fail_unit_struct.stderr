@@ -1,0 +1,5 @@
+error: WireContract supports only named-field structs
+  --> tests/ui/fail_unit_struct.rs:12:12
+   |
+12 | pub struct UnitDto;
+   |            ^^^^^^^

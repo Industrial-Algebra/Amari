@@ -17,7 +17,12 @@ fn canonical_json(catalog: &StructuralCatalog) -> serde_json::Result<Vec<u8>> {
 }
 
 /// Crates that legitimately have zero declared Cargo features.
-const ALLOWED_NO_FEATURES: &[&str] = &["amari-flynn-macros", "amari-surcomplex", "amari-wasm"];
+const ALLOWED_NO_FEATURES: &[&str] = &[
+    "amari-discovery-macros",
+    "amari-flynn-macros",
+    "amari-surcomplex",
+    "amari-wasm",
+];
 
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -61,7 +66,7 @@ fn generate_twice_produces_identical_results() {
 }
 
 #[test]
-fn generated_catalog_has_26_packages_excluding_discovery() {
+fn generated_catalog_has_27_packages_excluding_discovery() {
     let catalog = generate_workspace_catalog(workspace_root()).unwrap();
 
     let names: BTreeSet<&str> = catalog.crates.iter().map(|c| c.name.as_str()).collect();
@@ -69,7 +74,7 @@ fn generated_catalog_has_26_packages_excluding_discovery() {
         !names.contains("amari-discovery"),
         "amari-discovery must be excluded"
     );
-    assert_eq!(catalog.crates.len(), 26, "expected 26 workspace packages");
+    assert_eq!(catalog.crates.len(), 27, "expected 27 workspace packages");
 
     // Verify known packages are present.
     for expected in &[
@@ -87,6 +92,7 @@ fn generated_catalog_has_26_packages_excluding_discovery() {
         "amari-wasm",
         "amari-flynn",
         "amari-flynn-macros",
+        "amari-discovery-macros",
         "amari-gpu",
     ] {
         assert!(
@@ -463,7 +469,7 @@ fn no_discovery_api_leaked_in_catalog() {
     for c in &catalog.crates {
         for item in &c.items {
             assert!(
-                !item.path.contains("amari_discovery"),
+                !item.path.starts_with("amari_discovery::"),
                 "discovery API leaked: {}",
                 item.path
             );
