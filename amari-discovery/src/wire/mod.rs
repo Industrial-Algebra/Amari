@@ -6,10 +6,16 @@
 //! the extraction-ready data model used to export that authority as stable
 //! JSON Schema documents with Amari semantic metadata and canonical hashes.
 
+pub mod registry;
+
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::{DiscoveryError, DiscoveryResult, SCHEMA_V1};
+
+pub use registry::{
+    ProbeSchemaBinding, ProbeSchemaContractState, ProbeSchemaRegistration, ProbeWireSchemaRegistry,
+};
 
 /// Direction of a probe wire schema.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
@@ -158,6 +164,22 @@ pub struct ProbeSchemaDocument {
 }
 
 impl ProbeSchemaDocument {
+    /// Revalidates all document invariants, including documents produced by
+    /// deserialization rather than [`Self::new`].
+    pub fn validate(&self) -> DiscoveryResult<()> {
+        validate_schema_id(&self.id, self.role)?;
+        if self.protocol_version != SCHEMA_V1 {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "wire schema protocol version must be `{SCHEMA_V1}`"
+            )));
+        }
+        if !self.structural_schema.is_object() {
+            return Err(DiscoveryError::InvalidInput(
+                "wire structural schema must be a JSON object".to_owned(),
+            ));
+        }
+        Ok(())
+    }
     /// Creates and validates a complete hybrid schema document.
     pub fn new(
         id: impl Into<String>,
