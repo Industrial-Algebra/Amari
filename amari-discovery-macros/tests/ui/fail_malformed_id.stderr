@@ -1,0 +1,5 @@
+error: wire_contract id must be `amari.discovery/probe/<lowercase-name>/<role>/v<N>` and match the declared role
+ --> tests/ui/fail_malformed_id.rs:9:10
+  |
+9 |     id = "amari.discovery/probe/TestProbe/input/v1",
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

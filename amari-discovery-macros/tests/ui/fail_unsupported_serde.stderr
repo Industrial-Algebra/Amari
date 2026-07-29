@@ -1,0 +1,5 @@
+error: WireContract does not support untagged enums
+  --> tests/ui/fail_unsupported_serde.rs:13:10
+   |
+13 | pub enum UnsupportedSerde {
+   |          ^^^^^^^^^^^^^^^^

@@ -121,6 +121,6 @@ pub use schema::{
     SchemaSummary,
 };
 pub use wire::{
-    ProbeSchemaDocument, ProbeSchemaSummary, WireCompatibility, WireExample, WireSchemaRole,
-    WireSemanticConstraint,
+    ProbeSchemaDocument, ProbeSchemaSummary, WireCompatibility, WireContract, WireExample,
+    WireSchemaRole, WireSemanticConstraint,
 };
