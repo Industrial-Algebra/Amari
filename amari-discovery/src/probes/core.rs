@@ -24,8 +24,29 @@ const PRODUCT_NODES: u64 = COEFFICIENT_COUNT * 3;
 const PRODUCT_ITERATIONS: u64 = PRODUCT_OPERATIONS;
 
 /// Typed input for a geometric product in Euclidean Cl(3,0,0).
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/core-geometric-product/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        finite_numbers = "all Cl(3,0,0) input coefficients must be finite",
+        fixed_coefficient_length = "each operand must contain exactly eight coefficients in binary basis-blade order"
+    ),
+    example(
+        label = "basis_product",
+        value = "{\"left\":[0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0],\"right\":[0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0]}"
+    )
+)]
 pub struct Cl3ProductRequest {
     /// Left coefficients in binary basis-blade order.
     pub left: [f64; 8],
@@ -34,7 +55,28 @@ pub struct Cl3ProductRequest {
 }
 
 /// Typed output from a Euclidean Cl(3,0,0) geometric product.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/core-geometric-product/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        finite_numbers = "all Cl(3,0,0) output coefficients are finite",
+        fixed_coefficient_length = "the result contains exactly eight coefficients in binary basis-blade order"
+    ),
+    example(
+        label = "basis_product",
+        value = "{\"coefficients\":[0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0]}"
+    )
+)]
 pub struct Cl3ProductOutput {
     /// Product coefficients in binary basis-blade order.
     pub coefficients: [f64; 8],

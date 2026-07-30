@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use amari_discovery::{
-    Catalog, ProbeEngine, ProbeId, ProbeSchemaContractState, ProbeSchemaDocument,
-    ProbeSchemaRegistration, ProbeWireSchemaRegistry, WireCompatibility, WireSchemaRole, SCHEMA_V1,
+    Catalog, CgtNimSumOutput, CgtNimSumRequest, Cl3ProductOutput, Cl3ProductRequest,
+    PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeEngine, ProbeId,
+    ProbeSchemaContractState, ProbeSchemaDocument, ProbeSchemaRegistration,
+    ProbeWireSchemaRegistry, WireCompatibility, WireSchemaRole, SCHEMA_V1,
 };
 
 fn synthetic_document(schema_id: &str, role: WireSchemaRole) -> ProbeSchemaDocument {
@@ -39,6 +41,135 @@ fn registrations(catalog: &Catalog, executable_ids: &[ProbeId]) -> Vec<ProbeSche
                 ),
             ]
         })
+        .collect()
+}
+
+#[test]
+fn cgt_core_dual_contracts() {
+    let catalog = Catalog::embedded().unwrap();
+
+    let cgt_input = ProbeSchemaDocument::from_contract::<CgtNimSumRequest>().unwrap();
+    let cgt_output = ProbeSchemaDocument::from_contract::<CgtNimSumOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:cgt:nim-sum:v1",
+        cgt_input.clone(),
+        cgt_output.clone(),
+    );
+    assert_eq!(cgt_input.id(), "amari.discovery/probe/cgt-nim-sum/input/v1");
+    assert_eq!(
+        cgt_output.id(),
+        "amari.discovery/probe/cgt-nim-sum/output/v1"
+    );
+    assert_eq!(
+        constraint_ids(&cgt_input),
+        ["heap_count_limit", "heap_value_limit"]
+    );
+    assert_eq!(
+        constraint_ids(&cgt_output),
+        ["grundy_values_align_with_heaps", "nim_sum_is_xor"]
+    );
+    assert_eq!(
+        cgt_input.exported_value().unwrap()["additionalProperties"],
+        false
+    );
+    assert!(cgt_input.exported_value().unwrap()["properties"]["heaps"].is_object());
+
+    let core_input = ProbeSchemaDocument::from_contract::<Cl3ProductRequest>().unwrap();
+    let core_output = ProbeSchemaDocument::from_contract::<Cl3ProductOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:core:geometric-product:v1",
+        core_input.clone(),
+        core_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&core_input),
+        ["finite_numbers", "fixed_coefficient_length"]
+    );
+    assert_eq!(
+        constraint_ids(&core_output),
+        ["finite_numbers", "fixed_coefficient_length"]
+    );
+    let core_schema = core_input.exported_value().unwrap();
+    assert_eq!(core_schema["required"][0], "left");
+    assert_eq!(core_schema["required"][1], "right");
+    assert_eq!(core_schema["properties"]["left"]["minItems"], 8);
+    assert_eq!(core_schema["properties"]["left"]["maxItems"], 8);
+    assert_eq!(core_schema["properties"]["right"]["minItems"], 8);
+
+    let dual_input = ProbeSchemaDocument::from_contract::<PolynomialDerivativeRequest>().unwrap();
+    let dual_output = ProbeSchemaDocument::from_contract::<PolynomialDerivativeOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:dual:polynomial-derivative:v1",
+        dual_input.clone(),
+        dual_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&dual_input),
+        [
+            "coefficient_count_limit",
+            "finite_numbers",
+            "nonempty_coefficients"
+        ]
+    );
+    assert_eq!(constraint_ids(&dual_output), ["finite_numbers"]);
+    assert_eq!(
+        dual_input.exported_value().unwrap()["additionalProperties"],
+        false
+    );
+    assert!(dual_input.exported_value().unwrap()["properties"]["coefficients"].is_object());
+    assert!(dual_input.exported_value().unwrap()["properties"]["at"].is_object());
+}
+
+fn assert_registered_pair(
+    catalog: &Catalog,
+    probe_id: &str,
+    input: ProbeSchemaDocument,
+    output: ProbeSchemaDocument,
+) {
+    let probe_id: ProbeId = probe_id.parse().unwrap();
+    assert_eq!(input.role(), WireSchemaRole::Input);
+    assert_eq!(output.role(), WireSchemaRole::Output);
+    assert_eq!(
+        input.canonical_hash().unwrap(),
+        input.canonical_hash().unwrap()
+    );
+    assert_eq!(
+        output.canonical_hash().unwrap(),
+        output.canonical_hash().unwrap()
+    );
+    assert_eq!(
+        input.summary().unwrap().hash(),
+        input.canonical_hash().unwrap()
+    );
+    assert_eq!(
+        output.summary().unwrap().hash(),
+        output.canonical_hash().unwrap()
+    );
+    assert_eq!(input.compatibility(), WireCompatibility::AdditivePatch);
+    assert_eq!(output.compatibility(), WireCompatibility::AdditivePatch);
+
+    let registry = ProbeWireSchemaRegistry::build(
+        catalog,
+        [probe_id.clone()],
+        [
+            ProbeSchemaRegistration::new(probe_id.clone(), input),
+            ProbeSchemaRegistration::new(probe_id.clone(), output),
+        ],
+    )
+    .unwrap();
+    let binding = registry.binding(&probe_id).unwrap();
+    assert_eq!(binding.state(), ProbeSchemaContractState::Resolved);
+}
+
+fn constraint_ids(document: &ProbeSchemaDocument) -> Vec<String> {
+    document.exported_value().unwrap()["x-amari-semantic-constraints"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|constraint| constraint["id"].as_str().unwrap().to_owned())
         .collect()
 }
 

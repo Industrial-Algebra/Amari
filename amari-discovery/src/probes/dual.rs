@@ -22,8 +22,30 @@ const OPERATIONS_PER_COEFFICIENT: u64 = 2;
 const MAX_COEFFICIENTS: u64 = MAX_OPERATIONS / OPERATIONS_PER_COEFFICIENT;
 
 /// Typed input for dual-number evaluation of a scalar polynomial and derivative.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/dual-polynomial-derivative/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        coefficient_count_limit = "at most 5000 coefficients are accepted per request",
+        finite_numbers = "all coefficients and the evaluation point must be finite",
+        nonempty_coefficients = "the polynomial requires at least one coefficient"
+    ),
+    example(
+        label = "quadratic",
+        value = "{\"coefficients\":[1.0,2.0,3.0],\"at\":2.0}"
+    )
+)]
 pub struct PolynomialDerivativeRequest {
     /// Polynomial coefficients in descending-power order.
     pub coefficients: Vec<f64>,
@@ -32,7 +54,22 @@ pub struct PolynomialDerivativeRequest {
 }
 
 /// Typed output from dual-number polynomial evaluation.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/dual-polynomial-derivative/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(finite_numbers = "the polynomial value and derivative are finite"),
+    example(label = "quadratic", value = "{\"value\":11.0,\"derivative\":6.0}")
+)]
 pub struct PolynomialDerivativeOutput {
     /// Polynomial value at the requested point.
     pub value: f64,
