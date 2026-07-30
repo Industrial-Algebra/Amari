@@ -22,8 +22,36 @@ const MAX_EMISSION_SYMBOLS: usize = 4_096;
 const MAX_OBSERVATIONS: usize = 4_096;
 
 /// Typed input for the tropical Viterbi proof-slice probe.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/tropical-viterbi/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        emission_rows_match_states = "there is exactly one emission row per state",
+        emission_width_limit = "emission rows have equal nonzero width at most 4096",
+        finite_weights = "all transition and emission weights are finite",
+        nonempty_observations = "at least one observation is required",
+        observation_count_limit = "at most 4096 observations are accepted",
+        observation_indices_in_bounds = "every observation index is below the emission width",
+        square_transitions = "the transition matrix is square",
+        state_limit = "at most 64 states are accepted",
+        states_nonempty = "at least one state is required"
+    ),
+    example(
+        label = "two_state_decode",
+        value = "{\"transitions\":[[0.0,1.0],[1.0,0.0]],\"emissions\":[[0.0,1.0],[1.0,0.0]],\"observations\":[0,1]}"
+    )
+)]
 pub struct TropicalViterbiRequest {
     /// Square state-transition matrix of tropical log weights.
     pub transitions: Vec<Vec<f64>>,
@@ -34,7 +62,26 @@ pub struct TropicalViterbiRequest {
 }
 
 /// Typed output from tropical Viterbi decoding.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/tropical-viterbi/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        finite_score = "the decoded tropical score is finite",
+        path_length_matches_observations = "the returned path has exactly one state per observation",
+        path_states_within_state_count = "every returned path state is below the input state count"
+    ),
+    example(label = "two_state_decode", value = "{\"path\":[0,1],\"score\":1.0}")
+)]
 pub struct TropicalViterbiOutput {
     /// Most likely state index at each observation.
     pub path: Vec<usize>,

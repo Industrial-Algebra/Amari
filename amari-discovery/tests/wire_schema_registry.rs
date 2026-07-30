@@ -2,9 +2,11 @@
 
 use amari_discovery::{
     Catalog, CgtNimSumOutput, CgtNimSumRequest, Cl3ProductOutput, Cl3ProductRequest,
+    NetworkShortestPathOutput, NetworkShortestPathRequest, ParetoFrontOutput, ParetoFrontRequest,
     PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeEngine, ProbeId,
     ProbeSchemaContractState, ProbeSchemaDocument, ProbeSchemaRegistration,
-    ProbeWireSchemaRegistry, WireCompatibility, WireSchemaRole, SCHEMA_V1,
+    ProbeWireSchemaRegistry, TropicalViterbiOutput, TropicalViterbiRequest, WireCompatibility,
+    WireSchemaRole, SCHEMA_V1,
 };
 
 fn synthetic_document(schema_id: &str, role: WireSchemaRole) -> ProbeSchemaDocument {
@@ -121,6 +123,111 @@ fn cgt_core_dual_contracts() {
     );
     assert!(dual_input.exported_value().unwrap()["properties"]["coefficients"].is_object());
     assert!(dual_input.exported_value().unwrap()["properties"]["at"].is_object());
+}
+
+#[test]
+fn structured_contracts() {
+    let catalog = Catalog::embedded().unwrap();
+
+    let network_input = ProbeSchemaDocument::from_contract::<NetworkShortestPathRequest>().unwrap();
+    let network_output = ProbeSchemaDocument::from_contract::<NetworkShortestPathOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:network:shortest-path:v1",
+        network_input.clone(),
+        network_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&network_input),
+        [
+            "adjacency_node_limit",
+            "adjacency_nonempty",
+            "adjacency_square",
+            "endpoint_indices_in_bounds",
+            "finite_nonnegative_weights"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&network_output),
+        [
+            "finite_total_weight",
+            "optional_path_shape",
+            "path_nodes_within_node_count"
+        ]
+    );
+    let network_schema = network_input.exported_value().unwrap();
+    assert_eq!(network_schema["additionalProperties"], false);
+    assert!(network_schema["properties"]["adjacency"].is_object());
+    assert!(network_schema["properties"]["source"].is_object());
+    assert!(network_schema["properties"]["target"].is_object());
+
+    let pareto_input = ProbeSchemaDocument::from_contract::<ParetoFrontRequest>().unwrap();
+    let pareto_output = ProbeSchemaDocument::from_contract::<ParetoFrontOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:optimization:pareto-front:v1",
+        pareto_input.clone(),
+        pareto_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&pareto_input),
+        [
+            "dimension_limit",
+            "finite_objectives",
+            "nonempty_directions",
+            "nonempty_population",
+            "population_limit",
+            "rectangular_objectives"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&pareto_output),
+        [
+            "solution_indices_match_request",
+            "solution_objectives_match_request",
+            "solutions_are_nondominated"
+        ]
+    );
+    let pareto_schema = pareto_input.exported_value().unwrap();
+    assert_eq!(pareto_schema["additionalProperties"], false);
+    assert!(pareto_schema["properties"]["objectives"].is_object());
+    assert!(pareto_schema["properties"]["directions"].is_object());
+
+    let tropical_input = ProbeSchemaDocument::from_contract::<TropicalViterbiRequest>().unwrap();
+    let tropical_output = ProbeSchemaDocument::from_contract::<TropicalViterbiOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:tropical:viterbi:v1",
+        tropical_input.clone(),
+        tropical_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&tropical_input),
+        [
+            "emission_rows_match_states",
+            "emission_width_limit",
+            "finite_weights",
+            "nonempty_observations",
+            "observation_count_limit",
+            "observation_indices_in_bounds",
+            "square_transitions",
+            "state_limit",
+            "states_nonempty"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&tropical_output),
+        [
+            "finite_score",
+            "path_length_matches_observations",
+            "path_states_within_state_count"
+        ]
+    );
+    let tropical_schema = tropical_input.exported_value().unwrap();
+    assert_eq!(tropical_schema["additionalProperties"], false);
+    assert!(tropical_schema["properties"]["transitions"].is_object());
+    assert!(tropical_schema["properties"]["emissions"].is_object());
+    assert!(tropical_schema["properties"]["observations"].is_object());
 }
 
 fn assert_registered_pair(
