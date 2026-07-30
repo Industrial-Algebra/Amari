@@ -2,11 +2,13 @@
 
 use amari_discovery::{
     Catalog, CgtNimSumOutput, CgtNimSumRequest, Cl3ProductOutput, Cl3ProductRequest,
-    NetworkShortestPathOutput, NetworkShortestPathRequest, ParetoFrontOutput, ParetoFrontRequest,
-    PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeEngine, ProbeId,
-    ProbeSchemaContractState, ProbeSchemaDocument, ProbeSchemaRegistration,
-    ProbeWireSchemaRegistry, TropicalViterbiOutput, TropicalViterbiRequest, WireCompatibility,
-    WireSchemaRole, SCHEMA_V1,
+    HolographicRecallOutput, HolographicRecallRequest, HolographicSuperpositionOutput,
+    HolographicSuperpositionRequest, NetworkShortestPathOutput, NetworkShortestPathRequest,
+    ParetoFrontOutput, ParetoFrontRequest, PolynomialDerivativeOutput, PolynomialDerivativeRequest,
+    ProbeEngine, ProbeId, ProbeSchemaContractState, ProbeSchemaDocument, ProbeSchemaRegistration,
+    ProbeWireSchemaRegistry, RationalSurcomplexDivisionOutput, RationalSurcomplexDivisionRequest,
+    RationalSurrealArithmeticOutput, RationalSurrealArithmeticRequest, TropicalViterbiOutput,
+    TropicalViterbiRequest, WireCompatibility, WireSchemaRole, SCHEMA_V1,
 };
 
 fn synthetic_document(schema_id: &str, role: WireSchemaRole) -> ProbeSchemaDocument {
@@ -228,6 +230,117 @@ fn structured_contracts() {
     assert!(tropical_schema["properties"]["transitions"].is_object());
     assert!(tropical_schema["properties"]["emissions"].is_object());
     assert!(tropical_schema["properties"]["observations"].is_object());
+}
+
+#[test]
+fn rational_holographic_contracts() {
+    let catalog = Catalog::embedded().unwrap();
+
+    let rational_input =
+        ProbeSchemaDocument::from_contract::<RationalSurrealArithmeticRequest>().unwrap();
+    let rational_output =
+        ProbeSchemaDocument::from_contract::<RationalSurrealArithmeticOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:surreal:rational-arithmetic:v1",
+        rational_input.clone(),
+        rational_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&rational_input),
+        [
+            "decimal_length_limit",
+            "decimal_strings_are_i128",
+            "nonzero_denominators",
+            "nonzero_rhs"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&rational_output),
+        ["nonzero_denominators", "normalized_exact_rationals"]
+    );
+    let rational_schema = rational_input.exported_value().unwrap();
+    assert_eq!(rational_schema["additionalProperties"], false);
+    assert!(rational_schema["properties"]["lhs"].is_object());
+    assert!(rational_schema["properties"]["rhs"].is_object());
+
+    let surcomplex_input =
+        ProbeSchemaDocument::from_contract::<RationalSurcomplexDivisionRequest>().unwrap();
+    let surcomplex_output =
+        ProbeSchemaDocument::from_contract::<RationalSurcomplexDivisionOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:surcomplex:rational-division:v1",
+        surcomplex_input.clone(),
+        surcomplex_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&surcomplex_input),
+        [
+            "decimal_length_limit",
+            "decimal_strings_are_i128",
+            "nonzero_denominators",
+            "nonzero_divisor"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&surcomplex_output),
+        ["nonzero_denominators", "normalized_exact_rationals"]
+    );
+    let surcomplex_schema = surcomplex_input.exported_value().unwrap();
+    assert_eq!(surcomplex_schema["additionalProperties"], false);
+    assert!(surcomplex_schema["properties"]["dividend"].is_object());
+    assert!(surcomplex_schema["properties"]["divisor"].is_object());
+
+    let superposition_input =
+        ProbeSchemaDocument::from_contract::<HolographicSuperpositionRequest>().unwrap();
+    let superposition_output =
+        ProbeSchemaDocument::from_contract::<HolographicSuperpositionOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:holographic:superposition:v1",
+        superposition_input.clone(),
+        superposition_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&superposition_input),
+        ["integer_seeds", "nonempty_seeds", "seed_count_limit"]
+    );
+    assert_eq!(
+        constraint_ids(&superposition_output),
+        ["finite_coefficients", "map256_dimension"]
+    );
+    assert_eq!(
+        superposition_input.exported_value().unwrap()["additionalProperties"],
+        false
+    );
+
+    let recall_input = ProbeSchemaDocument::from_contract::<HolographicRecallRequest>().unwrap();
+    let recall_output = ProbeSchemaDocument::from_contract::<HolographicRecallOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:holographic:recall:v1",
+        recall_input.clone(),
+        recall_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&recall_input),
+        ["entry_count_limit", "integer_seeds", "nonempty_entries"]
+    );
+    assert_eq!(
+        constraint_ids(&recall_output),
+        [
+            "bounded_warnings",
+            "capacity_metrics_consistent",
+            "finite_metrics",
+            "map256_dimension",
+            "nonnegative_attribution_weights"
+        ]
+    );
+    let recall_schema = recall_input.exported_value().unwrap();
+    assert_eq!(recall_schema["additionalProperties"], false);
+    assert!(recall_schema["properties"]["entries"].is_object());
+    assert!(recall_schema["properties"]["query_seed"].is_object());
 }
 
 fn assert_registered_pair(
