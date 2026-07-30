@@ -44,7 +44,7 @@ impl ProbeSchemaRegistration {
 }
 
 /// Compact input/output schema state for one known probe.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct ProbeSchemaBinding {
     probe_id: ProbeId,
     state: ProbeSchemaContractState,

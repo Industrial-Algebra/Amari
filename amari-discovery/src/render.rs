@@ -12,8 +12,8 @@ use crate::{
         probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult},
     },
     CandidatePlan, Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope,
-    NdjsonWriter, PlanStep, ProbeBackend, ProbeIsolation, ProjectKind, ProjectSnapshot,
-    ProtocolSchema, Recommendation, SchemaCatalog,
+    NdjsonWriter, PlanStep, ProbeBackend, ProbeIsolation, ProbeSchemaDocument, ProjectKind,
+    ProjectSnapshot, ProtocolSchema, Recommendation, SchemaCatalog,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -188,6 +188,23 @@ pub(crate) fn write_probe_description_human(
         description.descriptor.output_schema
     )?;
     writeln!(writer, "Executable: {}", yes_no(description.executable))?;
+    let input_hash = description
+        .schema_hashes
+        .input_summary()
+        .map(|summary| summary.hash())
+        .unwrap_or("declared-unavailable");
+    let output_hash = description
+        .schema_hashes
+        .output_summary()
+        .map(|summary| summary.hash())
+        .unwrap_or("declared-unavailable");
+    writeln!(writer, "Input schema hash: {input_hash}")?;
+    writeln!(writer, "Output schema hash: {output_hash}")?;
+    writeln!(
+        writer,
+        "Schema document: amari probe schema {} --direction input",
+        description.descriptor.id
+    )?;
     writeln!(writer, "Process isolation: yes")?;
     writeln!(writer, "Hard timeout: {}", yes_no(description.hard_timeout))?;
     writeln!(
@@ -195,6 +212,14 @@ pub(crate) fn write_probe_description_human(
         "Crash isolation: {}",
         yes_no(description.crash_isolation)
     )?;
+    Ok(())
+}
+
+pub(crate) fn write_probe_schema_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProbeSchemaDocument>,
+) -> DiscoveryResult<()> {
+    write!(writer, "{}", envelope.data.canonical_json()?)?;
     Ok(())
 }
 

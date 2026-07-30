@@ -12,7 +12,8 @@ use super::recommend::read_bounded_input;
 use crate::{
     CandidatePlan, Capabilities, Catalog, CatalogIdentity, Compatibility, DiscoveryError,
     DiscoveryResult, Envelope, PlanStep, ProbeBackend, ProbeDescriptor, ProbeEngineLimits, ProbeId,
-    ProbeIsolation, ProbeResult, Provenance, ReplayMetadata, ResourceLimits, SCHEMA_V1,
+    ProbeIsolation, ProbeResult, ProbeSchemaBinding, ProbeSchemaDocument, Provenance,
+    ReplayMetadata, ResourceLimits, WireSchemaRole, SCHEMA_V1,
 };
 
 const MAX_PROBE_INPUT_BYTES: u64 = 1_048_576;
@@ -57,6 +58,8 @@ pub struct ProbeDescription {
     pub hard_timeout: bool,
     /// Whether worker crashes are isolated from the CLI process.
     pub crash_isolation: bool,
+    /// Compact resolved or declared wire schema identities and hashes.
+    pub schema_hashes: ProbeSchemaBinding,
     /// Qualification for the runtime state.
     pub reason: Option<String>,
 }
@@ -136,6 +139,15 @@ pub fn describe_envelope(
 ) -> DiscoveryResult<Envelope<ProbeDescription>> {
     let descriptor = descriptor(catalog, probe_id)?.clone();
     let state = runtime_state(probe_id)?;
+    let schema_registry = crate::probes::wire_schema_registry(catalog)?;
+    let schema_hashes = schema_registry
+        .binding(probe_id)
+        .ok_or_else(|| {
+            DiscoveryError::CatalogCorruption(format!(
+                "probe `{probe_id}` has no wire schema binding"
+            ))
+        })?
+        .clone();
     Ok(catalog_envelope(
         catalog,
         ProbeDescription {
@@ -146,9 +158,36 @@ pub fn describe_envelope(
             isolation: ProbeIsolation::Process,
             hard_timeout: true,
             crash_isolation: true,
+            schema_hashes,
             reason: state.reason,
         },
     ))
+}
+
+/// Returns the complete DTO-derived wire schema for one probe direction.
+///
+/// # Errors
+///
+/// Returns invalid input for an unknown probe or a known probe whose contract
+/// is only declarative in this build, or a catalog/registry corruption error.
+pub fn schema_envelope(
+    catalog: &Catalog,
+    probe_id: &ProbeId,
+    role: WireSchemaRole,
+) -> DiscoveryResult<Envelope<ProbeSchemaDocument>> {
+    let descriptor = descriptor(catalog, probe_id)?;
+    let schema_id = match role {
+        WireSchemaRole::Input => descriptor.input_schema.as_str(),
+        WireSchemaRole::Output => descriptor.output_schema.as_str(),
+    };
+    let schema_registry = crate::probes::wire_schema_registry(catalog)?;
+    let document = schema_registry.document(schema_id).ok_or_else(|| {
+        DiscoveryError::InvalidInput(format!(
+            "probe `{probe_id}` has only a declared {role} wire schema in this build",
+            role = role.as_str()
+        ))
+    })?;
+    Ok(catalog_envelope(catalog, document.clone()))
 }
 
 /// Validates a saved plan's catalog-backed probe step without execution.
