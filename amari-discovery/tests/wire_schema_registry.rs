@@ -7,7 +7,9 @@ use amari_discovery::{
     ParetoFrontOutput, ParetoFrontRequest, PolynomialDerivativeOutput, PolynomialDerivativeRequest,
     ProbeEngine, ProbeId, ProbeSchemaContractState, ProbeSchemaDocument, ProbeSchemaRegistration,
     ProbeWireSchemaRegistry, RationalSurcomplexDivisionOutput, RationalSurcomplexDivisionRequest,
-    RationalSurrealArithmeticOutput, RationalSurrealArithmeticRequest, TropicalViterbiOutput,
+    RationalSurrealArithmeticOutput, RationalSurrealArithmeticRequest, RewriteInferRuleOutput,
+    RewriteInferRuleRequest, RewriteNormalizeOutput, RewriteNormalizeRequest,
+    RewritePredecessorsOutput, RewritePredecessorsRequest, TropicalViterbiOutput,
     TropicalViterbiRequest, WireCompatibility, WireSchemaRole, SCHEMA_V1,
 };
 
@@ -341,6 +343,124 @@ fn rational_holographic_contracts() {
     assert_eq!(recall_schema["additionalProperties"], false);
     assert!(recall_schema["properties"]["entries"].is_object());
     assert!(recall_schema["properties"]["query_seed"].is_object());
+}
+
+#[test]
+fn rewrite_contracts() {
+    let catalog = Catalog::embedded().unwrap();
+
+    let normalize_input = ProbeSchemaDocument::from_contract::<RewriteNormalizeRequest>().unwrap();
+    let normalize_output = ProbeSchemaDocument::from_contract::<RewriteNormalizeOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:rewrite:normalize:v1",
+        normalize_input.clone(),
+        normalize_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&normalize_input),
+        [
+            "max_steps_limit",
+            "max_steps_positive",
+            "rules_checked",
+            "rules_count_limit",
+            "rules_non_expanding",
+            "term_bounds",
+            "term_name_bytes_limit"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&normalize_output),
+        [
+            "normal_form_within_term_bounds",
+            "steps_within_request_limit"
+        ]
+    );
+    let normalize_schema = normalize_input.exported_value().unwrap();
+    assert_eq!(normalize_schema["additionalProperties"], false);
+    assert_recursive_term_schema_is_internally_tagged_and_strict(&normalize_schema);
+    assert!(normalize_schema["properties"]["rules"].is_object());
+    assert!(normalize_schema["properties"]["max_steps"].is_object());
+
+    let infer_input = ProbeSchemaDocument::from_contract::<RewriteInferRuleRequest>().unwrap();
+    let infer_output = ProbeSchemaDocument::from_contract::<RewriteInferRuleOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:rewrite:infer-rule:v1",
+        infer_input.clone(),
+        infer_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&infer_input),
+        [
+            "example_count_limit",
+            "examples_nonempty",
+            "term_bounds",
+            "term_name_bytes_limit"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&infer_output),
+        [
+            "rhs_no_duplicate_variables",
+            "rhs_variables_subset_lhs",
+            "rule_within_term_bounds"
+        ]
+    );
+    let infer_schema = infer_input.exported_value().unwrap();
+    assert_eq!(infer_schema["additionalProperties"], false);
+    assert_recursive_term_schema_is_internally_tagged_and_strict(&infer_schema);
+
+    let predecessors_input =
+        ProbeSchemaDocument::from_contract::<RewritePredecessorsRequest>().unwrap();
+    let predecessors_output =
+        ProbeSchemaDocument::from_contract::<RewritePredecessorsOutput>().unwrap();
+    assert_registered_pair(
+        &catalog,
+        "amari-probe:rewrite:predecessors:v1",
+        predecessors_input.clone(),
+        predecessors_output.clone(),
+    );
+    assert_eq!(
+        constraint_ids(&predecessors_input),
+        [
+            "max_depth_limit",
+            "max_frontier_limit",
+            "max_frontier_positive",
+            "max_results_limit",
+            "max_results_positive",
+            "reverse_lhs_no_duplicate_variables",
+            "rules_checked",
+            "rules_count_limit",
+            "term_bounds",
+            "term_name_bytes_limit"
+        ]
+    );
+    assert_eq!(
+        constraint_ids(&predecessors_output),
+        [
+            "predecessors_canonical_order",
+            "predecessors_within_result_limit",
+            "truncation_truthful"
+        ]
+    );
+    let predecessors_schema = predecessors_input.exported_value().unwrap();
+    assert_eq!(predecessors_schema["additionalProperties"], false);
+    assert_recursive_term_schema_is_internally_tagged_and_strict(&predecessors_schema);
+    assert!(predecessors_schema["properties"]["max_depth"].is_object());
+    assert!(predecessors_schema["properties"]["max_results"].is_object());
+    assert!(predecessors_schema["properties"]["max_frontier"].is_object());
+}
+
+fn assert_recursive_term_schema_is_internally_tagged_and_strict(schema: &serde_json::Value) {
+    let variants = schema["$defs"]["RewriteTerm"]["oneOf"]
+        .as_array()
+        .expect("recursive RewriteTerm schema must be an internally tagged oneOf");
+    assert_eq!(variants.len(), 2);
+    for variant in variants {
+        assert_eq!(variant["additionalProperties"], false);
+        assert!(variant["properties"]["kind"].is_object());
+    }
 }
 
 fn assert_registered_pair(

@@ -39,7 +39,9 @@ const MAX_PREDECESSOR_FRONTIER: u64 = 1_024;
 const MAX_INFERENCE_EXAMPLES: u64 = 256;
 
 /// Serializable first-order term accepted by rewrite probes.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize, schemars::JsonSchema,
+)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum RewriteTerm {
     /// Pattern variable.
@@ -89,7 +91,7 @@ impl RewriteTerm {
 }
 
 /// Serializable checked first-order rewrite rule.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RewriteRule {
     /// Left-hand side pattern.
@@ -117,8 +119,35 @@ impl RewriteRule {
 }
 
 /// Typed input for bounded ordered term normalization.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-normalize/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        max_steps_limit = "max_steps is no greater than 4096",
+        max_steps_positive = "max_steps is greater than zero",
+        rules_checked = "every rule RHS variable occurs in its LHS",
+        rules_count_limit = "at most 256 ordered rules are accepted",
+        rules_non_expanding = "normalization rejects rules that expand forward term size",
+        term_bounds = "terms have depth at most 64 and at most 4096 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes"
+    ),
+    example(
+        label = "identity_step",
+        value = "{\"term\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"rules\":[{\"lhs\":{\"kind\":\"variable\",\"name\":\"x\"},\"rhs\":{\"kind\":\"variable\",\"name\":\"x\"}}],\"max_steps\":1}"
+    )
+)]
 pub struct RewriteNormalizeRequest {
     /// Initial first-order term.
     pub term: RewriteTerm,
@@ -129,7 +158,29 @@ pub struct RewriteNormalizeRequest {
 }
 
 /// Typed fixed-point result from bounded term normalization.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-normalize/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        normal_form_within_term_bounds = "the normal form has depth at most 64 and at most 4096 nodes",
+        steps_within_request_limit = "steps never exceeds the requested max_steps bound"
+    ),
+    example(
+        label = "identity_step",
+        value = "{\"normal_form\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"steps\":0}"
+    )
+)]
 pub struct RewriteNormalizeOutput {
     /// Reached normal form.
     pub normal_form: RewriteTerm,
@@ -138,8 +189,38 @@ pub struct RewriteNormalizeOutput {
 }
 
 /// Typed input for bounded inverse-rewrite predecessor search.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-predecessors/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        max_depth_limit = "max_depth is no greater than 16",
+        max_frontier_limit = "max_frontier is no greater than 1024",
+        max_frontier_positive = "max_frontier is greater than zero",
+        max_results_limit = "max_results is no greater than 1024",
+        max_results_positive = "max_results is greater than zero",
+        reverse_lhs_no_duplicate_variables = "reverse search rejects rules whose LHS duplicates variable occurrences",
+        rules_checked = "every rule RHS variable occurs in its LHS",
+        rules_count_limit = "at most 256 ordered rules are accepted",
+        term_bounds = "terms have depth at most 64 and at most 4096 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes"
+    ),
+    example(
+        label = "one_reverse_step",
+        value = "{\"target\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]},\"rules\":[{\"lhs\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]}}],\"max_depth\":1,\"max_results\":8,\"max_frontier\":8}"
+    )
+)]
 pub struct RewritePredecessorsRequest {
     /// Target term whose predecessors are requested.
     pub target: RewriteTerm,
@@ -154,7 +235,30 @@ pub struct RewritePredecessorsRequest {
 }
 
 /// Deterministic bounded predecessor-search result.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-predecessors/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        predecessors_canonical_order = "predecessors are unique and canonically ordered by the wire DTO",
+        predecessors_within_result_limit = "the predecessor count never exceeds max_results",
+        truncation_truthful = "truncated is true exactly when max_results omitted at least one discovered predecessor"
+    ),
+    example(
+        label = "one_reverse_step",
+        value = "{\"predecessors\":[{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}],\"truncated\":false}"
+    )
+)]
 pub struct RewritePredecessorsOutput {
     /// Unique predecessor terms in canonical DTO order.
     pub predecessors: Vec<RewriteTerm>,
@@ -163,7 +267,7 @@ pub struct RewritePredecessorsOutput {
 }
 
 /// One positive before/after rewrite example.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RewriteExample {
     /// Concrete term before rewriting.
@@ -173,15 +277,58 @@ pub struct RewriteExample {
 }
 
 /// Typed input for bounded single-rule inference.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-infer-rule/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        example_count_limit = "at most 256 positive rewrite examples are accepted",
+        examples_nonempty = "at least one positive rewrite example is required",
+        term_bounds = "terms have depth at most 64 and at most 4096 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes"
+    ),
+    example(
+        label = "one_example",
+        value = "{\"examples\":[{\"before\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"after\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]}}]}"
+    )
+)]
 pub struct RewriteInferRuleRequest {
     /// Positive rewrite examples used for anti-unification.
     pub examples: Vec<RewriteExample>,
 }
 
 /// Exact checked rule inferred from positive examples.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-infer-rule/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        rhs_no_duplicate_variables = "the inferred RHS does not duplicate variable occurrences",
+        rhs_variables_subset_lhs = "every inferred RHS variable occurs in its LHS",
+        rule_within_term_bounds = "the inferred rule has depth at most 64 and at most 4096 nodes"
+    )
+)]
 pub struct RewriteInferRuleOutput {
     /// Inferred checked first-order rewrite rule.
     pub rule: RewriteRule,
