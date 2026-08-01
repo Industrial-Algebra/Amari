@@ -46,8 +46,8 @@ pub use surreal::{
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
 use crate::{
-    Catalog, DiscoveryError, DiscoveryResult, ProbeBackend, ProbeId, ProbeSchemaDocument,
-    ProbeSchemaRegistration, ProbeWireSchemaRegistry, ResourceObservations,
+    Catalog, DiscoveryError, DiscoveryResult, ProbeBackend, ProbeId, ProbeSchemaBinding,
+    ProbeSchemaDocument, ProbeSchemaRegistration, ProbeWireSchemaRegistry, ResourceObservations,
 };
 
 /// Caller-selected ceilings for cooperative in-process probe execution.
@@ -98,6 +98,8 @@ pub struct ProbeExecution {
     pub input_schema: String,
     /// Versioned response schema emitted by the adapter.
     pub output_schema: String,
+    /// Compact resolved wire schema identities and hashes.
+    pub schema_hashes: ProbeSchemaBinding,
     /// Execution backend.
     pub backend: ProbeBackend,
     /// Available isolation boundary.
@@ -113,6 +115,7 @@ pub struct ProbeExecution {
 /// Public cooperative executor over the fixed private probe registry.
 pub struct ProbeEngine {
     registry: ProbeRegistry,
+    schema_registry: ProbeWireSchemaRegistry,
     limits: ProbeEngineLimits,
 }
 
@@ -165,8 +168,10 @@ impl ProbeEngine {
                 "cooperative probe limits must be greater than zero".to_owned(),
             ));
         }
+        let (registry, schema_registry) = build_registries(catalog)?;
         Ok(Self {
-            registry: ProbeRegistry::build(catalog, compiled_registrations()?)?,
+            registry,
+            schema_registry,
             limits,
         })
     }
@@ -249,6 +254,15 @@ impl ProbeEngine {
             probe_id: id.clone(),
             input_schema: registered.input_schema.clone(),
             output_schema: registered.output_schema.clone(),
+            schema_hashes: self
+                .schema_registry
+                .binding(id)
+                .ok_or_else(|| {
+                    DiscoveryError::CatalogCorruption(format!(
+                        "executable probe `{id}` has no wire schema binding"
+                    ))
+                })?
+                .clone(),
             backend: ProbeBackend::Cpu,
             isolation: ProbeIsolation::Cooperative,
             deterministic: registered.deterministic,
@@ -268,20 +282,32 @@ pub(crate) fn execute_isolated(
 }
 
 pub(crate) fn wire_schema_registry(catalog: &Catalog) -> DiscoveryResult<ProbeWireSchemaRegistry> {
-    let executable_ids = compiled_registrations()?
-        .into_iter()
-        .map(|registration| registration.id);
-    ProbeWireSchemaRegistry::build(catalog, executable_ids, compiled_schema_registrations()?)
+    Ok(build_registries(catalog)?.1)
+}
+
+fn build_registries(
+    catalog: &Catalog,
+) -> DiscoveryResult<(ProbeRegistry, ProbeWireSchemaRegistry)> {
+    let adapters = compiled_registrations()?;
+    let executable_ids = adapters
+        .iter()
+        .map(|registration| registration.id.clone())
+        .collect::<Vec<_>>();
+    let schema_registrations = compiled_schema_registrations(catalog, &adapters)?;
+    Ok((
+        ProbeRegistry::build(catalog, adapters)?,
+        ProbeWireSchemaRegistry::build(catalog, executable_ids, schema_registrations)?,
+    ))
 }
 
 #[cfg(feature = "standard-probes")]
-fn compiled_schema_registrations() -> DiscoveryResult<Vec<ProbeSchemaRegistration>> {
-    let catalog = Catalog::embedded()?;
+fn compiled_schema_registrations(
+    catalog: &Catalog,
+    adapters: &[AdapterRegistration],
+) -> DiscoveryResult<Vec<ProbeSchemaRegistration>> {
     let mut registrations = Vec::new();
-    for probe_id in compiled_registrations()?
-        .into_iter()
-        .map(|registration| registration.id)
-    {
+    for adapter in adapters {
+        let probe_id = adapter.id.clone();
         let probe = catalog
             .probes()
             .iter()
@@ -391,7 +417,10 @@ fn schema_document(schema_id: &str) -> DiscoveryResult<ProbeSchemaDocument> {
 }
 
 #[cfg(not(feature = "standard-probes"))]
-fn compiled_schema_registrations() -> DiscoveryResult<Vec<ProbeSchemaRegistration>> {
+fn compiled_schema_registrations(
+    _catalog: &Catalog,
+    _adapters: &[AdapterRegistration],
+) -> DiscoveryResult<Vec<ProbeSchemaRegistration>> {
     Ok(Vec::new())
 }
 

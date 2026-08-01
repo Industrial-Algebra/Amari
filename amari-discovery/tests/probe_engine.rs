@@ -4,7 +4,10 @@
 
 #[cfg(feature = "standard-probes")]
 use amari_discovery::ProbeIsolation;
-use amari_discovery::{DiscoveryError, ProbeEngine, TropicalViterbiRequest};
+use amari_discovery::{
+    DiscoveryError, ProbeEngine, ProbeSchemaContractState, ProbeSchemaDocument,
+    TropicalViterbiOutput, TropicalViterbiRequest,
+};
 use serde_json::json;
 
 const CGT_NIM_SUM: &str = "amari-probe:cgt:nim-sum:v1";
@@ -163,6 +166,20 @@ fn execution_reports_cooperative_isolation_and_is_byte_deterministic() {
     assert_eq!(
         first.output_schema,
         "amari.discovery/probe/tropical-viterbi/output/v1"
+    );
+    let input_document = ProbeSchemaDocument::from_contract::<TropicalViterbiRequest>().unwrap();
+    let output_document = ProbeSchemaDocument::from_contract::<TropicalViterbiOutput>().unwrap();
+    assert_eq!(
+        first.schema_hashes.state(),
+        ProbeSchemaContractState::Resolved
+    );
+    assert_eq!(
+        first.schema_hashes.input_summary().unwrap(),
+        &input_document.summary().unwrap()
+    );
+    assert_eq!(
+        first.schema_hashes.output_summary().unwrap(),
+        &output_document.summary().unwrap()
     );
     assert!(first.resources.operations > 0);
     assert!(first.resources.nodes > 0);
