@@ -424,6 +424,20 @@ fn compiled_schema_registrations(
     Ok(Vec::new())
 }
 
+#[cfg(all(test, feature = "standard-probes"))]
+mod tests {
+    use crate::DiscoveryError;
+
+    #[test]
+    fn unknown_compiled_schema_contract_is_catalog_corruption() {
+        assert!(matches!(
+            super::schema_document("amari.discovery/probe/not-registered/input/v1"),
+            Err(DiscoveryError::CatalogCorruption(message))
+                if message.contains("no compiled wire contract")
+        ));
+    }
+}
+
 fn enforce_limit(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()> {
     if observed <= maximum {
         Ok(())

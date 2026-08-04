@@ -244,6 +244,7 @@ impl ProbeSchemaDocument {
 
     /// Returns the exported JSON value including Amari metadata.
     pub fn exported_value(&self) -> DiscoveryResult<serde_json::Value> {
+        self.validate()?;
         let mut exported = self
             .structural_schema
             .as_object()
