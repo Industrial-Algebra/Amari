@@ -30,6 +30,7 @@ fn executable_ids() -> Vec<ProbeId> {
     ProbeEngine::new().unwrap().executable_probe_ids()
 }
 
+#[cfg(feature = "standard-probes")]
 fn registrations(catalog: &Catalog, executable_ids: &[ProbeId]) -> Vec<ProbeSchemaRegistration> {
     catalog
         .probes()
@@ -513,6 +514,7 @@ fn constraint_ids(document: &ProbeSchemaDocument) -> Vec<String> {
         .collect()
 }
 
+#[cfg(feature = "standard-probes")]
 #[test]
 fn registry_resolves_every_executable_probe_and_declares_non_executable() {
     let catalog = Catalog::embedded().unwrap();
@@ -554,6 +556,7 @@ fn registry_resolves_every_executable_probe_and_declares_non_executable() {
     assert!(registry.document(&descriptor.input_schema).is_none());
 }
 
+#[cfg(feature = "standard-probes")]
 #[test]
 fn duplicate_schema_id_is_catalog_corruption() {
     let catalog = Catalog::embedded().unwrap();
@@ -568,6 +571,7 @@ fn duplicate_schema_id_is_catalog_corruption() {
     assert_eq!(error.kind(), "catalog_corruption");
 }
 
+#[cfg(feature = "standard-probes")]
 #[test]
 fn role_and_version_mismatches_are_catalog_corruption() {
     let catalog = Catalog::embedded().unwrap();
@@ -637,6 +641,7 @@ fn registration_probe_must_own_the_document_descriptor() {
     assert_eq!(error.kind(), "catalog_corruption");
 }
 
+#[cfg(feature = "standard-probes")]
 #[test]
 fn executable_probe_requires_exactly_one_input_and_one_output() {
     let catalog = Catalog::embedded().unwrap();

@@ -45,9 +45,11 @@ pub use surreal::{
 };
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
+#[cfg(feature = "standard-probes")]
+use crate::ProbeSchemaDocument;
 use crate::{
     Catalog, DiscoveryError, DiscoveryResult, ProbeBackend, ProbeId, ProbeSchemaBinding,
-    ProbeSchemaDocument, ProbeSchemaRegistration, ProbeWireSchemaRegistry, ResourceObservations,
+    ProbeSchemaRegistration, ProbeWireSchemaRegistry, ResourceObservations,
 };
 
 /// Caller-selected ceilings for cooperative in-process probe execution.
