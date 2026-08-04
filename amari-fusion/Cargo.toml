@@ -24,7 +24,7 @@ amari-holographic = { workspace = true, optional = true }
 # GPU acceleration dependencies
 bytemuck = { version = "1.14", features = ["derive"], optional = true }
 wgpu = { version = "0.19", optional = true }
-pollster = { version = "0.4", optional = true }
+pollster = { version = "1.0", optional = true }
 futures = { version = "0.3", optional = true }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"], optional = true }
 

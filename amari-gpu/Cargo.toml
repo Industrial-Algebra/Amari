@@ -32,7 +32,7 @@ amari-probabilistic = { workspace = true, optional = true }
 num-traits = { workspace = true }
 wgpu = "0.19"
 futures = "0.3"
-pollster = "0.4"
+pollster = "1.0"
 bytemuck = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
 tokio = { version = "1.0", features = ["sync", "time"] }
