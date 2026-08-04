@@ -15,7 +15,7 @@ categories = ["mathematics", "science", "algorithms"]
 amari-cgt = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true, optional = true }
-num-bigint = "0.4"
+num-bigint = "0.5"
 num-integer = "0.1"
 num-rational = { workspace = true }
 num-traits = { workspace = true }
