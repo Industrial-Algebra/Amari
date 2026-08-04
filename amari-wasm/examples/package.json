@@ -1,6 +1,6 @@
 {
   "name": "amari-wasm-examples",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "Comprehensive examples for Amari v0.24.0 WebAssembly mathematical computing library",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "all": "npm run demo && npm run geometric && npm run tropical && npm run autodiff && npm run infogeom && npm run fusion && npm run flynn && npm run gf2"
   },
   "dependencies": {
-    "@justinelliottcobb/amari-wasm": "^0.24.0"
+    "@justinelliottcobb/amari-wasm": "^0.24.1"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
