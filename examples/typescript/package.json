@@ -1,6 +1,6 @@
 {
   "name": "amari-typescript-example",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "Example TypeScript project using the Amari mathematical computing library",
   "main": "dist/example.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@justinelliottcobb/amari-wasm": "^0.24.0"
+    "@justinelliottcobb/amari-wasm": "^0.24.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
