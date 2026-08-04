@@ -13,7 +13,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use crate::inspect::{inspect_project_envelope, InspectionLimits};
 use crate::{
     commands, render, Capabilities, Catalog, CatalogIdentity, Compatibility, DiscoveryError,
-    DiscoveryResult, Envelope, GoalSpec, ReplayMetadata,
+    DiscoveryResult, Envelope, GoalSpec, ReplayMetadata, WireSchemaRole,
 };
 
 #[derive(Debug, Parser)]
@@ -140,6 +140,14 @@ enum ProbeCommand {
         /// Stable probe ID.
         probe_id: String,
     },
+    /// Resolve one complete DTO-derived probe wire schema.
+    Schema {
+        /// Stable probe ID.
+        probe_id: String,
+        /// Schema direction: input or output.
+        #[arg(long)]
+        direction: String,
+    },
     /// Run or dry-run a registered probe.
     Run {
         /// Stable probe ID.
@@ -235,6 +243,13 @@ impl ProbeCommand {
             Self::Describe { probe_id } => {
                 let _ = probe_id;
                 "probe describe"
+            }
+            Self::Schema {
+                probe_id,
+                direction,
+            } => {
+                let _ = (probe_id, direction);
+                "probe schema"
             }
             Self::Run {
                 probe_id,
@@ -488,6 +503,23 @@ fn run_probe<W: Write>(
                 mode,
                 render::write_probe_description_human,
             )
+        }
+        ProbeCommand::Schema {
+            probe_id,
+            direction,
+        } => {
+            let probe_id = probe_id.parse()?;
+            let role = match direction.as_str() {
+                "input" => WireSchemaRole::Input,
+                "output" => WireSchemaRole::Output,
+                _ => {
+                    return Err(DiscoveryError::InvalidInput(
+                        "probe schema direction must be `input` or `output`".to_owned(),
+                    ));
+                }
+            };
+            let envelope = commands::probe::schema_envelope(&catalog, &probe_id, role)?;
+            render::write_envelope(writer, &envelope, mode, render::write_probe_schema_human)
         }
         ProbeCommand::Run {
             probe_id,

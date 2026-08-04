@@ -180,6 +180,19 @@ impl ProbeSchemaDocument {
         }
         Ok(())
     }
+    /// Builds a complete document from a compiled probe DTO contract.
+    pub fn from_contract<T: WireContract>() -> DiscoveryResult<Self> {
+        Self::new(
+            T::SCHEMA_ID,
+            T::ROLE,
+            SCHEMA_V1,
+            T::structural_schema(),
+            T::semantic_constraints(),
+            T::examples(),
+            T::COMPATIBILITY,
+        )
+    }
+
     /// Creates and validates a complete hybrid schema document.
     pub fn new(
         id: impl Into<String>,
@@ -231,6 +244,7 @@ impl ProbeSchemaDocument {
 
     /// Returns the exported JSON value including Amari metadata.
     pub fn exported_value(&self) -> DiscoveryResult<serde_json::Value> {
+        self.validate()?;
         let mut exported = self
             .structural_schema
             .as_object()

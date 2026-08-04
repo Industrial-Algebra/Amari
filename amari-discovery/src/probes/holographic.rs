@@ -26,22 +26,58 @@ const RECALL_PASSES_PER_ENTRY: u64 = 11;
 const RECALL_FIXED_PASSES: u64 = 6;
 
 /// Typed request for deterministic additive MAP256 superposition.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/holographic-superposition/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        integer_seeds = "every seed is an unsigned 64-bit integer",
+        nonempty_seeds = "at least one seed is required",
+        seed_count_limit = "at most 256 seeds are accepted"
+    ),
+    example(label = "two_seeds", value = "{\"seeds\":[1,2]}")
+)]
 pub struct HolographicSuperpositionRequest {
     /// Seeds converted deterministically with `MAP256::from_seed`.
     pub seeds: Vec<u64>,
 }
 
 /// Typed output from additive MAP256 superposition.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/holographic-superposition/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        finite_coefficients = "every returned MAP coefficient is finite",
+        map256_dimension = "the coefficient vector contains exactly 256 MAP components"
+    )
+)]
 pub struct HolographicSuperpositionOutput {
     /// Additive trace coefficients in MAP component order.
     pub coefficients: Vec<f64>,
 }
 
 /// One deterministic key-value entry for holographic memory.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct HolographicEntry {
     /// Seed for the MAP256 key.
@@ -51,8 +87,31 @@ pub struct HolographicEntry {
 }
 
 /// Typed request for MAP256 associative-memory retrieval.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/holographic-recall/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        entry_count_limit = "at most 32 key-value entries are accepted",
+        integer_seeds = "entry and query seeds are unsigned 64-bit integers",
+        nonempty_entries = "at least one key-value entry is required"
+    ),
+    example(
+        label = "one_entry",
+        value = "{\"entries\":[{\"key_seed\":1,\"value_seed\":2}],\"query_seed\":1}"
+    )
+)]
 pub struct HolographicRecallRequest {
     /// Ordered key-value entries stored with existing memory semantics.
     pub entries: Vec<HolographicEntry>,
@@ -61,7 +120,7 @@ pub struct HolographicRecallRequest {
 }
 
 /// One normalized key-attribution weight.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct HolographicAttribution {
     /// Entry index in storage order.
     pub index: usize,
@@ -70,7 +129,7 @@ pub struct HolographicAttribution {
 }
 
 /// Capacity metrics reported by `HolographicMemory<MAP256>`.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct HolographicCapacity {
     /// Number of stored entries.
     pub item_count: usize,
@@ -85,7 +144,27 @@ pub struct HolographicCapacity {
 }
 
 /// Typed output from MAP256 associative-memory retrieval.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/holographic-recall/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        bounded_warnings = "warnings are deterministic and bounded to known capacity conditions",
+        capacity_metrics_consistent = "capacity item count, theoretical capacity, and near_capacity reflect the stored entries",
+        finite_metrics = "all returned coefficients, confidence, similarity, attribution weights, and SNR metrics are finite",
+        map256_dimension = "raw and cleaned coefficient vectors each contain exactly 256 MAP components",
+        nonnegative_attribution_weights = "every key-attribution weight is nonnegative"
+    )
+)]
 pub struct HolographicRecallOutput {
     /// Retrieved value after configured cleanup.
     pub value_coefficients: Vec<f64>,

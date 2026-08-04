@@ -28,7 +28,7 @@ const SURCOMPLEX_DIVISION_OPERATIONS: u64 = 12;
 const SURCOMPLEX_DIVISION_NODES: u64 = 7;
 
 /// Exact rational encoded as bounded base-ten numerator and denominator strings.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct DecimalRational {
     /// Signed base-ten numerator.
@@ -38,8 +38,32 @@ pub struct DecimalRational {
 }
 
 /// Typed input for exact arithmetic over two rational surreal values.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/surreal-rational-arithmetic/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        decimal_length_limit = "numerator and denominator strings each contain 1 to 40 characters",
+        decimal_strings_are_i128 = "decimal strings are signed base-ten i128 values",
+        nonzero_denominators = "each rational denominator is nonzero",
+        nonzero_rhs = "the right operand is nonzero so exact division is defined"
+    ),
+    example(
+        label = "halves_and_thirds",
+        value = "{\"lhs\":{\"numerator\":\"1\",\"denominator\":\"2\"},\"rhs\":{\"numerator\":\"1\",\"denominator\":\"3\"}}"
+    )
+)]
 pub struct RationalSurrealArithmeticRequest {
     /// Left operand.
     pub lhs: DecimalRational,
@@ -48,7 +72,29 @@ pub struct RationalSurrealArithmeticRequest {
 }
 
 /// Exact normalized results for the four rational field operations.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/surreal-rational-arithmetic/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        nonzero_denominators = "every result denominator is nonzero",
+        normalized_exact_rationals = "every result is normalized by the exact rational-surreal implementation"
+    ),
+    example(
+        label = "halves_and_thirds",
+        value = "{\"sum\":{\"numerator\":\"5\",\"denominator\":\"6\"},\"difference\":{\"numerator\":\"1\",\"denominator\":\"6\"},\"product\":{\"numerator\":\"1\",\"denominator\":\"6\"},\"quotient\":{\"numerator\":\"3\",\"denominator\":\"2\"}}"
+    )
+)]
 pub struct RationalSurrealArithmeticOutput {
     /// `lhs + rhs`.
     pub sum: DecimalRational,
@@ -61,7 +107,7 @@ pub struct RationalSurrealArithmeticOutput {
 }
 
 /// Exact rational surcomplex value encoded as real and imaginary parts.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct DecimalSurcomplex {
     /// Exact real component.
@@ -71,8 +117,32 @@ pub struct DecimalSurcomplex {
 }
 
 /// Typed input for exact rational-surcomplex division.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/surcomplex-rational-division/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        decimal_length_limit = "numerator and denominator strings each contain 1 to 40 characters",
+        decimal_strings_are_i128 = "decimal strings are signed base-ten i128 values",
+        nonzero_denominators = "each rational component denominator is nonzero",
+        nonzero_divisor = "the divisor has a nonzero real or imaginary component"
+    ),
+    example(
+        label = "identity_division",
+        value = "{\"dividend\":{\"real\":{\"numerator\":\"1\",\"denominator\":\"1\"},\"imaginary\":{\"numerator\":\"0\",\"denominator\":\"1\"}},\"divisor\":{\"real\":{\"numerator\":\"1\",\"denominator\":\"1\"},\"imaginary\":{\"numerator\":\"0\",\"denominator\":\"1\"}}}"
+    )
+)]
 pub struct RationalSurcomplexDivisionRequest {
     /// Rational-surcomplex dividend.
     pub dividend: DecimalSurcomplex,
@@ -81,7 +151,29 @@ pub struct RationalSurcomplexDivisionRequest {
 }
 
 /// Exact normalized result of rational-surcomplex division.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/surcomplex-rational-division/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        nonzero_denominators = "every quotient component denominator is nonzero",
+        normalized_exact_rationals = "quotient components are normalized by the exact rational-surcomplex implementation"
+    ),
+    example(
+        label = "identity_division",
+        value = "{\"quotient\":{\"real\":{\"numerator\":\"1\",\"denominator\":\"1\"},\"imaginary\":{\"numerator\":\"0\",\"denominator\":\"1\"}}}"
+    )
+)]
 pub struct RationalSurcomplexDivisionOutput {
     /// Exact quotient `dividend / divisor`.
     pub quotient: DecimalSurcomplex,

@@ -9,7 +9,7 @@ use serde::Serialize;
 use crate::{
     commands::{
         discover::{ExampleResult, GraphResult, SearchResults},
-        probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult},
+        probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult, ProbeSchemaResolution},
     },
     CandidatePlan, Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope,
     NdjsonWriter, PlanStep, ProbeBackend, ProbeIsolation, ProjectKind, ProjectSnapshot,
@@ -188,6 +188,23 @@ pub(crate) fn write_probe_description_human(
         description.descriptor.output_schema
     )?;
     writeln!(writer, "Executable: {}", yes_no(description.executable))?;
+    let input_hash = description
+        .schema_hashes
+        .input_summary()
+        .map(|summary| summary.hash())
+        .unwrap_or("declared-unavailable");
+    let output_hash = description
+        .schema_hashes
+        .output_summary()
+        .map(|summary| summary.hash())
+        .unwrap_or("declared-unavailable");
+    writeln!(writer, "Input schema hash: {input_hash}")?;
+    writeln!(writer, "Output schema hash: {output_hash}")?;
+    writeln!(
+        writer,
+        "Schema document: amari probe schema {} --direction input",
+        description.descriptor.id
+    )?;
     writeln!(writer, "Process isolation: yes")?;
     writeln!(writer, "Hard timeout: {}", yes_no(description.hard_timeout))?;
     writeln!(
@@ -195,6 +212,17 @@ pub(crate) fn write_probe_description_human(
         "Crash isolation: {}",
         yes_no(description.crash_isolation)
     )?;
+    Ok(())
+}
+
+pub(crate) fn write_probe_schema_human(
+    writer: &mut impl Write,
+    envelope: &Envelope<ProbeSchemaResolution>,
+) -> DiscoveryResult<()> {
+    writeln!(writer, "Canonical hash: {}", envelope.data.hash)?;
+    let mut document = serde_json::to_string_pretty(&envelope.data.document)?;
+    document.push('\n');
+    write!(writer, "{document}")?;
     Ok(())
 }
 

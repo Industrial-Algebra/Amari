@@ -61,7 +61,7 @@ pub use commands::discover::{
     SearchResults,
 };
 pub use commands::probe::{
-    ProbeDescription, ProbeDryRun, ProbeList, ProbeListItem, ProbeRunResult,
+    ProbeDescription, ProbeDryRun, ProbeList, ProbeListItem, ProbeRunResult, ProbeSchemaResolution,
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{

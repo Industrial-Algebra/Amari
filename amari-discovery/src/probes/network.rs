@@ -20,8 +20,32 @@ use crate::{DiscoveryError, DiscoveryResult, ProbeLimits, ResourceObservations, 
 const MAX_NODES: u64 = 128;
 
 /// Typed directed adjacency-matrix request for a shortest path.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/network-shortest-path/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        adjacency_node_limit = "the adjacency matrix contains at most 128 nodes",
+        adjacency_nonempty = "the adjacency matrix contains at least one node",
+        adjacency_square = "every adjacency row has one entry per node",
+        endpoint_indices_in_bounds = "source and target are valid node indices",
+        finite_nonnegative_weights = "every present edge weight is finite and nonnegative"
+    ),
+    example(
+        label = "two_node_path",
+        value = "{\"adjacency\":[[0.0,1.0],[null,0.0]],\"source\":0,\"target\":1}"
+    )
+)]
 pub struct NetworkShortestPathRequest {
     /// Square directed adjacency matrix, where `None` means no edge.
     pub adjacency: Vec<Vec<Option<f64>>>,
@@ -32,7 +56,7 @@ pub struct NetworkShortestPathRequest {
 }
 
 /// One reachable shortest path and its total edge weight.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct NetworkPath {
     /// Node indices from source through target, inclusive.
     pub nodes: Vec<usize>,
@@ -41,7 +65,29 @@ pub struct NetworkPath {
 }
 
 /// Typed output from geometric-network shortest-path evaluation.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/network-shortest-path/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        finite_total_weight = "a reachable path has a finite total weight",
+        optional_path_shape = "path is null exactly when the target is unreachable",
+        path_nodes_within_node_count = "every returned path node is a valid input node index"
+    ),
+    example(
+        label = "two_node_path",
+        value = "{\"path\":{\"nodes\":[0,1],\"total_weight\":1.0}}"
+    )
+)]
 pub struct NetworkShortestPathOutput {
     /// The shortest path, or `None` when the target is unreachable.
     pub path: Option<NetworkPath>,
