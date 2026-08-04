@@ -12,8 +12,8 @@ use super::recommend::read_bounded_input;
 use crate::{
     CandidatePlan, Capabilities, Catalog, CatalogIdentity, Compatibility, DiscoveryError,
     DiscoveryResult, Envelope, PlanStep, ProbeBackend, ProbeDescriptor, ProbeEngineLimits, ProbeId,
-    ProbeIsolation, ProbeResult, ProbeSchemaBinding, ProbeSchemaDocument, Provenance,
-    ReplayMetadata, ResourceLimits, WireSchemaRole, SCHEMA_V1,
+    ProbeIsolation, ProbeResult, ProbeSchemaBinding, Provenance, ReplayMetadata, ResourceLimits,
+    WireSchemaRole, SCHEMA_V1,
 };
 
 const MAX_PROBE_INPUT_BYTES: u64 = 1_048_576;
@@ -62,6 +62,15 @@ pub struct ProbeDescription {
     pub schema_hashes: ProbeSchemaBinding,
     /// Qualification for the runtime state.
     pub reason: Option<String>,
+}
+
+/// Complete exported wire schema plus its canonical identity hash.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ProbeSchemaResolution {
+    /// Exported JSON Schema document including Amari metadata.
+    pub document: Value,
+    /// Lowercase SHA-256 hash of the canonical exported document bytes.
+    pub hash: String,
 }
 
 /// Compatibility-only result for a probe step in a saved plan.
@@ -174,7 +183,7 @@ pub fn schema_envelope(
     catalog: &Catalog,
     probe_id: &ProbeId,
     role: WireSchemaRole,
-) -> DiscoveryResult<Envelope<ProbeSchemaDocument>> {
+) -> DiscoveryResult<Envelope<ProbeSchemaResolution>> {
     let descriptor = descriptor(catalog, probe_id)?;
     let schema_id = match role {
         WireSchemaRole::Input => descriptor.input_schema.as_str(),
@@ -187,7 +196,13 @@ pub fn schema_envelope(
             role = role.as_str()
         ))
     })?;
-    Ok(catalog_envelope(catalog, document.clone()))
+    Ok(catalog_envelope(
+        catalog,
+        ProbeSchemaResolution {
+            document: document.exported_value()?,
+            hash: document.canonical_hash()?,
+        },
+    ))
 }
 
 /// Validates a saved plan's catalog-backed probe step without execution.

@@ -107,21 +107,30 @@ fn schema_returns_complete_input_and_output_documents() {
     let output = command_json(&["probe", "schema", DUAL, "--direction", "output"]);
 
     assert_eq!(
-        input["data"],
-        serde_json::to_value(&input_document).unwrap()
+        input["data"]["document"],
+        input_document.exported_value().unwrap()
     );
     assert_eq!(
-        output["data"],
-        serde_json::to_value(&output_document).unwrap()
+        output["data"]["document"],
+        output_document.exported_value().unwrap()
     );
     assert_eq!(
-        input["data"]["id"],
+        input["data"]["document"]["$id"],
         "amari.discovery/probe/dual-polynomial-derivative/input/v1"
     );
     assert_eq!(
-        output["data"]["id"],
+        output["data"]["document"]["$id"],
         "amari.discovery/probe/dual-polynomial-derivative/output/v1"
     );
+    assert_eq!(
+        input["data"]["hash"],
+        input_document.canonical_hash().unwrap()
+    );
+    assert_eq!(
+        output["data"]["hash"],
+        output_document.canonical_hash().unwrap()
+    );
+    assert_eq!(input["data"]["hash"].as_str().unwrap().len(), 64);
     assert_eq!(
         input["data"]["hash"],
         command_json(&["probe", "schema", DUAL, "--direction", "input"])["data"]["hash"]
@@ -171,6 +180,32 @@ fn schema_rejects_invalid_direction_and_unknown_probe_as_typed_errors() {
         .as_str()
         .unwrap()
         .contains("unknown probe"));
+}
+
+#[test]
+fn readme_schema_docs() {
+    let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let readme = fs::read_to_string(manifest_dir.join("README.md")).unwrap();
+    let guide = fs::read_to_string(manifest_dir.join("../docs/guide/amari-discovery.md")).unwrap();
+
+    for document in [&readme, &guide] {
+        assert!(document.contains(
+            "amari probe schema amari-probe:dual:polynomial-derivative:v1 --direction input --json"
+        ));
+        assert!(document.contains("schema_hashes"));
+        assert!(document.contains("Structural JSON Schema"));
+        assert!(document.contains("semantic Rust validation"));
+        assert!(document.contains("amari.discovery/v1"));
+    }
+
+    assert!(readme.contains("amari.discovery/probe/dual-polynomial-derivative/input/v1"));
+    assert!(readme.contains("x-amari-semantic-constraints"));
+    assert!(readme.contains("canonical SHA-256 hash"));
+    assert!(guide.contains(
+        "required field, field type, unknown-field, semantic constraint, or output meaning"
+    ));
+    assert!(guide.contains("v1") && guide.contains("v2"));
+    assert!(guide.contains("additive optional metadata"));
 }
 
 #[test]

@@ -9,11 +9,11 @@ use serde::Serialize;
 use crate::{
     commands::{
         discover::{ExampleResult, GraphResult, SearchResults},
-        probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult},
+        probe::{ProbeDescription, ProbeDryRun, ProbeList, ProbeRunResult, ProbeSchemaResolution},
     },
     CandidatePlan, Capabilities, CapabilityRecord, DiscoveryOutcome, DiscoveryResult, Envelope,
-    NdjsonWriter, PlanStep, ProbeBackend, ProbeIsolation, ProbeSchemaDocument, ProjectKind,
-    ProjectSnapshot, ProtocolSchema, Recommendation, SchemaCatalog,
+    NdjsonWriter, PlanStep, ProbeBackend, ProbeIsolation, ProjectKind, ProjectSnapshot,
+    ProtocolSchema, Recommendation, SchemaCatalog,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -217,9 +217,12 @@ pub(crate) fn write_probe_description_human(
 
 pub(crate) fn write_probe_schema_human(
     writer: &mut impl Write,
-    envelope: &Envelope<ProbeSchemaDocument>,
+    envelope: &Envelope<ProbeSchemaResolution>,
 ) -> DiscoveryResult<()> {
-    write!(writer, "{}", envelope.data.canonical_json()?)?;
+    writeln!(writer, "Canonical hash: {}", envelope.data.hash)?;
+    let mut document = serde_json::to_string_pretty(&envelope.data.document)?;
+    document.push('\n');
+    write!(writer, "{document}")?;
     Ok(())
 }
 

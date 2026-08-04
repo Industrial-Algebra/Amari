@@ -101,6 +101,51 @@ Only registered, compiled adapters run. The public CLI routes execution through
 a restricted process worker and reports process isolation only after validating
 the worker frame, result, and provenance.
 
+### Probe wire schemas and drift
+
+`amari.discovery/v1` remains the response protocol. Every executable probe has
+a compiled Rust request and response DTO, and each DTO exports a complete wire
+schema for its existing descriptor ID. `probe describe` exposes only compact
+`schema_hashes`; `probe list` stays compact. Resolve a full document only when
+needed:
+
+```bash
+amari probe schema amari-probe:dual:polynomial-derivative:v1 --direction input --json
+amari probe schema amari-probe:dual:polynomial-derivative:v1 --direction output --json
+```
+
+The envelope's `data.document` contains the exported `$id`, JSON Schema 2020-12
+structure, and `x-amari-*` provenance, compatibility, examples, and semantic
+constraint metadata. `data.hash` is the canonical SHA-256 hash of the exact
+exported document bytes. The hash is returned beside the document rather than
+inside it, so it identifies one immutable canonical document without creating
+a self-referential schema.
+
+Structural JSON Schema and semantic Rust validation are complementary. JSON
+Schema describes required fields, primitive/container shape, nested DTOs, and
+unknown-field behavior. Semantic Rust validation remains authoritative for
+domain checks that JSON Schema should not duplicate, including finite numeric
+values, exact decimal/rational bounds, graph shape, MAP256 dimensions, rewrite
+term depth/node limits, checked rule variables, and truthful truncation
+metadata. Agents should use both the structural schema and the
+`x-amari-semantic-constraints` list before constructing a payload.
+
+Schema drift has three classes:
+
+1. **No drift:** the Rust DTO and exported document produce the same canonical
+   hash.
+2. **Additive patch drift:** additive optional metadata or a backward-compatible
+   optional field is added. The same `v1` ID may remain only if the changed
+   hash and release notes make the addition explicit.
+3. **Breaking drift:** any required field, field type, unknown-field, semantic constraint, or output meaning changes. The schema must advance from `v1` to
+   `v2` (generally, `vN` to `vN+1`) together with the owning probe descriptor.
+
+Registry tests reject descriptor/adapter mismatch, missing executable
+contracts, duplicate schema IDs, role/version mismatch, and undocumented DTO
+drift. A known but non-executable descriptor, currently
+`amari-probe:tropical:shortest-path:v1`, remains declared-only and never
+receives a fabricated compiled schema.
+
 ## Agent workflow: capabilities → inspect → recommend → plan → probe
 
 The following workflow requires `jq` and should be run from the project being
