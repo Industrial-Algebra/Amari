@@ -1,0 +1,5 @@
+error: WireContract does not support generic DTOs; derive it on a concrete wire type
+  --> tests/ui/fail_generic.rs:12:12
+   |
+12 | pub struct GenericDto<T> {
+   |            ^^^^^^^^^^

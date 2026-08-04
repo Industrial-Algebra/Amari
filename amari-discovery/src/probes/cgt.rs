@@ -24,15 +24,56 @@ const OPERATIONS_PER_OPTION_ENTRY: u64 = 4;
 const OPERATIONS_PER_REQUESTED_HEAP: u64 = 2;
 
 /// Typed input for exact nim-sum evaluation through Sprague-Grundy values.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/cgt-nim-sum/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        heap_count_limit = "at most 256 Nim heaps are accepted per request",
+        heap_value_limit = "each Nim heap value must be no greater than 64"
+    ),
+    example(label = "three_heaps", value = "{\"heaps\":[1,2,3]}")
+)]
 pub struct CgtNimSumRequest {
     /// Sizes of the independent Nim heaps.
     pub heaps: Vec<u32>,
 }
 
 /// Typed output from exact nim-sum evaluation.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/cgt-nim-sum/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        grundy_values_align_with_heaps = "grundy_values has exactly one entry for each requested heap, in request order",
+        nim_sum_is_xor = "nim_sum is the bitwise XOR of every grundy_values entry"
+    ),
+    example(
+        label = "three_heaps",
+        value = "{\"grundy_values\":[1,2,3],\"nim_sum\":0}"
+    )
+)]
 pub struct CgtNimSumOutput {
     /// Sprague-Grundy value computed directly for each requested heap.
     pub grundy_values: Vec<u32>,

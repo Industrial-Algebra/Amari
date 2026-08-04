@@ -45,8 +45,11 @@ pub use surreal::{
 };
 pub use tropical::{TropicalViterbiOutput, TropicalViterbiRequest};
 
+#[cfg(feature = "standard-probes")]
+use crate::ProbeSchemaDocument;
 use crate::{
-    Catalog, DiscoveryError, DiscoveryResult, ProbeBackend, ProbeId, ResourceObservations,
+    Catalog, DiscoveryError, DiscoveryResult, ProbeBackend, ProbeId, ProbeSchemaBinding,
+    ProbeSchemaRegistration, ProbeWireSchemaRegistry, ResourceObservations,
 };
 
 /// Caller-selected ceilings for cooperative in-process probe execution.
@@ -97,6 +100,8 @@ pub struct ProbeExecution {
     pub input_schema: String,
     /// Versioned response schema emitted by the adapter.
     pub output_schema: String,
+    /// Compact resolved wire schema identities and hashes.
+    pub schema_hashes: ProbeSchemaBinding,
     /// Execution backend.
     pub backend: ProbeBackend,
     /// Available isolation boundary.
@@ -112,6 +117,7 @@ pub struct ProbeExecution {
 /// Public cooperative executor over the fixed private probe registry.
 pub struct ProbeEngine {
     registry: ProbeRegistry,
+    schema_registry: ProbeWireSchemaRegistry,
     limits: ProbeEngineLimits,
 }
 
@@ -164,8 +170,10 @@ impl ProbeEngine {
                 "cooperative probe limits must be greater than zero".to_owned(),
             ));
         }
+        let (registry, schema_registry) = build_registries(catalog)?;
         Ok(Self {
-            registry: ProbeRegistry::build(catalog, compiled_registrations()?)?,
+            registry,
+            schema_registry,
             limits,
         })
     }
@@ -248,6 +256,15 @@ impl ProbeEngine {
             probe_id: id.clone(),
             input_schema: registered.input_schema.clone(),
             output_schema: registered.output_schema.clone(),
+            schema_hashes: self
+                .schema_registry
+                .binding(id)
+                .ok_or_else(|| {
+                    DiscoveryError::CatalogCorruption(format!(
+                        "executable probe `{id}` has no wire schema binding"
+                    ))
+                })?
+                .clone(),
             backend: ProbeBackend::Cpu,
             isolation: ProbeIsolation::Cooperative,
             deterministic: registered.deterministic,
@@ -264,6 +281,163 @@ pub(crate) fn execute_isolated(
     provenance: crate::Provenance,
 ) -> DiscoveryResult<ProbeExecution> {
     supervisor::execute_isolated(id, input, limits, provenance)
+}
+
+pub(crate) fn wire_schema_registry(catalog: &Catalog) -> DiscoveryResult<ProbeWireSchemaRegistry> {
+    Ok(build_registries(catalog)?.1)
+}
+
+fn build_registries(
+    catalog: &Catalog,
+) -> DiscoveryResult<(ProbeRegistry, ProbeWireSchemaRegistry)> {
+    let adapters = compiled_registrations()?;
+    let executable_ids = adapters
+        .iter()
+        .map(|registration| registration.id.clone())
+        .collect::<Vec<_>>();
+    let schema_registrations = compiled_schema_registrations(catalog, &adapters)?;
+    Ok((
+        ProbeRegistry::build(catalog, adapters)?,
+        ProbeWireSchemaRegistry::build(catalog, executable_ids, schema_registrations)?,
+    ))
+}
+
+#[cfg(feature = "standard-probes")]
+fn compiled_schema_registrations(
+    catalog: &Catalog,
+    adapters: &[AdapterRegistration],
+) -> DiscoveryResult<Vec<ProbeSchemaRegistration>> {
+    let mut registrations = Vec::new();
+    for adapter in adapters {
+        let probe_id = adapter.id.clone();
+        let probe = catalog
+            .probes()
+            .iter()
+            .find(|probe| probe.id == probe_id)
+            .ok_or_else(|| {
+                DiscoveryError::CatalogCorruption(format!(
+                    "executable probe `{probe_id}` has no descriptor"
+                ))
+            })?;
+        registrations.push(ProbeSchemaRegistration::new(
+            probe_id.clone(),
+            schema_document(&probe.input_schema)?,
+        ));
+        registrations.push(ProbeSchemaRegistration::new(
+            probe_id,
+            schema_document(&probe.output_schema)?,
+        ));
+    }
+    Ok(registrations)
+}
+
+#[cfg(feature = "standard-probes")]
+fn schema_document(schema_id: &str) -> DiscoveryResult<ProbeSchemaDocument> {
+    match schema_id {
+        "amari.discovery/probe/cgt-nim-sum/input/v1" => {
+            ProbeSchemaDocument::from_contract::<CgtNimSumRequest>()
+        }
+        "amari.discovery/probe/cgt-nim-sum/output/v1" => {
+            ProbeSchemaDocument::from_contract::<CgtNimSumOutput>()
+        }
+        "amari.discovery/probe/core-geometric-product/input/v1" => {
+            ProbeSchemaDocument::from_contract::<Cl3ProductRequest>()
+        }
+        "amari.discovery/probe/core-geometric-product/output/v1" => {
+            ProbeSchemaDocument::from_contract::<Cl3ProductOutput>()
+        }
+        "amari.discovery/probe/dual-polynomial-derivative/input/v1" => {
+            ProbeSchemaDocument::from_contract::<PolynomialDerivativeRequest>()
+        }
+        "amari.discovery/probe/dual-polynomial-derivative/output/v1" => {
+            ProbeSchemaDocument::from_contract::<PolynomialDerivativeOutput>()
+        }
+        "amari.discovery/probe/holographic-recall/input/v1" => {
+            ProbeSchemaDocument::from_contract::<HolographicRecallRequest>()
+        }
+        "amari.discovery/probe/holographic-recall/output/v1" => {
+            ProbeSchemaDocument::from_contract::<HolographicRecallOutput>()
+        }
+        "amari.discovery/probe/holographic-superposition/input/v1" => {
+            ProbeSchemaDocument::from_contract::<HolographicSuperpositionRequest>()
+        }
+        "amari.discovery/probe/holographic-superposition/output/v1" => {
+            ProbeSchemaDocument::from_contract::<HolographicSuperpositionOutput>()
+        }
+        "amari.discovery/probe/network-shortest-path/input/v1" => {
+            ProbeSchemaDocument::from_contract::<NetworkShortestPathRequest>()
+        }
+        "amari.discovery/probe/network-shortest-path/output/v1" => {
+            ProbeSchemaDocument::from_contract::<NetworkShortestPathOutput>()
+        }
+        "amari.discovery/probe/optimization-pareto-front/input/v1" => {
+            ProbeSchemaDocument::from_contract::<ParetoFrontRequest>()
+        }
+        "amari.discovery/probe/optimization-pareto-front/output/v1" => {
+            ProbeSchemaDocument::from_contract::<ParetoFrontOutput>()
+        }
+        "amari.discovery/probe/rewrite-infer-rule/input/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteInferRuleRequest>()
+        }
+        "amari.discovery/probe/rewrite-infer-rule/output/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteInferRuleOutput>()
+        }
+        "amari.discovery/probe/rewrite-normalize/input/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteNormalizeRequest>()
+        }
+        "amari.discovery/probe/rewrite-normalize/output/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteNormalizeOutput>()
+        }
+        "amari.discovery/probe/rewrite-predecessors/input/v1" => {
+            ProbeSchemaDocument::from_contract::<RewritePredecessorsRequest>()
+        }
+        "amari.discovery/probe/rewrite-predecessors/output/v1" => {
+            ProbeSchemaDocument::from_contract::<RewritePredecessorsOutput>()
+        }
+        "amari.discovery/probe/surreal-rational-arithmetic/input/v1" => {
+            ProbeSchemaDocument::from_contract::<RationalSurrealArithmeticRequest>()
+        }
+        "amari.discovery/probe/surreal-rational-arithmetic/output/v1" => {
+            ProbeSchemaDocument::from_contract::<RationalSurrealArithmeticOutput>()
+        }
+        "amari.discovery/probe/surcomplex-rational-division/input/v1" => {
+            ProbeSchemaDocument::from_contract::<RationalSurcomplexDivisionRequest>()
+        }
+        "amari.discovery/probe/surcomplex-rational-division/output/v1" => {
+            ProbeSchemaDocument::from_contract::<RationalSurcomplexDivisionOutput>()
+        }
+        "amari.discovery/probe/tropical-viterbi/input/v1" => {
+            ProbeSchemaDocument::from_contract::<TropicalViterbiRequest>()
+        }
+        "amari.discovery/probe/tropical-viterbi/output/v1" => {
+            ProbeSchemaDocument::from_contract::<TropicalViterbiOutput>()
+        }
+        _ => Err(DiscoveryError::CatalogCorruption(format!(
+            "no compiled wire contract for `{schema_id}`"
+        ))),
+    }
+}
+
+#[cfg(not(feature = "standard-probes"))]
+fn compiled_schema_registrations(
+    _catalog: &Catalog,
+    _adapters: &[AdapterRegistration],
+) -> DiscoveryResult<Vec<ProbeSchemaRegistration>> {
+    Ok(Vec::new())
+}
+
+#[cfg(all(test, feature = "standard-probes"))]
+mod tests {
+    use crate::DiscoveryError;
+
+    #[test]
+    fn unknown_compiled_schema_contract_is_catalog_corruption() {
+        assert!(matches!(
+            super::schema_document("amari.discovery/probe/not-registered/input/v1"),
+            Err(DiscoveryError::CatalogCorruption(message))
+                if message.contains("no compiled wire contract")
+        ));
+    }
 }
 
 fn enforce_limit(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()> {

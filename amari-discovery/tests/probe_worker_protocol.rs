@@ -117,6 +117,10 @@ fn worker_request_has_only_typed_data_and_success_preserves_provenance() {
         )
         .unwrap();
     assert_eq!(response["execution"]["output"], direct.output);
+    assert_eq!(
+        response["execution"]["schema_hashes"],
+        serde_json::to_value(direct.schema_hashes).unwrap()
+    );
 }
 
 #[test]

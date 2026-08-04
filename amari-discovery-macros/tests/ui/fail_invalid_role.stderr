@@ -1,0 +1,5 @@
+error: wire_contract role must be `input` or `output`
+  --> tests/ui/fail_invalid_role.rs:12:12
+   |
+12 |     role = "sideways"
+   |            ^^^^^^^^^^

@@ -30,6 +30,7 @@ pub mod protocol;
 mod render;
 pub mod schema;
 mod shell;
+pub mod wire;
 
 #[cfg(feature = "ai")]
 pub use ai::{
@@ -60,7 +61,7 @@ pub use commands::discover::{
     SearchResults,
 };
 pub use commands::probe::{
-    ProbeDescription, ProbeDryRun, ProbeList, ProbeListItem, ProbeRunResult,
+    ProbeDescription, ProbeDryRun, ProbeList, ProbeListItem, ProbeRunResult, ProbeSchemaResolution,
 };
 pub use error::{DiscoveryError, DiscoveryResult};
 pub use inspect::{
@@ -118,4 +119,9 @@ pub use protocol::{
 pub use schema::{
     protocol_schema, protocol_schema_catalog, ProtocolSchema, SchemaCatalog, SchemaKind,
     SchemaSummary,
+};
+pub use wire::{
+    ProbeSchemaBinding, ProbeSchemaContractState, ProbeSchemaDocument, ProbeSchemaRegistration,
+    ProbeSchemaSummary, ProbeWireSchemaRegistry, WireCompatibility, WireContract, WireExample,
+    WireSchemaRole, WireSemanticConstraint,
 };

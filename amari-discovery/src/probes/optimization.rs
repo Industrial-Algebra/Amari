@@ -20,7 +20,7 @@ const MAX_POPULATION: u64 = 256;
 const MAX_DIMENSIONS: u64 = 32;
 
 /// Optimization direction for one objective dimension.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ObjectiveDirection {
     /// Prefer lower objective values.
@@ -30,8 +30,33 @@ pub enum ObjectiveDirection {
 }
 
 /// Typed request for extracting a Pareto front from objective vectors.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
 #[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/optimization-pareto-front/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        dimension_limit = "at most 32 objective dimensions are accepted",
+        finite_objectives = "every objective value is finite",
+        nonempty_directions = "at least one objective direction is required",
+        nonempty_population = "at least one candidate objective vector is required",
+        population_limit = "at most 256 candidate objective vectors are accepted",
+        rectangular_objectives = "every candidate has exactly one value per objective direction"
+    ),
+    example(
+        label = "three_candidates",
+        value = "{\"objectives\":[[1.0,2.0],[2.0,1.0],[2.0,2.0]],\"directions\":[\"minimize\",\"minimize\"]}"
+    )
+)]
 pub struct ParetoFrontRequest {
     /// Objective vector for each candidate.
     pub objectives: Vec<Vec<f64>>,
@@ -40,7 +65,7 @@ pub struct ParetoFrontRequest {
 }
 
 /// One non-dominated point in the original objective convention.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct ParetoPoint {
     /// Zero-based candidate index from the request.
     pub index: usize,
@@ -49,7 +74,29 @@ pub struct ParetoPoint {
 }
 
 /// Typed output from Pareto-front extraction.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/optimization-pareto-front/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        solution_indices_match_request = "every solution index refers to an input candidate",
+        solution_objectives_match_request = "solution objective vectors preserve the original input values and dimension",
+        solutions_are_nondominated = "returned solutions are mutually non-dominated under the requested directions"
+    ),
+    example(
+        label = "three_candidates",
+        value = "{\"solutions\":[{\"index\":0,\"objectives\":[1.0,2.0]},{\"index\":1,\"objectives\":[2.0,1.0]}]}"
+    )
+)]
 pub struct ParetoFrontOutput {
     /// Non-dominated points ordered by original candidate index.
     pub solutions: Vec<ParetoPoint>,

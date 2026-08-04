@@ -10,12 +10,17 @@ use amari_discovery::{
     CandidatePlan, Catalog, CatalogIdentity, Compatibility, Envelope, PlanCompatibility,
     PlanNormalization, PlanStep, ReplayMetadata,
 };
+#[cfg(feature = "standard-probes")]
+use amari_discovery::{
+    PolynomialDerivativeOutput, PolynomialDerivativeRequest, ProbeSchemaDocument,
+};
 use assert_cmd::Command;
 use predicates::prelude::*;
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
 const VITERBI: &str = "amari-probe:tropical:viterbi:v1";
+const DUAL: &str = "amari-probe:dual:polynomial-derivative:v1";
 
 fn command_json(arguments: &[&str]) -> Value {
     let output = Command::cargo_bin("amari")
@@ -90,6 +95,119 @@ fn plan_envelope(probe_id: &str) -> Envelope<CandidatePlan> {
     )
 }
 
+#[cfg(feature = "standard-probes")]
+#[test]
+fn schema_returns_complete_input_and_output_documents() {
+    let input_document =
+        ProbeSchemaDocument::from_contract::<PolynomialDerivativeRequest>().unwrap();
+    let output_document =
+        ProbeSchemaDocument::from_contract::<PolynomialDerivativeOutput>().unwrap();
+
+    let input = command_json(&["probe", "schema", DUAL, "--direction", "input"]);
+    let output = command_json(&["probe", "schema", DUAL, "--direction", "output"]);
+
+    assert_eq!(
+        input["data"]["document"],
+        input_document.exported_value().unwrap()
+    );
+    assert_eq!(
+        output["data"]["document"],
+        output_document.exported_value().unwrap()
+    );
+    assert_eq!(
+        input["data"]["document"]["$id"],
+        "amari.discovery/probe/dual-polynomial-derivative/input/v1"
+    );
+    assert_eq!(
+        output["data"]["document"]["$id"],
+        "amari.discovery/probe/dual-polynomial-derivative/output/v1"
+    );
+    assert_eq!(
+        input["data"]["hash"],
+        input_document.canonical_hash().unwrap()
+    );
+    assert_eq!(
+        output["data"]["hash"],
+        output_document.canonical_hash().unwrap()
+    );
+    assert_eq!(input["data"]["hash"].as_str().unwrap().len(), 64);
+    assert_eq!(
+        input["data"]["hash"],
+        command_json(&["probe", "schema", DUAL, "--direction", "input"])["data"]["hash"]
+    );
+}
+
+#[cfg(feature = "standard-probes")]
+#[test]
+fn schema_rejects_invalid_direction_and_unknown_probe_as_typed_errors() {
+    let invalid_direction = Command::cargo_bin("amari")
+        .unwrap()
+        .args(["probe", "schema", DUAL, "--direction", "sideways", "--json"])
+        .assert()
+        .failure()
+        .code(2)
+        .stdout(predicate::str::is_empty())
+        .get_output()
+        .stderr
+        .clone();
+    let invalid_direction: Value = serde_json::from_slice(&invalid_direction).unwrap();
+    assert_eq!(invalid_direction["kind"], "invalid_input");
+    assert!(invalid_direction["message"]
+        .as_str()
+        .unwrap()
+        .contains("direction"));
+
+    let unknown_probe = Command::cargo_bin("amari")
+        .unwrap()
+        .args([
+            "probe",
+            "schema",
+            "amari-probe:dual:does-not-exist:v1",
+            "--direction",
+            "input",
+            "--json",
+        ])
+        .assert()
+        .failure()
+        .code(2)
+        .stdout(predicate::str::is_empty())
+        .get_output()
+        .stderr
+        .clone();
+    let unknown_probe: Value = serde_json::from_slice(&unknown_probe).unwrap();
+    assert_eq!(unknown_probe["kind"], "invalid_input");
+    assert!(unknown_probe["message"]
+        .as_str()
+        .unwrap()
+        .contains("unknown probe"));
+}
+
+#[test]
+fn readme_schema_docs() {
+    let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let readme = fs::read_to_string(manifest_dir.join("README.md")).unwrap();
+    let guide = fs::read_to_string(manifest_dir.join("../docs/guide/amari-discovery.md")).unwrap();
+
+    for document in [&readme, &guide] {
+        assert!(document.contains(
+            "amari probe schema amari-probe:dual:polynomial-derivative:v1 --direction input --json"
+        ));
+        assert!(document.contains("schema_hashes"));
+        assert!(document.contains("Structural JSON Schema"));
+        assert!(document.contains("semantic Rust validation"));
+        assert!(document.contains("amari.discovery/v1"));
+    }
+
+    assert!(readme.contains("amari.discovery/probe/dual-polynomial-derivative/input/v1"));
+    assert!(readme.contains("x-amari-semantic-constraints"));
+    assert!(readme.contains("canonical SHA-256 hash"));
+    assert!(guide.contains(
+        "required field, field type, unknown-field, semantic constraint, or output meaning"
+    ));
+    assert!(guide.contains("v1") && guide.contains("v2"));
+    assert!(guide.contains("additive optional metadata"));
+}
+
 #[test]
 fn list_reports_every_catalog_probe_with_dynamic_execution_state() {
     let listed = command_json(&["probe", "list"]);
@@ -105,6 +223,8 @@ fn list_reports_every_catalog_probe_with_dynamic_execution_state() {
         assert_eq!(probe["known"], true);
         assert_eq!(probe["available"], state["available"]);
         assert_eq!(probe["executable"], state["executable"]);
+        assert!(probe.get("descriptor").is_none());
+        assert!(probe.get("schema_hashes").is_none());
     }
 }
 
@@ -125,6 +245,35 @@ fn describe_returns_the_catalog_contract_and_process_guarantees() {
     assert_eq!(value["data"]["isolation"], "process");
     assert_eq!(value["data"]["hard_timeout"], true);
     assert_eq!(value["data"]["crash_isolation"], true);
+
+    #[cfg(feature = "standard-probes")]
+    {
+        let input_document =
+            ProbeSchemaDocument::from_contract::<amari_discovery::TropicalViterbiRequest>()
+                .unwrap();
+        let output_document =
+            ProbeSchemaDocument::from_contract::<amari_discovery::TropicalViterbiOutput>().unwrap();
+        let hashes = &value["data"]["schema_hashes"];
+        assert_eq!(hashes["probe_id"], VITERBI);
+        assert_eq!(hashes["state"], "resolved");
+        assert_eq!(
+            hashes["input_summary"],
+            serde_json::to_value(input_document.summary().unwrap()).unwrap()
+        );
+        assert_eq!(
+            hashes["output_summary"],
+            serde_json::to_value(output_document.summary().unwrap()).unwrap()
+        );
+    }
+
+    #[cfg(not(feature = "standard-probes"))]
+    {
+        let hashes = &value["data"]["schema_hashes"];
+        assert_eq!(hashes["probe_id"], VITERBI);
+        assert_eq!(hashes["state"], "declared");
+        assert!(hashes["input_summary"].is_null());
+        assert!(hashes["output_summary"].is_null());
+    }
 }
 
 #[test]
@@ -145,7 +294,12 @@ fn list_and_describe_human_output_are_concise() {
         .success()
         .stderr(predicate::str::is_empty())
         .stdout(predicate::str::contains("Process isolation"))
-        .stdout(predicate::str::contains("Hard timeout: yes"));
+        .stdout(predicate::str::contains("Hard timeout: yes"))
+        .stdout(predicate::str::contains("Input schema hash:"))
+        .stdout(predicate::str::contains("Output schema hash:"))
+        .stdout(predicate::str::contains(
+            "amari probe schema amari-probe:tropical:viterbi:v1 --direction input",
+        ));
 }
 
 #[cfg(feature = "standard-probes")]

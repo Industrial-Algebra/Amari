@@ -1,6 +1,6 @@
 {
   "name": "@justinelliottcobb/amari-wasm",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "WebAssembly bindings for Amari mathematical computing library",
   "scripts": {
     "build": "wasm-pack build --target web --out-dir pkg --scope justinelliottcobb",

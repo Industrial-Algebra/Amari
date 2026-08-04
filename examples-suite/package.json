@@ -1,6 +1,6 @@
 {
   "name": "amari-examples-suite",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "Interactive API examples for the Amari Mathematical Computing Library",
   "private": true,
   "type": "module",

@@ -34,6 +34,22 @@ def success_response() -> dict[str, object]:
             "probe_id": "amari-probe:tropical:viterbi:v1",
             "input_schema": "fixture/input/v1",
             "output_schema": "fixture/output/v1",
+            "schema_hashes": {
+                "probe_id": "amari-probe:tropical:viterbi:v1",
+                "state": "resolved",
+                "input_summary": {
+                    "id": "amari.discovery/probe/tropical-viterbi/input/v1",
+                    "role": "input",
+                    "compatibility": "additive_patch",
+                    "hash": "0" * 64,
+                },
+                "output_summary": {
+                    "id": "amari.discovery/probe/tropical-viterbi/output/v1",
+                    "role": "output",
+                    "compatibility": "additive_patch",
+                    "hash": "1" * 64,
+                },
+            },
             "backend": "cpu",
             "isolation": "cooperative",
             "deterministic": True,

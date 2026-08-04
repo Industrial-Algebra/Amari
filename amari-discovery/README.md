@@ -79,6 +79,88 @@ tool version, recall seed, catalog identity, project/input hashes, and saved
 probe hashes. A dry run validates compatibility only; actual probe execution
 requires an explicit typed input JSON file.
 
+## Probe wire schema authority
+
+Every executable probe resolves a complete DTO-derived input and output
+schema. `probe describe` remains compact but now includes `schema_hashes` for
+both directions:
+
+```bash
+amari probe describe amari-probe:dual:polynomial-derivative:v1 --json
+```
+
+Resolve the exported documents and their canonical SHA-256 hash explicitly:
+
+```bash
+amari probe schema amari-probe:dual:polynomial-derivative:v1 --direction input --json
+amari probe schema amari-probe:dual:polynomial-derivative:v1 --direction output --json
+```
+
+The response remains an `amari.discovery/v1` envelope. Its `data.document` is
+the exported JSON Schema plus Amari metadata, and `data.hash` is the canonical
+SHA-256 hash of that document. For the dual polynomial-derivative input, the
+complete document is:
+
+```json
+{
+  "$id": "amari.discovery/probe/dual-polynomial-derivative/input/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "PolynomialDerivativeRequest",
+  "description": "Typed input for dual-number evaluation of a scalar polynomial and derivative.",
+  "required": ["coefficients", "at"],
+  "additionalProperties": false,
+  "properties": {
+    "coefficients": {
+      "type": "array",
+      "description": "Polynomial coefficients in descending-power order.",
+      "items": { "type": "number", "format": "double" }
+    },
+    "at": {
+      "type": "number",
+      "format": "double",
+      "description": "Point at which to evaluate the polynomial and its first derivative."
+    }
+  },
+  "x-amari-schema-role": "input",
+  "x-amari-protocol-version": "amari.discovery/v1",
+  "x-amari-semantic-constraints": [
+    {
+      "id": "coefficient_count_limit",
+      "description": "at most 5000 coefficients are accepted per request"
+    },
+    {
+      "id": "finite_numbers",
+      "description": "all coefficients and the evaluation point must be finite"
+    },
+    {
+      "id": "nonempty_coefficients",
+      "description": "the polynomial requires at least one coefficient"
+    }
+  ],
+  "x-amari-examples": [
+    {
+      "label": "quadratic",
+      "value": { "coefficients": [1.0, 2.0, 3.0], "at": 2.0 }
+    }
+  ],
+  "x-amari-compatibility": "additive_patch"
+}
+```
+
+Structural JSON Schema describes the accepted JSON shape. The
+`x-amari-semantic-constraints` metadata is authoritative documentation for
+checks that still require semantic Rust validation, such as finite numbers,
+nonempty polynomials, exact rational bounds, term depth, and deterministic
+truncation behavior. Agents should validate structure from the schema but must
+not treat JSON Schema alone as proof that a payload satisfies the probe's
+semantic contract.
+
+The known but non-executable
+`amari-probe:tropical:shortest-path:v1` descriptor remains declared-only: its
+identity is visible, but the command does not fabricate a compiled contract
+when no adapter is present.
+
 ## Output and errors
 
 - Human output is the default.

@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.1] - 2026-08-04
+
+### Added
+
+#### `amari-discovery` probe wire-schema authority
+
+- New `amari-discovery-macros` crate with a bounded `WireContract` derive for stable probe DTOs, including compile-time rejection of unsupported Serde shapes and trybuild coverage
+- Wire schema model, exported JSON Schema documents, semantic/provenance/compatibility metadata, and deterministic canonical SHA-256 hashes
+- Registry validation for input/output schema ownership, role/version matching, duplicate IDs, and declared-only non-executable probes
+- Complete input/output wire contracts for all 13 executable discovery probes across numeric, structured, rational, holographic, and rewrite domains
+- `amari probe schema <probe-id> --direction input|output` for full exported schema documents, compact schema hashes in `amari probe describe`, and matching schema identities from direct and process-isolated probe execution
+
+### Documentation
+
+- Expanded `amari-discovery/README.md` and `docs/guide/amari-discovery.md` with the structural-versus-semantic contract split, compatibility classes, drift governance, and schema resolution examples
+
+> Release acceptance requires synchronized catalogs, registry-resolved packages,
+> successful publication, post-publication installation, and the `v0.24.1` tag.
+> The comprehensive rewrite/inverse expansion remains scoped to 0.25.0.
+
+---
+
 ## [0.24.0] - 2026-07-24
 
 ### Added
