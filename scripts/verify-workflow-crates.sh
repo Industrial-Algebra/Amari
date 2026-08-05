@@ -11,7 +11,7 @@ echo ""
 WORKSPACE_MEMBERS=$(grep -A 1 "^\[workspace\]" Cargo.toml | grep "members" | sed 's/members = \[//' | sed 's/\]//' | tr ',' '\n' | sed 's/"//g' | sed 's/ //g' | grep -v "^$")
 
 # Extract crates from publish.yml TIERS (one quoted space-separated tier per line)
-PUBLISH_CRATES=$(awk '/TIERS=\(/{flag=1; next} flag && /^\s*\)/{flag=0} flag {print}' .github/workflows/publish.yml | grep -oE '"[^"]+"' | tr -d '"' | tr ' ' '\n' | grep -v "^$" | sort -u)
+PUBLISH_CRATES=$(awk '/TIERS=\(/{flag=1; next} flag && /^[[:space:]]*\)/{flag=0} flag {print}' .github/workflows/publish.yml | grep -oE '"[^"]+"' | tr -d '"' | tr ' ' '\n' | grep -v "^$" | sort -u)
 
 # Exclude crates that are intentionally not published to crates.io
 # amari-wasm: Published to npm instead
