@@ -1,6 +1,21 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT OR Apache-2.0
-"""Verify that publish validation never executes legacy GPU runtime tests."""
+"""Pin the publish workflow's validation policy (post-0.24.1 velocity redesign).
+
+Policy:
+- The validate job runs on the dedicated self-hosted release runner as a fast
+  smoke gate. The full test/clippy/docs matrix is owned by PR CI
+  (ci.yml + mathematical-correctness.yml), which every tagged commit has
+  already passed; publish-time duplication cost ~55-60 minutes per release.
+- Validate must not contain cargo test or cargo clippy invocations, must not
+  use run_all_tests.sh, and must not serialize tests globally.
+- crates.io publishing must not use fixed indexing sleeps (the 0.24.1 release
+  spent ~20 minutes in sleep 45 calls); it must poll the sparse index at tier
+  boundaries instead.
+- All four publish jobs pin the verified Rust 1.97.1 toolchain through
+  dtolnay/rust-toolchain@1.97.1 plus the single global RUSTUP_TOOLCHAIN
+  override.
+"""
 
 from pathlib import Path
 import re
@@ -14,56 +29,80 @@ if match is None:
     raise AssertionError("publish workflow validate job not found")
 
 validate = match.group("body")
-commands = [
-    line.strip()
-    for line in validate.splitlines()
-    if line.strip().startswith("cargo test ")
-]
-workspace = [line for line in commands if line.startswith("cargo test --workspace")]
-expected_workspace = ["cargo test --workspace --exclude amari-gpu"]
-if workspace != expected_workspace:
-    raise AssertionError(
-        f"expected one GPU-excluded workspace test, found: {workspace!r}"
-    )
 
-for required in (
-    "cargo test -p amari-discovery --all-features",
-    "cargo test -p amari-holographic --all-features",
-):
-    if required not in commands:
-        raise AssertionError(f"missing required publish test: {required}")
+runs_on_lines = [
+    line.strip() for line in validate.splitlines() if line.strip().startswith("runs-on:")
+]
+if runs_on_lines != ["runs-on: [self-hosted, release]"]:
+    raise AssertionError(
+        "validate job must run on the dedicated self-hosted release runner; "
+        f"found: {runs_on_lines!r}"
+    )
 
 timeout_lines = [
     line.strip()
     for line in validate.splitlines()
     if line.strip().startswith("timeout-minutes:")
 ]
-if timeout_lines != ["timeout-minutes: 90"]:
+if timeout_lines != ["timeout-minutes: 30"]:
     raise AssertionError(
-        "validate job must use the empirically bounded 90-minute timeout; "
+        "validate smoke gate must keep the bounded 30-minute timeout; "
         f"found: {timeout_lines!r}"
     )
+
+active_validate = [
+    line.split("#", 1)[0]
+    for line in validate.splitlines()
+    if line.split("#", 1)[0].strip()
+]
+if any("cargo test" in line for line in active_validate):
+    raise AssertionError(
+        "publish-time cargo test reintroduces the duplicated matrix; "
+        "the full test matrix is enforced by PR CI on the tagged commits"
+    )
+if any("cargo clippy" in line for line in active_validate):
+    raise AssertionError(
+        "publish-time cargo clippy reintroduces the duplicated matrix; "
+        "warning-denied clippy is enforced by PR CI on the tagged commits"
+    )
 if "--test-threads" in validate:
-    raise AssertionError("publish tests must not use global serialization")
+    raise AssertionError("publish validation must not use global serialization")
 if "./run_all_tests.sh" in validate:
     raise AssertionError("run_all_tests.sh reintroduces amari-gpu runtime tests")
-clippy_commands = [
-    line.strip()
-    for line in validate.splitlines()
-    if line.strip().startswith("cargo clippy ")
+
+required_smoke_steps = [
+    "cargo fmt --all -- --check",
+    "scripts/version-sync.sh verify",
+    "scripts/verify-release-metadata.py",
+    "generate_catalog",
+    "scripts/generate-discovery-wasm-surface.sh",
+    "scripts/verify-publish-order.py",
+    "scripts/verify-workflow-crates.sh",
+    "scripts/verify-amari-binary-owner.py",
+    "cargo check --workspace --all-features",
 ]
-expected_clippy = [
-    "cargo clippy --workspace --all-features -- -D warnings",
-    (
-        "cargo clippy --workspace --all-targets --all-features -- "
-        "-D warnings -A clippy::needless_range_loop -A clippy::collapsible_match"
-    ),
-]
-if clippy_commands != expected_clippy:
+for required in required_smoke_steps:
+    if required not in validate:
+        raise AssertionError(f"missing required smoke step: {required}")
+
+publish_match = re.search(
+    r"(?ms)^  publish-crates:\n(?P<body>.*?)(?=^  [a-zA-Z0-9_-]+:\n)", workflow
+)
+if publish_match is None:
+    raise AssertionError("publish workflow publish-crates job not found")
+publish = publish_match.group("body")
+
+if "TIERS=(" not in publish:
+    raise AssertionError("publish-crates must publish in dependency tiers (TIERS)")
+if "CRATES=(" in publish:
+    raise AssertionError("stale flat CRATES array found; use tiered TIERS")
+if re.search(r"sleep\s+45", publish):
     raise AssertionError(
-        "expected warning-denied normal targets plus the documented tagged-test "
-        f"lint exception, found: {clippy_commands!r}"
+        "fixed indexing sleeps are forbidden; poll the sparse index instead"
     )
+for required in ("sparse_index_url", "wait_for_index", "index.crates.io"):
+    if required not in publish:
+        raise AssertionError(f"publish-crates must poll the sparse index ({required})")
 
 active_lines = [
     line.split("#", 1)[0].strip()
@@ -97,4 +136,4 @@ if preamble_overrides != [release_override] or all_overrides != [release_overrid
         f"override, RUSTUP_TOOLCHAIN 1.97.1; found: {all_overrides!r}"
     )
 
-print("publish test scope and effective release toolchain are pinned")
+print("publish workflow policy is pinned (self-hosted smoke, tiered polling)")
