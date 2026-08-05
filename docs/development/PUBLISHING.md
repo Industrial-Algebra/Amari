@@ -7,8 +7,31 @@ This document describes how to publish the Amari mathematical computing library 
 ### GitHub Secrets
 The following secrets must be configured in the GitHub repository:
 
-- `NPM_TOKEN` - npm authentication token for publishing `@amari/core`
 - `CARGO_REGISTRY_TOKEN` - crates.io API token for publishing Rust crates
+
+npm publishing uses **trusted publishing (OIDC)** — no npm token secret is
+required once the package is linked on npmjs.com (see below). The legacy
+`NPM_TOKEN` secret (classic token) is unused; npm revoked classic tokens in
+the granular-token transition.
+
+### npm Trusted Publishing (one-time setup)
+
+On npmjs.com, for `@justinelliottcobb/amari-wasm`: **Settings → Trusted
+Publishers → GitHub Actions** with:
+
+- Repository owner: `Industrial-Algebra`
+- Repository: `Amari`
+- Workflow filename: `publish.yml` (exact, case-sensitive, include `.yml`)
+- Environment: leave blank
+
+npm does not validate the configuration when saving, so double-check each
+field. Trusted publishing requires GitHub-hosted runners, Node >= 22.14.0,
+and npm CLI >= 11.5.1; provenance attestations are generated automatically.
+
+Fallback if OIDC is unavailable: create a **granular access token**
+(read+write on the package, 2FA-bypass enabled) and store it as the
+`NPM_TOKEN` secret. Granular tokens expire after at most 90 days and must be
+rotated.
 
 ### Local Setup
 For manual publishing:
@@ -120,7 +143,10 @@ npm publish    # Publish to npm
 - Ensure version numbers are updated
 
 **npm publish fails**
-- Verify `NPM_TOKEN` is valid and has publish permissions
+- Verify the trusted publisher configuration on npmjs.com matches the
+  repository and `publish.yml` exactly (all fields case-sensitive)
+- Check that the workflow job has `id-token: write` permission and runs on a
+  GitHub-hosted runner (trusted publishing does not support self-hosted)
 - Check that WASM build completed successfully
 - Ensure package version is incremented
 

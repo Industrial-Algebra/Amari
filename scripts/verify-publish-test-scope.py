@@ -136,4 +136,33 @@ if preamble_overrides != [release_override] or all_overrides != [release_overrid
         f"override, RUSTUP_TOOLCHAIN 1.97.1; found: {all_overrides!r}"
     )
 
+npm_match = re.search(
+    r"(?ms)^  publish-npm:\n(?P<body>.*?)(?=^  [a-zA-Z0-9_-]+:\n|\Z)", workflow
+)
+if npm_match is None:
+    raise AssertionError("publish workflow publish-npm job not found")
+publish_npm = npm_match.group("body")
+publish_npm_active = "\n".join(
+    line.split("#", 1)[0] for line in publish_npm.splitlines()
+)
+if "id-token: write" not in publish_npm_active:
+    raise AssertionError(
+        "publish-npm must grant id-token: write for trusted publishing (OIDC)"
+    )
+if "NODE_AUTH_TOKEN" in publish_npm_active or "secrets.NPM_TOKEN" in publish_npm_active:
+    raise AssertionError(
+        "publish-npm must not use the dead NPM_TOKEN secret; trusted "
+        "publishing (OIDC) replaced classic npm tokens"
+    )
+if "node-version: '24'" not in publish_npm_active:
+    raise AssertionError(
+        "publish-npm must use Node 24 (trusted publishing requires Node "
+        ">= 22.14.0 with npm CLI >= 11.5.1)"
+    )
+if "npm whoami" in publish_npm_active:
+    raise AssertionError(
+        "publish-npm must not run npm whoami; OIDC identity exists only "
+        "during npm publish"
+    )
+
 print("publish workflow policy is pinned (self-hosted smoke, tiered polling)")
