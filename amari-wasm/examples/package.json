@@ -38,7 +38,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/justinelliottcobb/Amari.git",
+    "url": "https://github.com/Industrial-Algebra/Amari",
     "directory": "amari-wasm/examples"
   }
 }
