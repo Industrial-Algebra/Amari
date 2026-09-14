@@ -7,6 +7,17 @@
 use alloc::collections::{BTreeSet, VecDeque};
 use alloc::vec::Vec;
 
+mod config;
+mod outcome;
+mod state;
+
+pub use config::InverseSearchConfig;
+pub use outcome::{
+    ApproximateSearchEvidence, BackwardDerivation, BackwardFrontier, BackwardSearchOutcome,
+    CertifiedExhaustion, ExhaustionAuthority, UnsupportedRelation,
+};
+pub use state::{SearchResources, SymbolicState};
+
 use crate::analysis::unify;
 use crate::error::RewriteResult;
 use crate::relation::{
