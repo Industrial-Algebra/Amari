@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "274735ae3df591675ebe18a6916f4e34522e6fa4fe3c1fc083cf5a9cea386e8a",
+  "content_hash": "9ae38422fb6f236f08eac11ea6ee50bc207a5e97497d153d439826574fdad460",
   "crates": [
     {
       "name": "amari",
@@ -376007,6 +376007,294 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::BidirectionalDerivation",
+          "kind": "struct",
+          "signature": "pub struct BidirectionalDerivation",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "forward_steps",
+                "ty": "Vec < ForwardStep >"
+              },
+              {
+                "label": "backward_steps",
+                "ty": "Vec < SymbolicPredecessor >"
+              },
+              {
+                "label": "meeting_forward",
+                "ty": "Term"
+              },
+              {
+                "label": "meeting_backward",
+                "ty": "Term"
+              },
+              {
+                "label": "unifier",
+                "ty": "Substitution"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::bidirectional",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct BidirectionalDerivation",
+              "shape": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "label": "forward_steps",
+                    "ty": "Vec < ForwardStep >"
+                  },
+                  {
+                    "label": "backward_steps",
+                    "ty": "Vec < SymbolicPredecessor >"
+                  },
+                  {
+                    "label": "meeting_forward",
+                    "ty": "Term"
+                  },
+                  {
+                    "label": "meeting_backward",
+                    "ty": "Term"
+                  },
+                  {
+                    "label": "unifier",
+                    "ty": "Substitution"
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+              "source_module": "amari_rewrite::inverse::bidirectional",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::bidirectional",
+              "declaration_ident": "BidirectionalDerivation"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalExplorer",
+          "kind": "struct",
+          "signature": "pub struct BidirectionalExplorer < 'a >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::bidirectional",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct BidirectionalExplorer < 'a >",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+              "source_module": "amari_rewrite::inverse::bidirectional",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::bidirectional",
+              "declaration_ident": "BidirectionalExplorer"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalExplorer::new",
+          "kind": "method",
+          "signature": "pub fn new (system : & 'a TermSystem , config : crate :: inverse :: InverseSearchConfig) -> Self",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::bidirectional",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (system : & 'a TermSystem , config : crate :: inverse :: InverseSearchConfig) -> Self",
+              "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+              "source_module": "amari_rewrite::inverse::bidirectional",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::bidirectional",
+              "declaration_ident": "BidirectionalExplorer::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalExplorer::search",
+          "kind": "method",
+          "signature": "pub fn search (& self , source : & Term , goal : & Term) -> RewriteResult < BidirectionalSearchOutcome >",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::bidirectional",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn search (& self , source : & Term , goal : & Term) -> RewriteResult < BidirectionalSearchOutcome >",
+              "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+              "source_module": "amari_rewrite::inverse::bidirectional",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::bidirectional",
+              "declaration_ident": "BidirectionalExplorer::search"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalFrontier",
+          "kind": "struct",
+          "signature": "pub struct BidirectionalFrontier",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "forward",
+                "ty": "Vec < SymbolicState >"
+              },
+              {
+                "label": "backward",
+                "ty": "Vec < SymbolicState >"
+              },
+              {
+                "label": "depth_reached",
+                "ty": "u64"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::bidirectional",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct BidirectionalFrontier",
+              "shape": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "label": "forward",
+                    "ty": "Vec < SymbolicState >"
+                  },
+                  {
+                    "label": "backward",
+                    "ty": "Vec < SymbolicState >"
+                  },
+                  {
+                    "label": "depth_reached",
+                    "ty": "u64"
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+              "source_module": "amari_rewrite::inverse::bidirectional",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::bidirectional",
+              "declaration_ident": "BidirectionalFrontier"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalSearchOutcome",
+          "kind": "enum",
+          "signature": "pub enum BidirectionalSearchOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Witness",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "BidirectionalDerivation"
+                  ]
+                }
+              },
+              {
+                "name": "Exhausted",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "CertifiedExhaustion"
+                  ]
+                }
+              },
+              {
+                "name": "Partial",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "BidirectionalFrontier"
+                  ]
+                }
+              },
+              {
+                "name": "Unsupported",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "UnsupportedRelation"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::bidirectional",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum BidirectionalSearchOutcome",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Witness",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "BidirectionalDerivation"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "Exhausted",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "CertifiedExhaustion"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "Partial",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "BidirectionalFrontier"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "Unsupported",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "UnsupportedRelation"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+              "source_module": "amari_rewrite::inverse::bidirectional",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::bidirectional",
+              "declaration_ident": "BidirectionalSearchOutcome"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::CertifiedExhaustion",
           "kind": "struct",
           "signature": "pub struct CertifiedExhaustion",
@@ -376133,6 +376421,67 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::inverse::outcome",
               "declaration_ident": "ExhaustionAuthority"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::ForwardStep",
+          "kind": "struct",
+          "signature": "pub struct ForwardStep",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "rule_id",
+                "ty": "RuleId"
+              },
+              {
+                "label": "position",
+                "ty": "Path"
+              },
+              {
+                "label": "source_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "result_hash",
+                "ty": "Sha256Digest"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::bidirectional",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct ForwardStep",
+              "shape": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "label": "rule_id",
+                    "ty": "RuleId"
+                  },
+                  {
+                    "label": "position",
+                    "ty": "Path"
+                  },
+                  {
+                    "label": "source_hash",
+                    "ty": "Sha256Digest"
+                  },
+                  {
+                    "label": "result_hash",
+                    "ty": "Sha256Digest"
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+              "source_module": "amari_rewrite::inverse::bidirectional",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::bidirectional",
+              "declaration_ident": "ForwardStep"
             }
           ]
         },
@@ -383120,6 +383469,79 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalDerivation",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalDerivation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalExplorer",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 8,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalExplorer"
+          },
+          "generics": "< 'a >",
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalFrontier",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalFrontier"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalSearchOutcome",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalSearchOutcome"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::inverse::CertifiedExhaustion",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 2,
@@ -383149,6 +383571,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::outcome",
             "ident": "ExhaustionAuthority"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::ForwardStep",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "ForwardStep"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -384436,6 +384876,79 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalDerivation",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalDerivation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalExplorer",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 8,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalExplorer"
+          },
+          "generics": "< 'a >",
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalFrontier",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalFrontier"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalSearchOutcome",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalSearchOutcome"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::inverse::CertifiedExhaustion",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 2,
@@ -384465,6 +384978,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::outcome",
             "ident": "ExhaustionAuthority"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::ForwardStep",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "ForwardStep"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -387393,6 +387924,60 @@
         },
         {
           "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalDerivation",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalDerivation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalFrontier",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalFrontier"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::BidirectionalSearchOutcome",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "BidirectionalSearchOutcome"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::inverse::CertifiedExhaustion",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 2,
@@ -387422,6 +388007,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::outcome",
             "ident": "ExhaustionAuthority"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::ForwardStep",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::bidirectional",
+            "ident": "ForwardStep"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -389016,6 +389619,54 @@
           "surface_kind": "top_level"
         },
         {
+          "path": "amari_rewrite::inverse::BidirectionalDerivation",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalExplorer",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 8,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalExplorer::new",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalExplorer::search",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalFrontier",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::BidirectionalSearchOutcome",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::inverse::CertifiedExhaustion",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 2,
@@ -389043,6 +389694,14 @@
           "path": "amari_rewrite::inverse::ExhaustionAuthority",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::ForwardStep",
+          "source_path": "amari-rewrite/src/inverse/bidirectional.rs",
+          "source_ordinal": 0,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -389650,7 +390309,7 @@
         {
           "path": "amari_rewrite::prelude::Substitution::compose",
           "source_path": "amari-rewrite/src/trs/substitution.rs",
-          "source_ordinal": 9,
+          "source_ordinal": 10,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -389682,7 +390341,7 @@
         {
           "path": "amari_rewrite::prelude::Substitution::is_empty",
           "source_path": "amari-rewrite/src/trs/substitution.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -389698,7 +390357,7 @@
         {
           "path": "amari_rewrite::prelude::Substitution::len",
           "source_path": "amari-rewrite/src/trs/substitution.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -391082,7 +391741,7 @@
         {
           "path": "amari_rewrite::trs::Substitution::compose",
           "source_path": "amari-rewrite/src/trs/substitution.rs",
-          "source_ordinal": 9,
+          "source_ordinal": 10,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -391114,7 +391773,7 @@
         {
           "path": "amari_rewrite::trs::Substitution::is_empty",
           "source_path": "amari-rewrite/src/trs/substitution.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -391130,7 +391789,7 @@
         {
           "path": "amari_rewrite::trs::Substitution::len",
           "source_path": "amari-rewrite/src/trs/substitution.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
