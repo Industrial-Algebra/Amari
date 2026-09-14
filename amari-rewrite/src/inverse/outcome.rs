@@ -52,6 +52,10 @@ pub enum ExhaustionAuthority {
     FiniteGroundingDomain,
     /// An exact regular-language exclusion proof.
     RegularLanguageExclusion,
+    /// The symbolic search frontier closed: every alpha-canonical
+    /// state reachable by backward expansion was enumerated and
+    /// expanded, with no candidate ever dropped by a cap.
+    ClosedSymbolicSearch,
 }
 
 impl CertifiedExhaustion {

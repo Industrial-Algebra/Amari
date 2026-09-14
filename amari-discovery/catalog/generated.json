@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "db89ca1d9880f1f5b37cc7f4db7b48fc167fb6d9c923c8f2557429679c1fdbf5",
+  "content_hash": "274735ae3df591675ebe18a6916f4e34522e6fa4fe3c1fc083cf5a9cea386e8a",
   "crates": [
     {
       "name": "amari",
@@ -375625,6 +375625,71 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::BackwardExplorer",
+          "kind": "struct",
+          "signature": "pub struct BackwardExplorer < 'a >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::backward",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct BackwardExplorer < 'a >",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/inverse/backward.rs",
+              "source_module": "amari_rewrite::inverse::backward",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::backward",
+              "declaration_ident": "BackwardExplorer"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BackwardExplorer::new",
+          "kind": "method",
+          "signature": "pub fn new (system : & 'a TermSystem , config : crate :: inverse :: InverseSearchConfig) -> Self",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::backward",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (system : & 'a TermSystem , config : crate :: inverse :: InverseSearchConfig) -> Self",
+              "source_path": "amari-rewrite/src/inverse/backward.rs",
+              "source_module": "amari_rewrite::inverse::backward",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::backward",
+              "declaration_ident": "BackwardExplorer::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BackwardExplorer::search",
+          "kind": "method",
+          "signature": "pub fn search (& self , target : & Term , goal : & Term , mode : SearchMode ,) -> RewriteResult < BackwardSearchOutcome >",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::backward",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn search (& self , target : & Term , goal : & Term , mode : SearchMode ,) -> RewriteResult < BackwardSearchOutcome >",
+              "source_path": "amari-rewrite/src/inverse/backward.rs",
+              "source_module": "amari_rewrite::inverse::backward",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::backward",
+              "declaration_ident": "BackwardExplorer::search"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::BackwardFrontier",
           "kind": "struct",
           "signature": "pub struct BackwardFrontier",
@@ -376024,6 +376089,12 @@
                 "data": {
                   "kind": "unit"
                 }
+              },
+              {
+                "name": "ClosedSymbolicSearch",
+                "data": {
+                  "kind": "unit"
+                }
               }
             ]
           },
@@ -376045,6 +376116,12 @@
                   },
                   {
                     "name": "RegularLanguageExclusion",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "ClosedSymbolicSearch",
                     "data": {
                       "kind": "unit"
                     }
@@ -376486,6 +376563,59 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::SearchMode",
+          "kind": "enum",
+          "signature": "pub enum SearchMode",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "BreadthFirst",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "CostFirst",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::backward",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum SearchMode",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "BreadthFirst",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "CostFirst",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/backward.rs",
+              "source_module": "amari_rewrite::inverse::backward",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::backward",
+              "declaration_ident": "SearchMode"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::SearchResources",
           "kind": "struct",
           "signature": "pub struct SearchResources",
@@ -376879,6 +377009,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::inverse::state",
               "declaration_ident": "SymbolicState::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::SymbolicState::retained_bytes",
+          "kind": "method",
+          "signature": "pub fn retained_bytes (& self) -> u64",
+          "source_path": "amari-rewrite/src/inverse/state.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::state",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn retained_bytes (& self) -> u64",
+              "source_path": "amari-rewrite/src/inverse/state.rs",
+              "source_module": "amari_rewrite::inverse::state",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::state",
+              "declaration_ident": "SymbolicState::retained_bytes"
             }
           ]
         },
@@ -382898,6 +383047,25 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::BackwardExplorer",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::backward",
+            "ident": "BackwardExplorer"
+          },
+          "generics": "< 'a >",
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::inverse::BackwardFrontier",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 1,
@@ -382999,6 +383167,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::SearchMode",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::backward",
+            "ident": "SearchMode"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -383827,6 +384013,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::inverse::SearchMode",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::backward",
+            "ident": "SearchMode"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -384159,6 +384363,25 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::BackwardExplorer",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::backward",
+            "ident": "BackwardExplorer"
+          },
+          "generics": "< 'a >",
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::inverse::BackwardFrontier",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 1,
@@ -384260,6 +384483,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::SearchMode",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::backward",
+            "ident": "SearchMode"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -385431,6 +385672,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::inverse::SearchMode",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::backward",
+            "ident": "SearchMode"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -387188,6 +387447,24 @@
         },
         {
           "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::SearchMode",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::backward",
+            "ident": "SearchMode"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::inverse::SymbolicPredecessor",
           "source_path": "amari-rewrite/src/inverse/mod.rs",
           "source_ordinal": 5,
@@ -388659,6 +388936,30 @@
           "surface_kind": "top_level"
         },
         {
+          "path": "amari_rewrite::inverse::BackwardExplorer",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::BackwardExplorer::new",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::inverse::BackwardExplorer::search",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::inverse::BackwardFrontier",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 1,
@@ -388923,6 +389224,14 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::inverse::SearchMode",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::inverse::SearchResources",
           "source_path": "amari-rewrite/src/inverse/state.rs",
           "source_ordinal": 8,
@@ -389054,6 +389363,14 @@
           "path": "amari_rewrite::inverse::SymbolicState::new",
           "source_path": "amari-rewrite/src/inverse/state.rs",
           "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::inverse::SymbolicState::retained_bytes",
+          "source_path": "amari-rewrite/src/inverse/state.rs",
+          "source_ordinal": 4,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"

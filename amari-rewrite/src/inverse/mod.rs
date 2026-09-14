@@ -7,10 +7,12 @@
 use alloc::collections::{BTreeSet, VecDeque};
 use alloc::vec::Vec;
 
+mod backward;
 mod config;
 mod outcome;
 mod state;
 
+pub use backward::{BackwardExplorer, SearchMode};
 pub use config::InverseSearchConfig;
 pub use outcome::{
     ApproximateSearchEvidence, BackwardDerivation, BackwardFrontier, BackwardSearchOutcome,
