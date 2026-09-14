@@ -1,6 +1,9 @@
 //! Substitutions for first-order terms.
 
-use alloc::{collections::BTreeMap, string::String};
+use alloc::{
+    collections::{BTreeMap, BTreeSet},
+    string::String,
+};
 
 use super::{Term, Variable};
 
@@ -47,17 +50,39 @@ impl Substitution {
     ///
     /// Bound ranges are themselves resolved (deep application), so
     /// unifier-produced substitutions whose ranges mention bound
-    /// variables still normalize fully. Termination follows from the
-    /// occurs check performed at binding time.
+    /// variables still normalize fully.
+    ///
+    /// Cycle safety: `match_pattern` performs no occurs check, so
+    /// matching terms that mention same-named variables can produce
+    /// self-referential bindings (`X ↦ X` or `X ↦ f(X)`). Such
+    /// bindings resolve to their fixed point: the variable is left in
+    /// place at the point the cycle is detected, so application
+    /// always terminates.
     pub fn apply(&self, term: &Term) -> Term {
+        self.apply_guarded(term, &mut BTreeSet::new())
+    }
+
+    fn apply_guarded(&self, term: &Term, visiting: &mut BTreeSet<Variable>) -> Term {
         match term {
-            Term::Var(var) => match self.map.get(var) {
-                Some(bound) => self.apply(&bound.clone()),
-                None => term.clone(),
-            },
+            Term::Var(var) => {
+                if visiting.contains(var) {
+                    return term.clone();
+                }
+                match self.map.get(var) {
+                    Some(bound) => {
+                        visiting.insert(var.clone());
+                        let resolved = self.apply_guarded(&bound.clone(), visiting);
+                        visiting.remove(var);
+                        resolved
+                    }
+                    None => term.clone(),
+                }
+            }
             Term::Sym(symbol, args) => Term::Sym(
                 symbol.clone(),
-                args.iter().map(|arg| self.apply(arg)).collect(),
+                args.iter()
+                    .map(|arg| self.apply_guarded(arg, visiting))
+                    .collect(),
             ),
         }
     }
@@ -106,5 +131,31 @@ impl Substitution {
             return Err(invalid("composition would not be idempotent"));
         }
         Ok(composed)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::vec;
+
+    #[test]
+    fn self_referential_bindings_resolve_to_fixed_point() {
+        // X |-> X is the identity on X.
+        let mut substitution = Substitution::new();
+        substitution.insert(Variable::new("X"), Term::var("X"));
+        assert_eq!(substitution.apply(&Term::var("X")), Term::var("X"));
+        // X |-> f(X) terminates, leaving the inner X in place.
+        let mut cyclic = Substitution::new();
+        cyclic.insert(Variable::new("X"), Term::sym("f", vec![Term::var("X")]));
+        assert_eq!(
+            cyclic.apply(&Term::var("X")),
+            Term::sym("f", vec![Term::var("X")])
+        );
+        // Chains still resolve: X |-> Y, Y |-> a gives a.
+        let mut chain = Substitution::new();
+        chain.insert(Variable::new("X"), Term::var("Y"));
+        chain.insert(Variable::new("Y"), Term::constant("a"));
+        assert_eq!(chain.apply(&Term::var("X")), Term::constant("a"));
     }
 }
