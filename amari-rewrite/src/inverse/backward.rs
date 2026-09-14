@@ -1,0 +1,375 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+//! Bounded backward explorer over alpha-canonical symbolic states.
+//!
+//! Expansion only follows valid [`crate::relation::BackwardClause`]
+//! transitions via [`symbolic_predecessors`]; every retained edge
+//! carries rule/path/unifier/constraint provenance. Witnesses are
+//! replayed forward through the original [`TermSystem`] before they
+//! are returned. Budget cuts are always `Partial`; `Exhausted` is
+//! certified only when the frontier closes with nothing dropped.
+
+use alloc::collections::{BTreeMap, BTreeSet, VecDeque};
+use alloc::string::ToString;
+use alloc::vec::Vec;
+
+use crate::analysis::unify;
+use crate::error::{RewriteError, RewriteResult};
+use crate::inverse::outcome::{
+    BackwardDerivation, BackwardFrontier, BackwardSearchOutcome, CertifiedExhaustion,
+    ExhaustionAuthority, UnsupportedRelation,
+};
+use crate::inverse::state::{SearchResources, SymbolicState};
+use crate::inverse::{symbolic_predecessors, SymbolicPredecessor};
+use crate::relation::{
+    ConstraintOutcome, ConstraintSet, RelationLimits, RelationResources, RuleId, Sha256Digest,
+};
+use crate::trs::{match_pattern, Term, TermSystem};
+
+/// A state matches the goal when the two terms UNIFY: existential
+/// logic variables in the state may be instantiated by the goal, so
+/// one-way pattern matching is not the right check.
+fn goal_matches(limits: &RelationLimits, goal: &Term, term: &Term) -> bool {
+    let mut resources = RelationResources::new(limits);
+    unify(term, goal, &mut resources).is_ok()
+}
+
+/// Exact expansion ordering.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
+pub enum SearchMode {
+    /// Canonical breadth-first order.
+    BreadthFirst,
+    /// Deterministic symbolic cost order: fewest term nodes first,
+    /// ties broken by canonical digest.
+    CostFirst,
+}
+
+/// Bounded backward explorer over a term system.
+#[derive(Clone, Debug)]
+pub struct BackwardExplorer<'a> {
+    system: &'a TermSystem,
+    config: crate::inverse::InverseSearchConfig,
+}
+
+struct SearchNode {
+    state: SymbolicState,
+    depth: u64,
+    parent: Option<([u8; 32], SymbolicPredecessor)>,
+    expanded: bool,
+}
+
+enum Pending {
+    BreadthFirst(VecDeque<[u8; 32]>),
+    CostFirst(BTreeSet<(u64, [u8; 32])>),
+}
+
+impl Pending {
+    fn push(&mut self, cost: u64, digest: [u8; 32]) {
+        match self {
+            Self::BreadthFirst(queue) => queue.push_back(digest),
+            Self::CostFirst(set) => {
+                set.insert((cost, digest));
+            }
+        }
+    }
+
+    fn pop(&mut self) -> Option<[u8; 32]> {
+        match self {
+            Self::BreadthFirst(queue) => queue.pop_front(),
+            Self::CostFirst(set) => set.pop_first().map(|(_, digest)| digest),
+        }
+    }
+}
+
+impl<'a> BackwardExplorer<'a> {
+    /// Bind an explorer to a system and a validated configuration.
+    pub fn new(system: &'a TermSystem, config: crate::inverse::InverseSearchConfig) -> Self {
+        Self { system, config }
+    }
+
+    /// Search backward from `target` for a state matching the `goal`
+    /// pattern. Outcomes are typed; see [`BackwardSearchOutcome`].
+    pub fn search(
+        &self,
+        target: &Term,
+        goal: &Term,
+        mode: SearchMode,
+    ) -> RewriteResult<BackwardSearchOutcome> {
+        let limits = RelationLimits::new(
+            self.config.max_term_nodes() as usize,
+            self.config.max_term_depth() as usize,
+            self.config.max_constraints() as usize,
+            self.config.max_operations() as usize,
+        )?;
+        let mut resources = SearchResources::new(&self.config);
+        let mut nodes: BTreeMap<[u8; 32], SearchNode> = BTreeMap::new();
+        let mut pending = match mode {
+            SearchMode::BreadthFirst => Pending::BreadthFirst(VecDeque::new()),
+            SearchMode::CostFirst => Pending::CostFirst(BTreeSet::new()),
+        };
+        let mut truncated = false;
+        let mut scope: u64 = 0;
+
+        let root = SymbolicState::new(target.clone(), ConstraintSet::new());
+        if goal_matches(&limits, goal, root.term()) {
+            return Ok(BackwardSearchOutcome::Witness(BackwardDerivation {
+                steps: Vec::new(),
+            }));
+        }
+        if resources.record_state().is_err()
+            || resources.record_bytes(root.retained_bytes()).is_err()
+        {
+            return Ok(BackwardSearchOutcome::Partial(BackwardFrontier {
+                states: Vec::new(),
+                depth_reached: 0,
+            }));
+        }
+        let root_digest = *root.canonical_digest().as_bytes();
+        pending.push(term_cost(root.term()), root_digest);
+        nodes.insert(
+            root_digest,
+            SearchNode {
+                state: root,
+                depth: 0,
+                parent: None,
+                expanded: false,
+            },
+        );
+
+        while let Some(digest) = pending.pop() {
+            let (term, constraints, depth) = {
+                let node = nodes.get(&digest).expect("pending digest exists");
+                (
+                    node.state.term().clone(),
+                    node.state.constraints().clone(),
+                    node.depth,
+                )
+            };
+            if depth >= self.config.max_depth() {
+                truncated = true;
+                continue;
+            }
+            if resources.record_operations(1).is_err() {
+                truncated = true;
+                break;
+            }
+            scope += 1;
+            let predecessors =
+                match symbolic_predecessors(self.system, &term, &limits, scope as u32) {
+                    Ok(predecessors) => predecessors,
+                    Err(RewriteError::UnificationFailure { reason }) => {
+                        return Ok(BackwardSearchOutcome::Unsupported(UnsupportedRelation {
+                            reason,
+                        }));
+                    }
+                    Err(_) => {
+                        truncated = true;
+                        break;
+                    }
+                };
+            if let Some(node) = nodes.get_mut(&digest) {
+                node.expanded = true;
+            }
+            for predecessor in predecessors {
+                if resources.record_transition().is_err() {
+                    truncated = true;
+                    break;
+                }
+                let Some(child) =
+                    self.child_state(&constraints, &predecessor, &limits, &mut truncated)
+                else {
+                    continue;
+                };
+                let child_depth = depth + 1;
+                if child_depth > self.config.max_depth() {
+                    truncated = true;
+                    continue;
+                }
+                let child_digest = *child.canonical_digest().as_bytes();
+                if nodes.contains_key(&child_digest) {
+                    continue;
+                }
+                if goal_matches(&limits, goal, child.term()) {
+                    let steps = build_chain(&nodes, &digest, predecessor);
+                    return self.replay_witness(steps, target);
+                }
+                if resources.record_state().is_err()
+                    || resources.record_bytes(child.retained_bytes()).is_err()
+                {
+                    truncated = true;
+                    break;
+                }
+                let enqueue = child_depth < self.config.max_depth();
+                if !enqueue {
+                    truncated = true;
+                }
+                let cost = term_cost(child.term());
+                nodes.insert(
+                    child_digest,
+                    SearchNode {
+                        state: child,
+                        depth: child_depth,
+                        parent: Some((digest, predecessor)),
+                        expanded: false,
+                    },
+                );
+                if enqueue {
+                    pending.push(cost, child_digest);
+                }
+            }
+            if truncated {
+                break;
+            }
+        }
+
+        if truncated {
+            let frontier: Vec<SymbolicState> = nodes
+                .values()
+                .filter(|node| !node.expanded)
+                .map(|node| node.state.clone())
+                .collect();
+            let depth_reached = nodes.values().map(|node| node.depth).max().unwrap_or(0);
+            return Ok(BackwardSearchOutcome::Partial(BackwardFrontier {
+                states: frontier,
+                depth_reached,
+            }));
+        }
+
+        let mut evidence = Vec::new();
+        for digest in nodes.keys() {
+            evidence.extend_from_slice(digest);
+        }
+        Ok(BackwardSearchOutcome::Exhausted(
+            CertifiedExhaustion::certify(ExhaustionAuthority::ClosedSymbolicSearch, &evidence),
+        ))
+    }
+
+    /// Merge parent and step constraints, normalize, and build the
+    /// child state. Unsatisfiable candidates are genuinely impossible
+    /// and dropped; size-cap drops mark the search truncated.
+    fn child_state(
+        &self,
+        parent_constraints: &ConstraintSet,
+        predecessor: &SymbolicPredecessor,
+        limits: &RelationLimits,
+        truncated: &mut bool,
+    ) -> Option<SymbolicState> {
+        let mut merged = ConstraintSet::new();
+        for constraint in parent_constraints.constraints() {
+            merged.insert(constraint.clone());
+        }
+        for constraint in predecessor.constraints.constraints() {
+            merged.insert(constraint.clone());
+        }
+        let (substitution, constraints) = match merged.normalize(limits) {
+            Ok(ConstraintOutcome::Satisfiable {
+                substitution,
+                residuals,
+            }) => {
+                let mut set = ConstraintSet::new();
+                for residual in residuals {
+                    set.insert(residual);
+                }
+                (substitution, set)
+            }
+            Ok(ConstraintOutcome::Unsatisfiable) => return None,
+            Ok(ConstraintOutcome::UnsupportedTheory) => {
+                *truncated = true;
+                return None;
+            }
+            Err(_) => {
+                *truncated = true;
+                return None;
+            }
+        };
+        let term = substitution.apply(&predecessor.term);
+        if term_cost(&term) > self.config.max_term_nodes()
+            || term_depth(&term) > self.config.max_term_depth()
+        {
+            *truncated = true;
+            return None;
+        }
+        Some(SymbolicState::new(term, constraints))
+    }
+
+    /// Replay a witness chain forward through the original system.
+    /// A mismatch is an internal-consistency hard error, never a
+    /// silently returned witness.
+    fn replay_witness(
+        &self,
+        steps: Vec<SymbolicPredecessor>,
+        target: &Term,
+    ) -> RewriteResult<BackwardSearchOutcome> {
+        let mut current = steps
+            .last()
+            .map(|step| step.term.clone())
+            .unwrap_or_else(|| target.clone());
+        for step in steps.iter().rev() {
+            let rule = self
+                .system
+                .rules()
+                .iter()
+                .find(|rule| RuleId::from_rule(rule) == step.provenance.rule_id)
+                .ok_or_else(|| RewriteError::ResidualMismatch {
+                    message: "witness step references an unknown rule".to_string(),
+                })?;
+            let position = current.subterm(&step.provenance.position).ok_or_else(|| {
+                RewriteError::ResidualMismatch {
+                    message: "witness replay lost the recorded path".to_string(),
+                }
+            })?;
+            let bindings = match_pattern(rule.lhs(), position).ok_or_else(|| {
+                RewriteError::ResidualMismatch {
+                    message: "witness replay failed to match the lhs".to_string(),
+                }
+            })?;
+            current = current
+                .replace_at(&step.provenance.position, bindings.apply(rule.rhs()))
+                .map_err(|_| RewriteError::ResidualMismatch {
+                    message: "witness replay failed to rebuild the term".to_string(),
+                })?;
+        }
+        let replayed = Sha256Digest::canonical_term("amari.relation.term/v1", &current);
+        let expected = Sha256Digest::canonical_term("amari.relation.term/v1", target);
+        if replayed != expected {
+            return Err(RewriteError::ResidualMismatch {
+                message: "witness replay does not reconstruct the target".to_string(),
+            });
+        }
+        Ok(BackwardSearchOutcome::Witness(BackwardDerivation { steps }))
+    }
+}
+
+/// Walk parent edges from the node at `digest` back to the root,
+/// returning the chain ordered root-to-leaf with `leaf_edge` last.
+fn build_chain(
+    nodes: &BTreeMap<[u8; 32], SearchNode>,
+    digest: &[u8; 32],
+    leaf_edge: SymbolicPredecessor,
+) -> Vec<SymbolicPredecessor> {
+    let mut steps = alloc::vec![leaf_edge];
+    let mut cursor = *digest;
+    while let Some(node) = nodes.get(&cursor) {
+        match &node.parent {
+            Some((parent, edge)) => {
+                steps.push(edge.clone());
+                cursor = *parent;
+            }
+            None => break,
+        }
+    }
+    steps.reverse();
+    steps
+}
+
+fn term_cost(term: &Term) -> u64 {
+    term.positions().len() as u64
+}
+
+fn term_depth(term: &Term) -> u64 {
+    match term {
+        Term::Var(_) => 1,
+        Term::Sym(_, args) => 1 + args.iter().map(term_depth).max().unwrap_or(0),
+    }
+}

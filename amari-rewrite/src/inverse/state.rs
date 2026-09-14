@@ -56,6 +56,14 @@ impl SymbolicState {
     pub fn canonical_digest(&self) -> Sha256Digest {
         self.digest
     }
+
+    /// Accounting estimate of the bytes this state retains: the
+    /// 32-byte digest plus a per-node term charge and a
+    /// per-constraint charge. Used for frontier byte budgets.
+    pub fn retained_bytes(&self) -> u64 {
+        let nodes = self.term.positions().len() as u64;
+        32 + 16 * nodes + 24 * self.constraints.len() as u64
+    }
 }
 
 /// Joint alpha-canonical encoding: one variable-renaming pass shared
