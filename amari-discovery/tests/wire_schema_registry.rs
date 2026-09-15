@@ -519,7 +519,7 @@ fn constraint_ids(document: &ProbeSchemaDocument) -> Vec<String> {
 fn registry_resolves_every_executable_probe_and_declares_non_executable() {
     let catalog = Catalog::embedded().unwrap();
     let executable_ids = executable_ids();
-    assert_eq!(executable_ids.len(), 16);
+    assert_eq!(executable_ids.len(), 18);
     let registry = ProbeWireSchemaRegistry::build(
         &catalog,
         executable_ids.iter().cloned(),

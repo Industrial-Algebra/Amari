@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "14faf27343c04d0f98b58945c972b272999f9348fac786e4d929385c70a80fd0",
+  "content_hash": "2961c35d79f947c45852895d7f69d0f19ce3112e2205b72cd7c19ad6f7348e07",
   "crates": [
     {
       "name": "amari",
@@ -475786,6 +475786,42 @@
       "capability_id": "amari:amari-rewrite:synthesis:infer-rule",
       "input_schema": "amari.discovery/probe/rewrite-infer-rule/input/v1",
       "output_schema": "amari.discovery/probe/rewrite-infer-rule/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:backward-search:v1",
+      "capability_id": "amari:amari-rewrite:inverse:backward-search",
+      "input_schema": "amari.discovery/probe/rewrite-backward-search/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-backward-search/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:bidirectional-search:v1",
+      "capability_id": "amari:amari-rewrite:inverse:bidirectional-search",
+      "input_schema": "amari.discovery/probe/rewrite-bidirectional-search/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-bidirectional-search/output/v1",
       "required_features": [
         "standard-probes"
       ],
