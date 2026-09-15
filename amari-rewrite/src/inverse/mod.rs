@@ -10,7 +10,9 @@ use alloc::vec::Vec;
 mod backward;
 mod bidirectional;
 mod config;
+pub(crate) mod guidance;
 mod outcome;
+mod replay;
 mod state;
 
 pub use backward::{BackwardExplorer, SearchMode};
@@ -19,9 +21,14 @@ pub use bidirectional::{
     BidirectionalSearchOutcome, ForwardStep,
 };
 pub use config::InverseSearchConfig;
+pub use guidance::{guidance_hash, scorer_hash, GuidanceMode, SymbolicScore};
 pub use outcome::{
     ApproximateSearchEvidence, BackwardDerivation, BackwardFrontier, BackwardSearchOutcome,
     CertifiedExhaustion, ExhaustionAuthority, UnsupportedRelation,
+};
+pub use replay::{
+    config_hash, query_hash, system_hash, ReplayCertificate, ReplayDerivation, ReplayQuery,
+    ResourceObservation,
 };
 pub use state::{SearchResources, SymbolicState};
 
