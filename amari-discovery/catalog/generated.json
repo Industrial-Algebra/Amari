@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "9ae38422fb6f236f08eac11ea6ee50bc207a5e97497d153d439826574fdad460",
+  "content_hash": "14faf27343c04d0f98b58945c972b272999f9348fac786e4d929385c70a80fd0",
   "crates": [
     {
       "name": "amari",
@@ -375556,6 +375556,26 @@
               {
                 "label": "explored_states",
                 "ty": "u64"
+              },
+              {
+                "label": "dropped_candidates",
+                "ty": "u64"
+              },
+              {
+                "label": "scorer_hash",
+                "ty": "crate :: relation :: Sha256Digest"
+              },
+              {
+                "label": "config_hash",
+                "ty": "crate :: relation :: Sha256Digest"
+              },
+              {
+                "label": "guidance_hash",
+                "ty": "crate :: relation :: Sha256Digest"
+              },
+              {
+                "label": "frontier",
+                "ty": "Option < BackwardFrontier >"
               }
             ]
           },
@@ -375576,6 +375596,26 @@
                   {
                     "label": "explored_states",
                     "ty": "u64"
+                  },
+                  {
+                    "label": "dropped_candidates",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "scorer_hash",
+                    "ty": "crate :: relation :: Sha256Digest"
+                  },
+                  {
+                    "label": "config_hash",
+                    "ty": "crate :: relation :: Sha256Digest"
+                  },
+                  {
+                    "label": "guidance_hash",
+                    "ty": "crate :: relation :: Sha256Digest"
+                  },
+                  {
+                    "label": "frontier",
+                    "ty": "Option < BackwardFrontier >"
                   }
                 ]
               },
@@ -375686,6 +375726,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::inverse::backward",
               "declaration_ident": "BackwardExplorer::search"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::BackwardExplorer::search_with_guidance",
+          "kind": "method",
+          "signature": "pub fn search_with_guidance (& self , target : & Term , goal : & Term , mode : SearchMode , guidance : & GuidanceMode ,) -> RewriteResult < BackwardSearchOutcome >",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::backward",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn search_with_guidance (& self , target : & Term , goal : & Term , mode : SearchMode , guidance : & GuidanceMode ,) -> RewriteResult < BackwardSearchOutcome >",
+              "source_path": "amari-rewrite/src/inverse/backward.rs",
+              "source_module": "amari_rewrite::inverse::backward",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::backward",
+              "declaration_ident": "BackwardExplorer::search_with_guidance"
             }
           ]
         },
@@ -376486,6 +376545,90 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::GuidanceMode",
+          "kind": "enum",
+          "signature": "pub enum GuidanceMode",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "CompleteWithinLimits",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "HeuristicPruning",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "beam_width",
+                      "ty": "u64"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::guidance",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum GuidanceMode",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "CompleteWithinLimits",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "HeuristicPruning",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "beam_width",
+                          "ty": "u64"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/guidance.rs",
+              "source_module": "amari_rewrite::inverse::guidance",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::guidance",
+              "declaration_ident": "GuidanceMode"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::GuidanceMode::validate",
+          "kind": "method",
+          "signature": "pub fn validate (& self , config : & crate :: inverse :: InverseSearchConfig) -> RewriteResult < () >",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::guidance",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn validate (& self , config : & crate :: inverse :: InverseSearchConfig) -> RewriteResult < () >",
+              "source_path": "amari-rewrite/src/inverse/guidance.rs",
+              "source_module": "amari_rewrite::inverse::guidance",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::guidance",
+              "declaration_ident": "GuidanceMode::validate"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::InverseSearchConfig",
           "kind": "struct",
           "signature": "pub struct InverseSearchConfig",
@@ -376912,6 +377055,364 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::ReplayCertificate",
+          "kind": "struct",
+          "signature": "pub struct ReplayCertificate",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "query",
+                "ty": "ReplayQuery"
+              },
+              {
+                "label": "derivation",
+                "ty": "ReplayDerivation"
+              },
+              {
+                "label": "config",
+                "ty": "InverseSearchConfig"
+              },
+              {
+                "label": "guidance",
+                "ty": "GuidanceMode"
+              },
+              {
+                "label": "resources",
+                "ty": "ResourceObservation"
+              },
+              {
+                "label": "system_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "query_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "config_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "guidance_hash",
+                "ty": "Sha256Digest"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct ReplayCertificate",
+              "shape": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "label": "query",
+                    "ty": "ReplayQuery"
+                  },
+                  {
+                    "label": "derivation",
+                    "ty": "ReplayDerivation"
+                  },
+                  {
+                    "label": "config",
+                    "ty": "InverseSearchConfig"
+                  },
+                  {
+                    "label": "guidance",
+                    "ty": "GuidanceMode"
+                  },
+                  {
+                    "label": "resources",
+                    "ty": "ResourceObservation"
+                  },
+                  {
+                    "label": "system_hash",
+                    "ty": "Sha256Digest"
+                  },
+                  {
+                    "label": "query_hash",
+                    "ty": "Sha256Digest"
+                  },
+                  {
+                    "label": "config_hash",
+                    "ty": "Sha256Digest"
+                  },
+                  {
+                    "label": "guidance_hash",
+                    "ty": "Sha256Digest"
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "ReplayCertificate"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayCertificate::issue",
+          "kind": "method",
+          "signature": "pub fn issue (system : & TermSystem , query : ReplayQuery , derivation : ReplayDerivation , config : InverseSearchConfig , guidance : GuidanceMode , resources : ResourceObservation ,) -> Self",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn issue (system : & TermSystem , query : ReplayQuery , derivation : ReplayDerivation , config : InverseSearchConfig , guidance : GuidanceMode , resources : ResourceObservation ,) -> Self",
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "ReplayCertificate::issue"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayCertificate::verify",
+          "kind": "method",
+          "signature": "pub fn verify (& self , system : & TermSystem) -> RewriteResult < () >",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn verify (& self , system : & TermSystem) -> RewriteResult < () >",
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "ReplayCertificate::verify"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayDerivation",
+          "kind": "enum",
+          "signature": "pub enum ReplayDerivation",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Backward",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "BackwardDerivation"
+                  ]
+                }
+              },
+              {
+                "name": "Bidirectional",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "BidirectionalDerivation"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum ReplayDerivation",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Backward",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "BackwardDerivation"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "Bidirectional",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "BidirectionalDerivation"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "ReplayDerivation"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayQuery",
+          "kind": "enum",
+          "signature": "pub enum ReplayQuery",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Backward",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "target",
+                      "ty": "Term"
+                    },
+                    {
+                      "name": "goal",
+                      "ty": "Term"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Bidirectional",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "source",
+                      "ty": "Term"
+                    },
+                    {
+                      "name": "goal",
+                      "ty": "Term"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum ReplayQuery",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Backward",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "target",
+                          "ty": "Term"
+                        },
+                        {
+                          "name": "goal",
+                          "ty": "Term"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "Bidirectional",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "source",
+                          "ty": "Term"
+                        },
+                        {
+                          "name": "goal",
+                          "ty": "Term"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "ReplayQuery"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::ResourceObservation",
+          "kind": "struct",
+          "signature": "pub struct ResourceObservation",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "states",
+                "ty": "u64"
+              },
+              {
+                "label": "transitions",
+                "ty": "u64"
+              },
+              {
+                "label": "retained_bytes",
+                "ty": "u64"
+              },
+              {
+                "label": "operations",
+                "ty": "u64"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct ResourceObservation",
+              "shape": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "label": "states",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "transitions",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "retained_bytes",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "operations",
+                    "ty": "u64"
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "ResourceObservation"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::SearchMode",
           "kind": "enum",
           "signature": "pub enum SearchMode",
@@ -377278,6 +377779,99 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::SymbolicScore",
+          "kind": "struct",
+          "signature": "pub struct SymbolicScore",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "depth",
+                "ty": "u64"
+              },
+              {
+                "label": "term_growth",
+                "ty": "i64"
+              },
+              {
+                "label": "constraint_growth",
+                "ty": "u64"
+              },
+              {
+                "label": "unresolved_existentials",
+                "ty": "u64"
+              },
+              {
+                "label": "residual_cost",
+                "ty": "u64"
+              },
+              {
+                "label": "branch_factor",
+                "ty": "u64"
+              },
+              {
+                "label": "cycle",
+                "ty": "bool"
+              },
+              {
+                "label": "rule_priority",
+                "ty": "u64"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::guidance",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct SymbolicScore",
+              "shape": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "label": "depth",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "term_growth",
+                    "ty": "i64"
+                  },
+                  {
+                    "label": "constraint_growth",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "unresolved_existentials",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "residual_cost",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "branch_factor",
+                    "ty": "u64"
+                  },
+                  {
+                    "label": "cycle",
+                    "ty": "bool"
+                  },
+                  {
+                    "label": "rule_priority",
+                    "ty": "u64"
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/inverse/guidance.rs",
+              "source_module": "amari_rewrite::inverse::guidance",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::guidance",
+              "declaration_ident": "SymbolicScore"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::SymbolicState",
           "kind": "struct",
           "signature": "pub struct SymbolicState",
@@ -377437,6 +378031,44 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::config_hash",
+          "kind": "fn",
+          "signature": "pub fn config_hash (config : & InverseSearchConfig) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn config_hash (config : & InverseSearchConfig) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "config_hash"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::guidance_hash",
+          "kind": "fn",
+          "signature": "pub fn guidance_hash (mode : & GuidanceMode) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::guidance",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn guidance_hash (mode : & GuidanceMode) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/inverse/guidance.rs",
+              "source_module": "amari_rewrite::inverse::guidance",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::guidance",
+              "declaration_ident": "guidance_hash"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::predecessors",
           "kind": "fn",
           "signature": "pub fn predecessors (system : & TermSystem , target : Term , max_depth : usize) -> alloc :: vec :: Vec < Term >",
@@ -377456,6 +378088,44 @@
           ]
         },
         {
+          "path": "amari_rewrite::inverse::query_hash",
+          "kind": "fn",
+          "signature": "pub fn query_hash (query : & ReplayQuery) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn query_hash (query : & ReplayQuery) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "query_hash"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::scorer_hash",
+          "kind": "fn",
+          "signature": "pub fn scorer_hash () -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::guidance",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn scorer_hash () -> Sha256Digest",
+              "source_path": "amari-rewrite/src/inverse/guidance.rs",
+              "source_module": "amari_rewrite::inverse::guidance",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::guidance",
+              "declaration_ident": "scorer_hash"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::inverse::symbolic_predecessors",
           "kind": "fn",
           "signature": "pub fn symbolic_predecessors (system : & TermSystem , target : & Term , limits : & RelationLimits , scope : u32 ,) -> RewriteResult < alloc :: vec :: Vec < SymbolicPredecessor > >",
@@ -377471,6 +378141,25 @@
               "is_reexport": false,
               "declaration_module": "amari_rewrite::inverse",
               "declaration_ident": "symbolic_predecessors"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::inverse::system_hash",
+          "kind": "fn",
+          "signature": "pub fn system_hash (system : & TermSystem) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::inverse::replay",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn system_hash (system : & TermSystem) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/inverse/replay.rs",
+              "source_module": "amari_rewrite::inverse::replay",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::inverse::replay",
+              "declaration_ident": "system_hash"
             }
           ]
         },
@@ -383596,6 +384285,24 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::GuidanceMode",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "GuidanceMode"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
           "source_path": "amari-rewrite/src/inverse/config.rs",
           "source_ordinal": 0,
@@ -383607,6 +384314,78 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::ReplayCertificate",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayCertificate"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::ReplayDerivation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayDerivation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::ReplayQuery",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayQuery"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::ResourceObservation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ResourceObservation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -383661,6 +384440,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse",
             "ident": "SymbolicPredecessor"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::inverse::SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "SymbolicScore"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -384453,6 +385250,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::inverse::ResourceObservation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ResourceObservation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -385003,6 +385818,24 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::GuidanceMode",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "GuidanceMode"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
           "source_path": "amari-rewrite/src/inverse/config.rs",
           "source_ordinal": 0,
@@ -385014,6 +385847,78 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::ReplayCertificate",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayCertificate"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::ReplayDerivation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayDerivation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::ReplayQuery",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayQuery"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::ResourceObservation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ResourceObservation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -385068,6 +385973,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse",
             "ident": "SymbolicPredecessor"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::inverse::SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "SymbolicScore"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -386210,6 +387133,24 @@
         },
         {
           "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::inverse::ResourceObservation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ResourceObservation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::inverse::SearchMode",
           "source_path": "amari-rewrite/src/inverse/backward.rs",
           "source_ordinal": 1,
@@ -386239,6 +387180,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse",
             "ident": "SymbolicPredecessor"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::inverse::SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "SymbolicScore"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -387455,6 +388414,24 @@
         },
         {
           "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::inverse::SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "SymbolicScore"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Ord",
           "impl_type_path": "amari_rewrite::inverse::SymbolicState",
           "source_path": "amari-rewrite/src/inverse/state.rs",
           "source_ordinal": 6,
@@ -388032,6 +389009,24 @@
         },
         {
           "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::GuidanceMode",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "GuidanceMode"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
           "source_path": "amari-rewrite/src/inverse/config.rs",
           "source_ordinal": 0,
@@ -388043,6 +389038,78 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::config",
             "ident": "InverseSearchConfig"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::ReplayCertificate",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayCertificate"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::ReplayDerivation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayDerivation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::ReplayQuery",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ReplayQuery"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::ResourceObservation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::replay",
+            "ident": "ResourceObservation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -388079,6 +389146,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse",
             "ident": "SymbolicPredecessor"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::inverse::SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "SymbolicScore"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -388763,6 +389848,24 @@
             "kind": "local",
             "module": "amari_rewrite::rewritable",
             "ident": "Path"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::inverse::SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::inverse::guidance",
+            "ident": "SymbolicScore"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -389563,6 +390666,14 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::inverse::BackwardExplorer::search_with_guidance",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::inverse::BackwardFrontier",
           "source_path": "amari-rewrite/src/inverse/outcome.rs",
           "source_ordinal": 1,
@@ -389705,6 +390816,22 @@
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::GuidanceMode",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::GuidanceMode::validate",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
         },
         {
           "path": "amari_rewrite::inverse::InverseSearchConfig",
@@ -389883,6 +391010,54 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::inverse::ReplayCertificate",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayCertificate::issue",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayCertificate::verify",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayDerivation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::ReplayQuery",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::ResourceObservation",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::inverse::SearchMode",
           "source_path": "amari-rewrite/src/inverse/backward.rs",
           "source_ordinal": 1,
@@ -389995,6 +391170,14 @@
           "surface_kind": "top_level"
         },
         {
+          "path": "amari_rewrite::inverse::SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::inverse::SymbolicState",
           "source_path": "amari-rewrite/src/inverse/state.rs",
           "source_ordinal": 0,
@@ -390051,6 +391234,22 @@
           "surface_kind": "top_level"
         },
         {
+          "path": "amari_rewrite::inverse::config_hash",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::guidance_hash",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::inverse::predecessors",
           "source_path": "amari-rewrite/src/inverse/mod.rs",
           "source_ordinal": 0,
@@ -390059,9 +391258,33 @@
           "surface_kind": "top_level"
         },
         {
+          "path": "amari_rewrite::inverse::query_hash",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::scorer_hash",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::inverse::symbolic_predecessors",
           "source_path": "amari-rewrite/src/inverse/mod.rs",
           "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::inverse::system_hash",
+          "source_path": "amari-rewrite/src/inverse/replay.rs",
+          "source_ordinal": 4,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"

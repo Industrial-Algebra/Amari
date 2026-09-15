@@ -15,9 +15,10 @@ use alloc::vec::Vec;
 
 use crate::analysis::unify;
 use crate::error::{RewriteError, RewriteResult};
+use crate::inverse::guidance::{GuidanceMode, SymbolicScore};
 use crate::inverse::outcome::{
-    BackwardDerivation, BackwardFrontier, BackwardSearchOutcome, CertifiedExhaustion,
-    ExhaustionAuthority, UnsupportedRelation,
+    ApproximateSearchEvidence, BackwardDerivation, BackwardFrontier, BackwardSearchOutcome,
+    CertifiedExhaustion, ExhaustionAuthority, UnsupportedRelation,
 };
 use crate::inverse::state::{SearchResources, SymbolicState};
 use crate::inverse::{symbolic_predecessors, SymbolicPredecessor};
@@ -89,13 +90,29 @@ impl<'a> BackwardExplorer<'a> {
     }
 
     /// Search backward from `target` for a state matching the `goal`
-    /// pattern. Outcomes are typed; see [`BackwardSearchOutcome`].
+    /// pattern. Equivalent to [`Self::search_with_guidance`] with
+    /// [`GuidanceMode::CompleteWithinLimits`].
     pub fn search(
         &self,
         target: &Term,
         goal: &Term,
         mode: SearchMode,
     ) -> RewriteResult<BackwardSearchOutcome> {
+        self.search_with_guidance(target, goal, mode, &GuidanceMode::CompleteWithinLimits)
+    }
+
+    /// Search backward under an explicit guidance mode. Guidance
+    /// never creates transitions: it orders (or, in heuristic mode,
+    /// explicitly prunes and counts) already valid candidates.
+    /// Pruned searches never return `Exhausted`.
+    pub fn search_with_guidance(
+        &self,
+        target: &Term,
+        goal: &Term,
+        mode: SearchMode,
+        guidance: &GuidanceMode,
+    ) -> RewriteResult<BackwardSearchOutcome> {
+        guidance.validate(&self.config)?;
         let limits = RelationLimits::new(
             self.config.max_term_nodes() as usize,
             self.config.max_term_depth() as usize,
@@ -109,6 +126,7 @@ impl<'a> BackwardExplorer<'a> {
             SearchMode::CostFirst => Pending::CostFirst(BTreeSet::new()),
         };
         let mut truncated = false;
+        let mut dropped: u64 = 0;
         let mut scope: u64 = 0;
 
         let root = SymbolicState::new(target.clone(), ConstraintSet::new());
@@ -171,6 +189,10 @@ impl<'a> BackwardExplorer<'a> {
             if let Some(node) = nodes.get_mut(&digest) {
                 node.expanded = true;
             }
+            // Buffer the valid candidates for this expansion, then
+            // order (or explicitly prune) them via the guidance mode.
+            let parent_state = SymbolicState::new(term.clone(), constraints.clone());
+            let mut candidates: Vec<(SymbolicState, SymbolicPredecessor)> = Vec::new();
             for predecessor in predecessors {
                 if resources.record_transition().is_err() {
                     truncated = true;
@@ -181,12 +203,50 @@ impl<'a> BackwardExplorer<'a> {
                 else {
                     continue;
                 };
+                candidates.push((child, predecessor));
+            }
+            if truncated {
+                break;
+            }
+            let branch_factor = candidates.len() as u64;
+            let rule_priority = |predecessor: &SymbolicPredecessor| {
+                self.system
+                    .rules()
+                    .iter()
+                    .position(|rule| RuleId::from_rule(rule) == predecessor.provenance.rule_id)
+                    .unwrap_or(usize::MAX) as u64
+            };
+            let mut scored: Vec<(SymbolicScore, [u8; 32], SymbolicState, SymbolicPredecessor)> =
+                candidates
+                    .into_iter()
+                    .map(|(child, predecessor)| {
+                        let child_digest = *child.canonical_digest().as_bytes();
+                        let score = crate::inverse::guidance::score_candidate(
+                            &parent_state,
+                            &child,
+                            &predecessor,
+                            depth + 1,
+                            branch_factor,
+                            nodes.contains_key(&child_digest),
+                            rule_priority(&predecessor),
+                        );
+                        (score, child_digest, child, predecessor)
+                    })
+                    .collect();
+            scored.sort_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)));
+            if let GuidanceMode::HeuristicPruning { beam_width } = guidance {
+                let keep = (*beam_width).min(usize::MAX as u64) as usize;
+                if scored.len() > keep {
+                    dropped += (scored.len() - keep) as u64;
+                    scored.truncate(keep);
+                }
+            }
+            for (_, child_digest, child, predecessor) in scored {
                 let child_depth = depth + 1;
                 if child_depth > self.config.max_depth() {
                     truncated = true;
                     continue;
                 }
-                let child_digest = *child.canonical_digest().as_bytes();
                 if nodes.contains_key(&child_digest) {
                     continue;
                 }
@@ -223,6 +283,20 @@ impl<'a> BackwardExplorer<'a> {
             }
         }
 
+        let approximate = |frontier: Option<BackwardFrontier>, dropped: u64, explored: u64| {
+            BackwardSearchOutcome::Approximate(ApproximateSearchEvidence {
+                summary: alloc::format!(
+                    "heuristic pruning dropped {dropped} valid candidates; \
+                     nothing about unexplored space is certified"
+                ),
+                explored_states: explored,
+                dropped_candidates: dropped,
+                scorer_hash: crate::inverse::guidance::scorer_hash(),
+                config_hash: crate::inverse::replay::config_hash(&self.config),
+                guidance_hash: crate::inverse::guidance::guidance_hash(guidance),
+                frontier,
+            })
+        };
         if truncated {
             let frontier: Vec<SymbolicState> = nodes
                 .values()
@@ -230,12 +304,19 @@ impl<'a> BackwardExplorer<'a> {
                 .map(|node| node.state.clone())
                 .collect();
             let depth_reached = nodes.values().map(|node| node.depth).max().unwrap_or(0);
-            return Ok(BackwardSearchOutcome::Partial(BackwardFrontier {
+            let frontier = BackwardFrontier {
                 states: frontier,
                 depth_reached,
-            }));
+            };
+            if dropped > 0 {
+                return Ok(approximate(Some(frontier), dropped, resources.states()));
+            }
+            return Ok(BackwardSearchOutcome::Partial(frontier));
         }
 
+        if dropped > 0 {
+            return Ok(approximate(None, dropped, resources.states()));
+        }
         let mut evidence = Vec::new();
         for digest in nodes.keys() {
             evidence.extend_from_slice(digest);

@@ -82,7 +82,11 @@ impl CertifiedExhaustion {
     }
 }
 
-/// Evidence for an approximate (non-exact) search result.
+/// Evidence for an approximate (non-exact) search result. Carries
+/// the dropped-candidate count and the scorer/config/guidance
+/// hashes, so approximation authority is always inspectable. An
+/// approximate outcome can never construct exhaustion or
+/// unreachability certificates.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
 pub struct ApproximateSearchEvidence {
@@ -90,6 +94,16 @@ pub struct ApproximateSearchEvidence {
     pub summary: String,
     /// States explored before the approximation was produced.
     pub explored_states: u64,
+    /// Candidates dropped by explicit heuristic pruning.
+    pub dropped_candidates: u64,
+    /// Digest of the scorer identity.
+    pub scorer_hash: crate::relation::Sha256Digest,
+    /// Digest of the search configuration.
+    pub config_hash: crate::relation::Sha256Digest,
+    /// Digest of the guidance mode.
+    pub guidance_hash: crate::relation::Sha256Digest,
+    /// The retained frontier at the cut, when a budget also fired.
+    pub frontier: Option<BackwardFrontier>,
 }
 
 /// A relation the 0.25 engines do not support, with the reason.
