@@ -167,6 +167,16 @@ impl ReplayCertificate {
         let mismatch = |message: &str| RewriteError::ResidualMismatch {
             message: message.to_string(),
         };
+        // The embedded configuration is part of the certified
+        // statement, so it must be a VALID configuration: a
+        // certificate carrying limits no search could run under
+        // (for example max_depth = 0) is rejected regardless of
+        // whether its hashes match.
+        self.config
+            .validate()
+            .map_err(|error| RewriteError::ResidualMismatch {
+                message: alloc::format!("certificate configuration is invalid: {error}"),
+            })?;
         if system_hash(system) != self.system_hash {
             return Err(mismatch("certificate system hash mismatch"));
         }
@@ -316,8 +326,62 @@ fn replay_bidirectional(
             .replace_at(&step.provenance.position, bindings.apply(rule.rhs()))
             .map_err(|_| mismatch("replay failed a backward rebuild"))?;
     }
-    if canonical(&current) != canonical(goal) {
-        return Err(mismatch("replay does not reconstruct the goal"));
+    // The backward half starts from the meeting substitution's
+    // instantiation of the meeting term, so a goal whose variables
+    // were bound by the meet reconstructs to an INSTANCE of the
+    // goal, not the raw goal. Acceptance is pattern matching with
+    // the goal as the pattern: the reconstructed endpoint must be
+    // an instance of the declared goal.
+    if match_pattern(goal, &current).is_none() {
+        return Err(mismatch(
+            "replay does not reconstruct an instance of the goal",
+        ));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::inverse::{BackwardExplorer, BackwardSearchOutcome, SearchMode};
+    use crate::trs::{Term, TermSystem};
+    use alloc::vec;
+
+    /// I3 (Cohort 3 closeout): a certificate whose embedded
+    /// configuration is invalid must not verify, even when every
+    /// hash is recomputed to match the tampered config.
+    #[test]
+    fn verify_rejects_an_invalid_embedded_configuration() {
+        let system = TermSystem::new(vec![]);
+        let target = Term::constant("a");
+        let goal = Term::var("X");
+        let outcome = BackwardExplorer::new(&system, InverseSearchConfig::default())
+            .search(&target, &goal, SearchMode::BreadthFirst)
+            .unwrap();
+        let BackwardSearchOutcome::Witness(derivation) = outcome else {
+            panic!("baseline must witness");
+        };
+        let query = ReplayQuery::Backward { target, goal };
+        let resources = ResourceObservation {
+            states: 1,
+            transitions: 0,
+            retained_bytes: 64,
+            operations: 4,
+        };
+        let mut certificate = ReplayCertificate::issue(
+            &system,
+            query,
+            ReplayDerivation::Backward(derivation),
+            InverseSearchConfig::default(),
+            GuidanceMode::CompleteWithinLimits,
+            resources,
+        );
+        assert!(certificate.verify(&system).is_ok());
+        // Tamper: no search with max_depth = 0 can produce a
+        // witness, and `new` rejects such a configuration.
+        certificate.config = certificate.config.with_max_depth_unchecked(0);
+        certificate.config_hash = config_hash(&certificate.config);
+        let result = certificate.verify(&system);
+        assert!(result.is_err(), "max_depth = 0 must not verify");
+    }
 }

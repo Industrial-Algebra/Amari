@@ -184,7 +184,7 @@ fn depth_state_transition_byte_and_operation_ceilings_are_partial() {
     let goal = parse("c");
     // Depth 0: root cannot expand.
     let depth0 = InverseSearchConfig::new(
-        0 + 1,
+        1,
         1_024,
         4_096,
         4_096,

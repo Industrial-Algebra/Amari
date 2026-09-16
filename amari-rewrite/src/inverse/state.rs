@@ -70,12 +70,107 @@ impl SymbolicState {
 /// by the term and every constraint, with constraint sides
 /// canonicalized (symmetric equality/disequality) and constraint
 /// encodings sorted.
+///
+/// Constraint order must not influence the digest: the shared
+/// renaming pass allocates variable indices in visitation order, so
+/// constraints are first placed in a canonical order. Each
+/// constraint gets a wildcard *shape key* (variables erased, sides
+/// canonicalized); runs of equal shapes (whose relative order a
+/// sort cannot decide) are enumerated exhaustively and the
+/// lexicographically smallest full encoding wins. Enumeration is
+/// capped at 720 arrangements; beyond that the (still deterministic,
+/// still sound) baseline order is used. Order-dependence can only
+/// ever cause a missed dedup, never a false equality: two states
+/// are equal only when their final encodings are identical.
 fn canonical_state_digest(term: &Term, constraints: &ConstraintSet) -> Sha256Digest {
+    let constraints = constraints.constraints();
+    // Decorate each constraint with its wildcard shape key and sort
+    // stably: within a tie, the caller's iteration order is the
+    // deterministic baseline.
+    let mut decorated: Vec<(Vec<u8>, &TermConstraint)> = constraints
+        .iter()
+        .map(|constraint| (constraint_shape_key(constraint), constraint))
+        .collect();
+    decorated.sort_by(|left, right| left.0.cmp(&right.0));
+    // Group maximal runs of equal shape keys.
+    let mut runs: Vec<core::ops::Range<usize>> = Vec::new();
+    let mut start = 0;
+    for index in 1..=decorated.len() {
+        if index == decorated.len() || decorated[index].0 != decorated[start].0 {
+            runs.push(start..index);
+            start = index;
+        }
+    }
+    // Total arrangement count (product of run factorials), capped.
+    let mut arrangements: u64 = 1;
+    for run in &runs {
+        let size = (run.end - run.start) as u64;
+        let mut factorial: u64 = 1;
+        for factor in 2..=size {
+            factorial = factorial.saturating_mul(factor);
+        }
+        arrangements = arrangements.saturating_mul(factorial);
+        if arrangements > 720 {
+            break;
+        }
+    }
+    let mut best: Option<Vec<u8>> = None;
+    if arrangements <= 720 && !runs.is_empty() {
+        // Enumerate arrangements: an odometer over per-run
+        // permutation indices (permutations are lexicographic).
+        let run_perms: Vec<Vec<Vec<usize>>> = runs
+            .iter()
+            .map(|run| permutations(run.end - run.start))
+            .collect();
+        let mut odometer = vec![0usize; runs.len()];
+        'arrangements: loop {
+            let mut order: Vec<&TermConstraint> = Vec::with_capacity(constraints.len());
+            for (slot, run) in runs.iter().enumerate() {
+                for &local in &run_perms[slot][odometer[slot]] {
+                    order.push(decorated[run.start + local].1);
+                }
+            }
+            let encoding = encode_state_with_order(term, &order);
+            if best.as_ref().is_none_or(|current| encoding < *current) {
+                best = Some(encoding);
+            }
+            // Advance the odometer; overflow at slot 0 ends the
+            // enumeration.
+            let mut slot = runs.len();
+            while slot > 0 {
+                slot -= 1;
+                odometer[slot] += 1;
+                if odometer[slot] < run_perms[slot].len() {
+                    break;
+                }
+                odometer[slot] = 0;
+                if slot == 0 {
+                    break 'arrangements;
+                }
+            }
+        }
+    }
+    if let Some(encoding) = best {
+        return Sha256Digest::framed("amari.relation.symbolic-state/v1", &encoding);
+    }
+    // Fallback (only reachable above the enumeration cap): the
+    // shape-sorted baseline order.
+    let order: Vec<&TermConstraint> = decorated
+        .iter()
+        .map(|(_, constraint)| *constraint)
+        .collect();
+    let encoding = encode_state_with_order(term, &order);
+    Sha256Digest::framed("amari.relation.symbolic-state/v1", &encoding)
+}
+
+/// Encode the term and the constraints (in the given order) with
+/// one shared renaming pass, returning the full pre-digest bytes.
+fn encode_state_with_order(term: &Term, order: &[&TermConstraint]) -> Vec<u8> {
     let mut variables: Vec<String> = Vec::new();
     let mut encoding = Vec::new();
     encode_term(term, &mut variables, &mut encoding);
     let mut constraint_blobs: Vec<Vec<u8>> = Vec::new();
-    for constraint in constraints.constraints() {
+    for constraint in order {
         let (tag, left, right) = match constraint {
             TermConstraint::Equal(left, right) => (0x10u8, left, right),
             TermConstraint::NotEqual(left, right) => (0x11u8, left, right),
@@ -100,7 +195,75 @@ fn canonical_state_digest(term: &Term, constraints: &ConstraintSet) -> Sha256Dig
         encoding.extend_from_slice(&(blob.len() as u32).to_le_bytes());
         encoding.extend_from_slice(&blob);
     }
-    Sha256Digest::framed("amari.relation.symbolic-state/v1", &encoding)
+    encoding
+}
+
+/// Wildcard shape key for a constraint: the same encoding scheme as
+/// `encode_term`, but every variable maps to one marker and sides
+/// are canonicalized, so the key is invariant under alpha-renaming
+/// and insertion order.
+fn constraint_shape_key(constraint: &TermConstraint) -> Vec<u8> {
+    fn encode_shape(term: &Term, out: &mut Vec<u8>) {
+        use alloc::string::ToString;
+        match term {
+            Term::Var(_) => {
+                out.push(0x00);
+                out.extend_from_slice(&0u32.to_le_bytes());
+            }
+            Term::Sym(symbol, args) => {
+                out.push(0x01);
+                let name = symbol.to_string();
+                out.extend_from_slice(&(args.len() as u32).to_le_bytes());
+                out.extend_from_slice(&(name.len() as u32).to_le_bytes());
+                out.extend_from_slice(name.as_bytes());
+                for arg in args {
+                    encode_shape(arg, out);
+                }
+            }
+        }
+    }
+    let (tag, left, right) = match constraint {
+        TermConstraint::Equal(left, right) => (0x10u8, left, right),
+        TermConstraint::NotEqual(left, right) => (0x11u8, left, right),
+    };
+    let mut left_bytes = Vec::new();
+    encode_shape(left, &mut left_bytes);
+    let mut right_bytes = Vec::new();
+    encode_shape(right, &mut right_bytes);
+    let mut key = vec![tag];
+    if left_bytes <= right_bytes {
+        key.extend_from_slice(&left_bytes);
+        key.extend_from_slice(&right_bytes);
+    } else {
+        key.extend_from_slice(&right_bytes);
+        key.extend_from_slice(&left_bytes);
+    }
+    key
+}
+
+/// All permutations of `0..size`, in lexicographic order.
+fn permutations(size: usize) -> Vec<Vec<usize>> {
+    let mut result = Vec::new();
+    let mut current: Vec<usize> = (0..size).collect();
+    loop {
+        result.push(current.clone());
+        // Next lexicographic permutation.
+        let mut pivot = None;
+        for index in (0..current.len().saturating_sub(1)).rev() {
+            if current[index] < current[index + 1] {
+                pivot = Some(index);
+                break;
+            }
+        }
+        let Some(pivot) = pivot else { break };
+        let mut successor = current.len() - 1;
+        while current[successor] <= current[pivot] {
+            successor -= 1;
+        }
+        current.swap(pivot, successor);
+        current[pivot + 1..].reverse();
+    }
+    result
 }
 
 impl PartialEq for SymbolicState {

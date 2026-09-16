@@ -102,15 +102,35 @@ pub(crate) struct MeetCandidate {
     unifier: Substitution,
 }
 
+/// The result of checking one forward/backward state pair.
+pub(crate) enum MeetCheck {
+    /// Terms unify and the combined constraints normalize
+    /// satisfiable under the meeting substitution.
+    Met(MeetCandidate),
+    /// The pair genuinely cannot meet.
+    NotMet,
+    /// The check itself exhausted the relation limits, so no
+    /// verdict exists. This must never be read as `NotMet`: a
+    /// limit event forfeits any exhaustion certificate.
+    Undecided,
+}
+
 /// Meet check: terms unify AND the combined constraints (including
 /// the meeting substitution's instantiations) normalize satisfiable.
+/// A `RelationLimitExceeded` from inside the check is NOT a failed
+/// meet: it yields `Undecided`, which callers must propagate into
+/// truncation (Partial), never into exhaustion.
 pub(crate) fn check_meet(
     forward: &SymbolicState,
     backward: &SymbolicState,
     limits: &RelationLimits,
-) -> Option<MeetCandidate> {
+) -> MeetCheck {
     let mut resources = RelationResources::new(limits);
-    let unifier = unify(forward.term(), backward.term(), &mut resources).ok()?;
+    let unifier = match unify(forward.term(), backward.term(), &mut resources) {
+        Ok(unifier) => unifier,
+        Err(crate::RewriteError::RelationLimitExceeded { .. }) => return MeetCheck::Undecided,
+        Err(_) => return MeetCheck::NotMet,
+    };
     // Apply the meeting substitution to the combined constraints
     // BEFORE normalizing: a contradiction that only appears after
     // instantiation (X != c with X := c) must reject the meet.
@@ -130,8 +150,9 @@ pub(crate) fn check_meet(
         merged.insert(apply(constraint));
     }
     match merged.normalize(limits) {
-        Ok(ConstraintOutcome::Satisfiable { .. }) => Some(MeetCandidate { unifier }),
-        _ => None,
+        Ok(ConstraintOutcome::Satisfiable { .. }) => MeetCheck::Met(MeetCandidate { unifier }),
+        Err(crate::RewriteError::RelationLimitExceeded { .. }) => MeetCheck::Undecided,
+        _ => MeetCheck::NotMet,
     }
 }
 
@@ -150,6 +171,8 @@ impl<'a> BidirectionalExplorer<'a> {
 
     /// Search for a certified meeting between `source` and `goal`.
     pub fn search(&self, source: &Term, goal: &Term) -> RewriteResult<BidirectionalSearchOutcome> {
+        // Re-validate the whole configuration (see backward.rs).
+        self.config.validate()?;
         let limits = RelationLimits::new(
             self.config.max_term_nodes() as usize,
             self.config.max_term_depth() as usize,
@@ -166,18 +189,25 @@ impl<'a> BidirectionalExplorer<'a> {
 
         let source_state = SymbolicState::new(source.clone(), ConstraintSet::new());
         let goal_state = SymbolicState::new(goal.clone(), ConstraintSet::new());
-        if let Some(meet) = check_meet(&source_state, &goal_state, &limits) {
-            return self.replay_witness(
-                BidirectionalDerivation {
-                    forward_steps: Vec::new(),
-                    backward_steps: Vec::new(),
-                    meeting_forward: source.clone(),
-                    meeting_backward: goal.clone(),
-                    unifier: meet.unifier,
-                },
-                source,
-                goal,
-            );
+        match check_meet(&source_state, &goal_state, &limits) {
+            MeetCheck::Met(meet) => {
+                return self.replay_witness(
+                    BidirectionalDerivation {
+                        forward_steps: Vec::new(),
+                        backward_steps: Vec::new(),
+                        meeting_forward: source.clone(),
+                        meeting_backward: goal.clone(),
+                        unifier: meet.unifier,
+                    },
+                    source,
+                    goal,
+                );
+            }
+            MeetCheck::NotMet => {}
+            // The initial pair cannot even be checked inside the
+            // limits: truncated before the search begins, so the
+            // only honest outcome is Partial.
+            MeetCheck::Undecided => truncated = true,
         }
         if resources.record_state().is_err()
             || resources
@@ -262,11 +292,14 @@ impl<'a> BidirectionalExplorer<'a> {
                     // state, in digest order (deterministic).
                     let mut met = None;
                     for (other_digest, other) in &backward {
-                        if check_meet(&child, &other.state, &limits).is_none() {
-                            continue;
-                        }
-                        let meet =
-                            check_meet(&child, &other.state, &limits).expect("checked above");
+                        let meet = match check_meet(&child, &other.state, &limits) {
+                            MeetCheck::Met(meet) => meet,
+                            MeetCheck::NotMet => continue,
+                            MeetCheck::Undecided => {
+                                truncated = true;
+                                continue;
+                            }
+                        };
                         let mut forward_steps = forward_chain(&forward, &digest);
                         forward_steps.push(step.clone());
                         let derivation = BidirectionalDerivation {
@@ -330,6 +363,9 @@ impl<'a> BidirectionalExplorer<'a> {
                 let predecessors =
                     match symbolic_predecessors(self.system, &term, &limits, scope as u32) {
                         Ok(predecessors) => predecessors,
+                        // Defensive: unreachable today (see the
+                        // note in backward.rs); a clash at
+                        // expansion time is unsupported.
                         Err(RewriteError::UnificationFailure { reason }) => {
                             return Ok(BidirectionalSearchOutcome::Unsupported(
                                 UnsupportedRelation { reason },
@@ -369,11 +405,14 @@ impl<'a> BidirectionalExplorer<'a> {
                     // Meet check against every retained forward state.
                     let mut met = None;
                     for (other_digest, other) in &forward {
-                        if check_meet(&other.state, &child, &limits).is_none() {
-                            continue;
-                        }
-                        let meet =
-                            check_meet(&other.state, &child, &limits).expect("checked above");
+                        let meet = match check_meet(&other.state, &child, &limits) {
+                            MeetCheck::Met(meet) => meet,
+                            MeetCheck::NotMet => continue,
+                            MeetCheck::Undecided => {
+                                truncated = true;
+                                continue;
+                            }
+                        };
                         let mut backward_steps = backward_chain(&backward, &digest);
                         backward_steps.push(predecessor.clone());
                         let derivation = BidirectionalDerivation {
@@ -501,9 +540,17 @@ impl<'a> BidirectionalExplorer<'a> {
                 .replace_at(&step.provenance.position, bindings.apply(rule.rhs()))
                 .map_err(|_| mismatch("replay failed a backward rebuild"))?;
         }
-        if canonical(&current) != canonical(goal) {
+        // The backward half starts from the meeting substitution's
+        // instantiation of the meeting term, so a goal whose
+        // variables were bound by the meet reconstructs to an
+        // INSTANCE of the goal, not the raw goal. Acceptance is
+        // therefore pattern matching with the goal as the pattern:
+        // the reconstructed endpoint must be an instance of the
+        // declared goal. (Strict canonical equality wrongly rejects
+        // every non-ground goal.)
+        if match_pattern(goal, &current).is_none() {
             return Err(mismatch(
-                "bidirectional replay does not reconstruct the goal",
+                "bidirectional replay does not reconstruct an instance of the goal",
             ));
         }
         Ok(BidirectionalSearchOutcome::Witness(derivation))
@@ -651,9 +698,15 @@ mod tests {
             ConstraintSet::new(),
         );
         let limits = RelationLimits::default();
-        assert!(check_meet(&forward, &backward, &limits).is_none());
+        assert!(matches!(
+            check_meet(&forward, &backward, &limits),
+            MeetCheck::NotMet
+        ));
         // Control: without the constraint the same terms meet.
         let plain = SymbolicState::new(Term::sym("g", vec![Term::var("X")]), ConstraintSet::new());
-        assert!(check_meet(&plain, &backward, &limits).is_some());
+        assert!(matches!(
+            check_meet(&plain, &backward, &limits),
+            MeetCheck::Met(_)
+        ));
     }
 }

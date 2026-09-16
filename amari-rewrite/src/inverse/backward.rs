@@ -27,12 +27,32 @@ use crate::relation::{
 };
 use crate::trs::{match_pattern, Term, TermSystem};
 
+/// The result of checking one state against the goal.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum GoalCheck {
+    /// The terms unify.
+    Match,
+    /// The terms genuinely clash.
+    NoMatch,
+    /// The check itself exhausted the relation limits, so no
+    /// verdict exists. This must never be read as `NoMatch`: a
+    /// limit event forfeits any exhaustion certificate.
+    Undecided,
+}
+
 /// A state matches the goal when the two terms UNIFY: existential
 /// logic variables in the state may be instantiated by the goal, so
-/// one-way pattern matching is not the right check.
-fn goal_matches(limits: &RelationLimits, goal: &Term, term: &Term) -> bool {
+/// one-way pattern matching is not the right check. A
+/// `RelationLimitExceeded` from inside unification is NOT a clash:
+/// it yields `Undecided`, which callers must propagate into
+/// truncation (Partial), never into exhaustion.
+fn goal_check(limits: &RelationLimits, goal: &Term, term: &Term) -> GoalCheck {
     let mut resources = RelationResources::new(limits);
-    unify(term, goal, &mut resources).is_ok()
+    match unify(term, goal, &mut resources) {
+        Ok(_) => GoalCheck::Match,
+        Err(crate::RewriteError::RelationLimitExceeded { .. }) => GoalCheck::Undecided,
+        Err(_) => GoalCheck::NoMatch,
+    }
 }
 
 /// Exact expansion ordering.
@@ -113,6 +133,11 @@ impl<'a> BackwardExplorer<'a> {
         guidance: &GuidanceMode,
     ) -> RewriteResult<BackwardSearchOutcome> {
         guidance.validate(&self.config)?;
+        // Re-validate the whole configuration, not just the four
+        // relation-limit fields: a config built outside `new`
+        // (e.g. tampered struct state inside this crate) must not
+        // raise the fixed ceilings.
+        self.config.validate()?;
         let limits = RelationLimits::new(
             self.config.max_term_nodes() as usize,
             self.config.max_term_depth() as usize,
@@ -130,10 +155,17 @@ impl<'a> BackwardExplorer<'a> {
         let mut scope: u64 = 0;
 
         let root = SymbolicState::new(target.clone(), ConstraintSet::new());
-        if goal_matches(&limits, goal, root.term()) {
-            return Ok(BackwardSearchOutcome::Witness(BackwardDerivation {
-                steps: Vec::new(),
-            }));
+        match goal_check(&limits, goal, root.term()) {
+            GoalCheck::Match => {
+                return Ok(BackwardSearchOutcome::Witness(BackwardDerivation {
+                    steps: Vec::new(),
+                }));
+            }
+            GoalCheck::NoMatch => {}
+            // The root cannot even be checked inside the limits:
+            // the search is truncated before it begins, so the only
+            // honest outcome is Partial.
+            GoalCheck::Undecided => truncated = true,
         }
         if resources.record_state().is_err()
             || resources.record_bytes(root.retained_bytes()).is_err()
@@ -177,6 +209,13 @@ impl<'a> BackwardExplorer<'a> {
                 match symbolic_predecessors(self.system, &term, &limits, scope as u32) {
                     Ok(predecessors) => predecessors,
                     Err(RewriteError::UnificationFailure { reason }) => {
+                        // Defensive: `symbolic_predecessors` skips
+                        // clashing positions instead of returning
+                        // this variant (inverse/mod.rs), so this
+                        // branch is unreachable today. It is kept
+                        // because a clash at expansion time IS an
+                        // unsupported-search condition should the
+                        // expansion contract ever change.
                         return Ok(BackwardSearchOutcome::Unsupported(UnsupportedRelation {
                             reason,
                         }));
@@ -250,9 +289,20 @@ impl<'a> BackwardExplorer<'a> {
                 if nodes.contains_key(&child_digest) {
                     continue;
                 }
-                if goal_matches(&limits, goal, child.term()) {
-                    let steps = build_chain(&nodes, &digest, predecessor);
-                    return self.replay_witness(steps, target);
+                let mut undecided = false;
+                match goal_check(&limits, goal, child.term()) {
+                    GoalCheck::Match => {
+                        let steps = build_chain(&nodes, &digest, predecessor);
+                        return self.replay_witness(steps, target);
+                    }
+                    GoalCheck::NoMatch => {}
+                    // The check ran out of budget: the child may or
+                    // may not be a witness. Retain it as unexplored
+                    // and forfeit certification.
+                    GoalCheck::Undecided => {
+                        truncated = true;
+                        undecided = true;
+                    }
                 }
                 if resources.record_state().is_err()
                     || resources.record_bytes(child.retained_bytes()).is_err()
@@ -260,7 +310,7 @@ impl<'a> BackwardExplorer<'a> {
                     truncated = true;
                     break;
                 }
-                let enqueue = child_depth < self.config.max_depth();
+                let enqueue = child_depth < self.config.max_depth() && !undecided;
                 if !enqueue {
                     truncated = true;
                 }

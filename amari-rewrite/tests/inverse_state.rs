@@ -129,8 +129,10 @@ fn search_resources_account_states_transitions_and_bytes() {
 #[test]
 fn exhausted_requires_certified_authority() {
     // There is no public constructor for CertifiedExhaustion: the
-    // variant exists but cannot be built from caller data. This test
-    // pins the remaining outcome surface instead.
+    // variant exists but cannot be built from caller data. With the
+    // `serialize` feature the refusal is enforced at the serde
+    // boundary (see inverse_remediation::i1). This test pins the
+    // remaining outcome surface.
     let frontier = amari_rewrite::inverse::BackwardFrontier {
         states: vec![SymbolicState::new(parse("f(?0.0)"), ConstraintSet::new())],
         depth_reached: 3,
