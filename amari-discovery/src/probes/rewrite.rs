@@ -1856,3 +1856,589 @@ mod tests {
         }
     }
 }
+
+/// Search ordering accepted by the backward-search probe.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
+pub enum RewriteSearchMode {
+    /// Canonical breadth-first ordering.
+    BreadthFirst,
+    /// Deterministic symbolic cost ordering.
+    CostFirst,
+}
+
+/// Guidance accepted by the backward-search probe.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum RewriteGuidance {
+    /// Ordering only; no candidate is dropped before a limit.
+    CompleteWithinLimits,
+    /// Explicit beam pruning with per-round dropped counts.
+    HeuristicPruning {
+        /// Candidates kept per expansion round.
+        beam_width: u64,
+    },
+}
+
+/// Typed input for bounded symbolic backward search.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-backward-search/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        rules_checked = "every rule RHS variable occurs in its LHS",
+        rules_count_limit = "at most 256 ordered rules are accepted",
+        term_bounds = "terms have depth at most 64 and at most 4096 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes",
+        max_depth_limit = "max_depth is between 1 and 16",
+        beam_width_limit = "heuristic_pruning beam width is between 1 and 1024"
+    ),
+    example(
+        label = "one_step_witness",
+        value = "{\"target\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"goal\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},{\"kind\":\"symbol\",\"name\":\"zero\",\"arguments\":[]}]},\"rules\":[{\"lhs\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"X\"},{\"kind\":\"symbol\",\"name\":\"zero\",\"arguments\":[]}]},\"rhs\":{\"kind\":\"variable\",\"name\":\"X\"}}],\"mode\":\"breadth_first\",\"guidance\":{\"kind\":\"complete_within_limits\"},\"max_depth\":8}"
+    )
+)]
+pub struct RewriteBackwardSearchRequest {
+    /// Target term the search starts from.
+    pub target: RewriteTerm,
+    /// Goal pattern the search seeks.
+    pub goal: RewriteTerm,
+    /// Ordered checked forward rules.
+    pub rules: Vec<RewriteRule>,
+    /// Expansion ordering.
+    pub mode: RewriteSearchMode,
+    /// Guidance mode (complete or explicit beam pruning).
+    pub guidance: RewriteGuidance,
+    /// Maximum search depth (1..=16).
+    pub max_depth: u64,
+}
+
+/// Typed output of bounded symbolic backward search.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-backward-search/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        outcome_truthful = "witness steps replay through the submitted system; exhausted is returned only on zero-drop frontier closure; approximate carries exact dropped counts"
+    ),
+    example(
+        label = "one_step_witness",
+        value = "{\"outcome\":\"witness\",\"steps\":[{\"term\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},{\"kind\":\"symbol\",\"name\":\"zero\",\"arguments\":[]}]},\"existentials\":[],\"constraints\":[],\"provenance\":{\"rule_id\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"position\":[],\"scope\":1,\"target_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"predecessor_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\"}}],\"exhaustion_authority\":null,\"frontier\":[],\"depth_reached\":1,\"dropped_candidates\":0,\"reason\":null}"
+    )
+)]
+pub struct RewriteBackwardSearchOutput {
+    /// Typed outcome: witness, exhausted, partial, approximate, or
+    /// unsupported.
+    pub outcome: String,
+    /// Witness derivation steps (empty unless outcome is witness).
+    pub steps: Vec<RewriteSymbolicPredecessor>,
+    /// Exhaustion authority kind (only when outcome is exhausted).
+    pub exhaustion_authority: Option<String>,
+    /// Retained unexpanded frontier terms (partial/approximate).
+    pub frontier: Vec<RewriteTerm>,
+    /// Deepest depth reached.
+    pub depth_reached: u64,
+    /// Candidates dropped by heuristic pruning (0 otherwise).
+    pub dropped_candidates: u64,
+    /// Reason string for unsupported or approximate summaries.
+    pub reason: Option<String>,
+}
+
+/// Typed input for bounded bidirectional search.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-bidirectional-search/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        rules_checked = "every rule RHS variable occurs in its LHS",
+        rules_count_limit = "at most 256 ordered rules are accepted",
+        term_bounds = "terms have depth at most 64 and at most 4096 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes",
+        max_depth_limit = "max_depth is between 1 and 16"
+    ),
+    example(
+        label = "forward_meets_backward",
+        value = "{\"source\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},{\"kind\":\"symbol\",\"name\":\"zero\",\"arguments\":[]}]},\"goal\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"rules\":[{\"lhs\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"X\"},{\"kind\":\"symbol\",\"name\":\"zero\",\"arguments\":[]}]},\"rhs\":{\"kind\":\"variable\",\"name\":\"X\"}}],\"max_depth\":8}"
+    )
+)]
+pub struct RewriteBidirectionalSearchRequest {
+    /// Source term the forward frontier starts from.
+    pub source: RewriteTerm,
+    /// Goal term the backward frontier starts from.
+    pub goal: RewriteTerm,
+    /// Ordered checked forward rules.
+    pub rules: Vec<RewriteRule>,
+    /// Maximum per-side search depth (1..=16).
+    pub max_depth: u64,
+}
+
+/// One forward step in a bidirectional witness.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteForwardStep {
+    /// Canonical 64-hex identity of the applied rule.
+    pub rule_id: String,
+    /// Position of the rewritten subterm.
+    pub position: Vec<u64>,
+    /// Canonical 64-hex digest of the source term.
+    pub source_hash: String,
+    /// Canonical 64-hex digest of the result term.
+    pub result_hash: String,
+}
+
+/// Typed output of bounded bidirectional search.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-bidirectional-search/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        outcome_truthful = "meets replay through the submitted system before acceptance; exhausted is returned only on zero-drop closure of both frontiers"
+    ),
+    example(
+        label = "forward_meets_backward",
+        value = "{\"outcome\":\"witness\",\"forward_steps\":[{\"rule_id\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"position\":[],\"source_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\"}],\"backward_steps\":[],\"meeting_forward\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"meeting_backward\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"exhaustion_authority\":null,\"frontier_forward\":[],\"frontier_backward\":[],\"depth_reached\":1,\"reason\":null}"
+    )
+)]
+pub struct RewriteBidirectionalSearchOutput {
+    /// Typed outcome: witness, exhausted, partial, or unsupported.
+    pub outcome: String,
+    /// Forward steps from source to the meeting point.
+    pub forward_steps: Vec<RewriteForwardStep>,
+    /// Backward steps from goal to the meeting point.
+    pub backward_steps: Vec<RewriteSymbolicPredecessor>,
+    /// Meeting term on the forward side (witness only).
+    pub meeting_forward: Option<RewriteTerm>,
+    /// Meeting term on the backward side (witness only).
+    pub meeting_backward: Option<RewriteTerm>,
+    /// Exhaustion authority kind (only when outcome is exhausted).
+    pub exhaustion_authority: Option<String>,
+    /// Retained unexpanded forward frontier terms.
+    pub frontier_forward: Vec<RewriteTerm>,
+    /// Retained unexpanded backward frontier terms.
+    pub frontier_backward: Vec<RewriteTerm>,
+    /// Deepest depth reached on either side.
+    pub depth_reached: u64,
+    /// Reason string for unsupported outcomes.
+    pub reason: Option<String>,
+}
+
+#[cfg(feature = "standard-probes")]
+const MAX_SEARCH_DEPTH: u64 = 16;
+#[cfg(feature = "standard-probes")]
+const MAX_BEAM_WIDTH: u64 = 1_024;
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn backward_search_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:backward-search:v1".parse()?,
+        capability_id: "amari:amari-rewrite:inverse:backward-search".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-backward-search/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-backward-search/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_backward_search,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn bidirectional_search_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:bidirectional-search:v1".parse()?,
+        capability_id: "amari:amari-rewrite:inverse:bidirectional-search".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-bidirectional-search/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-bidirectional-search/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_bidirectional_search,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn search_config(max_depth: u64) -> DiscoveryResult<amari_rewrite::inverse::InverseSearchConfig> {
+    if max_depth == 0 || max_depth > MAX_SEARCH_DEPTH {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "search max depth must be between 1 and {MAX_SEARCH_DEPTH}"
+        )));
+    }
+    amari_rewrite::inverse::InverseSearchConfig::new(
+        max_depth,
+        4_096,
+        16_384,
+        4_096,
+        64,
+        4_096,
+        65_536,
+        50_000,
+        1 << 20,
+        1 << 20,
+    )
+    .map_err(|error| DiscoveryError::InvalidInput(format!("search configuration invalid: {error}")))
+}
+
+#[cfg(feature = "standard-probes")]
+fn predecessor_dto(
+    predecessor: &amari_rewrite::inverse::SymbolicPredecessor,
+) -> RewriteSymbolicPredecessor {
+    RewriteSymbolicPredecessor {
+        term: RewriteTerm::from_term(&predecessor.term),
+        existentials: predecessor
+            .existentials
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+        constraints: predecessor
+            .constraints
+            .constraints()
+            .iter()
+            .map(|constraint| match constraint {
+                amari_rewrite::relation::TermConstraint::Equal(left, right) => {
+                    RewriteTermConstraint::Equal {
+                        left: RewriteTerm::from_term(left),
+                        right: RewriteTerm::from_term(right),
+                    }
+                }
+                amari_rewrite::relation::TermConstraint::NotEqual(left, right) => {
+                    RewriteTermConstraint::NotEqual {
+                        left: RewriteTerm::from_term(left),
+                        right: RewriteTerm::from_term(right),
+                    }
+                }
+            })
+            .collect(),
+        provenance: RewriteSymbolicProvenance {
+            rule_id: predecessor.provenance.rule_id.to_string(),
+            position: predecessor
+                .provenance
+                .position
+                .as_slice()
+                .iter()
+                .map(|index| *index as u64)
+                .collect(),
+            scope: u64::from(predecessor.provenance.scope),
+            target_hash: predecessor.provenance.target_hash.to_hex(),
+            predecessor_hash: predecessor.provenance.predecessor_hash.to_hex(),
+        },
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_backward_search(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewriteBackwardSearchRequest = serde_json::from_value(input.clone()).map_err(|error| {
+        DiscoveryError::InvalidInput(format!(
+            "backward search request has an invalid term, rule, mode, guidance, or limit shape: {error}"
+        ))
+    })?;
+    let bounds = effective_bounds(limits);
+    validate_rewrite_request(
+        &request,
+        [&request.target, &request.goal],
+        &request.rules,
+        bounds,
+    )?;
+    let rules = request
+        .rules
+        .iter()
+        .map(RewriteRule::to_rule)
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let system = TermSystem::new(rules);
+    let target = request.target.to_term()?;
+    let goal = request.goal.to_term()?;
+    let config = search_config(request.max_depth)?;
+    let mode = match request.mode {
+        RewriteSearchMode::BreadthFirst => amari_rewrite::inverse::SearchMode::BreadthFirst,
+        RewriteSearchMode::CostFirst => amari_rewrite::inverse::SearchMode::CostFirst,
+    };
+    let guidance = match &request.guidance {
+        RewriteGuidance::CompleteWithinLimits => {
+            amari_rewrite::inverse::GuidanceMode::CompleteWithinLimits
+        }
+        RewriteGuidance::HeuristicPruning { beam_width } => {
+            if *beam_width == 0 || *beam_width > MAX_BEAM_WIDTH {
+                return Err(DiscoveryError::InvalidInput(format!(
+                    "heuristic pruning beam width must be between 1 and {MAX_BEAM_WIDTH}"
+                )));
+            }
+            amari_rewrite::inverse::GuidanceMode::HeuristicPruning {
+                beam_width: *beam_width,
+            }
+        }
+    };
+    let outcome = amari_rewrite::inverse::BackwardExplorer::new(&system, config)
+        .search_with_guidance(&target, &goal, mode, &guidance)
+        .map_err(|error| DiscoveryError::ProbeFailed(format!("backward search failed: {error}")))?;
+    let output = match outcome {
+        amari_rewrite::inverse::BackwardSearchOutcome::Witness(derivation) => {
+            RewriteBackwardSearchOutput {
+                outcome: "witness".to_owned(),
+                depth_reached: derivation.steps.len() as u64,
+                steps: derivation.steps.iter().map(predecessor_dto).collect(),
+                exhaustion_authority: None,
+                frontier: Vec::new(),
+                dropped_candidates: 0,
+                reason: None,
+            }
+        }
+        amari_rewrite::inverse::BackwardSearchOutcome::Exhausted(certified) => {
+            RewriteBackwardSearchOutput {
+                outcome: "exhausted".to_owned(),
+                steps: Vec::new(),
+                exhaustion_authority: Some(format!("{:?}", certified.authority())),
+                frontier: Vec::new(),
+                depth_reached: 0,
+                dropped_candidates: 0,
+                reason: None,
+            }
+        }
+        amari_rewrite::inverse::BackwardSearchOutcome::Partial(frontier) => {
+            RewriteBackwardSearchOutput {
+                outcome: "partial".to_owned(),
+                steps: Vec::new(),
+                exhaustion_authority: None,
+                depth_reached: frontier.depth_reached,
+                frontier: frontier
+                    .states
+                    .iter()
+                    .map(|state| RewriteTerm::from_term(state.term()))
+                    .collect(),
+                dropped_candidates: 0,
+                reason: None,
+            }
+        }
+        amari_rewrite::inverse::BackwardSearchOutcome::Approximate(evidence) => {
+            RewriteBackwardSearchOutput {
+                outcome: "approximate".to_owned(),
+                steps: Vec::new(),
+                exhaustion_authority: None,
+                depth_reached: evidence
+                    .frontier
+                    .as_ref()
+                    .map(|frontier| frontier.depth_reached)
+                    .unwrap_or(0),
+                frontier: evidence
+                    .frontier
+                    .as_ref()
+                    .map(|frontier| {
+                        frontier
+                            .states
+                            .iter()
+                            .map(|state| RewriteTerm::from_term(state.term()))
+                            .collect()
+                    })
+                    .unwrap_or_default(),
+                dropped_candidates: evidence.dropped_candidates,
+                reason: Some(evidence.summary),
+            }
+        }
+        amari_rewrite::inverse::BackwardSearchOutcome::Unsupported(unsupported) => {
+            RewriteBackwardSearchOutput {
+                outcome: "unsupported".to_owned(),
+                steps: Vec::new(),
+                exhaustion_authority: None,
+                frontier: Vec::new(),
+                depth_reached: 0,
+                dropped_candidates: 0,
+                reason: Some(unsupported.reason),
+            }
+        }
+    };
+    let bytes = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations: bytes,
+            nodes: 0,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_bidirectional_search(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewriteBidirectionalSearchRequest = serde_json::from_value(input.clone())
+        .map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "bidirectional search request has an invalid term, rule, or limit shape: {error}"
+            ))
+        })?;
+    let bounds = effective_bounds(limits);
+    validate_rewrite_request(
+        &request,
+        [&request.source, &request.goal],
+        &request.rules,
+        bounds,
+    )?;
+    let rules = request
+        .rules
+        .iter()
+        .map(RewriteRule::to_rule)
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let system = TermSystem::new(rules);
+    let source = request.source.to_term()?;
+    let goal = request.goal.to_term()?;
+    let config = search_config(request.max_depth)?;
+    let outcome = amari_rewrite::inverse::BidirectionalExplorer::new(&system, config)
+        .search(&source, &goal)
+        .map_err(|error| {
+            DiscoveryError::ProbeFailed(format!("bidirectional search failed: {error}"))
+        })?;
+    let output = match outcome {
+        amari_rewrite::inverse::BidirectionalSearchOutcome::Witness(derivation) => {
+            RewriteBidirectionalSearchOutput {
+                outcome: "witness".to_owned(),
+                forward_steps: derivation
+                    .forward_steps
+                    .iter()
+                    .map(|step| RewriteForwardStep {
+                        rule_id: step.rule_id.to_string(),
+                        position: step
+                            .position
+                            .as_slice()
+                            .iter()
+                            .map(|index| *index as u64)
+                            .collect(),
+                        source_hash: step.source_hash.to_hex(),
+                        result_hash: step.result_hash.to_hex(),
+                    })
+                    .collect(),
+                backward_steps: derivation
+                    .backward_steps
+                    .iter()
+                    .map(predecessor_dto)
+                    .collect(),
+                meeting_forward: Some(RewriteTerm::from_term(&derivation.meeting_forward)),
+                meeting_backward: Some(RewriteTerm::from_term(&derivation.meeting_backward)),
+                exhaustion_authority: None,
+                frontier_forward: Vec::new(),
+                frontier_backward: Vec::new(),
+                depth_reached: (derivation.forward_steps.len() + derivation.backward_steps.len())
+                    as u64,
+                reason: None,
+            }
+        }
+        amari_rewrite::inverse::BidirectionalSearchOutcome::Exhausted(certified) => {
+            RewriteBidirectionalSearchOutput {
+                outcome: "exhausted".to_owned(),
+                forward_steps: Vec::new(),
+                backward_steps: Vec::new(),
+                meeting_forward: None,
+                meeting_backward: None,
+                exhaustion_authority: Some(format!("{:?}", certified.authority())),
+                frontier_forward: Vec::new(),
+                frontier_backward: Vec::new(),
+                depth_reached: 0,
+                reason: None,
+            }
+        }
+        amari_rewrite::inverse::BidirectionalSearchOutcome::Partial(frontier) => {
+            RewriteBidirectionalSearchOutput {
+                outcome: "partial".to_owned(),
+                forward_steps: Vec::new(),
+                backward_steps: Vec::new(),
+                meeting_forward: None,
+                meeting_backward: None,
+                exhaustion_authority: None,
+                frontier_forward: frontier
+                    .forward
+                    .iter()
+                    .map(|state| RewriteTerm::from_term(state.term()))
+                    .collect(),
+                frontier_backward: frontier
+                    .backward
+                    .iter()
+                    .map(|state| RewriteTerm::from_term(state.term()))
+                    .collect(),
+                depth_reached: frontier.depth_reached,
+                reason: None,
+            }
+        }
+        amari_rewrite::inverse::BidirectionalSearchOutcome::Unsupported(unsupported) => {
+            RewriteBidirectionalSearchOutput {
+                outcome: "unsupported".to_owned(),
+                forward_steps: Vec::new(),
+                backward_steps: Vec::new(),
+                meeting_forward: None,
+                meeting_backward: None,
+                exhaustion_authority: None,
+                frontier_forward: Vec::new(),
+                frontier_backward: Vec::new(),
+                depth_reached: 0,
+                reason: Some(unsupported.reason),
+            }
+        }
+    };
+    let bytes = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations: bytes,
+            nodes: 0,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}

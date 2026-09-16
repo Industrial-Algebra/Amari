@@ -239,6 +239,16 @@ stability = "experimental"
 cost = "moderate"
 
 [[relations]]
+from = "amari:amari-rewrite:inverse:predecessors"
+to = "amari:amari-rewrite:inverse:backward-search"
+kind = "superseded_by"
+
+[[relations]]
+from = "amari:amari-rewrite:inverse:predecessors"
+to = "amari:amari-rewrite:inverse:bidirectional-search"
+kind = "superseded_by"
+
+[[relations]]
 from = "amari:amari-core:product:geometric-product"
 to = "amari:amari-core:rotor:rotation"
 kind = "supports"
@@ -277,6 +287,34 @@ kind = "supports"
 from = "amari:amari-rewrite:macros:derive-rewritable"
 to = "amari:amari-rewrite:macros:term-rule-constructors"
 kind = "composes_with"
+
+[[capabilities]]
+id = "amari:amari-rewrite:inverse:backward-search"
+name = "Bounded symbolic backward search"
+description = "Bounded BFS/cost-ordered backward exploration over alpha-canonical symbolic states with replay-verified witnesses, certified frontier-closure exhaustion, and transparent guidance."
+aliases = ["backward explorer", "inverse search"]
+concepts = ["term rewriting system", "inverse rewriting", "symbolic search"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::inverse::BackwardExplorer"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:backward-search:v1"]
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:inverse:bidirectional-search"
+name = "Bounded bidirectional rewrite search"
+description = "Forward/backward frontiers meeting on unification with full-path replay through the original system before witness acceptance."
+aliases = ["bidirectional explorer", "frontier meeting"]
+concepts = ["term rewriting system", "bidirectional search", "unification"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::inverse::BidirectionalExplorer"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:bidirectional-search:v1"]
+stability = "experimental"
+cost = "moderate"
 
 [[capabilities]]
 id = "amari:amari-rewrite:inverse:symbolic-predecessors"

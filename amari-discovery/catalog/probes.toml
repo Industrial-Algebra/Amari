@@ -211,6 +211,36 @@ max_operations = 100000
 timeout_millis = 2000
 
 [[probes]]
+id = "amari-probe:rewrite:backward-search:v1"
+capability_id = "amari:amari-rewrite:inverse:backward-search"
+input_schema = "amari.discovery/probe/rewrite-backward-search/input/v1"
+output_schema = "amari.discovery/probe/rewrite-backward-search/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:rewrite:bidirectional-search:v1"
+capability_id = "amari:amari-rewrite:inverse:bidirectional-search"
+input_schema = "amari.discovery/probe/rewrite-bidirectional-search/input/v1"
+output_schema = "amari.discovery/probe/rewrite-bidirectional-search/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
 id = "amari-probe:rewrite:symbolic-predecessors:v1"
 capability_id = "amari:amari-rewrite:inverse:symbolic-predecessors"
 input_schema = "amari.discovery/probe/rewrite-symbolic-predecessors/input/v1"

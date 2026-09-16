@@ -34,11 +34,13 @@ pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathReq
 pub use optimization::{ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest, ParetoPoint};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
 pub use rewrite::{
-    RewriteBranchingEstimate, RewriteErasedBinding, RewriteExample, RewriteInferRuleOutput,
+    RewriteBackwardSearchOutput, RewriteBackwardSearchRequest, RewriteBidirectionalSearchOutput,
+    RewriteBidirectionalSearchRequest, RewriteBranchingEstimate, RewriteErasedBinding,
+    RewriteExample, RewriteForwardStep, RewriteGuidance, RewriteInferRuleOutput,
     RewriteInferRuleRequest, RewriteInverseAnalysisOutput, RewriteInverseAnalysisRequest,
     RewriteInverseRuleReport, RewriteNormalizeOutput, RewriteNormalizeRequest,
     RewritePredecessorsOutput, RewritePredecessorsRequest, RewriteResidualAuthority,
-    RewriteResidualReplayOutput, RewriteResidualReplayRequest, RewriteRule,
+    RewriteResidualReplayOutput, RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode,
     RewriteSymbolicPredecessor, RewriteSymbolicPredecessorsOutput,
     RewriteSymbolicPredecessorsRequest, RewriteSymbolicProvenance, RewriteTerm,
     RewriteTermConstraint,
@@ -399,6 +401,18 @@ fn schema_document(schema_id: &str) -> DiscoveryResult<ProbeSchemaDocument> {
         "amari.discovery/probe/rewrite-predecessors/output/v1" => {
             ProbeSchemaDocument::from_contract::<RewritePredecessorsOutput>()
         }
+        "amari.discovery/probe/rewrite-backward-search/input/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteBackwardSearchRequest>()
+        }
+        "amari.discovery/probe/rewrite-backward-search/output/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteBackwardSearchOutput>()
+        }
+        "amari.discovery/probe/rewrite-bidirectional-search/input/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteBidirectionalSearchRequest>()
+        }
+        "amari.discovery/probe/rewrite-bidirectional-search/output/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteBidirectionalSearchOutput>()
+        }
         "amari.discovery/probe/rewrite-symbolic-predecessors/input/v1" => {
             ProbeSchemaDocument::from_contract::<RewriteSymbolicPredecessorsRequest>()
         }
@@ -483,6 +497,8 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
         holographic::superposition_registration()?,
         network::registration()?,
         optimization::registration()?,
+        rewrite::backward_search_registration()?,
+        rewrite::bidirectional_search_registration()?,
         rewrite::infer_rule_registration()?,
         rewrite::inverse_analysis_registration()?,
         rewrite::normalize_registration()?,
