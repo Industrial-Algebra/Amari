@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "8b98f34abb431e751395588fa577330c1fa92c7c255b478587f89279335ba400",
+  "content_hash": "9f4d65e4138d61c0a8c56d7ff7d44f86213b661c4a3d951623fdf32e0d725892",
   "crates": [
     {
       "name": "amari",
@@ -374285,6 +374285,30 @@
                 }
               },
               {
+                "name": "MalformedAutomaton",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonGroundTerm",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -374424,6 +374448,30 @@
                   },
                   {
                     "name": "InvalidSubstitution",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "MalformedAutomaton",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "NonGroundTerm",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -375352,6 +375400,30 @@
                 }
               },
               {
+                "name": "MalformedAutomaton",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonGroundTerm",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -375491,6 +375563,30 @@
                   },
                   {
                     "name": "InvalidSubstitution",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "MalformedAutomaton",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "NonGroundTerm",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -378202,6 +378298,662 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::AcceptingRun",
+          "kind": "struct",
+          "signature": "pub struct AcceptingRun",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct AcceptingRun",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "AcceptingRun"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::AcceptingRun::assignments",
+          "kind": "method",
+          "signature": "pub fn assignments (& self) -> & [(Vec < usize > , TreeState)]",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn assignments (& self) -> & [(Vec < usize > , TreeState)]",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "AcceptingRun::assignments"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::AcceptingRun::root_state",
+          "kind": "method",
+          "signature": "pub fn root_state (& self) -> & TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn root_state (& self) -> & TreeState",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "AcceptingRun::root_state"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol",
+          "kind": "struct",
+          "signature": "pub struct RankedSymbol",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::alphabet",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct RankedSymbol",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/alphabet.rs",
+              "source_module": "amari_rewrite::language::alphabet",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::alphabet",
+              "declaration_ident": "RankedSymbol"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol::arity",
+          "kind": "method",
+          "signature": "pub fn arity (& self) -> u16",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::alphabet",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn arity (& self) -> u16",
+              "source_path": "amari-rewrite/src/language/alphabet.rs",
+              "source_module": "amari_rewrite::language::alphabet",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::alphabet",
+              "declaration_ident": "RankedSymbol::arity"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol::new",
+          "kind": "method",
+          "signature": "pub fn new (symbol : Symbol , arity : u16) -> Self",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::alphabet",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (symbol : Symbol , arity : u16) -> Self",
+              "source_path": "amari-rewrite/src/language/alphabet.rs",
+              "source_module": "amari_rewrite::language::alphabet",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::alphabet",
+              "declaration_ident": "RankedSymbol::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol::symbol",
+          "kind": "method",
+          "signature": "pub fn symbol (& self) -> & Symbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::alphabet",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn symbol (& self) -> & Symbol",
+              "source_path": "amari-rewrite/src/language/alphabet.rs",
+              "source_module": "amari_rewrite::language::alphabet",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::alphabet",
+              "declaration_ident": "RankedSymbol::symbol"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton",
+          "kind": "struct",
+          "signature": "pub struct TreeAutomaton",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct TreeAutomaton",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::accepting_run",
+          "kind": "method",
+          "signature": "pub fn accepting_run (& self , term : & Term) -> RewriteResult < Option < AcceptingRun > >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn accepting_run (& self , term : & Term) -> RewriteResult < Option < AcceptingRun > >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::accepting_run"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::accepts",
+          "kind": "method",
+          "signature": "pub fn accepts (& self , term : & Term) -> RewriteResult < bool >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn accepts (& self , term : & Term) -> RewriteResult < bool >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::accepts"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::alphabet",
+          "kind": "method",
+          "signature": "pub fn alphabet (& self) -> & [RankedSymbol]",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn alphabet (& self) -> & [RankedSymbol]",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::alphabet"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::finals",
+          "kind": "method",
+          "signature": "pub fn finals (& self) -> & [TreeState]",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn finals (& self) -> & [TreeState]",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::finals"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::limits",
+          "kind": "method",
+          "signature": "pub fn limits (& self) -> & TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn limits (& self) -> & TreeAutomatonLimits",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::limits"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::new",
+          "kind": "method",
+          "signature": "pub fn new (alphabet : Vec < RankedSymbol > , states : Vec < TreeState > , transitions : Vec < TreeTransition > , finals : Vec < TreeState > , limits : TreeAutomatonLimits ,) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (alphabet : Vec < RankedSymbol > , states : Vec < TreeState > , transitions : Vec < TreeTransition > , finals : Vec < TreeState > , limits : TreeAutomatonLimits ,) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::states",
+          "kind": "method",
+          "signature": "pub fn states (& self) -> & [TreeState]",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn states (& self) -> & [TreeState]",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::states"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::transitions",
+          "kind": "method",
+          "signature": "pub fn transitions (& self) -> & [TreeTransition]",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn transitions (& self) -> & [TreeTransition]",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::transitions"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits",
+          "kind": "struct",
+          "signature": "pub struct TreeAutomatonLimits",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct TreeAutomatonLimits",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::MAX_RANK",
+          "kind": "const",
+          "signature": "pub const MAX_RANK : usize",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "const",
+              "signature": "pub const MAX_RANK : usize",
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits::MAX_RANK"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::MAX_STATES",
+          "kind": "const",
+          "signature": "pub const MAX_STATES : usize",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "const",
+              "signature": "pub const MAX_STATES : usize",
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits::MAX_STATES"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::MAX_TRANSITIONS",
+          "kind": "const",
+          "signature": "pub const MAX_TRANSITIONS : usize",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "const",
+              "signature": "pub const MAX_TRANSITIONS : usize",
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits::MAX_TRANSITIONS"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::max_rank",
+          "kind": "method",
+          "signature": "pub fn max_rank (& self) -> usize",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn max_rank (& self) -> usize",
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits::max_rank"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::max_states",
+          "kind": "method",
+          "signature": "pub fn max_states (& self) -> usize",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn max_states (& self) -> usize",
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits::max_states"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::max_transitions",
+          "kind": "method",
+          "signature": "pub fn max_transitions (& self) -> usize",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn max_transitions (& self) -> usize",
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits::max_transitions"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::new",
+          "kind": "method",
+          "signature": "pub fn new (max_states : usize , max_transitions : usize , max_rank : usize) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::limits",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (max_states : usize , max_transitions : usize , max_rank : usize) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/limits.rs",
+              "source_module": "amari_rewrite::language::limits",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::limits",
+              "declaration_ident": "TreeAutomatonLimits::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeState",
+          "kind": "struct",
+          "signature": "pub struct TreeState",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct TreeState",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeState"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeState::name",
+          "kind": "method",
+          "signature": "pub fn name (& self) -> & Symbol",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn name (& self) -> & Symbol",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeState::name"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeState::new",
+          "kind": "method",
+          "signature": "pub fn new (name : impl Into < Symbol >) -> Self",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (name : impl Into < Symbol >) -> Self",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeState::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition",
+          "kind": "struct",
+          "signature": "pub struct TreeTransition",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct TreeTransition",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeTransition"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::children",
+          "kind": "method",
+          "signature": "pub fn children (& self) -> & [TreeState]",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn children (& self) -> & [TreeState]",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeTransition::children"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::new",
+          "kind": "method",
+          "signature": "pub fn new (symbol : Symbol , children : Vec < TreeState > , parent : TreeState) -> Self",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (symbol : Symbol , children : Vec < TreeState > , parent : TreeState) -> Self",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeTransition::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::parent",
+          "kind": "method",
+          "signature": "pub fn parent (& self) -> & TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn parent (& self) -> & TreeState",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeTransition::parent"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::symbol",
+          "kind": "method",
+          "signature": "pub fn symbol (& self) -> & Symbol",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn symbol (& self) -> & Symbol",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeTransition::symbol"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::network::RewriteGraphSummary",
           "kind": "struct",
           "signature": "pub struct RewriteGraphSummary",
@@ -378719,6 +379471,30 @@
                 }
               },
               {
+                "name": "MalformedAutomaton",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonGroundTerm",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -378858,6 +379634,30 @@
                   },
                   {
                     "name": "InvalidSubstitution",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "MalformedAutomaton",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "NonGroundTerm",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -384539,6 +385339,114 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::AcceptingRun",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 4,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "AcceptingRun"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::alphabet",
+            "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::TreeAutomaton",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeAutomaton"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::limits",
+            "ident": "TreeAutomatonLimits"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeState"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
           "source_path": "amari-rewrite/src/network/mod.rs",
           "source_ordinal": 0,
@@ -385324,6 +386232,24 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::backward",
             "ident": "SearchMode"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::limits",
+            "ident": "TreeAutomatonLimits"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -386072,6 +386998,114 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::AcceptingRun",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 4,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "AcceptingRun"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::alphabet",
+            "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::TreeAutomaton",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeAutomaton"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::limits",
+            "ident": "TreeAutomatonLimits"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeState"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
           "source_path": "amari-rewrite/src/network/mod.rs",
           "source_ordinal": 0,
@@ -386756,6 +387790,24 @@
         },
         {
           "trait_path": "Default",
+          "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Default"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::limits",
+            "ident": "TreeAutomatonLimits"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": false
+        },
+        {
+          "trait_path": "Default",
           "impl_type_path": "amari_rewrite::prelude::Path",
           "source_path": "amari-rewrite/src/rewritable.rs",
           "source_ordinal": 0,
@@ -387258,6 +388310,114 @@
           "unsafe_trait": false,
           "negative": false,
           "is_derived": false
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::AcceptingRun",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 4,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "AcceptingRun"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::alphabet",
+            "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::TreeAutomaton",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeAutomaton"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::limits",
+            "ident": "TreeAutomatonLimits"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeState"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
         },
         {
           "trait_path": "Eq",
@@ -388218,6 +389378,60 @@
         },
         {
           "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::alphabet",
+            "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeState"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
           "impl_type_path": "amari_rewrite::prelude::Path",
           "source_path": "amari-rewrite/src/rewritable.rs",
           "source_ordinal": 0,
@@ -388485,6 +389699,60 @@
           "unsafe_trait": false,
           "negative": false,
           "is_derived": false
+        },
+        {
+          "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::alphabet",
+            "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeState"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
         },
         {
           "trait_path": "Ord",
@@ -389245,6 +390513,114 @@
         },
         {
           "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::AcceptingRun",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 4,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "AcceptingRun"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::alphabet",
+            "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::TreeAutomaton",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeAutomaton"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::limits",
+            "ident": "TreeAutomatonLimits"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeState"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
           "source_path": "amari-rewrite/src/network/mod.rs",
           "source_ordinal": 0,
@@ -389926,6 +391302,60 @@
           "unsafe_trait": false,
           "negative": false,
           "is_derived": false
+        },
+        {
+          "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::alphabet",
+            "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeState"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::automaton",
+            "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
         },
         {
           "trait_path": "PartialOrd",
@@ -391379,6 +392809,270 @@
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language",
+          "source_path": "amari-rewrite/src/language/mod.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "module"
+        },
+        {
+          "path": "amari_rewrite::language::AcceptingRun",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::AcceptingRun::assignments",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::AcceptingRun::root_state",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol::arity",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol::new",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RankedSymbol::symbol",
+          "source_path": "amari-rewrite/src/language/alphabet.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::accepting_run",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 7,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::accepts",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::alphabet",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::finals",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::limits",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::new",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::states",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::transitions",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::MAX_RANK",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_const"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::MAX_STATES",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_const"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::MAX_TRANSITIONS",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_const"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::max_rank",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::max_states",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::max_transitions",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomatonLimits::new",
+          "source_path": "amari-rewrite/src/language/limits.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeState",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::TreeState::name",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeState::new",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::children",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::new",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::parent",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeTransition::symbol",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
         },
         {
           "path": "amari_rewrite::network",
@@ -393349,6 +395043,7 @@
         "amari_rewrite::ars",
         "amari_rewrite::error",
         "amari_rewrite::inverse",
+        "amari_rewrite::language",
         "amari_rewrite::network",
         "amari_rewrite::neural",
         "amari_rewrite::prelude",

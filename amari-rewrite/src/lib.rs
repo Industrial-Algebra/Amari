@@ -17,6 +17,7 @@ pub mod analysis;
 pub mod ars;
 pub mod error;
 pub mod inverse;
+pub mod language;
 pub mod prelude;
 pub mod relation;
 pub mod reversible;

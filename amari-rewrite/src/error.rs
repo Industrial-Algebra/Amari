@@ -62,6 +62,21 @@ pub enum RewriteError {
         /// Validation failure detail.
         message: String,
     },
+    /// A tree automaton failed validation (rank conflict, unknown
+    /// state or symbol, arity mismatch, duplicate entry, invalid
+    /// final state).
+    #[error("malformed tree automaton: {message}")]
+    MalformedAutomaton {
+        /// Validation failure detail.
+        message: String,
+    },
+    /// A language operation requires a ground term but received one
+    /// containing variables.
+    #[error("non-ground term: {message}")]
+    NonGroundTerm {
+        /// Failure detail.
+        message: String,
+    },
     /// A residual failed validation or its reconstructed source digest
     /// did not match the recorded authority. Always a hard error: no
     /// degraded or warning-only reconstruction is ever returned.
