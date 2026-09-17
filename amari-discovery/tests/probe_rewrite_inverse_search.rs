@@ -171,7 +171,7 @@ fn backward_search_certifies_closed_frontier_exhaustion() {
     assert_eq!(output.outcome, "exhausted");
     assert_eq!(
         output.exhaustion_authority.as_deref(),
-        Some("ClosedSymbolicSearch")
+        Some("closed_symbolic_search")
     );
 }
 
@@ -304,7 +304,7 @@ fn bidirectional_search_certifies_exhaustion_and_rejects_bad_input() {
     assert_eq!(output.outcome, "exhausted");
     assert_eq!(
         output.exhaustion_authority.as_deref(),
-        Some("ClosedSymbolicSearch")
+        Some("closed_symbolic_search")
     );
     let mut bad = closed.clone();
     bad["max_depth"] = json!(0);
@@ -318,6 +318,27 @@ fn bidirectional_search_certifies_exhaustion_and_rejects_bad_input() {
         .unwrap()
         .execute(&BIDIRECTIONAL.parse().unwrap(), &bad)
         .is_err());
+}
+
+#[test]
+fn b2_bidirectional_probe_answers_variable_goals() {
+    // Closeout finding B2: this request used to fail the worker
+    // (exit 6) because replay compared against the raw goal.
+    let request = json!({
+        "source": {"kind": "symbol", "name": "f", "arguments": [
+            {"kind": "symbol", "name": "c", "arguments": []},
+            {"kind": "symbol", "name": "c", "arguments": []}
+        ]},
+        "goal": {"kind": "symbol", "name": "f", "arguments": [
+            {"kind": "variable", "name": "X0"},
+            {"kind": "variable", "name": "X1"}
+        ]},
+        "rules": [],
+        "max_depth": 8
+    });
+    let output: RewriteBidirectionalSearchOutput =
+        serde_json::from_value(run(BIDIRECTIONAL, &request)).unwrap();
+    assert_eq!(output.outcome, "witness");
 }
 
 // Keep the request DTO referenced for schema drift detection.

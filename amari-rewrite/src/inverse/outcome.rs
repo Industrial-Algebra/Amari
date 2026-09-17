@@ -35,9 +35,12 @@ pub struct BackwardFrontier {
 /// Certified finite/exact exhaustion authority. Constructible only
 /// inside this crate with certified evidence (a fully enumerated
 /// finite grounding domain, or an exact regular-language exclusion);
-/// the fields are private so callers cannot forge exhaustion.
+/// the fields are private so callers cannot forge exhaustion, and
+/// deserialization is refused outright: a certificate is minted
+/// only by crate-internal certification and is never accepted back
+/// from callers (wire consumers read the probe DTOs instead).
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 pub struct CertifiedExhaustion {
     authority: ExhaustionAuthority,
     evidence_hash: Sha256Digest,
@@ -56,6 +59,19 @@ pub enum ExhaustionAuthority {
     /// state reachable by backward expansion was enumerated and
     /// expanded, with no candidate ever dropped by a cap.
     ClosedSymbolicSearch,
+}
+
+impl ExhaustionAuthority {
+    /// Stable, versioned wire tag for this authority kind. These
+    /// strings are part of the discovery probe contract; never
+    /// expose Rust `Debug` spellings on the wire.
+    pub fn wire_tag(&self) -> &'static str {
+        match self {
+            Self::FiniteGroundingDomain => "finite_grounding_domain",
+            Self::RegularLanguageExclusion => "regular_language_exclusion",
+            Self::ClosedSymbolicSearch => "closed_symbolic_search",
+        }
+    }
 }
 
 impl CertifiedExhaustion {
@@ -148,5 +164,26 @@ mod tests {
         assert_eq!(certified.evidence_hash().as_bytes().len(), 32);
         let outcome = BackwardSearchOutcome::Exhausted(certified);
         assert!(matches!(outcome, BackwardSearchOutcome::Exhausted(_)));
+    }
+}
+
+/// Certified exhaustion is never accepted from callers: any attempt
+/// to deserialize it (including inside `BackwardSearchOutcome` or
+/// `BidirectionalSearchOutcome`) is an error. This keeps the
+/// `ClosedSymbolicSearch` authority unforgeable even with the
+/// `serialize` feature enabled.
+#[cfg(feature = "serialize")]
+impl<'de> serde::Deserialize<'de> for CertifiedExhaustion {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        // Consume the incoming value so the error is attributed to
+        // this type rather than a syntax failure.
+        let _ = serde::de::IgnoredAny::deserialize(deserializer)?;
+        Err(serde::de::Error::custom(
+            "CertifiedExhaustion cannot be deserialized: exhaustion \
+             certificates are minted only inside amari-rewrite",
+        ))
     }
 }

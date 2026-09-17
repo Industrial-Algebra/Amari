@@ -1910,7 +1910,10 @@ pub enum RewriteGuidance {
     )
 )]
 pub struct RewriteBackwardSearchRequest {
-    /// Target term the search starts from.
+    /// Target term the search starts from. Variable names are
+    /// SHARED with the goal: a name used in both terms denotes the
+    /// same variable, and unification enforces one common
+    /// instantiation.
     pub target: RewriteTerm,
     /// Goal pattern the search seeks.
     pub goal: RewriteTerm,
@@ -1957,7 +1960,9 @@ pub struct RewriteBackwardSearchOutput {
     pub exhaustion_authority: Option<String>,
     /// Retained unexpanded frontier terms (partial/approximate).
     pub frontier: Vec<RewriteTerm>,
-    /// Deepest depth reached.
+    /// Deepest depth reached: for a witness, the derivation length
+    /// (the depth at which the witness was found); for partial and
+    /// approximate outcomes, the deepest retained frontier depth.
     pub depth_reached: u64,
     /// Candidates dropped by heuristic pruning (0 otherwise).
     pub dropped_candidates: u64,
@@ -1994,7 +1999,10 @@ pub struct RewriteBackwardSearchOutput {
     )
 )]
 pub struct RewriteBidirectionalSearchRequest {
-    /// Source term the forward frontier starts from.
+    /// Source term the forward frontier starts from. Variable names
+    /// are SHARED with the goal: a name used in both terms denotes
+    /// the same variable, and unification enforces one common
+    /// instantiation.
     pub source: RewriteTerm,
     /// Goal term the backward frontier starts from.
     pub goal: RewriteTerm,
@@ -2058,7 +2066,9 @@ pub struct RewriteBidirectionalSearchOutput {
     pub frontier_forward: Vec<RewriteTerm>,
     /// Retained unexpanded backward frontier terms.
     pub frontier_backward: Vec<RewriteTerm>,
-    /// Deepest depth reached on either side.
+    /// Deepest depth reached on either side: for a witness, the
+    /// forward derivation length; for partial, the deepest retained
+    /// frontier depth.
     pub depth_reached: u64,
     /// Reason string for unsupported outcomes.
     pub reason: Option<String>,
@@ -2243,7 +2253,7 @@ fn execute_backward_search(
             RewriteBackwardSearchOutput {
                 outcome: "exhausted".to_owned(),
                 steps: Vec::new(),
-                exhaustion_authority: Some(format!("{:?}", certified.authority())),
+                exhaustion_authority: Some(certified.authority().wire_tag().to_owned()),
                 frontier: Vec::new(),
                 depth_reached: 0,
                 dropped_candidates: 0,
@@ -2387,7 +2397,7 @@ fn execute_bidirectional_search(
                 backward_steps: Vec::new(),
                 meeting_forward: None,
                 meeting_backward: None,
-                exhaustion_authority: Some(format!("{:?}", certified.authority())),
+                exhaustion_authority: Some(certified.authority().wire_tag().to_owned()),
                 frontier_forward: Vec::new(),
                 frontier_backward: Vec::new(),
                 depth_reached: 0,

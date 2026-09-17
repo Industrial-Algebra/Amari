@@ -51,8 +51,11 @@ pub enum GuidanceMode {
     CompleteWithinLimits,
     /// Explicit beam pruning: at most `beam_width` candidates are
     /// kept per expansion round. Dropped candidates are counted and
-    /// reported; outcomes are always `Approximate` and can never
-    /// prove exhaustion or unreachability.
+    /// reported. When the beam actually drops candidates the outcome
+    /// is `Approximate` and can never prove exhaustion or
+    /// unreachability; a pruning run that drops NOTHING enumerated
+    /// everything the beam admitted, so it retains full authority
+    /// (`Witness`/`Exhausted`) — the beam made no approximation.
     HeuristicPruning { beam_width: u64 },
 }
 

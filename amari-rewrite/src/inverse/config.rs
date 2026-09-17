@@ -11,11 +11,50 @@
 use crate::error::{RewriteError, RewriteResult};
 
 /// Bounded configuration for backward/bidirectional inverse search.
+/// Serde wire shape for `InverseSearchConfig`. Deserialization
+/// always routes through `InverseSearchConfig::new`, so the fixed
+/// ceilings hold no matter where the bytes came from.
+#[cfg(feature = "serialize")]
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InverseSearchConfigWire {
+    max_depth: u64,
+    max_states: u64,
+    max_transitions: u64,
+    max_term_nodes: u64,
+    max_term_depth: u64,
+    max_constraints: u64,
+    max_groundings: u64,
+    max_operations: u64,
+    max_frontier_bytes: u64,
+    max_trace_bytes: u64,
+}
+
+#[cfg(feature = "serialize")]
+impl TryFrom<InverseSearchConfigWire> for InverseSearchConfig {
+    type Error = crate::RewriteError;
+
+    fn try_from(wire: InverseSearchConfigWire) -> Result<Self, Self::Error> {
+        Self::new(
+            wire.max_depth,
+            wire.max_states,
+            wire.max_transitions,
+            wire.max_term_nodes,
+            wire.max_term_depth,
+            wire.max_constraints,
+            wire.max_groundings,
+            wire.max_operations,
+            wire.max_frontier_bytes,
+            wire.max_trace_bytes,
+        )
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(
     feature = "serialize",
     derive(serde::Serialize, serde::Deserialize),
-    serde(deny_unknown_fields)
+    serde(try_from = "InverseSearchConfigWire")
 )]
 pub struct InverseSearchConfig {
     max_depth: u64,
@@ -79,6 +118,17 @@ impl InverseSearchConfig {
             max_frontier_bytes,
             max_trace_bytes,
         };
+        config.validate()?;
+        Ok(config)
+    }
+
+    /// Re-run the ceiling and non-zero checks over the current
+    /// field values. `new` calls this, and so must any consumer
+    /// handed a config whose provenance is not `new` (certificate
+    /// verification, explorer entry points): the ceilings are an
+    /// invariant of the type, not just of one constructor.
+    pub fn validate(&self) -> RewriteResult<()> {
+        let config = self;
         config.check("search depth", config.max_depth, Self::MAX_DEPTH)?;
         config.check("search states", config.max_states, Self::MAX_STATES)?;
         config.check(
@@ -121,7 +171,16 @@ impl InverseSearchConfig {
             config.max_trace_bytes,
             Self::MAX_TRACE_BYTES,
         )?;
-        Ok(config)
+        Ok(())
+    }
+
+    /// Test-only constructor that bypasses validation, used to pin
+    /// that downstream consumers (`ReplayCertificate::verify`)
+    /// re-validate rather than trusting the value.
+    #[cfg(test)]
+    pub(crate) fn with_max_depth_unchecked(mut self, max_depth: u64) -> Self {
+        self.max_depth = max_depth;
+        self
     }
 
     fn check(&self, resource: &'static str, value: u64, ceiling: u64) -> RewriteResult<()> {
