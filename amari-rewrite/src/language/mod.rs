@@ -14,6 +14,8 @@
 mod alphabet;
 mod automaton;
 mod limits;
+mod operations;
+mod witness;
 
 pub use alphabet::RankedSymbol;
 pub use automaton::{AcceptingRun, TreeAutomaton, TreeState, TreeTransition};
