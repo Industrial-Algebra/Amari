@@ -13,10 +13,13 @@
 
 mod alphabet;
 mod automaton;
+mod determinize;
 mod limits;
+mod minimize;
 mod operations;
 mod witness;
 
 pub use alphabet::RankedSymbol;
 pub use automaton::{AcceptingRun, TreeAutomaton, TreeState, TreeTransition};
+pub use determinize::MAX_DETERMINIZED_SUBSETS;
 pub use limits::TreeAutomatonLimits;

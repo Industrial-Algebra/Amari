@@ -424,6 +424,43 @@ impl TreeAutomaton {
         assignments.sort();
         Ok(Some(AcceptingRun { assignments }))
     }
+    /// Deterministic canonical bytes for this automaton: framed
+    /// encoding of the sorted alphabet, states, transitions, and
+    /// finals. Canonically equal automata are byte-identical.
+    pub fn canonical_bytes(&self) -> Vec<u8> {
+        fn push_u32(out: &mut Vec<u8>, value: u32) {
+            out.extend_from_slice(&value.to_le_bytes());
+        }
+        fn push_str(out: &mut Vec<u8>, value: &str) {
+            push_u32(out, value.len() as u32);
+            out.extend_from_slice(value.as_bytes());
+        }
+        let mut out = Vec::new();
+        out.extend_from_slice(b"amari.language.automaton/v1\0");
+        push_u32(&mut out, self.alphabet.len() as u32);
+        for ranked in &self.alphabet {
+            push_u32(&mut out, u32::from(ranked.arity()));
+            push_str(&mut out, ranked.symbol().as_str());
+        }
+        push_u32(&mut out, self.states.len() as u32);
+        for state in &self.states {
+            push_str(&mut out, state.name().as_str());
+        }
+        push_u32(&mut out, self.transitions.len() as u32);
+        for transition in &self.transitions {
+            push_str(&mut out, transition.symbol().as_str());
+            push_u32(&mut out, transition.children().len() as u32);
+            for child in transition.children() {
+                push_str(&mut out, child.name().as_str());
+            }
+            push_str(&mut out, transition.parent().name().as_str());
+        }
+        push_u32(&mut out, self.finals.len() as u32);
+        for final_state in &self.finals {
+            push_str(&mut out, final_state.name().as_str());
+        }
+        out
+    }
 }
 
 fn malformed(message: String) -> RewriteError {
