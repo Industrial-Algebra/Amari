@@ -105,15 +105,10 @@ impl TreeAutomaton {
                 let transition = TreeTransition::new(left.symbol().clone(), children, parent);
                 if seen.insert(transition.clone()) {
                     // Enforce output ceilings as storage grows:
-                    // never accumulate past a limit.
-                    let projected_states = states.len() + 1 + transition.children().len();
-                    if projected_states > limits.max_states() {
-                        return Err(RewriteError::InvalidLimit {
-                            resource: "tree automaton states",
-                            value: projected_states,
-                            ceiling: limits.max_states(),
-                        });
-                    }
+                    // never accumulate past a limit. Count DISTINCT
+                    // missing states only — a parent/child already
+                    // present (or repeated among the children) adds
+                    // nothing.
                     if transitions.len() + 1 > limits.max_transitions() {
                         return Err(RewriteError::InvalidLimit {
                             resource: "tree automaton transitions",
@@ -121,8 +116,20 @@ impl TreeAutomaton {
                             ceiling: limits.max_transitions(),
                         });
                     }
-                    states.insert(transition.parent().clone());
-                    states.extend(transition.children().iter().cloned());
+                    for candidate in
+                        core::iter::once(transition.parent()).chain(transition.children().iter())
+                    {
+                        if !states.contains(candidate) {
+                            if states.len() + 1 > limits.max_states() {
+                                return Err(RewriteError::InvalidLimit {
+                                    resource: "tree automaton states",
+                                    value: states.len() + 1,
+                                    ceiling: limits.max_states(),
+                                });
+                            }
+                            states.insert(candidate.clone());
+                        }
+                    }
                     transitions.push(transition);
                 }
             }

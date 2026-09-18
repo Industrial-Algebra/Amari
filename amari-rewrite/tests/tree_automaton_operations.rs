@@ -582,3 +582,172 @@ fn trimming_requires_reachable_siblings_and_is_idempotent() {
     let twice = once.trimmed().expect("trim");
     assert_eq!(once, twice);
 }
+
+// ---- re-review regressions (PR #267, round 2)
+
+/// N1 (P1): saturated costs must never install cyclic backpointers.
+/// Two 64-doubling chains with unary self-loops at their tips, both
+/// tips final: witness extraction is a typed limit error, not a
+/// stack overflow.
+#[test]
+fn oversized_derivations_never_create_cyclic_backpointers() {
+    let mut transitions = vec![transition("z", &[], "p0"), transition("z", &[], "q0")];
+    let mut state_names = vec!["p0".to_owned(), "q0".to_owned()];
+    for prefix in ["p", "q"] {
+        for i in 1..65 {
+            let previous = format!("{prefix}{}", i - 1);
+            let current = format!("{prefix}{i}");
+            transitions.push(transition("f", &[&previous, &previous], &current));
+            if i == 64 {
+                transitions.push(transition("a", &[&current], &current));
+            }
+            if prefix == "q" {
+                state_names.push(current.clone());
+            }
+        }
+    }
+    for i in 1..65 {
+        state_names.push(format!("p{i}"));
+    }
+    let automaton = automaton(
+        vec![ranked("z", 0), ranked("a", 1), ranked("f", 2)],
+        states(&state_names.iter().map(String::as_str).collect::<Vec<_>>()),
+        transitions,
+        states(&["p64", "q64"]),
+    );
+    assert!(matches!(
+        automaton.witness(),
+        Err(RewriteError::RelationLimitExceeded { .. })
+    ));
+}
+
+/// N2 (P2): product-state projection counts DISTINCT missing states.
+/// Self-intersecting a one-state recursive automaton needs exactly
+/// one product state and two transitions.
+#[test]
+fn intersection_counts_distinct_new_product_states() {
+    let automaton = automaton(
+        vec![ranked("a", 0), ranked("f", 2)],
+        states(&["q"]),
+        vec![transition("a", &[], "q"), transition("f", &["q", "q"], "q")],
+        states(&["q"]),
+    );
+    let exact = TreeAutomatonLimits::new(1, 2, 2).expect("limits");
+    let product = automaton
+        .intersection(&automaton, &exact)
+        .expect("one-state product fits exactly");
+    assert_eq!(product.states().len(), 1);
+    assert_eq!(product.transitions().len(), 2);
+    assert!(product.accepts(&Term::constant("a")).expect("ground"));
+}
+
+/// N3 (P2): the witness tie-break reproduces the shared canonical
+/// byte order (arity, name length, name bytes, children).
+#[test]
+fn witness_tie_break_matches_canonical_byte_order() {
+    // "aa" vs "b": both constants; canonical bytes compare name
+    // length first, so "b" wins even though "aa" < "b" as text....
+    // ("aa" < "b" lexicographically, but name length 1 < 2.)
+    let automaton = automaton(
+        vec![ranked("aa", 0), ranked("b", 0)],
+        states(&["q"]),
+        vec![transition("aa", &[], "q"), transition("b", &[], "q")],
+        states(&["q"]),
+    );
+    assert_eq!(
+        automaton.witness().expect("within limits"),
+        Some(Term::constant("b"))
+    );
+}
+
+/// N4 (P2): depth must be computed on the FINALIZED derivation
+/// graph. The canonical tie at q prefers the deeper equal-cost
+/// derivation; the stale shallow depth must not smuggle a depth-66
+/// witness past the guard.
+#[test]
+fn witness_depth_reflects_the_final_derivation_graph() {
+    let mut transitions = vec![
+        transition("c", &[], "c"),
+        transition("z", &["c", "c", "c", "c"], "q"),
+        transition("a", &["c"], "r1"),
+        transition("a", &["r1"], "r2"),
+        transition("a", &["r2"], "r3"),
+        transition("a", &["r3"], "q"),
+    ];
+    let mut state_names: Vec<String> = ["c", "q", "r1", "r2", "r3"]
+        .iter()
+        .map(|name| name.to_string())
+        .collect();
+    // 62 unary A wrappers from q to the sole final.
+    let mut previous = "q".to_owned();
+    for i in 0..62 {
+        let current = if i == 61 {
+            "final".to_owned()
+        } else {
+            format!("p{i:02}")
+        };
+        transitions.push(transition("A", &[&previous], &current));
+        state_names.push(current.clone());
+        previous = current;
+    }
+    let automaton = automaton(
+        vec![
+            ranked("c", 0),
+            ranked("a", 1),
+            ranked("A", 1),
+            ranked("z", 4),
+        ],
+        states(&state_names.iter().map(String::as_str).collect::<Vec<_>>()),
+        transitions,
+        states(&["final"]),
+    );
+    // Canonical tie at q: arity 1 (a-chain, depth 4) beats arity 4
+    // (z form, depth 1), so the canonical smallest witness has
+    // depth 4 + 62 = 66 and must be a typed limit error...
+    assert!(matches!(
+        automaton.witness(),
+        Err(RewriteError::RelationLimitExceeded { .. })
+    ));
+    // ...while the shallow member of the language is still accepted
+    // by membership (its depth 1 + 62 = 63 is within limits).
+    let c = || Term::constant("c");
+    let shallow_q = Term::sym("z", vec![c(), c(), c(), c()]);
+    let mut shallow = shallow_q;
+    for _ in 0..62 {
+        shallow = Term::sym("A", vec![shallow]);
+    }
+    assert!(automaton.accepts(&shallow).expect("ground"));
+}
+
+/// N5 (P2): witness depth uses the same edge-based convention as
+/// membership: a constant has depth 0.
+#[test]
+fn witness_depth_matches_membership_convention() {
+    let build = |wrappers: usize| {
+        let mut transitions = vec![transition("c", &[], "q0")];
+        let mut names: Vec<String> = vec!["q0".to_owned()];
+        for i in 1..=wrappers {
+            let previous = format!("q{}", i - 1);
+            let current = format!("q{i}");
+            transitions.push(transition("u", &[&previous], &current));
+            names.push(current);
+        }
+        let final_name = format!("q{wrappers}");
+        automaton(
+            vec![ranked("c", 0), ranked("u", 1)],
+            states(&names.iter().map(String::as_str).collect::<Vec<_>>()),
+            transitions,
+            states(&[final_name.as_str()]),
+        )
+    };
+    // Depth exactly 64: within limits for BOTH membership and
+    // witness.
+    let at_limit = build(64);
+    assert!(matches!(at_limit.witness(), Ok(Some(_))));
+    // Depth 65: typed error from witness, and membership agrees.
+    let over_limit = build(65);
+    assert!(matches!(
+        over_limit.witness(),
+        Err(RewriteError::RelationLimitExceeded { .. })
+    ));
+}
