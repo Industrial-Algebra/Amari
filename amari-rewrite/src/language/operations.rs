@@ -104,17 +104,48 @@ impl TreeAutomaton {
                     .collect();
                 let transition = TreeTransition::new(left.symbol().clone(), children, parent);
                 if seen.insert(transition.clone()) {
+                    // Enforce output ceilings as storage grows:
+                    // never accumulate past a limit.
+                    let projected_states = states.len() + 1 + transition.children().len();
+                    if projected_states > limits.max_states() {
+                        return Err(RewriteError::InvalidLimit {
+                            resource: "tree automaton states",
+                            value: projected_states,
+                            ceiling: limits.max_states(),
+                        });
+                    }
+                    if transitions.len() + 1 > limits.max_transitions() {
+                        return Err(RewriteError::InvalidLimit {
+                            resource: "tree automaton transitions",
+                            value: transitions.len() + 1,
+                            ceiling: limits.max_transitions(),
+                        });
+                    }
                     states.insert(transition.parent().clone());
                     states.extend(transition.children().iter().cloned());
                     transitions.push(transition);
                 }
             }
         }
-        let finals: Vec<TreeState> = self
+        // Preflight the final-state product BEFORE allocation: the
+        // pair encoding is injective, so the product size is exact.
+        let final_pairs = self
             .finals()
-            .iter()
-            .flat_map(|a| other.finals().iter().map(move |b| encode_pair(a, b)))
-            .collect();
+            .len()
+            .checked_mul(other.finals().len())
+            .filter(|pairs| *pairs <= limits.max_states())
+            .ok_or(RewriteError::InvalidLimit {
+                resource: "tree automaton states",
+                value: usize::MAX,
+                ceiling: limits.max_states(),
+            })?;
+        let mut finals: Vec<TreeState> = Vec::with_capacity(final_pairs);
+        for left_final in self.finals() {
+            for right_final in other.finals() {
+                resources.charge()?;
+                finals.push(encode_pair(left_final, right_final));
+            }
+        }
         for final_state in &finals {
             states.insert(final_state.clone());
         }
@@ -148,7 +179,7 @@ impl TreeAutomaton {
     /// the result stays composable. Idempotent.
     pub fn trimmed(&self) -> RewriteResult<TreeAutomaton> {
         let reachable = self.reachable_states();
-        let co_reachable = self.co_reachable_states();
+        let co_reachable = self.co_reachable_states(&reachable);
         let keep: BTreeSet<&TreeState> = self
             .states()
             .iter()
@@ -215,13 +246,23 @@ impl TreeAutomaton {
     }
 
     /// States that can reach a final state (as the parent of a run
-    /// suffix ending in a final at the root).
-    fn co_reachable_states(&self) -> BTreeSet<TreeState> {
+    /// suffix ending in a final at the root). Propagation only
+    /// crosses transitions whose children are ALL bottom-up
+    /// reachable: a co-reachable parent with an unrealizable sibling
+    /// contributes nothing, and without this restriction the first
+    /// trim kept states the second pass removed (idempotence
+    /// violation).
+    fn co_reachable_states(&self, reachable: &BTreeSet<TreeState>) -> BTreeSet<TreeState> {
         let mut co_reachable: BTreeSet<TreeState> = self.finals().iter().cloned().collect();
         loop {
             let mut grew = false;
             for transition in self.transitions() {
-                if co_reachable.contains(transition.parent()) {
+                if co_reachable.contains(transition.parent())
+                    && transition
+                        .children()
+                        .iter()
+                        .all(|child| reachable.contains(child))
+                {
                     for child in transition.children() {
                         if co_reachable.insert(child.clone()) {
                             grew = true;

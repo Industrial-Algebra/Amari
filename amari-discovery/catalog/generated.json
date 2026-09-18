@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "161ce536adc9ece5ade42d03b37e0b033f21d1952e91a98e5210ee40407b2074",
+  "content_hash": "e069bdde94be76a89c159a8b9c2e073d640701397b84f1aef1742c6598a734b2",
   "crates": [
     {
       "name": "amari",
@@ -378704,14 +378704,14 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::witness",
           "kind": "method",
-          "signature": "pub fn witness (& self) -> Option < Term >",
+          "signature": "pub fn witness (& self) -> RewriteResult < Option < Term > >",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "is_reexport": true,
           "source_module": "amari_rewrite::language::automaton",
           "variants": [
             {
               "kind": "method",
-              "signature": "pub fn witness (& self) -> Option < Term >",
+              "signature": "pub fn witness (& self) -> RewriteResult < Option < Term > >",
               "source_path": "amari-rewrite/src/language/automaton.rs",
               "source_module": "amari_rewrite::language::automaton",
               "is_reexport": true,

@@ -106,10 +106,13 @@ fn emptiness_reflects_final_reachability() {
 #[test]
 fn witness_is_the_smallest_accepted_term() {
     let parity = parity_automaton();
-    assert_eq!(parity.witness(), Some(Term::constant("z")));
+    assert_eq!(
+        parity.witness().expect("within limits"),
+        Some(Term::constant("z"))
+    );
     // No witness for an empty language.
     let empty = automaton(vec![ranked("a", 0)], states(&["q"]), vec![], vec![]);
-    assert_eq!(empty.witness(), None);
+    assert_eq!(empty.witness().expect("within limits"), None);
 }
 
 #[test]
@@ -121,9 +124,9 @@ fn witness_tie_breaks_canonically_and_is_deterministic() {
         vec![transition("b", &[], "q"), transition("a", &[], "q")],
         states(&["q"]),
     );
-    let first = both.witness().expect("nonempty");
+    let first = both.witness().expect("within limits").expect("nonempty");
     assert_eq!(first, Term::constant("a"));
-    assert_eq!(both.witness(), Some(first.clone()));
+    assert_eq!(both.witness().expect("within limits"), Some(first.clone()));
     // The witness is genuinely accepted.
     assert!(both.accepts(&first).expect("ground term"));
     // A deeper witness: only even chains of length >= 2 accepted.
@@ -138,7 +141,7 @@ fn witness_tie_breaks_canonically_and_is_deterministic() {
         states(&["p2"]),
     );
     assert_eq!(
-        only_ssz.witness(),
+        only_ssz.witness().expect("within limits"),
         Some(Term::sym(
             "s",
             vec![Term::sym("s", vec![Term::constant("z")])]
@@ -263,7 +266,7 @@ fn intersection_membership_is_the_conjunction() {
     let ssz = Term::sym("s", vec![Term::sym("s", vec![Term::constant("z")])]);
     assert!(both.accepts(&z).expect("ground"));
     assert!(!both.accepts(&ssz).expect("ground"));
-    assert_eq!(both.witness(), Some(z));
+    assert_eq!(both.witness().expect("within limits"), Some(z));
 }
 
 #[test]
@@ -279,7 +282,7 @@ fn intersection_with_empty_language_is_empty() {
         .intersection(&empty, &TreeAutomatonLimits::default())
         .expect("intersection");
     assert!(both.language_is_empty());
-    assert_eq!(both.witness(), None);
+    assert_eq!(both.witness().expect("within limits"), None);
 }
 
 #[test]
@@ -448,7 +451,10 @@ fn boolean_operations_and_trimming_preserve_membership() {
             .expect("intersection");
         let trimmed_left = left.trimmed().expect("trim");
         assert_eq!(left.language_is_empty(), trimmed_left.language_is_empty());
-        assert_eq!(left.witness(), trimmed_left.witness());
+        assert_eq!(
+            left.witness().expect("within limits"),
+            trimmed_left.witness().expect("within limits")
+        );
         for _ in 0..30 {
             let term = random_term(&mut rng, &alphabet, 3);
             let in_left = left.accepts(&term).expect("ground");
@@ -470,7 +476,7 @@ fn boolean_operations_and_trimming_preserve_membership() {
             );
         }
         // Witness honesty: a reported witness is always accepted.
-        if let Some(witness) = union.witness() {
+        if let Some(witness) = union.witness().expect("within limits") {
             assert!(union.accepts(&witness).expect("ground"));
         }
         // Canonical results: union is insensitive to operand input
@@ -481,4 +487,98 @@ fn boolean_operations_and_trimming_preserve_membership() {
             .expect("union");
         assert_eq!(union, union_again);
     }
+}
+
+// ---- review regressions (PR #267): memory safety + trim correctness
+
+/// R1: a valid chain automaton whose irrelevant branch would expand
+/// to exponentially large trees must not be materialized: only the
+/// final witness is built.
+#[test]
+fn witness_does_not_materialize_exponential_irrelevant_terms() {
+    let mut transitions = vec![transition("a", &[], "q0")];
+    let mut state_names = vec!["q0".to_owned()];
+    for i in 1..25 {
+        let previous = format!("q{}", i - 1);
+        let current = format!("q{i}");
+        transitions.push(transition("f", &[&previous, &previous], &current));
+        state_names.push(current);
+    }
+    let automaton = automaton(
+        vec![ranked("a", 0), ranked("f", 2)],
+        states(&state_names.iter().map(String::as_str).collect::<Vec<_>>()),
+        transitions,
+        states(&["q0"]),
+    );
+    // Instant: only q0's witness is ever materialized.
+    assert_eq!(
+        automaton.witness().expect("within term limits"),
+        Some(Term::constant("a"))
+    );
+}
+
+/// R1b: when the SMALLEST witness itself exceeds the term ceilings,
+/// the outcome is a typed limit error — never conflated with an
+/// empty language and never an allocation abort.
+#[test]
+fn oversized_smallest_witness_is_a_typed_limit_error() {
+    let mut transitions = vec![transition("a", &[], "q0")];
+    let mut state_names = vec!["q0".to_owned()];
+    // 13 doublings: the smallest q12 term has 2^13 = 8,192 leaves,
+    // beyond the 4,096-node ceiling.
+    for i in 1..13 {
+        let previous = format!("q{}", i - 1);
+        let current = format!("q{i}");
+        transitions.push(transition("f", &[&previous, &previous], &current));
+        state_names.push(current);
+    }
+    let automaton = automaton(
+        vec![ranked("a", 0), ranked("f", 2)],
+        states(&state_names.iter().map(String::as_str).collect::<Vec<_>>()),
+        transitions,
+        states(&["q12"]),
+    );
+    assert!(matches!(
+        automaton.witness(),
+        Err(RewriteError::RelationLimitExceeded { .. })
+    ));
+}
+
+/// R2: the final-state product is preflighted BEFORE allocation and
+/// charged to the operation budget.
+#[test]
+fn intersection_preflights_final_state_product() {
+    let finals_a: Vec<TreeState> = (0..100).map(|i| state(&format!("a{i}"))).collect();
+    let finals_b: Vec<TreeState> = (0..100).map(|i| state(&format!("b{i}"))).collect();
+    let left = automaton(vec![ranked("c", 0)], finals_a.clone(), vec![], finals_a);
+    let right = automaton(vec![ranked("c", 0)], finals_b.clone(), vec![], finals_b);
+    // 100 x 100 = 10,000 product finals against a 50-state limit:
+    // typed error, returned without building the product.
+    let tight = TreeAutomatonLimits::new(50, 65_536, 16).expect("limits");
+    assert!(matches!(
+        left.intersection(&right, &tight),
+        Err(RewriteError::InvalidLimit { .. })
+    ));
+}
+
+/// R3: a co-reachable parent does not make unreachable siblings
+/// useful; trimming must be idempotent on the first pass.
+#[test]
+fn trimming_requires_reachable_siblings_and_is_idempotent() {
+    let automaton = automaton(
+        vec![ranked("a", 0), ranked("f", 2)],
+        states(&["live", "dead", "final"]),
+        vec![
+            transition("a", &[], "live"),
+            transition("f", &["live", "dead"], "final"),
+        ],
+        states(&["final"]),
+    );
+    // The language is empty: `dead` is unreachable.
+    assert!(automaton.language_is_empty());
+    let once = automaton.trimmed().expect("trim");
+    assert!(once.states().is_empty());
+    assert!(once.transitions().is_empty());
+    let twice = once.trimmed().expect("trim");
+    assert_eq!(once, twice);
 }
