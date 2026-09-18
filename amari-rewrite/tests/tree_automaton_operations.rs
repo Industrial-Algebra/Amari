@@ -751,3 +751,62 @@ fn witness_depth_matches_membership_convention() {
         Err(RewriteError::RelationLimitExceeded { .. })
     ));
 }
+
+// ---- re-review round 3 (PR #267): stack safety at the ceilings
+
+/// S1: an exact 4,096-node derivation (deepest admissible by the
+/// node ceiling) must produce the typed depth error, not a stack
+/// overflow in depth computation.
+#[test]
+fn witness_deep_exact_derivation_is_a_typed_error_not_a_crash() {
+    let mut names: Vec<String> = (0..4096).map(|i| format!("q{i:04}")).collect();
+    let mut transitions = vec![transition("a", &[], "q0000")];
+    for i in 1..4096 {
+        transitions.push(transition(
+            "f",
+            &[&format!("q{:04}", i - 1)],
+            &format!("q{i:04}"),
+        ));
+    }
+    let automaton = automaton(
+        vec![ranked("a", 0), ranked("f", 1)],
+        states(&names.iter().map(String::as_str).collect::<Vec<_>>()),
+        transitions,
+        states(&["q4095"]),
+    );
+    assert!(matches!(
+        automaton.witness(),
+        Err(RewriteError::RelationLimitExceeded { .. })
+    ));
+    names.clear();
+}
+
+/// S2: comparing two equal-cost deep derivations must be stack-safe
+/// too — the comparator runs before the depth guard.
+#[test]
+fn witness_comparison_is_stack_safe_on_deep_equal_chains() {
+    let mut names: Vec<String> = Vec::new();
+    let mut transitions = vec![transition("a", &[], "p0000"), transition("a", &[], "q0000")];
+    for prefix in ["p", "q"] {
+        for i in 0..2048 {
+            names.push(format!("{prefix}{i:04}"));
+            if i > 0 {
+                transitions.push(transition(
+                    "f",
+                    &[&format!("{prefix}{:04}", i - 1)],
+                    &format!("{prefix}{i:04}"),
+                ));
+            }
+        }
+    }
+    let automaton = automaton(
+        vec![ranked("a", 0), ranked("f", 1)],
+        states(&names.iter().map(String::as_str).collect::<Vec<_>>()),
+        transitions,
+        states(&["p2047", "q2047"]),
+    );
+    assert!(matches!(
+        automaton.witness(),
+        Err(RewriteError::RelationLimitExceeded { .. })
+    ));
+}

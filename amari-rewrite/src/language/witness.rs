@@ -89,7 +89,7 @@ impl TreeAutomaton {
             );
             left_entry.cost.cmp(&right_entry.cost).then_with(|| {
                 let mut memo = BTreeMap::new();
-                self.compare_state_indices(&best, *left, *right, &mut memo)
+                self.compare_state_pair(&best, *left, *right, &mut memo)
             })
         }) else {
             // Every reachable final is oversized: the language is
@@ -99,9 +99,10 @@ impl TreeAutomaton {
                 limit: RelationLimits::MAX_TERM_NODES,
             });
         };
-        // Depth is measured on the FINALIZED graph, edge-based.
-        let mut depth_memo = BTreeMap::new();
-        let depth = self.finalized_depth(&best, chosen, &mut depth_memo);
+        // Depth is measured on the FINALIZED graph, edge-based,
+        // computed iteratively over ascending costs.
+        let depths = self.finalized_depths(&best);
+        let depth = depths[chosen];
         if depth > RelationLimits::MAX_TERM_DEPTH {
             return Err(RewriteError::RelationLimitExceeded {
                 resource: "witness term depth",
@@ -128,31 +129,38 @@ impl TreeAutomaton {
         )
     }
 
-    /// Edge-based depth of the finalized derivation for `index`
-    /// (constants are depth 0, matching membership). Memoized over
-    /// the acyclic exact-cost backpointer graph.
-    fn finalized_depth(
-        &self,
-        best: &[Option<BestDerivation>],
-        index: usize,
-        memo: &mut BTreeMap<usize, usize>,
-    ) -> usize {
-        if let Some(depth) = memo.get(&index) {
-            return *depth;
+    /// Edge-based depths of all exact derivations (constants are
+    /// depth 0, matching membership), computed ITERATIVELY: children
+    /// always carry strictly smaller exact costs, so evaluating
+    /// states in ascending-cost order needs no recursion and no
+    /// stack growth (PR #267 round 3: deep-but-exact derivations
+    /// must surface the typed depth error, not a stack overflow).
+    /// Values are capped one past the depth ceiling.
+    fn finalized_depths(&self, best: &[Option<BestDerivation>]) -> Vec<usize> {
+        const DEPTH_CAP: usize = RelationLimits::MAX_TERM_DEPTH + 1;
+        let mut depths = alloc::vec![0usize; self.states().len()];
+        let mut order: Vec<usize> = best
+            .iter()
+            .enumerate()
+            .filter(|(_, entry)| entry.as_ref().is_some_and(|entry| !entry.is_oversized()))
+            .map(|(index, _)| index)
+            .collect();
+        order.sort_by_key(|index| best[*index].as_ref().expect("filtered exact").cost);
+        for index in order {
+            let entry = best[index].as_ref().expect("filtered exact");
+            let depth = if entry.children.is_empty() {
+                0
+            } else {
+                1 + entry
+                    .children
+                    .iter()
+                    .map(|child| depths[*child])
+                    .max()
+                    .unwrap_or(0)
+            };
+            depths[index] = depth.min(DEPTH_CAP);
         }
-        let entry = best[index].as_ref().expect("reachable state");
-        let depth = if entry.children.is_empty() {
-            0
-        } else {
-            1 + entry
-                .children
-                .iter()
-                .map(|child| self.finalized_depth(best, *child, memo))
-                .max()
-                .unwrap_or(0)
-        };
-        memo.insert(index, depth);
-        depth
+        depths
     }
 
     /// For each state (indexed by canonical state order), the
@@ -237,66 +245,121 @@ impl TreeAutomaton {
         }
     }
 
+    /// Compare a candidate form against a table entry during the
+    /// fixpoint. Top-level fields are compared inline; child
+    /// derivations go through the iterative pair comparator.
     fn compare_forms_fresh(
         &self,
         best: &[Option<BestDerivation>],
         left: &BestDerivation,
         right: &BestDerivation,
     ) -> Ordering {
+        let left_symbol = self.transitions()[left.transition].symbol();
+        let right_symbol = self.transitions()[right.transition].symbol();
+        let head = le_u32(left.children.len())
+            .cmp(&le_u32(right.children.len()))
+            .then_with(|| {
+                le_u32(left_symbol.as_str().len()).cmp(&le_u32(right_symbol.as_str().len()))
+            })
+            .then_with(|| left_symbol.as_str().cmp(right_symbol.as_str()));
+        if head != Ordering::Equal {
+            return head;
+        }
         let mut memo = BTreeMap::new();
-        self.compare_forms(best, left, right, &mut memo)
+        left.children
+            .iter()
+            .zip(right.children.iter())
+            .map(|(a, b)| self.compare_state_pair(best, *a, *b, &mut memo))
+            .find(|ordering| *ordering != Ordering::Equal)
+            .unwrap_or(Ordering::Equal)
     }
 
-    fn compare_state_indices(
+    /// Canonical-order comparison of two state derivations with an
+    /// EXPLICIT work stack, reproducing the shared `encode_term`
+    /// byte order exactly (arity and name length as little-endian
+    /// u32 bytes, then name bytes, then children left to right).
+    /// Only exact derivations are compared, so costs strictly
+    /// decrease along edges and no cycle guard is needed — but
+    /// acyclicity alone does not bound recursion depth, and
+    /// deep-but-exact derivations must not grow the call stack
+    /// (PR #267 round 3). Memoized per pair.
+    fn compare_state_pair(
         &self,
         best: &[Option<BestDerivation>],
         left: usize,
         right: usize,
         memo: &mut BTreeMap<(usize, usize), Ordering>,
     ) -> Ordering {
+        /// Post-order frame: `Visit` expands a pair, `Resolve`
+        /// combines child results once they are memoized.
+        enum Work {
+            Visit(usize, usize),
+            Resolve(usize, usize),
+        }
+        let mut work = alloc::vec![Work::Visit(left, right)];
+        while let Some(item) = work.pop() {
+            match item {
+                Work::Visit(a, b) => {
+                    if a == b || memo.contains_key(&(a, b)) {
+                        continue;
+                    }
+                    let (Some(left_entry), Some(right_entry)) = (&best[a], &best[b]) else {
+                        memo.insert((a, b), Ordering::Equal);
+                        continue;
+                    };
+                    let left_symbol = self.transitions()[left_entry.transition].symbol();
+                    let right_symbol = self.transitions()[right_entry.transition].symbol();
+                    let head = le_u32(left_entry.children.len())
+                        .cmp(&le_u32(right_entry.children.len()))
+                        .then_with(|| {
+                            le_u32(left_symbol.as_str().len())
+                                .cmp(&le_u32(right_symbol.as_str().len()))
+                        })
+                        .then_with(|| left_symbol.as_str().cmp(right_symbol.as_str()));
+                    if head != Ordering::Equal {
+                        memo.insert((a, b), head);
+                        continue;
+                    }
+                    work.push(Work::Resolve(a, b));
+                    // Children resolve left to right; push reversed
+                    // so the leftmost is processed first.
+                    for (child_a, child_b) in left_entry
+                        .children
+                        .iter()
+                        .zip(right_entry.children.iter())
+                        .rev()
+                    {
+                        work.push(Work::Visit(*child_a, *child_b));
+                    }
+                }
+                Work::Resolve(a, b) => {
+                    let (Some(left_entry), Some(right_entry)) = (&best[a], &best[b]) else {
+                        memo.insert((a, b), Ordering::Equal);
+                        continue;
+                    };
+                    let ordering = left_entry
+                        .children
+                        .iter()
+                        .zip(right_entry.children.iter())
+                        .map(|(child_a, child_b)| {
+                            if child_a == child_b {
+                                Ordering::Equal
+                            } else {
+                                memo.get(&(*child_a, *child_b)).copied().unwrap_or_else(|| {
+                                    unreachable!("children are visited before Resolve")
+                                })
+                            }
+                        })
+                        .find(|ordering| *ordering != Ordering::Equal)
+                        .unwrap_or(Ordering::Equal);
+                    memo.insert((a, b), ordering);
+                }
+            }
+        }
         if left == right {
             return Ordering::Equal;
         }
-        if let Some(ordering) = memo.get(&(left, right)) {
-            return *ordering;
-        }
-        let (Some(left_entry), Some(right_entry)) = (&best[left], &best[right]) else {
-            return Ordering::Equal;
-        };
-        let ordering = self.compare_forms(best, left_entry, right_entry, memo);
-        memo.insert((left, right), ordering);
-        ordering
-    }
-
-    /// Canonical-order comparison of two derivations, reproducing
-    /// the shared `encode_term` byte order exactly: symbol arity and
-    /// name length as little-endian u32 bytes, then name bytes, then
-    /// children left to right. Only exact derivations reach this
-    /// comparator, so recursion follows strictly decreasing costs
-    /// and is acyclic.
-    fn compare_forms(
-        &self,
-        best: &[Option<BestDerivation>],
-        left: &BestDerivation,
-        right: &BestDerivation,
-        memo: &mut BTreeMap<(usize, usize), Ordering>,
-    ) -> Ordering {
-        let left_symbol = self.transitions()[left.transition].symbol();
-        let right_symbol = self.transitions()[right.transition].symbol();
-        le_u32(left.children.len())
-            .cmp(&le_u32(right.children.len()))
-            .then_with(|| {
-                le_u32(left_symbol.as_str().len()).cmp(&le_u32(right_symbol.as_str().len()))
-            })
-            .then_with(|| left_symbol.as_str().cmp(right_symbol.as_str()))
-            .then_with(|| {
-                left.children
-                    .iter()
-                    .zip(right.children.iter())
-                    .map(|(a, b)| self.compare_state_indices(best, *a, *b, memo))
-                    .find(|ordering| *ordering != Ordering::Equal)
-                    .unwrap_or(Ordering::Equal)
-            })
+        memo.get(&(left, right)).copied().unwrap_or(Ordering::Equal)
     }
 }
 
