@@ -77,6 +77,14 @@ pub enum RewriteError {
         /// Failure detail.
         message: String,
     },
+    /// A regular tree grammar failed validation (undeclared
+    /// nonterminal, rank mismatch, unrenderable name) or a grammar
+    /// text could not be parsed.
+    #[error("malformed tree grammar: {message}")]
+    MalformedGrammar {
+        /// Validation or parse failure detail.
+        message: String,
+    },
     /// A residual failed validation or its reconstructed source digest
     /// did not match the recorded authority. Always a hard error: no
     /// degraded or warning-only reconstruction is ever returned.

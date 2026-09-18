@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "3fc442daa12f336440321e135c7e97a3ce88b8aa3052412bc16529ecab567fa6",
+  "content_hash": "c95f1080be6a9864cd32dea523b3cae37d8d096e2b35b234a39c4c95c5671fd6",
   "crates": [
     {
       "name": "amari",
@@ -374309,6 +374309,18 @@
                 }
               },
               {
+                "name": "MalformedGrammar",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -374472,6 +374484,18 @@
                   },
                   {
                     "name": "NonGroundTerm",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "MalformedGrammar",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -375424,6 +375448,18 @@
                 }
               },
               {
+                "name": "MalformedGrammar",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -375587,6 +375623,18 @@
                   },
                   {
                     "name": "NonGroundTerm",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "MalformedGrammar",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -378363,6 +378411,128 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::GRAMMAR_SYNTAX_HEADER",
+          "kind": "const",
+          "signature": "pub const GRAMMAR_SYNTAX_HEADER : & str",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "const",
+              "signature": "pub const GRAMMAR_SYNTAX_HEADER : & str",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "GRAMMAR_SYNTAX_HEADER"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction",
+          "kind": "struct",
+          "signature": "pub struct GrammarProduction",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct GrammarProduction",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "GrammarProduction"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::children",
+          "kind": "method",
+          "signature": "pub fn children (& self) -> & [Nonterminal]",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn children (& self) -> & [Nonterminal]",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "GrammarProduction::children"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::lhs",
+          "kind": "method",
+          "signature": "pub fn lhs (& self) -> & Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn lhs (& self) -> & Nonterminal",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "GrammarProduction::lhs"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::new",
+          "kind": "method",
+          "signature": "pub fn new (lhs : Nonterminal , symbol : RankedSymbol , children : Vec < Nonterminal > ,) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (lhs : Nonterminal , symbol : RankedSymbol , children : Vec < Nonterminal > ,) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "GrammarProduction::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::symbol",
+          "kind": "method",
+          "signature": "pub fn symbol (& self) -> & RankedSymbol",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn symbol (& self) -> & RankedSymbol",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "GrammarProduction::symbol"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::MAX_DETERMINIZED_SUBSETS",
           "kind": "const",
           "signature": "pub const MAX_DETERMINIZED_SUBSETS : usize",
@@ -378378,6 +378548,71 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::determinize",
               "declaration_ident": "MAX_DETERMINIZED_SUBSETS"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::Nonterminal",
+          "kind": "struct",
+          "signature": "pub struct Nonterminal",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct Nonterminal",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "Nonterminal"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::Nonterminal::name",
+          "kind": "method",
+          "signature": "pub fn name (& self) -> & Symbol",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn name (& self) -> & Symbol",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "Nonterminal::name"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::Nonterminal::new",
+          "kind": "method",
+          "signature": "pub fn new (name : impl Into < String >) -> Self",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (name : impl Into < String >) -> Self",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "Nonterminal::new"
             }
           ]
         },
@@ -378462,6 +378697,280 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::alphabet",
               "declaration_ident": "RankedSymbol::symbol"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar",
+          "kind": "struct",
+          "signature": "pub struct RegularTreeGrammar",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct RegularTreeGrammar",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::accepts",
+          "kind": "method",
+          "signature": "pub fn accepts (& self , term : & Term) -> RewriteResult < bool >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn accepts (& self , term : & Term) -> RewriteResult < bool >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::accepts"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::from_automaton",
+          "kind": "method",
+          "signature": "pub fn from_automaton (automaton : & TreeAutomaton) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn from_automaton (automaton : & TreeAutomaton) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::from_automaton"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::from_automaton_with_limits",
+          "kind": "method",
+          "signature": "pub fn from_automaton_with_limits (automaton : & TreeAutomaton , limits : & TreeAutomatonLimits ,) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn from_automaton_with_limits (automaton : & TreeAutomaton , limits : & TreeAutomatonLimits ,) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::from_automaton_with_limits"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::language_is_empty",
+          "kind": "method",
+          "signature": "pub fn language_is_empty (& self) -> RewriteResult < bool >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn language_is_empty (& self) -> RewriteResult < bool >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::language_is_empty"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::limits",
+          "kind": "method",
+          "signature": "pub fn limits (& self) -> & TreeAutomatonLimits",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn limits (& self) -> & TreeAutomatonLimits",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::limits"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::new",
+          "kind": "method",
+          "signature": "pub fn new (nonterminals : Vec < Nonterminal > , productions : Vec < GrammarProduction > , starts : Vec < Nonterminal > , limits : & TreeAutomatonLimits ,) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn new (nonterminals : Vec < Nonterminal > , productions : Vec < GrammarProduction > , starts : Vec < Nonterminal > , limits : & TreeAutomatonLimits ,) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::nonterminals",
+          "kind": "method",
+          "signature": "pub fn nonterminals (& self) -> & [Nonterminal]",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn nonterminals (& self) -> & [Nonterminal]",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::nonterminals"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::parse",
+          "kind": "method",
+          "signature": "pub fn parse (text : & str , limits : & TreeAutomatonLimits) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn parse (text : & str , limits : & TreeAutomatonLimits) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::parse"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::productions",
+          "kind": "method",
+          "signature": "pub fn productions (& self) -> & [GrammarProduction]",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn productions (& self) -> & [GrammarProduction]",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::productions"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::render",
+          "kind": "method",
+          "signature": "pub fn render (& self) -> String",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn render (& self) -> String",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::render"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::starts",
+          "kind": "method",
+          "signature": "pub fn starts (& self) -> & [Nonterminal]",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn starts (& self) -> & [Nonterminal]",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::starts"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::to_automaton",
+          "kind": "method",
+          "signature": "pub fn to_automaton (& self) -> RewriteResult < TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn to_automaton (& self) -> RewriteResult < TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::to_automaton"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::witness",
+          "kind": "method",
+          "signature": "pub fn witness (& self) -> RewriteResult < Option < Term > >",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::grammar",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn witness (& self) -> RewriteResult < Option < Term > >",
+              "source_path": "amari-rewrite/src/language/grammar.rs",
+              "source_module": "amari_rewrite::language::grammar",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::grammar",
+              "declaration_ident": "RegularTreeGrammar::witness"
             }
           ]
         },
@@ -379742,6 +380251,18 @@
                 }
               },
               {
+                "name": "MalformedGrammar",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -379905,6 +380426,18 @@
                   },
                   {
                     "name": "NonGroundTerm",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "MalformedGrammar",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -385604,6 +386137,42 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -385615,6 +386184,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::alphabet",
             "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "RegularTreeGrammar"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -387263,6 +387850,42 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -387274,6 +387897,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::alphabet",
             "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "RegularTreeGrammar"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -388578,6 +389219,42 @@
         },
         {
           "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -388589,6 +389266,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::alphabet",
             "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "RegularTreeGrammar"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -389625,6 +390320,42 @@
         },
         {
           "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -389946,6 +390677,42 @@
           "unsafe_trait": false,
           "negative": false,
           "is_derived": false
+        },
+        {
+          "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
         },
         {
           "trait_path": "Ord",
@@ -390778,6 +391545,42 @@
         },
         {
           "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -390789,6 +391592,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::alphabet",
             "ident": "RankedSymbol"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "RegularTreeGrammar"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -391552,6 +392373,42 @@
         },
         {
           "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -391873,6 +392730,24 @@
             "kind": "local",
             "module": "amari_rewrite::trs::term",
             "ident": "Term"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": false
+        },
+        {
+          "trait_path": "core::fmt::Display",
+          "impl_type_path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 7,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "core::fmt::Display"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::grammar",
+            "ident": "Nonterminal"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -393090,12 +393965,84 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::GRAMMAR_SYNTAX_HEADER",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::children",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::lhs",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::new",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::GrammarProduction::symbol",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::language::MAX_DETERMINIZED_SUBSETS",
           "source_path": "amari-rewrite/src/language/determinize.rs",
           "source_ordinal": 0,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::Nonterminal",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::Nonterminal::name",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::Nonterminal::new",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
         },
         {
           "path": "amari_rewrite::language::RankedSymbol",
@@ -393125,6 +394072,118 @@
           "path": "amari_rewrite::language::RankedSymbol::symbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::accepts",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 8,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::from_automaton",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::from_automaton_with_limits",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 7,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::language_is_empty",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 10,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::limits",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::new",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::nonterminals",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::parse",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 12,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::productions",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::render",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 11,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::starts",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::to_automaton",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::RegularTreeGrammar::witness",
+          "source_path": "amari-rewrite/src/language/grammar.rs",
+          "source_ordinal": 9,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
