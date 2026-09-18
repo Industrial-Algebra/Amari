@@ -400,7 +400,12 @@ fn random_term(rng: &mut Lcg, alphabet: &[RankedSymbol], depth: u64) -> Term {
 #[test]
 fn determinize_minimize_complement_laws_on_random_automata() {
     let mut rng = Lcg(0xDE12_0C20_2026_0918);
-    let alphabet = vec![ranked("a", 0), ranked("b", 0), ranked("f", 1)];
+    let alphabet = vec![
+        ranked("a", 0),
+        ranked("b", 0),
+        ranked("f", 1),
+        ranked("g", 2),
+    ];
     for instance in 0..60 {
         let left = random_automaton(&mut rng, &alphabet);
         let right = random_automaton(&mut rng, &alphabet);
@@ -476,5 +481,151 @@ fn determinize_minimize_complement_laws_on_random_automata() {
         let twice = left_min.minimized().expect("idempotent");
         assert_eq!(left_min, twice);
         assert_eq!(left_min.canonical_bytes(), twice.canonical_bytes());
+        // Renaming invariance: permuting input state names must not
+        // change canonical bytes.
+        let mut renamed_states: Vec<TreeState> = left.states().to_vec();
+        if renamed_states.len() > 1 {
+            renamed_states.rotate_left(1);
+        }
+        let name_of: std::collections::BTreeMap<String, String> = left
+            .states()
+            .iter()
+            .zip(renamed_states.iter())
+            .map(|(from, to)| {
+                (
+                    from.name().as_str().to_string(),
+                    to.name().as_str().to_string(),
+                )
+            })
+            .collect();
+        let renamed = automaton(
+            left.alphabet().to_vec(),
+            renamed_states,
+            left.transitions()
+                .iter()
+                .map(|t| {
+                    transition(
+                        t.symbol().as_str(),
+                        &t.children()
+                            .iter()
+                            .map(|c| name_of[c.name().as_str()].as_str())
+                            .collect::<Vec<_>>(),
+                        &name_of[t.parent().name().as_str()],
+                    )
+                })
+                .collect(),
+            left.finals()
+                .iter()
+                .map(|fim| state(&name_of[fim.name().as_str()]))
+                .collect(),
+        );
+        let renamed_min = renamed
+            .determinize(&TreeAutomatonLimits::default())
+            .expect("det")
+            .minimized()
+            .expect("min");
+        assert_eq!(
+            left_min.canonical_bytes(),
+            renamed_min.canonical_bytes(),
+            "renaming invariance violated at {instance}"
+        );
     }
+}
+
+// ---- P1/P2 review regressions (4571eec review)
+
+/// P1: with binary symbols, one-hole context refinement must track
+/// the correspondence between a concrete sibling and the resulting
+/// parent block. `f(a,a)` and `f(b,b)` accepted but not `f(a,b)`.
+#[test]
+fn binary_contexts_distinguish_states() {
+    let automaton = automaton(
+        vec![ranked("a", 0), ranked("b", 0), ranked("f", 2)],
+        states(&["p", "q", "r"]),
+        vec![
+            transition("a", &[], "p"),
+            transition("b", &[], "q"),
+            transition("f", &["p", "p"], "r"),
+            transition("f", &["q", "q"], "r"),
+        ],
+        states(&["r"]),
+    );
+    let minimal = automaton.minimized().expect("minimized");
+    // p and q are context-equivalent ONLY to themselves here: the
+    // minimal automaton has three blocks ([p], [q], [r]).
+    assert_eq!(minimal.states().len(), 3, "{minimal:?}");
+    assert!(minimal
+        .accepts(&Term::sym(
+            "f",
+            vec![Term::constant("a"), Term::constant("a")]
+        ))
+        .unwrap());
+    assert!(minimal
+        .accepts(&Term::sym(
+            "f",
+            vec![Term::constant("b"), Term::constant("b")]
+        ))
+        .unwrap());
+    assert!(
+        !minimal
+            .accepts(&Term::sym(
+                "f",
+                vec![Term::constant("a"), Term::constant("b")]
+            ))
+            .unwrap(),
+        "merged p and q: now accepts f(a,b) — language changed"
+    );
+    assert!(!minimal
+        .accepts(&Term::sym(
+            "f",
+            vec![Term::constant("b"), Term::constant("a")]
+        ))
+        .unwrap());
+}
+
+/// P2a: canonical numbering must be a function of the language
+/// (structure), not of input state-name spellings.
+#[test]
+fn canonical_numbering_is_renaming_invariant() {
+    let alphabet = vec![ranked("a", 0), ranked("f", 1)];
+    let original = automaton(
+        alphabet.clone(),
+        states(&["p", "q"]),
+        vec![transition("a", &[], "p"), transition("f", &["p"], "q")],
+        states(&["q"]),
+    );
+    let renamed = automaton(
+        alphabet,
+        states(&["z", "b"]),
+        vec![transition("a", &[], "z"), transition("f", &["z"], "b")],
+        states(&["b"]),
+    );
+    assert_eq!(
+        original.minimized().expect("min").canonical_bytes(),
+        renamed.minimized().expect("min").canonical_bytes(),
+        "renaming input states changed canonical bytes"
+    );
+}
+
+/// P2b: generated names reaching two digits must not break
+/// idempotence through lexical re-ordering.
+#[test]
+fn minimize_idempotent_beyond_ten_states() {
+    let alphabet = vec![ranked("a", 0), ranked("f", 1)];
+    let names: Vec<String> = (0..12).map(|i| format!("q{i:02}")).collect();
+    let mut transitions = vec![transition("a", &[], &names[0])];
+    for i in 1..12 {
+        transitions.push(transition("f", &[&names[i - 1]], &names[i]));
+    }
+    let name_refs: Vec<&str> = names.iter().map(String::as_str).collect();
+    let source = automaton(
+        alphabet,
+        states(&name_refs),
+        transitions,
+        states(&[&names[11]]),
+    );
+    let once = source.minimized().expect("once");
+    let twice = once.minimized().expect("twice");
+    assert_eq!(once, twice, "minimization not idempotent past ten states");
+    assert_eq!(once.canonical_bytes(), twice.canonical_bytes());
 }
