@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "c95f1080be6a9864cd32dea523b3cae37d8d096e2b35b234a39c4c95c5671fd6",
+  "content_hash": "e7686063c7ec93934b885cf35a49bfbeaefdb4f7e02845d72ca9e2d31083fa8e",
   "crates": [
     {
       "name": "amari",
@@ -386139,7 +386139,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -386157,7 +386157,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -386193,7 +386193,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -387852,7 +387852,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -387870,7 +387870,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -387906,7 +387906,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -389221,7 +389221,7 @@
           "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "trait_endpoint": {
             "kind": "external",
             "path": "Eq"
@@ -389239,7 +389239,7 @@
           "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "trait_endpoint": {
             "kind": "external",
             "path": "Eq"
@@ -389275,7 +389275,7 @@
           "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "trait_endpoint": {
             "kind": "external",
             "path": "Eq"
@@ -390322,7 +390322,7 @@
           "trait_path": "Hash",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "trait_endpoint": {
             "kind": "external",
             "path": "Hash"
@@ -390340,7 +390340,7 @@
           "trait_path": "Hash",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "trait_endpoint": {
             "kind": "external",
             "path": "Hash"
@@ -390682,7 +390682,7 @@
           "trait_path": "Ord",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "trait_endpoint": {
             "kind": "external",
             "path": "Ord"
@@ -390700,7 +390700,7 @@
           "trait_path": "Ord",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "trait_endpoint": {
             "kind": "external",
             "path": "Ord"
@@ -391547,7 +391547,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -391565,7 +391565,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -391601,7 +391601,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::RegularTreeGrammar",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -392375,7 +392375,7 @@
           "trait_path": "PartialOrd",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialOrd"
@@ -392393,7 +392393,7 @@
           "trait_path": "PartialOrd",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialOrd"
@@ -392739,7 +392739,7 @@
           "trait_path": "core::fmt::Display",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "core::fmt::Display"
@@ -393975,7 +393975,7 @@
         {
           "path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -394023,7 +394023,7 @@
         {
           "path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -394079,7 +394079,7 @@
         {
           "path": "amari_rewrite::language::RegularTreeGrammar",
           "source_path": "amari-rewrite/src/language/grammar.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"

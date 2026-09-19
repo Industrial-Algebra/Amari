@@ -445,3 +445,144 @@ fn random_term(rng: &mut Lcg, alphabet: &[RankedSymbol], depth: u64) -> Term {
         .collect();
     Term::sym(choice.symbol().as_str(), arguments)
 }
+
+// ---- P1/P2 review regressions (18809bd review)
+
+/// P1: parsing must enforce ceilings incrementally — two million
+/// distinct productions under a one-production limit must be a fast
+/// typed error, not an unbounded allocation.
+#[test]
+fn parse_enforces_limits_before_buffering() {
+    let limits = TreeAutomatonLimits::new(1, 1, 4).expect("limits");
+    let mut text = String::from("amari-tree-grammar/v1\nnonterminals: S\nstart: S\n");
+    for i in 0..2_000_000u32 {
+        text.push_str(&format!("S -> a{i}\n"));
+    }
+    let started = std::time::Instant::now();
+    let result = RegularTreeGrammar::parse(&text, &limits);
+    assert!(
+        matches!(result, Err(RewriteError::InvalidLimit { .. })),
+        "expected InvalidLimit, got {:?}",
+        result.map(|g| g.productions().len())
+    );
+    assert!(
+        started.elapsed().as_secs() < 10,
+        "not rejected early: {:?}",
+        started.elapsed()
+    );
+}
+
+/// P1: duplicate production lines are typed errors as they are read
+/// (memory stays bounded even for repeated identical lines).
+#[test]
+fn duplicate_production_lines_are_typed_errors() {
+    let mut text = String::from("amari-tree-grammar/v1\nnonterminals: S\nstart: S\n");
+    for _ in 0..100_000 {
+        text.push_str("S -> a\n");
+    }
+    let result = RegularTreeGrammar::parse(&text, &TreeAutomatonLimits::default());
+    assert!(matches!(result, Err(RewriteError::MalformedGrammar { .. })));
+    // And the constructor rejects duplicate productions too.
+    let dup = RegularTreeGrammar::new(
+        vec![nt("S")],
+        vec![production("S", "a", 0, &[]), production("S", "a", 0, &[])],
+        vec![nt("S")],
+        &TreeAutomatonLimits::default(),
+    );
+    assert!(matches!(dup, Err(RewriteError::MalformedGrammar { .. })));
+}
+
+/// P1: tokenization is bounded by the rank ceiling — a production
+/// line with absurdly many children errors without collecting it.
+#[test]
+fn tokenization_is_bounded_by_rank_ceiling() {
+    let limits = TreeAutomatonLimits::default(); // rank ceiling 16
+    let mut line = String::from("amari-tree-grammar/v1\nnonterminals: S\nstart: S\nS -> f");
+    for _ in 0..1_000_000 {
+        line.push_str(" S");
+    }
+    line.push('\n');
+    let started = std::time::Instant::now();
+    let result = RegularTreeGrammar::parse(&line, &limits);
+    assert!(matches!(result, Err(RewriteError::InvalidLimit { .. })));
+    assert!(started.elapsed().as_secs() < 10);
+}
+
+/// P2a: terminal symbol names must be renderable for a lossless
+/// render/parse round trip.
+#[test]
+fn unrenderable_terminal_symbols_are_rejected() {
+    for bad_symbol in ["", "a S", "line\nbreak", "->"] {
+        // Rejected at production construction...
+        let production = GrammarProduction::new(
+            nt("S"),
+            RankedSymbol::new(Symbol::new(bad_symbol), 0),
+            vec![],
+        );
+        assert!(
+            matches!(production, Err(RewriteError::MalformedGrammar { .. })),
+            "symbol {bad_symbol:?} accepted"
+        );
+    }
+}
+
+/// P2b: directive-prefixed nonterminal names break the parse
+/// dispatch and must be rejected at construction — including via
+/// automaton conversion.
+#[test]
+fn directive_prefixed_nonterminals_are_rejected() {
+    for bad in ["start:S", "nonterminals:S", "start:", "nonterminals:"] {
+        let result = RegularTreeGrammar::new(
+            vec![nt(bad)],
+            vec![production(bad, "a", 0, &[])],
+            vec![nt(bad)],
+            &TreeAutomatonLimits::default(),
+        );
+        assert!(
+            matches!(result, Err(RewriteError::MalformedGrammar { .. })),
+            "name {bad:?} accepted"
+        );
+    }
+    // The same rule applies through automaton conversion.
+    let automaton = TreeAutomaton::new(
+        vec![RankedSymbol::new(Symbol::new("a"), 0)],
+        vec![TreeState::new(Symbol::new("start:S"))],
+        vec![TreeTransition::new(
+            Symbol::new("a"),
+            vec![],
+            TreeState::new(Symbol::new("start:S")),
+        )],
+        vec![TreeState::new(Symbol::new("start:S"))],
+        TreeAutomatonLimits::default(),
+    )
+    .expect("automaton");
+    assert!(matches!(
+        RegularTreeGrammar::from_automaton(&automaton),
+        Err(RewriteError::MalformedGrammar { .. })
+    ));
+}
+
+/// P2c: a symbol name has ONE rank per grammar. Mixed-rank use is a
+/// typed grammar error at construction/parse, not a surprise
+/// automaton rank-conflict at first use.
+#[test]
+fn rank_conflicts_are_typed_grammar_errors() {
+    let conflict = RegularTreeGrammar::new(
+        vec![nt("S")],
+        vec![
+            production("S", "f", 0, &[]),
+            production("S", "f", 1, &["S"]),
+        ],
+        vec![nt("S")],
+        &TreeAutomatonLimits::default(),
+    );
+    assert!(matches!(
+        conflict,
+        Err(RewriteError::MalformedGrammar { .. })
+    ));
+    let parsed = RegularTreeGrammar::parse(
+        "amari-tree-grammar/v1\nnonterminals: S\nstart: S\nS -> f\nS -> f S\n",
+        &TreeAutomatonLimits::default(),
+    );
+    assert!(matches!(parsed, Err(RewriteError::MalformedGrammar { .. })));
+}

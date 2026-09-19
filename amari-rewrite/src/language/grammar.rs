@@ -23,7 +23,9 @@
 //! The header line is mandatory. `nonterminals:` declares the
 //! nonterminal set; every production lhs, production child, and
 //! `start:` name must be declared. A production's symbol rank is the
-//! number of children on that line (overloaded ranks are allowed).
+//! number of children on that line; each symbol name has ONE rank per
+//! grammar (the automaton alphabet's single-rank invariant), and
+//! conflicting ranks are rejected at construction/parse.
 //! Blank lines are ignored. [`RegularTreeGrammar::render`] emits the
 //! canonical form: declarations first, nonterminals and starts
 //! sorted, productions in canonical sorted order, exactly one
@@ -42,8 +44,21 @@ use crate::trs::{Symbol, Term};
 /// The mandatory first line of the fixed grammar text syntax.
 pub const GRAMMAR_SYNTAX_HEADER: &str = "amari-tree-grammar/v1";
 
+/// Whether a name can appear in the fixed text syntax: non-empty,
+/// free of whitespace, not the arrow token, and not carrying a
+/// directive prefix (which would be misparsed as a `start:` or
+/// `nonterminals:` declaration line).
+fn renderable_name(name: &str) -> bool {
+    !name.is_empty()
+        && name != "->"
+        && !name.starts_with("start:")
+        && !name.starts_with("nonterminals:")
+        && !name.chars().any(char::is_whitespace)
+}
+
 /// A grammar nonterminal. Names must be renderable in the fixed
-/// syntax: non-empty, free of whitespace, and not the arrow token.
+/// syntax: non-empty, free of whitespace, not the arrow token, and
+/// without a directive prefix.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
 pub struct Nonterminal(Symbol);
@@ -63,8 +78,7 @@ impl Nonterminal {
 
     /// Whether the name can appear in the fixed text syntax.
     fn is_renderable(&self) -> bool {
-        let name = self.0.as_str();
-        !name.is_empty() && name != "->" && !name.chars().any(char::is_whitespace)
+        renderable_name(self.0.as_str())
     }
 }
 
@@ -94,6 +108,14 @@ impl GrammarProduction {
                     symbol.symbol(),
                     children.len(),
                     symbol.arity()
+                ),
+            });
+        }
+        if !renderable_name(symbol.symbol().as_str()) {
+            return Err(RewriteError::MalformedGrammar {
+                message: format!(
+                    "terminal symbol {:?} is not renderable in the grammar syntax",
+                    symbol.symbol().as_str()
                 ),
             });
         }
@@ -214,13 +236,37 @@ impl RegularTreeGrammar {
                 }
             }
         }
+        // One rank per symbol name (the automaton alphabet's
+        // single-rank invariant); conflicting ranks are a grammar
+        // error, not a surprise at automaton conversion time.
+        let mut ranks: alloc::collections::BTreeMap<&Symbol, u16> =
+            alloc::collections::BTreeMap::new();
+        for production in &productions {
+            let name = production.symbol().symbol();
+            let arity = production.symbol().arity();
+            match ranks.insert(name, arity) {
+                None => {}
+                Some(previous) if previous == arity => {}
+                Some(previous) => {
+                    return Err(RewriteError::MalformedGrammar {
+                        message: format!(
+                            "rank conflict for symbol {}: {previous} vs {arity}",
+                            name.as_str()
+                        ),
+                    });
+                }
+            }
+        }
         let mut nonterminals = nonterminals;
         let mut productions = productions;
         let mut starts = starts;
         nonterminals.sort();
-        nonterminals.dedup();
         productions.sort();
-        productions.dedup();
+        if productions.windows(2).any(|pair| pair[0] == pair[1]) {
+            return Err(RewriteError::MalformedGrammar {
+                message: "duplicate production".into(),
+            });
+        }
         starts.sort();
         starts.dedup();
         Ok(Self {
@@ -408,9 +454,13 @@ impl RegularTreeGrammar {
                 ),
             });
         }
-        let mut nonterminals: Vec<Nonterminal> = Vec::new();
-        let mut starts: Vec<Nonterminal> = Vec::new();
-        let mut productions: Vec<GrammarProduction> = Vec::new();
+        // Ceilings are enforced INCREMENTALLY as lines are read —
+        // memory and work stay bounded by the caller's limits rather
+        // than by the input size — and duplicates are rejected as
+        // they are read.
+        let mut declared: BTreeSet<Nonterminal> = BTreeSet::new();
+        let mut start_set: BTreeSet<Nonterminal> = BTreeSet::new();
+        let mut seen_productions: BTreeSet<GrammarProduction> = BTreeSet::new();
         for (index, raw) in lines {
             let line_number = index + 1;
             let line = raw.trim();
@@ -419,14 +469,34 @@ impl RegularTreeGrammar {
             }
             if let Some(rest) = line.strip_prefix("nonterminals:") {
                 for token in rest.split_whitespace() {
-                    nonterminals.push(Nonterminal::new(token));
+                    let nonterminal = Nonterminal::new(token);
+                    if declared.contains(&nonterminal) {
+                        return Err(malformed(
+                            line_number,
+                            format!("duplicate nonterminal declaration {token:?}"),
+                        ));
+                    }
+                    if declared.len() >= limits.max_states() {
+                        return Err(RewriteError::InvalidLimit {
+                            resource: "tree grammar nonterminals",
+                            value: declared.len() + 1,
+                            ceiling: limits.max_states(),
+                        });
+                    }
+                    declared.insert(nonterminal);
                 }
                 continue;
             }
             if let Some(rest) = line.strip_prefix("start:") {
                 let mut found = false;
                 for token in rest.split_whitespace() {
-                    starts.push(Nonterminal::new(token));
+                    let start = Nonterminal::new(token);
+                    if !start_set.insert(start) {
+                        return Err(malformed(
+                            line_number,
+                            format!("duplicate start nonterminal {token:?}"),
+                        ));
+                    }
                     found = true;
                 }
                 if !found {
@@ -434,35 +504,58 @@ impl RegularTreeGrammar {
                 }
                 continue;
             }
-            // Production: <lhs> -> <symbol> <children...>
-            let tokens: Vec<&str> = line.split_whitespace().collect();
-            if tokens.len() < 2 || tokens[1] != "->" {
+            // Production: <lhs> -> <symbol> <children...>.
+            // Tokenization is bounded by the rank ceiling: children
+            // are collected lazily and the line is rejected as soon
+            // as it exceeds the ceiling.
+            let mut tokens = line.split_whitespace();
+            let lhs_token = tokens.next();
+            let arrow = tokens.next();
+            let symbol_token = tokens.next();
+            let (Some(lhs_token), Some("->"), Some(symbol_token)) =
+                (lhs_token, arrow, symbol_token)
+            else {
                 return Err(malformed(
                     line_number,
                     format!(
                         "expected a production `<lhs> -> <symbol> <children...>`, found {line:?}"
                     ),
                 ));
+            };
+            let mut children: Vec<Nonterminal> = Vec::new();
+            for token in tokens {
+                if children.len() >= limits.max_rank() {
+                    return Err(RewriteError::InvalidLimit {
+                        resource: "tree grammar production rank",
+                        value: children.len() + 1,
+                        ceiling: limits.max_rank(),
+                    });
+                }
+                children.push(Nonterminal::new(token));
             }
-            if tokens.len() < 3 {
-                return Err(malformed(
-                    line_number,
-                    "production is missing its symbol".into(),
-                ));
-            }
-            let lhs = Nonterminal::new(tokens[0]);
-            let children: Vec<Nonterminal> = tokens[3..]
-                .iter()
-                .map(|token| Nonterminal::new(*token))
-                .collect();
             let arity = u16::try_from(children.len())
                 .map_err(|_| malformed(line_number, "rank exceeds u16".into()))?;
-            let symbol = RankedSymbol::new(Symbol::new(tokens[2]), arity);
-            productions.push(
-                GrammarProduction::new(lhs, symbol, children)
-                    .map_err(|_| malformed(line_number, "rank mismatch".into()))?,
-            );
+            let symbol = RankedSymbol::new(Symbol::new(symbol_token), arity);
+            let production = GrammarProduction::new(Nonterminal::new(lhs_token), symbol, children)
+                .map_err(|error| match error {
+                    RewriteError::MalformedGrammar { message } => malformed(line_number, message),
+                    other => other,
+                })?;
+            if seen_productions.contains(&production) {
+                return Err(malformed(line_number, "duplicate production".into()));
+            }
+            if seen_productions.len() >= limits.max_transitions() {
+                return Err(RewriteError::InvalidLimit {
+                    resource: "tree grammar productions",
+                    value: seen_productions.len() + 1,
+                    ceiling: limits.max_transitions(),
+                });
+            }
+            seen_productions.insert(production);
         }
+        let nonterminals: Vec<Nonterminal> = declared.into_iter().collect();
+        let starts: Vec<Nonterminal> = start_set.into_iter().collect();
+        let productions: Vec<GrammarProduction> = seen_productions.into_iter().collect();
         Self::new(nonterminals, productions, starts, limits).map_err(|error| match error {
             // Keep limit errors exact; re-attach a line hint to
             // validation failures (construction has already checked
