@@ -492,6 +492,31 @@ fn duplicate_production_lines_are_typed_errors() {
     assert!(matches!(dup, Err(RewriteError::MalformedGrammar { .. })));
 }
 
+/// P1: distinct start declarations are count-bounded as read —
+/// starts are a subset of the declared nonterminals, so a valid
+/// grammar can never have more distinct starts than the state
+/// ceiling.
+#[test]
+fn distinct_starts_are_bounded_by_the_state_ceiling() {
+    let limits = TreeAutomatonLimits::new(1, 1, 4).expect("limits");
+    let mut text = String::from("amari-tree-grammar/v1\nnonterminals: S\n");
+    for i in 0..200_000u32 {
+        text.push_str(&format!("start: q{i}\n"));
+    }
+    let started = std::time::Instant::now();
+    let result = RegularTreeGrammar::parse(&text, &limits);
+    assert!(
+        matches!(result, Err(RewriteError::InvalidLimit { .. })),
+        "expected InvalidLimit, got {:?}",
+        result.map(|g| g.starts().len())
+    );
+    assert!(
+        started.elapsed().as_secs() < 10,
+        "not rejected early: {:?}",
+        started.elapsed()
+    );
+}
+
 /// P1: tokenization is bounded by the rank ceiling — a production
 /// line with absurdly many children errors without collecting it.
 #[test]

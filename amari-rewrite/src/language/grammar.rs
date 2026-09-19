@@ -491,12 +491,25 @@ impl RegularTreeGrammar {
                 let mut found = false;
                 for token in rest.split_whitespace() {
                     let start = Nonterminal::new(token);
-                    if !start_set.insert(start) {
+                    if start_set.contains(&start) {
                         return Err(malformed(
                             line_number,
                             format!("duplicate start nonterminal {token:?}"),
                         ));
                     }
+                    // Starts are a subset of the declared
+                    // nonterminals (enforced by construction), so a
+                    // valid grammar never has more distinct starts
+                    // than the state ceiling — bound the set as it
+                    // is read, before inserting an owned entry.
+                    if start_set.len() >= limits.max_states() {
+                        return Err(RewriteError::InvalidLimit {
+                            resource: "tree grammar start nonterminals",
+                            value: start_set.len() + 1,
+                            ceiling: limits.max_states(),
+                        });
+                    }
+                    start_set.insert(start);
                     found = true;
                 }
                 if !found {
