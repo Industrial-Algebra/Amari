@@ -17,6 +17,7 @@ const SHORTEST_PATH: &str = "amari-probe:network:shortest-path:v1";
 const PARETO_FRONT: &str = "amari-probe:optimization:pareto-front:v1";
 const REWRITE_BACKWARD_SEARCH: &str = "amari-probe:rewrite:backward-search:v1";
 const REWRITE_BIDIRECTIONAL_SEARCH: &str = "amari-probe:rewrite:bidirectional-search:v1";
+const REWRITE_LANGUAGES: &str = "amari-probe:rewrite:languages:v1";
 const REWRITE_INFER_RULE: &str = "amari-probe:rewrite:infer-rule:v1";
 const REWRITE_NORMALIZE: &str = "amari-probe:rewrite:normalize:v1";
 const REWRITE_PREDECESSORS: &str = "amari-probe:rewrite:predecessors:v1";
@@ -48,6 +49,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
     let optimization = PARETO_FRONT.parse().unwrap();
     let rewrite_backward_search = REWRITE_BACKWARD_SEARCH.parse().unwrap();
     let rewrite_bidirectional_search = REWRITE_BIDIRECTIONAL_SEARCH.parse().unwrap();
+    let rewrite_languages = REWRITE_LANGUAGES.parse().unwrap();
     let rewrite_infer_rule = REWRITE_INFER_RULE.parse().unwrap();
     let rewrite_normalize = REWRITE_NORMALIZE.parse().unwrap();
     let rewrite_predecessors = REWRITE_PREDECESSORS.parse().unwrap();
@@ -98,6 +100,10 @@ fn engine_derives_executable_state_from_the_private_registry() {
         cfg!(feature = "standard-probes")
     );
     assert_eq!(
+        engine.is_executable(&rewrite_languages),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
         engine.is_executable(&rewrite_infer_rule),
         cfg!(feature = "standard-probes")
     );
@@ -137,6 +143,7 @@ fn engine_derives_executable_state_from_the_private_registry() {
                 rewrite_bidirectional_search,
                 rewrite_infer_rule,
                 rewrite_inverse_analysis,
+                rewrite_languages,
                 rewrite_normalize,
                 rewrite_predecessors,
                 rewrite_residual_replay,

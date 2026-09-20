@@ -357,3 +357,31 @@ example_refs = []
 probe_refs = ["amari-probe:rewrite:residual-replay:v1"]
 stability = "experimental"
 cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:language:automata"
+name = "Checked finite tree automata"
+description = "Checked bottom-up tree automata with bounded determinization, minimization, completion, complement, union/intersection, emptiness, and witness extraction."
+aliases = ["tree automaton", "regular tree language", "NFTA"]
+concepts = ["tree automata", "regular languages", "recognizability"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::language::TreeAutomaton"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:languages:v1"]
+stability = "stable"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:language:grammars"
+name = "Regular tree grammars"
+description = "Checked regular tree grammars with a fixed canonical text syntax and lossless conversion to tree automata for language operations."
+aliases = ["tree grammar", "regular tree grammar"]
+concepts = ["tree automata", "formal grammars", "regular languages"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::language::RegularTreeGrammar"]
+example_refs = []
+probe_refs = []
+stability = "stable"
+cost = "moderate"

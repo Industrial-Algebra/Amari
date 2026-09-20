@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "e7686063c7ec93934b885cf35a49bfbeaefdb4f7e02845d72ca9e2d31083fa8e",
+  "content_hash": "64fff9ee6d5d6afa97a0d0640e4975350028a8425eabf25f5a20928baab499ce",
   "crates": [
     {
       "name": "amari",
@@ -479072,6 +479072,24 @@
       "capability_id": "amari:amari-rewrite:reversible:residual-replay",
       "input_schema": "amari.discovery/probe/rewrite-residual-replay/input/v1",
       "output_schema": "amari.discovery/probe/rewrite-residual-replay/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:languages:v1",
+      "capability_id": "amari:amari-rewrite:language:automata",
+      "input_schema": "amari.discovery/probe/rewrite-languages/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-languages/output/v1",
       "required_features": [
         "standard-probes"
       ],

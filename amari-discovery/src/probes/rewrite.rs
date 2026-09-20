@@ -7,6 +7,10 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 #[cfg(feature = "standard-probes")]
 use amari_rewrite::{
+    language::{
+        RankedSymbol, RegularTreeGrammar, TreeAutomaton, TreeAutomatonLimits, TreeState,
+        TreeTransition,
+    },
     synthesis::infer_rule,
     trs::{match_pattern, Rule, Term, TermSystem},
 };
@@ -2450,5 +2454,415 @@ fn execute_bidirectional_search(
             bytes: 0,
         },
         output: serde_json::to_value(output)?,
+    })
+}
+
+// ---- Regular tree language probe (0.25 Cohort 4, Task 22)
+
+#[cfg(feature = "standard-probes")]
+const MAX_AUTOMATON_STATES: usize = 64;
+#[cfg(feature = "standard-probes")]
+const MAX_AUTOMATON_TRANSITIONS: usize = 256;
+#[cfg(feature = "standard-probes")]
+const MAX_AUTOMATON_ALPHABET: usize = 64;
+#[cfg(feature = "standard-probes")]
+const MAX_GRAMMAR_TEXT_BYTES: usize = 8_192;
+
+/// A ranked alphabet entry in a language-probe automaton.
+#[derive(
+    Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize, schemars::JsonSchema,
+)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteRankedSymbol {
+    /// Symbol name.
+    pub name: String,
+    /// Symbol rank (number of children).
+    pub arity: u16,
+}
+
+/// One bottom-up transition `symbol(children) -> parent`.
+#[derive(
+    Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize, schemars::JsonSchema,
+)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteAutomatonTransition {
+    /// Transition symbol.
+    pub symbol: String,
+    /// Child states in positional order.
+    pub children: Vec<String>,
+    /// Parent (result) state.
+    pub parent: String,
+}
+
+/// A checked finite tree automaton accepted by the languages probe.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteAutomaton {
+    /// Ranked alphabet.
+    pub alphabet: Vec<RewriteRankedSymbol>,
+    /// State names.
+    pub states: Vec<String>,
+    /// Bottom-up transitions.
+    pub transitions: Vec<RewriteAutomatonTransition>,
+    /// Final (accepting) states.
+    pub finals: Vec<String>,
+}
+
+/// Typed input for the regular-tree-languages probe.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-languages/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        operation_known = "operation is membership, emptiness, witness, union, intersection, determinize, or minimize",
+        exactly_one_source = "exactly one of automaton or grammar (fixed-syntax text) is accepted",
+        automaton_bounds = "at most 64 states, 256 transitions, 64 alphabet symbols, and 16 children per transition",
+        grammar_text_limit = "grammar text is at most 8192 bytes",
+        name_bytes_limit = "names contain at most 256 bytes"
+    ),
+    example(
+        label = "parity_membership",
+        value = "{\"operation\":\"membership\",\"automaton\":{\"alphabet\":[{\"name\":\"z\",\"arity\":0},{\"name\":\"s\",\"arity\":1}],\"states\":[\"q0\",\"q1\"],\"transitions\":[{\"symbol\":\"z\",\"children\":[],\"parent\":\"q0\"},{\"symbol\":\"s\",\"children\":[\"q0\"],\"parent\":\"q1\"},{\"symbol\":\"s\",\"children\":[\"q1\"],\"parent\":\"q0\"}],\"finals\":[\"q0\"]},\"other\":null,\"term\":{\"kind\":\"symbol\",\"name\":\"s\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"z\",\"arguments\":[]}]},\"grammar\":null}"
+    )
+)]
+pub struct RewriteLanguagesRequest {
+    /// The operation to perform: membership, emptiness, witness,
+    /// union, intersection, determinize, or minimize.
+    pub operation: String,
+    /// The automaton to operate on (exactly one of `automaton` /
+    /// `grammar`).
+    pub automaton: Option<RewriteAutomaton>,
+    /// The second automaton for union/intersection.
+    pub other: Option<RewriteAutomaton>,
+    /// The term for membership (ground terms only).
+    pub term: Option<RewriteTerm>,
+    /// A grammar in the fixed text syntax, converted to an
+    /// automaton before operating (exactly one of `automaton` /
+    /// `grammar`).
+    pub grammar: Option<String>,
+}
+
+/// Typed output of the languages probe: results and certificates
+/// (canonical hashes), never source text.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-languages/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        certificates_only = "construction operations return the sha256 of the result's canonical bytes plus state/transition counts, never source text",
+        witness_ground = "witness terms are ground and replay-accepted by the submitted automaton"
+    ),
+    example(
+        label = "witness_z",
+        value = "{\"outcome\":\"ok\",\"accepted\":null,\"language_empty\":null,\"witness\":{\"kind\":\"symbol\",\"name\":\"z\",\"arguments\":[]},\"result_hash\":null,\"result_states\":null,\"result_transitions\":null}"
+    )
+)]
+pub struct RewriteLanguagesOutput {
+    /// `ok` on success; invalid requests are typed errors instead.
+    pub outcome: String,
+    /// Membership verdict.
+    pub accepted: Option<bool>,
+    /// Emptiness verdict.
+    pub language_empty: Option<bool>,
+    /// The smallest witness term (absent when the language is
+    /// empty).
+    pub witness: Option<RewriteTerm>,
+    /// sha256 hex of the result automaton's canonical bytes
+    /// (union/intersection/determinize/minimize).
+    pub result_hash: Option<String>,
+    /// Result automaton state count.
+    pub result_states: Option<u64>,
+    /// Result automaton transition count.
+    pub result_transitions: Option<u64>,
+}
+
+#[cfg(feature = "standard-probes")]
+fn validate_automaton_dto(automaton: &RewriteAutomaton) -> DiscoveryResult<()> {
+    if automaton.states.len() > MAX_AUTOMATON_STATES {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "automaton declares {} states; the probe ceiling is {MAX_AUTOMATON_STATES}",
+            automaton.states.len()
+        )));
+    }
+    if automaton.transitions.len() > MAX_AUTOMATON_TRANSITIONS {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "automaton declares {} transitions; the probe ceiling is {MAX_AUTOMATON_TRANSITIONS}",
+            automaton.transitions.len()
+        )));
+    }
+    if automaton.alphabet.len() > MAX_AUTOMATON_ALPHABET {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "automaton declares {} symbols; the probe ceiling is {MAX_AUTOMATON_ALPHABET}",
+            automaton.alphabet.len()
+        )));
+    }
+    if automaton.finals.len() > automaton.states.len() {
+        return Err(DiscoveryError::InvalidInput(
+            "automaton declares more finals than states".to_owned(),
+        ));
+    }
+    let mut names = automaton
+        .states
+        .iter()
+        .map(String::as_str)
+        .chain(automaton.finals.iter().map(String::as_str))
+        .chain(automaton.alphabet.iter().map(|symbol| symbol.name.as_str()))
+        .collect::<Vec<_>>();
+    for transition in &automaton.transitions {
+        names.push(transition.symbol.as_str());
+        names.push(transition.parent.as_str());
+        names.extend(transition.children.iter().map(String::as_str));
+        if transition.children.len() > 16 {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "transition {} has {} children; the probe ceiling is 16",
+                transition.symbol,
+                transition.children.len()
+            )));
+        }
+    }
+    for name in names {
+        validate_name(name)?;
+    }
+    Ok(())
+}
+
+#[cfg(feature = "standard-probes")]
+fn build_automaton(automaton: &RewriteAutomaton) -> DiscoveryResult<TreeAutomaton> {
+    validate_automaton_dto(automaton)?;
+    let alphabet = automaton
+        .alphabet
+        .iter()
+        .map(|symbol| {
+            RankedSymbol::new(
+                amari_rewrite::trs::Symbol::new(symbol.name.clone()),
+                symbol.arity,
+            )
+        })
+        .collect();
+    let states = automaton
+        .states
+        .iter()
+        .map(|name| TreeState::new(amari_rewrite::trs::Symbol::new(name.clone())))
+        .collect();
+    let transitions = automaton
+        .transitions
+        .iter()
+        .map(|transition| {
+            TreeTransition::new(
+                amari_rewrite::trs::Symbol::new(transition.symbol.clone()),
+                transition
+                    .children
+                    .iter()
+                    .map(|child| TreeState::new(amari_rewrite::trs::Symbol::new(child.clone())))
+                    .collect(),
+                TreeState::new(amari_rewrite::trs::Symbol::new(transition.parent.clone())),
+            )
+        })
+        .collect();
+    let finals = automaton
+        .finals
+        .iter()
+        .map(|name| TreeState::new(amari_rewrite::trs::Symbol::new(name.clone())))
+        .collect();
+    TreeAutomaton::new(
+        alphabet,
+        states,
+        transitions,
+        finals,
+        TreeAutomatonLimits::default(),
+    )
+    .map_err(|error| DiscoveryError::InvalidInput(format!("automaton is malformed: {error}")))
+}
+
+#[cfg(feature = "standard-probes")]
+fn automaton_certificate(automaton: &TreeAutomaton) -> (String, u64, u64) {
+    use sha2::Digest;
+    let digest = sha2::Sha256::digest(automaton.canonical_bytes());
+    let hash = digest.iter().map(|byte| format!("{byte:02x}")).collect();
+    (
+        hash,
+        automaton.states().len() as u64,
+        automaton.transitions().len() as u64,
+    )
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_languages(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewriteLanguagesRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "languages request has an invalid operation, automaton, term, or grammar shape: {error}"
+            ))
+        })?;
+    let bounds = effective_bounds(limits);
+    // Exactly one source: an automaton DTO or grammar text.
+    let source = match (&request.automaton, &request.grammar) {
+        (Some(automaton), None) => build_automaton(automaton)?,
+        (None, Some(grammar)) => {
+            if grammar.len() > MAX_GRAMMAR_TEXT_BYTES {
+                return Err(DiscoveryError::InvalidInput(format!(
+                    "grammar text is {} bytes; the probe ceiling is {MAX_GRAMMAR_TEXT_BYTES}",
+                    grammar.len()
+                )));
+            }
+            RegularTreeGrammar::parse(grammar, &TreeAutomatonLimits::default())
+                .map_err(|error| DiscoveryError::InvalidInput(format!("grammar: {error}")))?
+                .to_automaton()
+                .map_err(|error| {
+                    DiscoveryError::InvalidInput(format!("grammar conversion: {error}"))
+                })?
+        }
+        (Some(_), Some(_)) => {
+            return Err(DiscoveryError::InvalidInput(
+                "exactly one of `automaton` and `grammar` is accepted".to_owned(),
+            ));
+        }
+        (None, None) => {
+            return Err(DiscoveryError::InvalidInput(
+                "one of `automaton` and `grammar` is required".to_owned(),
+            ));
+        }
+    };
+    let certificate_output = |automaton: &TreeAutomaton| {
+        let (hash, states, transitions) = automaton_certificate(automaton);
+        RewriteLanguagesOutput {
+            outcome: "ok".to_owned(),
+            accepted: None,
+            language_empty: None,
+            witness: None,
+            result_hash: Some(hash),
+            result_states: Some(states),
+            result_transitions: Some(transitions),
+        }
+    };
+    let output = match request.operation.as_str() {
+        "membership" => {
+            let term = request.term.as_ref().ok_or_else(|| {
+                DiscoveryError::InvalidInput("membership requires a `term`".to_owned())
+            })?;
+            let term = term.to_term()?;
+            RewriteLanguagesOutput {
+                outcome: "ok".to_owned(),
+                accepted: Some(source.accepts(&term).map_err(|error| {
+                    DiscoveryError::InvalidInput(format!("membership: {error}"))
+                })?),
+                language_empty: None,
+                witness: None,
+                result_hash: None,
+                result_states: None,
+                result_transitions: None,
+            }
+        }
+        "emptiness" => RewriteLanguagesOutput {
+            outcome: "ok".to_owned(),
+            accepted: None,
+            language_empty: Some(source.language_is_empty()),
+            witness: None,
+            result_hash: None,
+            result_states: None,
+            result_transitions: None,
+        },
+        "witness" => RewriteLanguagesOutput {
+            outcome: "ok".to_owned(),
+            accepted: None,
+            language_empty: None,
+            witness: source
+                .witness()
+                .map_err(|error| DiscoveryError::InvalidInput(format!("witness: {error}")))?
+                .map(|term| RewriteTerm::from_term(&term)),
+            result_hash: None,
+            result_states: None,
+            result_transitions: None,
+        },
+        "union" | "intersection" => {
+            let other = request.other.as_ref().ok_or_else(|| {
+                DiscoveryError::InvalidInput(format!(
+                    "{} requires a second automaton `other`",
+                    request.operation
+                ))
+            })?;
+            let other = build_automaton(other)?;
+            let result = if request.operation == "union" {
+                source.union(&other, &TreeAutomatonLimits::default())
+            } else {
+                source.intersection(&other, &TreeAutomatonLimits::default())
+            }
+            .map_err(|error| {
+                DiscoveryError::InvalidInput(format!("{}: {error}", request.operation))
+            })?;
+            certificate_output(&result)
+        }
+        "determinize" => {
+            let result = source
+                .determinize(&TreeAutomatonLimits::default())
+                .map_err(|error| DiscoveryError::InvalidInput(format!("determinize: {error}")))?;
+            certificate_output(&result)
+        }
+        "minimize" => {
+            let result = source
+                .minimized()
+                .map_err(|error| DiscoveryError::InvalidInput(format!("minimize: {error}")))?;
+            certificate_output(&result)
+        }
+        other => {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "unknown operation {other:?}: expected membership, emptiness, witness, union, intersection, determinize, or minimize"
+            )));
+        }
+    };
+    let bytes = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations: bytes,
+            nodes: 0,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn languages_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:languages:v1".parse()?,
+        capability_id: "amari:amari-rewrite:language:automata".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-languages/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-languages/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_languages,
     })
 }

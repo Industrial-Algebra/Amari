@@ -241,6 +241,7 @@ mod tests {
                     .unwrap(),
                 "amari-probe:rewrite:infer-rule:v1".parse().unwrap(),
                 "amari-probe:rewrite:inverse-analysis:v1".parse().unwrap(),
+                "amari-probe:rewrite:languages:v1".parse().unwrap(),
                 "amari-probe:rewrite:normalize:v1".parse().unwrap(),
                 "amari-probe:rewrite:predecessors:v1".parse().unwrap(),
                 "amari-probe:rewrite:residual-replay:v1".parse().unwrap(),

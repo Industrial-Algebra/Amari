@@ -284,3 +284,18 @@ max_input_bytes = 65536
 max_output_bytes = 65536
 max_operations = 100000
 timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:rewrite:languages:v1"
+capability_id = "amari:amari-rewrite:language:automata"
+input_schema = "amari.discovery/probe/rewrite-languages/input/v1"
+output_schema = "amari.discovery/probe/rewrite-languages/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
