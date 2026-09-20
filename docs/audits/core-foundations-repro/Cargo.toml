@@ -1,0 +1,12 @@
+[package]
+name = "amari-core-foundations-audit"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# Standalone audit evidence, deliberately outside the production test matrix.
+# Law tests expose defects at the pinned baseline and are expected to fail.
+[workspace]
+
+[dependencies]
+amari-core = { path = "../../../amari-core" }

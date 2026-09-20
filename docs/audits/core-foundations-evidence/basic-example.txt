@@ -1,0 +1,51 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `target/debug/examples/basic`
+Amari Geometric Algebra Example
+==============================
+
+Basis vectors:
+e1 = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+e2 = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+e3 = [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
+
+Orthonormality checks:
+e1 · e1 = 1.0
+e2 · e2 = 1.0
+e3 · e3 = 1.0
+e1 · e2 = 0.0
+e1 · e3 = 0.0
+e2 · e3 = 0.0
+
+Bivector e1 ∧ e2:
+e12 = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+
+Anticommutivity check:
+e1 ∧ e2 = 1.0 (e12 component)
+e2 ∧ e1 = -1.0 (e12 component)
+
+Rotor for 90° rotation in e1-e2 plane:
+R = [0.707, 0.000, 0.000, -0.707, 0.000, 0.000, 0.000, 0.000]
+Rotor norm: 1.000000
+
+Rotation examples:
+R · e1 · R† = [0.000, 0.000, 1.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+This should be approximately e2: 0.000000
+R · e2 · R† = [0.000, -1.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+This should be approximately -e1: 0.000000
+R · e3 · R† = [0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 0.000, 0.000]
+This should be approximately e3: 0.000000
+
+Rotor composition:
+45° rotor composed with itself:
+R₄₅ ∘ R₄₅ = [0.707, 0.000, 0.000, -0.707, 0.000, 0.000, 0.000, 0.000]
+Difference from 90° rotor: 0.000000
+
+Using MultivectorBuilder:
+Vector v = x·e1 + y·e2 + 0.5·e3
+v = [0.0, 1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0]
+Rotated vector R·v·R†:
+R·v·R† = [0.000, -1.000, 1.000, 0.000, 0.500, 0.000, 0.000, 0.000]
+
+Note: The z-component (e3) should remain unchanged: 0.500 → 0.500
+
+Example completed successfully!

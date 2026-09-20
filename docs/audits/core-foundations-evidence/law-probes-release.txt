@@ -1,0 +1,163 @@
+   Compiling amari-core-foundations-audit v0.0.0 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-audit/docs/audits/core-foundations-repro)
+    Finished `release` profile [optimized] target(s) in 3.10s
+     Running tests/foundations.rs (target/release/build/amari-core-foundations-audit/79c30afdb8cc9251/out/foundations-79c30afdb8cc9251)
+
+running 22 tests
+test finding_01_inverse_of_invertible_mixed_grade_element ... FAILED
+test finding_03_exponential_of_nilpotent_bivector ... FAILED
+test finding_05_exponential_of_null_vector_is_not_identity ... FAILED
+test finding_09_vector_dual_preserves_declared_wrapper_grade ... FAILED
+test finding_01_inverse_rejects_zero_divisor ... FAILED
+test finding_10_slerp_supports_two_dimensional_rotors ... FAILED
+test finding_10_slerp_preserves_four_dimensional_endpoint ... FAILED
+test finding_06_scalar_exponential_converges ... FAILED
+test finding_11_boost_power_one_preserves_rotor ... FAILED
+test finding_11_negative_identity_power_one_preserves_double_cover ... FAILED
+test finding_02_geometric_product_preserves_small_coefficients ... FAILED
+test finding_02_geometric_product_associativity_across_scales ... FAILED
+test finding_11_small_rotation_power_one_preserves_rotor ... FAILED
+test finding_12_rotor_between_negative_unit_vectors_maps_direction ... FAILED
+test finding_12_rotor_from_negative_unit_vector_to_itself ... FAILED
+test finding_07_approximate_equality_distinguishes_null_vector_from_zero ... FAILED
+test finding_04_exponential_of_nonsimple_bivector ... FAILED
+test finding_08_degenerate_hodge_matches_documented_formal_complement ... FAILED
+test finding_14_raw_rotor_constructor_preserves_even_grade ... FAILED
+test finding_13_reflection_in_hyperplane_negates_normal ... FAILED
+test finding_15_bivector_setter_handles_all_four_dimensional_components ... FAILED
+test oracle_all_basis_pairs_through_dimension_four ... ok
+
+failures:
+
+---- finding_01_inverse_of_invertible_mixed_grade_element stdout ----
+
+thread 'finding_01_inverse_of_invertible_mixed_grade_element' (1262119) panicked at tests/foundations.rs:26:9:
+blade 1: actual=0.8, expected=0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- finding_03_exponential_of_nilpotent_bivector stdout ----
+
+thread 'finding_03_exponential_of_nilpotent_bivector' (1262123) panicked at tests/foundations.rs:26:9:
+blade 3: actual=0, expected=1
+
+---- finding_05_exponential_of_null_vector_is_not_identity stdout ----
+
+thread 'finding_05_exponential_of_null_vector_is_not_identity' (1262125) panicked at tests/foundations.rs:26:9:
+blade 1: actual=0, expected=1
+
+---- finding_09_vector_dual_preserves_declared_wrapper_grade stdout ----
+
+thread 'finding_09_vector_dual_preserves_declared_wrapper_grade' (1262129) panicked at tests/foundations.rs:26:9:
+blade 14: actual=1, expected=0
+
+---- finding_01_inverse_rejects_zero_divisor stdout ----
+
+thread 'finding_01_inverse_rejects_zero_divisor' (1262120) panicked at tests/foundations.rs:192:5:
+nonzero annihilator proves no inverse exists
+
+---- finding_10_slerp_supports_two_dimensional_rotors stdout ----
+
+thread 'finding_10_slerp_supports_two_dimensional_rotors' (1262131) panicked at /home/lucien/working/industrial-algebra/Amari/.worktrees/core-audit/amari-core/src/rotor.rs:151:20:
+index out of bounds: the len is 4 but the index is 4
+
+---- finding_10_slerp_preserves_four_dimensional_endpoint stdout ----
+
+thread 'finding_10_slerp_preserves_four_dimensional_endpoint' (1262130) panicked at tests/foundations.rs:26:9:
+blade 0: actual=1, expected=0.8775825618903728
+
+---- finding_06_scalar_exponential_converges stdout ----
+
+thread 'finding_06_scalar_exponential_converges' (1262126) panicked at tests/foundations.rs:253:5:
+actual=228152458.75893366, expected=485165195.4097903
+
+---- finding_11_boost_power_one_preserves_rotor stdout ----
+
+thread 'finding_11_boost_power_one_preserves_rotor' (1262132) panicked at tests/foundations.rs:26:9:
+blade 0: actual=1, expected=1.127625965206381
+
+---- finding_11_negative_identity_power_one_preserves_double_cover stdout ----
+
+thread 'finding_11_negative_identity_power_one_preserves_double_cover' (1262133) panicked at tests/foundations.rs:26:9:
+blade 0: actual=1, expected=-1
+
+---- finding_02_geometric_product_preserves_small_coefficients stdout ----
+
+thread 'finding_02_geometric_product_preserves_small_coefficients' (1262122) panicked at tests/foundations.rs:10:5:
+actual=0.00000000000000000e0, expected=1.00000000000000000e0
+
+---- finding_02_geometric_product_associativity_across_scales stdout ----
+
+thread 'finding_02_geometric_product_associativity_across_scales' (1262121) panicked at tests/foundations.rs:26:9:
+blade 0: actual=0, expected=1
+
+---- finding_11_small_rotation_power_one_preserves_rotor stdout ----
+
+thread 'finding_11_small_rotation_power_one_preserves_rotor' (1262134) panicked at tests/foundations.rs:26:9:
+blade 3: actual=0, expected=-0.000000005
+
+---- finding_12_rotor_between_negative_unit_vectors_maps_direction stdout ----
+
+thread 'finding_12_rotor_between_negative_unit_vectors_maps_direction' (1262135) panicked at tests/foundations.rs:26:9:
+blade 2: actual=-0.9999999999999998, expected=1
+
+---- finding_12_rotor_from_negative_unit_vector_to_itself stdout ----
+
+thread 'finding_12_rotor_from_negative_unit_vector_to_itself' (1262136) panicked at tests/foundations.rs:319:41:
+identity maps any vector to itself
+
+---- finding_07_approximate_equality_distinguishes_null_vector_from_zero stdout ----
+
+thread 'finding_07_approximate_equality_distinguishes_null_vector_from_zero' (1262127) panicked at tests/foundations.rs:263:5:
+nonzero null vector is not the zero multivector
+
+---- finding_04_exponential_of_nonsimple_bivector stdout ----
+
+thread 'finding_04_exponential_of_nonsimple_bivector' (1262124) panicked at tests/foundations.rs:26:9:
+blade 0: actual=0.15594369476537437, expected=0.2919265817264289
+
+---- finding_08_degenerate_hodge_matches_documented_formal_complement stdout ----
+
+thread 'finding_08_degenerate_hodge_matches_documented_formal_complement' (1262128) panicked at tests/foundations.rs:26:9:
+blade 3: actual=0, expected=1
+
+---- finding_14_raw_rotor_constructor_preserves_even_grade stdout ----
+
+thread 'finding_14_raw_rotor_constructor_preserves_even_grade' (1262138) panicked at tests/foundations.rs:26:9:
+blade 1: actual=-0.4194911955787122, expected=0
+
+---- finding_13_reflection_in_hyperplane_negates_normal stdout ----
+
+thread 'finding_13_reflection_in_hyperplane_negates_normal' (1262137) panicked at tests/foundations.rs:26:9:
+blade 1: actual=1, expected=-1
+
+---- finding_15_bivector_setter_handles_all_four_dimensional_components stdout ----
+
+thread 'finding_15_bivector_setter_handles_all_four_dimensional_components' (1262139) panicked at tests/foundations.rs:10:5:
+actual=0.00000000000000000e0, expected=1.00000000000000000e0
+
+
+failures:
+    finding_01_inverse_of_invertible_mixed_grade_element
+    finding_01_inverse_rejects_zero_divisor
+    finding_02_geometric_product_associativity_across_scales
+    finding_02_geometric_product_preserves_small_coefficients
+    finding_03_exponential_of_nilpotent_bivector
+    finding_04_exponential_of_nonsimple_bivector
+    finding_05_exponential_of_null_vector_is_not_identity
+    finding_06_scalar_exponential_converges
+    finding_07_approximate_equality_distinguishes_null_vector_from_zero
+    finding_08_degenerate_hodge_matches_documented_formal_complement
+    finding_09_vector_dual_preserves_declared_wrapper_grade
+    finding_10_slerp_preserves_four_dimensional_endpoint
+    finding_10_slerp_supports_two_dimensional_rotors
+    finding_11_boost_power_one_preserves_rotor
+    finding_11_negative_identity_power_one_preserves_double_cover
+    finding_11_small_rotation_power_one_preserves_rotor
+    finding_12_rotor_between_negative_unit_vectors_maps_direction
+    finding_12_rotor_from_negative_unit_vector_to_itself
+    finding_13_reflection_in_hyperplane_negates_normal
+    finding_14_raw_rotor_constructor_preserves_even_grade
+    finding_15_bivector_setter_handles_all_four_dimensional_components
+
+test result: FAILED. 1 passed; 21 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `--test foundations`

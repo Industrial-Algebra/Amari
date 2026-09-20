@@ -1,0 +1,3 @@
+ Documenting amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-audit/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.27s
+   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-audit/target/doc/amari_core/index.html
