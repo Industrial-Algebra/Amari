@@ -383,3 +383,112 @@ fn grammar_names_respect_probe_ceiling_and_witnesses_replay() {
         "unexpected error: {error}"
     );
 }
+
+// ---- Review round 2 regressions (PR #270): accounting must cover
+// the library's actual charge model, not optimistic estimates.
+
+/// Review P1 (round 2): membership charges one operation per
+/// transition at EVERY term node (2 nodes x 2 transitions = 4).
+#[test]
+fn membership_charges_transitions_per_node() {
+    let engine = ProbeEngine::with_limits(amari_discovery::ProbeEngineLimits {
+        max_operations: 2,
+        ..Default::default()
+    })
+    .unwrap();
+    let automaton = json!({
+        "alphabet": [{"name": "a", "arity": 0}, {"name": "f", "arity": 1}],
+        "states": ["q0", "q1"],
+        "transitions": [
+            {"symbol": "a", "children": [], "parent": "q0"},
+            {"symbol": "f", "children": ["q0"], "parent": "q1"}
+        ],
+        "finals": ["q1"]
+    });
+    let error = engine
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({
+                "operation": "membership",
+                "automaton": automaton,
+                "term": {"kind": "symbol", "name": "f", "arguments": [
+                    {"kind": "symbol", "name": "a", "arguments": []}
+                ]}
+            }),
+        )
+        .expect_err("4 transition checks exceed the 2-operation budget");
+    assert!(
+        error.to_string().contains("operation"),
+        "unexpected error: {error}"
+    );
+}
+
+/// Review P1 (round 2): determinization charges (m+1)^arity odometer
+/// steps per non-nullary symbol at every registered macro-state m,
+/// and discovered subsets can outnumber input states (7 subsets from
+/// 3 states charges 2 x (1+...+7) = 56).
+#[test]
+fn determinize_charges_macro_state_odometer_steps() {
+    let engine = ProbeEngine::with_limits(amari_discovery::ProbeEngineLimits {
+        max_operations: 52,
+        ..Default::default()
+    })
+    .unwrap();
+    let automaton = json!({
+        "alphabet": [
+            {"name": "a", "arity": 0},
+            {"name": "r", "arity": 1},
+            {"name": "u", "arity": 1}
+        ],
+        "states": ["q0", "q1", "q2"],
+        "transitions": [
+            {"symbol": "a", "children": [], "parent": "q0"},
+            {"symbol": "r", "children": ["q0"], "parent": "q1"},
+            {"symbol": "r", "children": ["q1"], "parent": "q2"},
+            {"symbol": "r", "children": ["q2"], "parent": "q0"},
+            {"symbol": "u", "children": ["q0"], "parent": "q0"},
+            {"symbol": "u", "children": ["q0"], "parent": "q1"},
+            {"symbol": "u", "children": ["q1"], "parent": "q1"},
+            {"symbol": "u", "children": ["q2"], "parent": "q2"}
+        ],
+        "finals": ["q0"]
+    });
+    let error = engine
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "determinize", "automaton": automaton}),
+        )
+        .expect_err("56 odometer steps exceed the 52-operation budget");
+    assert!(
+        error.to_string().contains("operation"),
+        "unexpected error: {error}"
+    );
+}
+
+/// Review P1 (round 2): minimization completion adds one transition
+/// per state TUPLE per symbol (2^4 = 16 f-transitions here), and
+/// refinement charges once per child position per round.
+#[test]
+fn minimize_charges_completion_tuples_and_child_positions() {
+    let engine = ProbeEngine::with_limits(amari_discovery::ProbeEngineLimits {
+        max_operations: 20,
+        ..Default::default()
+    })
+    .unwrap();
+    let automaton = json!({
+        "alphabet": [{"name": "a", "arity": 0}, {"name": "f", "arity": 4}],
+        "states": ["q"],
+        "transitions": [{"symbol": "a", "children": [], "parent": "q"}],
+        "finals": ["q"]
+    });
+    let error = engine
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "minimize", "automaton": automaton}),
+        )
+        .expect_err("completion + refinement charges exceed the 20-operation budget");
+    assert!(
+        error.to_string().contains("operation"),
+        "unexpected error: {error}"
+    );
+}

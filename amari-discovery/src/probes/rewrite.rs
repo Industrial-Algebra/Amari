@@ -2708,17 +2708,20 @@ fn automaton_certificate(automaton: &TreeAutomaton) -> (String, u64, u64) {
 }
 
 #[cfg(feature = "standard-probes")]
-fn arity_charge_bound(automaton: &TreeAutomaton, state_count: u64) -> u64 {
-    // Conservative per-macro-state determinization charge: for each
-    // non-nullary symbol of arity a, at most state_count^a tuples are
-    // evaluated when a macro-state registers (saturating).
-    automaton
-        .alphabet()
-        .iter()
-        .filter(|symbol| symbol.arity() >= 1)
-        .fold(0u64, |total, symbol| {
-            total.saturating_add(state_count.saturating_pow(u32::from(symbol.arity())))
-        })
+fn determinize_charge(automaton: &TreeAutomaton, discovered: u64) -> u64 {
+    // Exact subset-construction charge: when macro-state m (0-indexed)
+    // registers, the odometer walks (m+1)^arity steps per non-nullary
+    // symbol and every step is charged. Discovered macro-states can
+    // outnumber the source states, so the charge is indexed by the
+    // RESULT state count, not the input's (saturating).
+    let mut total = 0u64;
+    for symbol in automaton.alphabet().iter().filter(|s| s.arity() >= 1) {
+        let arity = u32::from(symbol.arity());
+        for m in 1..=discovered {
+            total = total.saturating_add(m.saturating_pow(arity));
+        }
+    }
+    total
 }
 
 #[cfg(feature = "standard-probes")]
@@ -2825,7 +2828,10 @@ fn execute_languages(
             let accepted = source
                 .accepts(&term)
                 .map_err(|error| DiscoveryError::InvalidInput(format!("membership: {error}")))?;
-            decision_output(Some(accepted), None, None, term_nodes, term_nodes)
+            // accepting_run charges one operation per transition at
+            // every term node.
+            let operations = term_nodes.saturating_mul(source_transitions);
+            decision_output(Some(accepted), None, None, operations, term_nodes)
         }
         "emptiness" => {
             // The witness fixpoint scans every transition in each of
@@ -2894,12 +2900,9 @@ fn execute_languages(
             let result = source
                 .determinize(&TreeAutomatonLimits::default())
                 .map_err(|error| DiscoveryError::InvalidInput(format!("determinize: {error}")))?;
-            // Each registered macro-state evaluates at most
-            // `arity_charge_bound` tuples; seeding scans the source
-            // transitions once (saturating).
-            let operations = (result.states().len() as u64)
-                .saturating_mul(arity_charge_bound(&source, source_states))
-                .saturating_add(source_transitions);
+            // Exact odometer-step charge over the registered
+            // macro-states (seeding is uncharged).
+            let operations = determinize_charge(&source, result.states().len() as u64);
             certificate_output(&result, operations)
         }
         "minimize" => {
@@ -2907,17 +2910,32 @@ fn execute_languages(
                 .minimized()
                 .map_err(|error| DiscoveryError::InvalidInput(format!("minimize: {error}")))?;
             // Minimization requires deterministic input, then trims,
-            // completes (at most one sink state and one transition per
-            // state-symbol pair), and refines for at most `states`
-            // rounds that each scan the transitions (saturating).
-            let completed_states = source_states.saturating_add(1);
-            let completed_transitions = source_transitions
-                .saturating_add(completed_states.saturating_mul(source.alphabet().len() as u64));
-            let operations = completed_states
-                .max(1)
-                .saturating_mul(completed_transitions)
-                .saturating_add(completed_transitions)
-                .saturating_add(completed_states);
+            // completes, refines, and canonically numbers the result:
+            // - completion charges one odometer step per state TUPLE
+            //   per symbol: sum over symbols of states^arity (the sink
+            //   adds one state);
+            // - refinement charges once per child position per round,
+            //   with at most `states` rounds;
+            // - canonical numbering charges at most once per
+            //   transition.
+            // All saturating.
+            let completed_states = source_states.saturating_add(1).max(1);
+            let completion = source.alphabet().iter().fold(0u64, |total, symbol| {
+                total.saturating_add(completed_states.saturating_pow(u32::from(symbol.arity())))
+            });
+            let completed_transitions = source_transitions.saturating_add(completion);
+            let max_arity = source
+                .alphabet()
+                .iter()
+                .map(|symbol| u64::from(symbol.arity()))
+                .max()
+                .unwrap_or(0);
+            let refinement = completed_states
+                .saturating_mul(max_arity)
+                .saturating_mul(completed_transitions);
+            let operations = completion
+                .saturating_add(refinement)
+                .saturating_add(completed_transitions);
             certificate_output(&result, operations)
         }
         other => {
