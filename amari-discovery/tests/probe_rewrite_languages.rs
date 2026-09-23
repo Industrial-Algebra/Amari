@@ -257,3 +257,129 @@ fn oversized_inputs_are_typed_errors() {
         .unwrap_err();
     assert!(format!("{error}").contains("state"), "{error}");
 }
+
+// ---- Review round 1 regressions (PR #270)
+
+/// Review P1: the probe validates membership terms against the
+/// caller-tightened node budget before running the operation.
+#[test]
+fn membership_term_respects_caller_node_budget() {
+    let engine = ProbeEngine::with_limits(amari_discovery::ProbeEngineLimits {
+        max_nodes: 1,
+        ..Default::default()
+    })
+    .unwrap();
+    let automaton = json!({
+        "alphabet": [{"name": "a", "arity": 0}, {"name": "f", "arity": 1}],
+        "states": ["q0", "q1"],
+        "transitions": [
+            {"symbol": "a", "children": [], "parent": "q0"},
+            {"symbol": "f", "children": ["q0"], "parent": "q1"}
+        ],
+        "finals": ["q1"]
+    });
+    let error = engine
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({
+                "operation": "membership",
+                "automaton": automaton,
+                "term": {"kind": "symbol", "name": "f", "arguments": [
+                    {"kind": "symbol", "name": "a", "arguments": []}
+                ]}
+            }),
+        )
+        .expect_err("two-node term exceeds the one-node budget");
+    assert!(
+        error.to_string().contains("node"),
+        "unexpected error: {error}"
+    );
+}
+
+/// Review P1: determinization reports domain work (subset-construction
+/// tuple evaluations), so the engine's post-execution check enforces
+/// the caller's operation budget.
+#[test]
+fn determinize_reports_domain_work_against_caller_budget() {
+    let engine = ProbeEngine::with_limits(amari_discovery::ProbeEngineLimits {
+        max_operations: 500,
+        ..Default::default()
+    })
+    .unwrap();
+    let states: Vec<String> = (0..64).map(|index| format!("q{index}")).collect();
+    let mut transitions = vec![json!({"symbol": "a", "children": [], "parent": "q0"})];
+    for index in 1..64 {
+        transitions.push(json!({
+            "symbol": "f",
+            "children": [format!("q{}", index - 1)],
+            "parent": format!("q{index}")
+        }));
+    }
+    let automaton = json!({
+        "alphabet": [{"name": "a", "arity": 0}, {"name": "f", "arity": 1}],
+        "states": states,
+        "transitions": transitions,
+        "finals": ["q63"]
+    });
+    let error = engine
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "determinize", "automaton": automaton}),
+        )
+        .expect_err("2080 tuple evaluations exceed the 500-operation budget");
+    assert!(
+        error.to_string().contains("operation"),
+        "unexpected error: {error}"
+    );
+}
+
+/// Review P2: grammar-derived names face the same 256-byte ceiling as
+/// automaton DTO names, and witnesses replay through membership under
+/// both source representations.
+#[test]
+fn grammar_names_respect_probe_ceiling_and_witnesses_replay() {
+    let long_name = |bytes: usize| "x".repeat(bytes);
+    let grammar_with = |bytes: usize| {
+        format!(
+            "amari-tree-grammar/v1\nnonterminals: S\nstart: S\nS -> {}\n",
+            long_name(bytes)
+        )
+    };
+    // 256-byte terminal names are accepted end to end.
+    let witness = run_typed(&json!({
+        "operation": "witness",
+        "grammar": grammar_with(256)
+    }));
+    let witness_term = witness.witness.expect("256-byte witness");
+    let accepted = run_typed(&json!({
+        "operation": "membership",
+        "grammar": grammar_with(256),
+        "term": serde_json::to_value(&witness_term).unwrap()
+    }));
+    assert_eq!(accepted.accepted, Some(true), "grammar replay");
+    // The same witness replays against the equivalent automaton DTO.
+    let automaton = json!({
+        "alphabet": [{"name": long_name(256), "arity": 0}],
+        "states": ["S"],
+        "transitions": [{"symbol": long_name(256), "children": [], "parent": "S"}],
+        "finals": ["S"]
+    });
+    let accepted = run_typed(&json!({
+        "operation": "membership",
+        "automaton": automaton,
+        "term": serde_json::to_value(&witness_term).unwrap()
+    }));
+    assert_eq!(accepted.accepted, Some(true), "automaton replay");
+    // 257-byte terminal names are typed errors.
+    let error = ProbeEngine::new()
+        .unwrap()
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "witness", "grammar": grammar_with(257)}),
+        )
+        .expect_err("257-byte grammar terminal exceeds the name ceiling");
+    assert!(
+        error.to_string().contains("257"),
+        "unexpected error: {error}"
+    );
+}

@@ -2708,6 +2708,34 @@ fn automaton_certificate(automaton: &TreeAutomaton) -> (String, u64, u64) {
 }
 
 #[cfg(feature = "standard-probes")]
+fn arity_charge_bound(automaton: &TreeAutomaton, state_count: u64) -> u64 {
+    // Conservative per-macro-state determinization charge: for each
+    // non-nullary symbol of arity a, at most state_count^a tuples are
+    // evaluated when a macro-state registers (saturating).
+    automaton
+        .alphabet()
+        .iter()
+        .filter(|symbol| symbol.arity() >= 1)
+        .fold(0u64, |total, symbol| {
+            total.saturating_add(state_count.saturating_pow(u32::from(symbol.arity())))
+        })
+}
+
+#[cfg(feature = "standard-probes")]
+fn validate_grammar_derived_names(automaton: &TreeAutomaton) -> DiscoveryResult<()> {
+    // The library grammar checks renderability, not the probe's name
+    // ceiling; enforce the same rules on grammar-derived content so
+    // witnesses replay through membership.
+    for symbol in automaton.alphabet() {
+        validate_name(symbol.symbol().as_str())?;
+    }
+    for state in automaton.states() {
+        validate_name(state.name().as_str())?;
+    }
+    Ok(())
+}
+
+#[cfg(feature = "standard-probes")]
 fn execute_languages(
     input: &Value,
     limits: &EffectiveProbeLimits,
@@ -2729,12 +2757,14 @@ fn execute_languages(
                     grammar.len()
                 )));
             }
-            RegularTreeGrammar::parse(grammar, &TreeAutomatonLimits::default())
+            let automaton = RegularTreeGrammar::parse(grammar, &TreeAutomatonLimits::default())
                 .map_err(|error| DiscoveryError::InvalidInput(format!("grammar: {error}")))?
                 .to_automaton()
                 .map_err(|error| {
                     DiscoveryError::InvalidInput(format!("grammar conversion: {error}"))
-                })?
+                })?;
+            validate_grammar_derived_names(&automaton)?;
+            automaton
         }
         (Some(_), Some(_)) => {
             return Err(DiscoveryError::InvalidInput(
@@ -2747,57 +2777,85 @@ fn execute_languages(
             ));
         }
     };
-    let certificate_output = |automaton: &TreeAutomaton| {
+    let source_states = source.states().len() as u64;
+    let source_transitions = source.transitions().len() as u64;
+    let source_finals = source.finals().len() as u64;
+    let certificate_output = |automaton: &TreeAutomaton, operations: u64| {
         let (hash, states, transitions) = automaton_certificate(automaton);
-        RewriteLanguagesOutput {
-            outcome: "ok".to_owned(),
-            accepted: None,
-            language_empty: None,
-            witness: None,
-            result_hash: Some(hash),
-            result_states: Some(states),
-            result_transitions: Some(transitions),
-        }
+        (
+            RewriteLanguagesOutput {
+                outcome: "ok".to_owned(),
+                accepted: None,
+                language_empty: None,
+                witness: None,
+                result_hash: Some(hash),
+                result_states: Some(states),
+                result_transitions: Some(transitions),
+            },
+            operations,
+            states,
+        )
     };
-    let output = match request.operation.as_str() {
+    let decision_output = |accepted, language_empty, witness, operations, nodes| {
+        (
+            RewriteLanguagesOutput {
+                outcome: "ok".to_owned(),
+                accepted,
+                language_empty,
+                witness,
+                result_hash: None,
+                result_states: None,
+                result_transitions: None,
+            },
+            operations,
+            nodes,
+        )
+    };
+    let (output, operations, nodes) = match request.operation.as_str() {
         "membership" => {
             let term = request.term.as_ref().ok_or_else(|| {
                 DiscoveryError::InvalidInput("membership requires a `term`".to_owned())
             })?;
+            // The run visits every node of the term exactly once, so
+            // the term's size IS the operation count; enforce the
+            // caller-tightened budgets before conversion.
+            let stats = term_stats(term, bounds.max_term_depth, bounds.max_term_nodes)?;
+            let term_nodes = stats.nodes;
             let term = term.to_term()?;
-            RewriteLanguagesOutput {
-                outcome: "ok".to_owned(),
-                accepted: Some(source.accepts(&term).map_err(|error| {
-                    DiscoveryError::InvalidInput(format!("membership: {error}"))
-                })?),
-                language_empty: None,
-                witness: None,
-                result_hash: None,
-                result_states: None,
-                result_transitions: None,
-            }
+            let accepted = source
+                .accepts(&term)
+                .map_err(|error| DiscoveryError::InvalidInput(format!("membership: {error}")))?;
+            decision_output(Some(accepted), None, None, term_nodes, term_nodes)
         }
-        "emptiness" => RewriteLanguagesOutput {
-            outcome: "ok".to_owned(),
-            accepted: None,
-            language_empty: Some(source.language_is_empty()),
-            witness: None,
-            result_hash: None,
-            result_states: None,
-            result_transitions: None,
-        },
-        "witness" => RewriteLanguagesOutput {
-            outcome: "ok".to_owned(),
-            accepted: None,
-            language_empty: None,
-            witness: source
+        "emptiness" => {
+            // The witness fixpoint scans every transition in each of
+            // at most `states` rounds.
+            let operations = source_transitions.saturating_mul(source_states.max(1));
+            let empty = source.language_is_empty();
+            decision_output(None, Some(empty), None, operations, source_states)
+        }
+        "witness" => {
+            let operations = source_transitions.saturating_mul(source_states.max(1));
+            let witness = source
                 .witness()
                 .map_err(|error| DiscoveryError::InvalidInput(format!("witness: {error}")))?
-                .map(|term| RewriteTerm::from_term(&term)),
-            result_hash: None,
-            result_states: None,
-            result_transitions: None,
-        },
+                .map(|term| RewriteTerm::from_term(&term));
+            let witness_nodes = witness
+                .as_ref()
+                .map(|term| {
+                    term_stats(term, bounds.max_term_depth, bounds.max_term_nodes)
+                        .map(|stats| stats.nodes)
+                })
+                .transpose()?
+                .unwrap_or(0);
+            decision_output(
+                None,
+                None,
+                witness,
+                operations.saturating_add(witness_nodes),
+                witness_nodes,
+            )
+        }
         "union" | "intersection" => {
             let other = request.other.as_ref().ok_or_else(|| {
                 DiscoveryError::InvalidInput(format!(
@@ -2806,6 +2864,9 @@ fn execute_languages(
                 ))
             })?;
             let other = build_automaton(other)?;
+            let other_states = other.states().len() as u64;
+            let other_transitions = other.transitions().len() as u64;
+            let other_finals = other.finals().len() as u64;
             let result = if request.operation == "union" {
                 source.union(&other, &TreeAutomatonLimits::default())
             } else {
@@ -2814,19 +2875,50 @@ fn execute_languages(
             .map_err(|error| {
                 DiscoveryError::InvalidInput(format!("{}: {error}", request.operation))
             })?;
-            certificate_output(&result)
+            // Union concatenates transitions and enumerates the final
+            // product; intersection pairs compatible transitions and
+            // enumerates the final product (saturating).
+            let operations = if request.operation == "union" {
+                source_transitions
+                    .saturating_add(other_transitions)
+                    .saturating_add(source_finals.saturating_mul(other_finals))
+            } else {
+                source_transitions
+                    .saturating_mul(other_transitions)
+                    .saturating_add(source_finals.saturating_mul(other_finals))
+            };
+            let _ = other_states;
+            certificate_output(&result, operations)
         }
         "determinize" => {
             let result = source
                 .determinize(&TreeAutomatonLimits::default())
                 .map_err(|error| DiscoveryError::InvalidInput(format!("determinize: {error}")))?;
-            certificate_output(&result)
+            // Each registered macro-state evaluates at most
+            // `arity_charge_bound` tuples; seeding scans the source
+            // transitions once (saturating).
+            let operations = (result.states().len() as u64)
+                .saturating_mul(arity_charge_bound(&source, source_states))
+                .saturating_add(source_transitions);
+            certificate_output(&result, operations)
         }
         "minimize" => {
             let result = source
                 .minimized()
                 .map_err(|error| DiscoveryError::InvalidInput(format!("minimize: {error}")))?;
-            certificate_output(&result)
+            // Minimization requires deterministic input, then trims,
+            // completes (at most one sink state and one transition per
+            // state-symbol pair), and refines for at most `states`
+            // rounds that each scan the transitions (saturating).
+            let completed_states = source_states.saturating_add(1);
+            let completed_transitions = source_transitions
+                .saturating_add(completed_states.saturating_mul(source.alphabet().len() as u64));
+            let operations = completed_states
+                .max(1)
+                .saturating_mul(completed_transitions)
+                .saturating_add(completed_transitions)
+                .saturating_add(completed_states);
+            certificate_output(&result, operations)
         }
         other => {
             return Err(DiscoveryError::InvalidInput(format!(
@@ -2835,10 +2927,11 @@ fn execute_languages(
         }
     };
     let bytes = validate_encoded_output(&output, bounds)?;
+    let _ = bytes;
     Ok(AdapterOutput {
         resources: ResourceObservations {
-            operations: bytes,
-            nodes: 0,
+            operations,
+            nodes,
             iterations: 1,
             bytes: 0,
         },
