@@ -92,9 +92,8 @@ fn catalog_descriptors_cover_both_inverse_search_probes() {
         .collect();
     assert!(ids.iter().any(|id| id == BACKWARD));
     assert!(ids.iter().any(|id| id == BIDIRECTIONAL));
-    // Descriptor count is locked: the two new probes extend the
-    // existing seventeen.
-    assert_eq!(ids.len(), 19);
+    // Descriptor count is locked: Task 22 extended the set again.
+    assert_eq!(ids.len(), 20);
 }
 
 #[test]
