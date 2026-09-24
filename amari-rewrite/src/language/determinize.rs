@@ -11,7 +11,7 @@ use alloc::vec::Vec;
 use crate::error::{RewriteError, RewriteResult};
 use crate::language::automaton::TreeAutomaton;
 use crate::language::{TreeAutomatonLimits, TreeState, TreeTransition};
-use crate::relation::RelationLimits;
+use crate::relation::{RelationLimits, RelationResources};
 use crate::trs::Symbol;
 
 /// Hard exploration ceiling for the subset construction (design
@@ -70,6 +70,20 @@ impl TreeAutomaton {
     /// every tuple evaluation is charged to the workspace operation
     /// budget, and the result must satisfy the caller's limits.
     pub fn determinize(&self, limits: &TreeAutomatonLimits) -> RewriteResult<TreeAutomaton> {
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        self.determinize_with_resources(limits, &mut resources)
+    }
+
+    /// [`Self::determinize`] under a caller-supplied operation
+    /// budget: one operation is charged per odometer step (each
+    /// registering macro-state m walks (m+1)^arity steps per
+    /// non-nullary symbol) plus one per source transition examined
+    /// for every qualifying tuple.
+    pub fn determinize_with_resources(
+        &self,
+        limits: &TreeAutomatonLimits,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<TreeAutomaton> {
         let state_index: BTreeMap<&TreeState, usize> = self
             .states()
             .iter()
@@ -87,7 +101,6 @@ impl TreeAutomaton {
         let mut macros: Vec<BTreeSet<usize>> = Vec::new();
         let mut macro_index: BTreeMap<BTreeSet<usize>, usize> = BTreeMap::new();
         let mut out: Vec<(Symbol, Vec<usize>, usize)> = Vec::new();
-        let mut budget = RelationBudget::new();
         let register = |macros: &mut Vec<BTreeSet<usize>>,
                         macro_index: &mut BTreeMap<BTreeSet<usize>, usize>,
                         set: BTreeSet<usize>|
@@ -142,12 +155,16 @@ impl TreeAutomaton {
                 // step is charged to the operation budget.
                 let mut odometer = alloc::vec![0usize; arity];
                 loop {
-                    budget.charge()?;
+                    resources.record_operations(1)?;
                     let components = &odometer;
                     let contains_m = components.contains(&m);
                     let max_component = components.iter().copied().max().unwrap_or(0);
                     if contains_m && max_component == m {
                         let mut target: BTreeSet<usize> = BTreeSet::new();
+                        let scanned = by_symbol
+                            .get(ranked.symbol())
+                            .map_or(0, |transitions| transitions.len());
+                        resources.record_operations(scanned)?;
                         for transition in by_symbol.get(ranked.symbol()).into_iter().flatten() {
                             if transition
                                 .children()
@@ -240,6 +257,17 @@ impl TreeAutomaton {
     /// that would exceed the transition ceiling is a typed
     /// `InvalidLimit`, never a partial completion.
     pub fn completed(&self) -> RewriteResult<TreeAutomaton> {
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        self.completed_with_resources(&mut resources)
+    }
+
+    /// [`Self::completed`] under a caller-supplied operation budget:
+    /// one operation is charged per odometer step (one per state
+    /// tuple per symbol).
+    pub fn completed_with_resources(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<TreeAutomaton> {
         if !self.is_deterministic() {
             return Err(RewriteError::MalformedAutomaton {
                 message: "completion requires a deterministic automaton".into(),
@@ -284,7 +312,6 @@ impl TreeAutomaton {
             .map(|t| (t.symbol().clone(), t.children().to_vec()))
             .collect();
         let mut transitions = self.transitions().to_vec();
-        let mut budget = RelationBudget::new();
         for ranked in self.alphabet() {
             let arity = usize::from(ranked.arity());
             let mut odometer = alloc::vec![0usize; arity];
@@ -293,7 +320,7 @@ impl TreeAutomaton {
                     .iter()
                     .map(|index| states[*index].clone())
                     .collect();
-                budget.charge()?;
+                resources.record_operations(1)?;
                 if !covered.contains(&(ranked.symbol().clone(), tuple.clone())) {
                     transitions.push(TreeTransition::new(
                         ranked.symbol().clone(),
@@ -357,29 +384,5 @@ impl TreeAutomaton {
             complement,
             *self.limits(),
         )
-    }
-}
-
-/// Workspace operation budget for deterministic-language scans.
-struct RelationBudget {
-    remaining: usize,
-}
-
-impl RelationBudget {
-    fn new() -> Self {
-        Self {
-            remaining: RelationLimits::MAX_OPERATIONS,
-        }
-    }
-
-    fn charge(&mut self) -> RewriteResult<()> {
-        if self.remaining == 0 {
-            return Err(RewriteError::RelationLimitExceeded {
-                resource: "operations",
-                limit: RelationLimits::MAX_OPERATIONS,
-            });
-        }
-        self.remaining -= 1;
-        Ok(())
     }
 }

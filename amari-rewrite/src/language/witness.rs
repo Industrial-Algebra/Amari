@@ -29,7 +29,7 @@ use core::cmp::Ordering;
 
 use crate::error::{RewriteError, RewriteResult};
 use crate::language::automaton::TreeAutomaton;
-use crate::relation::RelationLimits;
+use crate::relation::{RelationLimits, RelationResources};
 use crate::trs::Term;
 
 /// Costs at or above this value cannot be materialized within the
@@ -64,8 +64,35 @@ impl TreeAutomaton {
     /// exceeds the fixed term node/depth ceilings: the language is
     /// nonempty, but its canonical smallest member cannot be
     /// represented within the authority.
+    /// [`Self::witness_with_resources`] under the default workspace
+    /// operation budget.
     pub fn witness(&self) -> RewriteResult<Option<Term>> {
-        let best = self.best_derivations();
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        self.witness_with_resources(&mut resources)
+    }
+
+    /// The smallest accepted ground term: fewest nodes first, ties
+    /// broken by the shared canonical term bytes. Deterministic —
+    /// repeated calls and canonically equal automata return
+    /// identical terms. `None` exactly when the language is empty.
+    ///
+    /// Work is charged to the caller-supplied budget: one operation
+    /// per transition evaluation in every fixpoint round, plus one
+    /// per state per canonical tie-break comparison (the comparison
+    /// traverses derivations whose size is bounded by the state
+    /// count). An exhausted budget is a typed
+    /// [`RewriteError::RelationLimitExceeded`], so callers can
+    /// enforce their own ceilings during execution.
+    ///
+    /// Returns a typed limit error when the smallest witness itself
+    /// exceeds the fixed term node/depth ceilings: the language is
+    /// nonempty, but its canonical smallest member cannot be
+    /// represented within the authority.
+    pub fn witness_with_resources(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Option<Term>> {
+        let best = self.best_derivations(resources)?;
         let finals: Vec<usize> = self
             .finals()
             .iter()
@@ -169,7 +196,10 @@ impl TreeAutomaton {
     /// `(cost, canonical form)`, and oversized candidates only fill
     /// empty slots, so termination is guaranteed and every exact
     /// backpointer graph is acyclic.
-    fn best_derivations(&self) -> Vec<Option<BestDerivation>> {
+    fn best_derivations(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Vec<Option<BestDerivation>>> {
         let mut best: Vec<Option<BestDerivation>> = alloc::vec![None; self.states().len()];
         let state_index = |target: &crate::language::TreeState| {
             self.states().iter().position(|state| state == target)
@@ -177,6 +207,7 @@ impl TreeAutomaton {
         loop {
             let mut improved = false;
             for (transition_index, transition) in self.transitions().iter().enumerate() {
+                resources.record_operations(1)?;
                 let mut cost = 1usize;
                 let mut children: Vec<usize> = Vec::with_capacity(transition.children().len());
                 let mut complete = true;
@@ -228,6 +259,11 @@ impl TreeAutomaton {
                     // oversized marker.
                     Some(current) if current.is_oversized() => true,
                     Some(current) => {
+                        if candidate.cost == current.cost {
+                            // The lazy canonical comparator traverses
+                            // derivations bounded by the state count.
+                            resources.record_operations(self.states().len())?;
+                        }
                         candidate.cost < current.cost
                             || (candidate.cost == current.cost
                                 && self.compare_forms_fresh(&best, &candidate, current)
@@ -240,7 +276,7 @@ impl TreeAutomaton {
                 }
             }
             if !improved {
-                return best;
+                return Ok(best);
             }
         }
     }
