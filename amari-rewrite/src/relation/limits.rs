@@ -165,6 +165,20 @@ impl RelationResources {
         Ok(())
     }
 
+    /// An unbounded budget for non-fallible internal callers: counts
+    /// still accumulate, but nothing is ever enforced. Metered
+    /// (budgeted) entry points take a caller-supplied budget instead.
+    pub(crate) fn unbounded() -> Self {
+        Self {
+            max_term_nodes: usize::MAX,
+            max_term_depth: usize::MAX,
+            max_constraints: usize::MAX,
+            max_operations: usize::MAX,
+            constraints: 0,
+            operations: 0,
+        }
+    }
+
     /// Constraints accounted so far.
     pub fn constraints(&self) -> usize {
         self.constraints

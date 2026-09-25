@@ -11,7 +11,7 @@ use alloc::vec::Vec;
 use crate::error::{RewriteError, RewriteResult};
 use crate::language::automaton::TreeAutomaton;
 use crate::language::{TreeState, TreeTransition};
-use crate::relation::RelationLimits;
+use crate::relation::{RelationLimits, RelationResources};
 use crate::trs::Symbol;
 
 impl TreeAutomaton {
@@ -28,17 +28,31 @@ impl TreeAutomaton {
     /// nondeterministic automaton is a typed error (determinize
     /// first).
     pub fn minimized(&self) -> RewriteResult<TreeAutomaton> {
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        self.minimized_with_resources(&mut resources)
+    }
+
+    /// [`Self::minimized`] under a caller-supplied operation budget,
+    /// charged across the whole pipeline: the trim fixpoints (one
+    /// operation per transition examined per round), completion (one
+    /// per state tuple per symbol), refinement (one per child
+    /// position per round), and canonical numbering (one per ready
+    /// transition).
+    pub fn minimized_with_resources(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<TreeAutomaton> {
         if !self.is_deterministic() {
             return Err(RewriteError::MalformedAutomaton {
                 message: "minimization requires a deterministic automaton".into(),
             });
         }
-        let trimmed = self.trimmed()?;
+        let trimmed = self.trimmed_with_resources(resources)?;
         if trimmed.states().is_empty() {
             // The canonical minimal automaton for the empty language.
             return Ok(trimmed);
         }
-        let complete = trimmed.completed()?;
+        let complete = trimmed.completed_with_resources(resources)?;
         let n = complete.states().len();
         let state_index: BTreeMap<&TreeState, usize> = complete
             .states()
@@ -82,13 +96,12 @@ impl TreeAutomaton {
         // partition is therefore a congruence. (Using sibling BLOCKS
         // here is unsound: the multiset would lose which concrete
         // sibling produced which parent block.)
-        let mut budget = MinimizeBudget::new();
         loop {
             let mut signatures: Vec<Vec<SignatureKey>> = (0..n).map(|_| Vec::new()).collect();
             for (symbol, children, parent) in &indexed {
                 let parent_block = block[*parent];
                 for (position, child) in children.iter().enumerate() {
-                    budget.charge()?;
+                    resources.record_operations(1)?;
                     let siblings: Vec<usize> = children
                         .iter()
                         .enumerate()
@@ -170,7 +183,7 @@ impl TreeAutomaton {
         let mut next = 0usize;
         while let Some((symbol, child_numbers, parent)) = ready.iter().next().cloned() {
             ready.remove(&(symbol, child_numbers, parent));
-            budget.charge()?;
+            resources.record_operations(1)?;
             if number[parent].is_some() {
                 continue;
             }
@@ -237,7 +250,7 @@ impl TreeAutomaton {
         // Final trim: drops the sink. Survivors keep their
         // structural numbers, so re-minimizing reproduces the same
         // names — idempotence does not depend on lexical ordering.
-        quotient_automaton.trimmed()
+        quotient_automaton.trimmed_with_resources(resources)
     }
 }
 
@@ -250,29 +263,4 @@ struct SignatureKey {
     position: usize,
     siblings: Vec<usize>,
     parent_block: usize,
-}
-
-/// Workspace operation budget for refinement rounds and the
-/// structural numbering traversal.
-struct MinimizeBudget {
-    remaining: usize,
-}
-
-impl MinimizeBudget {
-    fn new() -> Self {
-        Self {
-            remaining: RelationLimits::MAX_OPERATIONS,
-        }
-    }
-
-    fn charge(&mut self) -> RewriteResult<()> {
-        if self.remaining == 0 {
-            return Err(RewriteError::RelationLimitExceeded {
-                resource: "operations",
-                limit: RelationLimits::MAX_OPERATIONS,
-            });
-        }
-        self.remaining -= 1;
-        Ok(())
-    }
 }

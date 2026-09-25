@@ -11,8 +11,10 @@ use amari_rewrite::{
         RankedSymbol, RegularTreeGrammar, TreeAutomaton, TreeAutomatonLimits, TreeState,
         TreeTransition,
     },
+    relation::{RelationLimits, RelationResources},
     synthesis::infer_rule,
     trs::{match_pattern, Rule, Term, TermSystem},
+    RewriteError,
 };
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "standard-probes")]
@@ -2708,23 +2710,6 @@ fn automaton_certificate(automaton: &TreeAutomaton) -> (String, u64, u64) {
 }
 
 #[cfg(feature = "standard-probes")]
-fn determinize_charge(automaton: &TreeAutomaton, discovered: u64) -> u64 {
-    // Exact subset-construction charge: when macro-state m (0-indexed)
-    // registers, the odometer walks (m+1)^arity steps per non-nullary
-    // symbol and every step is charged. Discovered macro-states can
-    // outnumber the source states, so the charge is indexed by the
-    // RESULT state count, not the input's (saturating).
-    let mut total = 0u64;
-    for symbol in automaton.alphabet().iter().filter(|s| s.arity() >= 1) {
-        let arity = u32::from(symbol.arity());
-        for m in 1..=discovered {
-            total = total.saturating_add(m.saturating_pow(arity));
-        }
-    }
-    total
-}
-
-#[cfg(feature = "standard-probes")]
 fn validate_grammar_derived_names(automaton: &TreeAutomaton) -> DiscoveryResult<()> {
     // The library grammar checks renderability, not the probe's name
     // ceiling; enforce the same rules on grammar-derived content so
@@ -2736,6 +2721,39 @@ fn validate_grammar_derived_names(automaton: &TreeAutomaton) -> DiscoveryResult<
         validate_name(state.name().as_str())?;
     }
     Ok(())
+}
+
+#[cfg(feature = "standard-probes")]
+fn language_resources(limits: &EffectiveProbeLimits) -> DiscoveryResult<RelationResources> {
+    // Build the library budget from the caller-tightened engine
+    // limits, clamped into the library's ceiling profile. Operations
+    // then run under budget enforcement DURING execution, and the
+    // probe reports the library's actual charge counts.
+    fn clamp(value: u64, ceiling: usize) -> usize {
+        usize::try_from(value)
+            .unwrap_or(usize::MAX)
+            .clamp(1, ceiling)
+    }
+    let relation_limits = RelationLimits::new(
+        clamp(limits.max_nodes, RelationLimits::MAX_TERM_NODES),
+        RelationLimits::MAX_TERM_DEPTH,
+        RelationLimits::MAX_CONSTRAINTS,
+        clamp(limits.max_operations, RelationLimits::MAX_OPERATIONS),
+    )
+    .map_err(|error| DiscoveryError::InvalidInput(format!("probe limit profile: {error}")))?;
+    Ok(RelationResources::new(&relation_limits))
+}
+
+#[cfg(feature = "standard-probes")]
+fn language_error(operation: &str, error: RewriteError) -> DiscoveryError {
+    // Resource conditions stay limit errors (exit 7); malformed or
+    // out-of-domain inputs remain invalid-input (exit 2).
+    match error {
+        RewriteError::RelationLimitExceeded { .. } | RewriteError::InvalidLimit { .. } => {
+            DiscoveryError::LimitExceeded(format!("{operation}: {error}"))
+        }
+        other => DiscoveryError::InvalidInput(format!("{operation}: {other}")),
+    }
 }
 
 #[cfg(feature = "standard-probes")]
@@ -2761,12 +2779,32 @@ fn execute_languages(
                 )));
             }
             let automaton = RegularTreeGrammar::parse(grammar, &TreeAutomatonLimits::default())
-                .map_err(|error| DiscoveryError::InvalidInput(format!("grammar: {error}")))?
+                .map_err(|error| language_error("grammar", error))?
                 .to_automaton()
-                .map_err(|error| {
-                    DiscoveryError::InvalidInput(format!("grammar conversion: {error}"))
-                })?;
+                .map_err(|error| language_error("grammar conversion", error))?;
             validate_grammar_derived_names(&automaton)?;
+            // The wire contract's automaton bounds apply to the
+            // CONVERTED automaton as well: grammar text is compact
+            // enough to declare far more states than the DTO path
+            // admits.
+            if automaton.states().len() > MAX_AUTOMATON_STATES {
+                return Err(DiscoveryError::InvalidInput(format!(
+                    "grammar-derived automaton declares {} states; the probe ceiling is {MAX_AUTOMATON_STATES}",
+                    automaton.states().len()
+                )));
+            }
+            if automaton.transitions().len() > MAX_AUTOMATON_TRANSITIONS {
+                return Err(DiscoveryError::InvalidInput(format!(
+                    "grammar-derived automaton declares {} transitions; the probe ceiling is {MAX_AUTOMATON_TRANSITIONS}",
+                    automaton.transitions().len()
+                )));
+            }
+            if automaton.alphabet().len() > MAX_AUTOMATON_ALPHABET {
+                return Err(DiscoveryError::InvalidInput(format!(
+                    "grammar-derived automaton declares {} symbols; the probe ceiling is {MAX_AUTOMATON_ALPHABET}",
+                    automaton.alphabet().len()
+                )));
+            }
             automaton
         }
         (Some(_), Some(_)) => {
@@ -2781,8 +2819,6 @@ fn execute_languages(
         }
     };
     let source_states = source.states().len() as u64;
-    let source_transitions = source.transitions().len() as u64;
-    let source_finals = source.finals().len() as u64;
     let certificate_output = |automaton: &TreeAutomaton, operations: u64| {
         let (hash, states, transitions) = automaton_certificate(automaton);
         (
@@ -2825,26 +2861,39 @@ fn execute_languages(
             let stats = term_stats(term, bounds.max_term_depth, bounds.max_term_nodes)?;
             let term_nodes = stats.nodes;
             let term = term.to_term()?;
+            let mut resources = language_resources(limits)?;
             let accepted = source
-                .accepts(&term)
-                .map_err(|error| DiscoveryError::InvalidInput(format!("membership: {error}")))?;
+                .accepts_with_resources(&term, &mut resources)
+                .map_err(|error| language_error("membership", error))?;
             // accepting_run charges one operation per transition at
-            // every term node.
-            let operations = term_nodes.saturating_mul(source_transitions);
-            decision_output(Some(accepted), None, None, operations, term_nodes)
+            // every term node; the reported count is the library's
+            // own.
+            decision_output(
+                Some(accepted),
+                None,
+                None,
+                resources.operations() as u64,
+                term_nodes,
+            )
         }
         "emptiness" => {
-            // The witness fixpoint scans every transition in each of
-            // at most `states` rounds.
-            let operations = source_transitions.saturating_mul(source_states.max(1));
-            let empty = source.language_is_empty();
-            decision_output(None, Some(empty), None, operations, source_states)
+            let mut resources = language_resources(limits)?;
+            let empty = source
+                .language_is_empty_with_resources(&mut resources)
+                .map_err(|error| language_error("emptiness", error))?;
+            decision_output(
+                None,
+                Some(empty),
+                None,
+                resources.operations() as u64,
+                source_states,
+            )
         }
         "witness" => {
-            let operations = source_transitions.saturating_mul(source_states.max(1));
+            let mut resources = language_resources(limits)?;
             let witness = source
-                .witness()
-                .map_err(|error| DiscoveryError::InvalidInput(format!("witness: {error}")))?
+                .witness_with_resources(&mut resources)
+                .map_err(|error| language_error("witness", error))?
                 .map(|term| RewriteTerm::from_term(&term));
             let witness_nodes = witness
                 .as_ref()
@@ -2858,7 +2907,7 @@ fn execute_languages(
                 None,
                 None,
                 witness,
-                operations.saturating_add(witness_nodes),
+                (resources.operations() as u64).saturating_add(witness_nodes),
                 witness_nodes,
             )
         }
@@ -2870,73 +2919,32 @@ fn execute_languages(
                 ))
             })?;
             let other = build_automaton(other)?;
-            let other_states = other.states().len() as u64;
-            let other_transitions = other.transitions().len() as u64;
-            let other_finals = other.finals().len() as u64;
+            let mut resources = language_resources(limits)?;
             let result = if request.operation == "union" {
-                source.union(&other, &TreeAutomatonLimits::default())
+                source.union_with_resources(&other, &TreeAutomatonLimits::default(), &mut resources)
             } else {
-                source.intersection(&other, &TreeAutomatonLimits::default())
+                source.intersection_with_resources(
+                    &other,
+                    &TreeAutomatonLimits::default(),
+                    &mut resources,
+                )
             }
-            .map_err(|error| {
-                DiscoveryError::InvalidInput(format!("{}: {error}", request.operation))
-            })?;
-            // Union concatenates transitions and enumerates the final
-            // product; intersection pairs compatible transitions and
-            // enumerates the final product (saturating).
-            let operations = if request.operation == "union" {
-                source_transitions
-                    .saturating_add(other_transitions)
-                    .saturating_add(source_finals.saturating_mul(other_finals))
-            } else {
-                source_transitions
-                    .saturating_mul(other_transitions)
-                    .saturating_add(source_finals.saturating_mul(other_finals))
-            };
-            let _ = other_states;
-            certificate_output(&result, operations)
+            .map_err(|error| language_error(&request.operation, error))?;
+            certificate_output(&result, resources.operations() as u64)
         }
         "determinize" => {
+            let mut resources = language_resources(limits)?;
             let result = source
-                .determinize(&TreeAutomatonLimits::default())
-                .map_err(|error| DiscoveryError::InvalidInput(format!("determinize: {error}")))?;
-            // Exact odometer-step charge over the registered
-            // macro-states (seeding is uncharged).
-            let operations = determinize_charge(&source, result.states().len() as u64);
-            certificate_output(&result, operations)
+                .determinize_with_resources(&TreeAutomatonLimits::default(), &mut resources)
+                .map_err(|error| language_error("determinize", error))?;
+            certificate_output(&result, resources.operations() as u64)
         }
         "minimize" => {
+            let mut resources = language_resources(limits)?;
             let result = source
-                .minimized()
-                .map_err(|error| DiscoveryError::InvalidInput(format!("minimize: {error}")))?;
-            // Minimization requires deterministic input, then trims,
-            // completes, refines, and canonically numbers the result:
-            // - completion charges one odometer step per state TUPLE
-            //   per symbol: sum over symbols of states^arity (the sink
-            //   adds one state);
-            // - refinement charges once per child position per round,
-            //   with at most `states` rounds;
-            // - canonical numbering charges at most once per
-            //   transition.
-            // All saturating.
-            let completed_states = source_states.saturating_add(1).max(1);
-            let completion = source.alphabet().iter().fold(0u64, |total, symbol| {
-                total.saturating_add(completed_states.saturating_pow(u32::from(symbol.arity())))
-            });
-            let completed_transitions = source_transitions.saturating_add(completion);
-            let max_arity = source
-                .alphabet()
-                .iter()
-                .map(|symbol| u64::from(symbol.arity()))
-                .max()
-                .unwrap_or(0);
-            let refinement = completed_states
-                .saturating_mul(max_arity)
-                .saturating_mul(completed_transitions);
-            let operations = completion
-                .saturating_add(refinement)
-                .saturating_add(completed_transitions);
-            certificate_output(&result, operations)
+                .minimized_with_resources(&mut resources)
+                .map_err(|error| language_error("minimize", error))?;
+            certificate_output(&result, resources.operations() as u64)
         }
         other => {
             return Err(DiscoveryError::InvalidInput(format!(
