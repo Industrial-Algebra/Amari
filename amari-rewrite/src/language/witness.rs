@@ -64,10 +64,12 @@ impl TreeAutomaton {
     /// exceeds the fixed term node/depth ceilings: the language is
     /// nonempty, but its canonical smallest member cannot be
     /// represented within the authority.
-    /// [`Self::witness_with_resources`] under the default workspace
-    /// operation budget.
+    ///
+    /// The unmetered entry point retains an unbounded operation
+    /// workspace (matching its pre-instrumentation behavior); the
+    /// budgeted variant is [`Self::witness_with_resources`].
     pub fn witness(&self) -> RewriteResult<Option<Term>> {
-        let mut resources = RelationResources::new(&RelationLimits::default());
+        let mut resources = RelationResources::unbounded();
         self.witness_with_resources(&mut resources)
     }
 
@@ -78,9 +80,9 @@ impl TreeAutomaton {
     ///
     /// Work is charged to the caller-supplied budget: one operation
     /// per transition evaluation in every fixpoint round, plus one
-    /// per state per canonical tie-break comparison (the comparison
-    /// traverses derivations whose size is bounded by the state
-    /// count). An exhausted budget is a typed
+    /// per state per canonical tie-break comparison, in the fixpoint
+    /// AND in final-state selection (each comparison traverses
+    /// derivations whose size is bounded by the state count). An exhausted budget is a typed
     /// [`RewriteError::RelationLimitExceeded`], so callers can
     /// enforce their own ceilings during execution.
     ///
@@ -109,16 +111,31 @@ impl TreeAutomaton {
             .copied()
             .filter(|index| !best[*index].as_ref().expect("present").is_oversized())
             .collect();
-        let Some(chosen) = exact.iter().copied().min_by(|left, right| {
-            let (left_entry, right_entry) = (
-                best[*left].as_ref().expect("present"),
-                best[*right].as_ref().expect("present"),
+        // Fallible selection loop (min_by cannot surface charge
+        // failures): the canonical comparison between equal-cost
+        // finals is charged exactly like a fixpoint tie-break — one
+        // operation per state.
+        let mut chosen: Option<usize> = None;
+        for candidate in exact.iter().copied() {
+            let Some(current) = chosen else {
+                chosen = Some(candidate);
+                continue;
+            };
+            let (candidate_entry, current_entry) = (
+                best[candidate].as_ref().expect("present"),
+                best[current].as_ref().expect("present"),
             );
-            left_entry.cost.cmp(&right_entry.cost).then_with(|| {
+            let mut ordering = candidate_entry.cost.cmp(&current_entry.cost);
+            if ordering == Ordering::Equal {
+                resources.record_operations(self.states().len())?;
                 let mut memo = BTreeMap::new();
-                self.compare_state_pair(&best, *left, *right, &mut memo)
-            })
-        }) else {
+                ordering = self.compare_state_pair(&best, candidate, current, &mut memo);
+            }
+            if ordering == Ordering::Less {
+                chosen = Some(candidate);
+            }
+        }
+        let Some(chosen) = chosen else {
             // Every reachable final is oversized: the language is
             // nonempty but its smallest member exceeds the ceilings.
             return Err(RewriteError::RelationLimitExceeded {

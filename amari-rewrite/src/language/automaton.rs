@@ -317,21 +317,18 @@ impl TreeAutomaton {
         term: &Term,
         resources: &mut RelationResources,
     ) -> RewriteResult<Option<AcceptingRun>> {
-        // Input validation before any search: ground, within the
-        // fixed term ceilings, and inside the operation budget.
-        if !term.variables().is_empty() {
-            return Err(RewriteError::NonGroundTerm {
-                message: "tree automaton membership requires a ground term".into(),
-            });
-        }
-        // Ceiling enforcement BEFORE materializing O(nodes*depth)
-        // path data: a single streaming walk counts nodes and depth
-        // with constant memory and rejects as soon as either fixed
-        // ceiling is crossed (a deep chain would otherwise allocate
-        // quadratic path storage before the check ran).
+        // Groundness, node count, and depth are validated by a
+        // single streaming walk with constant memory BEFORE any
+        // path data materializes. No recursive traversal may precede
+        // the ceilings: `variables()` would overflow the stack on a
+        // deep chain, so groundness is checked inline. Rejection
+        // happens as soon as either fixed ceiling is crossed (a deep
+        // chain would otherwise allocate quadratic path storage
+        // before the check ran). Depth is EDGE-based — a constant
+        // has depth 0 — matching witness extraction.
         let mut node_count = 0usize;
         let mut depth = 0usize;
-        let mut stack = alloc::vec![(term, 1usize)];
+        let mut stack = alloc::vec![(term, 0usize)];
         while let Some((node, level)) = stack.pop() {
             node_count += 1;
             if node_count > RelationLimits::MAX_TERM_NODES {
@@ -347,9 +344,16 @@ impl TreeAutomaton {
                     limit: RelationLimits::MAX_TERM_DEPTH,
                 });
             }
-            if let Term::Sym(_, arguments) = node {
-                for argument in arguments {
-                    stack.push((argument, level + 1));
+            match node {
+                Term::Var(_) => {
+                    return Err(RewriteError::NonGroundTerm {
+                        message: "tree automaton membership requires a ground term".into(),
+                    });
+                }
+                Term::Sym(_, arguments) => {
+                    for argument in arguments {
+                        stack.push((argument, level + 1));
+                    }
                 }
             }
         }
