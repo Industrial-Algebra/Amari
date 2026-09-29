@@ -347,3 +347,63 @@ fn unmetered_witness_has_no_operation_budget() {
         Err(RewriteError::RelationLimitExceeded { .. })
     ));
 }
+
+/// Finding 1 (round 3): the validation walk's worklist is bounded
+/// by the DEPTH ceiling, not by input breadth — rejecting a shallow
+/// but over-wide term must not allocate proportionally to its
+/// sibling count. Measured with a max-single-allocation recorder
+/// (robust to parallel test threads): the allowance is twice the
+/// storage of a 4,096-entry (reference, depth) frontier.
+mod allocation {
+    use super::*;
+    use std::alloc::{GlobalAlloc, Layout, System};
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering as AtomicOrdering};
+
+    static COUNTING: AtomicBool = AtomicBool::new(false);
+    static MAX_ALLOC: AtomicUsize = AtomicUsize::new(0);
+
+    struct MaxSingleAlloc;
+
+    unsafe impl GlobalAlloc for MaxSingleAlloc {
+        unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+            let ptr = unsafe { System.alloc(layout) };
+            if COUNTING.load(AtomicOrdering::Relaxed) {
+                MAX_ALLOC.fetch_max(layout.size(), AtomicOrdering::Relaxed);
+            }
+            ptr
+        }
+
+        unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+            unsafe { System.dealloc(ptr, layout) }
+        }
+    }
+
+    #[global_allocator]
+    static GLOBAL: MaxSingleAlloc = MaxSingleAlloc;
+
+    #[test]
+    fn wide_term_rejection_has_depth_bounded_worklist() {
+        // 10,001 nodes, depth 1: constructed BEFORE measurement (its
+        // own child storage is out of scope for the assertion).
+        let wide = Term::sym("f", vec![Term::sym("c", vec![]); 10_000]);
+        let automaton = chain_automaton(2);
+        MAX_ALLOC.store(0, AtomicOrdering::Relaxed);
+        COUNTING.store(true, AtomicOrdering::Relaxed);
+        let result = automaton.accepts(&wide);
+        COUNTING.store(false, AtomicOrdering::Relaxed);
+        let error = result.expect_err("10,001 nodes exceed the ceiling");
+        assert!(matches!(
+            error,
+            RewriteError::RelationLimitExceeded {
+                resource: "term nodes",
+                ..
+            }
+        ));
+        let observed = MAX_ALLOC.load(AtomicOrdering::Relaxed);
+        assert!(
+            observed <= 131_072,
+            "single largest worklist allocation {observed} exceeds twice \
+             a 4,096-entry frontier (131,072 bytes)"
+        );
+    }
+}
