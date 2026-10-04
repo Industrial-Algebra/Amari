@@ -1,9 +1,10 @@
 # ADR 0001: Exact regular preimage scope for tree rewriting
 
-- Status: **Proposed** — second review round (remediated per the
-  first independent review: findings R1–R9 resolved inline; 0.25
-  Task 23 gate — no Task 24–26 implementation may begin until no
-  Critical/Important finding remains).
+- Status: **Accepted** — independent mathematical review round 2
+  returned APPROVE at `6665da0` with zero Critical/Important
+  findings (one nonblocking Minor comment fix applied afterward).
+  The Task 23 gate is PASSED; Tasks 24–26 may proceed within the
+  approved classes below.
 - Date: 2026-09-28 (round 1), remediated 2026-10-04
 - Gate artifacts: `docs/research/rewrite-preimage-closure-matrix.md`
   (matrix, citations, counterexamples), `amari-rewrite/tests/

@@ -215,8 +215,9 @@ fn non_left_linear_one_step_preimage_is_equality_correlated() {
 /// R1 regression: the gate's one-step relation is APPLICATION
 /// rewriting. Under R = {f(x,y) -> f(y,x)} the term f(a,a) has the
 /// identity application (x,y both bound to a), so the application
-/// preimage of {f(a,a)} contains f(a,a) — and exactly the diagonal
-/// pairs, since a swap reaching f(a,a) requires equal children.
+/// preimage of {f(a,a)} contains f(a,a) — in fact it is exactly the
+/// singleton {f(a,a)}, since a swap reaching f(a,a) requires both
+/// children equal to a.
 /// `TermSystem::successors` instead filters identity results and
 /// returns NO successor for f(a,a); the strict one-step preimage of
 /// a universal target on the slice K = {f(g^m(a), g^n(a))} would be
