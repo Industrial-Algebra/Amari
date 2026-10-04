@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "64fff9ee6d5d6afa97a0d0640e4975350028a8425eabf25f5a20928baab499ce",
+  "content_hash": "b621574daf96aeec84c84ace5c960545c73214ca4053921447924c9d1d273052",
   "crates": [
     {
       "name": "amari",
@@ -379021,6 +379021,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::accepting_run_with_resources",
+          "kind": "method",
+          "signature": "pub fn accepting_run_with_resources (& self , term : & Term , resources : & mut RelationResources ,) -> RewriteResult < Option < AcceptingRun > >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn accepting_run_with_resources (& self , term : & Term , resources : & mut RelationResources ,) -> RewriteResult < Option < AcceptingRun > >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::accepting_run_with_resources"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::accepts",
           "kind": "method",
           "signature": "pub fn accepts (& self , term : & Term) -> RewriteResult < bool >",
@@ -379036,6 +379055,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::automaton",
               "declaration_ident": "TreeAutomaton::accepts"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::accepts_with_resources",
+          "kind": "method",
+          "signature": "pub fn accepts_with_resources (& self , term : & Term , resources : & mut RelationResources ,) -> RewriteResult < bool >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn accepts_with_resources (& self , term : & Term , resources : & mut RelationResources ,) -> RewriteResult < bool >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::accepts_with_resources"
             }
           ]
         },
@@ -379116,6 +379154,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::completed_with_resources",
+          "kind": "method",
+          "signature": "pub fn completed_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn completed_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::completed_with_resources"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::determinize",
           "kind": "method",
           "signature": "pub fn determinize (& self , limits : & TreeAutomatonLimits) -> RewriteResult < TreeAutomaton >",
@@ -379131,6 +379188,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::automaton",
               "declaration_ident": "TreeAutomaton::determinize"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::determinize_with_resources",
+          "kind": "method",
+          "signature": "pub fn determinize_with_resources (& self , limits : & TreeAutomatonLimits , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn determinize_with_resources (& self , limits : & TreeAutomatonLimits , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::determinize_with_resources"
             }
           ]
         },
@@ -379169,6 +379245,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::automaton",
               "declaration_ident": "TreeAutomaton::intersection"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::intersection_with_resources",
+          "kind": "method",
+          "signature": "pub fn intersection_with_resources (& self , other : & TreeAutomaton , limits : & TreeAutomatonLimits , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn intersection_with_resources (& self , other : & TreeAutomaton , limits : & TreeAutomatonLimits , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::intersection_with_resources"
             }
           ]
         },
@@ -379230,6 +379325,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::language_is_empty_with_resources",
+          "kind": "method",
+          "signature": "pub fn language_is_empty_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < bool >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn language_is_empty_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < bool >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::language_is_empty_with_resources"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::limits",
           "kind": "method",
           "signature": "pub fn limits (& self) -> & TreeAutomatonLimits",
@@ -379264,6 +379378,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::automaton",
               "declaration_ident": "TreeAutomaton::minimized"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::minimized_with_resources",
+          "kind": "method",
+          "signature": "pub fn minimized_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn minimized_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::minimized_with_resources"
             }
           ]
         },
@@ -379344,6 +379477,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::trimmed_with_resources",
+          "kind": "method",
+          "signature": "pub fn trimmed_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn trimmed_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::trimmed_with_resources"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::union",
           "kind": "method",
           "signature": "pub fn union (& self , other : & TreeAutomaton , limits : & TreeAutomatonLimits ,) -> RewriteResult < TreeAutomaton >",
@@ -379363,6 +379515,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::union_with_resources",
+          "kind": "method",
+          "signature": "pub fn union_with_resources (& self , other : & TreeAutomaton , limits : & TreeAutomatonLimits , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn union_with_resources (& self , other : & TreeAutomaton , limits : & TreeAutomatonLimits , resources : & mut RelationResources ,) -> RewriteResult < TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::union_with_resources"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::witness",
           "kind": "method",
           "signature": "pub fn witness (& self) -> RewriteResult < Option < Term > >",
@@ -379378,6 +379549,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::automaton",
               "declaration_ident": "TreeAutomaton::witness"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::witness_with_resources",
+          "kind": "method",
+          "signature": "pub fn witness_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < Option < Term > >",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::automaton",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn witness_with_resources (& self , resources : & mut RelationResources ,) -> RewriteResult < Option < Term > >",
+              "source_path": "amari-rewrite/src/language/automaton.rs",
+              "source_module": "amari_rewrite::language::automaton",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::automaton",
+              "declaration_ident": "TreeAutomaton::witness_with_resources"
             }
           ]
         },
@@ -394199,7 +394389,15 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::accepting_run",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::accepting_run_with_resources",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 9,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -394208,6 +394406,14 @@
           "path": "amari_rewrite::language::TreeAutomaton::accepts",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::accepts_with_resources",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 7,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -394223,7 +394429,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::canonical_bytes",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 10,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -394245,7 +394451,23 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::completed_with_resources",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::determinize",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::determinize_with_resources",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "source_ordinal": 0,
           "gate": "always",
@@ -394262,6 +394484,14 @@
         },
         {
           "path": "amari_rewrite::language::TreeAutomaton::intersection",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::intersection_with_resources",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "source_ordinal": 0,
           "gate": "always",
@@ -394293,6 +394523,14 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::language_is_empty_with_resources",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::limits",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "source_ordinal": 5,
@@ -394302,6 +394540,14 @@
         },
         {
           "path": "amari_rewrite::language::TreeAutomaton::minimized",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::minimized_with_resources",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "source_ordinal": 0,
           "gate": "always",
@@ -394341,6 +394587,14 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::trimmed_with_resources",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::union",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "source_ordinal": 0,
@@ -394349,7 +394603,23 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::TreeAutomaton::union_with_resources",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::language::TreeAutomaton::witness",
+          "source_path": "amari-rewrite/src/language/automaton.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TreeAutomaton::witness_with_resources",
           "source_path": "amari-rewrite/src/language/automaton.rs",
           "source_ordinal": 0,
           "gate": "always",
@@ -395519,7 +395789,7 @@
         {
           "path": "amari_rewrite::relation::RelationResources::constraints",
           "source_path": "amari-rewrite/src/relation/limits.rs",
-          "source_ordinal": 4,
+          "source_ordinal": 5,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -395535,7 +395805,7 @@
         {
           "path": "amari_rewrite::relation::RelationResources::operations",
           "source_path": "amari-rewrite/src/relation/limits.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"

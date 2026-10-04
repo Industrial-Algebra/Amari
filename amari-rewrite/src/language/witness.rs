@@ -29,7 +29,7 @@ use core::cmp::Ordering;
 
 use crate::error::{RewriteError, RewriteResult};
 use crate::language::automaton::TreeAutomaton;
-use crate::relation::RelationLimits;
+use crate::relation::{RelationLimits, RelationResources};
 use crate::trs::Term;
 
 /// Costs at or above this value cannot be materialized within the
@@ -64,8 +64,37 @@ impl TreeAutomaton {
     /// exceeds the fixed term node/depth ceilings: the language is
     /// nonempty, but its canonical smallest member cannot be
     /// represented within the authority.
+    ///
+    /// The unmetered entry point retains an unbounded operation
+    /// workspace (matching its pre-instrumentation behavior); the
+    /// budgeted variant is [`Self::witness_with_resources`].
     pub fn witness(&self) -> RewriteResult<Option<Term>> {
-        let best = self.best_derivations();
+        let mut resources = RelationResources::unbounded();
+        self.witness_with_resources(&mut resources)
+    }
+
+    /// The smallest accepted ground term: fewest nodes first, ties
+    /// broken by the shared canonical term bytes. Deterministic —
+    /// repeated calls and canonically equal automata return
+    /// identical terms. `None` exactly when the language is empty.
+    ///
+    /// Work is charged to the caller-supplied budget: one operation
+    /// per transition evaluation in every fixpoint round, plus one
+    /// per state per canonical tie-break comparison, in the fixpoint
+    /// AND in final-state selection (each comparison traverses
+    /// derivations whose size is bounded by the state count). An exhausted budget is a typed
+    /// [`RewriteError::RelationLimitExceeded`], so callers can
+    /// enforce their own ceilings during execution.
+    ///
+    /// Returns a typed limit error when the smallest witness itself
+    /// exceeds the fixed term node/depth ceilings: the language is
+    /// nonempty, but its canonical smallest member cannot be
+    /// represented within the authority.
+    pub fn witness_with_resources(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Option<Term>> {
+        let best = self.best_derivations(resources)?;
         let finals: Vec<usize> = self
             .finals()
             .iter()
@@ -82,16 +111,31 @@ impl TreeAutomaton {
             .copied()
             .filter(|index| !best[*index].as_ref().expect("present").is_oversized())
             .collect();
-        let Some(chosen) = exact.iter().copied().min_by(|left, right| {
-            let (left_entry, right_entry) = (
-                best[*left].as_ref().expect("present"),
-                best[*right].as_ref().expect("present"),
+        // Fallible selection loop (min_by cannot surface charge
+        // failures): the canonical comparison between equal-cost
+        // finals is charged exactly like a fixpoint tie-break — one
+        // operation per state.
+        let mut chosen: Option<usize> = None;
+        for candidate in exact.iter().copied() {
+            let Some(current) = chosen else {
+                chosen = Some(candidate);
+                continue;
+            };
+            let (candidate_entry, current_entry) = (
+                best[candidate].as_ref().expect("present"),
+                best[current].as_ref().expect("present"),
             );
-            left_entry.cost.cmp(&right_entry.cost).then_with(|| {
+            let mut ordering = candidate_entry.cost.cmp(&current_entry.cost);
+            if ordering == Ordering::Equal {
+                resources.record_operations(self.states().len())?;
                 let mut memo = BTreeMap::new();
-                self.compare_state_pair(&best, *left, *right, &mut memo)
-            })
-        }) else {
+                ordering = self.compare_state_pair(&best, candidate, current, &mut memo);
+            }
+            if ordering == Ordering::Less {
+                chosen = Some(candidate);
+            }
+        }
+        let Some(chosen) = chosen else {
             // Every reachable final is oversized: the language is
             // nonempty but its smallest member exceeds the ceilings.
             return Err(RewriteError::RelationLimitExceeded {
@@ -169,7 +213,10 @@ impl TreeAutomaton {
     /// `(cost, canonical form)`, and oversized candidates only fill
     /// empty slots, so termination is guaranteed and every exact
     /// backpointer graph is acyclic.
-    fn best_derivations(&self) -> Vec<Option<BestDerivation>> {
+    fn best_derivations(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Vec<Option<BestDerivation>>> {
         let mut best: Vec<Option<BestDerivation>> = alloc::vec![None; self.states().len()];
         let state_index = |target: &crate::language::TreeState| {
             self.states().iter().position(|state| state == target)
@@ -177,6 +224,7 @@ impl TreeAutomaton {
         loop {
             let mut improved = false;
             for (transition_index, transition) in self.transitions().iter().enumerate() {
+                resources.record_operations(1)?;
                 let mut cost = 1usize;
                 let mut children: Vec<usize> = Vec::with_capacity(transition.children().len());
                 let mut complete = true;
@@ -228,6 +276,11 @@ impl TreeAutomaton {
                     // oversized marker.
                     Some(current) if current.is_oversized() => true,
                     Some(current) => {
+                        if candidate.cost == current.cost {
+                            // The lazy canonical comparator traverses
+                            // derivations bounded by the state count.
+                            resources.record_operations(self.states().len())?;
+                        }
                         candidate.cost < current.cost
                             || (candidate.cost == current.cost
                                 && self.compare_forms_fresh(&best, &candidate, current)
@@ -240,7 +293,7 @@ impl TreeAutomaton {
                 }
             }
             if !improved {
-                return best;
+                return Ok(best);
             }
         }
     }

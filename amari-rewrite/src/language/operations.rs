@@ -10,6 +10,7 @@ use alloc::vec::Vec;
 use crate::error::{RewriteError, RewriteResult};
 use crate::language::automaton::TreeAutomaton;
 use crate::language::{TreeAutomatonLimits, TreeState, TreeTransition};
+use crate::relation::{RelationLimits, RelationResources};
 use crate::trs::Symbol;
 
 impl TreeAutomaton {
@@ -22,6 +23,23 @@ impl TreeAutomaton {
         &self,
         other: &TreeAutomaton,
         limits: &TreeAutomatonLimits,
+    ) -> RewriteResult<TreeAutomaton> {
+        self.require_same_alphabet(other)?;
+        // The unmetered entry point retains an unbounded workspace
+        // (status quo); [`Self::union_with_resources`] is the
+        // budgeted variant.
+        let mut resources = RelationResources::unbounded();
+        self.union_with_resources(other, limits, &mut resources)
+    }
+
+    /// [`Self::union`] under a caller-supplied operation budget: one
+    /// operation is charged per state, transition, and final
+    /// renamed into the disjoint-union product.
+    pub fn union_with_resources(
+        &self,
+        other: &TreeAutomaton,
+        limits: &TreeAutomatonLimits,
+        resources: &mut RelationResources,
     ) -> RewriteResult<TreeAutomaton> {
         self.require_same_alphabet(other)?;
         let total = self.states().len() + other.states().len();
@@ -40,15 +58,26 @@ impl TreeAutomaton {
             Vec::with_capacity(self.transitions().len() + other.transitions().len());
         let mut finals = Vec::with_capacity(self.finals().len() + other.finals().len());
         for (prefix, automaton) in [("L", self), ("R", other)] {
-            states.extend(automaton.states().iter().map(|s| rename(prefix, s)));
-            finals.extend(automaton.finals().iter().map(|s| rename(prefix, s)));
-            transitions.extend(automaton.transitions().iter().map(|t| {
-                TreeTransition::new(
-                    t.symbol().clone(),
-                    t.children().iter().map(|c| rename(prefix, c)).collect(),
-                    rename(prefix, t.parent()),
-                )
-            }));
+            for state in automaton.states() {
+                resources.record_operations(1)?;
+                states.push(rename(prefix, state));
+            }
+            for final_state in automaton.finals() {
+                resources.record_operations(1)?;
+                finals.push(rename(prefix, final_state));
+            }
+            for transition in automaton.transitions() {
+                resources.record_operations(1)?;
+                transitions.push(TreeTransition::new(
+                    transition.symbol().clone(),
+                    transition
+                        .children()
+                        .iter()
+                        .map(|c| rename(prefix, c))
+                        .collect(),
+                    rename(prefix, transition.parent()),
+                ));
+            }
         }
         TreeAutomaton::new(
             self.alphabet().to_vec(),
@@ -71,7 +100,20 @@ impl TreeAutomaton {
         limits: &TreeAutomatonLimits,
     ) -> RewriteResult<TreeAutomaton> {
         self.require_same_alphabet(other)?;
-        let mut resources = RelationBudget::new();
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        self.intersection_with_resources(other, limits, &mut resources)
+    }
+
+    /// [`Self::intersection`] under a caller-supplied operation
+    /// budget: one operation is charged per compatible transition
+    /// pair examined and per final-state pair enumerated.
+    pub fn intersection_with_resources(
+        &self,
+        other: &TreeAutomaton,
+        limits: &TreeAutomatonLimits,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<TreeAutomaton> {
+        self.require_same_alphabet(other)?;
         // Group the right-hand transitions by symbol so only
         // same-symbol pairs are scanned.
         let mut right_by_symbol: BTreeMap<&Symbol, Vec<&TreeTransition>> = BTreeMap::new();
@@ -93,7 +135,7 @@ impl TreeAutomaton {
                 continue;
             };
             for right in candidates {
-                resources.charge()?;
+                resources.record_operations(1)?;
                 // Same alphabet, so same symbol implies same arity.
                 let parent = encode_pair(left.parent(), right.parent());
                 let children: Vec<TreeState> = left
@@ -149,7 +191,7 @@ impl TreeAutomaton {
         let mut finals: Vec<TreeState> = Vec::with_capacity(final_pairs);
         for left_final in self.finals() {
             for right_final in other.finals() {
-                resources.charge()?;
+                resources.record_operations(1)?;
                 finals.push(encode_pair(left_final, right_final));
             }
         }
@@ -185,8 +227,22 @@ impl TreeAutomaton {
     /// language is preserved exactly; the alphabet is retained so
     /// the result stays composable. Idempotent.
     pub fn trimmed(&self) -> RewriteResult<TreeAutomaton> {
-        let reachable = self.reachable_states();
-        let co_reachable = self.co_reachable_states(&reachable);
+        // The unmetered entry point retains an unbounded workspace
+        // (status quo); [`Self::trimmed_with_resources`] is the
+        // budgeted variant.
+        let mut resources = RelationResources::unbounded();
+        self.trimmed_with_resources(&mut resources)
+    }
+
+    /// [`Self::trimmed`] under a caller-supplied operation budget:
+    /// one operation is charged per transition examined in every
+    /// reachability and co-reachability fixpoint round.
+    pub fn trimmed_with_resources(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<TreeAutomaton> {
+        let reachable = self.reachable_states(resources)?;
+        let co_reachable = self.co_reachable_states(&reachable, resources)?;
         let keep: BTreeSet<&TreeState> = self
             .states()
             .iter()
@@ -215,10 +271,24 @@ impl TreeAutomaton {
     }
 
     /// Whether the accepted language is empty: no final state is
-    /// bottom-up reachable.
+    /// bottom-up reachable. This non-fallible convenience runs with
+    /// an unbounded workspace; the budgeted variant is
+    /// [`Self::language_is_empty_with_resources`].
     pub fn language_is_empty(&self) -> bool {
-        let reachable = self.reachable_states();
-        !self.finals().iter().any(|f| reachable.contains(f))
+        let mut resources = RelationResources::unbounded();
+        self.language_is_empty_with_resources(&mut resources)
+            .expect("unbounded resources never exhaust")
+    }
+
+    /// [`Self::language_is_empty`] under a caller-supplied operation
+    /// budget: one operation is charged per transition examined in
+    /// every reachability fixpoint round.
+    pub fn language_is_empty_with_resources(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<bool> {
+        let reachable = self.reachable_states(resources)?;
+        Ok(!self.finals().iter().any(|f| reachable.contains(f)))
     }
 
     fn require_same_alphabet(&self, other: &TreeAutomaton) -> RewriteResult<()> {
@@ -233,11 +303,15 @@ impl TreeAutomaton {
     }
 
     /// States reachable by some bottom-up run (from constants).
-    pub(crate) fn reachable_states(&self) -> BTreeSet<TreeState> {
+    pub(crate) fn reachable_states(
+        &self,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<BTreeSet<TreeState>> {
         let mut reachable: BTreeSet<TreeState> = BTreeSet::new();
         loop {
             let mut grew = false;
             for transition in self.transitions() {
+                resources.record_operations(1)?;
                 if reachable.contains(transition.parent()) {
                     continue;
                 }
@@ -247,7 +321,7 @@ impl TreeAutomaton {
                 }
             }
             if !grew {
-                return reachable;
+                return Ok(reachable);
             }
         }
     }
@@ -259,11 +333,16 @@ impl TreeAutomaton {
     /// contributes nothing, and without this restriction the first
     /// trim kept states the second pass removed (idempotence
     /// violation).
-    fn co_reachable_states(&self, reachable: &BTreeSet<TreeState>) -> BTreeSet<TreeState> {
+    fn co_reachable_states(
+        &self,
+        reachable: &BTreeSet<TreeState>,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<BTreeSet<TreeState>> {
         let mut co_reachable: BTreeSet<TreeState> = self.finals().iter().cloned().collect();
         loop {
             let mut grew = false;
             for transition in self.transitions() {
+                resources.record_operations(1)?;
                 if co_reachable.contains(transition.parent())
                     && transition
                         .children()
@@ -278,33 +357,8 @@ impl TreeAutomaton {
                 }
             }
             if !grew {
-                return co_reachable;
+                return Ok(co_reachable);
             }
         }
-    }
-}
-
-/// Fixed operation budget for language construction scans (the
-/// workspace operations ceiling).
-struct RelationBudget {
-    remaining: usize,
-}
-
-impl RelationBudget {
-    fn new() -> Self {
-        Self {
-            remaining: crate::relation::RelationLimits::MAX_OPERATIONS,
-        }
-    }
-
-    fn charge(&mut self) -> RewriteResult<()> {
-        if self.remaining == 0 {
-            return Err(RewriteError::RelationLimitExceeded {
-                resource: "operations",
-                limit: crate::relation::RelationLimits::MAX_OPERATIONS,
-            });
-        }
-        self.remaining -= 1;
-        Ok(())
     }
 }

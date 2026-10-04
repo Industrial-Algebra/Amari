@@ -288,38 +288,95 @@ impl TreeAutomaton {
         Ok(self.accepting_run(term)?.is_some())
     }
 
+    /// `accepts` under a caller-supplied operation budget: one
+    /// operation is charged per transition examined at every term
+    /// node, and the caller's term node/depth limits are enforced
+    /// before any path data is materialized.
+    pub fn accepts_with_resources(
+        &self,
+        term: &Term,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<bool> {
+        Ok(self
+            .accepting_run_with_resources(term, resources)?
+            .is_some())
+    }
+
     /// An accepting run for the ground term, if one exists. The run
     /// is deterministic: among all valid runs, the lexicographically
     /// smallest state assignment is returned.
     pub fn accepting_run(&self, term: &Term) -> RewriteResult<Option<AcceptingRun>> {
-        // Input validation before any search: ground, within the
-        // fixed term ceilings, and inside the operation budget.
-        if !term.variables().is_empty() {
-            return Err(RewriteError::NonGroundTerm {
-                message: "tree automaton membership requires a ground term".into(),
-            });
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        self.accepting_run_with_resources(term, &mut resources)
+    }
+
+    /// `accepting_run` under a caller-supplied operation budget (see
+    /// [`Self::accepts_with_resources`] for the charge model).
+    pub fn accepting_run_with_resources(
+        &self,
+        term: &Term,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Option<AcceptingRun>> {
+        // Groundness, node count, and depth are validated by a
+        // single streaming walk BEFORE any path data materializes.
+        // No recursive traversal may precede the ceilings
+        // (`variables()` would overflow the stack on a deep chain),
+        // so groundness is checked inline, and rejection happens as
+        // soon as either fixed ceiling is crossed. The worklist
+        // holds one iterator frame per ANCESTOR on the current path,
+        // so its size is bounded by the depth ceiling — never by
+        // input breadth (enqueueing every child at once would
+        // allocate proportionally to the widest sibling list before
+        // the next node check). Depth is EDGE-based — a constant
+        // has depth 0 — matching witness extraction.
+        let mut node_count = 0usize;
+        let mut depth = 0usize;
+        let mut frames: alloc::vec::Vec<(usize, core::slice::Iter<'_, Term>)> =
+            alloc::vec::Vec::new();
+        let mut current = Some((term, 0usize));
+        while let Some((node, level)) = current.take() {
+            node_count += 1;
+            if node_count > RelationLimits::MAX_TERM_NODES {
+                return Err(RewriteError::RelationLimitExceeded {
+                    resource: "term nodes",
+                    limit: RelationLimits::MAX_TERM_NODES,
+                });
+            }
+            depth = depth.max(level);
+            if depth > RelationLimits::MAX_TERM_DEPTH {
+                return Err(RewriteError::RelationLimitExceeded {
+                    resource: "term depth",
+                    limit: RelationLimits::MAX_TERM_DEPTH,
+                });
+            }
+            match node {
+                Term::Var(_) => {
+                    return Err(RewriteError::NonGroundTerm {
+                        message: "tree automaton membership requires a ground term".into(),
+                    });
+                }
+                Term::Sym(_, arguments) => frames.push((level, arguments.iter())),
+            }
+            current = loop {
+                let Some((parent_level, remaining)) = frames.last_mut() else {
+                    break None;
+                };
+                match remaining.next() {
+                    Some(child) => break Some((child, *parent_level + 1)),
+                    None => {
+                        frames.pop();
+                    }
+                }
+            };
         }
+        // Caller-tightened term budgets are enforced before the path
+        // materialization as well.
+        resources.record_term(node_count, depth)?;
         let position_paths = term.positions();
         let positions: Vec<Vec<usize>> = position_paths
             .iter()
             .map(|path| path.as_slice().to_vec())
             .collect();
-        let node_count = positions.len();
-        if node_count > RelationLimits::MAX_TERM_NODES {
-            return Err(RewriteError::RelationLimitExceeded {
-                resource: "term nodes",
-                limit: RelationLimits::MAX_TERM_NODES,
-            });
-        }
-        let depth = positions.iter().map(Vec::len).max().unwrap_or(0);
-        if depth > RelationLimits::MAX_TERM_DEPTH {
-            return Err(RewriteError::RelationLimitExceeded {
-                resource: "term depth",
-                limit: RelationLimits::MAX_TERM_DEPTH,
-            });
-        }
-        let mut resources = RelationResources::new(&RelationLimits::default());
-        resources.record_term(node_count, depth)?;
         let path_index: alloc::collections::BTreeMap<&[usize], usize> = positions
             .iter()
             .enumerate()

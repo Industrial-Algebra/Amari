@@ -492,3 +492,94 @@ fn minimize_charges_completion_tuples_and_child_positions() {
         "unexpected error: {error}"
     );
 }
+
+// ---- Cohort 4 closeout review regressions (remediation branch)
+
+/// Finding 2: the grammar source path enforces the same 64-state /
+/// 256-transition / 64-symbol ceilings as the automaton DTO path.
+#[test]
+fn grammar_source_respects_automaton_ceilings() {
+    let nonterminals: Vec<String> = (0..70).map(|index| format!("N{index}")).collect();
+    let mut grammar = format!(
+        "amari-tree-grammar/v1\nnonterminals: {}\nstart: N0\n",
+        nonterminals.join(" ")
+    );
+    for index in 0..70 {
+        grammar.push_str(&format!("N{index} -> c{index}\n"));
+    }
+    let error = ProbeEngine::new()
+        .unwrap()
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "witness", "grammar": grammar}),
+        )
+        .expect_err("70 grammar states exceed the 64-state probe ceiling");
+    assert!(
+        error.to_string().contains("64"),
+        "unexpected error: {error}"
+    );
+}
+
+/// Finding 3: emptiness work is metered by the library and enforced
+/// during execution — the reverse-ordered 2-state chain costs 6
+/// fixpoint transition evaluations, so a budget of 5 fails.
+#[test]
+fn emptiness_enforces_budget_during_execution() {
+    let chain = json!({
+        "alphabet": [{"name": "z", "arity": 0}, {"name": "a", "arity": 1}],
+        "states": ["s0", "s1"],
+        "transitions": [
+            {"symbol": "z", "children": [], "parent": "s0"},
+            {"symbol": "a", "children": ["s0"], "parent": "s1"}
+        ],
+        "finals": ["s1"]
+    });
+    // Default budget: the exact library count is reported.
+    let engine = ProbeEngine::new().unwrap();
+    let execution = engine
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "emptiness", "automaton": chain}),
+        )
+        .expect("emptiness under default budget");
+    assert_eq!(
+        execution.resources.operations, 6,
+        "3 rounds x 2 transitions"
+    );
+    // Caller-tightened budget below the actual work: typed limit
+    // error, enforced during execution.
+    let tight = ProbeEngine::with_limits(amari_discovery::ProbeEngineLimits {
+        max_operations: 5,
+        ..Default::default()
+    })
+    .unwrap();
+    let error = tight
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "emptiness", "automaton": chain}),
+        )
+        .expect_err("6 fixpoint evaluations exceed the 5-operation budget");
+    assert!(
+        error.to_string().contains("operation"),
+        "unexpected error: {error}"
+    );
+}
+
+/// Finding 4: library limit errors surface as limit_exceeded
+/// (exit 7), not invalid_input (exit 2).
+#[test]
+fn library_limit_errors_keep_their_kind() {
+    let grammar = "amari-tree-grammar/v1\nnonterminals: S\nstart: S\n\
+                   S -> f a a a a a a a a a a a a a a a a a\n";
+    let error = ProbeEngine::new()
+        .unwrap()
+        .execute(
+            &LANGUAGES.parse().unwrap(),
+            &json!({"operation": "witness", "grammar": grammar}),
+        )
+        .expect_err("rank-17 production exceeds the library rank ceiling");
+    assert!(
+        matches!(error, amari_discovery::DiscoveryError::LimitExceeded(_)),
+        "rank-17 grammar must be limit_exceeded, got: {error}"
+    );
+}
