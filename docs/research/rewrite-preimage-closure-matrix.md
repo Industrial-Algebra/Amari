@@ -219,7 +219,7 @@ precondition.
 
 - [TATA] Comon, Dauchet, Gilleron, Jacquemard, Lugiez, Löding,
   Tison, Tommasi. *Tree Automata Techniques and Applications*,
-  2008 (hal-03367725). Cited: Example 1.2.1; Theorems 1.4.3, 1.4.4;
+  2008 (hal-03367725). Cited: Example 1.2.1;
   Propositions 3.2.7, 3.2.9, 3.2.12, 3.4.3 (and the root-instance
   adaptation immediately following its proof), 3.4.7 (whose proof
   invokes Theorem 3.2.14); Exercise 1.17; §2.5 (context only).
