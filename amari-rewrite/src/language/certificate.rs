@@ -144,14 +144,27 @@ impl PreimageCertificate {
         })
     }
 
-    /// Attach the completed result language, binding its digest.
+    /// Attach a claimed result language, binding its digest. Binding
+    /// is deliberately infallible: [`PreimageCertificate::verify`]
+    /// and [`PreimageCertificate::verify_result`] are the semantic
+    /// authority (a deserialized certificate bypasses this method),
+    /// and they reject a result inconsistent with the construction —
+    /// e.g. `Identity` binds only the input language.
     pub fn complete(mut self, result: &TreeAutomaton) -> Self {
         self.result = Some(language_digest(result));
         self
     }
 
-    /// Recompute and compare the system, language, and limits
-    /// bindings. Does not check the result.
+    /// Recompute and compare every binding: the system, language,
+    /// and limits digests, plus the certificate's internal
+    /// consistency — the class must match a fresh classification of
+    /// the bound system, the construction must be exactly the
+    /// approved capability for the class and operation, the horizon
+    /// and authority fields must be coherent, and an `Identity`
+    /// construction may bind only the input language as its result.
+    /// Tampered metadata (including deserialized certificates) fails.
+    /// Only `Exact` authority is verifiable evidence in this
+    /// revision; `Partial` is reserved for Tasks 26-27.
     pub fn verify(
         &self,
         system: &TermSystem,
@@ -164,12 +177,51 @@ impl PreimageCertificate {
             && self.max_term_depth == limits.max_term_depth()
             && self.max_constraints == limits.max_constraints()
             && self.max_operations == limits.max_operations()
+            && self.verify_consistency(system)
+    }
+
+    /// Internal consistency against the ADR 0001 capability table.
+    fn verify_consistency(&self, system: &TermSystem) -> bool {
+        let Ok(classification) = classify_system(system) else {
+            return false;
+        };
+        if classification.class() != self.class {
+            return false;
+        }
+        if classification.capability(self.operation) != PreimageCapability::Exact(self.construction)
+        {
+            return false;
+        }
+        let horizon_ok = match self.operation {
+            PreimageOperation::FiniteHorizon(bound) => self.horizon == Some(bound),
+            _ => self.horizon.is_none(),
+        };
+        let construction_ok = match (self.operation, self.construction) {
+            (PreimageOperation::FiniteHorizon(0), PreimageConstruction::Identity) => true,
+            (
+                PreimageOperation::FiniteHorizon(bound),
+                PreimageConstruction::FiniteHorizonIteration(recorded),
+            ) => bound >= 1 && bound == recorded,
+            (PreimageOperation::OneStep, PreimageConstruction::LeftLinearOneStep) => true,
+            (PreimageOperation::Saturation, PreimageConstruction::GttSaturation) => true,
+            _ => false,
+        };
+        let authority_ok = matches!(self.authority, CertificateAuthority::Exact);
+        horizon_ok && construction_ok && authority_ok && self.identity_result_ok()
+    }
+
+    /// An `Identity` construction's result is the input language
+    /// itself; any other bound result is inconsistent.
+    fn identity_result_ok(&self) -> bool {
+        self.construction != PreimageConstruction::Identity
+            || self.result.map_or(true, |result| result == self.language)
     }
 
     /// Recompute and compare the result binding. False when the
-    /// certificate carries no result.
+    /// certificate carries no result, and false for an `Identity`
+    /// construction whose result is not the input language.
     pub fn verify_result(&self, result: &TreeAutomaton) -> bool {
-        self.result == Some(language_digest(result))
+        self.result == Some(language_digest(result)) && self.identity_result_ok()
     }
 
     /// The preimage operation.

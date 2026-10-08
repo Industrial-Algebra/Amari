@@ -257,3 +257,81 @@ fn digests_are_deterministic_and_rule_order_insensitive() {
         language_digest(&small_automaton())
     );
 }
+
+#[test]
+fn identity_completion_binds_only_the_input_language() {
+    let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
+    let language = universal_automaton();
+    let limits = RelationLimits::default();
+    let certificate = PreimageCertificate::issue(
+        PreimageOperation::FiniteHorizon(0),
+        &system,
+        &language,
+        &limits,
+    )
+    .expect("horizon zero is exact for every class");
+
+    // The Identity construction's result is the input language: a
+    // different bound language is inconsistent and must not verify.
+    let mismatched = certificate.clone().complete(&small_automaton());
+    assert!(!mismatched.verify(&system, &language, &limits));
+    assert!(!mismatched.verify_result(&small_automaton()));
+
+    let matched = certificate.complete(&language);
+    assert!(matched.verify(&system, &language, &limits));
+    assert!(matched.verify_result(&language));
+}
+
+#[cfg(feature = "serialize")]
+#[test]
+fn tampered_metadata_fails_verification() {
+    let system = TermSystem::new(vec![Rule::new(g(x()), f(x(), x())).unwrap()]);
+    let language = universal_automaton();
+    let limits = RelationLimits::default();
+    let certificate =
+        PreimageCertificate::issue(PreimageOperation::OneStep, &system, &language, &limits)
+            .expect("left-linear one-step is approved")
+            .complete(&language);
+    assert!(certificate.verify(&system, &language, &limits));
+
+    let mut wire = serde_json::to_value(&certificate).expect("serializes");
+    // Tamper: promotion to an ApproximationOnly cell.
+    wire["operation"] = serde_json::json!("Saturation");
+    wire["construction"] = serde_json::json!("GttSaturation");
+    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
+    assert!(!tampered.verify(&system, &language, &limits));
+
+    // Tamper: horizon metadata inconsistent with the operation.
+    wire["operation"] = serde_json::to_value(PreimageOperation::OneStep).unwrap();
+    wire["construction"] = serde_json::to_value(PreimageConstruction::LeftLinearOneStep).unwrap();
+    wire["horizon"] = serde_json::json!(5);
+    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
+    assert!(!tampered.verify(&system, &language, &limits));
+
+    // Tamper: class field disagrees with the bound system.
+    wire["horizon"] = serde_json::json!(null);
+    wire["class"] = serde_json::json!("Ground");
+    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
+    assert!(!tampered.verify(&system, &language, &limits));
+
+    // Tamper: downgraded authority is not exact evidence.
+    wire["class"] = serde_json::json!("LeftLinearShared");
+    wire["authority"] = serde_json::json!({"Partial": {"detail": "operations"}});
+    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
+    assert!(!tampered.verify(&system, &language, &limits));
+}
+
+#[test]
+fn contract_violating_system_fails_verification() {
+    let system = TermSystem::new(vec![Rule::new(g(x()), f(x(), x())).unwrap()]);
+    let language = universal_automaton();
+    let limits = RelationLimits::default();
+    let certificate =
+        PreimageCertificate::issue(PreimageOperation::OneStep, &system, &language, &limits)
+            .expect("approved cell")
+            .complete(&language);
+    // Same digest requires the same rules; a contract-violating
+    // system additionally fails classification re-derivation.
+    let violating = TermSystem::new(vec![Rule::new_unchecked(g(x()), y())]);
+    assert!(!certificate.verify(&violating, &language, &limits));
+}
