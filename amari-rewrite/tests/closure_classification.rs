@@ -249,3 +249,53 @@ fn alphabet_rebinding_fails_verification() {
     // the rebound certificate fails it.
     assert!(!(rebound.verify(&system, &small, &limits) && rebound.verify_result(&small)));
 }
+
+/// Round-3 P1: deserialization must not produce completed `Exact`
+/// evidence. A forged certificate — pending issue, then the wire
+/// `result` field replaced with the universal-language digest — must
+/// arrive PENDING (completion claims do not cross trust boundaries).
+/// The forged claim here is mathematically false: the one-step
+/// preimage of the empty language is empty, not universal.
+#[cfg(feature = "serialize")]
+#[test]
+fn deserialized_certificates_are_pending() {
+    // Empty language over {a/0, g/1}: g(q)->q with no constant
+    // transition accepts no ground term.
+    let q = TreeState::new("q");
+    let empty_language = TreeAutomaton::new(
+        vec![
+            RankedSymbol::new(Symbol::new("a"), 0),
+            RankedSymbol::new(Symbol::new("g"), 1),
+        ],
+        vec![q.clone()],
+        vec![TreeTransition::new(
+            Symbol::new("g"),
+            vec![q.clone()],
+            q.clone(),
+        )],
+        vec![q],
+        TreeAutomatonLimits::default(),
+    )
+    .expect("fixture automaton is valid");
+    assert!(empty_language.language_is_empty());
+
+    let system = TermSystem::new(vec![Rule::new(a(), g(a())).unwrap()]);
+    let limits = RelationLimits::default();
+    let certificate = PreimageCertificate::issue(
+        PreimageOperation::OneStep,
+        &system,
+        &empty_language,
+        &limits,
+    )
+    .expect("ground one-step is approved");
+
+    let mut wire = serde_json::to_value(&certificate).expect("serializes");
+    wire["result"] = serde_json::to_value(Some(language_digest(&universal_automaton()))).unwrap();
+    let forged: PreimageCertificate = serde_json::from_value(wire).expect("deserializes");
+
+    assert!(!forged.is_complete());
+    assert!(!forged.verify_result(&universal_automaton()));
+    // The pending certificate itself remains valid: its parameters
+    // describe an approved cell.
+    assert!(forged.verify(&system, &empty_language, &limits));
+}

@@ -94,7 +94,7 @@ pub enum CertificateAuthority {
 /// A certificate binding a preimage operation to its system, language,
 /// class, construction, limits, and (once completed) result language.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 pub struct PreimageCertificate {
     operation: PreimageOperation,
     class: TrsClass,
@@ -109,6 +109,55 @@ pub struct PreimageCertificate {
     max_operations: usize,
     authority: CertificateAuthority,
     result: Option<Sha256Digest>,
+}
+
+/// Deserialization yields a PENDING certificate: the completion claim
+/// does not cross trust boundaries. The wire format still carries the
+/// `result` field for inspection, but the reconstructed value drops it;
+/// completed `Exact` evidence is acquired only from an in-crate trusted
+/// construction (`PreimageCertificate::complete`, Tasks 25-26).
+/// Serialization and deserialization are therefore intentionally not
+/// inverse for completed certificates.
+#[cfg(feature = "serialize")]
+impl<'de> serde::Deserialize<'de> for PreimageCertificate {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(serde::Deserialize)]
+        struct Wire {
+            operation: PreimageOperation,
+            class: TrsClass,
+            construction: PreimageConstruction,
+            system: Sha256Digest,
+            language: Sha256Digest,
+            rule_count: usize,
+            horizon: Option<u32>,
+            max_term_nodes: usize,
+            max_term_depth: usize,
+            max_constraints: usize,
+            max_operations: usize,
+            authority: CertificateAuthority,
+            result: Option<Sha256Digest>,
+        }
+        let wire = Wire::deserialize(deserializer)?;
+        let _claimed_result = wire.result;
+        Ok(Self {
+            operation: wire.operation,
+            class: wire.class,
+            construction: wire.construction,
+            system: wire.system,
+            language: wire.language,
+            rule_count: wire.rule_count,
+            horizon: wire.horizon,
+            max_term_nodes: wire.max_term_nodes,
+            max_term_depth: wire.max_term_depth,
+            max_constraints: wire.max_constraints,
+            max_operations: wire.max_operations,
+            authority: wire.authority,
+            result: None,
+        })
+    }
 }
 
 impl PreimageCertificate {
