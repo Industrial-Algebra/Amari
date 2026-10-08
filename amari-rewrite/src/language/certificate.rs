@@ -124,7 +124,10 @@ impl<'de> serde::Deserialize<'de> for PreimageCertificate {
     where
         D: serde::Deserializer<'de>,
     {
+        // Name-sensitive formats (e.g. RON with struct names) must see
+        // the real type name, not the shadow's.
         #[derive(serde::Deserialize)]
+        #[serde(rename = "PreimageCertificate")]
         struct Wire {
             operation: PreimageOperation,
             class: TrsClass,
@@ -598,5 +601,55 @@ mod tests {
         // system additionally fails classification re-derivation.
         let violating = TermSystem::new(vec![Rule::new_unchecked(g(x()), y())]);
         assert!(!certificate.verify(&violating, &language, &limits));
+    }
+
+    /// Round-4 P2 regression: the shadow wire struct must present the
+    /// REAL struct name to name-sensitive serde formats (e.g. RON with
+    /// struct names), or `PreimageCertificate` values fail to
+    /// deserialize there. Captures the name handed to
+    /// `deserialize_struct` without a format dependency.
+    #[cfg(feature = "serialize")]
+    #[test]
+    fn shadow_deserializer_presents_the_real_struct_name() {
+        use serde::de::{Error as DeError, Visitor};
+        use serde::{Deserialize, Deserializer};
+
+        struct NameCapture;
+
+        impl<'de> Deserializer<'de> for NameCapture {
+            type Error = serde::de::value::Error;
+
+            fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+            where
+                V: Visitor<'de>,
+            {
+                Err(DeError::custom("deserialize_any unsupported"))
+            }
+
+            fn deserialize_struct<V>(
+                self,
+                name: &'static str,
+                _fields: &'static [&'static str],
+                _visitor: V,
+            ) -> Result<V::Value, Self::Error>
+            where
+                V: Visitor<'de>,
+            {
+                Err(DeError::custom(alloc::string::String::from(name)))
+            }
+
+            serde::forward_to_deserialize_any! {
+                bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
+                bytes byte_buf option unit unit_struct newtype_struct seq tuple
+                tuple_struct map enum identifier ignored_any
+            }
+        }
+
+        let error = PreimageCertificate::deserialize(NameCapture)
+            .expect_err("the capturing deserializer always fails with the struct name");
+        assert!(
+            error.to_string().contains("PreimageCertificate"),
+            "the deserializer must present the real struct name, got: {error}"
+        );
     }
 }
