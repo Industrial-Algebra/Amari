@@ -194,41 +194,6 @@ fn issue_revalidates_the_rule_contract() {
 }
 
 #[test]
-fn complete_and_verify_round_trip() {
-    let system = TermSystem::new(vec![Rule::new(a(), g(a())).unwrap()]);
-    let language = universal_automaton();
-    let limits = RelationLimits::default();
-    let certificate =
-        PreimageCertificate::issue(PreimageOperation::Saturation, &system, &language, &limits)
-            .expect("ground saturation is approved");
-    assert_eq!(certificate.class(), TrsClass::Ground);
-    assert_eq!(
-        certificate.construction(),
-        PreimageConstruction::GttSaturation
-    );
-
-    let certificate = certificate.complete(&language);
-    assert!(certificate.is_complete());
-    assert!(certificate.verify(&system, &language, &limits));
-    assert!(certificate.verify_result(&language));
-
-    // A different system does not verify.
-    let other_system = TermSystem::new(vec![
-        Rule::new(a(), g(a())).unwrap(),
-        Rule::new(g(a()), a()).unwrap(),
-    ]);
-    assert!(!certificate.verify(&other_system, &language, &limits));
-
-    // A different result does not verify.
-    assert!(!certificate.verify_result(&small_automaton()));
-
-    // Tightened limits do not verify.
-    let tighter = RelationLimits::new(4096, 64, limits.max_constraints(), 500_000)
-        .expect("valid tightened limits");
-    assert!(!certificate.verify(&system, &language, &tighter));
-}
-
-#[test]
 fn digests_are_deterministic_and_rule_order_insensitive() {
     let rules_a = vec![
         Rule::new(a(), g(a())).unwrap(),
@@ -258,80 +223,29 @@ fn digests_are_deterministic_and_rule_order_insensitive() {
     );
 }
 
-#[test]
-fn identity_completion_binds_only_the_input_language() {
-    let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
-    let language = universal_automaton();
-    let limits = RelationLimits::default();
-    let certificate = PreimageCertificate::issue(
-        PreimageOperation::FiniteHorizon(0),
-        &system,
-        &language,
-        &limits,
-    )
-    .expect("horizon zero is exact for every class");
-
-    // The Identity construction's result is the input language: a
-    // different bound language is inconsistent and must not verify.
-    let mismatched = certificate.clone().complete(&small_automaton());
-    assert!(!mismatched.verify(&system, &language, &limits));
-    assert!(!mismatched.verify_result(&small_automaton()));
-
-    let matched = certificate.complete(&language);
-    assert!(matched.verify(&system, &language, &limits));
-    assert!(matched.verify_result(&language));
-}
-
+/// Round-2 P1 (alphabet rebinding): a deserialized certificate whose
+/// language/result digests were rebound to an automaton whose alphabet
+/// does NOT cover the system's symbols must not verify — `verify`
+/// re-runs the ADR 0001 common-alphabet validation.
 #[cfg(feature = "serialize")]
 #[test]
-fn tampered_metadata_fails_verification() {
-    let system = TermSystem::new(vec![Rule::new(g(x()), f(x(), x())).unwrap()]);
+fn alphabet_rebinding_fails_verification() {
+    let system = TermSystem::new(vec![Rule::new(f(a(), a()), a()).unwrap()]);
     let language = universal_automaton();
+    let small = small_automaton();
     let limits = RelationLimits::default();
+    assert!(validate_alphabet(&system, &small).is_err());
+
     let certificate =
         PreimageCertificate::issue(PreimageOperation::OneStep, &system, &language, &limits)
-            .expect("left-linear one-step is approved")
-            .complete(&language);
-    assert!(certificate.verify(&system, &language, &limits));
-
+            .expect("approved cell");
     let mut wire = serde_json::to_value(&certificate).expect("serializes");
-    // Tamper: promotion to an ApproximationOnly cell.
-    wire["operation"] = serde_json::json!("Saturation");
-    wire["construction"] = serde_json::json!("GttSaturation");
-    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
-    assert!(!tampered.verify(&system, &language, &limits));
-
-    // Tamper: horizon metadata inconsistent with the operation.
-    wire["operation"] = serde_json::to_value(PreimageOperation::OneStep).unwrap();
-    wire["construction"] = serde_json::to_value(PreimageConstruction::LeftLinearOneStep).unwrap();
-    wire["horizon"] = serde_json::json!(5);
-    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
-    assert!(!tampered.verify(&system, &language, &limits));
-
-    // Tamper: class field disagrees with the bound system.
-    wire["horizon"] = serde_json::json!(null);
-    wire["class"] = serde_json::json!("Ground");
-    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
-    assert!(!tampered.verify(&system, &language, &limits));
-
-    // Tamper: downgraded authority is not exact evidence.
-    wire["class"] = serde_json::json!("LeftLinearShared");
-    wire["authority"] = serde_json::json!({"Partial": {"detail": "operations"}});
-    let tampered: PreimageCertificate = serde_json::from_value(wire.clone()).expect("deserializes");
-    assert!(!tampered.verify(&system, &language, &limits));
-}
-
-#[test]
-fn contract_violating_system_fails_verification() {
-    let system = TermSystem::new(vec![Rule::new(g(x()), f(x(), x())).unwrap()]);
-    let language = universal_automaton();
-    let limits = RelationLimits::default();
-    let certificate =
-        PreimageCertificate::issue(PreimageOperation::OneStep, &system, &language, &limits)
-            .expect("approved cell")
-            .complete(&language);
-    // Same digest requires the same rules; a contract-violating
-    // system additionally fails classification re-derivation.
-    let violating = TermSystem::new(vec![Rule::new_unchecked(g(x()), y())]);
-    assert!(!certificate.verify(&violating, &language, &limits));
+    wire["language"] = serde_json::to_value(language_digest(&small)).unwrap();
+    wire["result"] = serde_json::to_value(Some(language_digest(&small))).unwrap();
+    let rebound: PreimageCertificate = serde_json::from_value(wire).expect("deserializes");
+    assert!(!rebound.verify(&system, &small, &limits));
+    // verify_result is compositional (it does not see the
+    // system/language pair): full validation is the conjunction, and
+    // the rebound certificate fails it.
+    assert!(!(rebound.verify(&system, &small, &limits) && rebound.verify_result(&small)));
 }

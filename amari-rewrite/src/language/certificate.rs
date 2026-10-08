@@ -10,6 +10,20 @@
 //! (explicitly out of scope per the closure matrix). Certificates are
 //! issued ONLY for class/operation cells the ADR approves as exact;
 //! approximation-only cells are hard `UnsupportedPreimage` errors.
+//!
+//! ## Trust model
+//!
+//! Verification establishes everything decidable WITHOUT re-running
+//! the construction: input/limit bindings, capability-table
+//! consistency, alphabet compatibility, and the constructions whose
+//! result is determined by the inputs alone (`Identity`; any operation
+//! over an empty system). For a non-`Identity` construction over a
+//! non-empty system, the correctness of the bound result is the
+//! responsibility of the in-crate construction that produced it —
+//! [`PreimageCertificate::complete`] is crate-visible, so completed
+//! `Exact` evidence can originate only from those trusted
+//! constructions (Tasks 25-26). A certificate is content-bound
+//! evidence, not authentication.
 
 use alloc::format;
 use alloc::string::String;
@@ -87,6 +101,7 @@ pub struct PreimageCertificate {
     construction: PreimageConstruction,
     system: Sha256Digest,
     language: Sha256Digest,
+    rule_count: usize,
     horizon: Option<u32>,
     max_term_nodes: usize,
     max_term_depth: usize,
@@ -134,6 +149,7 @@ impl PreimageCertificate {
             construction,
             system: system_digest(system),
             language: language_digest(language),
+            rule_count: classification.rule_count(),
             horizon,
             max_term_nodes: limits.max_term_nodes(),
             max_term_depth: limits.max_term_depth(),
@@ -144,13 +160,20 @@ impl PreimageCertificate {
         })
     }
 
-    /// Attach a claimed result language, binding its digest. Binding
-    /// is deliberately infallible: [`PreimageCertificate::verify`]
-    /// and [`PreimageCertificate::verify_result`] are the semantic
-    /// authority (a deserialized certificate bypasses this method),
-    /// and they reject a result inconsistent with the construction —
-    /// e.g. `Identity` binds only the input language.
-    pub fn complete(mut self, result: &TreeAutomaton) -> Self {
+    /// Attach a claimed result language, binding its digest.
+    ///
+    /// Crate-visible only: a completed `Exact` certificate is trusted
+    /// construction evidence, and the only trusted constructions are
+    /// the in-crate preimage operations (Tasks 25-26). External code
+    /// can issue pending certificates and verify them, but cannot mint
+    /// completed exact evidence. Verification remains the semantic
+    /// authority for everything decidable without re-running the
+    /// construction (bindings, capability consistency, Identity and
+    /// empty-system result semantics).
+    // Minted by the Task 25/26 construction code; until then only the
+    // in-crate unit tests exercise it.
+    #[allow(dead_code)]
+    pub(crate) fn complete(mut self, result: &TreeAutomaton) -> Self {
         self.result = Some(language_digest(result));
         self
     }
@@ -171,6 +194,9 @@ impl PreimageCertificate {
         language: &TreeAutomaton,
         limits: &RelationLimits,
     ) -> bool {
+        if validate_alphabet(system, language).is_err() {
+            return false;
+        }
         self.system == system_digest(system)
             && self.language == language_digest(language)
             && self.max_term_nodes == limits.max_term_nodes()
@@ -185,7 +211,7 @@ impl PreimageCertificate {
         let Ok(classification) = classify_system(system) else {
             return false;
         };
-        if classification.class() != self.class {
+        if classification.class() != self.class || classification.rule_count() != self.rule_count {
             return false;
         }
         if classification.capability(self.operation) != PreimageCapability::Exact(self.construction)
@@ -217,11 +243,35 @@ impl PreimageCertificate {
             || self.result.is_none_or(|result| result == self.language)
     }
 
-    /// Recompute and compare the result binding. False when the
-    /// certificate carries no result, and false for an `Identity`
-    /// construction whose result is not the input language.
+    /// Recompute and compare the result binding, including the
+    /// construction semantics decidable without re-running the
+    /// construction: an `Identity` result must be the input language,
+    /// and for an EMPTY system the one-step preimage must be the
+    /// empty language while every other operation is the identity.
+    /// False when the certificate carries no result. Full validation
+    /// of a completed certificate is `verify(...) && verify_result(...)`;
+    /// the empty-system checks trust the bound `rule_count`, which
+    /// `verify` revalidates against the system.
     pub fn verify_result(&self, result: &TreeAutomaton) -> bool {
-        self.result == Some(language_digest(result)) && self.identity_result_ok()
+        self.result == Some(language_digest(result))
+            && self.identity_result_ok()
+            && self.empty_system_result_ok(result)
+    }
+
+    /// Decidable result semantics for systems with no rules.
+    fn empty_system_result_ok(&self, result: &TreeAutomaton) -> bool {
+        if self.rule_count != 0 {
+            return true;
+        }
+        match self.construction {
+            // No rules: no application steps, so the exact one-step
+            // preimage of any language is empty.
+            PreimageConstruction::LeftLinearOneStep => result.language_is_empty(),
+            // Horizon unions and saturation include zero steps.
+            PreimageConstruction::Identity
+            | PreimageConstruction::FiniteHorizonIteration(_)
+            | PreimageConstruction::GttSaturation => self.result == Some(self.language),
+        }
     }
 
     /// The preimage operation.
@@ -267,5 +317,237 @@ impl PreimageCertificate {
     /// Whether a result language has been bound.
     pub fn is_complete(&self) -> bool {
         self.result.is_some()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::language::{RankedSymbol, TreeAutomatonLimits, TreeState, TreeTransition};
+    use crate::trs::{Rule, Symbol, Term};
+    use alloc::vec;
+
+    fn a() -> Term {
+        Term::constant("a")
+    }
+
+    fn f(left: Term, right: Term) -> Term {
+        Term::sym("f", [left, right])
+    }
+
+    fn g(inner: Term) -> Term {
+        Term::sym("g", [inner])
+    }
+
+    fn x() -> Term {
+        Term::var("x")
+    }
+
+    fn y() -> Term {
+        Term::var("y")
+    }
+
+    fn universal_automaton() -> TreeAutomaton {
+        let q = TreeState::new("q");
+        TreeAutomaton::new(
+            vec![
+                RankedSymbol::new(Symbol::new("a"), 0),
+                RankedSymbol::new(Symbol::new("g"), 1),
+                RankedSymbol::new(Symbol::new("f"), 2),
+            ],
+            vec![q.clone()],
+            vec![
+                TreeTransition::new(Symbol::new("a"), vec![], q.clone()),
+                TreeTransition::new(Symbol::new("g"), vec![q.clone()], q.clone()),
+                TreeTransition::new(Symbol::new("f"), vec![q.clone(), q.clone()], q.clone()),
+            ],
+            vec![q],
+            TreeAutomatonLimits::default(),
+        )
+        .expect("fixture automaton is valid")
+    }
+
+    /// A different automaton (alphabet {a/0, g/1} only).
+    fn small_automaton() -> TreeAutomaton {
+        let q = TreeState::new("q");
+        TreeAutomaton::new(
+            vec![
+                RankedSymbol::new(Symbol::new("a"), 0),
+                RankedSymbol::new(Symbol::new("g"), 1),
+            ],
+            vec![q.clone()],
+            vec![
+                TreeTransition::new(Symbol::new("a"), vec![], q.clone()),
+                TreeTransition::new(Symbol::new("g"), vec![q.clone()], q.clone()),
+            ],
+            vec![q],
+            TreeAutomatonLimits::default(),
+        )
+        .expect("fixture automaton is valid")
+    }
+
+    /// An automaton over {a/0} with no transitions: the empty language.
+    fn empty_language() -> TreeAutomaton {
+        let q = TreeState::new("q");
+        TreeAutomaton::new(
+            vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            vec![q],
+            vec![],
+            vec![],
+            TreeAutomatonLimits::default(),
+        )
+        .expect("fixture automaton is valid")
+    }
+
+    /// Round-2 P1: with an EMPTY system the exact one-step preimage is
+    /// the empty language; a completed certificate claiming the
+    /// universal language must not verify. Saturation/horizon of an
+    /// empty system is the identity, so the universal language IS a
+    /// valid result there.
+    #[test]
+    fn empty_system_result_semantics_are_enforced() {
+        let system = TermSystem::new(vec![]);
+        let language = universal_automaton();
+        let limits = RelationLimits::default();
+
+        let one_step =
+            PreimageCertificate::issue(PreimageOperation::OneStep, &system, &language, &limits)
+                .expect("ground one-step is approved");
+        assert!(!one_step
+            .clone()
+            .complete(&language)
+            .verify_result(&language));
+        assert!(one_step
+            .complete(&empty_language())
+            .verify_result(&empty_language()));
+
+        let saturation =
+            PreimageCertificate::issue(PreimageOperation::Saturation, &system, &language, &limits)
+                .expect("ground saturation is approved");
+        assert!(saturation
+            .clone()
+            .complete(&language)
+            .verify_result(&language));
+        assert!(!saturation
+            .complete(&empty_language())
+            .verify_result(&empty_language()));
+    }
+
+    #[test]
+    fn complete_and_verify_round_trip() {
+        let system = TermSystem::new(vec![Rule::new(a(), g(a())).unwrap()]);
+        let language = universal_automaton();
+        let limits = RelationLimits::default();
+        let certificate =
+            PreimageCertificate::issue(PreimageOperation::Saturation, &system, &language, &limits)
+                .expect("ground saturation is approved");
+        assert_eq!(certificate.class(), TrsClass::Ground);
+        assert_eq!(
+            certificate.construction(),
+            PreimageConstruction::GttSaturation
+        );
+
+        let certificate = certificate.complete(&language);
+        assert!(certificate.is_complete());
+        assert!(certificate.verify(&system, &language, &limits));
+        assert!(certificate.verify_result(&language));
+
+        // A different system does not verify.
+        let other_system = TermSystem::new(vec![
+            Rule::new(a(), g(a())).unwrap(),
+            Rule::new(g(a()), a()).unwrap(),
+        ]);
+        assert!(!certificate.verify(&other_system, &language, &limits));
+
+        // A different result does not verify.
+        assert!(!certificate.verify_result(&small_automaton()));
+
+        // Tightened limits do not verify.
+        let tighter = RelationLimits::new(4096, 64, limits.max_constraints(), 500_000)
+            .expect("valid tightened limits");
+        assert!(!certificate.verify(&system, &language, &tighter));
+    }
+
+    #[test]
+    fn identity_completion_binds_only_the_input_language() {
+        let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
+        let language = universal_automaton();
+        let limits = RelationLimits::default();
+        let certificate = PreimageCertificate::issue(
+            PreimageOperation::FiniteHorizon(0),
+            &system,
+            &language,
+            &limits,
+        )
+        .expect("horizon zero is exact for every class");
+
+        // The Identity construction's result is the input language: a
+        // different bound language is inconsistent and must not verify.
+        let mismatched = certificate.clone().complete(&small_automaton());
+        assert!(!mismatched.verify(&system, &language, &limits));
+        assert!(!mismatched.verify_result(&small_automaton()));
+
+        let matched = certificate.complete(&language);
+        assert!(matched.verify(&system, &language, &limits));
+        assert!(matched.verify_result(&language));
+    }
+
+    #[cfg(feature = "serialize")]
+    #[test]
+    fn tampered_metadata_fails_verification() {
+        let system = TermSystem::new(vec![Rule::new(g(x()), f(x(), x())).unwrap()]);
+        let language = universal_automaton();
+        let limits = RelationLimits::default();
+        let certificate =
+            PreimageCertificate::issue(PreimageOperation::OneStep, &system, &language, &limits)
+                .expect("left-linear one-step is approved")
+                .complete(&language);
+        assert!(certificate.verify(&system, &language, &limits));
+
+        let mut wire = serde_json::to_value(&certificate).expect("serializes");
+        // Tamper: promotion to an ApproximationOnly cell.
+        wire["operation"] = serde_json::json!("Saturation");
+        wire["construction"] = serde_json::json!("GttSaturation");
+        let tampered: PreimageCertificate =
+            serde_json::from_value(wire.clone()).expect("deserializes");
+        assert!(!tampered.verify(&system, &language, &limits));
+
+        // Tamper: horizon metadata inconsistent with the operation.
+        wire["operation"] = serde_json::to_value(PreimageOperation::OneStep).unwrap();
+        wire["construction"] =
+            serde_json::to_value(PreimageConstruction::LeftLinearOneStep).unwrap();
+        wire["horizon"] = serde_json::json!(5);
+        let tampered: PreimageCertificate =
+            serde_json::from_value(wire.clone()).expect("deserializes");
+        assert!(!tampered.verify(&system, &language, &limits));
+
+        // Tamper: class field disagrees with the bound system.
+        wire["horizon"] = serde_json::json!(null);
+        wire["class"] = serde_json::json!("Ground");
+        let tampered: PreimageCertificate =
+            serde_json::from_value(wire.clone()).expect("deserializes");
+        assert!(!tampered.verify(&system, &language, &limits));
+
+        // Tamper: downgraded authority is not exact evidence.
+        wire["class"] = serde_json::json!("LeftLinearShared");
+        wire["authority"] = serde_json::json!({"Partial": {"detail": "operations"}});
+        let tampered: PreimageCertificate =
+            serde_json::from_value(wire.clone()).expect("deserializes");
+        assert!(!tampered.verify(&system, &language, &limits));
+    }
+
+    #[test]
+    fn contract_violating_system_fails_verification() {
+        let system = TermSystem::new(vec![Rule::new(g(x()), f(x(), x())).unwrap()]);
+        let language = universal_automaton();
+        let limits = RelationLimits::default();
+        let certificate =
+            PreimageCertificate::issue(PreimageOperation::OneStep, &system, &language, &limits)
+                .expect("approved cell")
+                .complete(&language);
+        // Same digest requires the same rules; a contract-violating
+        // system additionally fails classification re-derivation.
+        let violating = TermSystem::new(vec![Rule::new_unchecked(g(x()), y())]);
+        assert!(!certificate.verify(&violating, &language, &limits));
     }
 }
