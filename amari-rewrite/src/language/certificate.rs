@@ -614,6 +614,8 @@ mod tests {
         use serde::de::{Error as DeError, Visitor};
         use serde::{Deserialize, Deserializer};
 
+        use alloc::string::ToString;
+
         struct NameCapture;
 
         impl<'de> Deserializer<'de> for NameCapture {
