@@ -214,7 +214,7 @@ impl PreimageCertificate {
     /// itself; any other bound result is inconsistent.
     fn identity_result_ok(&self) -> bool {
         self.construction != PreimageConstruction::Identity
-            || self.result.map_or(true, |result| result == self.language)
+            || self.result.is_none_or(|result| result == self.language)
     }
 
     /// Recompute and compare the result binding. False when the
