@@ -85,6 +85,15 @@ pub enum RewriteError {
         /// Validation or parse failure detail.
         message: String,
     },
+    /// A preimage classification or certificate request falls outside
+    /// the classes approved by ADR 0001, or the system/language pair
+    /// violates the common-alphabet input contract. Never a warning:
+    /// the classifier never promotes a class heuristically.
+    #[error("unsupported preimage request: {message}")]
+    UnsupportedPreimage {
+        /// Failure detail.
+        message: String,
+    },
     /// A residual failed validation or its reconstructed source digest
     /// did not match the recorded authority. Always a hard error: no
     /// degraded or warning-only reconstruction is ever returned.
