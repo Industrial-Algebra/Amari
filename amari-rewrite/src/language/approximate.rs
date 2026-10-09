@@ -637,10 +637,10 @@ fn replays_into(
             // chain measured 1,360 constructed nodes where the
             // bound without the context term estimated 144).
             // Operations bill the attempts plus substitution plus
-            // context rebuilding; constraints bill the complete
-            // potential RETAINED output vector. All arithmetic
-            // saturates; the estimate is conservative, never an
-            // under-count.
+            // INTERMEDIATE binding/path copies plus context
+            // rebuilding; constraints bill the complete potential
+            // RETAINED output vector. All arithmetic saturates; the
+            // estimate is conservative, never an under-count.
             let mut ops_estimate = 0usize;
             let mut storage_estimate = 0usize;
             let term_size = term_nodes(term);
@@ -648,9 +648,23 @@ fn replays_into(
             for &(lhs_size, rhs_skeleton, rhs_var_occurrences) in rule_shapes {
                 let instantiated_worst =
                     rhs_skeleton.saturating_add(rhs_var_occurrences.saturating_mul(term_size));
+                // Construction WORK doubles the expansion: substitution
+                // clones each binding and then reconstructs it into the
+                // output (review round 5: x → z(x ×16) applied to `a`
+                // constructs 34 nodes — the 17-node successor plus 16
+                // intermediate binding copies plus overhead — where a
+                // single-copy bound estimates 20). The doubled context
+                // term likewise covers per-position path buffers beside
+                // the ancestor rebuilds.
+                let construction_worst = rhs_skeleton.saturating_add(
+                    rhs_var_occurrences
+                        .saturating_mul(term_size)
+                        .saturating_mul(2),
+                );
                 let per_position = 1usize
                     .saturating_add(lhs_size)
-                    .saturating_add(instantiated_worst)
+                    .saturating_add(construction_worst)
+                    .saturating_add(context_work)
                     .saturating_add(context_work);
                 ops_estimate = ops_estimate.saturating_add(term_size.saturating_mul(per_position));
                 storage_estimate = storage_estimate.saturating_add(

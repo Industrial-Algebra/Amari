@@ -794,3 +794,41 @@ fn deep_context_rebuild_work_is_bounded() {
         ),
     }
 }
+
+/// Review round 5 (P2): substitution clones each binding and then
+/// RECONSTRUCTS it into the output, so the construction-work bound
+/// doubles the variable-expansion term (x → z(x ×16) applied to `a`
+/// constructs 34 nodes where a single-copy bound estimates 20). The
+/// doubled context term likewise covers per-position path buffers.
+/// Instrumentation-level like round 4 (the reviewer's probe measures
+/// the prebill on the public TRS path); this guard pins the exact
+/// adversary resolving quickly and typed.
+#[test]
+fn binding_reconstruction_work_is_bounded() {
+    let duplicated_rhs = Term::sym("z", (0..16).map(|_| x()).collect::<Vec<_>>());
+    let system = TermSystem::new(vec![
+        Rule::new(x(), duplicated_rhs).unwrap(),
+        Rule::new(f(x(), x()), a()).unwrap(),
+    ]);
+    let language = accepts_exactly(&[("a", 0), ("f", 2)], &[a()]);
+    let result = one_step_lower_bound(
+        &system,
+        &language,
+        &RelationLimits::default(),
+        &TreeAutomatonLimits::default(),
+    );
+    match &result {
+        Ok(outcome) => assert!(
+            outcome
+                .trace()
+                .iter()
+                .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. })),
+            "an Ok outcome must have truncated, trace: {:?}",
+            outcome.trace()
+        ),
+        Err(error) => assert!(
+            matches!(error, RewriteError::RelationLimitExceeded { .. }),
+            "the only legal failure is a typed limit error, got {error:?}"
+        ),
+    }
+}
