@@ -351,3 +351,95 @@ fn identity_preimage_returns_the_input() {
     assert!(outcome.certificate().verify(&system, &language, &limits));
     assert!(outcome.certificate().verify_result(&language));
 }
+
+/// Review round 1 (P1): an empty system has an empty one-step
+/// preimage, so every finite horizon equals the input language and
+/// the certificate must bind the input representation itself —
+/// canonicalization must not replace it with an equivalent-but-
+/// different automaton (empty-system result semantics are digest
+/// equality per Task 24 round 2).
+#[test]
+fn empty_system_horizon_certificate_verifies() {
+    let system = TermSystem::new(vec![]);
+    let language = automaton_accepting(&[f(a(), a())]);
+    let limits = RelationLimits::default();
+    for horizon in [0, 1, 2] {
+        let outcome = finite_horizon_preimage(
+            &system,
+            &language,
+            horizon,
+            &limits,
+            &TreeAutomatonLimits::default(),
+        )
+        .expect("empty system horizon is approved");
+        assert!(outcome.certificate().verify(&system, &language, &limits));
+        assert!(
+            outcome.certificate().verify_result(outcome.automaton()),
+            "horizon {horizon}: the certificate must verify against its own result"
+        );
+    }
+}
+
+/// Review round 1 (P2): the automaton transition ceiling is a
+/// preflight/materialization-time `RelationLimitExceeded`, not a late
+/// `InvalidLimit` from assembly after the blowup is built.
+#[test]
+fn transition_limit_is_typed() {
+    let q = TreeState::new("q");
+    let language = TreeAutomaton::new(
+        vec![
+            RankedSymbol::new(Symbol::new("a"), 0),
+            RankedSymbol::new(Symbol::new("g"), 1),
+            RankedSymbol::new(Symbol::new("f"), 2),
+        ],
+        vec![q.clone()],
+        vec![
+            TreeTransition::new(Symbol::new("a"), vec![], q.clone()),
+            TreeTransition::new(Symbol::new("g"), vec![q.clone()], q.clone()),
+            TreeTransition::new(Symbol::new("f"), vec![q.clone(), q.clone()], q.clone()),
+        ],
+        vec![q],
+        TreeAutomatonLimits::default(),
+    )
+    .expect("fixture automaton is valid");
+    let system = TermSystem::new(vec![Rule::new(a(), a()).unwrap()]);
+    let result = one_step_preimage(
+        &system,
+        &language,
+        &RelationLimits::default(),
+        &TreeAutomatonLimits::new(4096, 3, 16).expect("valid tight limits"),
+    );
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "transition ceiling must be a typed relation-limit outcome, got {result:?}"
+    );
+}
+
+/// Review round 1 (P2): every horizon iteration charges the budget,
+/// even when a degenerate (empty-alphabet) construction performs no
+/// symbol work — 100k iterations on an operations budget of 1 must
+/// stop immediately with a typed outcome.
+#[test]
+fn horizon_iterations_are_metered() {
+    let language = TreeAutomaton::new(
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        TreeAutomatonLimits::default(),
+    )
+    .expect("empty fixture automaton is valid");
+    let system = TermSystem::new(vec![Rule::new(x(), x()).unwrap()]);
+    let limits = RelationLimits::new(4_096, 64, 4_096, 1).expect("valid tightened limits");
+    let result = finite_horizon_preimage(
+        &system,
+        &language,
+        100_000,
+        &limits,
+        &TreeAutomatonLimits::default(),
+    );
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "iterations must be metered, got {result:?}"
+    );
+}

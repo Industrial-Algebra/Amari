@@ -128,7 +128,13 @@ pub fn finite_horizon_preimage(
         language,
         limits,
     )?;
-    if horizon == 0 {
+    if horizon == 0 || system.rules().is_empty() {
+        // Horizon zero is the identity; an empty system has an empty
+        // one-step preimage, so every horizon equals the input
+        // language. Bind the input representation itself — the
+        // empty-system result semantics are digest equality (Task 24
+        // round 2), and canonicalization would substitute an
+        // equivalent-but-different representation.
         let result = language.clone();
         return Ok(PreimageOutcome {
             certificate: certificate.complete(&result),
@@ -197,6 +203,10 @@ fn one_step_construction(
     automaton_limits: &TreeAutomatonLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<TreeAutomaton> {
+    // Base construction charge: every call performs work (and every
+    // finite-horizon iteration must be metered even when a degenerate
+    // alphabet makes the symbol-level charges zero).
+    resources.record_operations(1)?;
     // A = complete deterministic automaton for `language`. Completion
     // is load-bearing: erased-variable arguments may have no
     // accepting run in a partial automaton but still need an
@@ -205,7 +215,7 @@ fn one_step_construction(
         .determinize_with_resources(automaton_limits, resources)?
         .completed_with_resources(resources)?;
     let nfta = build_epsilon_nfta(system, &complete, limits, automaton_limits, resources)?;
-    let (transitions, finals) = eliminate_epsilons(&nfta, resources)?;
+    let (transitions, finals) = eliminate_epsilons(&nfta, automaton_limits, resources)?;
     let assembled = TreeAutomaton::new(
         nfta.alphabet,
         nfta.states,
@@ -496,6 +506,7 @@ fn build_epsilon_nfta(
 /// (states `s` can silently reach).
 fn eliminate_epsilons(
     nfta: &EpsilonNfta,
+    automaton_limits: &TreeAutomatonLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<(Vec<TreeTransition>, Vec<TreeState>)> {
     // Reflexive-transitive closure of the epsilon relation. Our edges
@@ -570,6 +581,15 @@ fn eliminate_epsilons(
                     children.to_vec(),
                     parent.clone(),
                 ));
+                // The transition ceiling is enforced as the deduplicated
+                // set grows — a typed exhaustion outcome, not a late
+                // assembly error after the blowup is materialized.
+                if eliminated.len() > automaton_limits.max_transitions() {
+                    return Err(RewriteError::RelationLimitExceeded {
+                        resource: "preimage automaton transitions",
+                        limit: automaton_limits.max_transitions(),
+                    });
+                }
             }
             Ok(())
         })?;
@@ -896,7 +916,8 @@ mod tests {
         };
         let mut resources = RelationResources::new(&RelationLimits::default());
         let (transitions, finals) =
-            eliminate_epsilons(&nfta, &mut resources).expect("elimination succeeds");
+            eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources)
+                .expect("elimination succeeds");
         let folded_leaf = TreeTransition::new(Symbol::new("g"), vec![u_q.clone()], m_leaf.clone());
         let folded_conversion =
             TreeTransition::new(Symbol::new("g"), vec![m_leaf.clone()], v_q.clone());
