@@ -12,8 +12,9 @@
 //! depend on the caller's input order. Task 24 adds the exhaustive
 //! TRS taxonomy ([`TrsClass`]) and evidence certificates
 //! ([`PreimageCertificate`]) that gate the approved exact preimage
-//! constructions (ADR 0001); no preimage automaton construction
-//! exists yet (Tasks 25-26).
+//! constructions (ADR 0001); Task 25 adds the approved exact one-step
+//! and finite-horizon preimage constructions ([`one_step_preimage`],
+//! [`finite_horizon_preimage`]); unbounded saturation is Task 26.
 
 mod alphabet;
 mod automaton;
@@ -24,6 +25,7 @@ mod grammar;
 mod limits;
 mod minimize;
 mod operations;
+mod preimage;
 mod witness;
 
 pub use alphabet::RankedSymbol;
@@ -36,3 +38,6 @@ pub use classify::{
 pub use determinize::MAX_DETERMINIZED_SUBSETS;
 pub use grammar::{GrammarProduction, Nonterminal, RegularTreeGrammar, GRAMMAR_SYNTAX_HEADER};
 pub use limits::TreeAutomatonLimits;
+pub use preimage::{
+    finite_horizon_preimage, identity_preimage, one_step_preimage, PreimageOutcome,
+};

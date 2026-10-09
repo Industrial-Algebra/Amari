@@ -42,6 +42,27 @@ impl TermSystem {
         Ok(out)
     }
 
+    /// One-step successors under the application relation (ADR 0001,
+    /// finding R1): a rule whose replacement equals the source still
+    /// contributes that (equal) successor. This is the relation the
+    /// exact preimage constructions certify; the strict
+    /// [`Self::successors`] — which filters identity instances — is
+    /// unchanged and remains the enumeration-oriented API.
+    pub fn application_successors(&self, term: &Term) -> RewriteResult<Vec<Term>> {
+        let mut out = Vec::new();
+        for path in term.positions() {
+            let Some(subterm) = term.subterm(&path) else {
+                return Err(RewriteError::InvalidPath);
+            };
+            for rule in &self.rules {
+                if let Some(replacement) = rule.apply_root(subterm) {
+                    out.push(term.replace_at(&path, replacement)?);
+                }
+            }
+        }
+        Ok(out)
+    }
+
     /// Apply the first outermost one-step rewrite.
     pub fn apply_once(&self, term: &Term) -> RewriteResult<Option<Term>> {
         for path in term.positions() {
