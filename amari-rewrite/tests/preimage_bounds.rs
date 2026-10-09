@@ -365,8 +365,9 @@ fn tiny_constraint_budget_truncates_without_error() {
     let language = accepts_exactly(&[("a", 0), ("f", 2)], &[a()]);
     // A 32-cell storage budget truncates the enumeration after a few
     // retained terms; the small truncated witness set then assembles
-    // under a fresh draw of the same per-phase limits (operations are
-    // generous here, so assembly succeeds and the outcome is Ok).
+    // within the SAME shared per-query pool — the reserved headroom
+    // (one eighth of the limit) is what assembly draws down, and
+    // operations are generous here, so the outcome is Ok.
     let limits = RelationLimits::new(64, 64, 32, RelationLimits::MAX_OPERATIONS)
         .expect("valid tiny-constraint profile");
     let outcome =
