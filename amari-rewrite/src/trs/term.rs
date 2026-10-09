@@ -139,12 +139,14 @@ impl Term {
     }
 
     fn collect_variables(&self, vars: &mut Vec<Variable>) {
-        match self {
-            Self::Var(var) => vars.push(var.clone()),
-            Self::Sym(_, args) => {
-                for arg in args {
-                    arg.collect_variables(vars);
-                }
+        // Iterative (explicit worklist): callers sort and dedup, so
+        // traversal order is irrelevant, but depth must not depend on
+        // the call stack.
+        let mut stack = alloc::vec::Vec::from([self]);
+        while let Some(term) = stack.pop() {
+            match term {
+                Self::Var(var) => vars.push(var.clone()),
+                Self::Sym(_, args) => stack.extend(args.iter()),
             }
         }
     }

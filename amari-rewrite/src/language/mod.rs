@@ -14,7 +14,8 @@
 //! ([`PreimageCertificate`]) that gate the approved exact preimage
 //! constructions (ADR 0001); Task 25 adds the approved exact one-step
 //! and finite-horizon preimage constructions ([`one_step_preimage`],
-//! [`finite_horizon_preimage`]); unbounded saturation is Task 26.
+//! [`finite_horizon_preimage`]); Task 26 adds the exact unbounded
+//! saturation preimage ([`saturation_preimage`]).
 
 mod alphabet;
 mod automaton;
@@ -26,6 +27,7 @@ mod limits;
 mod minimize;
 mod operations;
 mod preimage;
+mod saturation;
 mod witness;
 
 pub use alphabet::RankedSymbol;
@@ -41,3 +43,4 @@ pub use limits::TreeAutomatonLimits;
 pub use preimage::{
     finite_horizon_preimage, identity_preimage, one_step_preimage, PreimageOutcome,
 };
+pub use saturation::saturation_preimage;

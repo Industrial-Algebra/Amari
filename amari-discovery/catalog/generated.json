@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "1babbf3163af5c99be333d5ea1cd62f42a920be244a923ef2968fe0cbcc79f71",
+  "content_hash": "65718faca99b3791a4c3e95f8c4f4ac3761d735fb8ee12af132a156ca4480571",
   "crates": [
     {
       "name": "amari",
@@ -380840,6 +380840,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::saturation_preimage",
+          "kind": "fn",
+          "signature": "pub fn saturation_preimage (system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < PreimageOutcome >",
+          "source_path": "amari-rewrite/src/language/saturation.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::saturation",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn saturation_preimage (system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < PreimageOutcome >",
+              "source_path": "amari-rewrite/src/language/saturation.rs",
+              "source_module": "amari_rewrite::language::saturation",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::saturation",
+              "declaration_ident": "saturation_preimage"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::system_digest",
           "kind": "fn",
           "signature": "pub fn system_digest (system : & TermSystem) -> Sha256Digest",
@@ -387369,7 +387388,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 6,
+          "source_ordinal": 7,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -387459,7 +387478,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -389316,7 +389335,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 6,
+          "source_ordinal": 7,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -389406,7 +389425,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -390829,7 +390848,7 @@
           "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 6,
+          "source_ordinal": 7,
           "trait_endpoint": {
             "kind": "external",
             "path": "Eq"
@@ -390919,7 +390938,7 @@
           "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "Eq"
@@ -393389,7 +393408,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 6,
+          "source_ordinal": 7,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -393479,7 +393498,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -394924,7 +394943,7 @@
           "trait_path": "serde::Deserialize",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "trait_endpoint": {
             "kind": "external",
             "path": "serde::Deserialize"
@@ -396008,7 +396027,7 @@
         {
           "path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 6,
+          "source_ordinal": 7,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -396136,7 +396155,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -396857,6 +396876,14 @@
           "path": "amari_rewrite::language::one_step_preimage",
           "source_path": "amari-rewrite/src/language/preimage.rs",
           "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::saturation_preimage",
+          "source_path": "amari-rewrite/src/language/saturation.rs",
+          "source_ordinal": 3,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"

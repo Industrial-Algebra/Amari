@@ -201,19 +201,22 @@ fn validate_side(
     rule_index: usize,
     term: &Term,
 ) -> RewriteResult<()> {
-    if let Term::Sym(symbol, arguments) = term {
-        let arity = arguments.len();
-        if !ranked.contains(&(symbol.as_str(), arity)) {
-            return Err(RewriteError::UnsupportedPreimage {
-                message: format!(
-                    "rule {rule_index}: symbol `{}` with arity {arity} is not in the language \
-                     alphabet (ADR 0001 input contract)",
-                    symbol.as_str()
-                ),
-            });
-        }
-        for argument in arguments {
-            validate_side(ranked, rule_index, argument)?;
+    // Iterative (explicit worklist): verification and issuance must
+    // never depend on call-stack depth for unmeasured terms.
+    let mut stack = alloc::vec::Vec::from([term]);
+    while let Some(node) = stack.pop() {
+        if let Term::Sym(symbol, arguments) = node {
+            let arity = arguments.len();
+            if !ranked.contains(&(symbol.as_str(), arity)) {
+                return Err(RewriteError::UnsupportedPreimage {
+                    message: format!(
+                        "rule {rule_index}: symbol `{}` with arity {arity} is not in the language \
+                         alphabet (ADR 0001 input contract)",
+                        symbol.as_str()
+                    ),
+                });
+            }
+            stack.extend(arguments.iter());
         }
     }
     Ok(())
@@ -227,12 +230,14 @@ fn is_linear(term: &Term) -> bool {
 }
 
 fn count_variables(term: &Term, counts: &mut alloc::collections::BTreeMap<Variable, usize>) {
-    match term {
-        Term::Var(variable) => *counts.entry(variable.clone()).or_insert(0) += 1,
-        Term::Sym(_, arguments) => {
-            for argument in arguments {
-                count_variables(argument, counts);
-            }
+    // Iterative (explicit worklist): classification runs during
+    // verification of arbitrary certificates, so term walks must
+    // never depend on call-stack depth.
+    let mut stack = alloc::vec::Vec::from([term]);
+    while let Some(node) = stack.pop() {
+        match node {
+            Term::Var(variable) => *counts.entry(variable.clone()).or_insert(0) += 1,
+            Term::Sym(_, arguments) => stack.extend(arguments.iter()),
         }
     }
 }

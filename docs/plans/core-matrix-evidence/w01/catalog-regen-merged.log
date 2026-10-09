@@ -1,0 +1,5 @@
+   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-discovery)
+   Compiling amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-rewrite)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.94s
+     Running `target/d07-baseline/w01/stable/debug/examples/generate_catalog .`
+Generated catalog: 28 crates, 11080 items, 107 dependency edges, hash 65718faca99b3791a4c3e95f8c4f4ac3761d735fb8ee12af132a156ca4480571

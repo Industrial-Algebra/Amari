@@ -89,6 +89,17 @@ impl PreimageOutcome {
     pub fn into_parts(self) -> (TreeAutomaton, PreimageCertificate) {
         (self.automaton, self.certificate)
     }
+
+    /// Assemble an outcome from a completed construction result and
+    /// its already-completed certificate. Crate-visible: the trusted
+    /// in-crate constructions (Tasks 25-26) are the only producers of
+    /// completed `Exact` evidence.
+    pub(crate) fn from_parts(automaton: TreeAutomaton, certificate: PreimageCertificate) -> Self {
+        Self {
+            automaton,
+            certificate,
+        }
+    }
 }
 
 /// Exact one-step preimage `R⁻¹(L)` under the application relation,
@@ -185,12 +196,12 @@ pub fn identity_preimage(
 /// disjoint ordinary states `U_q` simulating `A`, rewritten states
 /// `V_q`, and matching states `M`). Eliminated into a plain
 /// [`TreeAutomaton`] before canonicalization. Never public.
-struct EpsilonNfta {
-    alphabet: Vec<RankedSymbol>,
-    states: Vec<TreeState>,
-    transitions: Vec<TreeTransition>,
-    epsilons: Vec<(TreeState, TreeState)>,
-    finals: Vec<TreeState>,
+pub(crate) struct EpsilonNfta {
+    pub(crate) alphabet: Vec<RankedSymbol>,
+    pub(crate) states: Vec<TreeState>,
+    pub(crate) transitions: Vec<TreeTransition>,
+    pub(crate) epsilons: Vec<(TreeState, TreeState)>,
+    pub(crate) finals: Vec<TreeState>,
 }
 
 /// The preflight/elimination core shared by the one-step and
@@ -227,7 +238,7 @@ fn one_step_construction(
 }
 
 /// Determinize, complete, and minimize under the caller's budget.
-fn canonicalize(
+pub(crate) fn canonicalize(
     automaton: TreeAutomaton,
     automaton_limits: &TreeAutomatonLimits,
     resources: &mut RelationResources,
@@ -504,11 +515,24 @@ fn build_epsilon_nfta(
 /// epsilon-PREIMAGES of `si` (states that can silently reach `si`)
 /// and the parent `p` ranges over the epsilon-POSTIMAGES of `s`
 /// (states `s` can silently reach).
-fn eliminate_epsilons(
+pub(crate) fn eliminate_epsilons(
     nfta: &EpsilonNfta,
     automaton_limits: &TreeAutomatonLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<(Vec<TreeTransition>, Vec<TreeState>)> {
+    // Reserve the closure and preimage maps before allocation: each
+    // holds up to N² cells (review round 2's storage accounting).
+    let state_count = nfta.states.len();
+    let squared = state_count
+        .checked_mul(state_count)
+        .and_then(|n_sq| n_sq.checked_mul(2))
+        .ok_or(RewriteError::RelationLimitExceeded {
+            resource: "elimination relation storage",
+            limit: usize::MAX,
+        })?;
+    for _ in 0..squared {
+        resources.record_constraints(1)?;
+    }
     // Reflexive-transitive closure of the epsilon relation. Our edges
     // only go U -> M and M -> V, so it converges immediately, but the
     // generic fixpoint is implemented.
@@ -529,11 +553,16 @@ fn eliminate_epsilons(
     loop {
         let mut grew = false;
         for (from, to) in &nfta.epsilons {
-            resources.record_operations(1)?;
             let reached: Vec<TreeState> = closure
                 .get(to)
                 .map(|set| set.iter().cloned().collect())
                 .unwrap_or_default();
+            // Charge the edge visit AND every copied closure cell —
+            // set copies are not constant work (review round 1) — and
+            // reserve the scratch vector as constraints: it is
+            // independently allocated relation storage (review round 5).
+            resources.record_operations(1 + reached.len())?;
+            resources.record_constraints(reached.len())?;
             let from_set = closure.entry(from.clone()).or_default();
             for state in reached {
                 if from_set.insert(state) {
@@ -549,6 +578,7 @@ fn eliminate_epsilons(
     // Invert the closure into epsilon-preimage sets.
     let mut preimages: BTreeMap<TreeState, Vec<TreeState>> = BTreeMap::new();
     for (from, reached) in &closure {
+        resources.record_operations(reached.len())?;
         for target in reached {
             preimages
                 .entry(target.clone())
@@ -559,23 +589,33 @@ fn eliminate_epsilons(
 
     let mut eliminated: BTreeSet<TreeTransition> = BTreeSet::new();
     for transition in &nfta.transitions {
-        let child_sets: Vec<Vec<TreeState>> = transition
-            .children()
-            .iter()
-            .map(|child| {
-                preimages
-                    .get(child)
-                    .cloned()
-                    .unwrap_or_else(|| Vec::from([child.clone()]))
-            })
-            .collect();
+        // Copy the child-preimage lists — charged per copied cell
+        // (review round 2): tuple construction is not constant work.
+        let mut child_sets: Vec<Vec<TreeState>> = Vec::new();
+        for child in transition.children() {
+            let set = preimages
+                .get(child)
+                .cloned()
+                .unwrap_or_else(|| Vec::from([child.clone()]));
+            // The clone is billed twice under the metering model:
+            // operations for the copy work, constraints for the
+            // independently-retained relation storage (review round 3).
+            resources.record_operations(set.len())?;
+            resources.record_constraints(set.len())?;
+            child_sets.push(set);
+        }
         let parent_set: Vec<TreeState> = closure
             .get(transition.parent())
             .map(|set| set.iter().cloned().collect())
             .unwrap_or_default();
+        resources.record_operations(parent_set.len())?;
+        resources.record_constraints(parent_set.len())?;
         for_each_combination(&child_sets, |children| {
             for parent in &parent_set {
-                resources.record_operations(1)?;
+                // Candidate visit plus BOTH tuple materializations:
+                // the combination iterator's children vector and the
+                // to_vec copy into the deduplicated set (review round 3).
+                resources.record_operations(1 + 2 * children.len())?;
                 eliminated.insert(TreeTransition::new(
                     transition.symbol().clone(),
                     children.to_vec(),
@@ -595,16 +635,25 @@ fn eliminate_epsilons(
         })?;
     }
 
-    let eliminated_finals: Vec<TreeState> = nfta
-        .states
-        .iter()
-        .filter(|state| {
-            closure
-                .get(*state)
-                .is_some_and(|reached| reached.iter().any(|s| nfta.finals.contains(s)))
-        })
-        .cloned()
-        .collect();
+    // Final membership uses an indexed set — metered construction
+    // (operations for the inserts, constraints for the retained
+    // cells) — instead of unmetered linear scans of the final-state
+    // vector (review round 5).
+    resources.record_operations(nfta.finals.len())?;
+    resources.record_constraints(nfta.finals.len())?;
+    let final_set: BTreeSet<&TreeState> = nfta.finals.iter().collect();
+    // The final-state scan visits every state, and each indexed
+    // lookup in its reached set is unit work (review round 6).
+    resources.record_operations(nfta.states.len())?;
+    let mut eliminated_finals: Vec<TreeState> = Vec::new();
+    for state in &nfta.states {
+        if let Some(reached) = closure.get(state) {
+            resources.record_operations(reached.len())?;
+            if reached.iter().any(|s| final_set.contains(s)) {
+                eliminated_finals.push(state.clone());
+            }
+        }
+    }
 
     Ok((eliminated.into_iter().collect(), eliminated_finals))
 }
@@ -938,6 +987,234 @@ mod tests {
         assert!(transitions
             .iter()
             .all(|transition| transition.symbol().as_str() != "epsilon"));
+    }
+
+    /// Review round 1 (P2): elimination meters the closure's copied
+    /// cells, not just edge visits. Fixture: a()→p with the epsilon
+    /// chain p→q→r. Two relaxation rounds visit 4 edges and copy 6
+    /// closure cells (1+2 + 1+1 per round); charging only per visit
+    /// yields 4 — the test demands at least the visits + copies = 10.
+    /// Review round 2 (P2): candidate tuple construction is metered.
+    /// A single rank-100 transition copies 100 child-preimage lists
+    /// (one cell each) and a 100-cell children vector — the budget of
+    /// 150 must be exhausted by those copies (the old metering charged
+    /// only the single candidate visit).
+    fn high_rank_nfta() -> EpsilonNfta {
+        let s = TreeState::new("s");
+        let p = TreeState::new("p");
+        EpsilonNfta {
+            alphabet: vec![
+                RankedSymbol::new(Symbol::new("a"), 0),
+                RankedSymbol::new(Symbol::new("f"), 100),
+            ],
+            states: vec![s.clone(), p.clone()],
+            transitions: vec![
+                TreeTransition::new(Symbol::new("a"), vec![], s.clone()),
+                TreeTransition::new(
+                    Symbol::new("f"),
+                    (0..100).map(|_| s.clone()).collect(),
+                    p.clone(),
+                ),
+            ],
+            epsilons: vec![],
+            finals: vec![p],
+        }
+    }
+
+    /// Review round 3 (P2): cloned child-preimage lists are relation
+    /// storage and must be reserved as constraints — 100 copied cells
+    /// on top of the 2·N² map reservation (N=2 here) must exhaust a
+    /// 9-cell budget.
+    #[test]
+    fn elimination_reserves_cloned_relation_buffers() {
+        let nfta = high_rank_nfta();
+        let tight = RelationLimits::new(4_096, 64, 9, 1_000_000).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "cloned relation buffers must be reserved as constraints, got {result:?}"
+        );
+    }
+
+    /// Review round 3 (P2): the combination iterator's tuple
+    /// materialization and the parent/final scans are metered. With
+    /// generous constraints: inversion rows charge 2, child-list
+    /// copies 100, the candidate visit + tuple materialization +
+    /// to_vec copy 1+100+100, the parent-set copy 1, the final scan 2
+    /// — 306 in total, so a 205-operation budget must exhaust.
+    /// Review round 4 (P2): the cloned parent-set buffer is relation
+    /// storage too — a nullary-only fixture (N=1) reserves 2 cells for
+    /// the maps, and the cloned parent set needs a third, so a 2-cell
+    /// budget must exhaust.
+    /// Review round 5 (P2): the per-visit closure scratch (the cloned
+    /// reached vector) is independently allocated relation storage —
+    /// with one state and a self epsilon-edge the maps reserve 2
+    /// cells and the scratch needs a third, so a 2-cell budget must
+    /// exhaust.
+    #[test]
+    fn elimination_reserves_closure_scratch() {
+        let s = TreeState::new("s");
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: vec![s.clone()],
+            transitions: vec![],
+            epsilons: vec![(s.clone(), s.clone())],
+            finals: vec![],
+        };
+        let tight = RelationLimits::new(4_096, 64, 2, 4_096).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "closure scratch must be reserved as constraints, got {result:?}"
+        );
+    }
+
+    /// Review round 5 (P2): final membership uses an indexed set whose
+    /// construction is metered (operations for the inserts,
+    /// constraints for the retained cells) instead of unmetered linear
+    /// scans of the final-state vector. Ten states all final: the
+    /// build (10) plus inversion (10) plus the per-state visit (10)
+    /// is 30, so a 25-operation budget must exhaust.
+    /// Review round 6 (P2): every indexed final lookup is unit work.
+    /// Three-state epsilon cycle with final {q2}: closure visits 22,
+    /// inversion 9, index build 1, outer visits 3 — 35 — and the 9
+    /// lookups bring the total to 44, so a 40-operation budget must
+    /// exhaust.
+    #[test]
+    fn elimination_meters_indexed_final_lookups() {
+        let q0 = TreeState::new("q0");
+        let q1 = TreeState::new("q1");
+        let q2 = TreeState::new("q2");
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: vec![q0.clone(), q1.clone(), q2.clone()],
+            transitions: vec![],
+            epsilons: vec![
+                (q0.clone(), q1.clone()),
+                (q1.clone(), q2.clone()),
+                (q2.clone(), q0.clone()),
+            ],
+            finals: vec![q2],
+        };
+        let tight = RelationLimits::new(4_096, 64, 4_096, 40).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "indexed final lookups must be metered, got {result:?}"
+        );
+    }
+
+    #[test]
+    fn elimination_uses_metered_final_index() {
+        let states: Vec<TreeState> = (0..10)
+            .map(|i| TreeState::new(alloc::format!("s{i}")))
+            .collect();
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: states.clone(),
+            transitions: vec![],
+            epsilons: vec![],
+            finals: states,
+        };
+        let tight = RelationLimits::new(4_096, 64, 4_096, 25).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "the indexed final set must be metered, got {result:?}"
+        );
+    }
+
+    #[test]
+    fn elimination_reserves_cloned_parent_buffers() {
+        let s = TreeState::new("s");
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: vec![s.clone()],
+            transitions: vec![TreeTransition::new(Symbol::new("a"), vec![], s.clone())],
+            epsilons: vec![],
+            finals: vec![s],
+        };
+        let tight = RelationLimits::new(4_096, 64, 2, 4_096).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "the cloned parent buffer must be reserved as constraints, got {result:?}"
+        );
+    }
+
+    #[test]
+    fn elimination_meters_tuple_materialization_and_scans() {
+        let nfta = high_rank_nfta();
+        let tight = RelationLimits::new(4_096, 64, 4_096, 205).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "tuple materialization must be metered, got {result:?}"
+        );
+    }
+
+    #[test]
+    fn elimination_meters_high_rank_copies() {
+        let states: Vec<TreeState> = (0..100)
+            .map(|i| TreeState::new(alloc::format!("s{i}")))
+            .collect();
+        let parent = TreeState::new("p");
+        let nfta = EpsilonNfta {
+            alphabet: vec![
+                RankedSymbol::new(Symbol::new("a"), 0),
+                RankedSymbol::new(Symbol::new("f"), 100),
+            ],
+            states: states
+                .iter()
+                .cloned()
+                .chain(core::iter::once(parent.clone()))
+                .collect(),
+            transitions: vec![
+                TreeTransition::new(Symbol::new("a"), vec![], states[0].clone()),
+                TreeTransition::new(
+                    Symbol::new("f"),
+                    (0..100).map(|i| states[i].clone()).collect(),
+                    parent.clone(),
+                ),
+            ],
+            epsilons: vec![],
+            finals: vec![parent],
+        };
+        let tight = RelationLimits::new(4_096, 64, 4_096, 150).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "rank-100 tuple copies must exhaust the operations budget, got {result:?}"
+        );
+    }
+
+    #[test]
+    fn elimination_meters_closure_copies() {
+        let p = TreeState::new("p");
+        let q = TreeState::new("q");
+        let r = TreeState::new("r");
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: vec![p.clone(), q.clone(), r.clone()],
+            transitions: vec![TreeTransition::new(Symbol::new("a"), vec![], p.clone())],
+            epsilons: vec![(p.clone(), q.clone()), (q.clone(), r.clone())],
+            finals: vec![r.clone()],
+        };
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources)
+            .expect("elimination succeeds");
+        assert!(
+            resources.operations() >= 10,
+            "closure copies must be charged (visits + copied cells), got {}",
+            resources.operations()
+        );
     }
 
     #[test]

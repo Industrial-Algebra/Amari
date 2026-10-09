@@ -36,7 +36,7 @@ use crate::language::classify::{
 };
 use crate::language::TreeAutomaton;
 use crate::relation::{RelationLimits, Sha256Digest};
-use crate::trs::TermSystem;
+use crate::trs::{Term, TermSystem};
 
 /// Digest frame for individual terms inside certificate bindings.
 const TERM_FRAME: &str = "amari-rewrite/preimage/term/v1";
@@ -73,6 +73,53 @@ pub fn system_digest(system: &TermSystem) -> Sha256Digest {
 /// Bind a language automaton by its canonical encoding.
 pub fn language_digest(language: &TreeAutomaton) -> Sha256Digest {
     Sha256Digest::framed(LANGUAGE_FRAME, &language.canonical_bytes())
+}
+
+/// Iteratively measure a term (explicit worklist — no recursion on
+/// term depth) and enforce the caller's term bounds. Certificate
+/// issuance runs this before any recursive traversal so that
+/// unchecked deep terms are a typed limit outcome.
+fn preflight_term_bounds(term: &Term, limits: &RelationLimits) -> RewriteResult<()> {
+    let mut nodes = 0usize;
+    let mut depth = 0usize;
+    let mut stack = alloc::vec::Vec::from([(term, 0usize)]);
+    while let Some((node, level)) = stack.pop() {
+        nodes += 1;
+        if level > depth {
+            depth = level;
+        }
+        if nodes > limits.max_term_nodes() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term nodes",
+                limit: limits.max_term_nodes(),
+            });
+        }
+        if depth > limits.max_term_depth() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term depth",
+                limit: limits.max_term_depth(),
+            });
+        }
+        if let Term::Sym(_, arguments) = node {
+            // Bound the pending worklist BEFORE extending it: the term
+            // certainly has at least nodes + pending + new-children
+            // nodes, so reject without allocating when that provable
+            // lower bound already exceeds the budget (review round 4).
+            let lower_bound = nodes
+                .saturating_add(stack.len())
+                .saturating_add(arguments.len());
+            if lower_bound > limits.max_term_nodes() {
+                return Err(RewriteError::RelationLimitExceeded {
+                    resource: "term nodes",
+                    limit: limits.max_term_nodes(),
+                });
+            }
+            for argument in arguments {
+                stack.push((argument, level + 1));
+            }
+        }
+    }
+    Ok(())
 }
 
 /// The authority level a certificate asserts.
@@ -177,6 +224,13 @@ impl PreimageCertificate {
         language: &TreeAutomaton,
         limits: &RelationLimits,
     ) -> RewriteResult<Self> {
+        // Iterative term-bound preflight BEFORE any recursive traversal
+        // (classification, digest framing): an unchecked deep rule side
+        // must be a typed limit outcome, never a stack overflow.
+        for rule in system.rules() {
+            preflight_term_bounds(rule.lhs(), limits)?;
+            preflight_term_bounds(rule.rhs(), limits)?;
+        }
         let classification = classify_system(system)?;
         validate_alphabet(system, language)?;
         let construction = match classification.capability(operation) {
@@ -245,6 +299,16 @@ impl PreimageCertificate {
         language: &TreeAutomaton,
         limits: &RelationLimits,
     ) -> bool {
+        // Re-measure term bounds at verification time: a system that
+        // exceeds the verifier's limits could never have been issued
+        // against them, and every traversal stays iterative.
+        for rule in system.rules() {
+            if preflight_term_bounds(rule.lhs(), limits).is_err()
+                || preflight_term_bounds(rule.rhs(), limits).is_err()
+            {
+                return false;
+            }
+        }
         if validate_alphabet(system, language).is_err() {
             return false;
         }
