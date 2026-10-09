@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "b621574daf96aeec84c84ace5c960545c73214ca4053921447924c9d1d273052",
+  "content_hash": "8293ab302ea2aa9eadc7c6c88ceee59bde59d5ca6dec683186b4acbc4c9644ef",
   "crates": [
     {
       "name": "amari",
@@ -374321,6 +374321,18 @@
                 }
               },
               {
+                "name": "UnsupportedPreimage",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -374496,6 +374508,18 @@
                   },
                   {
                     "name": "MalformedGrammar",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "UnsupportedPreimage",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -375460,6 +375484,18 @@
                 }
               },
               {
+                "name": "UnsupportedPreimage",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -375635,6 +375671,18 @@
                   },
                   {
                     "name": "MalformedGrammar",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "UnsupportedPreimage",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -378411,6 +378459,155 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::CertificateAuthority",
+          "kind": "enum",
+          "signature": "pub enum CertificateAuthority",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Exact",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Partial",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "detail",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum CertificateAuthority",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Exact",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "Partial",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "detail",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "CertificateAuthority"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::Classification",
+          "kind": "struct",
+          "signature": "pub struct Classification",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct Classification",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "Classification"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::Classification::capability",
+          "kind": "method",
+          "signature": "pub fn capability (& self , operation : PreimageOperation) -> PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn capability (& self , operation : PreimageOperation) -> PreimageCapability",
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "Classification::capability"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::Classification::class",
+          "kind": "method",
+          "signature": "pub fn class (& self) -> TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn class (& self) -> TrsClass",
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "Classification::class"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::Classification::rule_count",
+          "kind": "method",
+          "signature": "pub fn rule_count (& self) -> usize",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn rule_count (& self) -> usize",
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "Classification::rule_count"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::GRAMMAR_SYNTAX_HEADER",
           "kind": "const",
           "signature": "pub const GRAMMAR_SYNTAX_HEADER : & str",
@@ -378613,6 +378810,474 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::grammar",
               "declaration_ident": "Nonterminal::new"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCapability",
+          "kind": "enum",
+          "signature": "pub enum PreimageCapability",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Exact",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "PreimageConstruction"
+                  ]
+                }
+              },
+              {
+                "name": "ApproximationOnly",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum PreimageCapability",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Exact",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "PreimageConstruction"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "ApproximationOnly",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "PreimageCapability"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate",
+          "kind": "struct",
+          "signature": "pub struct PreimageCertificate",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct PreimageCertificate",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::authority",
+          "kind": "method",
+          "signature": "pub fn authority (& self) -> & CertificateAuthority",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn authority (& self) -> & CertificateAuthority",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::authority"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::class",
+          "kind": "method",
+          "signature": "pub fn class (& self) -> TrsClass",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn class (& self) -> TrsClass",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::class"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::construction",
+          "kind": "method",
+          "signature": "pub fn construction (& self) -> PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn construction (& self) -> PreimageConstruction",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::construction"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::horizon",
+          "kind": "method",
+          "signature": "pub fn horizon (& self) -> Option < u32 >",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn horizon (& self) -> Option < u32 >",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::horizon"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::is_complete",
+          "kind": "method",
+          "signature": "pub fn is_complete (& self) -> bool",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn is_complete (& self) -> bool",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::is_complete"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::issue",
+          "kind": "method",
+          "signature": "pub fn issue (operation : PreimageOperation , system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits ,) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn issue (operation : PreimageOperation , system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits ,) -> RewriteResult < Self >",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::issue"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::language",
+          "kind": "method",
+          "signature": "pub fn language (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn language (& self) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::language"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::operation",
+          "kind": "method",
+          "signature": "pub fn operation (& self) -> PreimageOperation",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn operation (& self) -> PreimageOperation",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::operation"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::result",
+          "kind": "method",
+          "signature": "pub fn result (& self) -> Option < Sha256Digest >",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn result (& self) -> Option < Sha256Digest >",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::result"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::system",
+          "kind": "method",
+          "signature": "pub fn system (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn system (& self) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::system"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::verify",
+          "kind": "method",
+          "signature": "pub fn verify (& self , system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits ,) -> bool",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn verify (& self , system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits ,) -> bool",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::verify"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::verify_result",
+          "kind": "method",
+          "signature": "pub fn verify_result (& self , result : & TreeAutomaton) -> bool",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn verify_result (& self , result : & TreeAutomaton) -> bool",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::verify_result"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageConstruction",
+          "kind": "enum",
+          "signature": "pub enum PreimageConstruction",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Identity",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "LeftLinearOneStep",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "FiniteHorizonIteration",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "u32"
+                  ]
+                }
+              },
+              {
+                "name": "GttSaturation",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum PreimageConstruction",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Identity",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "LeftLinearOneStep",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "FiniteHorizonIteration",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "u32"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "GttSaturation",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "PreimageConstruction"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::PreimageOperation",
+          "kind": "enum",
+          "signature": "pub enum PreimageOperation",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "OneStep",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "FiniteHorizon",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "u32"
+                  ]
+                }
+              },
+              {
+                "name": "Saturation",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum PreimageOperation",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "OneStep",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "FiniteHorizon",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "u32"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "Saturation",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "PreimageOperation"
             }
           ]
         },
@@ -379900,6 +380565,178 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::TrsClass",
+          "kind": "enum",
+          "signature": "pub enum TrsClass",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Ground",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "LinearVariableDisjoint",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "LeftLinearShared",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "NonLeftLinear",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum TrsClass",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Ground",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "LinearVariableDisjoint",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "LeftLinearShared",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "NonLeftLinear",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "TrsClass"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::TrsClass::capability",
+          "kind": "method",
+          "signature": "pub fn capability (self , operation : PreimageOperation) -> PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn capability (self , operation : PreimageOperation) -> PreimageCapability",
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "TrsClass::capability"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::classify_system",
+          "kind": "fn",
+          "signature": "pub fn classify_system (system : & TermSystem) -> RewriteResult < Classification >",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn classify_system (system : & TermSystem) -> RewriteResult < Classification >",
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "classify_system"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::language_digest",
+          "kind": "fn",
+          "signature": "pub fn language_digest (language : & TreeAutomaton) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn language_digest (language : & TreeAutomaton) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "language_digest"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::system_digest",
+          "kind": "fn",
+          "signature": "pub fn system_digest (system : & TermSystem) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn system_digest (system : & TermSystem) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "system_digest"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::validate_alphabet",
+          "kind": "fn",
+          "signature": "pub fn validate_alphabet (system : & TermSystem , language : & TreeAutomaton) -> RewriteResult < () >",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::classify",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn validate_alphabet (system : & TermSystem , language : & TreeAutomaton) -> RewriteResult < () >",
+              "source_path": "amari-rewrite/src/language/classify.rs",
+              "source_module": "amari_rewrite::language::classify",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::classify",
+              "declaration_ident": "validate_alphabet"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::network::RewriteGraphSummary",
           "kind": "struct",
           "signature": "pub struct RewriteGraphSummary",
@@ -380453,6 +381290,18 @@
                 }
               },
               {
+                "name": "UnsupportedPreimage",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "ResidualMismatch",
                 "data": {
                   "kind": "struct",
@@ -380628,6 +381477,18 @@
                   },
                   {
                     "name": "MalformedGrammar",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "UnsupportedPreimage",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -386327,6 +387188,42 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::CertificateAuthority",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "CertificateAuthority"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::Classification",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "Classification"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
           "source_ordinal": 4,
@@ -386356,6 +387253,78 @@
             "kind": "local",
             "module": "amari_rewrite::language::grammar",
             "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageCapability"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 7,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "PreimageCertificate"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -386464,6 +387433,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -387263,6 +388250,78 @@
         },
         {
           "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::language::Classification",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "Classification"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::language::PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageCapability"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
           "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
           "source_path": "amari-rewrite/src/language/limits.rs",
           "source_ordinal": 0,
@@ -387274,6 +388333,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::limits",
             "ident": "TreeAutomatonLimits"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Copy",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Copy"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -388040,6 +389117,42 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::CertificateAuthority",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "CertificateAuthority"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::Classification",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "Classification"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
           "source_ordinal": 4,
@@ -388069,6 +389182,78 @@
             "kind": "local",
             "module": "amari_rewrite::language::grammar",
             "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageCapability"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 7,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "PreimageCertificate"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -388177,6 +389362,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -389409,6 +390612,42 @@
         },
         {
           "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::CertificateAuthority",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "CertificateAuthority"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::Classification",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "Classification"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
           "source_ordinal": 4,
@@ -389438,6 +390677,78 @@
             "kind": "local",
             "module": "amari_rewrite::language::grammar",
             "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageCapability"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 7,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "PreimageCertificate"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -389546,6 +390857,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -390546,6 +391875,42 @@
         },
         {
           "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -390593,6 +391958,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Hash",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Hash"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -390906,6 +392289,42 @@
         },
         {
           "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Ord",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -390953,6 +392372,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Ord",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Ord"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -391735,6 +393172,42 @@
         },
         {
           "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::CertificateAuthority",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "CertificateAuthority"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::Classification",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 5,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "Classification"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::GrammarProduction",
           "source_path": "amari-rewrite/src/language/grammar.rs",
           "source_ordinal": 4,
@@ -391764,6 +393237,78 @@
             "kind": "local",
             "module": "amari_rewrite::language::grammar",
             "ident": "Nonterminal"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 3,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageCapability"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 7,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "PreimageCertificate"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -391872,6 +393417,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -392599,6 +394162,42 @@
         },
         {
           "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageConstruction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "PreimageOperation"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
           "impl_type_path": "amari_rewrite::language::RankedSymbol",
           "source_path": "amari-rewrite/src/language/alphabet.rs",
           "source_ordinal": 0,
@@ -392646,6 +394245,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "TreeTransition"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialOrd",
+          "impl_type_path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialOrd"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::classify",
+            "ident": "TrsClass"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -393082,6 +394699,25 @@
             "kind": "local",
             "module": "amari_rewrite::inverse::outcome",
             "ident": "CertifiedExhaustion"
+          },
+          "generics": "< 'de >",
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": false
+        },
+        {
+          "trait_path": "serde::Deserialize",
+          "impl_type_path": "amari_rewrite::language::PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 8,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "serde::Deserialize"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::certificate",
+            "ident": "PreimageCertificate"
           },
           "generics": "< 'de >",
           "unsafe_trait": false,
@@ -394155,6 +395791,46 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::CertificateAuthority",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 6,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::Classification",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::Classification::capability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::Classification::class",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::Classification::rule_count",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::language::GRAMMAR_SYNTAX_HEADER",
           "source_path": "amari-rewrite/src/language/grammar.rs",
           "source_ordinal": 0,
@@ -394233,6 +395909,134 @@
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCapability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 7,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::authority",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 13,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::class",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 8,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::construction",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 9,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::horizon",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 12,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::is_complete",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 15,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::issue",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::language",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 11,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::operation",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 7,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::result",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 14,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::system",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 10,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::verify",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::verify_result",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageConstruction",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageOperation",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
         },
         {
           "path": "amari_rewrite::language::RankedSymbol",
@@ -394753,6 +396557,54 @@
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::TrsClass",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::TrsClass::capability",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::classify_system",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 7,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::language_digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 5,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::system_digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::validate_alphabet",
+          "source_path": "amari-rewrite/src/language/classify.rs",
+          "source_ordinal": 8,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
         },
         {
           "path": "amari_rewrite::network",
