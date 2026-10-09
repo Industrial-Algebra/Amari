@@ -642,18 +642,18 @@ pub(crate) fn eliminate_epsilons(
     resources.record_operations(nfta.finals.len())?;
     resources.record_constraints(nfta.finals.len())?;
     let final_set: BTreeSet<&TreeState> = nfta.finals.iter().collect();
-    // The final-state scan visits every state.
+    // The final-state scan visits every state, and each indexed
+    // lookup in its reached set is unit work (review round 6).
     resources.record_operations(nfta.states.len())?;
-    let eliminated_finals: Vec<TreeState> = nfta
-        .states
-        .iter()
-        .filter(|state| {
-            closure
-                .get(*state)
-                .is_some_and(|reached| reached.iter().any(|s| final_set.contains(s)))
-        })
-        .cloned()
-        .collect();
+    let mut eliminated_finals: Vec<TreeState> = Vec::new();
+    for state in &nfta.states {
+        if let Some(reached) = closure.get(state) {
+            resources.record_operations(reached.len())?;
+            if reached.iter().any(|s| final_set.contains(s)) {
+                eliminated_finals.push(state.clone());
+            }
+        }
+    }
 
     Ok((eliminated.into_iter().collect(), eliminated_finals))
 }
@@ -1077,6 +1077,36 @@ mod tests {
     /// scans of the final-state vector. Ten states all final: the
     /// build (10) plus inversion (10) plus the per-state visit (10)
     /// is 30, so a 25-operation budget must exhaust.
+    /// Review round 6 (P2): every indexed final lookup is unit work.
+    /// Three-state epsilon cycle with final {q2}: closure visits 22,
+    /// inversion 9, index build 1, outer visits 3 — 35 — and the 9
+    /// lookups bring the total to 44, so a 40-operation budget must
+    /// exhaust.
+    #[test]
+    fn elimination_meters_indexed_final_lookups() {
+        let q0 = TreeState::new("q0");
+        let q1 = TreeState::new("q1");
+        let q2 = TreeState::new("q2");
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: vec![q0.clone(), q1.clone(), q2.clone()],
+            transitions: vec![],
+            epsilons: vec![
+                (q0.clone(), q1.clone()),
+                (q1.clone(), q2.clone()),
+                (q2.clone(), q0.clone()),
+            ],
+            finals: vec![q2],
+        };
+        let tight = RelationLimits::new(4_096, 64, 4_096, 40).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "indexed final lookups must be metered, got {result:?}"
+        );
+    }
+
     #[test]
     fn elimination_uses_metered_final_index() {
         let states: Vec<TreeState> = (0..10)

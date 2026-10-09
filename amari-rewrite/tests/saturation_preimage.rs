@@ -549,7 +549,7 @@ fn deep_unchecked_terms_are_a_typed_outcome() {
 fn constraints_accounting_covers_reserved_storage() {
     let system = TermSystem::new(vec![Rule::new(a(), b()).unwrap()]);
     let language = singleton_language();
-    let tight = RelationLimits::new(4_096, 64, 9, 1_000_000).expect("valid tight limits");
+    let tight = RelationLimits::new(4_096, 64, 54, 1_000_000).expect("valid tight limits");
     let result = saturation_preimage(&system, &language, &tight, &TreeAutomatonLimits::default());
     assert!(
         matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
@@ -607,7 +607,7 @@ fn deep_system_verification_is_safe() {
 fn elimination_storage_is_reserved() {
     let system = TermSystem::new(vec![Rule::new(a(), b()).unwrap()]);
     let language = singleton_language();
-    let tight = RelationLimits::new(4_096, 64, 15, 1_000_000).expect("valid tight limits");
+    let tight = RelationLimits::new(4_096, 64, 54, 1_000_000).expect("valid tight limits");
     let result = saturation_preimage(&system, &language, &tight, &TreeAutomatonLimits::default());
     assert!(
         matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
@@ -655,4 +655,21 @@ fn deep_system_verification_with_pending_certificate_is_safe() {
         .expect("thread spawns")
         .join()
         .expect("verification returns instead of overflowing the stack");
+}
+
+/// Review round 6 (P2): the right-side evaluation's freshly allocated
+/// raw/closed sets and the edge-conversion/assembly clones are billed
+/// as constraints. The reviewer's `{a → a}` singleton case charges 21
+/// cells without them; the full buffer inventory requires more, so a
+/// 54-cell budget must now exhaust (54 is the pre-fix total).
+#[test]
+fn evaluation_buffers_and_assembly_clones_are_reserved() {
+    let system = TermSystem::new(vec![Rule::new(a(), a()).unwrap()]);
+    let language = singleton_language();
+    let tight = RelationLimits::new(4_096, 64, 54, 1_000_000).expect("valid tight limits");
+    let result = saturation_preimage(&system, &language, &tight, &TreeAutomatonLimits::default());
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "the full evaluation/assembly buffer inventory must be billed, got {result:?}"
+    );
 }

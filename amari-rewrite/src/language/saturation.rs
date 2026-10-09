@@ -149,6 +149,23 @@ pub fn saturation_preimage(
 
     let universe = build_universe(system, language, limits, automaton_limits, &mut resources)?;
     let (edges, _productive_rounds) = saturate(&universe, system, limits, &mut resources)?;
+    // The assembly clones below are freshly allocated buffers: the
+    // epsilon pairs, the state/transition/alphabet copies handed to
+    // the NFTA — billed as constraints before allocation (round 6).
+    let assembly_cells = edges
+        .len()
+        .checked_mul(2)
+        .and_then(|cells| {
+            cells
+                .checked_add(universe.states.len())
+                .and_then(|c| c.checked_add(universe.fixed.len()))
+                .and_then(|c| c.checked_add(universe.alphabet.len()))
+        })
+        .ok_or(RewriteError::RelationLimitExceeded {
+            resource: "saturation assembly storage",
+            limit: limits.max_constraints(),
+        })?;
+    charge_constraints(&mut resources, limits, assembly_cells)?;
     let epsilons: Vec<(TreeState, TreeState)> = edges
         .iter()
         .map(|&(from, to)| (universe.states[from].clone(), universe.states[to].clone()))
@@ -236,6 +253,9 @@ impl Universe {
                             raw.insert(*parent);
                         }
                     }
+                    // Freshly allocated per node per call: bill the
+                    // raw set's cells as constraints (review round 6).
+                    charge_constraints(resources, limits, raw.len())?;
                     let mut closed: BTreeSet<StateIndex> = BTreeSet::new();
                     for parent in &raw {
                         for (target, reachable) in closure[*parent].iter().enumerate() {
@@ -245,6 +265,8 @@ impl Universe {
                             }
                         }
                     }
+                    // The closed set is freshly allocated too.
+                    charge_constraints(resources, limits, closed.len())?;
                     closed
                 }
             };
