@@ -29,13 +29,18 @@
 //! order, then the fixed child-size-composition and recursive order).
 //! Every constructed node charges operations and, once retained, a
 //! relation-storage constraint; every replayed successor and every
-//! membership test charges operations. When a metered resource is
-//! exhausted the enumeration STOPS — an
-//! [`ApproximationEvent::EnumerationTruncated`] is recorded and the
-//! witnesses collected so far are returned. Exhaustion is never an
-//! error. Hard violations (an automaton ceiling exceeded while
-//! assembling the output) remain typed
-//! [`RewriteError::RelationLimitExceeded`] errors.
+//! membership test charges operations. The enumeration's effective
+//! ceiling is the configured limit MINUS a documented assembly
+//! headroom (one eighth of the limit when the limit is at least 8):
+//! when a metered resource crosses that ceiling the enumeration STOPS
+//! — an [`ApproximationEvent::EnumerationTruncated`] is recorded and
+//! the witnesses collected so far are returned. Enumeration
+//! exhaustion is never an error. Output assembly (DAG construction +
+//! canonicalize) draws from the SAME shared pool against the FULL
+//! limit — the reserved headroom is what makes a truncated outcome
+//! affordable — and assembly exhaustion IS a typed
+//! [`RewriteError::RelationLimitExceeded`]. Total accounted work
+//! never exceeds the caller's per-query limits.
 //!
 //! The input contract here differs from the exact constructions: the
 //! candidate alphabet is a union, so a rule left side may use a symbol
@@ -228,6 +233,14 @@ fn witnessed_lower_bound(
     )?;
 
     let candidate_alphabet = candidate_alphabet(system, language);
+    // Right-side node counts, precomputed once: the successor
+    // preflight bills each rule's potential replacement construction
+    // (review round 2).
+    let rhs_nodes: Vec<usize> = system
+        .rules()
+        .iter()
+        .map(|rule| term_nodes(rule.rhs()))
+        .collect();
     // The one-step relation is exactly one application (no reflexive
     // closure); finite horizon and saturation include zero steps.
     let min_steps = match operation {
@@ -244,6 +257,7 @@ fn witnessed_lower_bound(
             &candidate_alphabet,
             max_steps,
             min_steps,
+            &rhs_nodes,
             &mut resources,
             limits,
             &mut witnesses,
@@ -267,21 +281,22 @@ fn witnessed_lower_bound(
         reason: "no sound upper construction is approved for this class (ADR 0001 §Obligations)",
     });
 
-    // Output assembly draws a FRESH draw of the same configured
-    // limits (per-phase accounting, review round 1): enumeration
-    // exhaustion truncates (the witnesses so far are sound), while
-    // assembly exhaustion is a typed `RelationLimitExceeded` — the
-    // determinization odometer is metered per step
-    // (determinize.rs), so a runaway construction trips the
-    // operation budget instead of running unbounded. The automaton
-    // ceilings in `automaton_limits` still apply.
-    let mut assembly_resources = RelationResources::new(limits);
+    // Output assembly draws from the SAME shared pool (one per-query
+    // budget, review round 2): the determinization odometer is
+    // metered per step (determinize.rs), so a runaway construction
+    // trips the operation budget with a typed `RelationLimitExceeded`
+    // — but that also means exhaustion during assembly is a typed
+    // error, and truncation-with-Ok survives only when the truncated
+    // witness set assembles within the budget the enumeration left
+    // unspent. Total accounted work never exceeds the caller's
+    // configured per-query limits. The automaton ceilings in
+    // `automaton_limits` still apply.
     let lower = build_lower_automaton(
         &witnesses,
         &candidate_alphabet,
         language,
         automaton_limits,
-        &mut assembly_resources,
+        &mut resources,
     )?;
     let certificate = certificate.complete(&lower);
     Ok(ApproximationOutcome {
@@ -313,6 +328,17 @@ enum Stop {
     Hard(RewriteError),
 }
 
+/// The assembly headroom reserved under a configured limit: the
+/// enumeration stops at limit − reserve so the output automaton can
+/// be assembled within the same per-query budget (review round 2).
+fn headroom_reserve(limit: usize) -> usize {
+    if limit >= 8 {
+        limit / 8
+    } else {
+        0
+    }
+}
+
 /// Charge `count` operations after a checked preflight; exhaustion is
 /// a [`Stop::Truncated`], never an error.
 fn charge_operations(
@@ -320,10 +346,11 @@ fn charge_operations(
     limit: usize,
     count: usize,
 ) -> Result<(), Stop> {
+    let ceiling = limit.saturating_sub(headroom_reserve(limit));
     let exhausted = resources
         .operations()
         .checked_add(count)
-        .is_none_or(|next| next > limit);
+        .is_none_or(|next| next > ceiling);
     if exhausted {
         return Err(Stop::Truncated {
             resource: "operations",
@@ -340,10 +367,11 @@ fn charge_constraints(
     limit: usize,
     count: usize,
 ) -> Result<(), Stop> {
+    let ceiling = limit.saturating_sub(headroom_reserve(limit));
     let exhausted = resources
         .constraints()
         .checked_add(count)
-        .is_none_or(|next| next > limit);
+        .is_none_or(|next| next > ceiling);
     if exhausted {
         return Err(Stop::Truncated {
             resource: "constraints",
@@ -381,6 +409,7 @@ fn enumerate_witnesses(
     alphabet: &[RankedSymbol],
     max_steps: u32,
     min_steps: u32,
+    rhs_nodes: &[usize],
     resources: &mut RelationResources,
     limits: &RelationLimits,
     witnesses: &mut BTreeSet<Term>,
@@ -395,7 +424,7 @@ fn enumerate_witnesses(
                 continue;
             }
             if replays_into(
-                system, language, term, max_steps, min_steps, resources, limits,
+                system, language, term, max_steps, min_steps, rhs_nodes, resources, limits,
             )? {
                 let nodes = term_nodes(term);
                 charge_constraints(resources, limits.max_constraints(), 1 + nodes)?;
@@ -547,6 +576,7 @@ fn replays_into(
     start: &Term,
     budget: u32,
     min_steps: u32,
+    rhs_nodes: &[usize],
     resources: &mut RelationResources,
     limits: &RelationLimits,
 ) -> Result<bool, Stop> {
@@ -576,16 +606,26 @@ fn replays_into(
         }
         let mut next: Vec<Term> = Vec::new();
         for term in &frontier {
-            // Preflight the successor work BEFORE the successor vector
-            // is allocated: each rule is attempted at each position, so
-            // rules x (nodes + 1) is an honest advance estimate. A tiny
-            // budget truncates here without the allocation happening.
-            let estimate = system
-                .rules()
-                .len()
-                .saturating_mul(term_nodes(term).saturating_add(1))
-                .max(1);
-            charge_operations(resources, limits.max_operations(), estimate)?;
+            // Preflight the successor work BEFORE the successor
+            // vector is allocated: each rule is attempted at each
+            // position, and a successful application constructs a
+            // replacement of at most nodes(term) + nodes(rhs) nodes
+            // — bill the matching/substitution work AND the complete
+            // potential successor storage in advance (review round
+            // 2), so a rule with a huge right side truncates before
+            // the replacement is ever built.
+            let mut ops_estimate = 0usize;
+            let mut storage_estimate = 0usize;
+            for rhs_size in rhs_nodes {
+                ops_estimate = ops_estimate
+                    .saturating_add(term_nodes(term).saturating_add(1))
+                    .saturating_add(*rhs_size);
+                storage_estimate = storage_estimate
+                    .saturating_add(term_nodes(term))
+                    .saturating_add(*rhs_size);
+            }
+            charge_operations(resources, limits.max_operations(), ops_estimate.max(1))?;
+            charge_constraints(resources, limits.max_constraints(), storage_estimate)?;
             let successors = system.application_successors(term).map_err(Stop::Hard)?;
             charge_operations(resources, limits.max_operations(), successors.len())?;
             charge_constraints(resources, limits.max_constraints(), successors.len())?;

@@ -608,3 +608,59 @@ fn successor_work_is_preflighted_before_allocation() {
         "the tiny budget must truncate during replay preflight"
     );
 }
+
+/// Review round 2 (P2): the successor preflight bills the COMPLETE
+/// potential replacement storage — a rule whose right side has 4,096
+/// nodes truncates the replay before the 4,096-node successor is ever
+/// constructed (behavioral guard; the avoided allocation is
+/// instrumented in the reviewer's reproduction).
+#[test]
+fn huge_right_side_truncates_at_the_storage_preflight() {
+    let wide_rhs = Term::sym("z", (0..4_095).map(|_| b()).collect::<Vec<_>>());
+    let system = TermSystem::new(vec![
+        Rule::new(a(), wide_rhs).unwrap(),
+        Rule::new(f(x(), x()), a()).unwrap(),
+    ]);
+    // The wide symbol appears only on the rule's right side — it
+    // never enters a tree automaton (which would reject rank 4,095).
+    let language = accepts_exactly(&[("a", 0), ("b", 0), ("f", 2)], &[b()]);
+    let tight = RelationLimits::new(4_096, 64, 8, 20).expect("valid tight limits");
+    let outcome = one_step_lower_bound(&system, &language, &tight, &TreeAutomatonLimits::default())
+        .expect("truncation is not an error");
+    assert!(
+        outcome
+            .trace()
+            .iter()
+            .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. })),
+        "the 4,096-node replacement must trip the storage preflight, trace: {:?}",
+        outcome.trace()
+    );
+}
+
+/// Review round 2 (P2): one per-query budget. Enumeration truncates
+/// at the headroom boundary; when the witness set cannot be assembled
+/// within the SAME budget (here: the determinization odometer over a
+/// rank-16 symbol needs billions of steps), the outcome is a typed
+/// limit error — never a second implicit grant.
+#[test]
+fn assembly_beyond_the_shared_budget_is_typed() {
+    let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
+    let q = TreeState::new("q");
+    let language = TreeAutomaton::new(
+        vec![
+            RankedSymbol::new(Symbol::new("a"), 0),
+            RankedSymbol::new(Symbol::new("z"), 16),
+        ],
+        vec![q.clone()],
+        vec![TreeTransition::new(Symbol::new("a"), vec![], q.clone())],
+        vec![q],
+        TreeAutomatonLimits::default(),
+    )
+    .expect("fixture automaton is valid");
+    let tight = RelationLimits::new(4_096, 64, 4_096, 512).expect("valid tight limits");
+    let result = one_step_lower_bound(&system, &language, &tight, &TreeAutomatonLimits::default());
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "assembly beyond the shared per-query budget must be typed, got {result:?}"
+    );
+}
