@@ -100,28 +100,35 @@ fn hex_value(byte: u8) -> Option<u8> {
 /// Preorder canonical encoding with alpha-renaming: variables become
 /// indices by first occurrence; structure, arities, and symbol names
 /// are explicit. Shared with constraint canonicalization.
+///
+/// Iterative (explicit worklist, children pushed in reverse so the
+/// pop order is preorder): the byte output and first-occurrence
+/// variable indexing match the former recursive encoding exactly.
 pub(crate) fn encode_term(term: &Term, variables: &mut Vec<String>, out: &mut Vec<u8>) {
-    match term {
-        Term::Var(variable) => {
-            let name = variable.to_string();
-            let index = variables
-                .iter()
-                .position(|known| *known == name)
-                .unwrap_or_else(|| {
-                    variables.push(name);
-                    variables.len() - 1
-                });
-            out.push(0x00);
-            push_u32(out, index as u32);
-        }
-        Term::Sym(symbol, args) => {
-            out.push(0x01);
-            let name = symbol.to_string();
-            push_u32(out, args.len() as u32);
-            push_u32(out, name.len() as u32);
-            out.extend_from_slice(name.as_bytes());
-            for arg in args {
-                encode_term(arg, variables, out);
+    let mut stack = Vec::from([term]);
+    while let Some(node) = stack.pop() {
+        match node {
+            Term::Var(variable) => {
+                let name = variable.to_string();
+                let index = variables
+                    .iter()
+                    .position(|known| *known == name)
+                    .unwrap_or_else(|| {
+                        variables.push(name);
+                        variables.len() - 1
+                    });
+                out.push(0x00);
+                push_u32(out, index as u32);
+            }
+            Term::Sym(symbol, args) => {
+                out.push(0x01);
+                let name = symbol.to_string();
+                push_u32(out, args.len() as u32);
+                push_u32(out, name.len() as u32);
+                out.extend_from_slice(name.as_bytes());
+                for arg in args.iter().rev() {
+                    stack.push(arg);
+                }
             }
         }
     }

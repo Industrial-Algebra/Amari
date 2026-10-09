@@ -565,3 +565,52 @@ fn constraints_accounting_covers_reserved_storage() {
     .expect("generous limits succeed");
     assert!(outcome.certificate().verify(&system, &language, &generous));
 }
+
+/// Review round 2 (P1): verification and the public digest helpers
+/// must not recursively traverse unmeasured terms either — verifying
+/// against a deep unchecked system must return false (digest
+/// mismatch), never abort. Small thread stack; the term is leaked to
+/// avoid the recursive Drop.
+#[test]
+fn deep_system_verification_is_safe() {
+    let system = TermSystem::new(vec![Rule::new(a(), b()).unwrap()]);
+    let language = singleton_language();
+    let limits = RelationLimits::default();
+    let certificate =
+        saturation_preimage(&system, &language, &limits, &TreeAutomatonLimits::default())
+            .expect("small system is approved")
+            .certificate()
+            .clone();
+    std::thread::Builder::new()
+        .stack_size(128 * 1024)
+        .spawn(move || {
+            let mut deep = a();
+            for _ in 0..10_000 {
+                deep = g(deep);
+            }
+            let deep_system = TermSystem::new(vec![Rule::new_unchecked(deep, b())]);
+            let _ = amari_rewrite::language::system_digest(&deep_system);
+            assert!(!certificate.verify(&deep_system, &language, &limits));
+            std::mem::forget(deep_system);
+        })
+        .expect("thread spawns")
+        .join()
+        .expect("verification returns instead of overflowing the stack");
+}
+
+/// Review round 2 (P2): the elimination pass's own structures
+/// (closure + preimage maps) and each round's evaluation buffers are
+/// reserved relation storage too — a 15-cell budget covers the
+/// saturation reservations exactly and must now be exhausted by the
+/// remaining allocations.
+#[test]
+fn elimination_storage_is_reserved() {
+    let system = TermSystem::new(vec![Rule::new(a(), b()).unwrap()]);
+    let language = singleton_language();
+    let tight = RelationLimits::new(4_096, 64, 15, 1_000_000).expect("valid tight limits");
+    let result = saturation_preimage(&system, &language, &tight, &TreeAutomatonLimits::default());
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "a 15-cell budget must not cover the whole pipeline, got {result:?}"
+    );
+}

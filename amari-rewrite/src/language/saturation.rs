@@ -534,6 +534,10 @@ fn saturate(
         }
         // At least one charged operation per round.
         charge_operations(resources, limits, 1)?;
+        // The right-side evaluation buffers are allocated fresh every
+        // round — charge their capacity per round, not once (review
+        // round 2's cumulative storage accounting).
+        charge_constraints(resources, limits, evaluation_cells)?;
         compute_closure(&mut matrix, n, n_cubed, &edges, resources, limits)?;
         let mut added = false;
         for (rule_index, rule) in system.rules().iter().enumerate() {

@@ -76,18 +76,21 @@ pub trait Rewritable: Clone + PartialEq + Debug {
     }
 
     /// Return all valid positions in preorder, including the root.
+    ///
+    /// Iterative (explicit worklist): deep terms must never depend on
+    /// call-stack depth. Preorder matches the former recursive walk
+    /// exactly: parent, then children in ascending index order.
     fn positions(&self) -> Vec<Path> {
-        fn walk<T: Rewritable>(term: &T, path: Path, out: &mut Vec<Path>) {
+        let mut out = Vec::new();
+        let mut stack: Vec<(&Self, Path)> = Vec::from([(self, Path::root())]);
+        while let Some((term, path)) = stack.pop() {
             out.push(path.clone());
-            for index in 0..term.child_count() {
+            for index in (0..term.child_count()).rev() {
                 if let Some(child) = term.child(index) {
-                    walk(child, path.child(index), out);
+                    stack.push((child, path.child(index)));
                 }
             }
         }
-
-        let mut out = Vec::new();
-        walk(self, Path::root(), &mut out);
         out
     }
 

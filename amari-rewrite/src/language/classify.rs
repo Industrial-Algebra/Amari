@@ -201,19 +201,22 @@ fn validate_side(
     rule_index: usize,
     term: &Term,
 ) -> RewriteResult<()> {
-    if let Term::Sym(symbol, arguments) = term {
-        let arity = arguments.len();
-        if !ranked.contains(&(symbol.as_str(), arity)) {
-            return Err(RewriteError::UnsupportedPreimage {
-                message: format!(
-                    "rule {rule_index}: symbol `{}` with arity {arity} is not in the language \
-                     alphabet (ADR 0001 input contract)",
-                    symbol.as_str()
-                ),
-            });
-        }
-        for argument in arguments {
-            validate_side(ranked, rule_index, argument)?;
+    // Iterative (explicit worklist): verification and issuance must
+    // never depend on call-stack depth for unmeasured terms.
+    let mut stack = alloc::vec::Vec::from([term]);
+    while let Some(node) = stack.pop() {
+        if let Term::Sym(symbol, arguments) = node {
+            let arity = arguments.len();
+            if !ranked.contains(&(symbol.as_str(), arity)) {
+                return Err(RewriteError::UnsupportedPreimage {
+                    message: format!(
+                        "rule {rule_index}: symbol `{}` with arity {arity} is not in the language \
+                         alphabet (ADR 0001 input contract)",
+                        symbol.as_str()
+                    ),
+                });
+            }
+            stack.extend(arguments.iter());
         }
     }
     Ok(())
