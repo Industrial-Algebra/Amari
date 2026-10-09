@@ -5,14 +5,31 @@
 //! - Arbitrary precision using rug::Float for critical calculations
 //! - Configurable precision based on application requirements
 
-#[allow(unused_imports)]
-use num_traits::{FromPrimitive, ToPrimitive, Zero};
-
 #[cfg(feature = "std")]
-use std::fmt::{Debug, Display, Formatter, Result};
+use std::fmt::{Debug, Display};
+
+#[cfg(all(
+    feature = "std",
+    any(
+        feature = "native-precision",
+        feature = "high-precision",
+        feature = "wasm-precision"
+    )
+))]
+use std::fmt::{Formatter, Result};
 
 #[cfg(not(feature = "std"))]
-use core::fmt::{Debug, Display, Formatter, Result};
+use core::fmt::{Debug, Display};
+
+#[cfg(all(
+    not(feature = "std"),
+    any(
+        feature = "native-precision",
+        feature = "high-precision",
+        feature = "wasm-precision"
+    )
+))]
+use core::fmt::{Formatter, Result};
 
 #[cfg(feature = "std")]
 use std::f64::consts;

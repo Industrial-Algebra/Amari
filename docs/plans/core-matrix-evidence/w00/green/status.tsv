@@ -1,0 +1,14 @@
+G1-stable-default-clippy	0
+G2-no-default-check	0
+G5a-no-default-lib-clippy	0
+G5b-std-only-clippy	0
+G5c-highprec-lib-clippy	0
+G3-std-only-test	0
+G4-minimal-gf2-test	0
+G6-stable-default-test	0
+G7-stable-check	0
+G7-stable-doc	0
+G1-nightly-default-clippy	0
+G6-nightly-default-test	0
+G7-nightly-check	0
+G7-nightly-doc	0

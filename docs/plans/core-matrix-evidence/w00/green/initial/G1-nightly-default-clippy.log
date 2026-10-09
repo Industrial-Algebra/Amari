@@ -1,0 +1,12 @@
+    Checking zerocopy v0.8.62
+    Checking serde v1.0.229
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core)
+    Checking tinytemplate v1.2.1
+    Checking half v2.7.1
+    Checking ppv-lite86 v0.2.21
+    Checking ciborium-ll v0.2.2
+    Checking rand_chacha v0.9.0
+    Checking ciborium v0.2.2
+    Checking proptest v1.11.0
+    Checking criterion v0.8.2
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.67s

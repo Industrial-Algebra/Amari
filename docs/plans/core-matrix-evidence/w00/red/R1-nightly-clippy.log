@@ -1,0 +1,140 @@
+ Downloading crates ...
+  Downloaded num-modular v0.6.6
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+    Checking cfg-if v1.0.5
+   Compiling libc v0.2.190
+   Compiling zerocopy v0.8.62
+   Compiling autocfg v1.5.1
+   Compiling getrandom v0.3.4
+   Compiling crossbeam-utils v0.8.23
+   Compiling serde_core v1.0.229
+   Compiling getrandom v0.4.3
+    Checking rand_core v0.10.1
+   Compiling crossbeam-epoch v0.9.21
+   Compiling shlex v2.0.1
+   Compiling serde v1.0.229
+   Compiling zmij v1.0.23
+   Compiling crossbeam-deque v0.8.8
+   Compiling rustix v1.1.5
+   Compiling find-msvc-tools v0.1.14
+   Compiling rustversion v1.0.23
+   Compiling rayon-core v1.13.0
+    Checking linux-raw-sys v0.12.1
+    Checking regex-syntax v0.8.11
+   Compiling serde_json v1.0.151
+    Checking bitflags v2.13.2
+    Checking either v1.19.0
+   Compiling dashu-int v0.4.3
+    Checking clap_lex v1.1.1
+   Compiling cc v1.6.0
+    Checking plotters-backend v0.3.7
+    Checking anstyle v1.0.14
+    Checking once_cell v1.21.4
+    Checking num-modular v0.6.6
+   Compiling thiserror v2.0.21
+    Checking ciborium-io v0.2.2
+    Checking dashu-base v0.4.3
+    Checking itoa v1.0.18
+    Checking fastrand v2.5.0
+    Checking memchr v2.8.3
+    Checking static_assertions v1.1.0
+    Checking itertools v0.13.0
+    Checking bit-vec v0.8.0
+    Checking same-file v1.0.6
+    Checking cpufeatures v0.3.1
+    Checking cast v0.3.0
+    Checking quick-error v1.2.3
+    Checking fnv v1.0.7
+    Checking clap_builder v4.6.7
+    Checking chacha20 v0.10.2
+    Checking unarray v0.1.4
+    Checking walkdir v2.5.0
+    Checking plotters-svg v0.3.7
+    Checking anes v0.1.6
+    Checking bytemuck v1.25.2
+    Checking oorandom v11.1.5
+    Checking bit-set v0.8.0
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.119
+   Compiling syn v3.0.6
+    Checking regex-automata v0.4.18
+    Checking plotters v0.3.7
+    Checking approx v0.5.1
+    Checking rayon v1.12.0
+   Compiling alloca v0.4.0
+    Checking wait-timeout v0.2.1
+    Checking page_size v0.6.0
+    Checking rand_core v0.9.5
+    Checking tempfile v3.27.0
+    Checking rand v0.10.3
+    Checking rand v0.9.5
+    Checking rand_xorshift v0.4.0
+    Checking rusty-fork v0.3.1
+    Checking criterion-plot v0.8.2
+    Checking clap v4.6.7
+    Checking dashu-float v0.4.5
+    Checking regex v1.13.1
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.21
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core)
+   Compiling zerocopy-derive v0.8.62
+error: the loop variable `j` is used to index `other.coefficients`
+   --> amari-core/src/verified.rs:159:22
+    |
+159 |             for j in 0..Self::BASIS_SIZE {
+    |                      ^^^^^^^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-core/src/verified.rs:163:46
+    |
+163 |                     + self.coefficients[i] * other.coefficients[j] * T::from(sign).unwrap();
+    |                                              ^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and `.enumerate()`
+    |
+159 -             for j in 0..Self::BASIS_SIZE {
+159 +             for (j, <item>) in other.coefficients.iter().enumerate().take(Self::BASIS_SIZE) {
+    |
+
+error: the loop variable `j` is used to index `other.multivector.coefficients`
+   --> amari-core/src/verified.rs:339:22
+    |
+339 |             for j in 0..basis_size {
+    |                      ^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-core/src/verified.rs:357:31
+    |
+357 | ...                   * other.multivector.coefficients[j];
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator and `.enumerate()`
+    |
+339 -             for j in 0..basis_size {
+339 +             for (j, <item>) in other.multivector.coefficients.iter().enumerate().take(basis_size) {
+    |
+
+error: the loop variable `i` is used to index `self.multivector.coefficients`
+   --> amari-core/src/verified.rs:387:18
+    |
+387 |         for i in 0..basis_size {
+    |                  ^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-core/src/verified.rs:406:31
+    |
+406 | ...                   * self.multivector.coefficients[i]
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator and `.enumerate()`
+    |
+387 -         for i in 0..basis_size {
+387 +         for (i, <item>) in self.multivector.coefficients.iter().enumerate().take(basis_size) {
+    |
+
+error: could not compile `amari-core` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
