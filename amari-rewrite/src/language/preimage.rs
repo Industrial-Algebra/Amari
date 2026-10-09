@@ -540,11 +540,13 @@ pub(crate) fn eliminate_epsilons(
     loop {
         let mut grew = false;
         for (from, to) in &nfta.epsilons {
-            resources.record_operations(1)?;
             let reached: Vec<TreeState> = closure
                 .get(to)
                 .map(|set| set.iter().cloned().collect())
                 .unwrap_or_default();
+            // Charge the edge visit AND every copied closure cell —
+            // set copies are not constant work (review round 1).
+            resources.record_operations(1 + reached.len())?;
             let from_set = closure.entry(from.clone()).or_default();
             for state in reached {
                 if from_set.insert(state) {
@@ -560,6 +562,7 @@ pub(crate) fn eliminate_epsilons(
     // Invert the closure into epsilon-preimage sets.
     let mut preimages: BTreeMap<TreeState, Vec<TreeState>> = BTreeMap::new();
     for (from, reached) in &closure {
+        resources.record_operations(reached.len())?;
         for target in reached {
             preimages
                 .entry(target.clone())
@@ -949,6 +952,33 @@ mod tests {
         assert!(transitions
             .iter()
             .all(|transition| transition.symbol().as_str() != "epsilon"));
+    }
+
+    /// Review round 1 (P2): elimination meters the closure's copied
+    /// cells, not just edge visits. Fixture: a()→p with the epsilon
+    /// chain p→q→r. Two relaxation rounds visit 4 edges and copy 6
+    /// closure cells (1+2 + 1+1 per round); charging only per visit
+    /// yields 4 — the test demands at least the visits + copies = 10.
+    #[test]
+    fn elimination_meters_closure_copies() {
+        let p = TreeState::new("p");
+        let q = TreeState::new("q");
+        let r = TreeState::new("r");
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: vec![p.clone(), q.clone(), r.clone()],
+            transitions: vec![TreeTransition::new(Symbol::new("a"), vec![], p.clone())],
+            epsilons: vec![(p.clone(), q.clone()), (q.clone(), r.clone())],
+            finals: vec![r.clone()],
+        };
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources)
+            .expect("elimination succeeds");
+        assert!(
+            resources.operations() >= 10,
+            "closure copies must be charged (visits + copied cells), got {}",
+            resources.operations()
+        );
     }
 
     #[test]

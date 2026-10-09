@@ -485,8 +485,29 @@ fn saturate(
         })?;
     let max_productive = rule_edges.min(n_squared);
 
-    // Reserve the reusable closure matrix once (checked before allocation).
+    // Reserve ALL relation storage once (checked before allocation):
+    // the N² closure cells, the right-side evaluation sets (H·N cells,
+    // H = total rhs nodes), and the edge-membership set (at most
+    // min(m·N, N²) pairs) — review round 1's storage accounting.
+    let rhs_nodes: usize = system
+        .rules()
+        .iter()
+        .try_fold(0usize, |acc, rule| {
+            acc.checked_add(rule.rhs().positions().len())
+        })
+        .ok_or(RewriteError::RelationLimitExceeded {
+            resource: "saturation evaluation storage",
+            limit: limits.max_constraints(),
+        })?;
+    let evaluation_cells = rhs_nodes
+        .checked_mul(n)
+        .ok_or(RewriteError::RelationLimitExceeded {
+            resource: "saturation evaluation storage",
+            limit: limits.max_constraints(),
+        })?;
     charge_constraints(resources, limits, n_squared)?;
+    charge_constraints(resources, limits, evaluation_cells)?;
+    charge_constraints(resources, limits, max_productive)?;
     let mut matrix: Vec<Vec<bool>> = vec![vec![false; n]; n];
     let mut edges: BTreeSet<(StateIndex, StateIndex)> = BTreeSet::new();
     let mut productive = 0usize;

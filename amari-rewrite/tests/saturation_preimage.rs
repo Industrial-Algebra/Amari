@@ -25,6 +25,24 @@ fn b() -> Term {
     Term::constant("b")
 }
 
+/// A partial singleton automaton accepting exactly `b` over the ranked
+/// alphabet {a/0, b/0, g/1} (the review probe's `singleton`).
+fn singleton_language() -> TreeAutomaton {
+    let q = TreeState::new("q");
+    TreeAutomaton::new(
+        vec![
+            RankedSymbol::new(Symbol::new("a"), 0),
+            RankedSymbol::new(Symbol::new("b"), 0),
+            RankedSymbol::new(Symbol::new("g"), 1),
+        ],
+        vec![q.clone()],
+        vec![TreeTransition::new(Symbol::new("b"), vec![], q.clone())],
+        vec![q],
+        TreeAutomatonLimits::default(),
+    )
+    .expect("fixture automaton is valid")
+}
+
 fn c() -> Term {
     Term::constant("c")
 }
@@ -491,4 +509,59 @@ fn determinism() {
         second.automaton().canonical_bytes()
     );
     assert_eq!(first.certificate().result(), second.certificate().result());
+}
+
+/// Review round 1 (P1): an unchecked deep rule side must be a typed
+/// limit outcome, never a stack overflow. Certificate issuance must
+/// preflight term bounds ITERATIVELY before any recursive traversal
+/// (classification, digest framing). Runs on a small thread stack;
+/// the term is leaked to avoid the recursive Drop (house rule).
+#[test]
+fn deep_unchecked_terms_are_a_typed_outcome() {
+    std::thread::Builder::new()
+        .stack_size(128 * 1024)
+        .spawn(|| {
+            let mut term = a();
+            for _ in 0..10_000 {
+                term = g(term);
+            }
+            let system = TermSystem::new(vec![Rule::new_unchecked(term, b())]);
+            let language = singleton_language();
+            let limits = RelationLimits::new(4_096, 1, 4_096, 1).expect("valid tight limits");
+            let result =
+                saturation_preimage(&system, &language, &limits, &TreeAutomatonLimits::default());
+            assert!(
+                matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+                "deep unchecked terms must be a typed outcome, got {result:?}"
+            );
+            std::mem::forget(system);
+        })
+        .expect("thread spawns")
+        .join()
+        .expect("the call returns instead of overflowing the stack");
+}
+
+/// Review round 1 (P2): reserved relation storage is charged as
+/// constraints BEFORE allocation — closure matrix (N²), right-side
+/// evaluation sets (H·N), and the edge set (min(m·N, N²)). With N=3
+/// the reservation is 9+3+3=15 cells, so a 9-cell budget must fail.
+#[test]
+fn constraints_accounting_covers_reserved_storage() {
+    let system = TermSystem::new(vec![Rule::new(a(), b()).unwrap()]);
+    let language = singleton_language();
+    let tight = RelationLimits::new(4_096, 64, 9, 1_000_000).expect("valid tight limits");
+    let result = saturation_preimage(&system, &language, &tight, &TreeAutomatonLimits::default());
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "the reserved-storage reservation must exhaust a 9-cell budget, got {result:?}"
+    );
+    let generous = RelationLimits::default();
+    let outcome = saturation_preimage(
+        &system,
+        &language,
+        &generous,
+        &TreeAutomatonLimits::default(),
+    )
+    .expect("generous limits succeed");
+    assert!(outcome.certificate().verify(&system, &language, &generous));
 }

@@ -36,7 +36,7 @@ use crate::language::classify::{
 };
 use crate::language::TreeAutomaton;
 use crate::relation::{RelationLimits, Sha256Digest};
-use crate::trs::TermSystem;
+use crate::trs::{Term, TermSystem};
 
 /// Digest frame for individual terms inside certificate bindings.
 const TERM_FRAME: &str = "amari-rewrite/preimage/term/v1";
@@ -73,6 +73,40 @@ pub fn system_digest(system: &TermSystem) -> Sha256Digest {
 /// Bind a language automaton by its canonical encoding.
 pub fn language_digest(language: &TreeAutomaton) -> Sha256Digest {
     Sha256Digest::framed(LANGUAGE_FRAME, &language.canonical_bytes())
+}
+
+/// Iteratively measure a term (explicit worklist — no recursion on
+/// term depth) and enforce the caller's term bounds. Certificate
+/// issuance runs this before any recursive traversal so that
+/// unchecked deep terms are a typed limit outcome.
+fn preflight_term_bounds(term: &Term, limits: &RelationLimits) -> RewriteResult<()> {
+    let mut nodes = 0usize;
+    let mut depth = 0usize;
+    let mut stack = alloc::vec::Vec::from([(term, 0usize)]);
+    while let Some((node, level)) = stack.pop() {
+        nodes += 1;
+        if level > depth {
+            depth = level;
+        }
+        if nodes > limits.max_term_nodes() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term nodes",
+                limit: limits.max_term_nodes(),
+            });
+        }
+        if depth > limits.max_term_depth() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term depth",
+                limit: limits.max_term_depth(),
+            });
+        }
+        if let Term::Sym(_, arguments) = node {
+            for argument in arguments {
+                stack.push((argument, level + 1));
+            }
+        }
+    }
+    Ok(())
 }
 
 /// The authority level a certificate asserts.
@@ -177,6 +211,13 @@ impl PreimageCertificate {
         language: &TreeAutomaton,
         limits: &RelationLimits,
     ) -> RewriteResult<Self> {
+        // Iterative term-bound preflight BEFORE any recursive traversal
+        // (classification, digest framing): an unchecked deep rule side
+        // must be a typed limit outcome, never a stack overflow.
+        for rule in system.rules() {
+            preflight_term_bounds(rule.lhs(), limits)?;
+            preflight_term_bounds(rule.rhs(), limits)?;
+        }
         let classification = classify_system(system)?;
         validate_alphabet(system, language)?;
         let construction = match classification.capability(operation) {
