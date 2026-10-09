@@ -233,13 +233,20 @@ fn witnessed_lower_bound(
     )?;
 
     let candidate_alphabet = candidate_alphabet(system, language);
-    // Right-side node counts, precomputed once: the successor
-    // preflight bills each rule's potential replacement construction
-    // (review round 2).
-    let rhs_nodes: Vec<usize> = system
+    // Right-side shape, precomputed once per call: (lhs nodes,
+    // non-variable rhs nodes, rhs variable occurrences). The successor
+    // preflight bills variable-binding expansion and per-position
+    // multiplicity from these (review round 3).
+    let rule_shapes: Vec<(usize, usize, usize)> = system
         .rules()
         .iter()
-        .map(|rule| term_nodes(rule.rhs()))
+        .map(|rule| {
+            (
+                term_nodes(rule.lhs()),
+                term_nodes(rule.rhs()).saturating_sub(variable_occurrences(rule.rhs())),
+                variable_occurrences(rule.rhs()),
+            )
+        })
         .collect();
     // The one-step relation is exactly one application (no reflexive
     // closure); finite horizon and saturation include zero steps.
@@ -257,7 +264,7 @@ fn witnessed_lower_bound(
             &candidate_alphabet,
             max_steps,
             min_steps,
-            &rhs_nodes,
+            &rule_shapes,
             &mut resources,
             limits,
             &mut witnesses,
@@ -409,7 +416,7 @@ fn enumerate_witnesses(
     alphabet: &[RankedSymbol],
     max_steps: u32,
     min_steps: u32,
-    rhs_nodes: &[usize],
+    rule_shapes: &[(usize, usize, usize)],
     resources: &mut RelationResources,
     limits: &RelationLimits,
     witnesses: &mut BTreeSet<Term>,
@@ -424,7 +431,14 @@ fn enumerate_witnesses(
                 continue;
             }
             if replays_into(
-                system, language, term, max_steps, min_steps, rhs_nodes, resources, limits,
+                system,
+                language,
+                term,
+                max_steps,
+                min_steps,
+                rule_shapes,
+                resources,
+                limits,
             )? {
                 let nodes = term_nodes(term);
                 charge_constraints(resources, limits.max_constraints(), 1 + nodes)?;
@@ -576,7 +590,7 @@ fn replays_into(
     start: &Term,
     budget: u32,
     min_steps: u32,
-    rhs_nodes: &[usize],
+    rule_shapes: &[(usize, usize, usize)],
     resources: &mut RelationResources,
     limits: &RelationLimits,
 ) -> Result<bool, Stop> {
@@ -607,28 +621,49 @@ fn replays_into(
         let mut next: Vec<Term> = Vec::new();
         for term in &frontier {
             // Preflight the successor work BEFORE the successor
-            // vector is allocated: each rule is attempted at each
-            // position, and a successful application constructs a
-            // replacement of at most nodes(term) + nodes(rhs) nodes
-            // — bill the matching/substitution work AND the complete
-            // potential successor storage in advance (review round
-            // 2), so a rule with a huge right side truncates before
-            // the replacement is ever built.
+            // vector is allocated (review rounds 2–3). Per rule,
+            // the eager TRS layer can emit one replacement per
+            // MATCHING POSITION (at most nodes(term) of them), and
+            // each instantiated right side can be as large as its
+            // non-variable skeleton plus every variable occurrence
+            // expanded to a full copy of the term (a binding is a
+            // subterm of the term, so nodes(term) bounds each).
+            // Bill operations for the attempts plus substitution
+            // work, and constraints for the complete potential
+            // output vector INCLUDING the context-rebuild copies —
+            // a variable-duplicating or wide right side truncates
+            // before any replacement is constructed. All arithmetic
+            // saturates; the estimate is conservative, never an
+            // under-count.
             let mut ops_estimate = 0usize;
             let mut storage_estimate = 0usize;
-            for rhs_size in rhs_nodes {
-                ops_estimate = ops_estimate
-                    .saturating_add(term_nodes(term).saturating_add(1))
-                    .saturating_add(*rhs_size);
-                storage_estimate = storage_estimate
-                    .saturating_add(term_nodes(term))
-                    .saturating_add(*rhs_size);
+            let term_size = term_nodes(term);
+            for &(lhs_size, rhs_skeleton, rhs_var_occurrences) in rule_shapes {
+                let instantiated_worst =
+                    rhs_skeleton.saturating_add(rhs_var_occurrences.saturating_mul(term_size));
+                ops_estimate = ops_estimate.saturating_add(
+                    term_size.saturating_mul(
+                        1usize
+                            .saturating_add(lhs_size)
+                            .saturating_add(instantiated_worst),
+                    ),
+                );
+                storage_estimate = storage_estimate.saturating_add(
+                    term_size.saturating_mul(term_size.saturating_add(instantiated_worst)),
+                );
             }
             charge_operations(resources, limits.max_operations(), ops_estimate.max(1))?;
             charge_constraints(resources, limits.max_constraints(), storage_estimate)?;
             let successors = system.application_successors(term).map_err(Stop::Hard)?;
-            charge_operations(resources, limits.max_operations(), successors.len())?;
-            charge_constraints(resources, limits.max_constraints(), successors.len())?;
+            // Post-hoc truth: charge the ACTUAL instantiated successor
+            // node counts (not the vector length) as both work and
+            // retained storage.
+            let actual_nodes: usize = successors
+                .iter()
+                .map(term_nodes)
+                .fold(0usize, |acc, nodes| acc.saturating_add(nodes));
+            charge_operations(resources, limits.max_operations(), actual_nodes)?;
+            charge_constraints(resources, limits.max_constraints(), actual_nodes)?;
             for successor in successors {
                 // Membership of the freshly generated successor is
                 // tested BEFORE the visited check: a successor equal
@@ -763,6 +798,22 @@ fn build_lower_automaton(
 }
 
 /// Iterative node count of a term (no recursion on depth).
+/// Iterative variable-occurrence count of a term (with multiplicity —
+/// a duplicated variable counts once per occurrence), used to bound
+/// instantiated right-side sizes in the successor preflight.
+fn variable_occurrences(term: &Term) -> usize {
+    let mut occurrences = 0usize;
+    let mut stack = vec![term];
+    while let Some(node) = stack.pop() {
+        match node {
+            Term::Var(_) => occurrences += 1,
+            Term::Sym(_, arguments) => stack.extend(arguments.iter()),
+        }
+    }
+    occurrences
+}
+
+/// Iterative node count of a term.
 fn term_nodes(term: &Term) -> usize {
     let mut nodes = 0usize;
     let mut stack = vec![term];

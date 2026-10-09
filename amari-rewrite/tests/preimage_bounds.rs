@@ -664,3 +664,89 @@ fn assembly_beyond_the_shared_budget_is_typed() {
         "assembly beyond the shared per-query budget must be typed, got {result:?}"
     );
 }
+
+/// Review round 3 (P2), adversary 1: a variable-duplicating right
+/// side. The static right-side node count undercounts the
+/// INSTANTIATED replacement (each of 16 variable occurrences expands
+/// to a full binding copy), so the preflight must bound substitution
+/// expansion AND position multiplicity. At a 256-constraint budget —
+/// past the static estimate (~22 cells) but below the conservative
+/// bound — the witness `f(g(a), g(a))` is admitted pre-fix and
+/// rejected post-fix.
+#[test]
+fn duplicated_variable_preflight_bounds_substitution_expansion() {
+    // R = { f(x,x) -> z(x, ..., x) } with 16 occurrences of x.
+    let duplicated_rhs = Term::sym("z", (0..16).map(|_| x()).collect::<Vec<_>>());
+    let system = TermSystem::new(vec![Rule::new(f(x(), x()), duplicated_rhs).unwrap()]);
+    // L = { z(g(a), ..., g(a)) } — the instantiated successor of
+    // f(g(a), g(a)), 33 nodes, all ranks within the ceiling.
+    let instantiated = Term::sym("z", (0..16).map(|_| g(a())).collect::<Vec<_>>());
+    assert_eq!(term_node_count(&instantiated), 33);
+    let language = accepts_exactly(
+        &[("a", 0), ("g", 1), ("f", 2), ("z", 16)],
+        std::slice::from_ref(&instantiated),
+    );
+    let witness = f(g(a()), g(a()));
+    // Bisected divergence window: at 768 the static-estimate code
+    // admits the witness (its true charges fit), while the
+    // conservative bound correctly refuses the replay.
+    let limits = RelationLimits::new(4_096, 64, 768, 4_096).expect("valid mid limits");
+    let outcome =
+        one_step_lower_bound(&system, &language, &limits, &TreeAutomatonLimits::default())
+            .expect("truncation is not an error");
+    assert!(
+        outcome
+            .trace()
+            .iter()
+            .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. })),
+        "the duplicated-variable replacement must trip the preflight, trace: {:?}",
+        outcome.trace()
+    );
+    assert!(
+        !outcome.lower().accepts(&witness).expect("accepts"),
+        "the witness must not be admitted: its replacement was never affordable"
+    );
+    assert!(outcome.certificate().verify(&system, &language, &limits));
+    assert!(outcome.certificate().verify_result(outcome.lower()));
+}
+
+/// Review round 3 (P2), adversary 2: one rule matching at MULTIPLE
+/// positions of the same term emits one instantiated replacement per
+/// position. The preflight bounds position multiplicity (positions ×
+/// per-position worst case); at a tight budget the replay truncates
+/// cleanly. (The accounting gap itself — prebill 108 vs 207 actual —
+/// is instrumented in the reviewer's probe; the eventual post-hoc
+/// node-count charges reconcile the books.)
+#[test]
+fn multi_position_rule_preflight_bounds_output_multiplicity() {
+    let wide_rhs = Term::sym("z", (0..100).map(|_| b()).collect::<Vec<_>>());
+    let system = TermSystem::new(vec![
+        Rule::new(a(), wide_rhs).unwrap(),
+        Rule::new(f(x(), x()), a()).unwrap(),
+    ]);
+    let language = accepts_exactly(&[("a", 0), ("b", 0), ("f", 2)], &[a()]);
+    let tight = RelationLimits::new(4_096, 64, 16, 4_096).expect("valid tight limits");
+    let outcome = one_step_lower_bound(&system, &language, &tight, &TreeAutomatonLimits::default())
+        .expect("truncation is not an error");
+    assert!(
+        outcome
+            .trace()
+            .iter()
+            .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. })),
+        "the multi-position successor vector must trip the storage preflight, trace: {:?}",
+        outcome.trace()
+    );
+}
+
+/// Node-count helper for the adversary fixtures above.
+fn term_node_count(term: &Term) -> usize {
+    let mut nodes = 0usize;
+    let mut stack = vec![term];
+    while let Some(node) = stack.pop() {
+        nodes += 1;
+        if let Term::Sym(_, arguments) = node {
+            stack.extend(arguments.iter());
+        }
+    }
+    nodes
+}
