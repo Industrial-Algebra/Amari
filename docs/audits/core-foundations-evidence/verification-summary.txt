@@ -1,0 +1,37 @@
+Audit baseline: 165d7ccbd6d1aa899babb2d0ae392fa15272e556
+Date: 2026-09-19
+Worktree branch: chore/core-audit-foundations
+Scope: amari-core original foundations; GPU and WASM excluded.
+Production-source diff versus baseline: empty.
+
+Fresh final baseline:
+  cargo test --locked --offline -p amari-core
+  exit 0; 202 unit + 82 integration + 3 doc tests, no ignored tests.
+
+Audit fixture (docs/audits/core-foundations-repro/Cargo.toml):
+  cargo test --locked --offline --manifest-path ...
+  exit 101; 1 oracle test passed, 21 law/contract probes failed.
+  cargo test --locked --offline --release --manifest-path ...
+  exit 101; 1 oracle test passed, 21 law/contract probes failed.
+  cargo test --locked --offline --manifest-path ... oracle_
+  exit 0; 1 passed, 21 filtered out.
+  CARGO_TARGET_DIR was set to the worktree's target directory.
+
+Formatting:
+  cargo fmt -p amari-core --check: exit 0.
+  cargo fmt --manifest-path docs/audits/core-foundations-repro/Cargo.toml --check: exit 0.
+
+Other baseline gates:
+  RUSTDOCFLAGS='-D warnings' cargo doc --locked --offline -p amari-core --no-deps: exit 0.
+  cargo run --locked --offline -p amari-core --example basic: exit 0.
+  cargo clippy --locked --offline -p amari-core --all-targets -- -D warnings: exit 101.
+  cargo check --locked --offline -p amari-core --no-default-features: exit 101.
+  cargo test --locked --offline -p amari-core --no-default-features --features std: exit 101.
+  Full diagnostics are preserved in sibling .txt files, not treated as passes.
+
+Root ignored Cargo.lock SHA-256:
+  e7419fcc2b0eb45e7ad28fffed0f72ffd96d2da3012c5af4194c19e8f3369bee
+Standalone Cargo.lock.snapshot SHA-256:
+  19d17cb957b9d066ea06e3540f5e9bb14c9be1b47aa790ac75f39a5a305c0aff
+
+See report for explicit verification exclusions and dependency-resolution provenance.
