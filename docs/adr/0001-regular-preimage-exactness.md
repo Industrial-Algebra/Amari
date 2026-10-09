@@ -207,7 +207,12 @@ truncations.
   epsilon-edge closure behind Thm. 3.2.14) — NOT naive layer-union
   (matrix §S2 warning); anything else returns partial frontier +
   typed limits; certificates only after completed construction.
-  Oracle P2 row pins the ground fixpoint behavior.
+  Oracle P2 row pins the ground fixpoint behavior. Implemented as
+  target-specialized right-ground backward epsilon saturation over a
+  fixed state universe (Base/Any/Pat), justified by the independent
+  argument in `language/saturation.rs`; same finite-state closure
+  principle as TATA Thm. 3.2.14 with pattern-instance automata per
+  Prop. 3.4.7 — not a literal two-automaton GTT closure.
 - Task 27 owns lower/upper approximations under the matrix's
   obligations (lower bounds for non-left-linear systems need
   replayed finite witnesses, not the automaton step); no upper

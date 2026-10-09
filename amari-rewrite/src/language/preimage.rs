@@ -89,6 +89,17 @@ impl PreimageOutcome {
     pub fn into_parts(self) -> (TreeAutomaton, PreimageCertificate) {
         (self.automaton, self.certificate)
     }
+
+    /// Assemble an outcome from a completed construction result and
+    /// its already-completed certificate. Crate-visible: the trusted
+    /// in-crate constructions (Tasks 25-26) are the only producers of
+    /// completed `Exact` evidence.
+    pub(crate) fn from_parts(automaton: TreeAutomaton, certificate: PreimageCertificate) -> Self {
+        Self {
+            automaton,
+            certificate,
+        }
+    }
 }
 
 /// Exact one-step preimage `R⁻¹(L)` under the application relation,
@@ -185,12 +196,12 @@ pub fn identity_preimage(
 /// disjoint ordinary states `U_q` simulating `A`, rewritten states
 /// `V_q`, and matching states `M`). Eliminated into a plain
 /// [`TreeAutomaton`] before canonicalization. Never public.
-struct EpsilonNfta {
-    alphabet: Vec<RankedSymbol>,
-    states: Vec<TreeState>,
-    transitions: Vec<TreeTransition>,
-    epsilons: Vec<(TreeState, TreeState)>,
-    finals: Vec<TreeState>,
+pub(crate) struct EpsilonNfta {
+    pub(crate) alphabet: Vec<RankedSymbol>,
+    pub(crate) states: Vec<TreeState>,
+    pub(crate) transitions: Vec<TreeTransition>,
+    pub(crate) epsilons: Vec<(TreeState, TreeState)>,
+    pub(crate) finals: Vec<TreeState>,
 }
 
 /// The preflight/elimination core shared by the one-step and
@@ -227,7 +238,7 @@ fn one_step_construction(
 }
 
 /// Determinize, complete, and minimize under the caller's budget.
-fn canonicalize(
+pub(crate) fn canonicalize(
     automaton: TreeAutomaton,
     automaton_limits: &TreeAutomatonLimits,
     resources: &mut RelationResources,
@@ -504,7 +515,7 @@ fn build_epsilon_nfta(
 /// epsilon-PREIMAGES of `si` (states that can silently reach `si`)
 /// and the parent `p` ranges over the epsilon-POSTIMAGES of `s`
 /// (states `s` can silently reach).
-fn eliminate_epsilons(
+pub(crate) fn eliminate_epsilons(
     nfta: &EpsilonNfta,
     automaton_limits: &TreeAutomatonLimits,
     resources: &mut RelationResources,
