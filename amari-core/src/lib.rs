@@ -267,11 +267,22 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         self + other
     }
 
+    /// Whether every stored coefficient is exactly zero.
+    /// Internal structural predicate, not a tolerance-based numerical query.
+    fn is_exact_zero(&self) -> bool {
+        self.coefficients
+            .iter()
+            .all(|&coefficient| coefficient == 0.0)
+    }
+
     /// Get the grade of a multivector (returns the highest non-zero grade)
+    ///
+    /// A grade counts as non-zero when any of its coefficients differs from
+    /// exact zero; no tolerance is applied.
     pub fn grade(&self) -> usize {
         for grade in (0..=Self::DIM).rev() {
             let projection = self.grade_projection(grade);
-            if !projection.is_zero() {
+            if !projection.is_exact_zero() {
                 return grade;
             }
         }
@@ -286,6 +297,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
     /// Geometric product with another multivector
     ///
     /// The geometric product is the fundamental operation in geometric algebra,
+    ///
     /// combining both the inner and outer products.
     pub fn geometric_product(&self, rhs: &Self) -> Self {
         self.geometric_product_scalar(rhs)
@@ -297,12 +309,12 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         let mut result = Self::zero();
 
         for i in 0..Self::BASIS_COUNT {
-            if self.coefficients[i].abs() < 1e-14 {
+            if self.coefficients[i] == 0.0 {
                 continue;
             }
 
             for j in 0..Self::BASIS_COUNT {
-                if rhs.coefficients[j].abs() < 1e-14 {
+                if rhs.coefficients[j] == 0.0 {
                     continue;
                 }
 
@@ -315,6 +327,10 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
     }
 
     /// Inner product (grade-lowering, dot product for vectors)
+    ///
+    /// Coefficients equal to exact zero are skipped; there is no implicit
+    /// approximate-zero pruning. Ordinary floating-point rounding still
+    /// applies to the accumulated values.
     pub fn inner_product(&self, rhs: &Self) -> Self {
         let self_grades = self.grade_decomposition();
         let rhs_grades = rhs.grade_decomposition();
@@ -323,7 +339,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         // Inner product selects terms where grade(result) = |grade(a) - grade(b)|
         for (grade_a, mv_a) in self_grades.iter().enumerate() {
             for (grade_b, mv_b) in rhs_grades.iter().enumerate() {
-                if !mv_a.is_zero() && !mv_b.is_zero() {
+                if !mv_a.is_exact_zero() && !mv_b.is_exact_zero() {
                     let target_grade = grade_a.abs_diff(grade_b);
                     let product = mv_a.geometric_product(mv_b);
                     let projected = product.grade_projection(target_grade);
@@ -336,6 +352,9 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
     }
 
     /// Outer product (wedge product, grade-raising)
+    ///
+    /// Coefficients equal to exact zero are skipped; there is no implicit
+    /// approximate-zero pruning.
     pub fn outer_product(&self, rhs: &Self) -> Self {
         let self_grades = self.grade_decomposition();
         let rhs_grades = rhs.grade_decomposition();
@@ -344,7 +363,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         // Outer product selects terms where grade(result) = grade(a) + grade(b)
         for (grade_a, mv_a) in self_grades.iter().enumerate() {
             for (grade_b, mv_b) in rhs_grades.iter().enumerate() {
-                if !mv_a.is_zero() && !mv_b.is_zero() {
+                if !mv_a.is_exact_zero() && !mv_b.is_exact_zero() {
                     let target_grade = grade_a + grade_b;
                     if target_grade <= Self::DIM {
                         let product = mv_a.geometric_product(mv_b);
@@ -583,12 +602,12 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         let mut result = Self::zero();
 
         for (a_grade, mv_a) in self_grades.iter().enumerate() {
-            if mv_a.is_zero() {
+            if mv_a.is_exact_zero() {
                 continue;
             }
 
             for (b_grade, mv_b) in other_grades.iter().enumerate() {
-                if mv_b.is_zero() {
+                if mv_b.is_exact_zero() {
                     continue;
                 }
 
@@ -615,12 +634,12 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         let mut result = Self::zero();
 
         for (a_grade, mv_a) in self_grades.iter().enumerate() {
-            if mv_a.is_zero() {
+            if mv_a.is_exact_zero() {
                 continue;
             }
 
             for (b_grade, mv_b) in other_grades.iter().enumerate() {
-                if mv_b.is_zero() {
+                if mv_b.is_exact_zero() {
                     continue;
                 }
 
@@ -657,7 +676,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         let pseudoscalar_index = (1 << n) - 1; // All bits set
 
         for i in 0..Self::BASIS_COUNT {
-            if self.coefficients[i].abs() < 1e-14 {
+            if self.coefficients[i] == 0.0 {
                 continue;
             }
 

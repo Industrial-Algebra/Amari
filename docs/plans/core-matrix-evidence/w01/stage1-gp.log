@@ -1,0 +1,10 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.41s
+     Running tests/arithmetic_regressions.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/arithmetic_regressions-07d7f70f1462caed)
+
+running 2 tests
+test gp_small_finite_factor_is_not_zero ... ok
+test gp_associativity_does_not_drop_a_small_intermediate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

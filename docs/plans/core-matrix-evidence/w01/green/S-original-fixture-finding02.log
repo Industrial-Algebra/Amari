@@ -1,0 +1,28 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling autocfg v1.5.1
+   Compiling rustversion v1.0.23
+   Compiling dashu-int v0.4.3
+   Compiling dashu-base v0.4.3
+   Compiling static_assertions v1.1.0
+   Compiling cfg-if v1.0.4
+   Compiling num-modular v0.6.5
+   Compiling thiserror v2.0.20
+   Compiling bytemuck v1.25.2
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.4
+   Compiling approx v0.5.1
+   Compiling thiserror-impl v2.0.20
+   Compiling dashu-float v0.4.5
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-core)
+   Compiling amari-core-foundations-audit v0.0.0 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/docs/audits/core-foundations-repro)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.60s
+     Running tests/foundations.rs (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/target/d07-baseline/w01/stable/debug/deps/foundations-0dac96bc6d27b30f)
+
+running 2 tests
+test finding_02_geometric_product_preserves_small_coefficients ... ok
+test finding_02_geometric_product_associativity_across_scales ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.00s
+

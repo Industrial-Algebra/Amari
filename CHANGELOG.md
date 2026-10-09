@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+#### `amari-core` exact-zero arithmetic (CORE-02)
+
+- Fundamental `Multivector` operations no longer apply an implicit `1e-14` approximate-zero prune: the geometric product, inner/outer products, left/right contractions, Hodge coefficient transport, and `grade()` now skip only coefficients that are exactly zero
+- Small-but-finite coefficients (e.g. `2^-50` scaled blades) are preserved through products, contractions, and duality; scale-dependent associativity loss from dropped intermediates is removed
+- `grade()` reports the highest grade with an exactly-nonzero coefficient, matching its documented contract
+- Public approximate queries (`is_zero()` and the `num_traits::Zero` impl) are unchanged; their contract remains a separate numerical-policy decision (CORE-D01/W02)
+- Added `amari-core/tests/basis_word_oracle.rs` (independent basis-word product oracle, 4,589 blade pairs across 35 signatures through dimension 4) and `amari-core/tests/arithmetic_regressions.rs` (exact dyadic regressions for the corrected semantics)
+
+> Result changes relative to 0.24.1 in operations that previously dropped
+> sub-threshold coefficients are corrections, not compatibility breaks.
+
 ## [0.24.1] - 2026-08-04
 
 ### Added

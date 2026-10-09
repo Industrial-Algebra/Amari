@@ -1,0 +1,9 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-core)
+    Finished `release` profile [optimized] target(s) in 10.56s
+     Running tests/basis_word_oracle.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/release/deps/basis_word_oracle-410427fbc6bd8323)
+
+running 1 test
+test oracle_all_basis_pairs_through_dimension_four ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
