@@ -286,6 +286,16 @@ impl PreimageCertificate {
         language: &TreeAutomaton,
         limits: &RelationLimits,
     ) -> bool {
+        // Re-measure term bounds at verification time: a system that
+        // exceeds the verifier's limits could never have been issued
+        // against them, and every traversal stays iterative.
+        for rule in system.rules() {
+            if preflight_term_bounds(rule.lhs(), limits).is_err()
+                || preflight_term_bounds(rule.rhs(), limits).is_err()
+            {
+                return false;
+            }
+        }
         if validate_alphabet(system, language).is_err() {
             return false;
         }

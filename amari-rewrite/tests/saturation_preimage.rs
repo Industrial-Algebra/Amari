@@ -10,8 +10,8 @@
 //! cutoffs). Deep growing systems are built iteratively.
 
 use amari_rewrite::language::{
-    saturation_preimage, CertificateAuthority, PreimageConstruction, PreimageOperation,
-    RankedSymbol, TreeAutomaton, TreeAutomatonLimits, TreeState, TreeTransition,
+    saturation_preimage, CertificateAuthority, PreimageCertificate, PreimageConstruction,
+    PreimageOperation, RankedSymbol, TreeAutomaton, TreeAutomatonLimits, TreeState, TreeTransition,
 };
 use amari_rewrite::relation::RelationLimits;
 use amari_rewrite::trs::{Rule, Symbol, Term, TermSystem};
@@ -613,4 +613,46 @@ fn elimination_storage_is_reserved() {
         matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
         "a 15-cell budget must not cover the whole pipeline, got {result:?}"
     );
+}
+
+/// Review round 3 (P1): verification must be safe for ANY certificate
+/// input — including a deserialized pending certificate whose recorded
+/// digest matches a deep unchecked system. classify_system's linearity
+/// counting must not recurse; verification re-measures term bounds.
+#[cfg(feature = "serialize")]
+#[test]
+fn deep_system_verification_with_pending_certificate_is_safe() {
+    let system = TermSystem::new(vec![Rule::new(a(), b()).unwrap()]);
+    let language = singleton_language();
+    let limits = RelationLimits::default();
+    let certificate =
+        saturation_preimage(&system, &language, &limits, &TreeAutomatonLimits::default())
+            .expect("small system is approved")
+            .certificate()
+            .clone();
+    std::thread::Builder::new()
+        .stack_size(128 * 1024)
+        .spawn(move || {
+            let mut deep = a();
+            for _ in 0..10_000 {
+                deep = g(deep);
+            }
+            let deep_system = TermSystem::new(vec![Rule::new_unchecked(deep, b())]);
+            // Craft a pending certificate bound to the deep system by
+            // patching the wire form's digests (computation of the
+            // digest itself is iterative and safe on this small stack).
+            let mut wire: serde_json::Value =
+                serde_json::to_value(&certificate).expect("certificate serializes");
+            wire["system"] =
+                serde_json::to_value(amari_rewrite::language::system_digest(&deep_system))
+                    .expect("digest serializes");
+            wire["result"] = serde_json::Value::Null;
+            let pending: PreimageCertificate =
+                serde_json::from_value(wire).expect("patched wire form deserializes");
+            assert!(!pending.verify(&deep_system, &language, &limits));
+            std::mem::forget(deep_system);
+        })
+        .expect("thread spawns")
+        .join()
+        .expect("verification returns instead of overflowing the stack");
 }
