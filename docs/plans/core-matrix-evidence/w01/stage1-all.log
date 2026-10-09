@@ -1,0 +1,52 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/arithmetic_regressions.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/arithmetic_regressions-07d7f70f1462caed)
+
+running 6 tests
+test gp_associativity_does_not_drop_a_small_intermediate ... ok
+test gp_small_finite_factor_is_not_zero ... ok
+test projected_inner_and_contractions_keep_small_grade_components ... FAILED
+test structural_grade_reports_a_small_nonzero_component ... FAILED
+test structural_hodge_transport_is_linear_at_small_scale ... FAILED
+test projected_outer_product_keeps_small_grade_components ... FAILED
+
+failures:
+
+---- projected_inner_and_contractions_keep_small_grade_components stdout ----
+
+thread 'projected_inner_and_contractions_keep_small_grade_components' (1000114) panicked at amari-core/tests/arithmetic_regressions.rs:63:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- structural_grade_reports_a_small_nonzero_component stdout ----
+
+thread 'structural_grade_reports_a_small_nonzero_component' (1000116) panicked at amari-core/tests/arithmetic_regressions.rs:94:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- structural_hodge_transport_is_linear_at_small_scale stdout ----
+
+thread 'structural_hodge_transport_is_linear_at_small_scale' (1000117) panicked at amari-core/tests/arithmetic_regressions.rs:85:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.881784197001252e-16, 0.0]
+
+---- projected_outer_product_keeps_small_grade_components stdout ----
+
+thread 'projected_outer_product_keeps_small_grade_components' (1000115) panicked at amari-core/tests/arithmetic_regressions.rs:46:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+
+
+failures:
+    projected_inner_and_contractions_keep_small_grade_components
+    projected_outer_product_keeps_small_grade_components
+    structural_grade_reports_a_small_nonzero_component
+    structural_hodge_transport_is_linear_at_small_scale
+
+test result: FAILED. 2 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p amari-core --test arithmetic_regressions`

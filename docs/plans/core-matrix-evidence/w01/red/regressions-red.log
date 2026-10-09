@@ -1,0 +1,69 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running tests/arithmetic_regressions.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/arithmetic_regressions-07d7f70f1462caed)
+
+running 6 tests
+test gp_associativity_does_not_drop_a_small_intermediate ... FAILED
+test gp_small_finite_factor_is_not_zero ... FAILED
+test projected_inner_and_contractions_keep_small_grade_components ... FAILED
+test structural_grade_reports_a_small_nonzero_component ... FAILED
+test projected_outer_product_keeps_small_grade_components ... FAILED
+test structural_hodge_transport_is_linear_at_small_scale ... FAILED
+
+failures:
+
+---- gp_associativity_does_not_drop_a_small_intermediate stdout ----
+
+thread 'gp_associativity_does_not_drop_a_small_intermediate' (999330) panicked at amari-core/tests/arithmetic_regressions.rs:38:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- gp_small_finite_factor_is_not_zero stdout ----
+
+thread 'gp_small_finite_factor_is_not_zero' (999331) panicked at amari-core/tests/arithmetic_regressions.rs:22:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+---- projected_inner_and_contractions_keep_small_grade_components stdout ----
+
+thread 'projected_inner_and_contractions_keep_small_grade_components' (999332) panicked at amari-core/tests/arithmetic_regressions.rs:63:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+---- structural_grade_reports_a_small_nonzero_component stdout ----
+
+thread 'structural_grade_reports_a_small_nonzero_component' (999334) panicked at amari-core/tests/arithmetic_regressions.rs:94:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- projected_outer_product_keeps_small_grade_components stdout ----
+
+thread 'projected_outer_product_keeps_small_grade_components' (999333) panicked at amari-core/tests/arithmetic_regressions.rs:46:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+
+---- structural_hodge_transport_is_linear_at_small_scale stdout ----
+
+thread 'structural_hodge_transport_is_linear_at_small_scale' (999335) panicked at amari-core/tests/arithmetic_regressions.rs:85:5:
+assertion `left == right` failed
+  left: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ right: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.881784197001252e-16, 0.0]
+
+
+failures:
+    gp_associativity_does_not_drop_a_small_intermediate
+    gp_small_finite_factor_is_not_zero
+    projected_inner_and_contractions_keep_small_grade_components
+    projected_outer_product_keeps_small_grade_components
+    structural_grade_reports_a_small_nonzero_component
+    structural_hodge_transport_is_linear_at_small_scale
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p amari-core --test arithmetic_regressions`

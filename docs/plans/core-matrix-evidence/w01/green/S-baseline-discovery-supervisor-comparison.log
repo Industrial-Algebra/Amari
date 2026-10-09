@@ -1,0 +1,260 @@
+   Compiling quote v1.0.47
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling autocfg v1.5.1
+   Compiling cfg-if v1.0.5
+   Compiling libc v0.2.190
+   Compiling thiserror v2.0.21
+   Compiling rustversion v1.0.23
+   Compiling bytemuck v1.25.2
+   Compiling dashu-int v0.4.3
+   Compiling serde_core v1.0.229
+   Compiling num-modular v0.6.6
+   Compiling rand_core v0.10.1
+   Compiling static_assertions v1.1.0
+   Compiling dashu-base v0.4.3
+   Compiling memchr v2.8.3
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.1
+   Compiling zmij v1.0.23
+   Compiling getrandom v0.4.3
+   Compiling serde v1.0.229
+   Compiling zerocopy v0.8.62
+   Compiling getrandom v0.3.4
+   Compiling regex-syntax v0.8.11
+   Compiling rustix v1.1.5
+   Compiling anstyle v1.0.14
+   Compiling cpufeatures v0.3.1
+   Compiling fastrand v2.5.0
+   Compiling safe_arch v1.2.0
+   Compiling utf8parse v0.2.2
+   Compiling linux-raw-sys v0.12.1
+   Compiling bitflags v2.13.2
+   Compiling anstyle-parse v1.0.0
+   Compiling chacha20 v0.10.2
+   Compiling serde_json v1.0.151
+   Compiling hashbrown v0.17.1
+   Compiling colorchoice v1.0.5
+   Compiling once_cell v1.21.4
+   Compiling equivalent v1.0.2
+   Compiling rawpointer v0.2.1
+   Compiling ref-cast v1.0.27
+   Compiling generic-array v0.14.7
+   Compiling predicates-core v1.0.10
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling anstyle-query v1.1.5
+   Compiling anstream v1.0.0
+   Compiling quick-error v1.2.3
+   Compiling num-traits v0.2.19
+   Compiling matrixmultiply v0.3.11
+   Compiling wide v1.7.1
+   Compiling aho-corasick v1.1.5
+   Compiling toml_write v0.1.2
+   Compiling clap_lex v1.1.1
+   Compiling heck v0.5.0
+   Compiling bit-vec v0.8.0
+   Compiling strsim v0.11.1
+   Compiling normalize-line-endings v0.3.0
+   Compiling difflib v0.4.0
+   Compiling fnv v1.0.7
+   Compiling itoa v1.0.18
+   Compiling termtree v0.5.1
+   Compiling indexmap v2.14.2
+   Compiling cpufeatures v0.2.17
+   Compiling winnow v0.7.15
+   Compiling assert_cmd v2.2.2
+   Compiling predicates-tree v1.0.13
+   Compiling clap_builder v4.6.7
+   Compiling bit-set v0.8.0
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling same-file v1.0.6
+   Compiling unarray v0.1.4
+   Compiling dyn-clone v1.0.20
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-discovery)
+   Compiling walkdir v2.5.0
+   Compiling approx v0.5.1
+   Compiling num-integer v0.1.47
+   Compiling num-complex v0.4.6
+   Compiling digest v0.10.7
+   Compiling float-cmp v0.10.0
+   Compiling hex v0.4.3
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.8
+   Compiling wait-timeout v0.2.1
+   Compiling rand v0.10.3
+   Compiling rand_core v0.9.5
+   Compiling regex-automata v0.4.18
+   Compiling rand_xorshift v0.4.0
+   Compiling rand v0.9.5
+   Compiling tempfile v3.27.0
+   Compiling rusty-fork v0.3.1
+   Compiling num-rational v0.4.2
+   Compiling serde_derive_internals v0.30.0
+   Compiling dashu-float v0.4.5
+   Compiling ppv-lite86 v0.2.21
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_derive v1.0.229
+   Compiling ref-cast-impl v1.0.27
+   Compiling clap_derive v4.6.7
+   Compiling schemars_derive v1.2.2
+   Compiling rand_chacha v0.9.0
+   Compiling rand_chacha v0.10.0
+   Compiling nalgebra-macros v0.3.0
+   Compiling amari-discovery-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-discovery-macros)
+   Compiling proptest v1.11.0
+   Compiling regex v1.13.1
+   Compiling bstr v1.13.1
+   Compiling predicates v3.1.4
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core)
+   Compiling amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-cgt)
+   Compiling amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-rewrite)
+   Compiling clap v4.6.7
+   Compiling amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-surreal)
+   Compiling amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-dual)
+   Compiling amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-tropical)
+   Compiling amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-info-geom)
+   Compiling amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-holographic)
+   Compiling simba v0.10.2
+   Compiling amari-surcomplex v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-surcomplex)
+   Compiling amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-optimization)
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling schemars v1.2.2
+   Compiling toml_edit v0.22.27
+   Compiling toml v0.8.23
+   Compiling nalgebra v0.35.0
+   Compiling amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-network)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.23s
+     Running unittests src/lib.rs (target/d07-baseline/w01-baseline-check/stable/x86_64-unknown-linux-gnu/debug/deps/amari_discovery-95fa843e4e8370df)
+
+running 18 tests
+test probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock ... FAILED
+test probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure ... FAILED
+test probes::supervisor::tests::production_launcher_has_no_configuration_or_request_inputs ... ok
+test probes::supervisor::tests::changed_worker_provenance_is_rejected ... FAILED
+test probes::supervisor::tests::production_command_and_arguments_are_fixed_internally ... ok
+test probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode ... FAILED
+test probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr ... FAILED
+test probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan ... FAILED
+test probes::supervisor::tests::production_stdout_limit_includes_the_frame_header ... FAILED
+test probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd ... FAILED
+test probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker ... FAILED
+test probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker ... FAILED
+test probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery ... FAILED
+test probes::supervisor::tests::successful_response_rejects_unknown_execution_fields ... FAILED
+test probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields ... FAILED
+test probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics ... FAILED
+test probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation ... FAILED
+test probes::supervisor::tests::zero_deadline_is_rejected_before_waiting ... FAILED
+
+failures:
+
+---- probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock stdout ----
+
+thread 'probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock' (1078762) panicked at amari-discovery/src/probes/supervisor.rs:505:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure stdout ----
+
+thread 'probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure' (1078766) panicked at amari-discovery/src/probes/supervisor.rs:691:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(_))
+
+---- probes::supervisor::tests::changed_worker_provenance_is_rejected stdout ----
+
+thread 'probes::supervisor::tests::changed_worker_provenance_is_rejected' (1078763) panicked at amari-discovery/src/probes/supervisor.rs:700:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if
+    message.contains("provenance"))
+
+---- probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode stdout ----
+
+thread 'probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode' (1078764) panicked at amari-discovery/src/probes/supervisor.rs:672:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerCrashed { .. })
+
+---- probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr stdout ----
+
+thread 'probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr' (1078767) panicked at amari-discovery/src/probes/supervisor.rs:681:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerExited { code: 17 })
+
+---- probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan stdout ----
+
+thread 'probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan' (1078765) panicked at amari-discovery/src/probes/supervisor.rs:614:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::production_stdout_limit_includes_the_frame_header stdout ----
+
+thread 'probes::supervisor::tests::production_stdout_limit_includes_the_frame_header' (1078774) panicked at amari-discovery/src/probes/supervisor.rs:533:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd stdout ----
+
+thread 'probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd' (1078779) panicked at amari-discovery/src/probes/supervisor.rs:471:14:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker stdout ----
+
+thread 'probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker' (1078780) panicked at amari-discovery/src/probes/supervisor.rs:569:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker stdout ----
+
+thread 'probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker' (1078782) panicked at amari-discovery/src/probes/supervisor.rs:549:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery stdout ----
+
+thread 'probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery' (1078777) panicked at amari-discovery/src/probes/supervisor.rs:733:50:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::successful_response_rejects_unknown_execution_fields stdout ----
+
+thread 'probes::supervisor::tests::successful_response_rejects_unknown_execution_fields' (1078784) panicked at amari-discovery/src/probes/supervisor.rs:718:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if
+    message.contains("serialization"))
+
+---- probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields stdout ----
+
+thread 'probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields' (1078786) panicked at amari-discovery/src/probes/supervisor.rs:708:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if
+    message.contains("serialization"))
+
+---- probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics stdout ----
+
+thread 'probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics' (1078790) panicked at amari-discovery/src/probes/supervisor.rs:588:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation stdout ----
+
+thread 'probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation' (1078789) panicked at amari-discovery/src/probes/supervisor.rs:656:45:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::zero_deadline_is_rejected_before_waiting stdout ----
+
+thread 'probes::supervisor::tests::zero_deadline_is_rejected_before_waiting' (1078793) panicked at amari-discovery/src/probes/supervisor.rs:640:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+
+failures:
+    probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock
+    probes::supervisor::tests::changed_worker_provenance_is_rejected
+    probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode
+    probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan
+    probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure
+    probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr
+    probes::supervisor::tests::production_stdout_limit_includes_the_frame_header
+    probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery
+    probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd
+    probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker
+    probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker
+    probes::supervisor::tests::successful_response_rejects_unknown_execution_fields
+    probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields
+    probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation
+    probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics
+    probes::supervisor::tests::zero_deadline_is_rejected_before_waiting
+
+test result: FAILED. 2 passed; 16 failed; 0 ignored; 0 measured; 189 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p amari-discovery --lib`
