@@ -606,6 +606,7 @@ pub(crate) fn eliminate_epsilons(
             .map(|set| set.iter().cloned().collect())
             .unwrap_or_default();
         resources.record_operations(parent_set.len())?;
+        resources.record_constraints(parent_set.len())?;
         for_each_combination(&child_sets, |children| {
             for parent in &parent_set {
                 // Candidate visit plus BOTH tuple materializations:
@@ -1032,6 +1033,29 @@ mod tests {
     /// copies 100, the candidate visit + tuple materialization +
     /// to_vec copy 1+100+100, the parent-set copy 1, the final scan 2
     /// — 306 in total, so a 205-operation budget must exhaust.
+    /// Review round 4 (P2): the cloned parent-set buffer is relation
+    /// storage too — a nullary-only fixture (N=1) reserves 2 cells for
+    /// the maps, and the cloned parent set needs a third, so a 2-cell
+    /// budget must exhaust.
+    #[test]
+    fn elimination_reserves_cloned_parent_buffers() {
+        let s = TreeState::new("s");
+        let nfta = EpsilonNfta {
+            alphabet: vec![RankedSymbol::new(Symbol::new("a"), 0)],
+            states: vec![s.clone()],
+            transitions: vec![TreeTransition::new(Symbol::new("a"), vec![], s.clone())],
+            epsilons: vec![],
+            finals: vec![s],
+        };
+        let tight = RelationLimits::new(4_096, 64, 2, 4_096).expect("valid limits");
+        let mut resources = RelationResources::new(&tight);
+        let result = eliminate_epsilons(&nfta, &TreeAutomatonLimits::default(), &mut resources);
+        assert!(
+            matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+            "the cloned parent buffer must be reserved as constraints, got {result:?}"
+        );
+    }
+
     #[test]
     fn elimination_meters_tuple_materialization_and_scans() {
         let nfta = high_rank_nfta();

@@ -101,6 +101,19 @@ fn preflight_term_bounds(term: &Term, limits: &RelationLimits) -> RewriteResult<
             });
         }
         if let Term::Sym(_, arguments) = node {
+            // Bound the pending worklist BEFORE extending it: the term
+            // certainly has at least nodes + pending + new-children
+            // nodes, so reject without allocating when that provable
+            // lower bound already exceeds the budget (review round 4).
+            let lower_bound = nodes
+                .saturating_add(stack.len())
+                .saturating_add(arguments.len());
+            if lower_bound > limits.max_term_nodes() {
+                return Err(RewriteError::RelationLimitExceeded {
+                    resource: "term nodes",
+                    limit: limits.max_term_nodes(),
+                });
+            }
             for argument in arguments {
                 stack.push((argument, level + 1));
             }
