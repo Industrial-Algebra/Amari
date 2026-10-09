@@ -222,9 +222,8 @@ impl PreimageCertificate {
     /// authority for everything decidable without re-running the
     /// construction (bindings, capability consistency, Identity and
     /// empty-system result semantics).
-    // Minted by the Task 25/26 construction code; until then only the
-    // in-crate unit tests exercise it.
-    #[allow(dead_code)]
+    // Minted by the Task 25/26 construction code (Task 25's preimage
+    // constructions call it after canonicalization).
     pub(crate) fn complete(mut self, result: &TreeAutomaton) -> Self {
         self.result = Some(language_digest(result));
         self
