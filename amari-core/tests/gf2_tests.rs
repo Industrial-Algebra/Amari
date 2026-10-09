@@ -1,5 +1,7 @@
 //! Cross-module integration tests for the GF(2) algebra module.
 
+#![cfg(feature = "gf2")]
+
 use amari_core::gf2::*;
 
 mod grassmannian_matrix_integration {

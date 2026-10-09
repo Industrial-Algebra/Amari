@@ -1,0 +1,126 @@
+ Downloading crates ...
+  Downloaded crossbeam-utils v0.8.23
+  Downloaded either v1.19.0
+  Downloaded crossbeam-deque v0.8.8
+  Downloaded find-msvc-tools v0.1.14
+  Downloaded crossbeam-epoch v0.9.21
+  Downloaded cc v1.6.0
+  Downloaded zerocopy-derive v0.8.62
+  Downloaded zerocopy v0.8.62
+  Downloaded libc v0.2.190
+   Compiling cfg-if v1.0.5
+   Compiling libc v0.2.190
+   Compiling zerocopy v0.8.62
+   Compiling getrandom v0.3.4
+   Compiling serde_core v1.0.229
+   Compiling crossbeam-utils v0.8.23
+   Compiling rand_core v0.10.1
+   Compiling crossbeam-epoch v0.9.21
+   Compiling getrandom v0.4.3
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling rustix v1.1.5
+   Compiling serde v1.0.229
+   Compiling crossbeam-deque v0.8.8
+   Compiling zmij v1.0.23
+   Compiling rayon-core v1.13.0
+   Compiling regex-syntax v0.8.11
+   Compiling serde_json v1.0.151
+   Compiling either v1.19.0
+   Compiling linux-raw-sys v0.12.1
+   Compiling bitflags v2.13.2
+   Compiling ciborium-io v0.2.2
+   Compiling memchr v2.8.3
+   Compiling syn v2.0.119
+   Compiling num-traits v0.2.19
+   Compiling serde_derive v1.0.229
+   Compiling cc v1.6.0
+   Compiling fastrand v2.5.0
+   Compiling itoa v1.0.18
+   Compiling once_cell v1.21.4
+   Compiling clap_lex v1.1.1
+   Compiling plotters-backend v0.3.7
+   Compiling anstyle v1.0.14
+   Compiling itertools v0.13.0
+   Compiling quick-error v1.2.3
+   Compiling bit-vec v0.8.0
+   Compiling cast v0.3.0
+   Compiling fnv v1.0.7
+   Compiling same-file v1.0.6
+   Compiling cpufeatures v0.3.1
+   Compiling thiserror v2.0.21
+   Compiling oorandom v11.1.5
+   Compiling clap_builder v4.6.7
+   Compiling chacha20 v0.10.2
+   Compiling bytemuck v1.25.2
+   Compiling anes v0.1.6
+   Compiling unarray v0.1.4
+   Compiling plotters-svg v0.3.7
+   Compiling walkdir v2.5.0
+   Compiling approx v0.5.1
+   Compiling bit-set v0.8.0
+   Compiling plotters v0.3.7
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core)
+warning: unused imports: `Formatter` and `Result`
+  --> amari-core/src/precision.rs:12:32
+   |
+12 | use std::fmt::{Debug, Display, Formatter, Result};
+   |                                ^^^^^^^^^  ^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)
+   Compiling rayon v1.12.0
+   Compiling wait-timeout v0.2.1
+   Compiling page_size v0.6.0
+   Compiling rand_core v0.9.5
+   Compiling tempfile v3.27.0
+   Compiling rand v0.10.3
+   Compiling criterion-plot v0.8.2
+   Compiling regex-automata v0.4.18
+   Compiling alloca v0.4.0
+   Compiling rand v0.9.5
+   Compiling rand_xorshift v0.4.0
+   Compiling rusty-fork v0.3.1
+   Compiling clap v4.6.7
+   Compiling tinytemplate v1.2.1
+   Compiling regex v1.13.1
+   Compiling zerocopy-derive v0.8.62
+   Compiling half v2.7.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling ciborium-ll v0.2.2
+   Compiling rand_chacha v0.9.0
+   Compiling ciborium v0.2.2
+   Compiling proptest v1.11.0
+   Compiling criterion v0.8.2
+error[E0432]: unresolved import `amari_core::gf2`
+ --> amari-core/tests/gf2_tests.rs:3:17
+  |
+3 | use amari_core::gf2::*;
+  |                 ^^^ could not find `gf2` in `amari_core`
+
+warning: unused import: `super::*`
+ --> amari-core/tests/gf2_tests.rs:6:9
+  |
+6 |     use super::*;
+  |         ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::*`
+  --> amari-core/tests/gf2_tests.rs:43:9
+   |
+43 |     use super::*;
+   |         ^^^^^^^^
+
+warning: unused import: `super::*`
+  --> amari-core/tests/gf2_tests.rs:91:9
+   |
+91 |     use super::*;
+   |         ^^^^^^^^
+
+For more information about this error, try `rustc --explain E0432`.
+warning: `amari-core` (test "gf2_tests") generated 3 warnings
+error: could not compile `amari-core` (test "gf2_tests") due to 1 previous error; 3 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+warning: `amari-core` (lib test) generated 1 warning (1 duplicate)

@@ -5,6 +5,9 @@
 //! They serve the WASM fallback path and any consumer that needs
 //! signature selection at runtime.
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 /// Compute the result basis-blade index and sign for the geometric product
 /// of two basis blades `i` and `j` in Cl(p, q, r).
 ///

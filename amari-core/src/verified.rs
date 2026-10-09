@@ -156,11 +156,11 @@ where
         let mut result = vec![T::zero(); Self::BASIS_SIZE];
 
         for i in 0..Self::BASIS_SIZE {
-            for j in 0..Self::BASIS_SIZE {
+            for (j, &other_j) in other.coefficients.iter().enumerate() {
                 let sign = self.compute_product_sign(i, j);
                 let target_index = i ^ j; // XOR gives the resulting basis blade
-                result[target_index] = result[target_index]
-                    + self.coefficients[i] * other.coefficients[j] * T::from(sign).unwrap();
+                result[target_index] =
+                    result[target_index] + self.coefficients[i] * other_j * T::from(sign).unwrap();
             }
         }
 
@@ -336,7 +336,7 @@ where
         // compute their wedge product contributing to grade-3 (trivectors)
         for i in 0..dim {
             let blade_i = 1usize << i;
-            for j in 0..basis_size {
+            for (j, &other_j) in other.multivector.coefficients.iter().enumerate() {
                 if j.count_ones() != 2 {
                     continue;
                 }
@@ -352,9 +352,7 @@ where
                     }
                     let sign = if swaps % 2 == 0 { T::one() } else { -T::one() };
                     coefficients[target] = coefficients[target]
-                        + sign
-                            * self.multivector.coefficients[blade_i]
-                            * other.multivector.coefficients[j];
+                        + sign * self.multivector.coefficients[blade_i] * other_j;
                 }
             }
         }
@@ -384,7 +382,7 @@ where
 
         // For each grade-2 blade (bivectors) and grade-1 blade (vectors),
         // compute their wedge product contributing to grade-3 (trivectors)
-        for i in 0..basis_size {
+        for (i, &self_i) in self.multivector.coefficients.iter().enumerate() {
             if i.count_ones() != 2 {
                 continue;
             }
@@ -402,9 +400,7 @@ where
                     }
                     let sign = if swaps % 2 == 0 { T::one() } else { -T::one() };
                     coefficients[target] = coefficients[target]
-                        + sign
-                            * self.multivector.coefficients[i]
-                            * other.multivector.coefficients[blade_j];
+                        + sign * self_i * other.multivector.coefficients[blade_j];
                 }
             }
         }

@@ -1,0 +1,365 @@
+       Fresh unicode-ident v1.0.26
+       Fresh proc-macro2 v1.0.107
+       Fresh cfg-if v1.0.5
+       Fresh autocfg v1.5.1
+       Fresh rand_core v0.10.1
+       Fresh find-msvc-tools v0.1.14
+       Fresh shlex v2.0.1
+       Fresh regex-syntax v0.8.11
+       Fresh linux-raw-sys v0.12.1
+       Fresh either v1.19.0
+       Fresh bitflags v2.13.2
+       Fresh cc v1.6.0
+       Fresh clap_lex v1.1.1
+       Fresh once_cell v1.21.4
+       Fresh ciborium-io v0.2.2
+       Fresh anstyle v1.0.14
+       Fresh plotters-backend v0.3.7
+       Fresh fastrand v2.5.0
+       Fresh itoa v1.0.18
+       Fresh quote v1.0.47
+       Fresh libc v0.2.190
+       Fresh crossbeam-utils v0.8.23
+       Fresh serde_core v1.0.229
+       Fresh rustix v1.1.5
+       Fresh zmij v1.0.23
+       Fresh memchr v2.8.3
+       Fresh plotters-svg v0.3.7
+       Fresh clap_builder v4.6.7
+       Fresh itertools v0.13.0
+       Fresh regex-automata v0.4.18
+       Fresh same-file v1.0.6
+       Fresh fnv v1.0.7
+       Fresh cpufeatures v0.3.1
+       Fresh quick-error v1.2.3
+       Fresh bit-vec v0.8.0
+       Fresh cast v0.3.0
+       Fresh bytemuck v1.25.2
+       Fresh oorandom v11.1.5
+       Fresh anes v0.1.6
+       Fresh unarray v0.1.4
+       Fresh syn v2.0.119
+       Fresh syn v3.0.6
+       Fresh num-traits v0.2.19
+       Fresh getrandom v0.3.4
+       Fresh crossbeam-epoch v0.9.21
+       Fresh getrandom v0.4.3
+       Fresh serde_json v1.0.151
+       Fresh wait-timeout v0.2.1
+       Fresh regex v1.13.1
+       Fresh walkdir v2.5.0
+       Fresh criterion-plot v0.8.2
+       Fresh page_size v0.6.0
+       Fresh clap v4.6.7
+       Fresh chacha20 v0.10.2
+       Fresh bit-set v0.8.0
+       Fresh zerocopy-derive v0.8.62
+       Fresh rand_core v0.9.5
+       Fresh serde_derive v1.0.229
+       Fresh crossbeam-deque v0.8.8
+       Fresh thiserror-impl v2.0.21
+       Fresh tempfile v3.27.0
+       Fresh plotters v0.3.7
+       Fresh alloca v0.4.0
+       Fresh approx v0.5.1
+       Fresh rand v0.10.3
+       Fresh zerocopy v0.8.62
+       Fresh serde v1.0.229
+       Fresh rayon-core v1.13.0
+       Fresh rusty-fork v0.3.1
+       Fresh rand_xorshift v0.4.0
+       Fresh thiserror v2.0.21
+       Fresh rand v0.9.5
+       Fresh half v2.7.1
+       Fresh ppv-lite86 v0.2.21
+       Fresh rayon v1.12.0
+       Fresh tinytemplate v1.2.1
+       Dirty amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core): the file `amari-core/src/rotor.rs` has changed (1791566466.251956982s, 3m 17s after last build at 1791566269.126206629s)
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core)
+       Fresh ciborium-ll v0.2.2
+       Fresh rand_chacha v0.9.0
+       Fresh ciborium v0.2.2
+       Fresh proptest v1.11.0
+       Fresh criterion v0.8.2
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=amari_core CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name amari_core --edition=2021 amari-core/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=49f80915dda13673 -C extra-filename=-60b744b949d81c89 --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -C target-cpu=x86-64 -C target-feature=-avx2 -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out`
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=amari_core CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name amari_core --edition=2021 amari-core/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=047003a3d0ab64c5 -C extra-filename=-aaf8b872bc91d53d --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rmeta --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rmeta --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rmeta --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rmeta -C target-cpu=x86-64 -C target-feature=-avx2`
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=products CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/tmp LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name products --edition=2021 amari-core/tests/products.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=0f843837d13df3b9 -C extra-filename=-ec0a403cc43b4cf1 --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern amari_core=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libamari_core-aaf8b872bc91d53d.rlib --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -C target-cpu=x86-64 -C target-feature=-avx2 -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out`
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=audit_tests CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/tmp LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name audit_tests --edition=2021 amari-core/tests/audit_tests.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=96bb75fbd6ae46fd -C extra-filename=-52072032915b7d97 --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern amari_core=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libamari_core-aaf8b872bc91d53d.rlib --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -C target-cpu=x86-64 -C target-feature=-avx2 -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out`
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=rotors CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/tmp LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name rotors --edition=2021 amari-core/tests/rotors.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=c9cb512f6d617c9b -C extra-filename=-26b37f8d227bb678 --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern amari_core=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libamari_core-aaf8b872bc91d53d.rlib --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -C target-cpu=x86-64 -C target-feature=-avx2 -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out`
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=geometric_product CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/tmp LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name geometric_product --edition=2021 amari-core/tests/geometric_product.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=2de32bdf3bbd2559 -C extra-filename=-10aae2b9ca8c3039 --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern amari_core=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libamari_core-aaf8b872bc91d53d.rlib --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -C target-cpu=x86-64 -C target-feature=-avx2 -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out`
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=gf2_tests CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/tmp LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name gf2_tests --edition=2021 amari-core/tests/gf2_tests.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=4203e6fbf35109df -C extra-filename=-7f4ce73c1649ca15 --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern amari_core=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libamari_core-aaf8b872bc91d53d.rlib --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -C target-cpu=x86-64 -C target-feature=-avx2 -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out`
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_BIN_NAME=basic CARGO_CRATE_NAME=basic CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name basic --edition=2021 amari-core/examples/basic.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type bin --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -C metadata=a9af4a1d369c1a5c -C extra-filename=-3948e766ad50f231 --out-dir /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/examples --target x86_64-unknown-linux-gnu -C incremental=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps --extern amari_core=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libamari_core-aaf8b872bc91d53d.rlib --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -C target-cpu=x86-64 -C target-feature=-avx2 -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out`
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.47s
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/amari_core-60b744b949d81c89`
+
+running 151 tests
+test aligned_alloc::tests::test_aligned_memory ... ok
+test basis::tests::test_basis_helpers ... ok
+test cayley::tests::test_euclidean_3d ... ok
+test cayley::tests::test_null_vectors ... ok
+test comprehensive_tests::accessor_tests::test_bivector_part ... ok
+test aligned_alloc::tests::test_aligned_f64_vec ... ok
+test comprehensive_tests::accessor_tests::test_get_set ... ok
+test aligned_alloc::tests::test_aligned_coefficients ... ok
+test comprehensive_tests::accessor_tests::test_scalar_part ... ok
+test basis::tests::test_builder ... ok
+test aligned_alloc::tests::test_memory_pool ... ok
+test cayley::tests::test_minkowski_spacetime ... ok
+test comprehensive_tests::accessor_tests::test_set_scalar ... ok
+test basis::tests::test_blade_names ... ok
+test comprehensive_tests::accessor_tests::test_set_bivector_component ... ok
+test comprehensive_tests::accessor_tests::test_set_vector_component ... ok
+test comprehensive_tests::accessor_tests::test_trivector_part ... ok
+test comprehensive_tests::accessor_tests::test_vector_component ... ok
+test comprehensive_tests::accessor_tests::test_as_slice ... ok
+test comprehensive_tests::accessor_tests::test_vector_part ... ok
+test comprehensive_tests::arithmetic_tests::test_addition ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_zero ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_addition ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_bivector ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_negation ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_subtraction ... ok
+test comprehensive_tests::arithmetic_tests::test_scalar_multiplication ... ok
+test comprehensive_tests::bivector_tests::test_bivector_basis_bivectors ... ok
+test comprehensive_tests::bivector_tests::test_bivector_from_components ... ok
+test comprehensive_tests::bivector_tests::test_bivector_from_multivector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_bivector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_get ... ok
+test comprehensive_tests::bivector_tests::test_bivector_index_access ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_scalar ... ok
+test comprehensive_tests::bivector_tests::test_bivector_inner_product ... ok
+test comprehensive_tests::bivector_tests::test_bivector_inner_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_magnitude ... ok
+test comprehensive_tests::bivector_tests::test_bivector_outer_product ... ok
+test comprehensive_tests::bivector_tests::test_bivector_outer_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_right_contraction ... ok
+test comprehensive_tests::constructor_tests::test_basis_vector ... ok
+test comprehensive_tests::constructor_tests::test_from_coefficients ... ok
+test comprehensive_tests::constructor_tests::test_from_slice ... ok
+test comprehensive_tests::constructor_tests::test_scalar ... ok
+test comprehensive_tests::constructor_tests::test_zero ... ok
+test comprehensive_tests::integration_tests::test_basis_vector_anticommutativity ... ok
+test comprehensive_tests::integration_tests::test_basis_vector_squares ... ok
+test comprehensive_tests::integration_tests::test_distributivity ... ok
+test comprehensive_tests::integration_tests::test_identity_elements ... ok
+test comprehensive_tests::integration_tests::test_reverse_involution ... ok
+test comprehensive_tests::operation_tests::test_grade ... ok
+test comprehensive_tests::operation_tests::test_grade_projection ... ok
+test comprehensive_tests::operation_tests::test_reverse ... ok
+test comprehensive_tests::product_tests::test_geometric_product ... ok
+test comprehensive_tests::product_tests::test_geometric_product_associativity ... ok
+test comprehensive_tests::product_tests::test_inner_product ... ok
+test comprehensive_tests::product_tests::test_outer_product ... ok
+test comprehensive_tests::product_tests::test_outer_product_antisymmetric ... ok
+test comprehensive_tests::product_tests::test_scalar_product ... ok
+test comprehensive_tests::scalar_tests::test_scalar_commutative_multiplication ... ok
+test comprehensive_tests::scalar_tests::test_scalar_from ... ok
+test comprehensive_tests::scalar_tests::test_scalar_from_trait ... ok
+test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_multivector ... ok
+test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_vector ... ok
+test comprehensive_tests::scalar_tests::test_scalar_identity ... ok
+test comprehensive_tests::scalar_tests::test_scalar_one ... ok
+test comprehensive_tests::utility_tests::test_abs ... ok
+test comprehensive_tests::utility_tests::test_equality ... ok
+test comprehensive_tests::utility_tests::test_approx_eq ... ok
+test comprehensive_tests::utility_tests::test_inverse_small ... ok
+test comprehensive_tests::utility_tests::test_inverse ... ok
+test comprehensive_tests::utility_tests::test_inverse_zero ... ok
+test comprehensive_tests::utility_tests::test_is_zero ... ok
+test comprehensive_tests::utility_tests::test_norm ... ok
+test comprehensive_tests::utility_tests::test_magnitude ... ok
+test comprehensive_tests::utility_tests::test_norm_squared ... ok
+test comprehensive_tests::utility_tests::test_normalize ... ok
+test comprehensive_tests::utility_tests::test_normalize_small ... ok
+test comprehensive_tests::utility_tests::test_normalize_zero ... ok
+test comprehensive_tests::vector_tests::test_vector_add ... ok
+test comprehensive_tests::vector_tests::test_vector_as_slice ... ok
+test comprehensive_tests::vector_tests::test_vector_basis_vectors ... ok
+test comprehensive_tests::vector_tests::test_vector_from_components ... ok
+test comprehensive_tests::vector_tests::test_vector_from_multivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_multivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_scalar ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_vector ... ok
+test comprehensive_tests::vector_tests::test_vector_hodge_dual ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product_with_mv ... ok
+test comprehensive_tests::vector_tests::test_vector_left_contraction ... ok
+test comprehensive_tests::vector_tests::test_vector_magnitude ... ok
+test comprehensive_tests::vector_tests::test_vector_norm ... ok
+test comprehensive_tests::vector_tests::test_vector_norm_squared ... ok
+test comprehensive_tests::vector_tests::test_vector_normalize ... ok
+test comprehensive_tests::vector_tests::test_vector_normalize_zero ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product_with_mv ... ok
+test comprehensive_tests::vector_tests::test_vector_reverse ... ok
+test comprehensive_tests::vector_tests::test_vector_zero ... ok
+test generic::tests::test_blade_product_e12_e1_cl300 ... ok
+test generic::tests::test_blade_product_e1_e1_cl300 ... ok
+test generic::tests::test_blade_product_e1_e2_cl300 ... ok
+test generic::tests::test_blade_product_e2_e1_cl300 ... ok
+test generic::tests::test_blade_product_e3_e3_cl210 ... ok
+test generic::tests::test_blade_product_null_signature ... ok
+test generic::tests::test_blade_product_scalar_scalar ... ok
+test generic::tests::test_generic_gp_matches_const_generic_cl210 ... ok
+test generic::tests::test_generic_gp_matches_const_generic_cl300 ... ok
+test generic::tests::test_generic_gp_scalar_only ... ok
+test precision::tests::test_default_tolerance ... ok
+test precision::tests::test_standard_float_precision ... ok
+test generic::tests::test_generic_gp_random_cl410 ... ok
+test property_tests::unit_property_tests::test_property_framework ... ok
+test rotor::tests::test_reflection ... ok
+test rotor::tests::test_rotor_90_degrees ... ok
+test simd::tests::test_aligned_buffer ... ok
+test tests::test_basis_vectors ... ok
+test tests::test_grade_operations ... ok
+test simd::tests::test_runtime_feature_detection ... ok
+test tests::test_inner_and_outer_products ... ok
+test tests::test_rotor_from_bivector ... ok
+test rotor::tests::test_rotor_composition ... ok
+test tests::test_wedge_product ... ok
+test tests::test_algebraic_identities ... ok
+test tests::test_metric_signature ... ok
+test unicode_ops::tests::test_extended_unicode_operations ... ok
+test unicode_ops::tests::test_unicode_geometric_product ... ok
+test unicode_ops::tests::test_unicode_grade_projection ... ok
+test unicode_ops::tests::test_unicode_inner_product ... ok
+test unicode_ops::tests::test_unicode_unary_operations ... ok
+test unicode_ops::tests::test_unicode_mathematical_identities ... ok
+test unicode_ops::tests::test_unicode_wedge_product ... ok
+test property_tests::prop_basis_vector_squares ... ok
+test property_tests::prop_outer_product_self_zero ... ok
+test property_tests::prop_multiplicative_identity ... ok
+test property_tests::prop_outer_product_antisymmetric ... ok
+test property_tests::prop_additive_identity ... ok
+test property_tests::prop_basis_anticommutativity ... ok
+test property_tests::prop_addition_commutative ... ok
+test property_tests::prop_scalar_multiplication_commutative ... ok
+test property_tests::prop_reverse_antiautomorphism ... ok
+test property_tests::prop_norm_via_reverse ... ok
+test property_tests::prop_addition_associative ... ok
+test property_tests::prop_rotor_preserves_norm ... ok
+test property_tests::prop_left_distributivity ... ok
+test property_tests::prop_geometric_product_associative ... ok
+
+test result: ok. 151 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/audit_tests-52072032915b7d97`
+
+running 17 tests
+test contraction_tests::test_left_contraction_vector_vector ... ok
+test contraction_tests::test_inner_product_vector_bivector ... ok
+test cayley_tests::test_full_cayley_table_cl300 ... ok
+test hodge_dual_tests::test_hodge_dual_scalar_pseudoscalar_3d ... ok
+test numeric_tests::test_identity_geometric_product ... ok
+test hodge_dual_tests::test_hodge_dual_mixed_grade ... ok
+test hodge_dual_tests::test_hodge_dual_double_dual_3d ... ok
+test contraction_tests::test_left_contraction_vector_bivector ... ok
+test numeric_tests::test_large_coefficients ... ok
+test hodge_dual_tests::test_hodge_dual_basis_vectors_3d ... ok
+test numeric_tests::test_geometric_product_associativity ... ok
+test hodge_dual_tests::test_hodge_dual_bivectors_3d ... ok
+test numeric_tests::test_inverse_zero ... ok
+test numeric_tests::test_near_zero_normalize ... ok
+test signature_tests::test_projective_ga_cl201 ... ok
+test numeric_tests::test_normalize_zero_vector ... ok
+test signature_tests::test_minkowski_spacetime_cl130 ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/geometric_product-10aae2b9ca8c3039`
+
+running 15 tests
+test geometric_product_tests::test_basis_vector_squared_negative_signature ... ok
+test geometric_product_tests::test_basis_vector_squared_null_signature ... ok
+test geometric_product_tests::test_basis_vector_squared_positive_signature ... ok
+test geometric_product_tests::test_bivector_vector_product ... ok
+test geometric_product_tests::test_general_multivector_product ... ok
+test geometric_product_tests::test_geometric_product_associativity ... ok
+test geometric_product_tests::test_geometric_product_distributivity ... ok
+test geometric_product_tests::test_scalar_multiplication_commutes ... ok
+test geometric_product_tests::test_multiplicative_identity ... ok
+test geometric_product_tests::test_self_product_positive_definite ... ok
+test geometric_product_tests::test_grade_mixing_in_product ... ok
+test geometric_product_tests::test_vector_bivector_product ... ok
+test geometric_product_tests::test_zero_element ... ok
+test geometric_product_tests::test_orthogonal_basis_vectors_anticommute ... ok
+test performance_tests::test_geometric_product_performance ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/gf2_tests-7f4ce73c1649ca15`
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/products-ec0a403cc43b4cf1`
+
+running 17 tests
+test product_tests::test_bivector_bivector_products ... ok
+test product_tests::test_bivector_vector_inner_product ... ok
+test product_tests::test_contraction_properties ... ok
+test product_tests::test_inner_product_grade_lowering ... ok
+test product_tests::test_hodge_duality_preview ... ok
+test product_tests::test_inner_product_metric_signature ... ok
+test product_tests::test_outer_product_associativity ... ok
+test product_tests::test_outer_product_anticommutativity ... ok
+test product_tests::test_outer_product_grade_raising ... ok
+test product_tests::test_outer_product_self_is_zero ... ok
+test product_tests::test_geometric_product_decomposition ... ok
+test product_tests::test_outer_product_with_scalar ... ok
+test product_tests::test_product_commutativity_properties ... ok
+test product_tests::test_product_with_zero ... ok
+test product_tests::test_vector_bivector_products ... ok
+test product_tests::test_vector_inner_product_orthogonality ... ok
+test product_tests::test_vector_inner_product_parallel ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug:/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/rotors-26b37f8d227bb678`
+
+running 27 tests
+test rotor_tests::test_rotor_180_degree ... ok
+test rotor_tests::test_euler_angle_composition ... ok
+test rotor_tests::test_rotor_commutator ... ok
+test rotor_tests::test_rotor_double_cover ... ok
+test rotor_tests::test_rotor_composition ... ok
+test rotor_tests::test_rotor_from_bivector ... ok
+test rotor_tests::test_rotor_from_axis_angle ... ok
+test rotor_tests::test_rotor_identity ... ok
+test rotor_tests::test_rotor_from_vectors ... ok
+test rotor_tests::test_rotor_from_axis_angle_diagonal ... ok
+test rotor_tests::test_rotor_inverse ... ok
+test rotor_tests::test_rotor_interpolation ... ok
+test rotor_tests::test_rotor_logarithm ... ok
+test rotor_tests::test_rotor_power ... ok
+test rotor_tests::test_rotor_power_negative ... ok
+test rotor_tests::test_rotor_power_zero ... ok
+test rotor_tests::test_rotor_power_fractional ... ok
+test rotor_tests::test_rotor_power_third ... ok
+test rotor_tests::test_rotor_preserves_magnitude ... ok
+test rotor_tests::test_rotor_preserves_angles ... ok
+test rotor_tests::test_rotor_rotation_e13_plane ... ok
+test rotor_tests::test_rotor_rotation_e23_plane ... ok
+test rotor_tests::test_rotor_rotation_of_vector ... ok
+test rotor_tests::test_rotor_small_angle ... ok
+test rotor_tests::test_slerp_endpoints ... ok
+test rotor_tests::test_rotor_to_matrix ... ok
+test rotor_tests::test_to_rotation_matrix_e13_plane ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests amari_core
+     Running `CARGO=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo CARGO_CRATE_NAME=amari_core CARGO_MANIFEST_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core CARGO_MANIFEST_PATH=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core/Cargo.toml CARGO_PKG_AUTHORS='Amari Contributors' CARGO_PKG_DESCRIPTION='Core geometric algebra and mathematical structures' CARGO_PKG_HOMEPAGE='https://github.com/justinelliottcobb/Amari' CARGO_PKG_LICENSE='MIT OR Apache-2.0' CARGO_PKG_LICENSE_FILE='' CARGO_PKG_NAME=amari-core CARGO_PKG_README=README.md CARGO_PKG_REPOSITORY='https://github.com/justinelliottcobb/Amari' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.24.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=24 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' LD_LIBRARY_PATH='/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps:/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib:/nix/store/b2swxfi8srrbsafvh9iyyhd26mz9giwf-zlib-1.3.2/lib' /home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc --edition=2021 --crate-type lib --color auto --crate-name amari_core --test amari-core/src/lib.rs --test-run-directory /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core --target x86_64-unknown-linux-gnu -L native=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/build/alloca-54b410b450f8e00a/out --extern amari_core=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libamari_core-aaf8b872bc91d53d.rlib --extern approx=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libapprox-c7f1befc14f14dd1.rlib --extern bytemuck=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libbytemuck-4a7fee62fdae9904.rlib --extern criterion=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libcriterion-13856443288b0dc9.rlib --extern num_traits=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libnum_traits-eae252072f0192e9.rlib --extern proptest=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libproptest-bec3bf56d8a5e9c4.rlib --extern rand=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/librand-9f14ce1347997b5e.rlib --extern thiserror=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps/libthiserror-7d24149f41a95f45.rlib -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/target/d07-baseline/w00/stable/debug/deps -C embed-bitcode=no --cfg 'feature="std"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("creusot-contracts", "default", "formal-verification", "full-precision", "gf2", "high-precision", "native-precision", "parallel", "phantom-types", "rayon", "serde", "serialize", "std", "wasm-precision"))' -D warnings -C target-cpu=x86-64 -C target-feature=-avx2 --error-format human`
+
+running 3 tests
+test amari-core/src/lib.rs - Multivector<P,Q,R>::magnitude (line 475) ... ok
+test amari-core/src/lib.rs - Multivector<P,Q,R>::grade_magnitude (line 421) ... ok
+test amari-core/src/unicode_ops.rs - unicode_ops (line 25) ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+

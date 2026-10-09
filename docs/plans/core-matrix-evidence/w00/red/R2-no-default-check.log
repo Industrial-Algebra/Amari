@@ -1,0 +1,51 @@
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w00/amari-core)
+error: cannot find macro `vec` in this scope
+  --> amari-core/src/generic.rs:79:22
+   |
+79 |     let mut result = vec![0.0; basis_count];
+   |                      ^^^
+   |
+help: consider importing one of these macros
+   |
+ 8 + use crate::vec;
+   |
+ 8 + use alloc::vec;
+   |
+
+error[E0425]: cannot find type `Vec` in this scope
+  --> amari-core/src/generic.rs:76:89
+   |
+76 | pub fn generic_geometric_product(p: usize, q: usize, r: usize, a: &[f64], b: &[f64]) -> Vec<f64> {
+   |                                                                                         ^^^ not found in this scope
+   |
+help: consider importing one of these structs
+   |
+ 8 + use crate::Vec;
+   |
+ 8 + use alloc::vec::Vec;
+   |
+
+error[E0425]: cannot find type `Vec` in this scope
+   --> amari-core/src/rotor.rs:215:19
+    |
+215 |         let cols: Vec<_> = (0..3)
+    |                   ^^^ not found in this scope
+    |
+help: consider importing one of these structs
+    |
+  3 + use crate::Vec;
+    |
+  3 + use alloc::vec::Vec;
+    |
+
+warning: unused imports: `Formatter` and `Result`
+  --> amari-core/src/precision.rs:15:33
+   |
+15 | use core::fmt::{Debug, Display, Formatter, Result};
+   |                                 ^^^^^^^^^  ^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+warning: `amari-core` (lib) generated 1 warning
+error: could not compile `amari-core` (lib) due to 3 previous errors; 1 warning emitted
