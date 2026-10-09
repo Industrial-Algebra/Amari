@@ -7,9 +7,12 @@
 //! [`PreimageCertificate::complete`] is called — the exact result
 //! language. All bindings are framed SHA-256 digests; this is a
 //! content-binding scheme, not a cryptographic commitment scheme
-//! (explicitly out of scope per the closure matrix). Certificates are
-//! issued ONLY for class/operation cells the ADR approves as exact;
-//! approximation-only cells are hard `UnsupportedPreimage` errors.
+//! (explicitly out of scope per the closure matrix). `issue` mints
+//! `Exact` evidence only for class/operation cells the ADR approves as
+//! exact (approximation-only cells are hard `UnsupportedPreimage`
+//! errors); `issue_partial` mints `Partial`-authority evidence for the
+//! witnessed lower-bound surface (Task 27), whose soundness comes from
+//! individually replayed witnesses and whose upper bound is absent.
 //!
 //! ## Trust model
 //!
@@ -129,9 +132,10 @@ pub enum CertificateAuthority {
     /// The construction completed under the recorded limits; the
     /// certificate binds an exact result language.
     Exact,
-    /// Reserved for Tasks 26-27: a partial frontier with the named
-    /// exhausted resource. `PreimageCertificate::issue` never produces
-    /// this variant.
+    /// A partial-authority construction (Task 27): the witnessed
+    /// lower-bound surface binds a sound under-approximation and the
+    /// named boundary detail. `PreimageCertificate::issue` never
+    /// produces this variant; `issue_partial` does.
     Partial {
         /// The exhausted resource or boundary detail.
         detail: String,
@@ -266,6 +270,68 @@ impl PreimageCertificate {
         })
     }
 
+    /// Issue a pending `Partial`-authority certificate for a witnessed
+    /// lower-bound construction (Task 27).
+    ///
+    /// Enforces the ADR 0001 input contract's rule-side variable
+    /// containment and refuses — [`RewriteError::UnsupportedPreimage`]
+    /// — any class/operation cell the capability table approves as
+    /// exact; the approximation surface exists only for cells without
+    /// an exact construction. Unlike [`PreimageCertificate::issue`],
+    /// the common-alphabet clause is NOT enforced: the candidate
+    /// alphabet of a witnessed lower bound is a union, and the replay
+    /// is sound without a shared alphabet. The certificate records
+    /// `WitnessedLowerBound` with [`CertificateAuthority::Partial`] and
+    /// carries no result until the trusted in-crate construction calls
+    /// [`PreimageCertificate::complete`].
+    pub(crate) fn issue_partial(
+        operation: PreimageOperation,
+        system: &TermSystem,
+        language: &TreeAutomaton,
+        limits: &RelationLimits,
+        detail: &str,
+    ) -> RewriteResult<Self> {
+        for rule in system.rules() {
+            preflight_term_bounds(rule.lhs(), limits)?;
+            preflight_term_bounds(rule.rhs(), limits)?;
+        }
+        let classification = classify_system(system)?;
+        if !matches!(
+            classification.capability(operation),
+            PreimageCapability::ApproximationOnly
+        ) {
+            return Err(RewriteError::UnsupportedPreimage {
+                message: format!(
+                    "class {:?} has an approved exact construction for {:?}; the \
+                     approximation surface is only for cells without one (ADR 0001)",
+                    classification.class(),
+                    operation
+                ),
+            });
+        }
+        let horizon = match operation {
+            PreimageOperation::FiniteHorizon(bound) => Some(bound),
+            _ => None,
+        };
+        Ok(Self {
+            operation,
+            class: classification.class(),
+            construction: PreimageConstruction::WitnessedLowerBound,
+            system: system_digest(system),
+            language: language_digest(language),
+            rule_count: classification.rule_count(),
+            horizon,
+            max_term_nodes: limits.max_term_nodes(),
+            max_term_depth: limits.max_term_depth(),
+            max_constraints: limits.max_constraints(),
+            max_operations: limits.max_operations(),
+            authority: CertificateAuthority::Partial {
+                detail: String::from(detail),
+            },
+            result: None,
+        })
+    }
+
     /// Attach a claimed result language, binding its digest.
     ///
     /// Crate-visible only: a completed `Exact` certificate is trusted
@@ -291,8 +357,9 @@ impl PreimageCertificate {
     /// and authority fields must be coherent, and an `Identity`
     /// construction may bind only the input language as its result.
     /// Tampered metadata (including deserialized certificates) fails.
-    /// Only `Exact` authority is verifiable evidence in this
-    /// revision; `Partial` is reserved for Tasks 26-27.
+    /// `Exact` authority is verifiable for the approved exact
+    /// constructions; `Partial` authority is verifiable for the
+    /// witnessed lower-bound construction (Task 27).
     pub fn verify(
         &self,
         system: &TermSystem,
@@ -309,7 +376,12 @@ impl PreimageCertificate {
                 return false;
             }
         }
-        if validate_alphabet(system, language).is_err() {
+        // The exact constructions require the ADR 0001 common-alphabet
+        // clause; a witnessed lower bound replays rule applications
+        // over its own candidate alphabet and does not (Task 27).
+        if self.construction != PreimageConstruction::WitnessedLowerBound
+            && validate_alphabet(system, language).is_err()
+        {
             return false;
         }
         self.system == system_digest(system)
@@ -329,14 +401,26 @@ impl PreimageCertificate {
         if classification.class() != self.class || classification.rule_count() != self.rule_count {
             return false;
         }
-        if classification.capability(self.operation) != PreimageCapability::Exact(self.construction)
-        {
-            return false;
-        }
         let horizon_ok = match self.operation {
             PreimageOperation::FiniteHorizon(bound) => self.horizon == Some(bound),
             _ => self.horizon.is_none(),
         };
+        if self.construction == PreimageConstruction::WitnessedLowerBound {
+            // Partial-authority arm (ADR 0001 §Obligations): a witnessed
+            // lower bound is issued only where NO exact construction is
+            // approved, carries Partial authority, and may cover any of
+            // the three operations.
+            return horizon_ok
+                && matches!(
+                    classification.capability(self.operation),
+                    PreimageCapability::ApproximationOnly
+                )
+                && matches!(self.authority, CertificateAuthority::Partial { .. });
+        }
+        if classification.capability(self.operation) != PreimageCapability::Exact(self.construction)
+        {
+            return false;
+        }
         let construction_ok = match (self.operation, self.construction) {
             (PreimageOperation::FiniteHorizon(0), PreimageConstruction::Identity) => true,
             (
@@ -386,6 +470,10 @@ impl PreimageCertificate {
             PreimageConstruction::Identity
             | PreimageConstruction::FiniteHorizonIteration(_)
             | PreimageConstruction::GttSaturation => self.result == Some(self.language),
+            // A witnessed lower bound is not subject to the exact
+            // empty-system result semantics: its result is the
+            // enumerated witness set.
+            PreimageConstruction::WitnessedLowerBound => true,
         }
     }
 
