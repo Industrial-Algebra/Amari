@@ -228,15 +228,22 @@ fn witnessed_lower_bound(
     )?;
 
     let candidate_alphabet = candidate_alphabet(system, language);
+    // The one-step relation is exactly one application (no reflexive
+    // closure); finite horizon and saturation include zero steps.
+    let min_steps = match operation {
+        PreimageOperation::OneStep => 1,
+        PreimageOperation::FiniteHorizon(_) | PreimageOperation::Saturation => 0,
+    };
     let mut trace: Vec<ApproximationEvent> = Vec::new();
+    let mut resources = RelationResources::new(limits);
     let witnesses = if candidate_alphabet.iter().any(|ranked| ranked.arity() == 0) {
-        let mut resources = RelationResources::new(limits);
         let mut witnesses: BTreeSet<Term> = BTreeSet::new();
         match enumerate_witnesses(
             system,
             language,
             &candidate_alphabet,
             max_steps,
+            min_steps,
             &mut resources,
             limits,
             &mut witnesses,
@@ -260,18 +267,21 @@ fn witnessed_lower_bound(
         reason: "no sound upper construction is approved for this class (ADR 0001 §Obligations)",
     });
 
-    // Output assembly is bounded by the automaton ceilings in
-    // `automaton_limits` (hard errors on violation); the enumeration
-    // already spent the caller's relation budget, and truncation must
-    // remain `Ok`, so the assembled automaton is canonicalized with an
-    // unbounded relation workspace.
-    let mut output_resources = RelationResources::unbounded();
+    // Output assembly draws a FRESH draw of the same configured
+    // limits (per-phase accounting, review round 1): enumeration
+    // exhaustion truncates (the witnesses so far are sound), while
+    // assembly exhaustion is a typed `RelationLimitExceeded` — the
+    // determinization odometer is metered per step
+    // (determinize.rs), so a runaway construction trips the
+    // operation budget instead of running unbounded. The automaton
+    // ceilings in `automaton_limits` still apply.
+    let mut assembly_resources = RelationResources::new(limits);
     let lower = build_lower_automaton(
         &witnesses,
         &candidate_alphabet,
         language,
         automaton_limits,
-        &mut output_resources,
+        &mut assembly_resources,
     )?;
     let certificate = certificate.complete(&lower);
     Ok(ApproximationOutcome {
@@ -370,6 +380,7 @@ fn enumerate_witnesses(
     language: &TreeAutomaton,
     alphabet: &[RankedSymbol],
     max_steps: u32,
+    min_steps: u32,
     resources: &mut RelationResources,
     limits: &RelationLimits,
     witnesses: &mut BTreeSet<Term>,
@@ -383,7 +394,9 @@ fn enumerate_witnesses(
             if term_depth(term) > limits.max_term_depth() {
                 continue;
             }
-            if replays_into(system, language, term, max_steps, resources, limits)? {
+            if replays_into(
+                system, language, term, max_steps, min_steps, resources, limits,
+            )? {
                 let nodes = term_nodes(term);
                 charge_constraints(resources, limits.max_constraints(), 1 + nodes)?;
                 if witnesses.insert(term.clone()) {
@@ -521,47 +534,82 @@ fn compositions(
 }
 
 /// Whether forward replay from `start` reaches a member of `language`
-/// within `budget` application steps (zero steps included, so a member
-/// of the language is always a witness). `application_successors`
-/// includes self-steps, matching the exact path's relation.
+/// within `budget` application steps. `min_steps` is 1 for the
+/// one-step relation (EXACTLY one application — no reflexive closure)
+/// and 0 for finite horizon/saturation (zero steps included). A
+/// freshly generated successor is membership-tested even when already
+/// visited, so a GENUINE self-application (a rule that returns its
+/// own input) still counts as an application.
+#[allow(clippy::too_many_arguments)]
 fn replays_into(
     system: &TermSystem,
     language: &TreeAutomaton,
     start: &Term,
     budget: u32,
+    min_steps: u32,
     resources: &mut RelationResources,
     limits: &RelationLimits,
 ) -> Result<bool, Stop> {
     let mut visited: BTreeSet<Term> = BTreeSet::new();
     let mut frontier: Vec<Term> = vec![start.clone()];
     visited.insert(start.clone());
-    charge_constraints(resources, limits.max_constraints(), 2)?;
+    charge_constraints(resources, limits.max_constraints(), 2 * term_nodes(start))?;
+    if min_steps == 0 {
+        match language.accepts_with_resources(start, resources) {
+            Ok(true) => return Ok(true),
+            Ok(false) => {}
+            Err(RewriteError::RelationLimitExceeded { resource, limit }) => {
+                if resource == "operations" {
+                    return Err(Stop::Truncated {
+                        resource: "operations",
+                        limit,
+                    });
+                }
+            }
+            Err(error) => return Err(Stop::Hard(error)),
+        }
+    }
     let mut step = 0u32;
     loop {
-        for term in &frontier {
-            match language.accepts_with_resources(term, resources) {
-                Ok(true) => return Ok(true),
-                Ok(false) => {}
-                Err(RewriteError::RelationLimitExceeded { resource, limit }) => {
-                    if resource == "operations" {
-                        return Err(Stop::Truncated {
-                            resource: "operations",
-                            limit,
-                        });
-                    }
-                    // A per-term bound: this term cannot be a member.
-                }
-                Err(error) => return Err(Stop::Hard(error)),
-            }
-        }
         if step >= budget {
             break;
         }
         let mut next: Vec<Term> = Vec::new();
         for term in &frontier {
+            // Preflight the successor work BEFORE the successor vector
+            // is allocated: each rule is attempted at each position, so
+            // rules x (nodes + 1) is an honest advance estimate. A tiny
+            // budget truncates here without the allocation happening.
+            let estimate = system
+                .rules()
+                .len()
+                .saturating_mul(term_nodes(term).saturating_add(1))
+                .max(1);
+            charge_operations(resources, limits.max_operations(), estimate)?;
             let successors = system.application_successors(term).map_err(Stop::Hard)?;
             charge_operations(resources, limits.max_operations(), successors.len())?;
+            charge_constraints(resources, limits.max_constraints(), successors.len())?;
             for successor in successors {
+                // Membership of the freshly generated successor is
+                // tested BEFORE the visited check: a successor equal
+                // to a visited term (a genuine self-application) is
+                // still a real application.
+                if step + 1 >= min_steps {
+                    match language.accepts_with_resources(&successor, resources) {
+                        Ok(true) => return Ok(true),
+                        Ok(false) => {}
+                        Err(RewriteError::RelationLimitExceeded { resource, limit }) => {
+                            if resource == "operations" {
+                                return Err(Stop::Truncated {
+                                    resource: "operations",
+                                    limit,
+                                });
+                            }
+                            // A per-term bound: this term cannot be a member.
+                        }
+                        Err(error) => return Err(Stop::Hard(error)),
+                    }
+                }
                 if term_nodes(&successor) > limits.max_term_nodes()
                     || term_depth(&successor) > limits.max_term_depth()
                 {

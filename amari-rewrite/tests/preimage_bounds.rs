@@ -130,17 +130,21 @@ fn empty_language(ranked: &[(&str, u16)]) -> TreeAutomaton {
 
 /// Whether `term` replays into `language` within `budget` application
 /// steps, using the same relation the construction uses.
-fn replays_into(system: &TermSystem, language: &TreeAutomaton, term: &Term, budget: u32) -> bool {
+fn replays_into(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    term: &Term,
+    budget: u32,
+    min_steps: u32,
+) -> bool {
     let mut visited: BTreeSet<Term> = BTreeSet::new();
     let mut frontier: Vec<Term> = vec![term.clone()];
     visited.insert(term.clone());
+    if min_steps == 0 && language.accepts(term).expect("ground term") {
+        return true;
+    }
     let mut step = 0u32;
     loop {
-        for current in &frontier {
-            if language.accepts(current).expect("ground term") {
-                return true;
-            }
-        }
         if step >= budget || frontier.is_empty() {
             return false;
         }
@@ -150,6 +154,10 @@ fn replays_into(system: &TermSystem, language: &TreeAutomaton, term: &Term, budg
                 .application_successors(current)
                 .expect("application successors")
             {
+                // Genuine self-applications count even when visited.
+                if step + 1 >= min_steps && language.accepts(&successor).expect("ground term") {
+                    return true;
+                }
                 if visited.insert(successor.clone()) {
                     next.push(successor);
                 }
@@ -170,11 +178,17 @@ fn node_limited(max_nodes: usize) -> RelationLimits {
     .expect("valid node-limited profile")
 }
 
-fn assert_sound(system: &TermSystem, language: &TreeAutomaton, lower: &TreeAutomaton, budget: u32) {
+fn assert_sound(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    lower: &TreeAutomaton,
+    budget: u32,
+    min_steps: u32,
+) {
     for candidate in [a(), b(), c(), g(a()), f(a(), a()), h(a(), a()), g(g(a()))] {
         if lower.accepts(&candidate).expect("ground term") {
             assert!(
-                replays_into(system, language, &candidate, budget),
+                replays_into(system, language, &candidate, budget, min_steps),
                 "accepted witness {candidate:?} must replay into the language"
             );
         }
@@ -186,18 +200,19 @@ fn non_left_linear_one_step_lower_bound() {
     let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
     let language = accepts_exactly(&[("a", 0), ("g", 1), ("f", 2)], &[a()]);
     // A three-node budget makes the enumerated set exactly {a, g(a),
-    // f(a,a), g(g(a))}, so the only one-step witnesses are a (zero
-    // steps) and f(a,a) (the rule).
+    // f(a,a), g(g(a))}; the only one-step witness is f(a,a) — the
+    // one-step relation is EXACTLY ONE application, so `a` itself is
+    // not a witness (review round 1).
     let limits = node_limited(3);
     let outcome =
         one_step_lower_bound(&system, &language, &limits, &TreeAutomatonLimits::default())
             .expect("non-left-linear one-step is approximation-only");
 
-    assert!(outcome.lower().accepts(&a()).expect("ground"));
+    assert!(!outcome.lower().accepts(&a()).expect("ground"));
     assert!(outcome.lower().accepts(&f(a(), a())).expect("ground"));
     assert!(!outcome.lower().accepts(&g(a())).expect("ground"));
     assert!(!outcome.lower().accepts(&g(g(a()))).expect("ground"));
-    assert_sound(&system, &language, outcome.lower(), 1);
+    assert_sound(&system, &language, outcome.lower(), 1, 1);
 
     assert!(outcome.upper().is_none());
     let admitted = outcome
@@ -205,7 +220,7 @@ fn non_left_linear_one_step_lower_bound() {
         .iter()
         .filter(|event| matches!(event, ApproximationEvent::WitnessAdmitted { .. }))
         .count();
-    assert_eq!(admitted, 2, "trace: {:?}", outcome.trace());
+    assert_eq!(admitted, 1, "trace: {:?}", outcome.trace());
     let upper_unavailable = outcome
         .trace()
         .iter()
@@ -345,11 +360,15 @@ fn finite_horizon_needs_exactly_two_steps() {
 }
 
 #[test]
-fn tiny_operation_budget_truncates_without_error() {
+fn tiny_constraint_budget_truncates_without_error() {
     let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
     let language = accepts_exactly(&[("a", 0), ("f", 2)], &[a()]);
-    let limits = RelationLimits::new(64, 64, RelationLimits::MAX_CONSTRAINTS, 3)
-        .expect("valid tiny-operation profile");
+    // A 32-cell storage budget truncates the enumeration after a few
+    // retained terms; the small truncated witness set then assembles
+    // under a fresh draw of the same per-phase limits (operations are
+    // generous here, so assembly succeeds and the outcome is Ok).
+    let limits = RelationLimits::new(64, 64, 32, RelationLimits::MAX_OPERATIONS)
+        .expect("valid tiny-constraint profile");
     let outcome =
         one_step_lower_bound(&system, &language, &limits, &TreeAutomatonLimits::default())
             .expect("budget exhaustion during enumeration is not an error");
@@ -362,7 +381,7 @@ fn tiny_operation_budget_truncates_without_error() {
         "trace: {:?}",
         outcome.trace()
     );
-    assert_sound(&system, &language, outcome.lower(), 1);
+    assert_sound(&system, &language, outcome.lower(), 1, 1);
 }
 
 #[cfg(feature = "serialize")]
@@ -456,7 +475,7 @@ fn witness_symbol_outside_the_language_alphabet() {
         one_step_lower_bound(&system, &language, &limits, &TreeAutomatonLimits::default())
             .expect("non-left-linear one-step is approximation-only");
 
-    assert!(outcome.lower().accepts(&a()).expect("ground"));
+    assert!(!outcome.lower().accepts(&a()).expect("ground"));
     assert!(outcome.lower().accepts(&h(a(), a())).expect("ground"));
     assert!(language
         .alphabet()
@@ -473,4 +492,119 @@ fn witness_symbol_outside_the_language_alphabet() {
     );
     assert!(outcome.certificate().verify(&system, &language, &limits));
     assert!(outcome.certificate().verify_result(outcome.lower()));
+}
+
+/// Review round 1 (P1): the one-step relation is EXACTLY ONE
+/// application — no reflexive closure. Under {f(x,x) → a} with
+/// L = {a}, `a` has no application successors and is NOT a member of
+/// the concrete one-step preimage; the lower bound must not accept
+/// it. (Zero-step membership remains correct for finite horizon and
+/// saturation.)
+#[test]
+fn one_step_requires_an_actual_application() {
+    let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
+    let language = accepts_exactly(&[("a", 0), ("f", 2)], &[a()]);
+    let outcome = one_step_lower_bound(
+        &system,
+        &language,
+        &RelationLimits::default(),
+        &TreeAutomatonLimits::default(),
+    )
+    .expect("approximation-only cell");
+    assert!(
+        !outcome
+            .lower()
+            .accepts(&a())
+            .expect("acceptance is decidable"),
+        "a has no application successor in the language — not a one-step witness"
+    );
+    assert!(
+        outcome
+            .lower()
+            .accepts(&f(a(), a()))
+            .expect("acceptance is decidable"),
+        "f(a,a) rewrites to a language member in one application"
+    );
+    let limits = RelationLimits::default();
+    assert!(outcome.certificate().verify(&system, &language, &limits));
+}
+
+/// Review round 1 (P1): a GENUINE self-application (the rule a → a
+/// applies and returns `a`) is an application, so `a` IS a one-step
+/// witness of {a} — the fix must not suppress rule-produced
+/// self-loops.
+#[test]
+fn one_step_counts_genuine_self_applications() {
+    // The f(x,x) rule keeps the class approximation-only; the a -> a
+    // rule is the genuine self-application under test.
+    let system = TermSystem::new(vec![
+        Rule::new(a(), a()).unwrap(),
+        Rule::new(f(x(), x()), b()).unwrap(),
+    ]);
+    let language = accepts_exactly(&[("a", 0), ("b", 0), ("f", 2)], &[a()]);
+    let outcome = one_step_lower_bound(
+        &system,
+        &language,
+        &RelationLimits::default(),
+        &TreeAutomatonLimits::default(),
+    )
+    .expect("approximation-only cell");
+    assert!(
+        outcome
+            .lower()
+            .accepts(&a())
+            .expect("acceptance is decidable"),
+        "a rewrites to itself by a genuine rule application"
+    );
+}
+
+/// Review round 1 (P1): output assembly is bounded by the caller's
+/// operation budget. An unused rank-16 alphabet symbol makes
+/// determinization explore an astronomical odometer space BEFORE any
+/// state ceiling can fire; with a 200-operation budget the call must
+/// return a typed limit error promptly instead of running away.
+#[test]
+fn assembly_work_is_bounded_by_the_caller_budget() {
+    let system = TermSystem::new(vec![Rule::new(f(x(), x()), a()).unwrap()]);
+    let q = TreeState::new("q");
+    let language = TreeAutomaton::new(
+        vec![
+            RankedSymbol::new(Symbol::new("a"), 0),
+            RankedSymbol::new(Symbol::new("z"), 16),
+        ],
+        vec![q.clone()],
+        vec![TreeTransition::new(Symbol::new("a"), vec![], q.clone())],
+        vec![q],
+        TreeAutomatonLimits::default(),
+    )
+    .expect("fixture automaton is valid");
+    let tight = RelationLimits::new(4_096, 64, 4_096, 200).expect("valid tight limits");
+    let result = one_step_lower_bound(&system, &language, &tight, &TreeAutomatonLimits::default());
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "runaway assembly must become a typed limit outcome, got {result:?}"
+    );
+}
+
+/// Review round 1 (P2): successor work is preflighted before the
+/// successor vector is allocated — a 20,000-rule system replaying one
+/// candidate against a 20-operation budget truncates immediately
+/// (behavioral guard; the allocation itself is instrumented in the
+/// reviewer's reproduction).
+#[test]
+fn successor_work_is_preflighted_before_allocation() {
+    let mut rules: Vec<Rule> = (0..20_000).map(|_| Rule::new(a(), b()).unwrap()).collect();
+    rules.push(Rule::new(f(x(), x()), a()).unwrap());
+    let system = TermSystem::new(rules);
+    let language = accepts_exactly(&[("a", 0), ("b", 0), ("f", 2)], &[a()]);
+    let tight = RelationLimits::new(4_096, 64, 4_096, 20).expect("valid tight limits");
+    let outcome = one_step_lower_bound(&system, &language, &tight, &TreeAutomatonLimits::default())
+        .expect("truncation is not an error");
+    assert!(
+        outcome
+            .trace()
+            .iter()
+            .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. })),
+        "the tiny budget must truncate during replay preflight"
+    );
 }
