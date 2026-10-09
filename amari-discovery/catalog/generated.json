@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "4dbb0c6cd91c2778bab1b06117c0972d17efb3f72b596b3ab891d720b9f6c43a",
+  "content_hash": "6edb6747b20cec1dba9d639ffe33f261b95e2542b2f89f9d224196cf14e119c1",
   "crates": [
     {
       "name": "amari",
@@ -3299,7 +3299,7 @@
           "alias": "pollster",
           "package": "pollster",
           "kind": "normal",
-          "version": "0.4",
+          "version": "1.0",
           "optional": true,
           "default_features": true
         },
@@ -65394,7 +65394,7 @@
           "alias": "pollster",
           "package": "pollster",
           "kind": "normal",
-          "version": "0.4",
+          "version": "1.0",
           "optional": true,
           "default_features": true
         },
@@ -75873,7 +75873,7 @@
           "alias": "pollster",
           "package": "pollster",
           "kind": "normal",
-          "version": "0.4",
+          "version": "1.0",
           "optional": true,
           "default_features": true
         },
@@ -222634,7 +222634,7 @@
           "alias": "pollster",
           "package": "pollster",
           "kind": "normal",
-          "version": "0.4",
+          "version": "1.0",
           "optional": true,
           "default_features": true
         },
@@ -232150,7 +232150,7 @@
           "alias": "pollster",
           "package": "pollster",
           "kind": "normal",
-          "version": "0.4",
+          "version": "1.0",
           "optional": false,
           "default_features": true
         },
@@ -305914,7 +305914,7 @@
           "alias": "pollster",
           "package": "pollster",
           "kind": "normal",
-          "version": "0.4",
+          "version": "1.0",
           "optional": true,
           "default_features": true
         },
@@ -434595,7 +434595,7 @@
           "alias": "pollster",
           "package": "pollster",
           "kind": "normal",
-          "version": "0.4",
+          "version": "1.0",
           "optional": true,
           "default_features": true
         },
