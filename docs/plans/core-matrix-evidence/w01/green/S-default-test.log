@@ -1,0 +1,350 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
+     Running unittests src/lib.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/amari_core-1fe9da39ff2844c1)
+
+running 202 tests
+test aligned_alloc::tests::test_aligned_coefficients ... ok
+test aligned_alloc::tests::test_aligned_memory ... ok
+test aligned_alloc::tests::test_aligned_f64_vec ... ok
+test aligned_alloc::tests::test_memory_pool ... ok
+test cayley::tests::test_euclidean_3d ... ok
+test basis::tests::test_builder ... ok
+test basis::tests::test_basis_helpers ... ok
+test basis::tests::test_blade_names ... ok
+test comprehensive_tests::accessor_tests::test_as_slice ... ok
+test cayley::tests::test_minkowski_spacetime ... ok
+test comprehensive_tests::accessor_tests::test_bivector_part ... ok
+test comprehensive_tests::accessor_tests::test_get_set ... ok
+test cayley::tests::test_null_vectors ... ok
+test comprehensive_tests::accessor_tests::test_set_bivector_component ... ok
+test comprehensive_tests::accessor_tests::test_scalar_part ... ok
+test comprehensive_tests::accessor_tests::test_set_vector_component ... ok
+test comprehensive_tests::accessor_tests::test_set_scalar ... ok
+test comprehensive_tests::accessor_tests::test_trivector_part ... ok
+test comprehensive_tests::accessor_tests::test_vector_component ... ok
+test comprehensive_tests::accessor_tests::test_vector_part ... ok
+test comprehensive_tests::arithmetic_tests::test_addition ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_zero ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_addition ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_negation ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_bivector ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_subtraction ... ok
+test comprehensive_tests::bivector_tests::test_bivector_basis_bivectors ... ok
+test comprehensive_tests::arithmetic_tests::test_scalar_multiplication ... ok
+test comprehensive_tests::bivector_tests::test_bivector_from_components ... ok
+test comprehensive_tests::bivector_tests::test_bivector_from_multivector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_bivector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_get ... ok
+test comprehensive_tests::bivector_tests::test_bivector_index_access ... ok
+test comprehensive_tests::bivector_tests::test_bivector_inner_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_inner_product ... ok
+test comprehensive_tests::bivector_tests::test_bivector_magnitude ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_scalar ... ok
+test comprehensive_tests::bivector_tests::test_bivector_outer_product ... ok
+test comprehensive_tests::bivector_tests::test_bivector_outer_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_right_contraction ... ok
+test comprehensive_tests::constructor_tests::test_basis_vector ... ok
+test comprehensive_tests::constructor_tests::test_from_coefficients ... ok
+test comprehensive_tests::constructor_tests::test_from_slice ... ok
+test comprehensive_tests::constructor_tests::test_scalar ... ok
+test comprehensive_tests::constructor_tests::test_zero ... ok
+test comprehensive_tests::integration_tests::test_basis_vector_anticommutativity ... ok
+test comprehensive_tests::integration_tests::test_basis_vector_squares ... ok
+test comprehensive_tests::integration_tests::test_identity_elements ... ok
+test comprehensive_tests::integration_tests::test_distributivity ... ok
+test comprehensive_tests::integration_tests::test_reverse_involution ... ok
+test comprehensive_tests::operation_tests::test_grade_projection ... ok
+test comprehensive_tests::operation_tests::test_grade ... ok
+test comprehensive_tests::operation_tests::test_reverse ... ok
+test comprehensive_tests::product_tests::test_geometric_product ... ok
+test comprehensive_tests::product_tests::test_geometric_product_associativity ... ok
+test comprehensive_tests::product_tests::test_inner_product ... ok
+test comprehensive_tests::product_tests::test_outer_product ... ok
+test comprehensive_tests::product_tests::test_outer_product_antisymmetric ... ok
+test comprehensive_tests::product_tests::test_scalar_product ... ok
+test comprehensive_tests::scalar_tests::test_scalar_from ... ok
+test comprehensive_tests::scalar_tests::test_scalar_commutative_multiplication ... ok
+test comprehensive_tests::scalar_tests::test_scalar_from_trait ... ok
+test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_multivector ... ok
+test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_vector ... ok
+test comprehensive_tests::scalar_tests::test_scalar_identity ... ok
+test comprehensive_tests::scalar_tests::test_scalar_one ... ok
+test comprehensive_tests::utility_tests::test_abs ... ok
+test comprehensive_tests::utility_tests::test_equality ... ok
+test comprehensive_tests::utility_tests::test_approx_eq ... ok
+test comprehensive_tests::utility_tests::test_inverse_small ... ok
+test comprehensive_tests::utility_tests::test_inverse ... ok
+test comprehensive_tests::utility_tests::test_inverse_zero ... ok
+test comprehensive_tests::utility_tests::test_is_zero ... ok
+test comprehensive_tests::utility_tests::test_norm ... ok
+test comprehensive_tests::utility_tests::test_magnitude ... ok
+test comprehensive_tests::utility_tests::test_norm_squared ... ok
+test comprehensive_tests::utility_tests::test_normalize ... ok
+test comprehensive_tests::utility_tests::test_normalize_small ... ok
+test comprehensive_tests::utility_tests::test_normalize_zero ... ok
+test comprehensive_tests::vector_tests::test_vector_add ... ok
+test comprehensive_tests::vector_tests::test_vector_as_slice ... ok
+test comprehensive_tests::vector_tests::test_vector_basis_vectors ... ok
+test comprehensive_tests::vector_tests::test_vector_from_components ... ok
+test comprehensive_tests::vector_tests::test_vector_from_multivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_multivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_scalar ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_vector ... ok
+test comprehensive_tests::vector_tests::test_vector_hodge_dual ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product_with_mv ... ok
+test comprehensive_tests::vector_tests::test_vector_left_contraction ... ok
+test comprehensive_tests::vector_tests::test_vector_magnitude ... ok
+test comprehensive_tests::vector_tests::test_vector_norm ... ok
+test comprehensive_tests::vector_tests::test_vector_norm_squared ... ok
+test comprehensive_tests::vector_tests::test_vector_normalize ... ok
+test comprehensive_tests::vector_tests::test_vector_normalize_zero ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product_with_mv ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_reverse ... ok
+test comprehensive_tests::vector_tests::test_vector_zero ... ok
+test generic::tests::test_blade_product_e12_e1_cl300 ... ok
+test generic::tests::test_blade_product_e1_e1_cl300 ... ok
+test generic::tests::test_blade_product_e1_e2_cl300 ... ok
+test generic::tests::test_blade_product_e2_e1_cl300 ... ok
+test generic::tests::test_blade_product_e3_e3_cl210 ... ok
+test generic::tests::test_blade_product_null_signature ... ok
+test generic::tests::test_blade_product_scalar_scalar ... ok
+test generic::tests::test_generic_gp_matches_const_generic_cl210 ... ok
+test generic::tests::test_generic_gp_matches_const_generic_cl300 ... ok
+test generic::tests::test_generic_gp_scalar_only ... ok
+test gf2::clifford::tests::test_basis_vector_square_degenerate ... ok
+test gf2::clifford::tests::test_basis_vector_square_nondegenerate ... ok
+test gf2::clifford::tests::test_commutativity_over_gf2 ... ok
+test gf2::clifford::tests::test_geometric_product_associativity ... ok
+test gf2::clifford::tests::test_grade_projection ... ok
+test gf2::clifford::tests::test_outer_product_dependent ... ok
+test gf2::clifford::tests::test_outer_product_independent_blades ... ok
+test gf2::clifford::tests::test_pseudoscalar_product ... ok
+test gf2::clifford::tests::test_reverse ... ok
+test gf2::clifford::tests::test_to_real_from_real_roundtrip ... ok
+test gf2::clifford::tests::test_zero_and_identity ... ok
+test gf2::grassmannian::tests::test_binary_grassmannian_size ... ok
+test gf2::grassmannian::tests::test_gaussian_binomial_edge_cases ... ok
+test gf2::grassmannian::tests::test_gaussian_binomial_known_values ... ok
+test gf2::grassmannian::tests::test_schubert_cell_size_formula ... ok
+test gf2::matrix::tests::test_determinant_non_square ... ok
+test gf2::matrix::tests::test_full_rank ... ok
+test gf2::grassmannian::tests::test_schubert_cell_sizes_sum ... ok
+test gf2::matrix::tests::test_identity_properties ... ok
+test gf2::matrix::tests::test_matrix_vector_product ... ok
+test gf2::matrix::tests::test_matrix_product ... ok
+test gf2::matrix::tests::test_rank_deficient ... ok
+test gf2::matrix::tests::test_null_space ... ok
+test gf2::matrix::tests::test_row_echelon_and_rank ... ok
+test gf2::matrix::tests::test_solve ... ok
+test gf2::matrix::tests::test_solve_inconsistent ... ok
+test gf2::matrix::tests::test_transpose_roundtrip ... ok
+test gf2::grassmannian::tests::test_enumerate_subspaces_count ... ok
+test gf2::scalar::tests::test_conversions ... ok
+test gf2::grassmannian::tests::test_enumerate_subspaces_valid_rref ... ok
+test gf2::scalar::tests::test_distributivity ... ok
+test gf2::scalar::tests::test_field_addition ... ok
+test gf2::scalar::tests::test_field_multiplication ... ok
+test generic::tests::test_generic_gp_random_cl410 ... ok
+test gf2::scalar::tests::test_multiplicative_inverse ... ok
+test gf2::scalar::tests::test_self_inverse ... ok
+test gf2::vector::tests::test_dot_product ... ok
+test gf2::vector::tests::test_from_bits ... ok
+test gf2::vector::tests::test_from_u64_roundtrip ... ok
+test gf2::vector::tests::test_get_set_roundtrip ... ok
+test gf2::vector::tests::test_hamming_weight_and_distance ... ok
+test gf2::vector::tests::test_large_vector ... ok
+test gf2::vector::tests::test_xor_addition ... ok
+test gf2::vector::tests::test_zero_vector ... ok
+test precision::tests::test_dashu_float_creation ... ok
+test precision::tests::test_dashu_float_arithmetic ... ok
+test precision::tests::test_dashu_float_precision_operations ... ok
+test precision::tests::test_default_tolerance ... ok
+test precision::tests::test_standard_float_precision ... ok
+test precision::tests::test_dashu_float_transcendental ... ok
+test rotor::tests::test_rotor_90_degrees ... ok
+test simd::tests::test_aligned_buffer ... ok
+test simd::tests::test_runtime_feature_detection ... ok
+test property_tests::unit_property_tests::test_property_framework ... ok
+test tests::test_rotor_from_bivector ... ok
+test tests::test_wedge_product ... ok
+test tests::test_inner_and_outer_products ... ok
+test tests::test_algebraic_identities ... ok
+test unicode_ops::tests::test_unicode_geometric_product ... ok
+test tests::test_metric_signature ... ok
+test rotor::tests::test_reflection ... ok
+test unicode_ops::tests::test_extended_unicode_operations ... ok
+test tests::test_basis_vectors ... ok
+test unicode_ops::tests::test_unicode_grade_projection ... ok
+test unicode_ops::tests::test_unicode_unary_operations ... ok
+test tests::test_grade_operations ... ok
+test unicode_ops::tests::test_unicode_inner_product ... ok
+test unicode_ops::tests::test_unicode_mathematical_identities ... ok
+test unicode_ops::tests::test_unicode_wedge_product ... ok
+test rotor::tests::test_rotor_composition ... ok
+test verified::tests::test_grade_preservation ... ok
+test verified::tests::test_outer_product_type_safety ... ok
+test verified::tests::test_phantom_type_dimension_safety ... ok
+test verified::tests::test_signature_type_safety ... ok
+test property_tests::prop_multiplicative_identity ... ok
+test property_tests::prop_outer_product_antisymmetric ... ok
+test property_tests::prop_outer_product_self_zero ... ok
+test property_tests::prop_basis_vector_squares ... ok
+test property_tests::prop_additive_identity ... ok
+test property_tests::prop_reverse_antiautomorphism ... ok
+test property_tests::prop_basis_anticommutativity ... ok
+test property_tests::prop_rotor_preserves_norm ... ok
+test property_tests::prop_addition_commutative ... ok
+test property_tests::prop_norm_via_reverse ... ok
+test property_tests::prop_addition_associative ... ok
+test property_tests::prop_geometric_product_associative ... ok
+test property_tests::prop_scalar_multiplication_commutative ... ok
+test property_tests::prop_left_distributivity ... ok
+
+test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/arithmetic_regressions.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/arithmetic_regressions-07d7f70f1462caed)
+
+running 6 tests
+test gp_associativity_does_not_drop_a_small_intermediate ... ok
+test gp_small_finite_factor_is_not_zero ... ok
+test projected_inner_and_contractions_keep_small_grade_components ... ok
+test structural_hodge_transport_is_linear_at_small_scale ... ok
+test structural_grade_reports_a_small_nonzero_component ... ok
+test projected_outer_product_keeps_small_grade_components ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/audit_tests.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/audit_tests-f981f5915c4bf0d4)
+
+running 17 tests
+test contraction_tests::test_inner_product_vector_bivector ... ok
+test contraction_tests::test_left_contraction_vector_bivector ... ok
+test cayley_tests::test_full_cayley_table_cl300 ... ok
+test contraction_tests::test_left_contraction_vector_vector ... ok
+test hodge_dual_tests::test_hodge_dual_double_dual_3d ... ok
+test hodge_dual_tests::test_hodge_dual_basis_vectors_3d ... ok
+test hodge_dual_tests::test_hodge_dual_mixed_grade ... ok
+test hodge_dual_tests::test_hodge_dual_scalar_pseudoscalar_3d ... ok
+test numeric_tests::test_geometric_product_associativity ... ok
+test hodge_dual_tests::test_hodge_dual_bivectors_3d ... ok
+test numeric_tests::test_identity_geometric_product ... ok
+test numeric_tests::test_inverse_zero ... ok
+test numeric_tests::test_large_coefficients ... ok
+test numeric_tests::test_normalize_zero_vector ... ok
+test numeric_tests::test_near_zero_normalize ... ok
+test signature_tests::test_projective_ga_cl201 ... ok
+test signature_tests::test_minkowski_spacetime_cl130 ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/basis_word_oracle.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/basis_word_oracle-f610cc9af377c67a)
+
+running 1 test
+test oracle_all_basis_pairs_through_dimension_four ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+     Running tests/geometric_product.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/geometric_product-38d87fcfb5bfcfef)
+
+running 15 tests
+test geometric_product_tests::test_basis_vector_squared_negative_signature ... ok
+test geometric_product_tests::test_basis_vector_squared_positive_signature ... ok
+test geometric_product_tests::test_bivector_vector_product ... ok
+test geometric_product_tests::test_general_multivector_product ... ok
+test geometric_product_tests::test_geometric_product_distributivity ... ok
+test geometric_product_tests::test_grade_mixing_in_product ... ok
+test geometric_product_tests::test_scalar_multiplication_commutes ... ok
+test geometric_product_tests::test_basis_vector_squared_null_signature ... ok
+test geometric_product_tests::test_self_product_positive_definite ... ok
+test geometric_product_tests::test_vector_bivector_product ... ok
+test geometric_product_tests::test_zero_element ... ok
+test geometric_product_tests::test_geometric_product_associativity ... ok
+test geometric_product_tests::test_orthogonal_basis_vectors_anticommute ... ok
+test geometric_product_tests::test_multiplicative_identity ... ok
+test performance_tests::test_geometric_product_performance ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/gf2_tests.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/gf2_tests-3790c546d4e2d447)
+
+running 6 tests
+test clifford_real_integration::test_binary_to_real_geometric_product ... ok
+test clifford_real_integration::test_from_real_reduces_mod2 ... ok
+test grassmannian_matrix_integration::test_subspace_closure_under_xor ... ok
+test scalar_vector_matrix_chain::test_matrix_solve_and_verify ... ok
+test scalar_vector_matrix_chain::test_null_space_orthogonal_to_row_space ... ok
+test grassmannian_matrix_integration::test_enumerate_and_verify_subspaces ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/products.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/products-67b0ea82735a4d85)
+
+running 17 tests
+test product_tests::test_bivector_bivector_products ... ok
+test product_tests::test_bivector_vector_inner_product ... ok
+test product_tests::test_inner_product_metric_signature ... ok
+test product_tests::test_geometric_product_decomposition ... ok
+test product_tests::test_contraction_properties ... ok
+test product_tests::test_outer_product_anticommutativity ... ok
+test product_tests::test_inner_product_grade_lowering ... ok
+test product_tests::test_outer_product_self_is_zero ... ok
+test product_tests::test_outer_product_associativity ... ok
+test product_tests::test_outer_product_with_scalar ... ok
+test product_tests::test_outer_product_grade_raising ... ok
+test product_tests::test_hodge_duality_preview ... ok
+test product_tests::test_product_with_zero ... ok
+test product_tests::test_product_commutativity_properties ... ok
+test product_tests::test_vector_bivector_products ... ok
+test product_tests::test_vector_inner_product_orthogonality ... ok
+test product_tests::test_vector_inner_product_parallel ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rotors.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/rotors-081308916ca497ff)
+
+running 27 tests
+test rotor_tests::test_rotor_180_degree ... ok
+test rotor_tests::test_rotor_double_cover ... ok
+test rotor_tests::test_rotor_composition ... ok
+test rotor_tests::test_rotor_commutator ... ok
+test rotor_tests::test_rotor_from_axis_angle ... ok
+test rotor_tests::test_rotor_from_axis_angle_diagonal ... ok
+test rotor_tests::test_rotor_identity ... ok
+test rotor_tests::test_euler_angle_composition ... ok
+test rotor_tests::test_rotor_from_bivector ... ok
+test rotor_tests::test_rotor_from_vectors ... ok
+test rotor_tests::test_rotor_interpolation ... ok
+test rotor_tests::test_rotor_inverse ... ok
+test rotor_tests::test_rotor_logarithm ... ok
+test rotor_tests::test_rotor_power ... ok
+test rotor_tests::test_rotor_power_negative ... ok
+test rotor_tests::test_rotor_power_zero ... ok
+test rotor_tests::test_rotor_power_fractional ... ok
+test rotor_tests::test_rotor_power_third ... ok
+test rotor_tests::test_rotor_preserves_magnitude ... ok
+test rotor_tests::test_rotor_rotation_e13_plane ... ok
+test rotor_tests::test_rotor_preserves_angles ... ok
+test rotor_tests::test_rotor_rotation_e23_plane ... ok
+test rotor_tests::test_rotor_rotation_of_vector ... ok
+test rotor_tests::test_rotor_small_angle ... ok
+test rotor_tests::test_slerp_endpoints ... ok
+test rotor_tests::test_rotor_to_matrix ... ok
+test rotor_tests::test_to_rotation_matrix_e13_plane ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests amari_core
+
+running 3 tests
+test amari-core/src/lib.rs - Multivector<P,Q,R>::grade_magnitude (line 429) ... ok
+test amari-core/src/lib.rs - Multivector<P,Q,R>::magnitude (line 483) ... ok
+test amari-core/src/unicode_ops.rs - unicode_ops (line 25) ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

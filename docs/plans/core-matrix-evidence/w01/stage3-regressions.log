@@ -1,0 +1,14 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.42s
+     Running tests/arithmetic_regressions.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/arithmetic_regressions-07d7f70f1462caed)
+
+running 6 tests
+test gp_associativity_does_not_drop_a_small_intermediate ... ok
+test gp_small_finite_factor_is_not_zero ... ok
+test projected_inner_and_contractions_keep_small_grade_components ... ok
+test structural_hodge_transport_is_linear_at_small_scale ... ok
+test structural_grade_reports_a_small_nonzero_component ... ok
+test projected_outer_product_keeps_small_grade_components ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

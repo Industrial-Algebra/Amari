@@ -1,0 +1,1157 @@
+ Downloading crates ...
+  Downloaded wasm-bindgen-test-shared v0.2.129
+  Downloaded wasm-bindgen-test v0.3.79
+  Downloaded serde_spanned v1.1.2
+  Downloaded wasm-bindgen-test-macro v0.3.79
+  Downloaded toml_writer v1.1.3+spec-1.1.0
+  Downloaded trybuild v1.0.122
+  Downloaded toml v1.1.8+spec-1.1.0
+  Downloaded bstr v1.13.1
+   Compiling syn v3.0.6
+   Compiling memchr v2.8.3
+   Compiling serde_json v1.0.151
+   Compiling libm v0.2.16
+   Compiling utf8parse v0.2.2
+   Compiling colorchoice v1.0.5
+   Compiling anstyle-query v1.1.5
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling num-traits v0.2.19
+   Compiling heck v0.5.0
+   Compiling strsim v0.11.1
+   Compiling typenum v1.20.1
+   Compiling once_cell v1.21.4
+   Compiling version_check v0.9.5
+   Compiling getrandom v0.4.3
+   Compiling anstyle-parse v1.0.0
+   Compiling matrixmultiply v0.3.11
+   Compiling rawpointer v0.2.1
+   Compiling nalgebra-macros v0.3.0
+   Compiling ppv-lite86 v0.2.21
+   Compiling rustix v1.1.5
+   Compiling linux-raw-sys v0.12.1
+   Compiling cpufeatures v0.2.17
+   Compiling equivalent v1.0.2
+   Compiling hashbrown v0.17.1
+   Compiling serde_core v1.0.229
+   Compiling unicode-ident v1.0.26
+   Compiling zmij v1.0.23
+   Compiling itoa v1.0.18
+   Compiling anstream v1.0.0
+   Compiling ref-cast v1.0.27
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling dyn-clone v1.0.20
+   Compiling winnow v0.7.15
+   Compiling toml_write v0.1.2
+   Compiling predicates-core v1.0.10
+   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-discovery)
+   Compiling termtree v0.5.1
+   Compiling clap_builder v4.6.7
+   Compiling generic-array v0.14.7
+   Compiling rand_chacha v0.9.0
+   Compiling rand v0.10.3
+   Compiling rand_chacha v0.10.0
+   Compiling normalize-line-endings v0.3.0
+   Compiling hex v0.4.3
+   Compiling difflib v0.4.0
+   Compiling assert_cmd v2.2.2
+   Compiling predicates-tree v1.0.13
+   Compiling pin-project-lite v0.2.17
+   Compiling parking_lot_core v0.9.12
+   Compiling indexmap v2.14.2
+   Compiling smallvec v1.16.2
+   Compiling scopeguard v1.2.0
+   Compiling errno v0.3.14
+   Compiling aho-corasick v1.1.5
+   Compiling lock_api v0.4.14
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling signal-hook-registry v1.4.8
+   Compiling bytes v1.12.1
+   Compiling futures-sink v0.3.34
+   Compiling futures-core v0.3.34
+   Compiling slab v0.4.12
+   Compiling futures-channel v0.3.34
+   Compiling cfg_aliases v0.1.1
+   Compiling termcolor v1.4.1
+   Compiling futures-io v0.3.34
+   Compiling futures-task v0.3.34
+   Compiling ahash v0.8.12
+   Compiling parking_lot v0.12.5
+   Compiling thiserror v1.0.69
+   Compiling thiserror-impl v1.0.69
+   Compiling allocator-api2 v0.2.21
+   Compiling bit-vec v0.6.3
+   Compiling ash v0.37.3+1.3.251
+   Compiling unicode-width v0.1.14
+   Compiling khronos-egl v6.0.0
+   Compiling bit-set v0.5.3
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling wgpu-hal v0.19.5
+   Compiling codespan-reporting v0.11.1
+   Compiling gpu-alloc-types v0.3.1
+   Compiling syn v2.0.119
+   Compiling digest v0.10.7
+   Compiling spirv v0.3.0+sdk-1.3.268.0
+   Compiling gpu-descriptor-types v0.1.2
+   Compiling libloading v0.8.9
+   Compiling libloading v0.7.4
+   Compiling hexf-parse v0.2.1
+   Compiling rustc-hash v1.1.0
+   Compiling hashbrown v0.14.5
+   Compiling regex-automata v0.4.18
+   Compiling unicode-xid v0.2.6
+   Compiling sha2 v0.10.9
+   Compiling log v0.4.34
+   Compiling gpu-alloc v0.6.2
+   Compiling wgpu-core v0.19.4
+   Compiling wgpu-types v0.19.2
+   Compiling renderdoc-sys v1.1.0
+   Compiling arrayvec v0.7.8
+   Compiling profiling v1.0.18
+   Compiling raw-window-handle v0.6.2
+   Compiling glow v0.13.1
+   Compiling gpu-descriptor v0.2.4
+   Compiling wgpu v0.19.4
+   Compiling pollster v1.0.1
+   Compiling wasm-bindgen-shared v0.2.129
+   Compiling target-tuple v1.0.2
+   Compiling winnow v1.0.4
+   Compiling bumpalo v3.20.3
+   Compiling wasm-bindgen v0.2.129
+   Compiling toml_datetime v1.1.2+spec-1.1.0
+   Compiling serde v1.0.229
+   Compiling amari-flynn-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-flynn-macros)
+   Compiling approx v0.5.1
+   Compiling num-integer v0.1.47
+   Compiling plotters v0.3.7
+   Compiling num-complex v0.4.6
+   Compiling float-cmp v0.10.0
+   Compiling tempfile v3.27.0
+   Compiling rand_distr v0.6.0
+   Compiling num-bigint v0.4.8
+   Compiling rusty-fork v0.3.1
+   Compiling proptest v1.11.0
+   Compiling serde_spanned v1.1.2
+   Compiling toml_writer v1.1.3+spec-1.1.0
+   Compiling glob v0.3.4
+   Compiling amari-flynn v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-flynn)
+   Compiling thiserror v2.0.21
+   Compiling toml_parser v1.1.5+spec-1.1.0
+   Compiling cfg-if v1.0.5
+   Compiling wasm-bindgen-test-shared v0.2.129
+   Compiling amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-wasm)
+   Compiling naga v0.19.2
+   Compiling nu-ansi-term v0.50.3
+   Compiling toml v1.1.8+spec-1.1.0
+   Compiling num-rational v0.4.2
+   Compiling regex v1.13.1
+   Compiling bstr v1.13.1
+   Compiling toml_edit v0.25.17+spec-1.1.0
+   Compiling amari-discovery-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-discovery-macros)
+   Compiling predicates v3.1.4
+   Compiling serde_derive_internals v0.30.0
+   Compiling wasm-bindgen-macro-support v0.2.129
+   Compiling proc-macro-crate v3.5.0
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_derive v1.0.229
+   Compiling bytemuck_derive v1.12.1
+   Compiling clap_derive v4.6.7
+   Compiling ref-cast-impl v1.0.27
+   Compiling schemars_derive v1.2.2
+   Compiling tokio-macros v2.7.2
+   Compiling futures-macro v0.3.34
+   Compiling wasm-bindgen-test-macro v0.3.79
+   Compiling async-trait v0.1.92
+   Compiling amari-rewrite-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-rewrite-macros)
+   Compiling tokio v1.53.2
+   Compiling futures-util v0.3.34
+   Compiling amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-rewrite)
+   Compiling amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-cgt)
+   Compiling bytemuck v1.25.2
+   Compiling clap v4.6.7
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-core)
+   Compiling safe_arch v1.2.0
+   Compiling wide v1.7.1
+   Compiling amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-surreal)
+   Compiling amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-dual)
+   Compiling amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-tropical)
+   Compiling amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-info-geom)
+   Compiling amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-holographic)
+   Compiling amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-enumerative)
+   Compiling amari-surcomplex v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-surcomplex)
+   Compiling amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-optimization)
+   Compiling amari-measure v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-measure)
+   Compiling amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-automata)
+   Compiling amari-fusion v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-fusion)
+   Compiling amari-calculus v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-calculus)
+   Compiling amari-probabilistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-probabilistic)
+   Compiling amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-functional)
+   Compiling amari-topology v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-topology)
+   Compiling trybuild v1.0.122
+   Compiling schemars v1.2.2
+   Compiling futures-executor v0.3.34
+   Compiling ciborium v0.2.2
+   Compiling tinytemplate v1.2.1
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling futures v0.3.34
+   Compiling toml_edit v0.22.27
+   Compiling wasm-bindgen-macro v0.2.129
+   Compiling criterion v0.8.2
+   Compiling toml v0.8.23
+warning: unused import: `Sha256Digest`
+  --> amari-rewrite/tests/relation_grounding.rs:11:85
+   |
+11 |     ConstraintSet, GroundingDomain, GroundingOutcome, RankedSymbol, RelationLimits, Sha256Digest,
+   |                                                                                     ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Substitution`
+  --> amari-rewrite/tests/relation_grounding.rs:14:32
+   |
+14 | use amari_rewrite::trs::{Rule, Substitution, Term, TermSystem};
+   |                                ^^^^^^^^^^^^
+
+   Compiling js-sys v0.3.106
+   Compiling console_error_panic_hook v0.1.7
+warning: unused import: `RewriteResidual`
+  --> amari-rewrite/tests/residual_roundtrip.rs:10:49
+   |
+10 | use amari_rewrite::reversible::{ReversibleStep, RewriteResidual};
+   |                                                 ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `GuidanceMode`, `ReplayCertificate`, `ReplayQuery`, and `ResourceObservation`
+ --> amari-rewrite/tests/inverse_remediation.rs:6:5
+  |
+6 |     GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayQuery, ResourceObservation,
+  |     ^^^^^^^^^^^^                       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "relation_grounding") generated 2 warnings (run `cargo fix --test "relation_grounding" -p amari-rewrite` to apply 2 suggestions)
+warning: `amari-rewrite` (test "residual_roundtrip") generated 1 warning (run `cargo fix --test "residual_roundtrip" -p amari-rewrite` to apply 1 suggestion)
+warning: `amari-rewrite` (test "inverse_remediation") generated 1 warning (run `cargo fix --test "inverse_remediation" -p amari-rewrite` to apply 1 suggestion)
+   Compiling simba v0.10.2
+   Compiling nalgebra v0.35.0
+   Compiling wasm-bindgen-futures v0.4.79
+   Compiling serde-wasm-bindgen v0.6.5
+   Compiling web-sys v0.3.106
+   Compiling wasm-bindgen-test v0.3.79
+   Compiling amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-network)
+   Compiling amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-relativistic)
+   Compiling amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-dynamics)
+   Compiling amari v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01)
+   Compiling amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w01/amari-gpu)
+warning: unused imports: `RewriteGuidance` and `RewriteSearchMode`
+ --> amari-discovery/tests/probe_rewrite_inverse_search.rs:8:39
+  |
+8 |     RewriteBidirectionalSearchOutput, RewriteGuidance, RewriteSearchMode, RewriteTerm,
+  |                                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> amari-discovery/tests/probe_rewrite_inverse_search.rs:195:9
+    |
+195 |     let mut bad = backward_request(json!({"kind": "heuristic_pruning", "beam_width": 0}));
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `var` is never used
+  --> amari-discovery/tests/probe_rewrite_inverse_search.rs:15:4
+   |
+15 | fn var(name: &str) -> RewriteTerm {
+   |    ^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-discovery` (test "probe_rewrite_inverse_search") generated 3 warnings (run `cargo fix --test "probe_rewrite_inverse_search" -p amari-discovery` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 46.84s
+     Running unittests src/lib.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/amari-457bf849e37b9631)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/determinism_cross_platform.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/determinism_cross_platform-eb01c670bfd09050)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/integration-fe202a37251b0e28)
+
+running 2 tests
+test test_performance_tropical_vs_traditional ... ignored
+test test_tropical_dual_clifford_consistency ... ignored
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/integration_tests-af78449978dd8163)
+
+running 10 tests
+test test_conversion_consistency ... ignored
+test test_clifford_consistency ... ok
+test test_floating_point_consistency ... ok
+test test_gradient_consistency ... ok
+test test_softmax_consistency ... ok
+test test_tropical_dp_consistency ... ok
+test test_numerical_stability ... ok
+test test_interpolation_consistency ... ok
+test test_tdc_self_consistency ... ok
+test test_stress_integration ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+     Running unittests src/lib.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/amari_automata-fc4d92e806913d46)
+
+running 55 tests
+test comprehensive_tests_simple::boundary_tests::test_boundary_setting ... ok
+test comprehensive_tests_simple::boundary_tests::test_moore_neighborhood_2d ... ok
+test comprehensive_tests_simple::boundary_tests::test_fixed_boundary ... ok
+test comprehensive_tests_simple::boundary_tests::test_periodic_boundary ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_grade_preserving_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_custom_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_rotor_ca_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_conservative_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_rule_apply ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_reversible_rule ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_add_node ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_creation ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_node_creation ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_node_state_hash ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_navigator_new ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_generator_rotation ... ok
+test comprehensive_tests_simple::constructor_tests::test_from_seed ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_group_element_identity ... ok
+test comprehensive_tests_simple::constructor_tests::test_with_cached_cayley ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_cell_operations ... ok
+test comprehensive_tests_simple::constructor_tests::test_with_group_structure ... ok
+test comprehensive_tests_simple::metrics_tests::test_connected_components ... ok
+test comprehensive_tests_simple::metrics_tests::test_state_snapshot ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_creation ... ok
+test comprehensive_tests_simple::metrics_tests::test_density ... ok
+test comprehensive_tests_simple::metrics_tests::test_total_magnitude ... ok
+test comprehensive_tests_simple::multivector_verification_tests::test_multivector_associativity ... ok
+test comprehensive_tests_simple::multivector_verification_tests::test_multivector_properties ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_config_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_constraint_variants ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_rule ... ok
+test comprehensive_tests_simple::metrics_tests::test_total_energy ... ok
+test comprehensive_tests_simple::metrics_tests::test_reset ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_rule_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_polyomino_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_polyomino_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_shape_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_shape_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_tile_set_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_tile_set_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_wang_tile_set ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_solver_config_default ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_type_equality ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_type_inequality ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_types_all ... ok
+test comprehensive_tests_simple::verification_framework_tests::test_error_handling ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_ca_creation ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_ca_invalid_dimensions ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_cayley_table ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_geometric_closure ... ok
+test comprehensive_tests_simple::verification_framework_tests::test_mathematical_invariants ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_evolution ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_game_of_life_rule ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_evolution ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_rule_types ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/amari_calculus-9a2e88f6f96183d4)
+
+running 47 tests
+test derivative::tests::test_curl_of_rotation_field ... ok
+test derivative::tests::test_divergence ... ok
+test fields::scalar_field::tests::test_partial_derivative ... ok
+test fields::scalar_field::tests::test_scalar_field_combination ... ok
+test derivative::tests::test_gradient ... ok
+test fields::scalar_field::tests::test_scalar_field_evaluation ... ok
+test fields::tests::test_scalar_field_evaluation ... ok
+test fields::tests::test_vector_field_evaluation ... ok
+test fields::vector_field::tests::test_partial_derivative ... ok
+test fields::vector_field::tests::test_vector_field_combination ... ok
+test fields::vector_field::tests::test_vector_field_evaluation ... ok
+test integration::tests::test_integrate_1d_polynomial ... ok
+test integration::tests::test_integrate_2d_product ... ok
+test lie::tests::test_lie_bracket_antisymmetry ... ok
+test lie::tests::test_lie_bracket_coordinate_fields ... ok
+test lie::tests::test_lie_bracket_noncommuting_fields ... ok
+test integration::tests::test_integrate_3d_constant ... ok
+test lie::tests::test_lie_derivative_of_scalar ... ok
+test manifold::connection::tests::test_sphere_connection ... ok
+test manifold::covariant::tests::test_covariant_derivative_euclidean ... ok
+test manifold::connection::tests::test_euclidean_connection ... ok
+test manifold::covariant::tests::test_covariant_derivative_linear_field ... ok
+test manifold::covariant::tests::test_scalar_covariant_derivative ... ok
+test manifold::curvature::tests::test_euclidean_ricci_tensor ... ok
+test manifold::curvature::tests::test_ricci_symmetry ... ok
+test manifold::curvature::tests::test_euclidean_scalar_curvature ... ok
+test manifold::curvature::tests::test_sphere_riemann_tensor ... ok
+test manifold::curvature::tests::test_riemann_antisymmetry ... ok
+test manifold::curvature::tests::test_euclidean_riemann_tensor ... ok
+test manifold::geodesic::tests::test_parallel_transport_sphere ... ok
+test manifold::geodesic::tests::test_parallel_transport_euclidean ... ok
+test manifold::geodesic::tests::test_sphere_geodesic_acceleration ... ok
+test manifold::metric::tests::test_metric_inverse ... ok
+test manifold::geodesic::tests::test_euclidean_geodesic ... ok
+test manifold::metric::tests::test_sphere_metric ... ok
+test manifold::tests::test_euclidean_manifold ... ok
+test manifold::metric::tests::test_euclidean_metric ... ok
+test manifold::tests::test_manifold_parallel_transport_method ... ok
+test tests::test_crate_compiles ... ok
+test manifold::tests::test_spherical_manifold ... ok
+test manifold::curvature::tests::test_sphere_scalar_curvature ... ok
+test manifold::tests::test_hyperbolic_manifold ... ok
+test manifold::tests::test_manifold_curvature_methods ... ok
+test manifold::geodesic::tests::test_geodesic_trajectory ... ok
+test manifold::tests::test_euclidean_3d ... ok
+test manifold::tests::test_manifold_geodesic_method ... ok
+test integration::tests::test_fundamental_theorem_constant_field ... ok
+
+test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/amari_cgt-d367606e9916b302)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/basics.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/basics-c8845879788fe7b9)
+
+running 15 tests
+test basic_comparisons_and_outcomes ... ok
+test arena_round_trips_through_structural_game_form ... ok
+test canonical_form_export_matches_canonicalization ... ok
+test canonicalization_is_idempotent ... ok
+test canonicalization_removes_reversible_left_options ... ok
+test canonical_numeric_and_impartial_inspection_helpers_work ... ok
+test game_form_normalizes_recursive_option_sets ... ok
+test constructors_and_birthdays ... ok
+test game_form_display_uses_named_small_games_and_cut_notation ... ok
+test canonicalization_removes_dominated_left_options ... ok
+test negation_and_addition ... ok
+test numeric_examples_work ... ok
+test option_deduplication_is_stable ... ok
+test nimbers_match_heap_sizes ... ok
+test nim_sum_matches_xor ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/generation.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/generation-ba763af5277af4ef)
+
+running 24 tests
+test birthday_generation_recovers_small_named_games ... ok
+test birthday_layer_analysis_classifies_named_nonzero_games ... ok
+test birthday_growth_helpers_build_cumulative_and_comparative_summaries ... ok
+test canonical_corpus_buckets_group_small_named_games ... ok
+test canonical_corpus_constructor_deduplicates_input ... ok
+test canonical_corpus_by_birthday_preserves_small_named_canonicals ... ok
+test canonical_corpus_contains_named_games ... ok
+test birthday_layer_report_tracks_growth_and_classification ... ok
+test canonical_corpus_stats_classify_small_named_games ... ok
+test canonical_exact_birthday_layer_one_contains_named_triple ... ok
+test exact_birthday_layer_one_recovers_named_nonzero_games ... ok
+test exact_node_count_layer_two_recovers_small_two_node_games ... ok
+test reachable_node_count_counts_shared_subgraphs_once ... ok
+test layer_report_render_helpers_produce_lightweight_tables ... ok
+test canonical_layer_maps_preserve_expected_small_keys ... ok
+test node_count_layer_report_tracks_small_named_growth ... ok
+test birthday_generation_two_produces_full_small_layer ... ok
+test birthday_generation_reports_large_universe ... ok
+test birthday_layers_partition_small_generation ... ok
+test node_count_generation_finds_small_three_node_games ... ok
+test node_count_layers_partition_small_generation ... ok
+test canonical_corpus_by_node_count_deduplicates_equivalent_games ... ok
+test birthday_layer_report_summary_helpers_aggregate_and_peak_correctly ... ok
+test deeper_birthday_layer_analysis_reports_canonical_reduction ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/properties.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/properties-39f009c78cef76e9)
+
+running 3 tests
+test canonicalization_properties_hold_across_small_birthday_universe ... ok
+test negation_and_pairwise_addition_laws_hold_across_small_canonical_corpus ... ok
+test addition_is_associative_across_small_canonical_node_corpus ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running unittests src/lib.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/amari_core-32625d6c0976e300)
+
+running 202 tests
+test aligned_alloc::tests::test_aligned_f64_vec ... ok
+test aligned_alloc::tests::test_aligned_coefficients ... ok
+test aligned_alloc::tests::test_aligned_memory ... ok
+test aligned_alloc::tests::test_memory_pool ... ok
+test cayley::tests::test_euclidean_3d ... ok
+test basis::tests::test_basis_helpers ... ok
+test basis::tests::test_blade_names ... ok
+test basis::tests::test_builder ... ok
+test cayley::tests::test_null_vectors ... ok
+test comprehensive_tests::accessor_tests::test_as_slice ... ok
+test cayley::tests::test_minkowski_spacetime ... ok
+test comprehensive_tests::accessor_tests::test_bivector_part ... ok
+test comprehensive_tests::accessor_tests::test_get_set ... ok
+test comprehensive_tests::accessor_tests::test_scalar_part ... ok
+test comprehensive_tests::accessor_tests::test_set_bivector_component ... ok
+test comprehensive_tests::accessor_tests::test_set_scalar ... ok
+test comprehensive_tests::accessor_tests::test_set_vector_component ... ok
+test comprehensive_tests::accessor_tests::test_trivector_part ... ok
+test comprehensive_tests::accessor_tests::test_vector_component ... ok
+test comprehensive_tests::accessor_tests::test_vector_part ... ok
+test comprehensive_tests::arithmetic_tests::test_addition ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_zero ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_addition ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_bivector ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_negation ... ok
+test comprehensive_tests::arithmetic_tests::test_operator_subtraction ... ok
+test comprehensive_tests::arithmetic_tests::test_scalar_multiplication ... ok
+test comprehensive_tests::bivector_tests::test_bivector_basis_bivectors ... ok
+test comprehensive_tests::bivector_tests::test_bivector_from_components ... ok
+test comprehensive_tests::bivector_tests::test_bivector_from_multivector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_bivector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_get ... ok
+test comprehensive_tests::bivector_tests::test_bivector_index_access ... ok
+test comprehensive_tests::advanced_operations_tests::test_exp_scalar ... ok
+test comprehensive_tests::bivector_tests::test_bivector_inner_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_inner_product ... ok
+test comprehensive_tests::bivector_tests::test_bivector_magnitude ... ok
+test comprehensive_tests::bivector_tests::test_bivector_outer_product ... ok
+test comprehensive_tests::bivector_tests::test_bivector_outer_product_with_vector ... ok
+test comprehensive_tests::bivector_tests::test_bivector_right_contraction ... ok
+test comprehensive_tests::constructor_tests::test_basis_vector ... ok
+test comprehensive_tests::constructor_tests::test_from_coefficients ... ok
+test comprehensive_tests::constructor_tests::test_from_slice ... ok
+test comprehensive_tests::constructor_tests::test_scalar ... ok
+test comprehensive_tests::constructor_tests::test_zero ... ok
+test comprehensive_tests::integration_tests::test_basis_vector_anticommutativity ... ok
+test comprehensive_tests::integration_tests::test_basis_vector_squares ... ok
+test comprehensive_tests::integration_tests::test_distributivity ... ok
+test comprehensive_tests::integration_tests::test_identity_elements ... ok
+test comprehensive_tests::integration_tests::test_reverse_involution ... ok
+test comprehensive_tests::operation_tests::test_grade ... ok
+test comprehensive_tests::operation_tests::test_grade_projection ... ok
+test comprehensive_tests::operation_tests::test_reverse ... ok
+test comprehensive_tests::product_tests::test_geometric_product ... ok
+test comprehensive_tests::product_tests::test_geometric_product_associativity ... ok
+test comprehensive_tests::product_tests::test_inner_product ... ok
+test comprehensive_tests::product_tests::test_outer_product ... ok
+test comprehensive_tests::product_tests::test_outer_product_antisymmetric ... ok
+test comprehensive_tests::product_tests::test_scalar_product ... ok
+test comprehensive_tests::scalar_tests::test_scalar_from ... ok
+test comprehensive_tests::scalar_tests::test_scalar_commutative_multiplication ... ok
+test comprehensive_tests::scalar_tests::test_scalar_from_trait ... ok
+test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_multivector ... ok
+test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_vector ... ok
+test comprehensive_tests::scalar_tests::test_scalar_identity ... ok
+test comprehensive_tests::scalar_tests::test_scalar_one ... ok
+test comprehensive_tests::utility_tests::test_abs ... ok
+test comprehensive_tests::utility_tests::test_equality ... ok
+test comprehensive_tests::utility_tests::test_approx_eq ... ok
+test comprehensive_tests::utility_tests::test_inverse_small ... ok
+test comprehensive_tests::utility_tests::test_inverse ... ok
+test comprehensive_tests::utility_tests::test_inverse_zero ... ok
+test comprehensive_tests::utility_tests::test_is_zero ... ok
+test comprehensive_tests::utility_tests::test_norm ... ok
+test comprehensive_tests::utility_tests::test_magnitude ... ok
+test comprehensive_tests::utility_tests::test_norm_squared ... ok
+test comprehensive_tests::utility_tests::test_normalize ... ok
+test comprehensive_tests::utility_tests::test_normalize_small ... ok
+test comprehensive_tests::utility_tests::test_normalize_zero ... ok
+test comprehensive_tests::vector_tests::test_vector_add ... ok
+test comprehensive_tests::vector_tests::test_vector_as_slice ... ok
+test comprehensive_tests::vector_tests::test_vector_basis_vectors ... ok
+test comprehensive_tests::vector_tests::test_vector_from_components ... ok
+test comprehensive_tests::vector_tests::test_vector_from_multivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_multivector ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_scalar ... ok
+test comprehensive_tests::vector_tests::test_vector_geometric_product_with_vector ... ok
+test comprehensive_tests::vector_tests::test_vector_hodge_dual ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_inner_product_with_mv ... ok
+test comprehensive_tests::vector_tests::test_vector_left_contraction ... ok
+test comprehensive_tests::vector_tests::test_vector_magnitude ... ok
+test comprehensive_tests::vector_tests::test_vector_norm ... ok
+test comprehensive_tests::vector_tests::test_vector_norm_squared ... ok
+test comprehensive_tests::vector_tests::test_vector_normalize ... ok
+test comprehensive_tests::vector_tests::test_vector_normalize_zero ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product_with_bivector ... ok
+test comprehensive_tests::vector_tests::test_vector_outer_product_with_mv ... ok
+test comprehensive_tests::vector_tests::test_vector_reverse ... ok
+test comprehensive_tests::vector_tests::test_vector_zero ... ok
+test generic::tests::test_blade_product_e12_e1_cl300 ... ok
+test generic::tests::test_blade_product_e1_e1_cl300 ... ok
+test generic::tests::test_blade_product_e1_e2_cl300 ... ok
+test generic::tests::test_blade_product_e2_e1_cl300 ... ok
+test generic::tests::test_blade_product_e3_e3_cl210 ... ok
+test generic::tests::test_blade_product_null_signature ... ok
+test generic::tests::test_blade_product_scalar_scalar ... ok
+test generic::tests::test_generic_gp_matches_const_generic_cl210 ... ok
+test generic::tests::test_generic_gp_matches_const_generic_cl300 ... ok
+test generic::tests::test_generic_gp_scalar_only ... ok
+test gf2::clifford::tests::test_basis_vector_square_degenerate ... ok
+test gf2::clifford::tests::test_basis_vector_square_nondegenerate ... ok
+test gf2::clifford::tests::test_commutativity_over_gf2 ... ok
+test gf2::clifford::tests::test_geometric_product_associativity ... ok
+test gf2::clifford::tests::test_grade_projection ... ok
+test gf2::clifford::tests::test_outer_product_dependent ... ok
+test gf2::clifford::tests::test_outer_product_independent_blades ... ok
+test gf2::clifford::tests::test_pseudoscalar_product ... ok
+test gf2::clifford::tests::test_reverse ... ok
+test gf2::clifford::tests::test_to_real_from_real_roundtrip ... ok
+test gf2::clifford::tests::test_zero_and_identity ... ok
+test gf2::grassmannian::tests::test_binary_grassmannian_size ... ok
+test gf2::grassmannian::tests::test_gaussian_binomial_edge_cases ... ok
+test gf2::grassmannian::tests::test_gaussian_binomial_known_values ... ok
+test gf2::grassmannian::tests::test_schubert_cell_size_formula ... ok
+test gf2::matrix::tests::test_determinant_non_square ... ok
+test gf2::grassmannian::tests::test_schubert_cell_sizes_sum ... ok
+test gf2::matrix::tests::test_full_rank ... ok
+test gf2::matrix::tests::test_matrix_product ... ok
+test gf2::matrix::tests::test_identity_properties ... ok
+test gf2::matrix::tests::test_matrix_vector_product ... ok
+test gf2::matrix::tests::test_null_space ... ok
+test gf2::grassmannian::tests::test_enumerate_subspaces_count ... ok
+test generic::tests::test_generic_gp_random_cl410 ... ok
+test gf2::matrix::tests::test_rank_deficient ... ok
+test gf2::matrix::tests::test_row_echelon_and_rank ... ok
+test gf2::grassmannian::tests::test_enumerate_subspaces_valid_rref ... ok
+test gf2::matrix::tests::test_solve ... ok
+test gf2::scalar::tests::test_conversions ... ok
+test gf2::matrix::tests::test_solve_inconsistent ... ok
+test gf2::matrix::tests::test_transpose_roundtrip ... ok
+test gf2::scalar::tests::test_distributivity ... ok
+test gf2::scalar::tests::test_field_addition ... ok
+test gf2::scalar::tests::test_field_multiplication ... ok
+test gf2::scalar::tests::test_multiplicative_inverse ... ok
+test gf2::scalar::tests::test_self_inverse ... ok
+test gf2::vector::tests::test_dot_product ... ok
+test gf2::vector::tests::test_from_bits ... ok
+test gf2::vector::tests::test_from_u64_roundtrip ... ok
+test gf2::vector::tests::test_get_set_roundtrip ... ok
+test gf2::vector::tests::test_hamming_weight_and_distance ... ok
+test gf2::vector::tests::test_large_vector ... ok
+test gf2::vector::tests::test_xor_addition ... ok
+test gf2::vector::tests::test_zero_vector ... ok
+test precision::tests::test_dashu_float_creation ... ok
+test precision::tests::test_dashu_float_arithmetic ... ok
+test precision::tests::test_dashu_float_precision_operations ... ok
+test precision::tests::test_default_tolerance ... ok
+test precision::tests::test_standard_float_precision ... ok
+test precision::tests::test_dashu_float_transcendental ... ok
+test simd::tests::test_aligned_buffer ... ok
+test tests::test_basis_vectors ... ok
+test tests::test_grade_operations ... ok
+test tests::test_rotor_from_bivector ... ok
+test tests::test_inner_and_outer_products ... ok
+test tests::test_algebraic_identities ... ok
+test tests::test_wedge_product ... ok
+test tests::test_metric_signature ... ok
+test unicode_ops::tests::test_extended_unicode_operations ... ok
+test unicode_ops::tests::test_unicode_geometric_product ... ok
+test unicode_ops::tests::test_unicode_grade_projection ... ok
+test unicode_ops::tests::test_unicode_inner_product ... ok
+test rotor::tests::test_rotor_90_degrees ... ok
+test unicode_ops::tests::test_unicode_mathematical_identities ... ok
+test simd::tests::test_runtime_feature_detection ... ok
+test unicode_ops::tests::test_unicode_wedge_product ... ok
+test unicode_ops::tests::test_unicode_unary_operations ... ok
+test verified::tests::test_grade_preservation ... ok
+test verified::tests::test_phantom_type_dimension_safety ... ok
+test verified::tests::test_signature_type_safety ... ok
+test verified::tests::test_outer_product_type_safety ... ok
+test property_tests::unit_property_tests::test_property_framework ... ok
+test rotor::tests::test_reflection ... ok
+test rotor::tests::test_rotor_composition ... ok
+test property_tests::prop_basis_vector_squares ... ok
+test property_tests::prop_outer_product_self_zero ... ok
+test property_tests::prop_additive_identity ... ok
+test property_tests::prop_multiplicative_identity ... ok
+test property_tests::prop_basis_anticommutativity ... ok
+test property_tests::prop_scalar_multiplication_commutative ... ok
+test property_tests::prop_addition_commutative ... ok
+test property_tests::prop_outer_product_antisymmetric ... ok
+test property_tests::prop_norm_via_reverse ... ok
+test property_tests::prop_reverse_antiautomorphism ... ok
+test property_tests::prop_addition_associative ... ok
+test property_tests::prop_rotor_preserves_norm ... ok
+test property_tests::prop_left_distributivity ... ok
+test property_tests::prop_geometric_product_associative ... ok
+
+test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/arithmetic_regressions.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/arithmetic_regressions-bd4b07cd9fc59327)
+
+running 6 tests
+test gp_associativity_does_not_drop_a_small_intermediate ... ok
+test gp_small_finite_factor_is_not_zero ... ok
+test projected_inner_and_contractions_keep_small_grade_components ... ok
+test structural_hodge_transport_is_linear_at_small_scale ... ok
+test projected_outer_product_keeps_small_grade_components ... ok
+test structural_grade_reports_a_small_nonzero_component ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/audit_tests.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/audit_tests-795af8c0adddd22b)
+
+running 17 tests
+test cayley_tests::test_full_cayley_table_cl300 ... ok
+test contraction_tests::test_left_contraction_vector_vector ... ok
+test hodge_dual_tests::test_hodge_dual_basis_vectors_3d ... ok
+test contraction_tests::test_left_contraction_vector_bivector ... ok
+test hodge_dual_tests::test_hodge_dual_double_dual_3d ... ok
+test hodge_dual_tests::test_hodge_dual_bivectors_3d ... ok
+test hodge_dual_tests::test_hodge_dual_mixed_grade ... ok
+test hodge_dual_tests::test_hodge_dual_scalar_pseudoscalar_3d ... ok
+test contraction_tests::test_inner_product_vector_bivector ... ok
+test numeric_tests::test_geometric_product_associativity ... ok
+test numeric_tests::test_identity_geometric_product ... ok
+test numeric_tests::test_inverse_zero ... ok
+test numeric_tests::test_large_coefficients ... ok
+test numeric_tests::test_normalize_zero_vector ... ok
+test numeric_tests::test_near_zero_normalize ... ok
+test signature_tests::test_projective_ga_cl201 ... ok
+test signature_tests::test_minkowski_spacetime_cl130 ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/basis_word_oracle.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/basis_word_oracle-8cd8afa1709389df)
+
+running 1 test
+test oracle_all_basis_pairs_through_dimension_four ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
+     Running tests/geometric_product.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/geometric_product-5195b3f6d46311f8)
+
+running 15 tests
+test geometric_product_tests::test_basis_vector_squared_negative_signature ... ok
+test geometric_product_tests::test_basis_vector_squared_positive_signature ... ok
+test geometric_product_tests::test_basis_vector_squared_null_signature ... ok
+test geometric_product_tests::test_bivector_vector_product ... ok
+test geometric_product_tests::test_general_multivector_product ... ok
+test geometric_product_tests::test_geometric_product_associativity ... ok
+test geometric_product_tests::test_geometric_product_distributivity ... ok
+test geometric_product_tests::test_grade_mixing_in_product ... ok
+test geometric_product_tests::test_multiplicative_identity ... ok
+test geometric_product_tests::test_orthogonal_basis_vectors_anticommute ... ok
+test geometric_product_tests::test_self_product_positive_definite ... ok
+test geometric_product_tests::test_scalar_multiplication_commutes ... ok
+test geometric_product_tests::test_vector_bivector_product ... ok
+test geometric_product_tests::test_zero_element ... ok
+test performance_tests::test_geometric_product_performance ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/gf2_tests.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/gf2_tests-dbe926507b005b7d)
+
+running 6 tests
+test clifford_real_integration::test_binary_to_real_geometric_product ... ok
+test clifford_real_integration::test_from_real_reduces_mod2 ... ok
+test scalar_vector_matrix_chain::test_null_space_orthogonal_to_row_space ... ok
+test scalar_vector_matrix_chain::test_matrix_solve_and_verify ... ok
+test grassmannian_matrix_integration::test_subspace_closure_under_xor ... ok
+test grassmannian_matrix_integration::test_enumerate_and_verify_subspaces ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/products.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/products-bdca005fe0a09454)
+
+running 17 tests
+test product_tests::test_bivector_bivector_products ... ok
+test product_tests::test_contraction_properties ... ok
+test product_tests::test_hodge_duality_preview ... ok
+test product_tests::test_inner_product_grade_lowering ... ok
+test product_tests::test_bivector_vector_inner_product ... ok
+test product_tests::test_outer_product_anticommutativity ... ok
+test product_tests::test_inner_product_metric_signature ... ok
+test product_tests::test_outer_product_grade_raising ... ok
+test product_tests::test_outer_product_associativity ... ok
+test product_tests::test_outer_product_self_is_zero ... ok
+test product_tests::test_geometric_product_decomposition ... ok
+test product_tests::test_outer_product_with_scalar ... ok
+test product_tests::test_product_commutativity_properties ... ok
+test product_tests::test_product_with_zero ... ok
+test product_tests::test_vector_inner_product_orthogonality ... ok
+test product_tests::test_vector_bivector_products ... ok
+test product_tests::test_vector_inner_product_parallel ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rotors.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/rotors-181a6d86066469a5)
+
+running 27 tests
+test rotor_tests::test_rotor_commutator ... ok
+test rotor_tests::test_rotor_180_degree ... ok
+test rotor_tests::test_euler_angle_composition ... ok
+test rotor_tests::test_rotor_double_cover ... ok
+test rotor_tests::test_rotor_from_axis_angle ... ok
+test rotor_tests::test_rotor_composition ... ok
+test rotor_tests::test_rotor_from_axis_angle_diagonal ... ok
+test rotor_tests::test_rotor_from_vectors ... ok
+test rotor_tests::test_rotor_identity ... ok
+test rotor_tests::test_rotor_from_bivector ... ok
+test rotor_tests::test_rotor_logarithm ... ok
+test rotor_tests::test_rotor_inverse ... ok
+test rotor_tests::test_rotor_power_fractional ... ok
+test rotor_tests::test_rotor_interpolation ... ok
+test rotor_tests::test_rotor_power_third ... ok
+test rotor_tests::test_rotor_power ... ok
+test rotor_tests::test_rotor_power_zero ... ok
+test rotor_tests::test_rotor_power_negative ... ok
+test rotor_tests::test_rotor_preserves_angles ... ok
+test rotor_tests::test_rotor_preserves_magnitude ... ok
+test rotor_tests::test_rotor_rotation_e23_plane ... ok
+test rotor_tests::test_rotor_rotation_e13_plane ... ok
+test rotor_tests::test_rotor_rotation_of_vector ... ok
+test rotor_tests::test_rotor_small_angle ... ok
+test rotor_tests::test_rotor_to_matrix ... ok
+test rotor_tests::test_slerp_endpoints ... ok
+test rotor_tests::test_to_rotation_matrix_e13_plane ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/d07-baseline/w01/stable/x86_64-unknown-linux-gnu/debug/deps/amari_discovery-0eddbfda9d7726da)
+
+running 207 tests
+test catalog::generator::cfg::tests::all_normalization_sorts_and_deduplicates ... ok
+test catalog::generator::cfg::tests::feature_display_is_quoted ... ok
+test catalog::generator::cfg::tests::evaluate_feature_enabled_disabled ... ok
+test catalog::generator::cfg::tests::feature_default_closure_transitive ... ok
+test catalog::generator::cfg::tests::gate_and_combines_correctly ... ok
+test catalog::generator::cfg::tests::not_display_nests ... ok
+test catalog::generator::cfg::tests::unknown_cfg_display ... ok
+test catalog::generator::cfg::tests::any_gate_parse ... ok
+test catalog::generator::cfg::tests::all_gate_parse ... ok
+test catalog::generator::cfg::tests::no_cfg_attrs_is_always ... ok
+test catalog::generator::cfg::tests::bare_unix_is_unknown ... ok
+test catalog::generator::cfg::tests::feature_gate_parse ... ok
+test catalog::generator::cfg::tests::not_gate_parse ... ok
+test catalog::generator::cfg::tests::multiple_cfg_attrs_are_anded ... ok
+test catalog::generator::cfg::tests::unknown_predicate_is_unknown ... ok
+test catalog::generator::generate::tests::public_item_path_converts_crate_prefix ... ok
+test catalog::generator::generate::tests::public_module_path_converts_crate_root ... ok
+test catalog::generator::generate::tests::qualify_local_path_converts_crate_to_rust_name ... ok
+test catalog::generator::exports::tests::flatten_handles_grouped_renames_and_globs ... ok
+test catalog::generator::generate::tests::workspace_rel_path_root_package_passes_through ... ok
+test catalog::generator::generate::tests::workspace_rel_path_sub_package_prepends_dir ... ok
+test catalog::generator::generate::tests::wrapped_local_impl_path_is_package_qualified ... ok
+test catalog::generator::modules::tests::visibility_mapping_covers_public_restricted_and_private ... ok
+test catalog::generator::traits::tests::derive_traits_empty_for_no_derive ... ok
+test catalog::generator::signatures::tests::normalize_collapses_whitespace_deterministically ... ok
+test catalog::generator::traits::tests::normalize_collapses_whitespace ... ok
+test catalog::generator::traits::tests::path_to_string_simple_and_generic ... ok
+test catalog::generator::wasm::tests::canonical_ids_parse_without_panic ... ok
+test catalog::generator::signatures::tests::public_fields_filter_positional_and_named ... ok
+test catalog::generator::traits::tests::derive_traits_extracted_from_attributes ... ok
+test catalog::generator::wasm::tests::class_without_jsdoc_still_has_none_doc ... ok
+test catalog::generator::wasm::tests::default_mappings_empty_surface_returns_empty ... ok
+test catalog::generator::wasm::tests::default_mappings_recognises_fast_path_multivector ... ok
+test catalog::generator::wasm::tests::default_mappings_recognises_fast_path_rotor ... ok
+test catalog::generator::wasm::tests::default_mappings_recognises_generic_rotor ... ok
+test catalog::generator::wasm::tests::default_mappings_is_sorted_and_deduped ... ok
+test catalog::generator::wasm::tests::default_mappings_recognises_generic_multivector ... ok
+test catalog::generator::wasm::tests::empty_jsdoc_before_class_parses_normally ... ok
+test catalog::generator::wasm::tests::default_mappings_skips_class_without_method ... ok
+test catalog::generator::wasm::tests::enum_leading_decimal_initializer_parsed ... ok
+test catalog::generator::wasm::tests::enum_octal_initializer_parsed ... ok
+test catalog::generator::wasm::tests::enum_negative_decimal_initializer_parsed ... ok
+test catalog::generator::wasm::tests::enum_malformed_suffix_warns_and_skips_variant ... ok
+test catalog::generator::wasm::tests::enum_binary_initializer_no_spurious_variants ... ok
+test catalog::generator::wasm::tests::enum_unsupported_initializer_skips_only_that_variant ... ok
+test catalog::generator::wasm::tests::parse_empty_source_returns_error ... ok
+test catalog::generator::wasm::tests::parse_dispose_symbol ... ok
+test catalog::generator::wasm::tests::enum_unsupported_initializer_warns_and_skips ... ok
+test catalog::generator::wasm::tests::parse_export_alias ... ok
+test catalog::generator::wasm::tests::parse_enum ... ok
+test catalog::generator::wasm::tests::multiline_jsdoc_still_works ... ok
+test catalog::generator::wasm::tests::enum_hex_initializer_no_spurious_variants ... ok
+test catalog::generator::wasm::tests::parse_generic_type_in_signature ... ok
+test catalog::generator::wasm::tests::ordinary_jsdoc_still_works ... ok
+test catalog::generator::wasm::tests::parse_getters ... ok
+test catalog::generator::wasm::tests::parse_interface ... ok
+test catalog::generator::wasm::tests::parse_no_exports_returns_error ... ok
+test catalog::generator::wasm::tests::parse_private_constructor ... ok
+test catalog::generator::wasm::tests::parse_interface_with_function_type_members ... ok
+test catalog::generator::wasm::tests::parse_static_method ... ok
+test catalog::generator::wasm::tests::parse_single_class_with_method ... ok
+test catalog::generator::wasm::tests::parse_top_level_function ... ok
+test catalog::generator::wasm::tests::parse_type_alias ... ok
+test catalog::generator::wasm::tests::parse_real_dts_fragment_geometric_product ... ok
+test catalog::generator::wasm::tests::triple_star_empty_jsdoc_parses_normally ... ok
+test catalog::generator::wasm::tests::public_wasm_signature_change_changes_the_surface_hash ... ok
+test commands::discover::tests::resolve_alias_case_insensitive ... ok
+test catalog::generator::wasm::tests::validate_mappings_keeps_valid_removes_invalid ... ok
+test commands::discover::tests::resolve_deduplicates_by_capability_id ... ok
+test commands::discover::tests::resolve_case_insensitive_name_match ... ok
+test commands::discover::tests::resolve_direct_id_has_priority_over_name_match ... ok
+test commands::discover::tests::resolve_direct_id_match ... ok
+test commands::discover::tests::resolve_direct_id_unknown_returns_invalid_id ... ok
+test commands::discover::tests::resolve_duplicate_aliases_returns_invalid_input ... ok
+test commands::discover::tests::resolve_duplicate_case_insensitive_names_returns_invalid_input ... ok
+test commands::discover::tests::resolve_duplicate_symbol_refs_returns_invalid_input ... ok
+test commands::discover::tests::resolve_example_refs_all_valid ... ok
+test commands::discover::tests::resolve_example_refs_empty_is_ok ... ok
+test commands::discover::tests::resolve_example_refs_malformed_ref_returns_catalog_corruption ... ok
+test catalog::generator::wasm::tests::wasm_bindgen_disambiguator_hashes_do_not_change_the_surface ... ok
+test commands::discover::tests::resolve_example_refs_unknown_crate_returns_catalog_corruption ... ok
+test commands::discover::tests::resolve_example_refs_unknown_example_in_known_crate_returns_catalog_corruption ... ok
+test commands::discover::tests::resolve_invalid_input_lists_candidates_sorted_by_capability_id ... ok
+test commands::discover::tests::resolve_mixed_name_symbol_collision_returns_invalid_input ... ok
+test commands::discover::tests::resolve_mixed_alias_symbol_collision_returns_invalid_input ... ok
+test commands::discover::tests::resolve_no_match_returns_invalid_id ... ok
+test commands::discover::tests::resolve_single_alias_match ... ok
+test commands::discover::tests::resolve_single_name_match ... ok
+test commands::discover::tests::resolve_single_symbol_ref_match ... ok
+test inspect::cargo_config::config::tests::classify_rustflag_categories ... ok
+test inspect::cargo_config::config::tests::empty_input_hash_is_sha256_of_empty ... ok
+test inspect::cargo_config::config::tests::framed_hash_is_root_independent ... ok
+test inspect::cargo_config::config::tests::open_config_fifo_child ... ok
+test inspect::cargo_config::config::tests::normalize_target_key_cfg_and_triple ... ok
+test inspect::cargo_config::config::tests::runner_array_identity_no_separator_collision ... ok
+test inspect::cargo_config::config::tests::sanitize_basename_strips_path_and_args ... ok
+test inspect::cargo_config::config::tests::wall_clock_exceeded_helper_is_deterministic ... ok
+test inspect::cargo_config::config::tests::wall_clock_exceeded_micros_round_to_zero ... ok
+test inspect::cargo_config::derive::tests::bare_unix_windows_positive ... ok
+test inspect::cargo_config::derive::tests::escaped_quote_in_value_is_not_platform ... ok
+test inspect::cargo_config::derive::tests::nested_platform_predicates_positive ... ok
+test inspect::cargo_config::derive::tests::platform_option_names_require_exact_tokens ... ok
+test inspect::cargo_config::derive::tests::quoted_target_key_value_is_not_platform ... ok
+test inspect::cargo_config::derive::tests::strip_quoted_handles_escaped_quotes ... ok
+test inspect::rust::parser::tests::line_offsets_basic ... ok
+test inspect::rust::parser::tests::line_offsets_mid_line ... ok
+test inspect::rust::parser::tests::test_parse_bare_use_crate ... ok
+test inspect::rust::parser::tests::test_parse_direct_crate_use ... ok
+test inspect::rust::parser::tests::test_parse_cfg ... ok
+test inspect::rust::parser::tests::test_parse_cfg_attr ... ok
+test inspect::rust::parser::tests::test_cfg_dedup ... ok
+test inspect::rust::parser::tests::test_parse_glob_use ... ok
+test inspect::rust::parser::tests::test_parse_doc_attribute_segment ... ok
+test inspect::rust::parser::tests::test_parse_extern_crate ... ok
+test inspect::rust::parser::tests::test_parse_doc_segments ... ok
+test inspect::rust::parser::tests::test_parse_renamed_use ... ok
+test inspect::rust::parser::tests::test_parse_macro_path ... ok
+test inspect::rust::parser::tests::test_parse_simple_use ... ok
+test inspect::rust::parser::tests::test_parse_non_amari_ignored ... ok
+test inspect::rust::parser::tests::test_parse_malformed ... ok
+test inspect::rust::vocabulary::tests::test_comment_byte_string_not_comment ... ok
+test inspect::rust::parser::tests::test_parse_path_expression ... ok
+test inspect::rust::vocabulary::tests::test_comment_extraction_basic ... ok
+test inspect::rust::vocabulary::tests::test_comment_raw_byte_string_not_comment ... ok
+test inspect::rust::vocabulary::tests::test_comment_string_literal_not_comment ... ok
+test inspect::rust::parser::tests::test_parse_grouped_use ... ok
+test inspect::cargo_config::config::tests::open_config_missing_config_file ... ok
+test inspect::rust::parser::tests::test_parse_no_std_crate_attr ... ok
+test inspect::rust::parser::tests::test_parse_trait_bound ... ok
+test inspect::rust::vocabulary::tests::test_ascii_case_insensitive_match ... ok
+test inspect::rust::vocabulary::tests::test_comment_byte_char_literal_not_comment ... ok
+test inspect::rust::vocabulary::tests::test_comment_char_literal_not_comment ... ok
+test inspect::rust::vocabulary::tests::test_nested_block_comments ... ok
+test inspect::rust::vocabulary::tests::test_raw_byte_string_double_hash ... ok
+test inspect::rust::parser::tests::test_usage_has_1based_column ... ok
+test inspect::rust::vocabulary::tests::test_comment_raw_string_not_comment ... ok
+test inspect::rust::vocabulary::tests::test_raw_string_no_hashes ... ok
+test inspect::rust::vocabulary::tests::test_raw_byte_string_no_hashes ... ok
+test inspect::rust::parser::tests::test_parse_type_path ... ok
+test inspect::rust::vocabulary::tests::test_raw_string_single_hash ... ok
+test inspect::rust::vocabulary::tests::test_string_with_vocabulary_not_evidence ... ok
+test inspect::rust::vocabulary::tests::test_readme_direct_scan ... ok
+test inspect::rust::vocabulary::tests::test_vocabulary_from_doc_segments ... ok
+test inspect::rust::vocabulary::tests::test_vocabulary_ffi_blas ... ok
+test inspect::tests::bounded_read_aggregate_tighter_than_per_file ... ok
+test inspect::tests::bounded_read_both_zero_limits ... ok
+test inspect::rust::vocabulary::tests::test_vocabulary_has_source_locations ... ok
+test inspect::tests::bounded_read_empty_file ... ok
+test inspect::tests::bounded_read_exact_per_file_max ... ok
+test inspect::rust::vocabulary::tests::test_vocabulary_wasm_no_std ... ok
+test inspect::tests::bounded_read_one_byte_over_per_file_max ... ok
+test inspect::rust::vocabulary::tests::test_vocabulary_geometric_algebra ... ok
+test inspect::tests::bounded_read_per_file_exceeded_tighter ... ok
+test inspect::tests::bounded_read_per_file_tighter_than_aggregate ... ok
+test inspect::cargo_config::config::tests::open_config_missing_cargo_dir ... ok
+test inspect::tests::bounded_read_stale_small_metadata_aggregate_exhausted ... ok
+test inspect::tests::bounded_read_within_both_limits ... ok
+test inspect::tests::bounded_read_zero_per_file_max ... ok
+test inspect::tests::bounded_read_zero_remaining_aggregate_large_per_file ... ok
+test inspect::tests::empty_project_hash_is_sha256_of_empty_input ... ok
+test inspect::tests::snapshot_state_complete_json_roundtrip ... ok
+test inspect::tests::snapshot_state_limit_exceeded_json_roundtrip ... ok
+test planner::graph::tests::design_invalid_when_relation_is_not_traversable ... ok
+test inspect::tests::snapshot_state_all_limit_variants_json_roundtrip ... ok
+test planner::recall::tests::deterministic_token_vector_has_frozen_prefix ... ok
+test planner::graph::tests::bounded_path_retains_shallow_route_when_cheaper_route_exceeds_depth ... ok
+test probes::rewrite::tests::constant_growth_is_directional_and_checked ... ok
+test probes::rewrite::tests::encoded_output_bytes_are_checked_before_return ... ok
+
+running 1 test
+test inspect::cargo_config::config::tests::open_config_fifo_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 206 filtered out; finished in 0.00s
+
+test probes::rewrite::tests::recursive_term_and_rule_dtos_convert_to_checked_trs_values ... ok
+test probes::rewrite::tests::duplicate_rhs_variables_and_unbound_rhs_variables_are_rejected ... ok
+test inspect::cargo_config::config::tests::open_config_opens_regular_file ... ok
+test probes::rewrite::tests::empty_and_oversized_names_are_rejected_without_conversion ... ok
+test inspect::tests::nofollow_open_reads_regular_file ... ok
+test inspect::tests::nofollow_open_rejects_dangling_symlink ... ok
+test probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock ... FAILED
+test probes::rewrite::tests::validation_counts_request_bytes_term_depth_nodes_and_rules ... ok
+test probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure ... FAILED
+test inspect::cargo_config::config::tests::open_config_rejects_cargo_dir_symlink ... ok
+test probes::supervisor::tests::changed_worker_provenance_is_rejected ... FAILED
+test inspect::cargo_config::config::tests::open_config_rejects_config_file_symlink ... ok
+test probes::supervisor::tests::production_command_and_arguments_are_fixed_internally ... ok
+test probes::supervisor::tests::production_launcher_has_no_configuration_or_request_inputs ... ok
+test inspect::tests::nofollow_open_rejects_symlink ... ok
+test probes::tests::unknown_compiled_schema_contract_is_catalog_corruption ... ok
+test shell::tests::shell_input_limit_accepts_exact_boundary_and_rejects_one_more_byte ... ok
+test probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr ... FAILED
+test probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode ... FAILED
+test probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics ... FAILED
+test probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker ... FAILED
+test probes::supervisor::tests::production_stdout_limit_includes_the_frame_header ... FAILED
+test probes::supervisor::tests::successful_response_rejects_unknown_execution_fields ... FAILED
+test shell::tests::tokenizer_preserves_quoted_and_escaped_arguments ... ok
+test probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields ... FAILED
+test shell::tests::tokenizer_rejects_incomplete_input ... ok
+test probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker ... FAILED
+test probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan ... FAILED
+test probes::supervisor::tests::zero_deadline_is_rejected_before_waiting ... FAILED
+test probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd ... FAILED
+test probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation ... FAILED
+test probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery ... FAILED
+test inspect::cargo_config::config::tests::open_config_fifo_never_blocks ... ok
+test probes::registry::tests::compiled_registry_contains_exactly_completed_probe_slices ... ok
+test probes::registry::tests::executable_adapter_maps_one_to_one_to_known_descriptor ... ok
+test probes::registry::tests::duplicate_and_unknown_adapters_are_rejected ... ok
+test probes::registry::tests::side_effect_and_network_authority_are_rejected ... ok
+test probes::registry::tests::limit_determinism_and_feature_mismatches_are_rejected ... ok
+test probes::registry::tests::capability_and_schema_mismatches_are_rejected ... ok
+
+failures:
+
+---- probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock stdout ----
+
+thread 'probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock' (1074545) panicked at amari-discovery/src/probes/supervisor.rs:505:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure stdout ----
+
+thread 'probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure' (1074549) panicked at amari-discovery/src/probes/supervisor.rs:691:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(_))
+
+---- probes::supervisor::tests::changed_worker_provenance_is_rejected stdout ----
+
+thread 'probes::supervisor::tests::changed_worker_provenance_is_rejected' (1074546) panicked at amari-discovery/src/probes/supervisor.rs:700:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if
+    message.contains("provenance"))
+
+---- probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr stdout ----
+
+thread 'probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr' (1074551) panicked at amari-discovery/src/probes/supervisor.rs:681:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerExited { code: 17 })
+
+---- probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode stdout ----
+
+thread 'probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode' (1074547) panicked at amari-discovery/src/probes/supervisor.rs:672:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerCrashed { .. })
+
+---- probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics stdout ----
+
+thread 'probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics' (1074570) panicked at amari-discovery/src/probes/supervisor.rs:588:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker stdout ----
+
+thread 'probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker' (1074564) panicked at amari-discovery/src/probes/supervisor.rs:569:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::production_stdout_limit_includes_the_frame_header stdout ----
+
+thread 'probes::supervisor::tests::production_stdout_limit_includes_the_frame_header' (1074560) panicked at amari-discovery/src/probes/supervisor.rs:533:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::successful_response_rejects_unknown_execution_fields stdout ----
+
+thread 'probes::supervisor::tests::successful_response_rejects_unknown_execution_fields' (1074567) panicked at amari-discovery/src/probes/supervisor.rs:718:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if
+    message.contains("serialization"))
+
+---- probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields stdout ----
+
+thread 'probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields' (1074568) panicked at amari-discovery/src/probes/supervisor.rs:708:9:
+assertion failed: matches!(error, crate::DiscoveryError::ProbeWorkerProtocol(message) if
+    message.contains("serialization"))
+
+---- probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker stdout ----
+
+thread 'probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker' (1074565) panicked at amari-discovery/src/probes/supervisor.rs:549:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan stdout ----
+
+thread 'probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan' (1074548) panicked at amari-discovery/src/probes/supervisor.rs:614:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::zero_deadline_is_rejected_before_waiting stdout ----
+
+thread 'probes::supervisor::tests::zero_deadline_is_rejected_before_waiting' (1074571) panicked at amari-discovery/src/probes/supervisor.rs:640:41:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd stdout ----
+
+thread 'probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd' (1074562) panicked at amari-discovery/src/probes/supervisor.rs:471:14:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation stdout ----
+
+thread 'probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation' (1074569) panicked at amari-discovery/src/probes/supervisor.rs:656:45:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+---- probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery stdout ----
+
+thread 'probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery' (1074561) panicked at amari-discovery/src/probes/supervisor.rs:733:50:
+called `Result::unwrap()` on an `Err` value: Io(Os { code: 2, kind: NotFound, message: "No such file or directory" })
+
+
+failures:
+    probes::supervisor::tests::bounded_capture_drains_stderr_and_decodes_stdout_without_deadlock
+    probes::supervisor::tests::changed_worker_provenance_is_rejected
+    probes::supervisor::tests::crashing_worker_maps_to_typed_crash_without_protocol_decode
+    probes::supervisor::tests::deadline_kills_waits_and_reaps_slow_worker_without_orphan
+    probes::supervisor::tests::malformed_success_result_maps_to_typed_protocol_failure
+    probes::supervisor::tests::nonzero_worker_maps_exit_code_without_leaking_stderr
+    probes::supervisor::tests::production_stdout_limit_includes_the_frame_header
+    probes::supervisor::tests::repeated_crashes_and_protocol_failures_do_not_poison_recovery
+    probes::supervisor::tests::restricted_launch_clears_environment_and_uses_neutral_cwd
+    probes::supervisor::tests::stderr_flood_exceeding_cap_terminates_the_worker
+    probes::supervisor::tests::stdout_flood_exceeding_cap_terminates_the_worker
+    probes::supervisor::tests::successful_response_rejects_unknown_execution_fields
+    probes::supervisor::tests::successful_response_rejects_unknown_top_level_fields
+    probes::supervisor::tests::successful_worker_preserves_provenance_and_reports_process_isolation
+    probes::supervisor::tests::valid_worker_frame_decodes_with_empty_diagnostics
+    probes::supervisor::tests::zero_deadline_is_rejected_before_waiting
+
+test result: FAILED. 191 passed; 16 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.87s
+
+error: test failed, to rerun pass `-p amari-discovery --lib`

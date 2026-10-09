@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "e35bced860ad11c187cfb04756f5716e40004ea367431afeabad0c8709fcc6e5",
+  "content_hash": "65718faca99b3791a4c3e95f8c4f4ac3761d735fb8ee12af132a156ca4480571",
   "crates": [
     {
       "name": "amari",
@@ -62417,7 +62417,7 @@
         {
           "path": "amari_core::Multivector::abs",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 43,
+          "source_ordinal": 44,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62433,7 +62433,7 @@
         {
           "path": "amari_core::Multivector::approx_eq",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 44,
+          "source_ordinal": 45,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62481,7 +62481,7 @@
         {
           "path": "amari_core::Multivector::exp",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 47,
+          "source_ordinal": 48,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62521,7 +62521,7 @@
         {
           "path": "amari_core::Multivector::geometric_product",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 28,
+          "source_ordinal": 29,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62537,7 +62537,7 @@
         {
           "path": "amari_core::Multivector::grade",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 26,
+          "source_ordinal": 27,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62545,7 +62545,7 @@
         {
           "path": "amari_core::Multivector::grade_magnitude",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 36,
+          "source_ordinal": 37,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62561,7 +62561,7 @@
         {
           "path": "amari_core::Multivector::grade_projection",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 35,
+          "source_ordinal": 36,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62569,7 +62569,7 @@
         {
           "path": "amari_core::Multivector::grade_spectrum",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 37,
+          "source_ordinal": 38,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62577,7 +62577,7 @@
         {
           "path": "amari_core::Multivector::hodge_dual",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 51,
+          "source_ordinal": 52,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62585,7 +62585,7 @@
         {
           "path": "amari_core::Multivector::inner_product",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 30,
+          "source_ordinal": 31,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62593,7 +62593,7 @@
         {
           "path": "amari_core::Multivector::inverse",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 46,
+          "source_ordinal": 47,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62601,7 +62601,7 @@
         {
           "path": "amari_core::Multivector::is_zero",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 39,
+          "source_ordinal": 40,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62609,7 +62609,7 @@
         {
           "path": "amari_core::Multivector::left_contraction",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 49,
+          "source_ordinal": 50,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62617,7 +62617,7 @@
         {
           "path": "amari_core::Multivector::magnitude",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 41,
+          "source_ordinal": 42,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62625,7 +62625,7 @@
         {
           "path": "amari_core::Multivector::norm",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 42,
+          "source_ordinal": 43,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62633,7 +62633,7 @@
         {
           "path": "amari_core::Multivector::norm_squared",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 40,
+          "source_ordinal": 41,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62641,7 +62641,7 @@
         {
           "path": "amari_core::Multivector::normalize",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 45,
+          "source_ordinal": 46,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62649,7 +62649,7 @@
         {
           "path": "amari_core::Multivector::outer_product",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 31,
+          "source_ordinal": 32,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62657,7 +62657,7 @@
         {
           "path": "amari_core::Multivector::outer_product_with_vector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 27,
+          "source_ordinal": 28,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62665,7 +62665,7 @@
         {
           "path": "amari_core::Multivector::reverse",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 34,
+          "source_ordinal": 35,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62673,7 +62673,7 @@
         {
           "path": "amari_core::Multivector::right_contraction",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 50,
+          "source_ordinal": 51,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62697,7 +62697,7 @@
         {
           "path": "amari_core::Multivector::scalar_product",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 32,
+          "source_ordinal": 33,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
