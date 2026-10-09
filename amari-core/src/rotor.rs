@@ -1,6 +1,7 @@
 //! Rotor operations for rotations and reflections
 
 use crate::{Bivector, Multivector, Vector};
+use alloc::vec::Vec;
 
 /// Rotor in a Clifford algebra (even-grade multivector with unit norm)
 pub struct Rotor<const P: usize, const Q: usize, const R: usize> {
