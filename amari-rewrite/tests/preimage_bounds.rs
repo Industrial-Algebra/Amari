@@ -750,3 +750,47 @@ fn term_node_count(term: &Term) -> usize {
     }
     nodes
 }
+
+/// Review round 4 (P2): replacing at a deep position REBUILDS the
+/// context — every ancestor clones its argument subtree — so the
+/// per-position bound now includes the cumulative context work
+/// (nodes² dominates: ≤ depth ancestors × whole-term clone). This is
+/// the reviewer's nested-context adversary (g^15(a) replay measured
+/// 1,360 constructed nodes where the round-3 bound estimated 144
+/// operations). The gap is instrumentation-level: within the hard
+/// ceilings the witness is unreachable (storage retention binds
+/// first) and tight operation budgets are consumed by output
+/// assembly, so no black-box admission divergence exists — the
+/// reviewer's allocator-instrumented probe measures the prebill
+/// directly. This behavioral guard pins that the adversary resolves
+/// quickly and typed (never a hang, never an unbounded run).
+#[test]
+fn deep_context_rebuild_work_is_bounded() {
+    let deep = (0..15).fold(a(), |term, _| g(term));
+    assert_eq!(term_node_count(&deep), 16);
+    let system = TermSystem::new(vec![
+        Rule::new(g(x()), a()).unwrap(),
+        Rule::new(f(x(), x()), a()).unwrap(),
+    ]);
+    let language = accepts_exactly(&[("a", 0), ("g", 1), ("f", 2)], &[a()]);
+    let result = one_step_lower_bound(
+        &system,
+        &language,
+        &RelationLimits::default(),
+        &TreeAutomatonLimits::default(),
+    );
+    match &result {
+        Ok(outcome) => assert!(
+            outcome
+                .trace()
+                .iter()
+                .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. })),
+            "an Ok outcome must have truncated, trace: {:?}",
+            outcome.trace()
+        ),
+        Err(error) => assert!(
+            matches!(error, RewriteError::RelationLimitExceeded { .. }),
+            "the only legal failure is a typed limit error, got {error:?}"
+        ),
+    }
+}

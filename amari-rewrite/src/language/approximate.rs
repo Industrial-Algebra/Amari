@@ -621,33 +621,38 @@ fn replays_into(
         let mut next: Vec<Term> = Vec::new();
         for term in &frontier {
             // Preflight the successor work BEFORE the successor
-            // vector is allocated (review rounds 2–3). Per rule,
+            // vector is allocated (review rounds 2–4). Per rule,
             // the eager TRS layer can emit one replacement per
             // MATCHING POSITION (at most nodes(term) of them), and
             // each instantiated right side can be as large as its
             // non-variable skeleton plus every variable occurrence
             // expanded to a full copy of the term (a binding is a
             // subterm of the term, so nodes(term) bounds each).
-            // Bill operations for the attempts plus substitution
-            // work, and constraints for the complete potential
-            // output vector INCLUDING the context-rebuild copies —
-            // a variable-duplicating or wide right side truncates
-            // before any replacement is constructed. All arithmetic
+            // Replacing at a position also REBUILDS the context:
+            // every ancestor of the redex clones its argument
+            // subtree, and there are at most depth ≤ nodes(term)
+            // ancestors each cloning at most the whole term —
+            // nodes(term)^2 per position dominates that cumulative
+            // eager construction work (review round 4: a 16-node
+            // chain measured 1,360 constructed nodes where the
+            // bound without the context term estimated 144).
+            // Operations bill the attempts plus substitution plus
+            // context rebuilding; constraints bill the complete
+            // potential RETAINED output vector. All arithmetic
             // saturates; the estimate is conservative, never an
             // under-count.
             let mut ops_estimate = 0usize;
             let mut storage_estimate = 0usize;
             let term_size = term_nodes(term);
+            let context_work = term_size.saturating_mul(term_size);
             for &(lhs_size, rhs_skeleton, rhs_var_occurrences) in rule_shapes {
                 let instantiated_worst =
                     rhs_skeleton.saturating_add(rhs_var_occurrences.saturating_mul(term_size));
-                ops_estimate = ops_estimate.saturating_add(
-                    term_size.saturating_mul(
-                        1usize
-                            .saturating_add(lhs_size)
-                            .saturating_add(instantiated_worst),
-                    ),
-                );
+                let per_position = 1usize
+                    .saturating_add(lhs_size)
+                    .saturating_add(instantiated_worst)
+                    .saturating_add(context_work);
+                ops_estimate = ops_estimate.saturating_add(term_size.saturating_mul(per_position));
                 storage_estimate = storage_estimate.saturating_add(
                     term_size.saturating_mul(term_size.saturating_add(instantiated_worst)),
                 );
