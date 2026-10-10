@@ -88,3 +88,13 @@ PR-level comment review posted 0 P1 / 1 P2 / 1 P3:
 - **P3 PR description omission** — `approx_eq` also treats exact equality (including ±inf == ±inf via the leading `a == b` arm) as equal; PR body amended.
 
 Merged-tree gates: 306 tests / 11 suites stable AND nightly, clippy 0, fmt clean, lock `ba6b36cf…` unchanged (`merge-283-core-test*.log`, `merge-283-core-clippy.log`).
+
+## CI remediation (round 1 CI failures on PR #285)
+
+Four red checks, one root cause class — clippy lints on W02-authored code, invisible to the earlier amari-core-scoped gates:
+
+1. `amari-holographic/clifford.rs:233` — `ok_or_else` with a cheap struct-literal closure (`unnecessary_lazy_evaluations`) → `ok_or`. This alone explained "Mathematical Code Quality" AND the "Mathematical Correctness" aggregator (which gates on CODE_QUALITY) AND both "Test Suite (Native Precision)" jobs (each embeds a clippy step).
+2. `amari-automata/geometric_ca.rs:756,816` — `.then(|| x).unwrap_or(y)` chains (`obfuscated_if_else`) → plain `if/else` (division semantics preserved; automata suite re-run green: 55+1 passed).
+3. `amari-gpu/tests/core_ga_benchmark_crossover.rs:33` — `chunks_exact(8)` → `as_chunks::<8>()` (pre-existing file, untouched by W02, fixed anyway; test green).
+
+Verification uplift recorded: local workspace-wide clippy is now part of the evidence set (`ci-fix-workspace-clippy-*.log`). Remaining local-only failures are pre-existing or arrived via the #283 develop merge — `amari-discovery/tests/probe_rewrite_inverse_search.rs` (dead code; file byte-identical to develop), `amari-rewrite/tests/*` (unused imports etc.; introduced by #283), and local-nightly-1.100 `needless_range_loop` sites in amari-tropical/dual/info-geom (files unchanged by this branch) — all CI-green on develop `8c6c8b6`, all excluded from this PR's scope.

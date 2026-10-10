@@ -1,0 +1,73 @@
+   Compiling amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-tropical)
+   Compiling amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dual)
+   Compiling criterion v0.8.2
+   Compiling amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-automata)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.99s
+     Running unittests src/lib.rs (target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/deps/amari_automata-01e3fc480f763c92)
+
+running 55 tests
+test comprehensive_tests_simple::boundary_tests::test_fixed_boundary ... ok
+test comprehensive_tests_simple::boundary_tests::test_boundary_setting ... ok
+test comprehensive_tests_simple::boundary_tests::test_moore_neighborhood_2d ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_conservative_rule ... ok
+test comprehensive_tests_simple::boundary_tests::test_periodic_boundary ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_grade_preserving_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_custom_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_reversible_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_rotor_ca_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_rule_apply ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_add_node ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_creation ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_navigator_new ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_node_creation ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_node_state_hash ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_generator_rotation ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_group_element_identity ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_game_of_life_rule ... ok
+test comprehensive_tests_simple::constructor_tests::test_from_seed ... ok
+test comprehensive_tests_simple::constructor_tests::test_with_cached_cayley ... ok
+test comprehensive_tests_simple::constructor_tests::test_with_group_structure ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_cell_operations ... ok
+test comprehensive_tests_simple::metrics_tests::test_connected_components ... ok
+test comprehensive_tests_simple::metrics_tests::test_density ... ok
+test comprehensive_tests_simple::metrics_tests::test_state_snapshot ... ok
+test comprehensive_tests_simple::metrics_tests::test_total_energy ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_creation ... ok
+test comprehensive_tests_simple::metrics_tests::test_total_magnitude ... ok
+test comprehensive_tests_simple::metrics_tests::test_reset ... ok
+test comprehensive_tests_simple::multivector_verification_tests::test_multivector_properties ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_config_default ... ok
+test comprehensive_tests_simple::multivector_verification_tests::test_multivector_associativity ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_constraint_variants ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_rule ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_rule_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_polyomino_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_polyomino_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_shape_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_shape_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_tile_set_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_tile_set_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_wang_tile_set ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_solver_config_default ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_type_equality ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_type_inequality ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_types_all ... ok
+test comprehensive_tests_simple::verification_framework_tests::test_error_handling ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_ca_creation ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_ca_invalid_dimensions ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_geometric_closure ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_cayley_table ... ok
+test comprehensive_tests_simple::verification_framework_tests::test_mathematical_invariants ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_evolution ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_evolution ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_rule_types ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests amari_automata
+
+running 1 test
+test amari-automata/src/lib.rs - (line 24) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+

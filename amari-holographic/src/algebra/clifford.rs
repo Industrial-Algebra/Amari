@@ -230,7 +230,7 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
         let n = self.inner.coefficient_norm();
         (n > 0.0)
             .then(|| Self::new(self.inner.clone() / n))
-            .ok_or_else(|| AlgebraError::NormalizationFailed { norm: n })
+            .ok_or(AlgebraError::NormalizationFailed { norm: n })
     }
 
     fn permute(&self, shift: i32) -> Self {

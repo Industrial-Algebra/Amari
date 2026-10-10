@@ -753,9 +753,11 @@ impl<const P: usize, const Q: usize, const R: usize> CARule<P, Q, R> {
                     + neighbors.iter().map(|n| n.coefficient_norm()).sum::<f64>();
                 let avg_magnitude = total_magnitude / (neighbors.len() as f64 + 1.0);
                 let center_norm = center.coefficient_norm();
-                let normalized = (center_norm > 0.0)
-                    .then(|| center.clone() / center_norm)
-                    .unwrap_or(Multivector::zero());
+                let normalized = if center_norm > 0.0 {
+                    center.clone() / center_norm
+                } else {
+                    Multivector::zero()
+                };
                 normalized * avg_magnitude
             },
             rule_type: RuleType::Conservative,
@@ -813,9 +815,7 @@ impl<const P: usize, const Q: usize, const R: usize> Default for CARule<P, Q, R>
                     let product = acc.geometric_product(n);
                     let product_norm = product.coefficient_norm();
                     if product_norm > 0.5 {
-                        (product_norm > 0.0)
-                            .then(|| product / product_norm)
-                            .unwrap_or(Multivector::zero())
+                        product / product_norm
                     } else {
                         Multivector::zero()
                     }
