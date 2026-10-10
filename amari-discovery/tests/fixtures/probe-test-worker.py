@@ -136,6 +136,12 @@ def main() -> int:
             '{"kind":"invalid_input","message":"line1\\nline2"}\n'
         )
         return 2
+    if mode == "marker-unicode-separator":
+        sys.stderr.write(
+            "amari-discovery-worker-error: "
+            '{"kind":"invalid_input","message":"first\\u2028second"}\n'
+        )
+        return 2
     if mode == "marker-oversized-message":
         big = "x" * 4096
         sys.stderr.write(

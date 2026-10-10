@@ -171,7 +171,8 @@ fn send_worker_request(child: &mut Child, request: &WorkerRequest) -> DiscoveryR
 /// with a matching exit code (including a foreign worker) has chosen
 /// to publish that message, so consistency, not authenticity, is what
 /// the gate checks. Recovered messages are additionally hardened:
-/// single-line (control characters rejected) and length-bounded.
+/// single-line (control characters and the Unicode line/paragraph
+/// separators U+2028/U+2029 rejected) and length-bounded.
 /// `InvalidId` carries structured fields a flat message cannot
 /// reconstruct, so it is intentionally not recovered.
 /// The maximum length of a recovered worker error message.
@@ -188,8 +189,15 @@ fn recover_worker_error(stderr: &[u8], code: i32) -> Option<DiscoveryError> {
     let message = payload.get("message")?.as_str()?;
     // Hygiene: the message must be single-line and bounded, so a
     // marked payload cannot smuggle extra output lines or unbounded
-    // text through the recovered error (PR #286 round 2).
-    if message.len() > MAX_RECOVERED_MESSAGE_BYTES || message.chars().any(char::is_control) {
+    // text through the recovered error. Single-line rejects control
+    // characters AND the Unicode line/paragraph separators
+    // U+2028/U+2029 (category Zl/Zp, not covered by `is_control`)
+    // (PR #286 rounds 2-3).
+    if message.len() > MAX_RECOVERED_MESSAGE_BYTES
+        || message
+            .chars()
+            .any(|c| c.is_control() || matches!(c, '\u{2028}' | '\u{2029}'))
+    {
         return None;
     }
     let message = message.to_owned();
@@ -794,6 +802,18 @@ mod tests {
         // A marker message cannot smuggle extra output lines through
         // JSON escapes (PR #286 round 2).
         let error = run_fixture("marker-multiline-message").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerExited { code: 2 }
+        ));
+    }
+
+    #[test]
+    fn marker_message_with_unicode_line_separators_falls_back() {
+        // U+2028/U+2029 are category Zl/Zp, not control characters;
+        // the single-line hygiene rejects them explicitly
+        // (PR #286 round 3).
+        let error = run_fixture("marker-unicode-separator").unwrap_err();
         assert!(matches!(
             error,
             crate::DiscoveryError::ProbeWorkerExited { code: 2 }
