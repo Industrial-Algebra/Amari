@@ -63,6 +63,11 @@ pub enum PreimageConstruction {
     FiniteHorizonIteration(u32),
     /// GTT-closure saturation (linear variable-disjoint systems).
     GttSaturation,
+    /// Task 27: the canonical finite automaton of replayed finite
+    /// witnesses — a sound under-approximation issued with `Partial`
+    /// authority for cells the ADR approves no exact construction for
+    /// (the upper bound is always absent).
+    WitnessedLowerBound,
 }
 
 /// Whether a class admits an exact construction for an operation.

@@ -80,3 +80,11 @@ Test-count lineage: 294 (integrated W01 baseline) → 296 (initial W02 green) �
 Round 4 returned **0 P1 / 0 P2 / 1 P3** and a readiness verdict of "ready to commit and open a PR to develop." The P3 (lineage mislabel: 296 is the initial W02 green, not the pre-W02 baseline of 294) is applied above. Loop: R1 3/1/0 → R2 1/2/0 → R3 0/1/1 → R4 0/0/1, converged at 0 P1/P2.
 
 Verified-by-reviewer highlights: division vs reciprocal behavior exactly as documented ([1.0, 0.0] vs [inf, NaN]); IEEE-754 boundary wording (onset ≈1.49e-154, zero-rounding ≈1.57e-162); archives, inventories, catalog `aa4689c3…`, lock `ba6b36cf…` all exact.
+
+## PR review + develop integration (PR #283 concurrent activity)
+
+PR-level comment review posted 0 P1 / 1 P2 / 1 P3:
+- **P2 catalog conflict with develop** — develop had advanced via PR #283 (amari-rewrite cohort 5 + its catalog regen from a pre-W02 tree). Resolved per catalog discipline: merged origin/develop, regenerated from the merged tree — `822baaf8…`, 11,086 items (+9 from #283's new amari-rewrite surface). amari-rewrite required no W02 migration (workspace all-targets check clean, `merge-283-workspace.log`).
+- **P3 PR description omission** — `approx_eq` also treats exact equality (including ±inf == ±inf via the leading `a == b` arm) as equal; PR body amended.
+
+Merged-tree gates: 306 tests / 11 suites stable AND nightly, clippy 0, fmt clean, lock `ba6b36cf…` unchanged (`merge-283-core-test*.log`, `merge-283-core-clippy.log`).

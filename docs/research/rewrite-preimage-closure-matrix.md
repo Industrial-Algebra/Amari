@@ -187,7 +187,10 @@ is approximation/partial-authority only.
   For non-left-linear systems the one-step step is not exact-regular
   at all, so under-approximations need explicitly replayed finite
   witnesses (as the Task 27 plan requires) — not the automaton
-  construction.
+  construction. Task 27 implemented this obligation for the
+  approximation-only cells (C5/C7-style classes): deterministic,
+  metered enumeration of replayed finite witnesses returned as a
+  `Partial`-authority bound with the upper bound absent (`None`).
 - **Upper bound (certified over-approximation):** any abstraction
   must be provably a superset, and every linearization/merge/widen
   event must be recorded in the certificate. Design is Task 27
