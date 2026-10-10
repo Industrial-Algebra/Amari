@@ -129,13 +129,26 @@ pub fn saturation_preimage(
     limits: &RelationLimits,
     automaton_limits: &TreeAutomatonLimits,
 ) -> RewriteResult<PreimageOutcome> {
+    let mut resources = RelationResources::new(limits);
+    saturation_preimage_with_resources(system, language, limits, automaton_limits, &mut resources)
+}
+
+/// The exact saturation preimage drawing on the CALLER's pool, so a
+/// query can share one per-query budget across construction and
+/// membership (Task 28, PR #284 round 1 P2).
+pub(crate) fn saturation_preimage_with_resources(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    limits: &RelationLimits,
+    automaton_limits: &TreeAutomatonLimits,
+    resources: &mut RelationResources,
+) -> RewriteResult<PreimageOutcome> {
     let certificate =
         PreimageCertificate::issue(PreimageOperation::Saturation, system, language, limits)?;
-    let mut resources = RelationResources::new(limits);
     // Base construction charge: every call performs work (and the
     // saturation must be metered even when a degenerate input makes the
     // symbol-level charges zero).
-    charge_operations(&mut resources, limits, 1)?;
+    charge_operations(resources, limits, 1)?;
 
     // Saturation of the empty system is the identity. Bind the input
     // representation itself: the empty-system result semantics are digest
@@ -147,8 +160,8 @@ pub fn saturation_preimage(
         return Ok(PreimageOutcome::from_parts(result, certificate));
     }
 
-    let universe = build_universe(system, language, limits, automaton_limits, &mut resources)?;
-    let (edges, _productive_rounds) = saturate(&universe, system, limits, &mut resources)?;
+    let universe = build_universe(system, language, limits, automaton_limits, resources)?;
+    let (edges, _productive_rounds) = saturate(&universe, system, limits, resources)?;
     // The assembly clones below are freshly allocated buffers: the
     // epsilon pairs, the state/transition/alphabet copies handed to
     // the NFTA — billed as constraints before allocation (round 6).
@@ -165,7 +178,7 @@ pub fn saturation_preimage(
             resource: "saturation assembly storage",
             limit: limits.max_constraints(),
         })?;
-    charge_constraints(&mut resources, limits, assembly_cells)?;
+    charge_constraints(resources, limits, assembly_cells)?;
     let epsilons: Vec<(TreeState, TreeState)> = edges
         .iter()
         .map(|&(from, to)| (universe.states[from].clone(), universe.states[to].clone()))
@@ -177,7 +190,7 @@ pub fn saturation_preimage(
         epsilons,
         finals: universe.base_finals.clone(),
     };
-    let (transitions, finals) = eliminate_epsilons(&nfta, automaton_limits, &mut resources)?;
+    let (transitions, finals) = eliminate_epsilons(&nfta, automaton_limits, resources)?;
     let assembled = TreeAutomaton::new(
         nfta.alphabet,
         nfta.states,
@@ -185,7 +198,7 @@ pub fn saturation_preimage(
         finals,
         *automaton_limits,
     )?;
-    let result = canonicalize(assembled, automaton_limits, &mut resources)?;
+    let result = canonicalize(assembled, automaton_limits, resources)?;
     let certificate = certificate.complete(&result);
     Ok(PreimageOutcome::from_parts(result, certificate))
 }

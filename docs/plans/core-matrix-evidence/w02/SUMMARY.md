@@ -106,3 +106,7 @@ Verification uplift recorded: local workspace-wide clippy is now part of the evi
 3. P3-3 provenance/CI-coverage wording overstated — corrected above (unchanged-since-branch-point vs byte-identical-to-develop; predecessor checks ran on #283's head, not the merge commit).
 
 CI at review time: 5 pass / 9 running / 1 skipped, no failures.
+
+## Develop integration #2 (PR #284 concurrent activity)
+
+PR #284 (amari-rewrite Task 28 + catalog regen) merged to develop; catalog conflicted as before. Resolved identically: merged origin/develop @039d8f1, regenerated from the merged tree — `f2b25c34…`, 11,096 items (+10 from #284's surface). amari-rewrite required no W02 migration (workspace all-targets check clean, `merge-284-workspace.log`). Post-merge gates: 306 core tests stable, clippy 0 on all W02-touched crates (`merge-284-clippy.log`), fmt clean, lock unchanged.

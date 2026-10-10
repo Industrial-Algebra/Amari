@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "822baaf835d365dd1015bfaef21b0a3f0b27e5634fae7cea7e9720f64b5aeb4c",
+  "content_hash": "f2b25c34120eb3ffdd0dbe2e28b21c9480d7e506d820e342b9ec1eb394da5bf2",
   "crates": [
     {
       "name": "amari",
@@ -374308,6 +374308,18 @@
                     }
                   ]
                 }
+              },
+              {
+                "name": "RefinementViolation",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -374497,6 +374509,18 @@
                   },
                   {
                     "name": "ResidualMismatch",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "RefinementViolation",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -375471,6 +375495,18 @@
                     }
                   ]
                 }
+              },
+              {
+                "name": "RefinementViolation",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -375660,6 +375696,18 @@
                   },
                   {
                     "name": "ResidualMismatch",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "RefinementViolation",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -378636,6 +378684,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::ApproximationOutcome::witnesses",
+          "kind": "method",
+          "signature": "pub fn witnesses (& self) -> & BTreeSet < Term >",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn witnesses (& self) -> & BTreeSet < Term >",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "ApproximationOutcome::witnesses"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::CertificateAuthority",
           "kind": "enum",
           "signature": "pub enum CertificateAuthority",
@@ -378922,6 +378989,199 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::determinize",
               "declaration_ident": "MAX_DETERMINIZED_SUBSETS"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery",
+          "kind": "struct",
+          "signature": "pub struct MembershipQuery",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct MembershipQuery",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "MembershipQuery"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::certificate",
+          "kind": "method",
+          "signature": "pub fn certificate (& self) -> & PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn certificate (& self) -> & PreimageCertificate",
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "MembershipQuery::certificate"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::operation",
+          "kind": "method",
+          "signature": "pub fn operation (& self) -> PreimageOperation",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn operation (& self) -> PreimageOperation",
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "MembershipQuery::operation"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::trace",
+          "kind": "method",
+          "signature": "pub fn trace (& self) -> & [ApproximationEvent]",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn trace (& self) -> & [ApproximationEvent]",
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "MembershipQuery::trace"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::verdict",
+          "kind": "method",
+          "signature": "pub fn verdict (& self) -> & MembershipVerdict",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn verdict (& self) -> & MembershipVerdict",
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "MembershipQuery::verdict"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::MembershipVerdict",
+          "kind": "enum",
+          "signature": "pub enum MembershipVerdict",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Proven",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "TreeAutomaton"
+                  ]
+                }
+              },
+              {
+                "name": "Excluded",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Unknown",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum MembershipVerdict",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "Proven",
+                    "data": {
+                      "kind": "tuple",
+                      "types": [
+                        "TreeAutomaton"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "Excluded",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "Unknown",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "MembershipVerdict"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::MembershipVerdict::proven_automaton",
+          "kind": "method",
+          "signature": "pub fn proven_automaton (& self) -> Option < & TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn proven_automaton (& self) -> Option < & TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "MembershipVerdict::proven_automaton"
             }
           ]
         },
@@ -380934,6 +381194,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::classify_and_query",
+          "kind": "fn",
+          "signature": "pub fn classify_and_query (system : & TermSystem , language : & TreeAutomaton , operation : PreimageOperation , term : & Term , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < MembershipQuery >",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn classify_and_query (system : & TermSystem , language : & TreeAutomaton , operation : PreimageOperation , term : & Term , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < MembershipQuery >",
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "classify_and_query"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::classify_system",
           "kind": "fn",
           "signature": "pub fn classify_system (system : & TermSystem) -> RewriteResult < Classification >",
@@ -381063,6 +381342,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::preimage",
               "declaration_ident": "one_step_preimage"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::refine_lower_bound",
+          "kind": "fn",
+          "signature": "pub fn refine_lower_bound (system : & TermSystem , language : & TreeAutomaton , operation : PreimageOperation , prior : & ApproximationOutcome , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::refine",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn refine_lower_bound (system : & TermSystem , language : & TreeAutomaton , operation : PreimageOperation , prior : & ApproximationOutcome , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+              "source_path": "amari-rewrite/src/language/refine.rs",
+              "source_module": "amari_rewrite::language::refine",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::refine",
+              "declaration_ident": "refine_lower_bound"
             }
           ]
         },
@@ -381718,6 +382016,18 @@
                     }
                   ]
                 }
+              },
+              {
+                "name": "RefinementViolation",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -381907,6 +382217,18 @@
                   },
                   {
                     "name": "ResidualMismatch",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "message",
+                          "ty": "String"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "RefinementViolation",
                     "data": {
                       "kind": "struct",
                       "fields": [
@@ -387722,6 +388044,42 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::MembershipQuery",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipQuery"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::MembershipVerdict",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipVerdict"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
           "source_ordinal": 2,
@@ -389705,6 +390063,42 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::MembershipQuery",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipQuery"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::MembershipVerdict",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipVerdict"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::Nonterminal",
           "source_path": "amari-rewrite/src/language/grammar.rs",
           "source_ordinal": 2,
@@ -391229,6 +391623,42 @@
             "kind": "local",
             "module": "amari_rewrite::language::grammar",
             "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::MembershipQuery",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipQuery"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::MembershipVerdict",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipVerdict"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -393807,6 +394237,42 @@
             "kind": "local",
             "module": "amari_rewrite::language::grammar",
             "ident": "GrammarProduction"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::MembershipQuery",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 2,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipQuery"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::MembershipVerdict",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::refine",
+            "ident": "MembershipVerdict"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -396397,7 +396863,7 @@
         {
           "path": "amari_rewrite::language::ApproximationOutcome::certificate",
           "source_path": "amari-rewrite/src/language/approximate.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396413,13 +396879,21 @@
         {
           "path": "amari_rewrite::language::ApproximationOutcome::trace",
           "source_path": "amari-rewrite/src/language/approximate.rs",
-          "source_ordinal": 2,
+          "source_ordinal": 3,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
         },
         {
           "path": "amari_rewrite::language::ApproximationOutcome::upper",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::witnesses",
           "source_path": "amari-rewrite/src/language/approximate.rs",
           "source_ordinal": 1,
           "gate": "always",
@@ -396521,6 +396995,62 @@
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::certificate",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::operation",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::trace",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::MembershipQuery::verdict",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::MembershipVerdict",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::MembershipVerdict::proven_automaton",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
         },
         {
           "path": "amari_rewrite::language::Nonterminal",
@@ -397243,6 +397773,14 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::classify_and_query",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::language::classify_system",
           "source_path": "amari-rewrite/src/language/classify.rs",
           "source_ordinal": 7,
@@ -397261,7 +397799,7 @@
         {
           "path": "amari_rewrite::language::finite_horizon_preimage",
           "source_path": "amari-rewrite/src/language/preimage.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -397269,7 +397807,7 @@
         {
           "path": "amari_rewrite::language::identity_preimage",
           "source_path": "amari-rewrite/src/language/preimage.rs",
-          "source_ordinal": 4,
+          "source_ordinal": 6,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -397294,6 +397832,14 @@
           "path": "amari_rewrite::language::one_step_preimage",
           "source_path": "amari-rewrite/src/language/preimage.rs",
           "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::refine_lower_bound",
+          "source_path": "amari-rewrite/src/language/refine.rs",
+          "source_ordinal": 11,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
