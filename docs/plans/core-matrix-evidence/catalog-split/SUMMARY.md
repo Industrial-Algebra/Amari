@@ -43,7 +43,7 @@ Branch lock `a3fdc0e0…` (Cargo.lock is gitignored; per-worktree resolution).
 
 ## Gates
 
-Catalog suites: split 3/3, integrity 41/41, generation 11/11. Workspace
+Catalog suites: split 3/3, generation 41/41, integrity 11/11. (Historical counts transposed in the original record — round-2 review P3, corrected here.) Workspace
 all-targets check 0. fmt clean. Clippy `-D warnings` 0 on
 lib/bins/examples + the three catalog test targets; the only local-1.98
 clippy failures are the three pre-existing dead-code lints in
@@ -68,3 +68,7 @@ Round 1 returned **1 P1 / 3 P2** — all verified real, all remediated:
 4. **P2 corruption fixtures were already drifted (non-canonical manifest bytes) and failure modes were uncovered.** Fixed: `write_split_with_corruption` writes canonical manifest/index via the shared machinery; new `clean_split_fixture_passes_verification` establishes the baseline; added missing-file, orphan-file, lingering-monolith, and index-corruption tests (generation suite 41→46).
 
 Post-fix gates: generation 46/46, integrity 11/11, split 5/5, macros 5/5; scoped clippy 0; workspace all-targets check 0; fmt clean; catalog tree **byte-identical** through the remediation (hash `3b5c2aec…` unchanged; the fixes are machinery-only).
+
+## Review round 2 — convergence
+
+Round 2 returned **0 P1 / 0 P2 / 1 P3** with verdict "Ready for PR." The P3 (the pre-round-1 gate counts above transposed integrity/generation) is corrected in place. Loop: R1 1/1/0 → R2 0/0/1, converged at 0 P1/P2. Reviewer independently verified: all 33 catalog files match the archived pre-change checksums; fresh suites 46/11/5/5; shared renderer genuinely single-source; all failure-mode regressions pin.
