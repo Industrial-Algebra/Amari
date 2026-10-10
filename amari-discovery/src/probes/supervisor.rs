@@ -163,11 +163,20 @@ fn send_worker_request(child: &mut Child, request: &WorkerRequest) -> DiscoveryR
 
 /// Reconstructs a typed domain error from the worker's stderr marker
 /// line (PR #286 round 1). Recovery is gated on the marker parsing
-/// AND the process exit code agreeing with the kind's stable code, so
-/// a malformed or foreign worker can never inject a typed error;
-/// markerless exits keep the privacy-preserving `ProbeWorkerExited`
-/// mapping. `InvalidId` carries structured fields a flat message
-/// cannot reconstruct, so it is intentionally not recovered.
+/// AND the process exit code agreeing with the kind's stable code.
+///
+/// Privacy contract (PR #286 round 2): stderr content that is NOT
+/// explicitly marked is never surfaced. The marker itself is an
+/// opt-in protocol channel — any worker emitting a well-formed marker
+/// with a matching exit code (including a foreign worker) has chosen
+/// to publish that message, so consistency, not authenticity, is what
+/// the gate checks. Recovered messages are additionally hardened:
+/// single-line (control characters rejected) and length-bounded.
+/// `InvalidId` carries structured fields a flat message cannot
+/// reconstruct, so it is intentionally not recovered.
+/// The maximum length of a recovered worker error message.
+const MAX_RECOVERED_MESSAGE_BYTES: usize = 256;
+
 fn recover_worker_error(stderr: &[u8], code: i32) -> Option<DiscoveryError> {
     let text = std::str::from_utf8(stderr).ok()?;
     let line = text
@@ -176,7 +185,14 @@ fn recover_worker_error(stderr: &[u8], code: i32) -> Option<DiscoveryError> {
     let payload: serde_json::Value =
         serde_json::from_str(&line[worker::WORKER_ERROR_MARKER.len()..]).ok()?;
     let kind = payload.get("kind")?.as_str()?;
-    let message = payload.get("message")?.as_str()?.to_owned();
+    let message = payload.get("message")?.as_str()?;
+    // Hygiene: the message must be single-line and bounded, so a
+    // marked payload cannot smuggle extra output lines or unbounded
+    // text through the recovered error (PR #286 round 2).
+    if message.len() > MAX_RECOVERED_MESSAGE_BYTES || message.chars().any(char::is_control) {
+        return None;
+    }
+    let message = message.to_owned();
     let error = match kind {
         "invalid_input" => DiscoveryError::InvalidInput(message),
         "limit_exceeded" => DiscoveryError::LimitExceeded(message),
@@ -740,6 +756,53 @@ mod tests {
     #[test]
     fn malformed_marker_falls_back_to_exit_mapping() {
         let error = run_fixture("marker-malformed").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerExited { code: 2 }
+        ));
+    }
+
+    #[test]
+    fn foreign_worker_marker_is_the_documented_opt_in_channel() {
+        // A worker that emits a well-formed marker with a matching
+        // exit code has OPTED IN to the protocol channel: the marked
+        // message is surfaced (PR #286 round 2). The privacy guarantee
+        // covers only stderr content that is NOT so marked.
+        let error = run_fixture("foreign-marker").unwrap_err();
+        assert!(
+            matches!(
+                error,
+                crate::DiscoveryError::InvalidInput(ref message)
+                    if message == "FOREIGN_SECRET"
+            ),
+            "opt-in marker should surface: {error}"
+        );
+    }
+
+    #[test]
+    fn unmarked_stderr_never_surfaces_even_with_a_domain_exit_code() {
+        let error = run_fixture("code2-no-marker").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerExited { code: 2 }
+        ));
+        assert!(!error.to_string().contains("SECRET_DIAGNOSTIC"));
+    }
+
+    #[test]
+    fn marker_message_with_control_characters_falls_back() {
+        // A marker message cannot smuggle extra output lines through
+        // JSON escapes (PR #286 round 2).
+        let error = run_fixture("marker-multiline-message").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerExited { code: 2 }
+        ));
+    }
+
+    #[test]
+    fn marker_message_over_the_bound_falls_back() {
+        let error = run_fixture("marker-oversized-message").unwrap_err();
         assert!(matches!(
             error,
             crate::DiscoveryError::ProbeWorkerExited { code: 2 }
