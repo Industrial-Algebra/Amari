@@ -1,0 +1,142 @@
+{
+  "name": "amari-discovery-macros",
+  "version": "0.24.1",
+  "description": "Bounded wire-contract derive macros for amari-discovery probe DTOs",
+  "license": "MIT OR Apache-2.0",
+  "edition": "2021",
+  "manifest_path": "amari-discovery-macros/Cargo.toml",
+  "library_outputs": [
+    "proc-macro"
+  ],
+  "features": [],
+  "dependencies": [
+    {
+      "alias": "proc-macro2",
+      "package": "proc-macro2",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "quote",
+      "package": "quote",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "serde_json",
+      "package": "serde_json",
+      "kind": "normal",
+      "version": "1",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "syn",
+      "package": "syn",
+      "kind": "normal",
+      "version": "2.0",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "full"
+      ]
+    },
+    {
+      "alias": "schemars",
+      "package": "schemars",
+      "kind": "development",
+      "version": "1",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "serde",
+      "package": "serde",
+      "kind": "development",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "derive"
+      ]
+    },
+    {
+      "alias": "serde_json",
+      "package": "serde_json",
+      "kind": "development",
+      "version": "1",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "trybuild",
+      "package": "trybuild",
+      "kind": "development",
+      "version": "1",
+      "optional": false,
+      "default_features": true
+    }
+  ],
+  "targets": [
+    {
+      "name": "amari_discovery_macros",
+      "kind": "library",
+      "path": "amari-discovery-macros/src/lib.rs",
+      "crate_types": [
+        "proc-macro"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "path": "amari_discovery_macros::derive_wire_contract",
+      "kind": "fn",
+      "signature": "pub fn derive_wire_contract (input : TokenStream) -> TokenStream",
+      "source_path": "amari-discovery-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_discovery_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn derive_wire_contract (input : TokenStream) -> TokenStream",
+          "source_path": "amari-discovery-macros/src/lib.rs",
+          "source_module": "amari_discovery_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_discovery_macros",
+          "declaration_ident": "derive_wire_contract"
+        }
+      ]
+    }
+  ],
+  "macros": [
+    {
+      "path": "amari_discovery_macros::WireContract",
+      "name": "WireContract",
+      "kind": "proc_macro_derive",
+      "source_path": "amari-discovery-macros/src/lib.rs",
+      "signature": "pub fn derive_wire_contract (input : TokenStream) -> TokenStream",
+      "helpers": [
+        "wire_contract"
+      ]
+    }
+  ],
+  "cfg_gates": [
+    {
+      "path": "amari_discovery_macros::derive_wire_contract",
+      "source_path": "amari-discovery-macros/src/lib.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    }
+  ],
+  "examples": [],
+  "modules": [
+    "amari_discovery_macros"
+  ],
+  "readme": "amari-discovery-macros/README.md"
+}

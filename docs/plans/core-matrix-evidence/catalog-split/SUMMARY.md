@@ -1,0 +1,59 @@
+# CORE-CAT1 evidence — per-crate catalog split
+
+Branch `chore/catalog-split` from develop `1d2bfa9` (post-#285, post-#286).
+Branch lock `a3fdc0e0…` (Cargo.lock is gitignored; per-worktree resolution).
+
+## What changed
+
+- `amari-discovery/src/catalog/split.rs` (new): `CatalogManifest`,
+  `SplitTotals`, `CrateFileEntry`, `split_catalog`,
+  `compose_structural`. Split/compose are exact inverses.
+- `examples/generate_catalog.rs`: writes `catalog/manifest.json` +
+  `catalog/crates/<name>.json` (28 files) + generated `catalog/index.rs`
+  (documented include table); removes the legacy monolith and stale
+  per-crate files; atomic tmp+rename writes preserved.
+- `src/catalog/mod.rs`: `embedded()` composes the split layout and
+  serializes canonically before the unchanged `from_sources` path —
+  `content_hash` recipe and validation semantics unchanged.
+- `verify_checked_in(root, catalog_dir)`: split-aware; drift message
+  names the drifted file(s); orphaned crate files and a lingering
+  monolith count as drift.
+- Tests: new `tests/catalog_split.rs` (3 contracts); `catalog_integrity`
+  and `catalog_generation` adapted; CI drift check widened to the whole
+  `amari-discovery/catalog/` directory.
+
+## Proofs
+
+1. **Round-trip byte equality** (TDD red-first: E0432 before the API
+   existed): `split_catalog` → `compose_structural` reproduces the
+   canonical monolith serialization byte-for-byte → `content_hash`
+   unchanged in meaning. Split tests 3/3.
+2. **Determinism**: repeated generation leaves the catalog tree
+   byte-identical (hash `3b5c2aec…`, 28 crates / 11,096 items / 107
+   edges — same counts as the pre-split monolith `f2b25c34` layout).
+3. **Collision isolation** (the property this PR exists for): a scratch
+   `pub fn` added only to `amari-rewrite` changed exactly
+   `crates/amari-rewrite.json` + `manifest.json`; the other 27 crate
+   files and `index.rs` were untouched. Probe reverted; tree verified
+   byte-identical to the pre-probe snapshot.
+4. **Environment-local failure identity**: `-p amari-discovery --lib`
+   shows 191 passed / 24 failed, all `probes::supervisor`; the same 24
+   fail identically on clean develop `1d2bfa9` (temp worktree
+   /tmp/develop-baseline) — pre-existing environment failures, CI-green.
+
+## Gates
+
+Catalog suites: split 3/3, integrity 41/41, generation 11/11. Workspace
+all-targets check 0. fmt clean. Clippy `-D warnings` 0 on
+lib/bins/examples + the three catalog test targets; the only local-1.98
+clippy failures are the three pre-existing dead-code lints in
+`tests/probe_rewrite_inverse_search.rs` (file untouched by this branch —
+`git diff` empty; same disposition as W02's record). Lock unchanged
+after generation.
+
+## Bootstrap note
+
+The loader includes generated `catalog/index.rs` at compile time; a
+fresh workspace (no index.rs yet) bootstraps by stubbing the include
+once, running the generator, then restoring the include. Bootstrap
+machinery is not committed — the generator output is.

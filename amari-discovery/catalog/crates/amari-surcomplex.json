@@ -1,0 +1,2329 @@
+{
+  "name": "amari-surcomplex",
+  "version": "0.24.1",
+  "description": "Exact rational surcomplex numbers for the Amari library",
+  "license": "MIT OR Apache-2.0",
+  "edition": "2021",
+  "manifest_path": "amari-surcomplex/Cargo.toml",
+  "library_outputs": [
+    "lib"
+  ],
+  "features": [],
+  "dependencies": [
+    {
+      "alias": "amari-surreal",
+      "package": "amari-surreal",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-surreal",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "thiserror",
+      "package": "thiserror",
+      "kind": "normal",
+      "version": "2.0",
+      "optional": false,
+      "default_features": true
+    }
+  ],
+  "targets": [
+    {
+      "name": "amari_surcomplex",
+      "kind": "library",
+      "path": "amari-surcomplex/src/lib.rs",
+      "crate_types": [
+        "lib"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "path": "amari_surcomplex::RationalSurcomplex",
+      "kind": "struct",
+      "signature": "pub struct RationalSurcomplex",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RationalSurcomplex",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::checked_div",
+      "kind": "method",
+      "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self >",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self >",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::checked_div"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::checked_reciprocal",
+      "kind": "method",
+      "signature": "pub fn checked_reciprocal (& self) -> Result < Self >",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_reciprocal (& self) -> Result < Self >",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::checked_reciprocal"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::conjugate",
+      "kind": "method",
+      "signature": "pub fn conjugate (& self) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn conjugate (& self) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::conjugate"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::from_integer",
+      "kind": "method",
+      "signature": "pub fn from_integer < N : Into < i128 > > (n : N) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_integer < N : Into < i128 > > (n : N) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_integer"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::from_parts",
+      "kind": "method",
+      "signature": "pub fn from_parts (real : RationalSurreal , imag : RationalSurreal) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_parts (real : RationalSurreal , imag : RationalSurreal) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_parts"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::from_real",
+      "kind": "method",
+      "signature": "pub fn from_real (real : RationalSurreal) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_real (real : RationalSurreal) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_real"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::i",
+      "kind": "method",
+      "signature": "pub fn i () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn i () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::i"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::imag",
+      "kind": "method",
+      "signature": "pub fn imag (& self) -> & RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn imag (& self) -> & RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::imag"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::is_zero",
+      "kind": "method",
+      "signature": "pub fn is_zero (& self) -> bool",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_zero (& self) -> bool",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::is_zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::norm_sq",
+      "kind": "method",
+      "signature": "pub fn norm_sq (& self) -> RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn norm_sq (& self) -> RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::norm_sq"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::one",
+      "kind": "method",
+      "signature": "pub fn one () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn one () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::one"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::real",
+      "kind": "method",
+      "signature": "pub fn real (& self) -> & RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn real (& self) -> & RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::real"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::zero",
+      "kind": "method",
+      "signature": "pub fn zero () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn zero () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::Result",
+      "kind": "type",
+      "signature": "pub type Result < T > = core :: result :: Result < T , SurcomplexError >",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::error",
+      "variants": [
+        {
+          "kind": "type",
+          "signature": "pub type Result < T > = core :: result :: Result < T , SurcomplexError >",
+          "source_path": "amari-surcomplex/src/error.rs",
+          "source_module": "amari_surcomplex::error",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::error",
+          "declaration_ident": "Result"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::SurcomplexError",
+      "kind": "enum",
+      "signature": "pub enum SurcomplexError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "DivisionByZero",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Surreal",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "SurrealError"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-surcomplex/src/error.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::error",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum SurcomplexError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "DivisionByZero",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Surreal",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "SurrealError"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-surcomplex/src/error.rs",
+          "source_module": "amari_surcomplex::error",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::error",
+          "declaration_ident": "SurcomplexError"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::error::Result",
+      "kind": "type",
+      "signature": "pub type Result < T > = core :: result :: Result < T , SurcomplexError >",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::error",
+      "variants": [
+        {
+          "kind": "type",
+          "signature": "pub type Result < T > = core :: result :: Result < T , SurcomplexError >",
+          "source_path": "amari-surcomplex/src/error.rs",
+          "source_module": "amari_surcomplex::error",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::error",
+          "declaration_ident": "Result"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::error::SurcomplexError",
+      "kind": "enum",
+      "signature": "pub enum SurcomplexError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "DivisionByZero",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Surreal",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "SurrealError"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-surcomplex/src/error.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::error",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum SurcomplexError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "DivisionByZero",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Surreal",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "SurrealError"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-surcomplex/src/error.rs",
+          "source_module": "amari_surcomplex::error",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::error",
+          "declaration_ident": "SurcomplexError"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "kind": "struct",
+      "signature": "pub struct RationalSurcomplex",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RationalSurcomplex",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::checked_div",
+      "kind": "method",
+      "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self >",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self >",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::checked_div"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::checked_reciprocal",
+      "kind": "method",
+      "signature": "pub fn checked_reciprocal (& self) -> Result < Self >",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_reciprocal (& self) -> Result < Self >",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::checked_reciprocal"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::conjugate",
+      "kind": "method",
+      "signature": "pub fn conjugate (& self) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn conjugate (& self) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::conjugate"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::from_integer",
+      "kind": "method",
+      "signature": "pub fn from_integer < N : Into < i128 > > (n : N) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_integer < N : Into < i128 > > (n : N) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_integer"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::from_parts",
+      "kind": "method",
+      "signature": "pub fn from_parts (real : RationalSurreal , imag : RationalSurreal) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_parts (real : RationalSurreal , imag : RationalSurreal) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_parts"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::from_real",
+      "kind": "method",
+      "signature": "pub fn from_real (real : RationalSurreal) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_real (real : RationalSurreal) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_real"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::i",
+      "kind": "method",
+      "signature": "pub fn i () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn i () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::i"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::imag",
+      "kind": "method",
+      "signature": "pub fn imag (& self) -> & RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn imag (& self) -> & RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::imag"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::is_zero",
+      "kind": "method",
+      "signature": "pub fn is_zero (& self) -> bool",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_zero (& self) -> bool",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::is_zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::norm_sq",
+      "kind": "method",
+      "signature": "pub fn norm_sq (& self) -> RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn norm_sq (& self) -> RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::norm_sq"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::one",
+      "kind": "method",
+      "signature": "pub fn one () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn one () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::one"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::real",
+      "kind": "method",
+      "signature": "pub fn real (& self) -> & RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn real (& self) -> & RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::real"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::zero",
+      "kind": "method",
+      "signature": "pub fn zero () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn zero () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::Result",
+      "kind": "type",
+      "signature": "pub type Result < T > = core :: result :: Result < T , SurcomplexError >",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::error",
+      "variants": [
+        {
+          "kind": "type",
+          "signature": "pub type Result < T > = core :: result :: Result < T , SurcomplexError >",
+          "source_path": "amari-surcomplex/src/error.rs",
+          "source_module": "amari_surcomplex::error",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::error",
+          "declaration_ident": "Result"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::prelude::SurcomplexError",
+      "kind": "enum",
+      "signature": "pub enum SurcomplexError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "DivisionByZero",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Surreal",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "SurrealError"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-surcomplex/src/error.rs",
+      "is_reexport": true,
+      "source_module": "amari_surcomplex::error",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum SurcomplexError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "DivisionByZero",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Surreal",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "SurrealError"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-surcomplex/src/error.rs",
+          "source_module": "amari_surcomplex::error",
+          "is_reexport": true,
+          "declaration_module": "amari_surcomplex::error",
+          "declaration_ident": "SurcomplexError"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex",
+      "kind": "struct",
+      "signature": "pub struct RationalSurcomplex",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RationalSurcomplex",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::checked_div",
+      "kind": "method",
+      "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self >",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self >",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::checked_div"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::checked_reciprocal",
+      "kind": "method",
+      "signature": "pub fn checked_reciprocal (& self) -> Result < Self >",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_reciprocal (& self) -> Result < Self >",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::checked_reciprocal"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::conjugate",
+      "kind": "method",
+      "signature": "pub fn conjugate (& self) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn conjugate (& self) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::conjugate"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::from_integer",
+      "kind": "method",
+      "signature": "pub fn from_integer < N : Into < i128 > > (n : N) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_integer < N : Into < i128 > > (n : N) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_integer"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::from_parts",
+      "kind": "method",
+      "signature": "pub fn from_parts (real : RationalSurreal , imag : RationalSurreal) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_parts (real : RationalSurreal , imag : RationalSurreal) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_parts"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::from_real",
+      "kind": "method",
+      "signature": "pub fn from_real (real : RationalSurreal) -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_real (real : RationalSurreal) -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::from_real"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::i",
+      "kind": "method",
+      "signature": "pub fn i () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn i () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::i"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::imag",
+      "kind": "method",
+      "signature": "pub fn imag (& self) -> & RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn imag (& self) -> & RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::imag"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::is_zero",
+      "kind": "method",
+      "signature": "pub fn is_zero (& self) -> bool",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_zero (& self) -> bool",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::is_zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::norm_sq",
+      "kind": "method",
+      "signature": "pub fn norm_sq (& self) -> RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn norm_sq (& self) -> RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::norm_sq"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::one",
+      "kind": "method",
+      "signature": "pub fn one () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn one () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::one"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::real",
+      "kind": "method",
+      "signature": "pub fn real (& self) -> & RationalSurreal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn real (& self) -> & RationalSurreal",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::real"
+        }
+      ]
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::zero",
+      "kind": "method",
+      "signature": "pub fn zero () -> Self",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "is_reexport": false,
+      "source_module": "amari_surcomplex::rational",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn zero () -> Self",
+          "source_path": "amari-surcomplex/src/rational.rs",
+          "source_module": "amari_surcomplex::rational",
+          "is_reexport": false,
+          "declaration_module": "amari_surcomplex::rational",
+          "declaration_ident": "RationalSurcomplex::zero"
+        }
+      ]
+    }
+  ],
+  "trait_implementations": [
+    {
+      "trait_path": "Add",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Add"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Add",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Add"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Add",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Add"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_surcomplex::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_surcomplex::error::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_surcomplex::prelude::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_surcomplex::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_surcomplex::error::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_surcomplex::prelude::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_surcomplex::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_surcomplex::error::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_surcomplex::prelude::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_surcomplex::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_surcomplex::error::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_surcomplex::prelude::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Hash",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Hash"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Hash",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Hash"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Hash",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Hash"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Neg",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Neg"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Neg",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Neg"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Neg",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Neg"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surcomplex::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surcomplex::error::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surcomplex::prelude::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::error",
+        "ident": "SurcomplexError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surcomplex::rational",
+        "ident": "RationalSurcomplex"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    }
+  ],
+  "cfg_gates": [
+    {
+      "path": "amari_surcomplex::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::checked_div",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::checked_reciprocal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 11,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::conjugate",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::from_integer",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::from_parts",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::from_real",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::i",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::imag",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::is_zero",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 10,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::norm_sq",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::one",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::real",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::RationalSurcomplex::zero",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::Result",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::error",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_surcomplex::error::Result",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::error::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::prelude",
+      "source_path": "amari-surcomplex/src/prelude.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::checked_div",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::checked_reciprocal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 11,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::conjugate",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::from_integer",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::from_parts",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::from_real",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::i",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::imag",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::is_zero",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 10,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::norm_sq",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::one",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::real",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::RationalSurcomplex::zero",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::prelude::Result",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::prelude::SurcomplexError",
+      "source_path": "amari-surcomplex/src/error.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::rational",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::checked_div",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::checked_reciprocal",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 11,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::conjugate",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::from_integer",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::from_parts",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::from_real",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::i",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::imag",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::is_zero",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 10,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::norm_sq",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::one",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::real",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surcomplex::rational::RationalSurcomplex::zero",
+      "source_path": "amari-surcomplex/src/rational.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    }
+  ],
+  "examples": [],
+  "modules": [
+    "amari_surcomplex",
+    "amari_surcomplex::error",
+    "amari_surcomplex::prelude",
+    "amari_surcomplex::rational"
+  ],
+  "readme": "amari-surcomplex/README.md"
+}

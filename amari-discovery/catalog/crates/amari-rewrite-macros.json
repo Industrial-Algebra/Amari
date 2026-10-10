@@ -1,0 +1,224 @@
+{
+  "name": "amari-rewrite-macros",
+  "version": "0.24.1",
+  "description": "Checked procedural macros for amari-rewrite: derive(Rewritable), term!/rule!/relation! constructors",
+  "license": "MIT OR Apache-2.0",
+  "edition": "2021",
+  "manifest_path": "amari-rewrite-macros/Cargo.toml",
+  "library_outputs": [
+    "proc-macro"
+  ],
+  "features": [],
+  "dependencies": [
+    {
+      "alias": "proc-macro-crate",
+      "package": "proc-macro-crate",
+      "kind": "normal",
+      "version": "3",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "proc-macro2",
+      "package": "proc-macro2",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "quote",
+      "package": "quote",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "syn",
+      "package": "syn",
+      "kind": "normal",
+      "version": "2.0",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "full"
+      ]
+    },
+    {
+      "alias": "amari-rewrite",
+      "package": "amari-rewrite",
+      "kind": "development",
+      "path": "../amari-rewrite",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "trybuild",
+      "package": "trybuild",
+      "kind": "development",
+      "version": "1",
+      "optional": false,
+      "default_features": true
+    }
+  ],
+  "targets": [
+    {
+      "name": "amari_rewrite_macros",
+      "kind": "library",
+      "path": "amari-rewrite-macros/src/lib.rs",
+      "crate_types": [
+        "proc-macro"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "path": "amari_rewrite_macros::derive_rewritable",
+      "kind": "fn",
+      "signature": "pub fn derive_rewritable (input : TokenStream) -> TokenStream",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn derive_rewritable (input : TokenStream) -> TokenStream",
+          "source_path": "amari-rewrite-macros/src/lib.rs",
+          "source_module": "amari_rewrite_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite_macros",
+          "declaration_ident": "derive_rewritable"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite_macros::relation",
+      "kind": "fn",
+      "signature": "pub fn relation (_input : TokenStream) -> TokenStream",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn relation (_input : TokenStream) -> TokenStream",
+          "source_path": "amari-rewrite-macros/src/lib.rs",
+          "source_module": "amari_rewrite_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite_macros",
+          "declaration_ident": "relation"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite_macros::rule",
+      "kind": "fn",
+      "signature": "pub fn rule (input : TokenStream) -> TokenStream",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn rule (input : TokenStream) -> TokenStream",
+          "source_path": "amari-rewrite-macros/src/lib.rs",
+          "source_module": "amari_rewrite_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite_macros",
+          "declaration_ident": "rule"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite_macros::term",
+      "kind": "fn",
+      "signature": "pub fn term (input : TokenStream) -> TokenStream",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn term (input : TokenStream) -> TokenStream",
+          "source_path": "amari-rewrite-macros/src/lib.rs",
+          "source_module": "amari_rewrite_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite_macros",
+          "declaration_ident": "term"
+        }
+      ]
+    }
+  ],
+  "macros": [
+    {
+      "path": "amari_rewrite_macros::Rewritable",
+      "name": "Rewritable",
+      "kind": "proc_macro_derive",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "signature": "pub fn derive_rewritable (input : TokenStream) -> TokenStream",
+      "helpers": [
+        "rewritable"
+      ]
+    },
+    {
+      "path": "amari_rewrite_macros::relation",
+      "name": "relation",
+      "kind": "proc_macro",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "signature": "pub fn relation (_input : TokenStream) -> TokenStream"
+    },
+    {
+      "path": "amari_rewrite_macros::rule",
+      "name": "rule",
+      "kind": "proc_macro",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "signature": "pub fn rule (input : TokenStream) -> TokenStream"
+    },
+    {
+      "path": "amari_rewrite_macros::term",
+      "name": "term",
+      "kind": "proc_macro",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "signature": "pub fn term (input : TokenStream) -> TokenStream"
+    }
+  ],
+  "cfg_gates": [
+    {
+      "path": "amari_rewrite_macros::derive_rewritable",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite_macros::relation",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite_macros::rule",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite_macros::term",
+      "source_path": "amari-rewrite-macros/src/lib.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    }
+  ],
+  "examples": [],
+  "modules": [
+    "amari_rewrite_macros"
+  ]
+}

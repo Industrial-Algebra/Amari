@@ -1,0 +1,164 @@
+{
+  "name": "amari-flynn-macros",
+  "version": "0.24.1",
+  "description": "Procedural macros for amari-flynn probabilistic contracts",
+  "license": "MIT OR Apache-2.0",
+  "edition": "2021",
+  "manifest_path": "amari-flynn-macros/Cargo.toml",
+  "library_outputs": [
+    "proc-macro"
+  ],
+  "features": [],
+  "dependencies": [
+    {
+      "alias": "proc-macro2",
+      "package": "proc-macro2",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "quote",
+      "package": "quote",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "syn",
+      "package": "syn",
+      "kind": "normal",
+      "version": "2.0",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "full"
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "name": "amari_flynn_macros",
+      "kind": "library",
+      "path": "amari-flynn-macros/src/lib.rs",
+      "crate_types": [
+        "proc-macro"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "path": "amari_flynn_macros::ensures_expected",
+      "kind": "fn",
+      "signature": "pub fn ensures_expected (attr : TokenStream , item : TokenStream) -> TokenStream",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn ensures_expected (attr : TokenStream , item : TokenStream) -> TokenStream",
+          "source_path": "amari-flynn-macros/src/lib.rs",
+          "source_module": "amari_flynn_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn_macros",
+          "declaration_ident": "ensures_expected"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn_macros::prob_ensures",
+      "kind": "fn",
+      "signature": "pub fn prob_ensures (attr : TokenStream , item : TokenStream) -> TokenStream",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn prob_ensures (attr : TokenStream , item : TokenStream) -> TokenStream",
+          "source_path": "amari-flynn-macros/src/lib.rs",
+          "source_module": "amari_flynn_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn_macros",
+          "declaration_ident": "prob_ensures"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn_macros::prob_requires",
+      "kind": "fn",
+      "signature": "pub fn prob_requires (attr : TokenStream , item : TokenStream) -> TokenStream",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn prob_requires (attr : TokenStream , item : TokenStream) -> TokenStream",
+          "source_path": "amari-flynn-macros/src/lib.rs",
+          "source_module": "amari_flynn_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn_macros",
+          "declaration_ident": "prob_requires"
+        }
+      ]
+    }
+  ],
+  "macros": [
+    {
+      "path": "amari_flynn_macros::ensures_expected",
+      "name": "ensures_expected",
+      "kind": "proc_macro_attribute",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "signature": "pub fn ensures_expected (attr : TokenStream , item : TokenStream) -> TokenStream"
+    },
+    {
+      "path": "amari_flynn_macros::prob_ensures",
+      "name": "prob_ensures",
+      "kind": "proc_macro_attribute",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "signature": "pub fn prob_ensures (attr : TokenStream , item : TokenStream) -> TokenStream"
+    },
+    {
+      "path": "amari_flynn_macros::prob_requires",
+      "name": "prob_requires",
+      "kind": "proc_macro_attribute",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "signature": "pub fn prob_requires (attr : TokenStream , item : TokenStream) -> TokenStream"
+    }
+  ],
+  "cfg_gates": [
+    {
+      "path": "amari_flynn_macros::ensures_expected",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn_macros::prob_ensures",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn_macros::prob_requires",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    }
+  ],
+  "examples": [],
+  "modules": [
+    "amari_flynn_macros"
+  ],
+  "readme": "amari-flynn-macros/README.md"
+}

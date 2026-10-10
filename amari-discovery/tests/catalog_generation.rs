@@ -31,8 +31,26 @@ fn workspace_root() -> &'static Path {
         .expect("amari-discovery is inside the workspace")
 }
 
-fn checked_in_path() -> std::path::PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("catalog/generated.json")
+fn catalog_dir() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("catalog")
+}
+
+/// Writes a full split layout to `dir` with one crate body corrupted.
+fn write_split_with_corruption(dir: &Path, corrupt_crate: Option<&str>) {
+    use amari_discovery::split_catalog;
+    let catalog = generate_workspace_catalog(workspace_root()).unwrap();
+    let (manifest, bodies) = split_catalog(&catalog).unwrap();
+    let manifest_json = serde_json::to_string_pretty(&manifest).unwrap();
+    std::fs::create_dir_all(dir.join("crates")).unwrap();
+    for (name, body) in &bodies {
+        let body = if Some(name.as_str()) == corrupt_crate {
+            body.replace(&catalog.version, "0.0.0-corrupted")
+        } else {
+            body.clone()
+        };
+        std::fs::write(dir.join("crates").join(format!("{name}.json")), body).unwrap();
+    }
+    std::fs::write(dir.join("manifest.json"), manifest_json).unwrap();
 }
 
 // ============================================================================
@@ -493,28 +511,21 @@ fn no_discovery_api_leaked_in_catalog() {
 #[test]
 fn generated_equals_checked_in() {
     // The canonical checked-in file must exactly match generation.
-    verify_checked_in(workspace_root(), &checked_in_path()).unwrap();
+    verify_checked_in(workspace_root(), &catalog_dir()).unwrap();
 }
 
 #[test]
 fn modified_copy_produces_drift_error() {
-    let catalog = generate_workspace_catalog(workspace_root()).unwrap();
-    let json = canonical_json(&catalog).unwrap();
-
     let temp_dir = tempfile::TempDir::new().unwrap();
-    let temp_path = temp_dir.path().join("modified.json");
+    let name = generate_workspace_catalog(workspace_root())
+        .unwrap()
+        .crates
+        .first()
+        .map(|c| c.name.clone())
+        .unwrap();
+    write_split_with_corruption(temp_dir.path(), Some(&name));
 
-    // Write a deliberately corrupted version without coupling the test to a release.
-    let version_field = format!("\"version\": \"{}\"", catalog.version);
-    let modified = String::from_utf8_lossy(&json).replacen(
-        &version_field,
-        "\"version\": \"0.0.0-corrupted\"",
-        1,
-    );
-    assert_ne!(modified.as_bytes(), json, "test mutation must change bytes");
-    fs::write(&temp_path, modified.as_bytes()).unwrap();
-
-    let result = verify_checked_in(workspace_root(), &temp_path);
+    let result = verify_checked_in(workspace_root(), temp_dir.path());
     assert!(result.is_err(), "drift must be detected");
     let err = result.unwrap_err();
     assert_eq!(err.kind(), "catalog_corruption");
@@ -588,32 +599,25 @@ fn content_hash_is_sensitive_to_catalog_content() {
 }
 
 #[test]
-fn verify_checked_in_drift_message_includes_first_differing_line() {
-    // RED: Drift messages must include the first differing line number.
-    let catalog = generate_workspace_catalog(workspace_root()).unwrap();
-    let json = canonical_json(&catalog).unwrap();
-
+fn verify_checked_in_drift_message_names_drifted_files() {
+    // Drift messages must name the drifted file(s) so authors can locate
+    // the difference in the split layout.
     let temp_dir = tempfile::TempDir::new().unwrap();
-    let temp_path = temp_dir.path().join("corrupted.json");
+    let name = generate_workspace_catalog(workspace_root())
+        .unwrap()
+        .crates
+        .first()
+        .map(|c| c.name.clone())
+        .unwrap();
+    write_split_with_corruption(temp_dir.path(), Some(&name));
 
-    // Corrupt the version string which appears early in the JSON.
-    let version_field = format!("\"version\": \"{}\"", catalog.version);
-    let modified = String::from_utf8_lossy(&json).replacen(
-        &version_field,
-        "\"version\": \"0.0.0-corrupted\"",
-        1,
-    );
-    assert_ne!(modified.as_bytes(), json, "test mutation must change bytes");
-    fs::write(&temp_path, modified.as_bytes()).unwrap();
-
-    let result = verify_checked_in(workspace_root(), &temp_path);
+    let result = verify_checked_in(workspace_root(), temp_dir.path());
     assert!(result.is_err(), "drift must be detected");
     let err_msg = result.unwrap_err().to_string();
     assert!(err_msg.contains("drift"), "must mention drift");
-    // RED: The drift message should include the first differing line number.
     assert!(
-        err_msg.contains("line ") || err_msg.contains("differing"),
-        "drift message must help locate the difference: {err_msg}"
+        err_msg.contains(&name),
+        "drift message must name the drifted crate file: {err_msg}"
     );
 }
 

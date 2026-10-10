@@ -633,63 +633,72 @@ pub fn generate_workspace_catalog(root: &Path) -> DiscoveryResult<StructuralCata
 ///
 /// Returns [`DiscoveryError::CatalogCorruption`] when the generated catalog
 /// differs from the checked-in file or when the checked-in file cannot be read.
-pub fn verify_checked_in(root: &Path, checked_in: &Path) -> DiscoveryResult<()> {
+pub fn verify_checked_in(root: &Path, catalog_dir: &Path) -> DiscoveryResult<()> {
+    use std::collections::BTreeMap;
+
     let generated = generate_workspace_catalog(root)?;
-    let canonical_bytes = canonical_json_bytes(&generated)?;
-    let expected_bytes = fs::read(checked_in).map_err(|error| {
-        DiscoveryError::CatalogCorruption(format!(
-            "cannot read checked-in catalog {}: {error}",
-            checked_in.display()
-        ))
-    })?;
+    let (manifest, bodies) = crate::catalog::split::split_catalog(&generated)?;
 
-    if canonical_bytes == expected_bytes {
-        Ok(())
-    } else {
-        let gen_len = canonical_bytes.len();
-        let exp_len = expected_bytes.len();
-        let gen_str = String::from_utf8_lossy(&canonical_bytes);
-        let exp_str = String::from_utf8_lossy(&expected_bytes);
+    let mut expected: BTreeMap<std::path::PathBuf, Vec<u8>> = BTreeMap::new();
+    let manifest_bytes = {
+        let mut bytes = serde_json::to_vec_pretty(&manifest)?;
+        bytes.push(b'\n');
+        bytes
+    };
+    expected.insert(catalog_dir.join("manifest.json"), manifest_bytes);
+    for (name, body) in &bodies {
+        expected.insert(
+            catalog_dir.join("crates").join(format!("{name}.json")),
+            body.clone().into_bytes(),
+        );
+    }
 
-        // Find first differing line number and show a safe snippet.
-        let gen_lines: Vec<&str> = gen_str.lines().collect();
-        let exp_lines: Vec<&str> = exp_str.lines().collect();
-        let max_lines = gen_lines.len().max(exp_lines.len());
+    let mut drift: Vec<String> = Vec::new();
+    for (path, want) in &expected {
+        let have = fs::read(path).map_err(|error| {
+            DiscoveryError::CatalogCorruption(format!(
+                "cannot read checked-in catalog file {}: {error}",
+                path.display()
+            ))
+        })?;
+        if &have != want {
+            drift.push(format!("{}", path.display()));
+        }
+    }
 
-        let mut first_diff_line = 0usize;
-        let mut first_diff_gen = "";
-        let mut first_diff_exp = "";
-        let mut total_differing = 0usize;
-
-        for i in 0..max_lines {
-            let g = gen_lines.get(i).copied().unwrap_or("<EOF>");
-            let e = exp_lines.get(i).copied().unwrap_or("<EOF>");
-            if g != e {
-                total_differing += 1;
-                if first_diff_line == 0 {
-                    first_diff_line = i + 1; // 1-indexed
-                    first_diff_gen = g;
-                    first_diff_exp = e;
+    // Orphaned per-crate files and the legacy monolith also count as drift.
+    let crates_dir = catalog_dir.join("crates");
+    let listed: std::collections::HashSet<&str> =
+        manifest.crates.iter().map(|e| e.name.as_str()).collect();
+    if let Ok(entries) = fs::read_dir(&crates_dir) {
+        for entry in entries.filter_map(|e| e.ok()) {
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if name.ends_with(".json") {
+                let stem = name.trim_end_matches(".json");
+                if !listed.contains(stem) {
+                    drift.push(format!("unexpected {}", entry.path().display()));
                 }
             }
         }
+    }
+    let monolith = catalog_dir.join("generated.json");
+    if monolith.exists() {
+        drift.push(format!(
+            "legacy monolith still present: {}",
+            monolith.display()
+        ));
+    }
 
+    if drift.is_empty() {
+        Ok(())
+    } else {
         Err(DiscoveryError::CatalogCorruption(format!(
-            "catalog drift detected: generated {gen_len} bytes, checked-in {exp_len} bytes, \
-             {total_differing} differing lines. First difference at line {first_diff_line}: \
-             generated={gen_snippet}, expected={exp_snippet}. \
+            "catalog drift detected in {} file(s): {}. \
              Run the catalog generation example to regenerate.",
-            gen_snippet = first_diff_gen.chars().take(120).collect::<String>(),
-            exp_snippet = first_diff_exp.chars().take(120).collect::<String>(),
+            drift.len(),
+            drift.join(", ")
         )))
     }
-}
-
-/// Internal: serializes a catalog to canonical JSON bytes (pretty with trailing newline).
-fn canonical_json_bytes(catalog: &StructuralCatalog) -> DiscoveryResult<Vec<u8>> {
-    let mut json_bytes = serde_json::to_vec_pretty(catalog)?;
-    json_bytes.push(b'\n');
-    Ok(json_bytes)
 }
 
 // ============================================================================
