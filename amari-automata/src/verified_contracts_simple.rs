@@ -83,7 +83,7 @@ impl<const P: usize, const Q: usize, const R: usize> VerifiedContractGeometricCA
             for y in 0..self.inner.height() {
                 if let Ok(cell) = self.inner.get_cell_2d(x, y) {
                     // Verify basic multivector properties
-                    if !cell.magnitude().is_finite() {
+                    if !cell.coefficient_norm().is_finite() {
                         return false;
                     }
                 }
@@ -122,7 +122,7 @@ impl<const P: usize, const Q: usize, const R: usize> VerifiedContractGeometricCA
             return Err(AutomataError::InvalidCoordinates(x, y));
         }
 
-        if !multivector.magnitude().is_finite() {
+        if !multivector.coefficient_norm().is_finite() {
             return Err(AutomataError::AssemblyFailed("Constraint violation".into()));
         }
 
@@ -216,13 +216,13 @@ impl<const P: usize, const Q: usize, const R: usize> VerifiedContractCayleyTable
         let test_mv: Multivector<P, Q, R> = Multivector::basis_vector(0);
 
         // Verify magnitude is finite
-        if !test_mv.magnitude().is_finite() {
+        if !test_mv.coefficient_norm().is_finite() {
             return false;
         }
 
         // Verify geometric product is defined
         let product = test_mv.geometric_product(&test_mv);
-        if !product.magnitude().is_finite() {
+        if !product.coefficient_norm().is_finite() {
             return false;
         }
 

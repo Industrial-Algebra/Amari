@@ -88,10 +88,10 @@ mod multivector_verification_tests {
     #[test]
     fn test_multivector_properties() {
         let mv = Multivector::<3, 0, 0>::basis_vector(0);
-        assert!(mv.magnitude() >= 0.0);
+        assert!(mv.coefficient_norm() >= 0.0);
 
         let zero = Multivector::<3, 0, 0>::zero();
-        assert_eq!(zero.magnitude(), 0.0);
+        assert_eq!(zero.coefficient_norm(), 0.0);
 
         let scalar = Multivector::<3, 0, 0>::scalar(5.0);
         assert_eq!(scalar.scalar_part(), 5.0);
@@ -130,7 +130,7 @@ mod verification_framework_tests {
         // Evolution should maintain geometric algebra properties
         ca.step().unwrap();
         let evolved = ca.get_cell_2d(1, 1).unwrap();
-        assert!(evolved.magnitude().is_finite());
+        assert!(evolved.coefficient_norm().is_finite());
     }
 }
 
@@ -201,7 +201,7 @@ mod ca_rule_tests {
         ];
         let result = rule.apply(&center, &neighbors);
         // 2 neighbors = survives in Game of Life
-        assert!(result.magnitude() > 0.5);
+        assert!(result.coefficient_norm() > 0.5);
     }
 }
 
@@ -470,7 +470,7 @@ mod cayley_navigation_tests {
     fn test_group_element_identity() {
         let elem = GroupElement::identity();
         let mv = elem.to_multivector();
-        assert!(mv.magnitude() >= 0.0);
+        assert!(mv.coefficient_norm() >= 0.0);
     }
 
     #[test]

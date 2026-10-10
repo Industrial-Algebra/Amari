@@ -179,7 +179,7 @@ impl<T: Float> TropicalDualOptimizer<T> {
         let mut result = point.clone();
 
         // Project Clifford component onto unit sphere (normalization)
-        let clifford_norm = result.clifford().norm();
+        let clifford_norm = result.clifford().coefficient_norm();
         if clifford_norm > 1e-10 {
             // Need to create new result with normalized clifford
             let normalized_clifford = result.clifford().clone() * (1.0 / clifford_norm);
@@ -605,7 +605,7 @@ mod tests {
 
         // All three representations should be consistent
         assert!(sync_tdc.dual().norm().real > 0.0);
-        assert!(sync_tdc.clifford().norm() > 0.0);
+        assert!(sync_tdc.clifford().coefficient_norm() > 0.0);
 
         // Check that tropical representation has some non-zero elements
         let mut has_nonzero = false;

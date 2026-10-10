@@ -1,0 +1,421 @@
+    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-network)
+    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-relativistic)
+    Checking amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dynamics)
+    Checking wgpu v0.19.4
+    Checking amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-functional)
+    Checking wasm-bindgen-futures v0.4.79
+    Checking serde-wasm-bindgen v0.6.5
+    Checking web-sys v0.3.106
+warning: unused imports: `GuidanceMode`, `ReplayCertificate`, `ReplayQuery`, and `ResourceObservation`
+ --> amari-rewrite/tests/inverse_remediation.rs:6:5
+  |
+6 |     GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayQuery, ResourceObservation,
+  |     ^^^^^^^^^^^^                       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `PreimageCertificate`
+  --> amari-rewrite/tests/saturation_preimage.rs:13:48
+   |
+13 |     saturation_preimage, CertificateAuthority, PreimageCertificate, PreimageConstruction,
+   |                                                ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Sha256Digest`
+  --> amari-rewrite/tests/relation_grounding.rs:11:85
+   |
+11 |     ConstraintSet, GroundingDomain, GroundingOutcome, RankedSymbol, RelationLimits, Sha256Digest,
+   |                                                                                     ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Substitution`
+  --> amari-rewrite/tests/relation_grounding.rs:14:32
+   |
+14 | use amari_rewrite::trs::{Rule, Substitution, Term, TermSystem};
+   |                                ^^^^^^^^^^^^
+
+warning: unused import: `RewriteResidual`
+  --> amari-rewrite/tests/residual_roundtrip.rs:10:49
+   |
+10 | use amari_rewrite::reversible::{ReversibleStep, RewriteResidual};
+   |                                                 ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "inverse_remediation") generated 1 warning (run `cargo fix --test "inverse_remediation" -p amari-rewrite` to apply 1 suggestion)
+warning: `amari-rewrite` (test "saturation_preimage") generated 1 warning (run `cargo fix --test "saturation_preimage" -p amari-rewrite` to apply 1 suggestion)
+warning: `amari-rewrite` (test "relation_grounding") generated 2 warnings (run `cargo fix --test "relation_grounding" -p amari-rewrite` to apply 2 suggestions)
+warning: `amari-rewrite` (test "residual_roundtrip") generated 1 warning (run `cargo fix --test "residual_roundtrip" -p amari-rewrite` to apply 1 suggestion)
+    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-info-geom)
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Checking wasm-bindgen-test v0.3.79
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-network/src/lib.rs:294:17
+    |
+294 |         Ok(diff.norm())
+    |                 ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-network/src/lib.rs:661:41
+    |
+661 |                     let distance = diff.norm();
+    |                                         ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-network/src/lib.rs:690:41
+    |
+690 |                     let distance = diff.norm();
+    |                                         ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-network/src/lib.rs:884:26
+    |
+884 |         let norm1 = pos1.norm();
+    |                          ^^^^ method not found in `&Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-network/src/lib.rs:885:26
+    |
+885 |         let norm2 = pos2.norm();
+    |                          ^^^^ method not found in `&Multivector<P, Q, R>`
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `norm` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/ergodic/birkhoff.rs:502:46
+    |
+502 |         |state: &Multivector<P, Q, R>| state.norm()
+    |                                              ^^^^ method not found in `&Multivector<P, Q, R>`
+
+error: could not compile `amari-network` (lib) due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:313:32
+    |
+313 |     let initial_norm = initial.norm();
+    |                                ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:318:17
+    |
+318 |         if diff.norm() < tolerance && times[i] > config.dt * 10.0 {
+    |                 ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:322:36
+    |
+322 |                 let d0 = diff_prev.norm();
+    |                                    ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:323:31
+    |
+323 |                 let d1 = diff.norm();
+    |                               ^^^^ method not found in `Multivector<P, Q, R>`
+
+error: could not compile `amari-network` (lib test) due to 5 previous errors
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:174:14
+    |
+174 |         diff.norm()
+    |              ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:254:30
+    |
+254 |             avg_dist += diff.norm();
+    |                              ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:300:22
+    |
+300 |                 diff.norm()
+    |                      ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:421:22
+    |
+421 |                 diff.norm()
+    |                      ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:491:18
+    |
+491 |             diff.norm() < tolerance
+    |                  ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+  --> amari-dynamics/src/attractor/mod.rs:98:17
+   |
+98 |         if diff.norm() > config.fixed_point_tolerance {
+   |                 ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for reference `&amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/ergodic/birkhoff.rs:502:46
+    |
+502 |         |state: &Multivector<P, Q, R>| state.norm()
+    |                                              ^^^^ method not found in `&amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:313:32
+    |
+313 |     let initial_norm = initial.norm();
+    |                                ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:318:17
+    |
+318 |         if diff.norm() < tolerance && times[i] > config.dt * 10.0 {
+    |                 ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/phase/portrait.rs:292:44
+    |
+292 |                     let magnitude = vector.norm();
+    |                                            ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:322:36
+    |
+322 |                 let d0 = diff_prev.norm();
+    |                                    ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/phase/trajectory.rs:165:26
+    |
+165 |         let dist = state.norm();
+    |                          ^^^^ method not found in `&Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/limit_cycle.rs:323:31
+    |
+323 |                 let d1 = diff.norm();
+    |                               ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/phase/trajectory.rs:217:32
+    |
+217 |     let initial_norm = initial.norm();
+    |                                ^^^^ method not found in `&Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/dopri.rs:180:20
+    |
+180 |         if !result.norm().is_finite() {
+    |                    ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/dopri.rs:250:31
+    |
+250 |         let error = error_vec.norm();
+    |                               ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/dopri.rs:253:20
+    |
+253 |         if !result.norm().is_finite() || !error.is_finite() {
+    |                    ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:174:14
+    |
+174 |         diff.norm()
+    |              ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0689]: can't call method `powf` on ambiguous numeric type `{float}`
+   --> amari-dynamics/src/solver/dopri.rs:263:41
+    |
+263 |             dt * safety * (1.0 / error).powf(0.2)
+    |                                         ^^^^
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:254:30
+    |
+254 |             avg_dist += diff.norm();
+    |                              ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rkf45.rs:161:20
+    |
+161 |         if !result.norm().is_finite() {
+    |                    ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:300:22
+    |
+300 |                 diff.norm()
+    |                      ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rkf45.rs:230:31
+    |
+230 |         let error = error_vec.norm();
+    |                               ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rkf45.rs:233:20
+    |
+233 |         if !result.norm().is_finite() || !error.is_finite() {
+    |                    ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0689]: can't call method `powf` on ambiguous numeric type `{float}`
+   --> amari-dynamics/src/solver/rkf45.rs:245:41
+    |
+245 |             dt * safety * (1.0 / error).powf(0.2) // 1/(4+1) = 0.2
+    |                                         ^^^^
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:421:22
+    |
+421 |                 diff.norm()
+    |                      ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/traits.rs:148:22
+    |
+148 |                 diff.norm()
+    |                      ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/traits.rs:476:59
+    |
+476 |             let scale = config.atol + config.rtol * state.norm();
+    |                                                           ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/attractor/traits.rs:491:18
+    |
+491 |             diff.norm() < tolerance
+    |                  ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/stability/fixed_point.rs:270:26
+    |
+270 |                     diff.norm() > merge_tolerance
+    |                          ^^^^ method not found in `Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+  --> amari-dynamics/src/attractor/mod.rs:98:17
+   |
+98 |         if diff.norm() > config.fixed_point_tolerance {
+   |                 ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/phase/portrait.rs:292:44
+    |
+292 |                     let magnitude = vector.norm();
+    |                                            ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for reference `&amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/phase/trajectory.rs:165:26
+    |
+165 |         let dist = state.norm();
+    |                          ^^^^ method not found in `&amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for reference `&amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/phase/trajectory.rs:217:32
+    |
+217 |     let initial_norm = initial.norm();
+    |                                ^^^^ method not found in `&amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/dopri.rs:180:20
+    |
+180 |         if !result.norm().is_finite() {
+    |                    ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/dopri.rs:250:31
+    |
+250 |         let error = error_vec.norm();
+    |                               ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/dopri.rs:253:20
+    |
+253 |         if !result.norm().is_finite() || !error.is_finite() {
+    |                    ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+Some errors have detailed explanations: E0599, E0689.
+For more information about an error, try `rustc --explain E0599`.
+error: could not compile `amari-dynamics` (lib) due to 25 previous errors
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rk4.rs:466:82
+    |
+466 |             let euler_error = (euler_traj.final_state().unwrap() - &exact_final).norm();
+    |                                                                                  ^^^^ method not found in `amari_core::Multivector<2, 0, 0>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rk4.rs:467:78
+    |
+467 |             let rk4_error = (rk4_traj.final_state().unwrap() - &exact_final).norm();
+    |                                                                              ^^^^ method not found in `amari_core::Multivector<2, 0, 0>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rkf45.rs:161:20
+    |
+161 |         if !result.norm().is_finite() {
+    |                    ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rkf45.rs:230:31
+    |
+230 |         let error = error_vec.norm();
+    |                               ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/rkf45.rs:233:20
+    |
+233 |         if !result.norm().is_finite() || !error.is_finite() {
+    |                    ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/traits.rs:148:22
+    |
+148 |                 diff.norm()
+    |                      ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/solver/traits.rs:476:59
+    |
+476 |             let scale = config.atol + config.rtol * state.norm();
+    |                                                           ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/stability/fixed_point.rs:270:26
+    |
+270 |                     diff.norm() > merge_tolerance
+    |                          ^^^^ method not found in `amari_core::Multivector<P, Q, R>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/systems/duffing.rs:376:20
+    |
+376 |         assert!(vf.norm() < 1e-10);
+    |                    ^^^^ method not found in `amari_core::Multivector<2, 0, 0>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/systems/lorenz.rs:260:20
+    |
+260 |         assert!(vf.norm() < 1e-10);
+    |                    ^^^^ method not found in `amari_core::Multivector<3, 0, 0>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/systems/pendulum.rs:523:20
+    |
+523 |         assert!(vf.norm() < 1e-10);
+    |                    ^^^^ method not found in `amari_core::Multivector<2, 0, 0>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/systems/pendulum.rs:623:20
+    |
+623 |         assert!(vf.norm() < 1e-10);
+    |                    ^^^^ method not found in `amari_core::Multivector<4, 0, 0>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-dynamics/src/systems/vanderpol.rs:250:20
+    |
+250 |         assert!(vf.norm() < 1e-10);
+    |                    ^^^^ method not found in `amari_core::Multivector<2, 0, 0>`
+
+error: could not compile `amari-dynamics` (lib test) due to 32 previous errors

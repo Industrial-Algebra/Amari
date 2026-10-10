@@ -1,0 +1,161 @@
+    Checking tinytemplate v1.2.1
+    Checking toml_datetime v0.6.11
+    Checking serde_spanned v0.6.9
+    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-tropical)
+    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dual)
+    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-info-geom)
+    Checking schemars v1.2.2
+    Checking ciborium v0.2.2
+    Checking nalgebra v0.35.0
+    Checking wgpu-core v0.19.4
+    Checking wasm-bindgen v0.2.129
+    Checking trybuild v1.0.122
+    Checking amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-rewrite)
+    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-holographic)
+error: the loop variable `i` is used to index `self.matrix`
+   --> amari-info-geom/src/lib.rs:179:18
+    |
+179 |         for i in 0..self.matrix.len() {
+    |                  ^^^^^^^^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-info-geom/src/lib.rs:181:32
+    |
+181 |                 eigenvals.push(self.matrix[i][i]);
+    |                                ^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and `.enumerate()`
+    |
+179 -         for i in 0..self.matrix.len() {
+179 +         for (i, <item>) in self.matrix.iter().enumerate().take(self.matrix.len()) {
+    |
+
+error: could not compile `amari-info-geom` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: useless use of `vec!`
+   --> amari-rewrite/tests/closure_oracle.rs:282:17
+    |
+282 |     let seeds = vec![g(a()), g(h(a())), g(h(h(a())))];
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can use an array directly: `[g(a()), g(h(a())), g(h(h(a())))]`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#useless_vec
+    = note: `-D clippy::useless-vec` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_vec)]`
+
+error: could not compile `amari-rewrite` (test "closure_oracle") due to 1 previous error
+error: the loop variable `j` is used to index `other.coefficients`
+   --> amari-dual/src/multivector.rs:180:22
+    |
+180 |             for j in 0..Self::BASIS_COUNT {
+    |                      ^^^^^^^^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-dual/src/multivector.rs:184:54
+    |
+184 |                 let product = self.coefficients[i] * other.coefficients[j];
+    |                                                      ^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and `.enumerate()`
+    |
+180 -             for j in 0..Self::BASIS_COUNT {
+180 +             for (j, <item>) in other.coefficients.iter().enumerate().take(Self::BASIS_COUNT) {
+    |
+
+error: the loop variable `i` is only used to index `self.coefficients`
+   --> amari-dual/src/multivector.rs:440:18
+    |
+440 |         for i in 0..Self::BASIS_COUNT {
+    |                  ^^^^^^^^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-dual/src/multivector.rs:441:36
+    |
+441 |             self.coefficients[i] = self.coefficients[i] * scalar;
+    |                                    ^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator
+    |
+440 -         for i in 0..Self::BASIS_COUNT {
+440 +         for <item> in self.coefficients.iter_mut().take(Self::BASIS_COUNT) {
+    |
+
+error: could not compile `amari-dual` (lib) due to 2 previous errors
+error: the loop variable `i` is used to index `matrix.data`
+   --> amari-tropical/src/types.rs:289:18
+    |
+289 |         for i in 0..size {
+    |                  ^^^^^^^
+    |
+note: for this index operation
+   --> amari-tropical/src/types.rs:290:13
+    |
+290 |             matrix.data[i][i] = TropicalNumber::one();
+    |             ^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and `.enumerate()`
+    |
+289 -         for i in 0..size {
+289 +         for (i, <item>) in matrix.data.iter_mut().enumerate().take(size) {
+    |
+
+error: the loop variable `state` is used to index `trellis.data`
+  --> amari-tropical/src/viterbi.rs:77:22
+   |
+77 |         for state in 0..n_states {
+   |                      ^^^^^^^^^^^
+   |
+note: for this index operation
+  --> amari-tropical/src/viterbi.rs:78:24
+   |
+78 |             let prob = trellis.data[state][n_obs - 1];
+   |                        ^^^^^^^^^^^^^^^^^^^
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator and `.enumerate()`
+   |
+77 -         for state in 0..n_states {
+77 +         for (state, <item>) in trellis.data.iter().enumerate().take(n_states) {
+   |
+
+error: the loop variable `i` is used to index `self.coefficients`
+   --> amari-tropical/src/verified.rs:203:18
+    |
+203 |         for i in 0..Self::BASIS_SIZE {
+    |                  ^^^^^^^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-tropical/src/verified.rs:205:37
+    |
+205 |                 let coeff_product = self.coefficients[i].tropical_mul(other.coefficients[j]);
+    |                                     ^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator and `.enumerate()`
+    |
+203 -         for i in 0..Self::BASIS_SIZE {
+203 +         for (i, <item>) in self.coefficients.iter().enumerate().take(Self::BASIS_SIZE) {
+    |
+
+error: the loop variable `j` is used to index `other.coefficients`
+   --> amari-tropical/src/verified.rs:204:22
+    |
+204 |             for j in 0..Self::BASIS_SIZE {
+    |                      ^^^^^^^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-tropical/src/verified.rs:205:71
+    |
+205 |                 let coeff_product = self.coefficients[i].tropical_mul(other.coefficients[j]);
+    |                                                                       ^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator and `.enumerate()`
+    |
+204 -             for j in 0..Self::BASIS_SIZE {
+204 +             for (j, <item>) in other.coefficients.iter().enumerate().take(Self::BASIS_SIZE) {
+    |
+
+error: could not compile `amari-tropical` (lib) due to 4 previous errors

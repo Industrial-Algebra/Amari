@@ -226,7 +226,7 @@ mod signature_tests {
         let e0e1 = e0.geometric_product(&e1);
         // e1*e0 + e0*e1 = 2*<e1,e0> = 0 (orthogonal)
         let sum = e1e0 + e0e1;
-        assert_relative_eq!(sum.norm(), 0.0, epsilon = 1e-14);
+        assert_relative_eq!(sum.norm_squared().abs().sqrt(), 0.0, epsilon = 1e-14);
     }
 }
 
@@ -256,7 +256,7 @@ mod contraction_tests {
         // e1 ⌋ e2 = 0 (orthogonal vectors)
         let e2 = Multivector::<3, 0, 0>::basis_vector(1);
         let result = e1.left_contraction(&e2);
-        assert_relative_eq!(result.norm(), 0.0, epsilon = 1e-14);
+        assert_relative_eq!(result.coefficient_norm(), 0.0, epsilon = 1e-14);
     }
 
     #[test]
@@ -269,7 +269,7 @@ mod contraction_tests {
         let result = e1.inner_product(&e23);
         // e1 · e23: grade |1-2| = 1, so result is grade 1
         // e1 · e23 = 0 (no shared basis vectors in Hestenes convention)
-        assert_relative_eq!(result.norm(), 0.0, epsilon = 1e-14);
+        assert_relative_eq!(result.coefficient_norm(), 0.0, epsilon = 1e-14);
 
         // e2 · e23 should give e3
         let e2 = Multivector::<3, 0, 0>::basis_vector(1);
@@ -283,11 +283,7 @@ mod contraction_tests {
 mod numeric_tests {
     use super::*;
 
-    #[test]
-    fn test_normalize_zero_vector() {
-        let zero = Multivector::<3, 0, 0>::zero();
-        assert!(zero.normalize().is_none());
-    }
+    // Multivector::normalize removed by CORE-W02 (D01.4); Vector domain coverage lives in numerical_contracts.rs
 
     #[test]
     fn test_inverse_zero() {
@@ -305,21 +301,6 @@ mod numeric_tests {
 
         let result = a.geometric_product(&b);
         assert_relative_eq!(result.scalar_part(), 1e20, epsilon = 1e6);
-    }
-
-    #[test]
-    fn test_near_zero_normalize() {
-        // Below the norm threshold, normalize returns None (correct behavior)
-        let mut v_tiny = Multivector::<3, 0, 0>::zero();
-        v_tiny.set(1, 1e-15);
-        assert!(v_tiny.normalize().is_none());
-
-        // Above the threshold, normalize should succeed and produce unit norm
-        let mut v_small = Multivector::<3, 0, 0>::zero();
-        v_small.set(1, 1e-6);
-        let normalized = v_small.normalize();
-        assert!(normalized.is_some());
-        assert_relative_eq!(normalized.unwrap().norm(), 1.0, epsilon = 1e-10);
     }
 
     #[test]

@@ -1,0 +1,9 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.25s
+     Running tests/macro_contracts.rs (target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/deps/macro_contracts-ab798576d4579e02)
+
+running 1 test
+test unit_macro_normalizes_multivector_operands ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

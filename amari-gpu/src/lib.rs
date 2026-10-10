@@ -1512,7 +1512,7 @@ mod tests {
         // Single product - always uses CPU, returns Multivector directly
         let result = adaptive.geometric_product(&e1, &e2).await;
         // e1 * e2 = e12 (bivector)
-        assert!(result.magnitude() > 0.0);
+        assert!(result.coefficient_norm() > 0.0);
     }
 
     #[tokio::test]

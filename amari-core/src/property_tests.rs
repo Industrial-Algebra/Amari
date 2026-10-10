@@ -264,8 +264,8 @@ proptest! {
         let rotated = rotor.geometric_product(&v).geometric_product(&rotor.reverse());
 
         // Norms should be equal
-        let original_norm = v.norm();
-        let rotated_norm = rotated.norm();
+        let original_norm = v.coefficient_norm();
+        let rotated_norm = rotated.coefficient_norm();
 
         prop_assert!((original_norm - rotated_norm).abs() < 1e-6);
     }

@@ -172,8 +172,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Compute geometric similarity (using the private method indirectly)
         let product = pos1.geometric_product(pos2);
         let scalar_part = product.scalar_part();
-        let norm1 = pos1.norm();
-        let norm2 = pos2.norm();
+        let norm1 = pos1.coefficient_norm();
+        let norm2 = pos2.coefficient_norm();
 
         let similarity = if norm1 > 0.0 && norm2 > 0.0 {
             (scalar_part / (norm1 * norm2)).abs()

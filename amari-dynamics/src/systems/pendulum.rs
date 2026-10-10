@@ -520,7 +520,7 @@ mod tests {
         let vf = p.vector_field(&origin).unwrap();
 
         // At equilibrium, vector field should be zero
-        assert!(vf.norm() < 1e-10);
+        assert!(vf.coefficient_norm() < 1e-10);
     }
 
     #[test]
@@ -620,7 +620,7 @@ mod tests {
         let vf = dp.vector_field(&origin).unwrap();
 
         // At equilibrium (both hanging down), vector field should be zero
-        assert!(vf.norm() < 1e-10);
+        assert!(vf.coefficient_norm() < 1e-10);
     }
 
     #[test]

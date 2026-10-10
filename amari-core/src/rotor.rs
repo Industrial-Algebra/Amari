@@ -22,7 +22,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         let rotor = half_angle_bivector.exp();
 
         Self {
-            multivector: rotor.normalize().unwrap_or(Multivector::scalar(1.0)),
+            multivector: rotor.normalize_versor().unwrap_or(Multivector::scalar(1.0)),
         }
     }
 
@@ -35,7 +35,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         let rotor = half_angle_bivector.exp();
 
         Self {
-            multivector: rotor.normalize().unwrap_or(Multivector::scalar(1.0)),
+            multivector: rotor.normalize_versor().unwrap_or(Multivector::scalar(1.0)),
         }
     }
 
@@ -56,7 +56,9 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     pub fn compose(&self, other: &Self) -> Self {
         let composed = self.multivector.geometric_product(&other.multivector);
         Self {
-            multivector: composed.normalize().unwrap_or(Multivector::scalar(1.0)),
+            multivector: composed
+                .normalize_versor()
+                .unwrap_or(Multivector::scalar(1.0)),
         }
     }
 
@@ -74,9 +76,9 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         }
     }
 
-    /// Get the magnitude of the rotor
+    /// Coefficient magnitude (versor metric policy deferred to W03).
     pub fn magnitude(&self) -> f64 {
-        self.multivector.norm()
+        self.multivector.coefficient_norm()
     }
 
     /// Get scalar part of the rotor
@@ -112,13 +114,13 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
 
     /// Create rotor from vectors (multivector version)
     pub fn from_vectors_mv(a: &Multivector<P, Q, R>, b: &Multivector<P, Q, R>) -> Option<Self> {
-        let a_norm = a.normalize()?;
-        let b_norm = b.normalize()?;
+        let a_norm = a.normalize_versor()?;
+        let b_norm = b.normalize_versor()?;
 
         // R = (1 + b*a) / |1 + b*a|
         let ba = b_norm.geometric_product(&a_norm);
         let rotor_unnorm = Multivector::scalar(1.0) + ba;
-        let rotor = rotor_unnorm.normalize()?;
+        let rotor = rotor_unnorm.normalize_versor()?;
 
         Some(Self { multivector: rotor })
     }
@@ -127,7 +129,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     pub fn from_axis_angle(axis: &Vector<P, Q, R>, angle: f64) -> Self {
         // Convert axis to a bivector perpendicular to it
         // For 3D, the bivector is the dual of the axis vector
-        let normalized_axis = axis.mv.normalize().unwrap_or(axis.mv.clone());
+        let normalized_axis = axis.mv.normalize_versor().unwrap_or(axis.mv.clone());
 
         // Create bivector from the axis vector using the dual operation
         // For a 3D axis (a1, a2, a3), the corresponding bivector is (a3*e12 - a2*e13 + a1*e23)
@@ -172,7 +174,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
             for (i, &coeff) in result_coeffs.iter().enumerate() {
                 result_mv.set(i, coeff);
             }
-            let normalized = result_mv.normalize().unwrap_or(result_mv);
+            let normalized = result_mv.normalize_versor().unwrap_or(result_mv);
             return Self {
                 multivector: normalized,
             };
@@ -200,7 +202,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         }
 
         // Normalize to ensure it's a unit rotor
-        let normalized = result_mv.normalize().unwrap_or(result_mv);
+        let normalized = result_mv.normalize_versor().unwrap_or(result_mv);
 
         Self {
             multivector: normalized,
@@ -240,7 +242,8 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         let half_angle = w.acos(); // θ/2
 
         let bivector_part = self.multivector.grade_projection(2);
-        let biv_norm = bivector_part.norm();
+        // explicit metric magnitude of the axis bivector; branch policy W07
+        let biv_norm = bivector_part.norm_squared().abs().sqrt();
 
         if biv_norm < 1e-14 {
             // Near-identity rotor or π rotation with no bivector component
@@ -265,7 +268,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         let log_r = self.logarithm();
 
         // If log is zero (identity rotor), any power is still identity
-        if log_r.norm() < 1e-14 {
+        if log_r.coefficient_norm() < 1e-14 {
             return Self::identity();
         }
 
@@ -273,7 +276,9 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         let result = scaled.exp();
 
         Self {
-            multivector: result.normalize().unwrap_or(Multivector::scalar(1.0)),
+            multivector: result
+                .normalize_versor()
+                .unwrap_or(Multivector::scalar(1.0)),
         }
     }
 }
@@ -321,7 +326,7 @@ mod tests {
         let rotor90 = Rotor::from_bivector(&e12, core::f64::consts::PI / 2.0);
 
         let diff = composed.as_multivector() - rotor90.as_multivector();
-        assert!(diff.norm() < 1e-10);
+        assert!(diff.coefficient_norm() < 1e-10);
     }
 
     #[test]

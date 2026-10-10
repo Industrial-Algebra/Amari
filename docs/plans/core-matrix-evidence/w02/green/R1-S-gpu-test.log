@@ -1,0 +1,68 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/deps/amari_gpu-7e6b1a5fa73292c9)
+
+running 61 tests
+test adaptive::tests::test_adaptive_verifier_creation ... ignored, GPU hardware required, may fail in CI/CD environments
+test benchmarks::tests::test_benchmark_runner_creation ... ignored, GPU hardware required, may fail in CI/CD environments
+test adaptive::tests::cauchy_schwarz_bound_accepts_correct_products ... ok
+test adaptive::tests::test_cpu_features_detection ... ok
+test adaptive::tests::test_platform_capabilities ... ok
+test multi_gpu::tests::test_device_id_creation ... ok
+test multi_gpu::tests::test_load_balancer_creation ... ok
+test relativistic::tests::test_gpu_minkowski_products ... ignored
+test multi_gpu::tests::test_workload_creation ... ok
+test adaptive::tests::test_verification_with_config ... ok
+test benchmarks::tests::test_benchmark_config ... ok
+test adaptive::tests::test_verification_level_determination ... ok
+test relativistic::tests::test_gpu_spacetime_vector_conversion ... ok
+test tests::test_adaptive_compute_batch_small ... ignored, GPU hardware required, may fail in CI/CD environments
+test multi_gpu::tests::test_workload_coordinator ... ok
+test shaders::tests::test_shader_constants ... ok
+test network::tests::test_should_use_gpu ... ok
+test shaders::tests::test_holographic_shaders ... ok
+test tests::test_adaptive_compute_geometric_product ... ignored, GPU hardware required, may fail in CI/CD environments
+test shaders::tests::test_shader_library_creation ... ok
+test shaders::tests::test_shader_retrieval ... ok
+test tests::test_adaptive_compute_cpu_fallback_small_batch ... ok
+test tests::test_cayley_entry_struct ... ok
+test tests::test_cayley_entry_zero ... ok
+test tests::test_geometric_product_shader_not_empty ... ok
+test tests::test_gpu_device_info_cpu ... ok
+test tests::test_adaptive_compute_geometric_product_basis_vectors ... ok
+test tests::test_adaptive_compute_cpu_fallback_multiple_elements ... ok
+test tests::test_gpu_device_info_initialized_always_true ... ok
+test tests::test_adaptive_compute_geometric_product_cpu ... ok
+test tests::test_gpu_device_info_methods ... ok
+test tests::test_gpu_error_debug ... ok
+test tests::test_gpu_error_display ... ok
+test tests::test_gpu_error_from_string ... ok
+test tests::test_gpu_error_variants ... ok
+test tests::test_gpu_fisher_matrix_eigenvalues ... ok
+test tests::test_gpu_fisher_matrix_empty ... ok
+test network::tests::test_adaptive_network_creation ... ok
+test tests::test_gpu_fisher_matrix_single_element ... ok
+test tests::test_should_use_gpu ... ok
+test tests::test_should_use_gpu_large_batch ... ok
+test tests::test_gpu_info_geometry_creation ... ok
+test tests::test_should_use_gpu_near_threshold ... ok
+test tests::test_should_use_gpu_single_element ... ok
+test tests::test_should_use_gpu_threshold ... ok
+test tests::test_should_use_gpu_zero_batch ... ok
+test tests::test_tensor_compute_shader_not_empty ... ok
+test unified::tests::test_gpu_context_creation ... ignored, GPU hardware required, may fail in CI/CD environments
+test unified::tests::test_gpu_dispatcher ... ignored, GPU hardware required, may fail in CI/CD environments
+test timeline::tests::test_performance_monitor ... ok
+test timeline::tests::test_timeline_event_creation ... ok
+test unified::tests::test_gpu_operation_params ... ok
+test verification::relativistic_tests::test_causality_verification ... ok
+test verification::relativistic_tests::test_four_velocity_normalization_verification ... ok
+test verification::relativistic_tests::test_minkowski_signature_verification ... ok
+test verification::tests::test_performance_stats ... ok
+test verification::tests::test_statistical_verifier_sampling ... ok
+test verification::tests::test_boundary_verifier_creation ... ok
+test verification::tests::test_verification_config_default ... ok
+test verification::tests::test_verified_multivector_creation ... ok
+test timeline::tests::test_timeline_analyzer ... ok
+
+test result: ok. 54 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

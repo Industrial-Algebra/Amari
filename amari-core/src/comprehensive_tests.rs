@@ -346,21 +346,21 @@ mod utility_tests {
     #[test]
     fn test_norm() {
         let mv = Cl3::from_coefficients(vec![0.0, 3.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
-        assert_eq!(mv.norm(), 5.0); // sqrt(3² + 4²) = 5
+        assert_eq!(mv.coefficient_norm(), 5.0); // sqrt(3² + 4²) = 5
     }
 
     #[test]
     fn test_magnitude() {
         let mv = Cl3::from_coefficients(vec![0.0, 3.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
-        assert_eq!(mv.magnitude(), 5.0); // Should be same as norm
-        assert_eq!(mv.magnitude(), mv.norm()); // Verify alias works
+        assert_eq!(mv.norm_squared(), 25.0); // signed metric quadratic form: 3² + 4²
+        assert_eq!(mv.coefficient_norm(), mv.norm_squared().sqrt()); // coefficient magnitude agrees here
     }
 
     #[test]
     fn test_abs() {
         let mv = Cl3::from_coefficients(vec![0.0, 3.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
-        assert_eq!(mv.abs(), 5.0); // Should be same as magnitude/norm
-        assert_eq!(mv.abs(), mv.magnitude());
+        assert_eq!(mv.coefficient_norm(), 5.0); // coefficient magnitude
+        assert_eq!(mv.coefficient_norm(), mv.norm_squared().sqrt()); // agrees with metric form here
     }
 
     #[test]
@@ -383,10 +383,12 @@ mod utility_tests {
     fn test_normalize() {
         // Test with non-zero vector
         let mv = Cl3::from_coefficients(vec![0.0, 3.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
-        let normalized = mv.normalize().expect("Should normalize successfully");
+        let normalized = mv
+            .normalize_versor()
+            .expect("Should normalize successfully");
 
-        // Should have unit norm
-        assert!((normalized.norm() - 1.0).abs() < 1e-10);
+        // Should have unit coefficient magnitude
+        assert!((normalized.coefficient_norm() - 1.0).abs() < 1e-10);
 
         // Should preserve direction (components scaled by 1/5)
         assert!((normalized.get(1) - 0.6).abs() < 1e-10); // 3/5
@@ -397,7 +399,7 @@ mod utility_tests {
     fn test_normalize_zero() {
         // Test with zero multivector
         let zero = Cl3::zero();
-        let result = zero.normalize();
+        let result = zero.normalize_versor();
 
         // Should return None for zero multivector
         assert!(result.is_none());
@@ -405,12 +407,14 @@ mod utility_tests {
 
     #[test]
     fn test_normalize_small() {
-        // Test with very small multivector (below threshold)
+        // Tiny positive-square multivector normalizes exactly: the domain
+        // test is strict positivity, with no magnitude threshold.
         let small = Cl3::scalar(1e-15);
-        let result = small.normalize();
+        let result = small
+            .normalize_versor()
+            .expect("tiny positive-square multivector normalizes exactly");
 
-        // Should return None for multivector below threshold
-        assert!(result.is_none());
+        assert!((result.coefficient_norm() - 1.0).abs() < 1e-10);
     }
 
     #[test]
@@ -460,7 +464,7 @@ mod vector_tests {
     fn test_vector_zero() {
         let v = Vector::<3, 0, 0>::zero();
         assert!(v.mv.is_zero());
-        assert_eq!(v.magnitude(), 0.0);
+        assert_eq!(v.coefficient_norm(), 0.0);
     }
 
     #[test]
@@ -561,7 +565,7 @@ mod vector_tests {
     #[test]
     fn test_vector_magnitude() {
         let v = Vector::<3, 0, 0>::from_components(3.0, 4.0, 0.0);
-        assert_eq!(v.magnitude(), 5.0); // sqrt(3² + 4²) = 5
+        assert_eq!(v.coefficient_norm(), 5.0); // sqrt(3² + 4²) = 5
     }
 
     #[test]
@@ -653,7 +657,7 @@ mod vector_tests {
         let v = Vector::<3, 0, 0>::from_components(3.0, 4.0, 0.0);
         let normalized = v.normalize().expect("Should normalize successfully");
 
-        assert!((normalized.norm() - 1.0).abs() < 1e-10);
+        assert!((normalized.coefficient_norm() - 1.0).abs() < 1e-10);
         assert!((normalized.mv.vector_component(0) - 0.6).abs() < 1e-10); // 3/5
         assert!((normalized.mv.vector_component(1) - 0.8).abs() < 1e-10); // 4/5
     }
@@ -685,7 +689,7 @@ mod vector_tests {
     #[test]
     fn test_vector_norm() {
         let v = Vector::<3, 0, 0>::from_components(3.0, 4.0, 0.0);
-        assert_eq!(v.norm(), 5.0);
+        assert_eq!(v.coefficient_norm(), 5.0);
     }
 
     #[test]
@@ -764,7 +768,7 @@ mod bivector_tests {
     #[test]
     fn test_bivector_magnitude() {
         let bv = Bivector::<3, 0, 0>::from_components(3.0, 4.0, 0.0);
-        assert_eq!(bv.magnitude(), 5.0); // sqrt(3² + 4²) = 5
+        assert_eq!(bv.coefficient_norm(), 5.0); // sqrt(3² + 4²) = 5
     }
 
     #[test]
@@ -936,7 +940,7 @@ mod advanced_operations_tests {
 
         // For a pure bivector B, exp(B) should be a rotor
         // Verify it has unit norm
-        assert!((rotor.norm() - 1.0).abs() < 1e-10);
+        assert!((rotor.coefficient_norm() - 1.0).abs() < 1e-10);
 
         // Verify it can rotate vectors (rotor conjugation)
         let rotated_e1 = rotor
@@ -947,7 +951,7 @@ mod advanced_operations_tests {
         // The exact values depend on implementation details, so just verify basic properties
 
         // Verify the rotated vector has unit length
-        assert!((rotated_e1.norm() - 1.0).abs() < 1e-10);
+        assert!((rotated_e1.coefficient_norm() - 1.0).abs() < 1e-10);
 
         // Verify it's primarily in the e1-e2 plane (other components should be zero)
         for i in [0, 3, 4, 5, 6, 7] {

@@ -145,7 +145,7 @@ impl WasmTropicalDualClifford {
             .sum::<f64>()
             .sqrt();
 
-        let clifford_norm = self.inner.clifford().magnitude();
+        let clifford_norm = self.inner.clifford().coefficient_norm();
 
         // Weighted combination
         (tropical_norm.max(0.0) + dual_norm + clifford_norm) / 3.0
@@ -200,12 +200,12 @@ impl WasmTropicalDualClifford {
     pub fn extract_geometric_features(&self) -> Vec<f64> {
         let mv = self.inner.clifford();
         vec![
-            mv.get(0),                // scalar
-            mv.get(1),                // e1
-            mv.get(2),                // e2
-            mv.get(3),                // e3
-            mv.magnitude(),           // magnitude
-            mv.reverse().magnitude(), // reverse magnitude
+            mv.get(0),                       // scalar
+            mv.get(1),                       // e1
+            mv.get(2),                       // e2
+            mv.get(3),                       // e3
+            mv.coefficient_norm(),           // magnitude
+            mv.reverse().coefficient_norm(), // reverse magnitude
         ]
     }
 

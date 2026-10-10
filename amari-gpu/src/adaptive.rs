@@ -498,7 +498,7 @@ impl AdaptiveVerifier {
         let verified_result = VerifiedMultivector::new(result);
 
         // Basic runtime validation
-        if !verified_result.inner().magnitude().is_finite() {
+        if !verified_result.inner().coefficient_norm().is_finite() {
             return Err(AdaptiveVerificationError::GpuVerification(
                 GpuVerificationError::InvariantViolation {
                     invariant: "Result magnitude must be finite".to_string(),
@@ -532,12 +532,19 @@ impl AdaptiveVerifier {
         b: &VerifiedMultivector<P, Q, R>,
         result: &VerifiedMultivector<P, Q, R>,
     ) -> Result<(), AdaptiveVerificationError> {
-        // Verify magnitude inequality: |a * b| <= |a| * |b|
-        let result_mag = result.inner().magnitude();
-        let a_mag = a.inner().magnitude();
-        let b_mag = b.inner().magnitude();
+        // Valid signature-independent bound (Cauchy–Schwarz): each output
+        // coefficient of a*b is a sum of at most N = BASIS_COUNT signed
+        // products a_i*b_j, so ||a*b||_2 <= (Σ|a_i|)(Σ|b_j|) <= N·||a||_2·||b||_2.
+        // The coefficient l2 norm is NOT submultiplicative with constant one
+        // (e.g. (1+e1)^2 has norm sqrt(8) > 2 in Euclidean Cl(1,0,0)), so the
+        // previous unscaled check rejected correct products; small relative
+        // slack plus an absolute floor covers floating-point rounding.
+        let n = amari_core::Multivector::<P, Q, R>::BASIS_COUNT as f64;
+        let result_mag = result.inner().coefficient_norm();
+        let a_mag = a.inner().coefficient_norm();
+        let b_mag = b.inner().coefficient_norm();
 
-        if result_mag > a_mag * b_mag + 1e-12 {
+        if result_mag > n * a_mag * b_mag * (1.0 + 1e-9) + 1e-12 {
             return Err(AdaptiveVerificationError::GpuVerification(
                 GpuVerificationError::InvariantViolation {
                     invariant: format!(
@@ -644,6 +651,68 @@ impl PlatformCapabilities for VerificationPlatform {
 
 #[cfg(test)]
 mod tests {
+    /// W02 review round 1: the magnitude bound must accept correct products.
+    /// Regression for the invalid unscaled submultiplicativity check, using
+    /// the reviewer counterexamples (Cl(1,1,0) pair and (1+e1)^2).
+    /// W02 review round 2: drive the PRODUCTION verifier with the
+    /// reviewer counterexamples; the old unscaled check rejected them.
+    #[test]
+    fn cauchy_schwarz_bound_accepts_correct_products() {
+        use amari_core::Multivector;
+        let verifier = AdaptiveVerifier {
+            platform: VerificationPlatform::NativeCpu {
+                features: CpuFeatures {
+                    supports_simd: true,
+                    core_count: 1,
+                    cache_size_kb: 32,
+                },
+            },
+            verification_level: AdaptiveVerifier::determine_verification_level(
+                &VerificationPlatform::NativeCpu {
+                    features: CpuFeatures {
+                        supports_simd: true,
+                        core_count: 1,
+                        cache_size_kb: 32,
+                    },
+                },
+            ),
+            performance_budget: std::time::Duration::from_secs(1),
+            boundary_verifier: None,
+            gpu_instance: None,
+        };
+        fn check<const P: usize, const Q: usize, const R: usize>(
+            verifier: &AdaptiveVerifier,
+            a: Multivector<P, Q, R>,
+            b: Multivector<P, Q, R>,
+        ) -> bool {
+            let ab = a.geometric_product(&b);
+            verifier
+                .verify_geometric_product_properties(
+                    &VerifiedMultivector::new(a),
+                    &VerifiedMultivector::new(b),
+                    &VerifiedMultivector::new(ab),
+                )
+                .is_ok()
+        }
+        let a = Multivector::<1, 1, 0>::from_coefficients(vec![0.0, -1.0, -1.0, -1.0]);
+        let b = Multivector::<1, 1, 0>::from_coefficients(vec![-1.0, 0.0, 0.0, -1.0]);
+        assert!(
+            check(&verifier, a, b),
+            "production verifier must accept the Cl(1,1,0) pair"
+        );
+        // (1+e1)^2: coefficient norm sqrt(8) > 2·1 — old check rejected it.
+        let v = {
+            let mut m = Multivector::<1, 0, 0>::zero();
+            m.set(0, 1.0);
+            m.set(1, 1.0);
+            m
+        };
+        assert!(
+            check(&verifier, v.clone(), v),
+            "production verifier must accept (1+e1)^2"
+        );
+    }
+
     use super::*;
 
     #[test]

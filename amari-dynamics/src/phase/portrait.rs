@@ -289,7 +289,7 @@ impl<const P: usize, const Q: usize, const R: usize> PhasePortrait<P, Q, R> {
                 }
 
                 if let Ok(vector) = system.vector_field(&position) {
-                    let magnitude = vector.norm();
+                    let magnitude = vector.coefficient_norm();
                     points.push(VectorFieldPoint {
                         position,
                         vector,

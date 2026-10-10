@@ -165,7 +165,7 @@ impl<T: Float> AttentionHead<T> {
     ) -> Multivector<DIM, 0, 0> {
         // Simplified geometric attention using scalar product
         let alignment = query_mv.scalar_product(key_mv);
-        let norm_product = query_mv.norm() * key_mv.norm();
+        let norm_product = query_mv.coefficient_norm() * key_mv.coefficient_norm();
 
         let attention_strength = if norm_product > 0.0 {
             (alignment / norm_product).clamp(0.0, 1.0)
