@@ -15,9 +15,10 @@ use std::collections::{BTreeMap, BTreeSet};
 #[cfg(feature = "serialize")]
 use amari_rewrite::language::PreimageCertificate;
 use amari_rewrite::language::{
-    finite_horizon_lower_bound, finite_horizon_preimage, language_digest, one_step_lower_bound,
-    saturation_lower_bound, saturation_preimage, ApproximationEvent, CertificateAuthority,
-    RankedSymbol, TreeAutomaton, TreeAutomatonLimits, TreeState, TreeTransition,
+    finite_horizon_lower_bound, finite_horizon_preimage, identity_preimage, language_digest,
+    one_step_lower_bound, saturation_lower_bound, saturation_preimage, ApproximationEvent,
+    CertificateAuthority, RankedSymbol, TreeAutomaton, TreeAutomatonLimits, TreeState,
+    TreeTransition,
 };
 use amari_rewrite::relation::RelationLimits;
 use amari_rewrite::trs::{Rule, Symbol, Term, TermSystem};
@@ -953,15 +954,21 @@ fn identity_clone_accounts_for_finals_storage() {
     for (name, outcome) in [
         (
             "horizon-0",
-            finite_horizon_preimage(&empty, &language, 0, &tight(199), &automaton_limits),
+            finite_horizon_preimage(&empty, &language, 0, &tight(199), &automaton_limits)
+                .map(|_| ()),
         ),
         (
             "empty-system horizon-1",
-            finite_horizon_preimage(&empty, &language, 1, &tight(199), &automaton_limits),
+            finite_horizon_preimage(&empty, &language, 1, &tight(199), &automaton_limits)
+                .map(|_| ()),
         ),
         (
             "empty-system saturation",
-            saturation_preimage(&empty, &language, &tight(199), &automaton_limits),
+            saturation_preimage(&empty, &language, &tight(199), &automaton_limits).map(|_| ()),
+        ),
+        (
+            "direct identity_preimage",
+            identity_preimage(&empty, &language, &tight(199)).map(|_| ()),
         ),
     ] {
         assert!(
@@ -972,15 +979,21 @@ fn identity_clone_accounts_for_finals_storage() {
     for (name, outcome) in [
         (
             "horizon-0",
-            finite_horizon_preimage(&empty, &language, 0, &tight(200), &automaton_limits),
+            finite_horizon_preimage(&empty, &language, 0, &tight(200), &automaton_limits)
+                .map(|_| ()),
         ),
         (
             "empty-system horizon-1",
-            finite_horizon_preimage(&empty, &language, 1, &tight(200), &automaton_limits),
+            finite_horizon_preimage(&empty, &language, 1, &tight(200), &automaton_limits)
+                .map(|_| ()),
         ),
         (
             "empty-system saturation",
-            saturation_preimage(&empty, &language, &tight(200), &automaton_limits),
+            saturation_preimage(&empty, &language, &tight(200), &automaton_limits).map(|_| ()),
+        ),
+        (
+            "direct identity_preimage",
+            identity_preimage(&empty, &language, &tight(200)).map(|_| ()),
         ),
     ] {
         assert!(outcome.is_ok(), "{name} at budget 200: {outcome:?}");
