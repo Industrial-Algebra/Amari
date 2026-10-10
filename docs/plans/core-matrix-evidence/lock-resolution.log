@@ -1,0 +1,7 @@
+     Locking 375 packages to highest compatible versions
+      Adding pollster v0.4.0 (available: v1.0.1)
+      Adding sha2 v0.10.9 (available: v0.11.0)
+      Adding syn v2.0.119 (available: v3.0.6)
+      Adding toml v0.8.23 (available: v1.1.6+spec-1.1.0)
+      Adding wgpu v0.19.4 (available: v30.0.1)
+      Adding z3 v0.20.2 (available: v0.21.0)

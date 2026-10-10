@@ -1,0 +1,153 @@
+warning: struct `Grade` is never constructed
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:20:12
+   |
+20 | pub struct Grade<const G: usize>;
+   |            ^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple associated items are never used
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:47:15
+    |
+ 42 | / impl<T, const P: usize, const Q: usize, const R: usize> VerifiedMultivector<T, P, Q, R>
+ 43 | | where
+ 44 | |     T: Float + Zero + One,
+    | |__________________________- associated items in this implementation
+...
+ 47 |       pub const DIM: usize = P + Q + R;
+    |                 ^^^
+...
+ 92 |       pub fn basis_vector(index: usize) -> Result<Self, &'static str> {
+    |              ^^^^^^^^^^^^
+...
+109 |       pub fn is_scalar(&self) -> bool {
+    |              ^^^^^^^^^
+...
+116 |       pub fn grade(&self) -> usize {
+    |              ^^^^^
+...
+129 |       pub fn add(&self, other: &Self) -> Self {
+    |              ^^^
+...
+153 |       pub fn geometric_product(&self, other: &Self) -> Self {
+    |              ^^^^^^^^^^^^^^^^^
+...
+179 |       fn compute_product_sign(&self, blade1: usize, blade2: usize) -> i32 {
+    |          ^^^^^^^^^^^^^^^^^^^^
+...
+204 |       fn count_swaps(&self, blade1: usize, blade2: usize) -> usize {
+    |          ^^^^^^^^^^^
+
+warning: struct `KVector` is never constructed
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:224:12
+    |
+224 | pub struct KVector<T, const K: usize, const P: usize, const Q: usize, const R: usize>
+    |            ^^^^^^^
+
+warning: associated items `from_multivector`, `grade`, and `inner_product` are never used
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:240:12
+    |
+232 | / impl<T, const K: usize, const P: usize, const Q: usize, const R: usize> KVector<T, K, P, Q, R>
+233 | | where
+234 | |     T: Float + Zero + One,
+    | |__________________________- associated items in this implementation
+...
+240 |       pub fn from_multivector(mv: VerifiedMultivector<T, P, Q, R>) -> Self {
+    |              ^^^^^^^^^^^^^^^^
+...
+260 |       pub const fn grade(&self) -> usize {
+    |                    ^^^^^
+...
+265 |       pub fn inner_product(&self, other: &Self) -> T {
+    |              ^^^^^^^^^^^^^
+
+warning: trait `OuterProduct` is never used
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:278:11
+    |
+278 | pub trait OuterProduct<T, const J: usize, const P: usize, const Q: usize, const R: usize>
+    |           ^^^^^^^^^^^^
+
+warning: struct `VerifiedRotor` is never constructed
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:426:12
+    |
+426 | pub struct VerifiedRotor<T, const P: usize, const Q: usize, const R: usize>
+    |            ^^^^^^^^^^^^^
+
+warning: associated items `new`, `is_even_grade`, `compute_norm`, `compose`, and `apply_to_multivector` are never used
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:448:12
+    |
+435 | / impl<T, const P: usize, const Q: usize, const R: usize> VerifiedRotor<T, P, Q, R>
+436 | | where
+437 | |     T: Float + Zero + One,
+    | |__________________________- associated items in this implementation
+...
+448 |       pub fn new(mv: VerifiedMultivector<T, P, Q, R>) -> Result<Self, &'static str> {
+    |              ^^^
+...
+465 |       fn is_even_grade(mv: &VerifiedMultivector<T, P, Q, R>) -> bool {
+    |          ^^^^^^^^^^^^^
+...
+476 |       fn compute_norm(mv: &VerifiedMultivector<T, P, Q, R>) -> T {
+    |          ^^^^^^^^^^^^
+...
+491 |       pub fn compose(&self, other: &Self) -> Self {
+    |              ^^^^^^^
+...
+510 |       pub fn apply_to_multivector(
+    |              ^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `dimension` and `add` are never used
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:562:18
+    |
+542 | / impl<T, const D: usize> Vector<T, D>
+543 | | where
+544 | |     T: Float + Zero + One,
+    | |__________________________- methods in this implementation
+...
+562 |       pub const fn dimension(&self) -> usize {
+    |                    ^^^^^^^^^
+...
+578 |       pub fn add(&self, other: &Self) -> Self {
+    |              ^^^
+
+warning: function `verified_addition` is never used
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:35:8
+   |
+35 | pub fn verified_addition<T, const P: usize, const Q: usize, const R: usize>(
+   |        ^^^^^^^^^^^^^^^^^
+
+warning: function `verified_norm` is never used
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:48:8
+   |
+48 | pub fn verified_norm<T, const P: usize, const Q: usize, const R: usize>(
+   |        ^^^^^^^^^^^^^
+
+warning: function `verified_grade` is never used
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:64:8
+   |
+64 | pub fn verified_grade<T, const P: usize, const Q: usize, const R: usize>(
+   |        ^^^^^^^^^^^^^^
+
+warning: function `verify_scalar_identity` is never used
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:79:8
+   |
+79 | pub fn verify_scalar_identity<T, const P: usize, const Q: usize, const R: usize>(
+   |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `verify_zero_addition` is never used
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:95:8
+   |
+95 | pub fn verify_zero_addition<T, const P: usize, const Q: usize, const R: usize>(
+   |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `verify_basis_vector_square` is never used
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:112:8
+    |
+112 | pub fn verify_basis_vector_square<T, const P: usize, const Q: usize, const R: usize>(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `core-d07-contract-probe` (bin "core-d07-contract-probe") generated 14 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s
+     Running `/tmp/core-d07-scrutiny/target/debug/core-d07-contract-probe`
+dot=-1
+zero_scalar_product=0

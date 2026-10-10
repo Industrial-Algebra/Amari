@@ -1,0 +1,529 @@
+[
+  {
+    "id": "nightly-default-plus-native-precision-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "native-precision"
+    ],
+    "exit": 0,
+    "seconds": 5.6,
+    "log": "/tmp/amari-core-d07/extended/nightly-default-plus-native-precision-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.27s",
+      "test result: ok. 199 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "nightly-default-plus-full-precision-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "full-precision"
+    ],
+    "exit": 0,
+    "seconds": 1.6,
+    "log": "/tmp/amari-core-d07/extended/nightly-default-plus-full-precision-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.31s",
+      "test result: ok. 199 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s"
+    ]
+  },
+  {
+    "id": "nightly-default-plus-wasm-precision-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "wasm-precision"
+    ],
+    "exit": 0,
+    "seconds": 1.6,
+    "log": "/tmp/amari-core-d07/extended/nightly-default-plus-wasm-precision-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.29s",
+      "test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "nightly-default-plus-serialize-parallel-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "serialize,parallel"
+    ],
+    "exit": 0,
+    "seconds": 1.7,
+    "log": "/tmp/amari-core-d07/extended/nightly-default-plus-serialize-parallel-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.37s",
+      "test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "nightly-default-plus-formal-verification-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "formal-verification"
+    ],
+    "exit": 0,
+    "seconds": 6.5,
+    "log": "/tmp/amari-core-d07/extended/nightly-default-plus-formal-verification-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.20s",
+      "test result: ok. 206 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "nightly-all-features-clippy",
+    "command": [
+      "cargo",
+      "+nightly",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--all-targets",
+      "--all-features",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 101,
+    "seconds": 0.7,
+    "log": "/tmp/amari-core-d07/extended/nightly-all-features-clippy.log",
+    "diagnostic_excerpt": [
+      "error: the loop variable `j` is used to index `other.coefficients`",
+      "error: the loop variable `j` is used to index `other.multivector.coefficients`",
+      "error: the loop variable `i` is used to index `self.multivector.coefficients`",
+      "error: could not compile `amari-core` (lib) due to 3 previous errors",
+      "warning: build failed, waiting for other jobs to finish...",
+      "error: could not compile `amari-core` (lib test) due to 3 previous errors"
+    ]
+  },
+  {
+    "id": "nightly-all-features-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--all-features"
+    ],
+    "exit": 0,
+    "seconds": 1.6,
+    "log": "/tmp/amari-core-d07/extended/nightly-all-features-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.33s",
+      "test result: ok. 203 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "stable-default-plus-native-precision-tests",
+    "command": [
+      "cargo",
+      "+stable",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "native-precision"
+    ],
+    "exit": 0,
+    "seconds": 5.3,
+    "log": "/tmp/amari-core-d07/extended/stable-default-plus-native-precision-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.04s",
+      "test result: ok. 199 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+    ]
+  },
+  {
+    "id": "stable-default-plus-full-precision-tests",
+    "command": [
+      "cargo",
+      "+stable",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "full-precision"
+    ],
+    "exit": 0,
+    "seconds": 1.6,
+    "log": "/tmp/amari-core-d07/extended/stable-default-plus-full-precision-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.28s",
+      "test result: ok. 199 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "stable-default-plus-wasm-precision-tests",
+    "command": [
+      "cargo",
+      "+stable",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "wasm-precision"
+    ],
+    "exit": 0,
+    "seconds": 1.5,
+    "log": "/tmp/amari-core-d07/extended/stable-default-plus-wasm-precision-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.24s",
+      "test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s"
+    ]
+  },
+  {
+    "id": "stable-default-plus-serialize-parallel-tests",
+    "command": [
+      "cargo",
+      "+stable",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "serialize,parallel"
+    ],
+    "exit": 0,
+    "seconds": 1.6,
+    "log": "/tmp/amari-core-d07/extended/stable-default-plus-serialize-parallel-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.27s",
+      "test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "stable-default-plus-formal-verification-tests",
+    "command": [
+      "cargo",
+      "+stable",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "formal-verification"
+    ],
+    "exit": 0,
+    "seconds": 6.1,
+    "log": "/tmp/amari-core-d07/extended/stable-default-plus-formal-verification-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.84s",
+      "test result: ok. 206 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+    ]
+  },
+  {
+    "id": "stable-all-features-clippy",
+    "command": [
+      "cargo",
+      "+stable",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--all-targets",
+      "--all-features",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 3.9,
+    "log": "/tmp/amari-core-d07/extended/stable-all-features-clippy.log",
+    "diagnostic_excerpt": [
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.77s"
+    ]
+  },
+  {
+    "id": "stable-all-features-tests",
+    "command": [
+      "cargo",
+      "+stable",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--all-features"
+    ],
+    "exit": 0,
+    "seconds": 1.6,
+    "log": "/tmp/amari-core-d07/extended/stable-all-features-tests.log",
+    "diagnostic_excerpt": [
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.30s",
+      "test result: ok. 203 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+    ]
+  },
+  {
+    "id": "nightly-std-gf2-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,gf2"
+    ],
+    "exit": 0,
+    "seconds": 1.6,
+    "log": "/tmp/amari-core-d07/extended/nightly-std-gf2-tests.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)",
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.29s",
+      "test result: ok. 194 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s"
+    ]
+  },
+  {
+    "id": "nightly-minimal-clippy",
+    "command": [
+      "cargo",
+      "+nightly",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--lib",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 101,
+    "seconds": 0.3,
+    "log": "/tmp/amari-core-d07/extended/nightly-minimal-clippy.log",
+    "diagnostic_excerpt": [
+      "error: cannot find macro `vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error: unused imports: `Formatter` and `Result`",
+      "For more information about this error, try `rustc --explain E0425`.",
+      "error: could not compile `amari-core` (lib) due to 4 previous errors"
+    ]
+  },
+  {
+    "id": "nightly-no-std-phantom-types-lib",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "phantom-types",
+      "--lib"
+    ],
+    "exit": 101,
+    "seconds": 0.3,
+    "log": "/tmp/amari-core-d07/extended/nightly-no-std-phantom-types-lib.log",
+    "diagnostic_excerpt": [
+      "error[E0308]: mismatched types",
+      "    = note: `usize` implements `PartialEq<{type error}>`",
+      "error[E0308]: mismatched types",
+      "error[E0308]: mismatched types",
+      "error[E0308]: mismatched types",
+      "error[E0308]: mismatched types",
+      "error[E0308]: mismatched types",
+      "error[E0308]: mismatched types",
+      "Some errors have detailed explanations: E0283, E0308, E0425, E0433.",
+      "For more information about an error, try `rustc --explain E0283`.",
+      "warning: `amari-core` (lib) generated 1 warning",
+      "error: could not compile `amari-core` (lib) due to 25 previous errors; 1 warning emitted"
+    ]
+  },
+  {
+    "id": "nightly-no-std-gf2-lib",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "gf2",
+      "--lib"
+    ],
+    "exit": 101,
+    "seconds": 0.3,
+    "log": "/tmp/amari-core-d07/extended/nightly-no-std-gf2-lib.log",
+    "diagnostic_excerpt": [
+      "error: cannot find macro `vec` in this scope",
+      "error: cannot find macro `vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "warning: unused imports: `Formatter` and `Result`",
+      "For more information about this error, try `rustc --explain E0425`.",
+      "warning: `amari-core` (lib) generated 1 warning",
+      "error: could not compile `amari-core` (lib) due to 4 previous errors; 1 warning emitted"
+    ]
+  },
+  {
+    "id": "nightly-no-std-formal-verification-lib",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "formal-verification",
+      "--lib"
+    ],
+    "exit": 101,
+    "seconds": 0.2,
+    "log": "/tmp/amari-core-d07/extended/nightly-no-std-formal-verification-lib.log",
+    "diagnostic_excerpt": [
+      "error[E0283]: type annotations needed",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "error[E0283]: type annotations needed",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "error[E0283]: type annotations needed",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "error[E0283]: type annotations needed",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "Some errors have detailed explanations: E0283, E0308, E0425, E0433.",
+      "For more information about an error, try `rustc --explain E0283`.",
+      "warning: `amari-core` (lib) generated 1 warning",
+      "error: could not compile `amari-core` (lib) due to 30 previous errors; 1 warning emitted"
+    ]
+  }
+]

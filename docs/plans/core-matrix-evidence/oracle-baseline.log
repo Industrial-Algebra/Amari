@@ -1,0 +1,10 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+   Compiling amari-core-foundations-audit v0.0.0 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/docs/audits/core-foundations-repro)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.16s
+     Running tests/foundations.rs (../core-audit/target/debug/build/amari-core-foundations-audit/1b40f530364f40df/out/foundations-1b40f530364f40df)
+
+running 1 test
+test oracle_all_basis_pairs_through_dimension_four ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.48s
+

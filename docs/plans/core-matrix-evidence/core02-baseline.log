@@ -1,0 +1,28 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.01s
+     Running tests/foundations.rs (../core-audit/target/debug/build/amari-core-foundations-audit/1b40f530364f40df/out/foundations-1b40f530364f40df)
+
+running 2 tests
+test finding_02_geometric_product_preserves_small_coefficients ... FAILED
+test finding_02_geometric_product_associativity_across_scales ... FAILED
+
+failures:
+
+---- finding_02_geometric_product_preserves_small_coefficients stdout ----
+
+thread 'finding_02_geometric_product_preserves_small_coefficients' (646116) panicked at tests/foundations.rs:10:5:
+actual=0.00000000000000000e0, expected=1.00000000000000000e0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- finding_02_geometric_product_associativity_across_scales stdout ----
+
+thread 'finding_02_geometric_product_associativity_across_scales' (646115) panicked at tests/foundations.rs:26:9:
+blade 0: actual=0, expected=1
+
+
+failures:
+    finding_02_geometric_product_associativity_across_scales
+    finding_02_geometric_product_preserves_small_coefficients
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test foundations`
