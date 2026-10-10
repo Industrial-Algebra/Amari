@@ -104,7 +104,7 @@ impl<const P: usize, const Q: usize, const R: usize> VerifiedMultivector<P, Q, R
     /// Verify mathematical invariants
     pub fn verify_invariants(&self) -> Result<(), GpuVerificationError> {
         // Check magnitude invariant
-        let magnitude = self.inner.magnitude();
+        let magnitude = self.inner.coefficient_norm();
         if !magnitude.is_finite() {
             return Err(GpuVerificationError::InvariantViolation {
                 invariant: "Magnitude must be finite".to_string(),
@@ -341,7 +341,7 @@ impl GpuBoundaryVerifier {
                 }
                 VerificationStrategy::Minimal => {
                     // Minimal verification: basic sanity checks only
-                    if !result_mv.magnitude().is_finite() {
+                    if !result_mv.coefficient_norm().is_finite() {
                         return Err(GpuVerificationError::InvariantViolation {
                             invariant: format!("Result[{}] magnitude is not finite", i),
                         });

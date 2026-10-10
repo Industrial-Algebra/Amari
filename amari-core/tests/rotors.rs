@@ -12,7 +12,11 @@ mod rotor_tests {
         let rotor = Rotor::from_bivector(&bivector, PI / 2.0);
 
         // Rotor should be normalized
-        assert_relative_eq!(rotor.magnitude(), 1.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            rotor.as_multivector().coefficient_norm(),
+            1.0,
+            epsilon = 1e-10
+        );
     }
 
     #[test]
@@ -62,7 +66,11 @@ mod rotor_tests {
         let identity = Rotor::<3, 0, 0>::identity();
 
         assert_relative_eq!(identity.scalar_part(), 1.0, epsilon = 1e-10);
-        assert_relative_eq!(identity.bivector_part().magnitude(), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            identity.bivector_part().coefficient_norm(),
+            0.0,
+            epsilon = 1e-10
+        );
     }
 
     #[test]
@@ -75,7 +83,11 @@ mod rotor_tests {
         let product = rotor.geometric_product(&inverse);
 
         assert_relative_eq!(product.scalar_part(), 1.0, epsilon = 1e-10);
-        assert_relative_eq!(product.bivector_part().magnitude(), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            product.bivector_part().coefficient_norm(),
+            0.0,
+            epsilon = 1e-10
+        );
     }
 
     #[test]
@@ -153,7 +165,11 @@ mod rotor_tests {
 
         let rotated = rotor.apply_to_vector(&vector);
 
-        assert_relative_eq!(vector.magnitude(), rotated.magnitude(), epsilon = 1e-10);
+        assert_relative_eq!(
+            vector.coefficient_norm(),
+            rotated.coefficient_norm(),
+            epsilon = 1e-10
+        );
     }
 
     #[test]
@@ -187,7 +203,11 @@ mod rotor_tests {
         let composed = x_rot.geometric_product(&y_rot.geometric_product(&z_rot));
 
         // Should still be a unit rotor
-        assert_relative_eq!(composed.magnitude(), 1.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            composed.as_multivector().coefficient_norm(),
+            1.0,
+            epsilon = 1e-10
+        );
     }
 
     #[test]

@@ -135,12 +135,12 @@ macro_rules! grade {
 
 /// Magnitude/norm: ‖a‖
 ///
-/// Euclidean magnitude of the multivector.
-/// Computed as sqrt(a† ⊗ a) for the scalar part.
+/// Coefficient magnitude of the multivector.
+/// Computed as sqrt of the sum of squared coefficients.
 #[macro_export]
 macro_rules! norm {
     ($a:expr) => {
-        $a.magnitude()
+        $a.coefficient_norm()
     };
 }
 
@@ -192,7 +192,18 @@ macro_rules! norm_squared {
 #[macro_export]
 macro_rules! unit {
     ($a:expr) => {{
-        $a.normalize().unwrap_or($a.clone())
+        // Public-API expansion (W02 review round 1): the operand contract is
+        // any type with `coefficient_norm()` and `Mul<f64>` (Multivector).
+        // The previously supported Vector operand is removed with
+        // Multivector::normalize (D01.4); convert via `.mv` first.
+        {
+            let n = $a.coefficient_norm();
+            if n > 0.0 {
+                $a / n
+            } else {
+                $a.clone()
+            }
+        }
     }};
 }
 
@@ -227,7 +238,7 @@ mod tests {
         let traditional = e1.outer_product(&e2);
 
         // Should produce e12 bivector
-        assert_relative_eq!(wedge_result.bivector_part().magnitude(), 1.0);
+        assert_relative_eq!(wedge_result.bivector_part().coefficient_norm(), 1.0);
 
         // Should match traditional syntax
         for i in 0..8 {
@@ -270,7 +281,7 @@ mod tests {
 
         // Test magnitude
         let magnitude = norm!(mv);
-        let traditional_magnitude = mv.magnitude();
+        let traditional_magnitude = mv.coefficient_norm();
 
         assert_relative_eq!(magnitude, traditional_magnitude);
     }
@@ -310,14 +321,16 @@ mod tests {
         let commutator_result = commutator!(a, b);
 
         // For orthogonal vectors, [e1,e2] should be related to e12
-        assert!(commutator_result.bivector_part().magnitude() > 0.0);
+        assert!(commutator_result.bivector_part().coefficient_norm() > 0.0);
 
         // Test unit vector
         let v = Vector::<3, 0, 0>::from_components(3.0, 4.0, 0.0);
-        let unit_result = unit!(v);
+        // `unit!` now routes through the crate-private versor normalizer, which
+        // is defined on `Multivector`; normalize the multivector form here.
+        let unit_result = unit!(v.mv.clone());
 
         // Should be unit magnitude
-        assert_relative_eq!(unit_result.norm(), 1.0, epsilon = 1e-10);
+        assert_relative_eq!(unit_result.coefficient_norm(), 1.0, epsilon = 1e-10);
 
         // Test squared magnitude
         let squared_mag = norm_squared!(v);

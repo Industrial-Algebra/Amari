@@ -107,7 +107,10 @@ fn main() {
         rotor_mv.get(6),
         rotor_mv.get(7)
     );
-    println!("Rotor norm: {:.6}\n", rotor_mv.norm());
+    println!(
+        "Rotor coefficient norm: {:.6}\n",
+        rotor_mv.coefficient_norm()
+    );
 
     // 5. Apply rotor to rotate vectors
     println!("Rotation examples:");
@@ -127,7 +130,7 @@ fn main() {
     );
     println!(
         "This should be approximately e2: {:.6}",
-        (rotated_e1.clone() - e2.clone()).norm()
+        (rotated_e1.clone() - e2.clone()).coefficient_norm()
     );
 
     // Rotate e2 (should become -e1)
@@ -145,7 +148,7 @@ fn main() {
     );
     println!(
         "This should be approximately -e1: {:.6}",
-        (rotated_e2.clone() + e1).norm()
+        (rotated_e2.clone() + e1).coefficient_norm()
     );
 
     // e3 should be unchanged (rotation is in e1-e2 plane)
@@ -163,7 +166,7 @@ fn main() {
     );
     println!(
         "This should be approximately e3: {:.6}\n",
-        (rotated_e3 - e3).norm()
+        (rotated_e3 - e3).coefficient_norm()
     );
 
     // Demonstrate composition of rotations
@@ -185,7 +188,7 @@ fn main() {
         composed_mv.get(7)
     );
 
-    let difference = (composed_mv - rotor_mv).norm();
+    let difference = (composed_mv - rotor_mv).coefficient_norm();
     println!("Difference from 90° rotor: {:.6}\n", difference);
 
     // Demonstrate using the builder pattern

@@ -169,7 +169,7 @@ fn test_community_detection() {
 
         for &node_idx in &community.nodes[1..] {
             let node_pos = network.get_node(node_idx).unwrap();
-            let distance = (first_pos.clone() - node_pos.clone()).norm();
+            let distance = (first_pos.clone() - node_pos.clone()).coefficient_norm();
             assert!(distance < 1.0); // Nodes in same community should be close
         }
     }

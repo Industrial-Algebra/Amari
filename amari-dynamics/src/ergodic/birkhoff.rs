@@ -499,7 +499,7 @@ pub mod observables {
     /// Euclidean norm of the state
     pub fn state_norm<const P: usize, const Q: usize, const R: usize>(
     ) -> impl Fn(&Multivector<P, Q, R>) -> f64 {
-        |state: &Multivector<P, Q, R>| state.norm()
+        |state: &Multivector<P, Q, R>| state.coefficient_norm()
     }
 
     /// Component value

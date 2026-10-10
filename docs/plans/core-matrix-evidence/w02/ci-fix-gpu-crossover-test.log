@@ -1,0 +1,9 @@
+   Compiling amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-gpu)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.50s
+     Running tests/core_ga_benchmark_crossover.rs (target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/deps/core_ga_benchmark_crossover-9c3c028edf96dff0)
+
+running 1 test
+test benchmark_core_ga_batch_geometric_product_cpu_vs_gpu ... ignored, Manual GB10/RTX benchmark harness for core GA batch crossover work
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

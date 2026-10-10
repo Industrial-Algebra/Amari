@@ -1,0 +1,11 @@
+   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-discovery)
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+   Compiling amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dual)
+   Compiling amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-tropical)
+   Compiling amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-info-geom)
+   Compiling amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-holographic)
+   Compiling amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-network)
+   Compiling amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-optimization)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.16s
+     Running `target/d07-baseline/w02/stable/debug/examples/generate_catalog .`
+Generated catalog: 28 crates, 11077 items, 107 dependency edges, hash aa4689c3bf344ed6046dcada51e78301e9e78da4458646df73e6757cd5dd1aa2

@@ -1,0 +1,50 @@
+    Checking tempfile v3.27.0
+    Checking criterion v0.8.2
+   Compiling proc-macro2 v1.0.107
+    Checking amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-rewrite)
+error: unused imports: `GuidanceMode`, `ReplayCertificate`, `ReplayQuery`, and `ResourceObservation`
+ --> amari-rewrite/tests/inverse_remediation.rs:6:5
+  |
+6 |     GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayQuery, ResourceObservation,
+  |     ^^^^^^^^^^^^                       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `-D unused-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: unused import: `RewriteResidual`
+  --> amari-rewrite/tests/residual_roundtrip.rs:10:49
+   |
+10 | use amari_rewrite::reversible::{ReversibleStep, RewriteResidual};
+   |                                                 ^^^^^^^^^^^^^^^
+   |
+   = note: `-D unused-imports` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: useless use of `format!`
+   --> amari-rewrite/tests/language_metered.rs:222:14
+    |
+222 |           .arg(format!(
+    |  ______________^
+223 | |             "ulimit -v 262144 && exec \"$0\" --exact deep_term_is_rejected_before_path_materialization --nocapture"
+224 | |         ))
+    | |_________^ help: consider using `.to_string()`: `"ulimit -v 262144 && exec \"$0\" --exact deep_term_is_rejected_before_path_materialization --nocapture".to_string()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#useless_format
+    = note: `-D clippy::useless-format` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_format)]`
+
+error: could not compile `amari-rewrite` (test "language_metered") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `amari-rewrite` (test "inverse_remediation") due to 1 previous error
+error: useless use of `vec!`
+   --> amari-rewrite/tests/closure_oracle.rs:282:17
+    |
+282 |     let seeds = vec![g(a()), g(h(a())), g(h(h(a())))];
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can use an array directly: `[g(a()), g(h(a())), g(h(h(a())))]`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#useless_vec
+    = note: `-D clippy::useless-vec` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_vec)]`
+
+error: could not compile `amari-rewrite` (test "residual_roundtrip") due to 1 previous error
+error: could not compile `amari-rewrite` (test "closure_oracle") due to 1 previous error

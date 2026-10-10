@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "6df7478b83dcec64be5a5267e148eee8a7f6ea4487faaef15d80dc3f47553a2e",
+  "content_hash": "f2b25c34120eb3ffdd0dbe2e28b21c9480d7e506d820e342b9ec1eb394da5bf2",
   "crates": [
     {
       "name": "amari",
@@ -52098,6 +52098,14 @@
           "default_features": true
         },
         {
+          "alias": "num-traits",
+          "package": "num-traits",
+          "kind": "development",
+          "version": "0.2",
+          "optional": false,
+          "default_features": true
+        },
+        {
           "alias": "proptest",
           "package": "proptest",
           "kind": "development",
@@ -52164,6 +52172,25 @@
               "is_reexport": false,
               "declaration_module": "amari_core",
               "declaration_ident": "Bivector"
+            }
+          ]
+        },
+        {
+          "path": "amari_core::Bivector::coefficient_norm",
+          "kind": "method",
+          "signature": "pub fn coefficient_norm (& self) -> f64",
+          "source_path": "amari-core/src/lib.rs",
+          "is_reexport": false,
+          "source_module": "amari_core",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn coefficient_norm (& self) -> f64",
+              "source_path": "amari-core/src/lib.rs",
+              "source_module": "amari_core",
+              "is_reexport": false,
+              "declaration_module": "amari_core",
+              "declaration_ident": "Bivector::coefficient_norm"
             }
           ]
         },
@@ -52354,25 +52381,6 @@
               "is_reexport": false,
               "declaration_module": "amari_core",
               "declaration_ident": "Bivector::inner_product_with_vector"
-            }
-          ]
-        },
-        {
-          "path": "amari_core::Bivector::magnitude",
-          "kind": "method",
-          "signature": "pub fn magnitude (& self) -> f64",
-          "source_path": "amari-core/src/lib.rs",
-          "is_reexport": false,
-          "source_module": "amari_core",
-          "variants": [
-            {
-              "kind": "method",
-              "signature": "pub fn magnitude (& self) -> f64",
-              "source_path": "amari-core/src/lib.rs",
-              "source_module": "amari_core",
-              "is_reexport": false,
-              "declaration_module": "amari_core",
-              "declaration_ident": "Bivector::magnitude"
             }
           ]
         },
@@ -52948,25 +52956,6 @@
           ]
         },
         {
-          "path": "amari_core::Multivector::abs",
-          "kind": "method",
-          "signature": "pub fn abs (& self) -> f64",
-          "source_path": "amari-core/src/lib.rs",
-          "is_reexport": false,
-          "source_module": "amari_core",
-          "variants": [
-            {
-              "kind": "method",
-              "signature": "pub fn abs (& self) -> f64",
-              "source_path": "amari-core/src/lib.rs",
-              "source_module": "amari_core",
-              "is_reexport": false,
-              "declaration_module": "amari_core",
-              "declaration_ident": "Multivector::abs"
-            }
-          ]
-        },
-        {
           "path": "amari_core::Multivector::add",
           "kind": "method",
           "signature": "pub fn add (& self , other : & Self) -> Self",
@@ -53077,6 +53066,25 @@
               "is_reexport": false,
               "declaration_module": "amari_core",
               "declaration_ident": "Multivector::bivector_type"
+            }
+          ]
+        },
+        {
+          "path": "amari_core::Multivector::coefficient_norm",
+          "kind": "method",
+          "signature": "pub fn coefficient_norm (& self) -> f64",
+          "source_path": "amari-core/src/lib.rs",
+          "is_reexport": false,
+          "source_module": "amari_core",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn coefficient_norm (& self) -> f64",
+              "source_path": "amari-core/src/lib.rs",
+              "source_module": "amari_core",
+              "is_reexport": false,
+              "declaration_module": "amari_core",
+              "declaration_ident": "Multivector::coefficient_norm"
             }
           ]
         },
@@ -53385,6 +53393,25 @@
           ]
         },
         {
+          "path": "amari_core::Multivector::is_approx_zero",
+          "kind": "method",
+          "signature": "pub fn is_approx_zero (& self , epsilon : f64) -> bool",
+          "source_path": "amari-core/src/lib.rs",
+          "is_reexport": false,
+          "source_module": "amari_core",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn is_approx_zero (& self , epsilon : f64) -> bool",
+              "source_path": "amari-core/src/lib.rs",
+              "source_module": "amari_core",
+              "is_reexport": false,
+              "declaration_module": "amari_core",
+              "declaration_ident": "Multivector::is_approx_zero"
+            }
+          ]
+        },
+        {
           "path": "amari_core::Multivector::is_zero",
           "kind": "method",
           "signature": "pub fn is_zero (& self) -> bool",
@@ -53423,44 +53450,6 @@
           ]
         },
         {
-          "path": "amari_core::Multivector::magnitude",
-          "kind": "method",
-          "signature": "pub fn magnitude (& self) -> f64",
-          "source_path": "amari-core/src/lib.rs",
-          "is_reexport": false,
-          "source_module": "amari_core",
-          "variants": [
-            {
-              "kind": "method",
-              "signature": "pub fn magnitude (& self) -> f64",
-              "source_path": "amari-core/src/lib.rs",
-              "source_module": "amari_core",
-              "is_reexport": false,
-              "declaration_module": "amari_core",
-              "declaration_ident": "Multivector::magnitude"
-            }
-          ]
-        },
-        {
-          "path": "amari_core::Multivector::norm",
-          "kind": "method",
-          "signature": "pub fn norm (& self) -> f64",
-          "source_path": "amari-core/src/lib.rs",
-          "is_reexport": false,
-          "source_module": "amari_core",
-          "variants": [
-            {
-              "kind": "method",
-              "signature": "pub fn norm (& self) -> f64",
-              "source_path": "amari-core/src/lib.rs",
-              "source_module": "amari_core",
-              "is_reexport": false,
-              "declaration_module": "amari_core",
-              "declaration_ident": "Multivector::norm"
-            }
-          ]
-        },
-        {
           "path": "amari_core::Multivector::norm_squared",
           "kind": "method",
           "signature": "pub fn norm_squared (& self) -> f64",
@@ -53476,25 +53465,6 @@
               "is_reexport": false,
               "declaration_module": "amari_core",
               "declaration_ident": "Multivector::norm_squared"
-            }
-          ]
-        },
-        {
-          "path": "amari_core::Multivector::normalize",
-          "kind": "method",
-          "signature": "pub fn normalize (& self) -> Option < Self >",
-          "source_path": "amari-core/src/lib.rs",
-          "is_reexport": false,
-          "source_module": "amari_core",
-          "variants": [
-            {
-              "kind": "method",
-              "signature": "pub fn normalize (& self) -> Option < Self >",
-              "source_path": "amari-core/src/lib.rs",
-              "source_module": "amari_core",
-              "is_reexport": false,
-              "declaration_module": "amari_core",
-              "declaration_ident": "Multivector::normalize"
             }
           ]
         },
@@ -54949,6 +54919,25 @@
           ]
         },
         {
+          "path": "amari_core::Vector::coefficient_norm",
+          "kind": "method",
+          "signature": "pub fn coefficient_norm (& self) -> f64",
+          "source_path": "amari-core/src/lib.rs",
+          "is_reexport": false,
+          "source_module": "amari_core",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn coefficient_norm (& self) -> f64",
+              "source_path": "amari-core/src/lib.rs",
+              "source_module": "amari_core",
+              "is_reexport": false,
+              "declaration_module": "amari_core",
+              "declaration_ident": "Vector::coefficient_norm"
+            }
+          ]
+        },
+        {
           "path": "amari_core::Vector::e1",
           "kind": "method",
           "signature": "pub fn e1 () -> Self",
@@ -55211,44 +55200,6 @@
               "is_reexport": false,
               "declaration_module": "amari_core",
               "declaration_ident": "Vector::left_contraction"
-            }
-          ]
-        },
-        {
-          "path": "amari_core::Vector::magnitude",
-          "kind": "method",
-          "signature": "pub fn magnitude (& self) -> f64",
-          "source_path": "amari-core/src/lib.rs",
-          "is_reexport": false,
-          "source_module": "amari_core",
-          "variants": [
-            {
-              "kind": "method",
-              "signature": "pub fn magnitude (& self) -> f64",
-              "source_path": "amari-core/src/lib.rs",
-              "source_module": "amari_core",
-              "is_reexport": false,
-              "declaration_module": "amari_core",
-              "declaration_ident": "Vector::magnitude"
-            }
-          ]
-        },
-        {
-          "path": "amari_core::Vector::norm",
-          "kind": "method",
-          "signature": "pub fn norm (& self) -> f64",
-          "source_path": "amari-core/src/lib.rs",
-          "is_reexport": false,
-          "source_module": "amari_core",
-          "variants": [
-            {
-              "kind": "method",
-              "signature": "pub fn norm (& self) -> f64",
-              "source_path": "amari-core/src/lib.rs",
-              "source_module": "amari_core",
-              "is_reexport": false,
-              "declaration_module": "amari_core",
-              "declaration_ident": "Vector::norm"
             }
           ]
         },
@@ -59500,7 +59451,7 @@
           "name": "norm",
           "kind": "declarative",
           "source_path": "amari-core/src/unicode_ops.rs",
-          "signature": "# [doc = \" Magnitude/norm: ‖a‖\"] # [doc = \"\"] # [doc = \" Euclidean magnitude of the multivector.\"] # [doc = \" Computed as sqrt(a† ⊗ a) for the scalar part.\"] # [macro_export] macro_rules ! norm { ($ a : expr) => { $ a . magnitude () } ; }"
+          "signature": "# [doc = \" Magnitude/norm: ‖a‖\"] # [doc = \"\"] # [doc = \" Coefficient magnitude of the multivector.\"] # [doc = \" Computed as sqrt of the sum of squared coefficients.\"] # [macro_export] macro_rules ! norm { ($ a : expr) => { $ a . coefficient_norm () } ; }"
         },
         {
           "path": "amari_core::norm_squared",
@@ -59542,7 +59493,7 @@
           "name": "unit",
           "kind": "declarative",
           "source_path": "amari-core/src/unicode_ops.rs",
-          "signature": "# [doc = \" Unit vector: â = a/‖a‖\"] # [macro_export] macro_rules ! unit { ($ a : expr) => { { $ a . normalize () . unwrap_or ($ a . clone ()) } } ; }"
+          "signature": "# [doc = \" Unit vector: â = a/‖a‖\"] # [macro_export] macro_rules ! unit { ($ a : expr) => { { { let n = $ a . coefficient_norm () ; if n > 0.0 { $ a / n } else { $ a . clone () } } } } ; }"
         },
         {
           "path": "amari_core::wedge",
@@ -60230,7 +60181,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_core::Bivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 15,
+          "source_ordinal": 17,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -60323,7 +60274,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_core::Scalar",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 10,
+          "source_ordinal": 12,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -60342,7 +60293,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_core::Vector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 13,
+          "source_ordinal": 15,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -60562,7 +60513,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_core::Bivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 15,
+          "source_ordinal": 17,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -60636,7 +60587,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_core::Scalar",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 10,
+          "source_ordinal": 12,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -60655,7 +60606,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_core::Vector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 13,
+          "source_ordinal": 15,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -60946,6 +60897,44 @@
           "is_derived": false
         },
         {
+          "trait_path": "Div",
+          "impl_type_path": "&amari_core::Multivector",
+          "source_path": "amari-core/src/lib.rs",
+          "source_ordinal": 7,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Div"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_core",
+            "ident": "Multivector"
+          },
+          "generics": "< const P : usize , const Q : usize , const R : usize >",
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": false
+        },
+        {
+          "trait_path": "Div",
+          "impl_type_path": "amari_core::Multivector",
+          "source_path": "amari-core/src/lib.rs",
+          "source_ordinal": 6,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Div"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_core",
+            "ident": "Multivector"
+          },
+          "generics": "< const P : usize , const Q : usize , const R : usize >",
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": false
+        },
+        {
           "trait_path": "Eq",
           "impl_type_path": "amari_core::gf2::BinaryMultivector",
           "source_path": "amari-core/src/gf2/clifford.rs",
@@ -61058,7 +61047,7 @@
           "trait_path": "From",
           "impl_type_path": "amari_core::Scalar",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 12,
+          "source_ordinal": 14,
           "trait_endpoint": {
             "kind": "external",
             "path": "From"
@@ -61202,7 +61191,7 @@
           "trait_path": "Mul",
           "impl_type_path": "&amari_core::Multivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 9,
           "trait_endpoint": {
             "kind": "external",
             "path": "Mul"
@@ -61240,7 +61229,7 @@
           "trait_path": "Mul",
           "impl_type_path": "amari_core::Multivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 6,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "Mul"
@@ -61295,7 +61284,7 @@
           "trait_path": "Neg",
           "impl_type_path": "amari_core::Multivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 10,
           "trait_endpoint": {
             "kind": "external",
             "path": "Neg"
@@ -61332,7 +61321,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_core::Bivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 15,
+          "source_ordinal": 17,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -61406,7 +61395,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_core::Scalar",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 10,
+          "source_ordinal": 12,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -61425,7 +61414,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_core::Vector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 13,
+          "source_ordinal": 15,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -61699,7 +61688,7 @@
           "trait_path": "Zero",
           "impl_type_path": "amari_core::Multivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 9,
+          "source_ordinal": 11,
           "trait_endpoint": {
             "kind": "external",
             "path": "Zero"
@@ -61888,7 +61877,7 @@
           "trait_path": "core::ops::Index",
           "impl_type_path": "amari_core::Bivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 17,
+          "source_ordinal": 19,
           "trait_endpoint": {
             "kind": "external",
             "path": "core::ops::Index"
@@ -62161,10 +62150,18 @@
         {
           "path": "amari_core::Bivector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 15,
+          "source_ordinal": 17,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_core::Bivector::coefficient_norm",
+          "source_path": "amari-core/src/lib.rs",
+          "source_ordinal": 7,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
         },
         {
           "path": "amari_core::Bivector::e12",
@@ -62242,14 +62239,6 @@
           "path": "amari_core::Bivector::inner_product_with_vector",
           "source_path": "amari-core/src/lib.rs",
           "source_ordinal": 10,
-          "gate": "always",
-          "status": "enabled",
-          "surface_kind": "inherent_method"
-        },
-        {
-          "path": "amari_core::Bivector::magnitude",
-          "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 7,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62337,7 +62326,7 @@
         {
           "path": "amari_core::E",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 18,
+          "source_ordinal": 20,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -62415,14 +62404,6 @@
           "surface_kind": "inherent_const"
         },
         {
-          "path": "amari_core::Multivector::abs",
-          "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 44,
-          "gate": "always",
-          "status": "enabled",
-          "surface_kind": "inherent_method"
-        },
-        {
           "path": "amari_core::Multivector::add",
           "source_path": "amari-core/src/lib.rs",
           "source_ordinal": 25,
@@ -62433,7 +62414,7 @@
         {
           "path": "amari_core::Multivector::approx_eq",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 45,
+          "source_ordinal": 44,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62471,6 +62452,14 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_core::Multivector::coefficient_norm",
+          "source_path": "amari-core/src/lib.rs",
+          "source_ordinal": 43,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_core::Multivector::dot",
           "source_path": "amari-core/src/lib.rs",
           "source_ordinal": 24,
@@ -62481,7 +62470,7 @@
         {
           "path": "amari_core::Multivector::exp",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 48,
+          "source_ordinal": 47,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62577,7 +62566,7 @@
         {
           "path": "amari_core::Multivector::hodge_dual",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 52,
+          "source_ordinal": 51,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62593,7 +62582,15 @@
         {
           "path": "amari_core::Multivector::inverse",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 47,
+          "source_ordinal": 46,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_core::Multivector::is_approx_zero",
+          "source_path": "amari-core/src/lib.rs",
+          "source_ordinal": 41,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62609,23 +62606,7 @@
         {
           "path": "amari_core::Multivector::left_contraction",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 50,
-          "gate": "always",
-          "status": "enabled",
-          "surface_kind": "inherent_method"
-        },
-        {
-          "path": "amari_core::Multivector::magnitude",
-          "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 42,
-          "gate": "always",
-          "status": "enabled",
-          "surface_kind": "inherent_method"
-        },
-        {
-          "path": "amari_core::Multivector::norm",
-          "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 43,
+          "source_ordinal": 49,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62633,15 +62614,7 @@
         {
           "path": "amari_core::Multivector::norm_squared",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 41,
-          "gate": "always",
-          "status": "enabled",
-          "surface_kind": "inherent_method"
-        },
-        {
-          "path": "amari_core::Multivector::normalize",
-          "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 46,
+          "source_ordinal": 42,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -62673,7 +62646,7 @@
         {
           "path": "amari_core::Multivector::right_contraction",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 51,
+          "source_ordinal": 50,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -63169,7 +63142,7 @@
         {
           "path": "amari_core::Scalar",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 10,
+          "source_ordinal": 12,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -63217,7 +63190,7 @@
         {
           "path": "amari_core::Vector",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 13,
+          "source_ordinal": 15,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -63234,6 +63207,14 @@
           "path": "amari_core::Vector::as_slice",
           "source_path": "amari-core/src/lib.rs",
           "source_ordinal": 12,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_core::Vector::coefficient_norm",
+          "source_path": "amari-core/src/lib.rs",
+          "source_ordinal": 11,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -63313,7 +63294,7 @@
         {
           "path": "amari_core::Vector::hodge_dual",
           "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 24,
+          "source_ordinal": 23,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -63346,22 +63327,6 @@
           "path": "amari_core::Vector::left_contraction",
           "source_path": "amari-core/src/lib.rs",
           "source_ordinal": 19,
-          "gate": "always",
-          "status": "enabled",
-          "surface_kind": "inherent_method"
-        },
-        {
-          "path": "amari_core::Vector::magnitude",
-          "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 11,
-          "gate": "always",
-          "status": "enabled",
-          "surface_kind": "inherent_method"
-        },
-        {
-          "path": "amari_core::Vector::norm",
-          "source_path": "amari-core/src/lib.rs",
-          "source_ordinal": 23,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"

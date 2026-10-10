@@ -255,7 +255,7 @@ impl<T: Float, const P: usize, const Q: usize, const R: usize> InverseDesigner<T
             for (x, (evolved_cell, target_cell)) in evolved_row.iter().zip(target_row).enumerate() {
                 // Compute squared difference in magnitude
                 let evolved_mag = evolved_cell.magnitude();
-                let target_mag = T::from(target_cell.magnitude()).unwrap();
+                let target_mag = T::from(target_cell.coefficient_norm()).unwrap();
                 let diff = evolved_mag - target_mag;
                 let weight = T::from(target.position_weights[y][x]).unwrap();
 

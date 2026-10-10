@@ -53,7 +53,7 @@ impl<T: Float, const DIM: usize> VerifiedContractTropicalDualClifford<T, DIM> {
     /// - `ensures(result.is_zero())`
     /// - `ensures(result.tropical().is_zero())`
     /// - `ensures(result.dual().norm().real.abs() < epsilon)`
-    /// - `ensures(result.clifford().norm().abs() < epsilon)`
+    /// - `ensures(result.clifford().coefficient_norm().abs() < epsilon)`
     pub fn zero() -> Self {
         Self {
             inner: TropicalDualClifford::zero(),
@@ -201,7 +201,7 @@ impl<T: Float, const DIM: usize> VerifiedContractTropicalDualClifford<T, DIM> {
         let clifford = self.inner.clifford();
 
         // Basic geometric algebra properties
-        let norm = clifford.norm();
+        let norm = clifford.coefficient_norm();
         if norm.is_nan() || norm.is_infinite() || norm < 0.0 {
             return false;
         }
@@ -345,9 +345,9 @@ impl FusionAlgebraLaws {
         let transformed = a.transform(b);
 
         // Verify geometric properties are preserved
-        let a_norm = a.inner.clifford().norm();
-        let b_norm = b.inner.clifford().norm();
-        let result_norm = transformed.inner.clifford().norm();
+        let a_norm = a.inner.clifford().coefficient_norm();
+        let b_norm = b.inner.clifford().coefficient_norm();
+        let result_norm = transformed.inner.clifford().coefficient_norm();
 
         // All norms should be finite and non-negative
         a_norm >= 0.0

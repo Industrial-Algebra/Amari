@@ -1,0 +1,510 @@
+    Checking memchr v2.8.3
+   Compiling serde_json v1.0.151
+   Compiling libm v0.2.16
+    Checking itoa v1.0.18
+    Checking regex-syntax v0.8.11
+    Checking anstyle v1.0.14
+    Checking utf8parse v0.2.2
+    Checking colorchoice v1.0.5
+   Compiling num-traits v0.2.19
+    Checking is_terminal_polyfill v1.70.2
+    Checking anstyle-query v1.1.5
+    Checking strsim v0.11.1
+    Checking clap_lex v1.1.1
+   Compiling heck v0.5.0
+    Checking same-file v1.0.6
+    Checking serde_core v1.0.229
+    Checking zmij v1.0.23
+    Checking libc v0.2.190
+    Checking typenum v1.20.1
+    Checking once_cell v1.21.4
+   Compiling version_check v0.9.5
+    Checking bitflags v2.13.2
+   Compiling syn v3.0.6
+    Checking anstyle-parse v1.0.0
+    Checking zerocopy v0.8.62
+    Checking crossbeam-utils v0.8.23
+    Checking walkdir v2.5.0
+    Checking either v1.19.0
+    Checking rand_core v0.10.1
+   Compiling getrandom v0.4.3
+    Checking fastrand v2.5.0
+    Checking cast v0.3.0
+   Compiling matrixmultiply v0.3.11
+    Checking plotters-backend v0.3.7
+    Checking ciborium-io v0.2.2
+    Checking oorandom v11.1.5
+    Checking anstream v1.0.0
+    Checking rawpointer v0.2.1
+    Checking alloca v0.4.0
+    Checking itertools v0.13.0
+   Compiling nalgebra-macros v0.3.0
+    Checking anes v0.1.6
+    Checking cpufeatures v0.3.1
+   Compiling rustix v1.1.5
+    Checking linux-raw-sys v0.12.1
+    Checking fnv v1.0.7
+    Checking chacha20 v0.10.2
+    Checking bit-vec v0.8.0
+    Checking quick-error v1.2.3
+    Checking unarray v0.1.4
+    Checking cpufeatures v0.2.17
+    Checking clap_builder v4.6.7
+    Checking equivalent v1.0.2
+    Checking hashbrown v0.17.1
+    Checking plotters-svg v0.3.7
+    Checking unicode-ident v1.0.26
+   Compiling ref-cast v1.0.27
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+    Checking bit-set v0.8.0
+    Checking aho-corasick v1.1.5
+    Checking crossbeam-epoch v0.9.21
+   Compiling generic-array v0.14.7
+    Checking dyn-clone v1.0.20
+    Checking toml_write v0.1.2
+    Checking winnow v0.7.15
+   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-discovery)
+    Checking predicates-core v1.0.10
+    Checking hex v0.4.3
+   Compiling assert_cmd v2.2.2
+    Checking termtree v0.5.1
+    Checking difflib v0.4.0
+    Checking normalize-line-endings v0.3.0
+    Checking crossbeam-deque v0.8.8
+    Checking pin-project-lite v0.2.17
+   Compiling parking_lot_core v0.9.12
+    Checking smallvec v1.16.2
+    Checking scopeguard v1.2.0
+    Checking predicates-tree v1.0.13
+    Checking rayon-core v1.13.0
+    Checking bytes v1.12.1
+    Checking futures-sink v0.3.34
+    Checking lock_api v0.4.14
+    Checking futures-core v0.3.34
+    Checking futures-io v0.3.34
+    Checking slab v0.4.12
+    Checking futures-task v0.3.34
+    Checking termcolor v1.4.1
+    Checking futures-channel v0.3.34
+   Compiling cfg_aliases v0.1.1
+   Compiling ahash v0.8.12
+    Checking indexmap v2.14.2
+   Compiling thiserror v1.0.69
+    Checking page_size v0.6.0
+    Checking getrandom v0.3.4
+    Checking wait-timeout v0.2.1
+    Checking errno v0.3.14
+    Checking rand v0.10.3
+    Checking socket2 v0.6.5
+    Checking mio v1.2.4
+    Checking rand_core v0.9.5
+   Compiling thiserror-impl v1.0.69
+    Checking signal-hook-registry v1.4.8
+    Checking unicode-width v0.1.14
+    Checking rayon v1.12.0
+    Checking parking_lot v0.12.5
+    Checking block-buffer v0.10.4
+    Checking rand v0.9.5
+    Checking rand_xorshift v0.4.0
+    Checking crypto-common v0.1.7
+    Checking syn v2.0.119
+    Checking allocator-api2 v0.2.21
+    Checking bit-vec v0.6.3
+    Checking digest v0.10.7
+   Compiling ash v0.37.3+1.3.251
+   Compiling khronos-egl v6.0.0
+    Checking codespan-reporting v0.11.1
+    Checking sha2 v0.10.9
+   Compiling wgpu-hal v0.19.5
+    Checking gpu-alloc-types v0.3.1
+    Checking spirv v0.3.0+sdk-1.3.268.0
+    Checking bit-set v0.5.3
+    Checking approx v0.5.1
+    Checking num-integer v0.1.47
+    Checking num-complex v0.4.6
+    Checking plotters v0.3.7
+    Checking float-cmp v0.10.0
+    Checking gpu-descriptor-types v0.1.2
+    Checking regex-automata v0.4.18
+    Checking libloading v0.8.9
+    Checking criterion-plot v0.8.2
+    Checking libloading v0.7.4
+    Checking hexf-parse v0.2.1
+    Checking num-bigint v0.4.8
+    Checking log v0.4.34
+    Checking rustc-hash v1.1.0
+    Checking unicode-xid v0.2.6
+    Checking gpu-alloc v0.6.2
+   Compiling wgpu-core v0.19.4
+    Checking wgpu-types v0.19.2
+    Checking renderdoc-sys v1.1.0
+    Checking arrayvec v0.7.8
+    Checking glow v0.13.1
+    Checking profiling v1.0.18
+    Checking raw-window-handle v0.6.2
+   Compiling wgpu v0.19.4
+    Checking pollster v1.0.1
+   Compiling wasm-bindgen-shared v0.2.129
+    Checking tempfile v3.27.0
+   Compiling bumpalo v3.20.3
+   Compiling target-tuple v1.0.2
+   Compiling wasm-bindgen v0.2.129
+    Checking rusty-fork v0.3.1
+    Checking rand_distr v0.6.0
+    Checking winnow v1.0.4
+    Checking toml_datetime v1.1.2+spec-1.1.0
+   Compiling amari-flynn-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-flynn-macros)
+    Checking serde_spanned v1.1.2
+   Compiling serde v1.0.229
+    Checking toml_writer v1.1.3+spec-1.1.0
+    Checking glob v0.3.4
+   Compiling thiserror v2.0.21
+   Compiling amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-wasm)
+    Checking cfg-if v1.0.5
+    Checking nu-ansi-term v0.50.3
+    Checking num-rational v0.4.2
+    Checking wasm-bindgen-test-shared v0.2.129
+    Checking naga v0.19.2
+    Checking toml_parser v1.1.5+spec-1.1.0
+    Checking amari-flynn v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-flynn)
+   Compiling amari-discovery-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-discovery-macros)
+    Checking toml v1.1.8+spec-1.1.0
+    Checking toml_edit v0.25.17+spec-1.1.0
+    Checking proc-macro-crate v3.5.0
+    Checking half v2.7.1
+    Checking ppv-lite86 v0.2.21
+    Checking regex v1.13.1
+    Checking bstr v1.13.1
+   Compiling serde_derive_internals v0.30.0
+   Compiling wasm-bindgen-macro-support v0.2.129
+    Checking hashbrown v0.14.5
+    Checking rand_chacha v0.9.0
+    Checking rand_chacha v0.10.0
+    Checking ciborium-ll v0.2.2
+    Checking proptest v1.11.0
+    Checking predicates v3.1.4
+    Checking amari-rewrite-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-rewrite-macros)
+    Checking gpu-descriptor v0.2.4
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_derive v1.0.229
+   Compiling bytemuck_derive v1.12.1
+   Compiling clap_derive v4.6.7
+   Compiling ref-cast-impl v1.0.27
+   Compiling schemars_derive v1.2.2
+   Compiling tokio-macros v2.7.2
+   Compiling futures-macro v0.3.34
+   Compiling async-trait v0.1.92
+   Compiling wasm-bindgen-test-macro v0.3.79
+    Checking tokio v1.53.2
+    Checking futures-util v0.3.34
+    Checking bytemuck v1.25.2
+    Checking safe_arch v1.2.0
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Checking amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-rewrite)
+    Checking amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-cgt)
+    Checking clap v4.6.7
+    Checking wide v1.7.1
+    Checking amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-surreal)
+    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-tropical)
+    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dual)
+    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-info-geom)
+    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-holographic)
+    Checking amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-enumerative)
+    Checking amari-surcomplex v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-surcomplex)
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-dual/src/multivector.rs:127:30
+    |
+127 |         T::from(self.value().magnitude()).unwrap()
+    |                 ----         ^^^^^^^^^
+    |                 |
+    |                 method `magnitude` is available on `&DualMultivector<T, P, Q, R>`
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:185:40
+    |
+185 |             let self_norm = self.inner.norm();
+    |                                        ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:186:42
+    |
+186 |             let other_norm = other.inner.norm();
+    |                                          ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:194:40
+    |
+194 |             let self_norm = self.inner.norm();
+    |                                        ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:195:42
+    |
+195 |             let other_norm = other.inner.norm();
+    |                                          ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:213:36
+    |
+213 |         let self_norm = self.inner.norm();
+    |                                    ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:214:38
+    |
+214 |         let other_norm = other.inner.norm();
+    |                                      ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:226:20
+    |
+226 |         self.inner.norm()
+    |                    ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:231:14
+    |
+230 | /         self.inner
+231 | |             .normalize()
+    | |             -^^^^^^^^^ method not found in `Multivector<P, Q, R>`
+    | |_____________|
+    |
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `normalize`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:234:34
+    |
+234 |                 norm: self.inner.norm(),
+    |                                  ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `algebra::BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:185:40
+    |
+185 |             let self_norm = self.inner.norm();
+    |                                        ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:186:42
+    |
+186 |             let other_norm = other.inner.norm();
+    |                                          ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:194:40
+    |
+194 |             let self_norm = self.inner.norm();
+    |                                        ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:195:42
+    |
+195 |             let other_norm = other.inner.norm();
+    |                                          ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:213:36
+    |
+213 |         let self_norm = self.inner.norm();
+    |                                    ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:214:38
+    |
+214 |         let other_norm = other.inner.norm();
+    |                                      ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:226:20
+    |
+226 |         self.inner.norm()
+    |                    ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:231:14
+    |
+230 | /         self.inner
+231 | |             .normalize()
+    | |             -^^^^^^^^^ method not found in `Multivector<P, Q, R>`
+    | |_____________|
+    |
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `normalize`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-holographic/src/algebra/clifford.rs:234:34
+    |
+234 |                 norm: self.inner.norm(),
+    |                                  ^^^^ method not found in `Multivector<P, Q, R>`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+note: `BindingAlgebra` defines an item `norm`, perhaps you need to implement it
+   --> amari-holographic/src/algebra/mod.rs:171:1
+    |
+171 | pub trait BindingAlgebra: Sized + Clone + Send + Sync {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: could not compile `amari-dual` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error[E0599]: no method named `magnitude` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-enumerative/src/geometric_algebra.rs:146:26
+    |
+146 |         self.multivector.magnitude()
+    |                          ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-enumerative/src/geometric_algebra.rs:160:44
+    |
+160 |         (meet - point.multivector.clone()).magnitude() < 1e-10
+    |                                            ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-enumerative/src/geometric_algebra.rs:353:44
+    |
+353 |         let multiplicity = intersection_mv.magnitude();
+    |                                            ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: could not compile `amari-holographic` (lib test) due to 9 previous errors
+error: could not compile `amari-holographic` (lib) due to 9 previous errors
+error: could not compile `amari-enumerative` (lib) due to 3 previous errors

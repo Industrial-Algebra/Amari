@@ -104,7 +104,7 @@ impl WasmGeometricCA {
         for y in 0..self.height {
             for x in 0..self.width {
                 if let Ok(cell) = self.inner.get_cell_2d(x, y) {
-                    if cell.norm() > 1e-10 {
+                    if cell.coefficient_norm() > 1e-10 {
                         count += 1;
                     }
                 }

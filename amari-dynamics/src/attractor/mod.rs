@@ -95,7 +95,7 @@ pub fn detect_attractor_type<const P: usize, const Q: usize, const R: usize>(
 
     for window in last_states.windows(2) {
         let diff = window[0] - window[1];
-        if diff.norm() > config.fixed_point_tolerance {
+        if diff.coefficient_norm() > config.fixed_point_tolerance {
             is_stationary = false;
             break;
         }

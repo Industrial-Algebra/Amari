@@ -18,7 +18,7 @@ extern crate alloc;
 use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
-use core::ops::{Add, Mul, Neg, Sub};
+use core::ops::{Add, Div, Mul, Neg, Sub};
 use num_traits::Zero;
 
 #[allow(dead_code)]
@@ -444,7 +444,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
     /// assert!((mv.grade_magnitude(1) - 1.0).abs() < 1e-10);  // vector part
     /// ```
     pub fn grade_magnitude(&self, grade: usize) -> f64 {
-        self.grade_projection(grade).magnitude()
+        self.grade_projection(grade).coefficient_norm()
     }
 
     /// Get all grade magnitudes as a vector.
@@ -470,62 +470,94 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         grades
     }
 
-    /// Check if this is (approximately) zero
+    /// Whether every coefficient is exactly zero.
+    ///
+    /// Exact structural test; there is no tolerance. For a tolerance-based
+    /// query use [`is_approx_zero`](Self::is_approx_zero).
     pub fn is_zero(&self) -> bool {
-        self.coefficients.iter().all(|&c| c.abs() < 1e-14)
+        self.coefficients.iter().all(|&c| c == 0.0)
     }
 
-    /// Compute the norm squared (scalar product with reverse)
+    /// Whether every coefficient is zero within `epsilon` under the same
+    /// coefficientwise relative+absolute rule as
+    /// [`approx_eq`](Self::approx_eq) against the zero element.
+    pub fn is_approx_zero(&self, epsilon: f64) -> bool {
+        self.approx_eq(&Self::zero(), epsilon)
+    }
+
+    /// Signed metric quadratic form: the scalar product with the reverse.
+    ///
+    /// This is the honest quadratic form induced by the algebra's metric.
+    /// In mixed or degenerate signatures it may be negative or zero for
+    /// nonzero elements; it is not a magnitude. Use
+    /// [`coefficient_norm`](Self::coefficient_norm) for the non-negative
+    /// magnitude of the coefficient vector.
     pub fn norm_squared(&self) -> f64 {
         self.scalar_product(&self.reverse())
     }
 
-    /// Compute the magnitude (length) of this multivector
+    /// Coefficient magnitude: sqrt of the sum of squared coefficients.
     ///
-    /// The magnitude is defined as |a| = √(a·ã) where ã is the reverse of a.
-    /// This provides the natural norm inherited from the underlying vector space.
-    ///
-    /// # Mathematical Properties
-    /// - Always non-negative: |a| ≥ 0
-    /// - Zero iff a = 0: |a| = 0 ⟺ a = 0
-    /// - Sub-multiplicative: |ab| ≤ |a||b|
-    ///
-    /// # Examples
-    /// ```rust
-    /// use amari_core::Multivector;
-    /// let v = Multivector::<3,0,0>::basis_vector(0);
-    /// assert_eq!(v.magnitude(), 1.0);
-    /// ```
-    pub fn magnitude(&self) -> f64 {
-        self.norm_squared().abs().sqrt()
-    }
-
-    /// Compute the norm (magnitude) of this multivector
-    ///
-    /// **Note**: This method is maintained for backward compatibility.
-    /// New code should prefer [`magnitude()`](Self::magnitude) for clarity.
-    pub fn norm(&self) -> f64 {
-        self.magnitude()
-    }
-
-    /// Absolute value (same as magnitude/norm for multivectors)
-    pub fn abs(&self) -> f64 {
-        self.magnitude()
-    }
-
-    /// Approximate equality comparison
-    pub fn approx_eq(&self, other: &Self, epsilon: f64) -> bool {
-        (self.clone() - other.clone()).magnitude() < epsilon
-    }
-
-    /// Normalize this multivector
-    pub fn normalize(&self) -> Option<Self> {
-        let norm = self.norm();
-        if norm > 1e-14 {
-            Some(self * (1.0 / norm))
-        } else {
-            None
+    /// Signature-independent l2 norm of the coefficient vector; always >= 0
+    /// and zero only for the exact zero element. This is not the metric
+    /// quantity — use [`norm_squared`](Self::norm_squared) for the signed
+    /// quadratic form.
+    pub fn coefficient_norm(&self) -> f64 {
+        // Scaled sum-of-squares: squaring raw coefficients would underflow
+        // to 0 for magnitudes below ~1e-154 and overflow to inf above
+        // ~1e154; scaling by the largest magnitude keeps every
+        // representable magnitude representable. NaN propagates
+        // explicitly (f64::max would silently ignore it).
+        if self.coefficients.iter().any(|c| c.is_nan()) {
+            return f64::NAN;
         }
+        let max = self
+            .coefficients
+            .iter()
+            .map(|c| c.abs())
+            .fold(0.0f64, f64::max);
+        if max == 0.0 || max.is_infinite() {
+            return max;
+        }
+        let scaled = self
+            .coefficients
+            .iter()
+            .map(|&c| {
+                let r = c / max;
+                r * r
+            })
+            .sum::<f64>();
+        max * scaled.sqrt()
+    }
+
+    /// Approximate equality: coefficientwise relative+absolute comparison.
+    ///
+    /// Two multivectors are approximately equal when, for every coefficient
+    /// pair (a, b): a == b, or both are finite and
+    /// |a - b| <= epsilon * max(1.0, |a|, |b|).
+    /// Non-finite coefficients compare approximately-equal only when exactly
+    /// equal (so NaN never matches, +inf matches +inf).
+    pub fn approx_eq(&self, other: &Self, epsilon: f64) -> bool {
+        self.coefficients
+            .iter()
+            .zip(other.coefficients.iter())
+            .all(|(&a, &b)| {
+                a == b
+                    || (a.is_finite()
+                        && b.is_finite()
+                        && (a - b).abs() <= epsilon * a.abs().max(b.abs()).max(1.0))
+            })
+    }
+
+    /// Crate-private versor normalization: exact positive-domain scaling.
+    ///
+    /// Returns Some(self * 1/sqrt(norm_squared())) only when the signed
+    /// metric quadratic form is strictly positive; no epsilon, no absolute
+    /// value. Public rotor/versor domain policy remains undecided (W03/W07);
+    /// internal call sites use this until then.
+    pub(crate) fn normalize_versor(&self) -> Option<Self> {
+        let q = self.norm_squared();
+        (q > 0.0).then(|| self / q.sqrt())
     }
 
     /// Compute multiplicative inverse if it exists
@@ -547,7 +579,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
     pub fn exp(&self) -> Self {
         // Check if this is a bivector (grade 2)
         let grade2 = self.grade_projection(2);
-        if (self - &grade2).norm() > 1e-10 {
+        if (self - &grade2).coefficient_norm() > 1e-10 {
             // For general multivectors, use series expansion
             return self.exp_series();
         }
@@ -584,7 +616,8 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
             result = result + term.clone();
 
             // Check convergence
-            if (result.clone() - old_result).norm() < 1e-14 {
+            // difference-magnitude convergence; exponential structure remains CORE-W03
+            if (result.clone() - old_result).coefficient_norm() < 1e-14 {
                 break;
             }
         }
@@ -773,6 +806,32 @@ impl<const P: usize, const Q: usize, const R: usize> Sub for &Multivector<P, Q, 
     }
 }
 
+/// Scale every coefficient by division.
+///
+/// Division (rather than multiplication by a reciprocal) keeps extreme
+/// magnitudes representable: `1.0 / n` overflows for subnormal `n`, which
+/// would turn exact normalizations into infinities/NaNs.
+impl<const P: usize, const Q: usize, const R: usize> Div<f64> for Multivector<P, Q, R> {
+    type Output = Self;
+    fn div(mut self, rhs: f64) -> Self {
+        for c in self.coefficients.iter_mut() {
+            *c /= rhs;
+        }
+        self
+    }
+}
+
+impl<const P: usize, const Q: usize, const R: usize> Div<f64> for &Multivector<P, Q, R> {
+    type Output = Multivector<P, Q, R>;
+    fn div(self, rhs: f64) -> Multivector<P, Q, R> {
+        let mut out = self.clone();
+        for c in out.coefficients.iter_mut() {
+            *c /= rhs;
+        }
+        out
+    }
+}
+
 impl<const P: usize, const Q: usize, const R: usize> Mul<f64> for Multivector<P, Q, R> {
     type Output = Self;
 
@@ -932,8 +991,9 @@ impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
         }
     }
 
-    pub fn magnitude(&self) -> f64 {
-        self.mv.magnitude()
+    /// Coefficient magnitude: sqrt of the sum of squared coefficients.
+    pub fn coefficient_norm(&self) -> f64 {
+        self.mv.coefficient_norm()
     }
 
     pub fn as_slice(&self) -> &[f64] {
@@ -978,14 +1038,23 @@ impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
         product.grade_projection(target_grade)
     }
 
-    /// Normalize the vector (return unit vector if possible)
+    /// Normalize the vector; Some only for strictly positive metric square.
+    ///
+    /// Negative-square (e.g. timelike) and null vectors return None. No
+    /// tolerance: a tiny positive-square vector normalizes exactly.
     pub fn normalize(&self) -> Option<Self> {
-        self.mv
-            .normalize()
-            .map(|normalized| Self { mv: normalized })
+        let q = self.norm_squared();
+        (q > 0.0).then(|| Self {
+            mv: &self.mv / q.sqrt(),
+        })
     }
 
-    /// Compute the squared norm of the vector
+    /// Signed metric quadratic form: the scalar product with the reverse.
+    ///
+    /// In mixed or degenerate signatures this may be negative or zero for
+    /// nonzero vectors; it is not a magnitude. Use
+    /// [`coefficient_norm`](Self::coefficient_norm) for the non-negative
+    /// coefficient magnitude.
     pub fn norm_squared(&self) -> f64 {
         self.mv.norm_squared()
     }
@@ -995,14 +1064,6 @@ impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
         Self {
             mv: self.mv.reverse(),
         }
-    }
-
-    /// Compute the norm (magnitude) of the vector
-    ///
-    /// **Note**: This method is maintained for backward compatibility.
-    /// New code should prefer [`magnitude()`](Self::magnitude) for clarity.
-    pub fn norm(&self) -> f64 {
-        self.magnitude()
     }
 
     /// Hodge dual of the vector
@@ -1068,8 +1129,9 @@ impl<const P: usize, const Q: usize, const R: usize> Bivector<P, Q, R> {
         self.mv.geometric_product(&other.mv)
     }
 
-    pub fn magnitude(&self) -> f64 {
-        self.mv.magnitude()
+    /// Coefficient magnitude: sqrt of the sum of squared coefficients.
+    pub fn coefficient_norm(&self) -> f64 {
+        self.mv.coefficient_norm()
     }
 
     /// Index access for bivector components
@@ -1177,7 +1239,7 @@ mod tests {
         let rotor = bivector.exp();
 
         // Check that rotor has unit norm
-        assert!((rotor.norm() - 1.0).abs() < 1e-10);
+        assert!((rotor.coefficient_norm() - 1.0).abs() < 1e-10);
     }
 
     #[test]
@@ -1193,17 +1255,21 @@ mod tests {
 
         let left = a.geometric_product(&b).geometric_product(&c);
         let right = a.geometric_product(&b.geometric_product(&c));
-        assert_relative_eq!(left.norm(), right.norm(), epsilon = 1e-12);
+        assert_relative_eq!(
+            left.coefficient_norm(),
+            right.coefficient_norm(),
+            epsilon = 1e-12
+        );
 
         // Distributivity: a(b + c) = ab + ac
         let ab_plus_ac = a.geometric_product(&b) + a.geometric_product(&c);
         let a_times_b_plus_c = a.geometric_product(&(b.clone() + c.clone()));
-        assert!((ab_plus_ac - a_times_b_plus_c).norm() < 1e-12);
+        assert!((ab_plus_ac - a_times_b_plus_c).coefficient_norm() < 1e-12);
 
         // Reverse property: (ab)† = b†a†
         let ab_reverse = a.geometric_product(&b).reverse();
         let b_reverse_a_reverse = b.reverse().geometric_product(&a.reverse());
-        assert!((ab_reverse - b_reverse_a_reverse).norm() < 1e-12);
+        assert!((ab_reverse - b_reverse_a_reverse).coefficient_norm() < 1e-12);
     }
 
     #[test]
@@ -1239,7 +1305,7 @@ mod tests {
 
         // Sum of grade projections should equal original
         let reconstructed = grade0 + grade1 + grade2;
-        assert!((mv - reconstructed).norm() < 1e-12);
+        assert!((mv - reconstructed).coefficient_norm() < 1e-12);
     }
 
     #[test]
@@ -1249,7 +1315,7 @@ mod tests {
         let e3 = Cl3::basis_vector(2);
 
         // Inner product of orthogonal vectors is zero
-        assert!(e1.inner_product(&e2).norm() < 1e-12);
+        assert!(e1.inner_product(&e2).coefficient_norm() < 1e-12);
 
         // Inner product of parallel vectors
         let v1 = e1.clone() + e2.clone();

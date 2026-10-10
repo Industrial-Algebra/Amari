@@ -5,9 +5,9 @@
 
 #![cfg(feature = "formal-verification")]
 
-use creusot_contracts::macros::{ensures, requires};
 use super::verified::VerifiedMultivector;
-use num_traits::{Zero, One, Float};
+use creusot_contracts::macros::{ensures, requires};
+use num_traits::{Float, One, Zero};
 
 /// Trait for types that satisfy the associativity law
 pub trait Associative {
@@ -101,9 +101,11 @@ pub trait GradeProjection {
 /// Verification of rotor properties
 pub trait RotorProperties<T: Float> {
     /// Rotors preserve norm under application: |R v R†| = |v|
+    ///
+    /// The preservation law is stated on the coefficient magnitude.
     #[law]
     #[ensures(forall(|rotor: &Self, vector: &Self|
-        (rotor.apply(vector).norm() - vector.norm()).abs() < T::epsilon()
+        (rotor.apply(vector).coefficient_norm() - vector.coefficient_norm()).abs() < T::epsilon()
     ))]
     fn norm_preservation(&self);
 
@@ -116,7 +118,7 @@ pub trait RotorProperties<T: Float> {
 
     fn apply(&self, vector: &Self) -> Self;
     fn compose(&self, other: &Self) -> Self;
-    fn norm(&self) -> T;
+    fn coefficient_norm(&self) -> T;
 }
 
 /// Verification of the fundamental identity for quaternions
@@ -154,8 +156,7 @@ where
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T, const P: usize, const Q: usize, const R: usize>
-    GeometricAlgebraLaws<T, P, Q, R>
+impl<T, const P: usize, const Q: usize, const R: usize> GeometricAlgebraLaws<T, P, Q, R>
 where
     T: Float + Zero + One,
 {
@@ -238,7 +239,11 @@ where
         .enumerate()
         .map(|(i, c)| {
             let grade = i.count_ones() as usize;
-            if grade.is_multiple_of(2) { *c } else { -*c }
+            if grade.is_multiple_of(2) {
+                *c
+            } else {
+                -*c
+            }
         })
         .collect();
     VerifiedMultivector {

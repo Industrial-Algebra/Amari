@@ -1,0 +1,1765 @@
+    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-network)
+    Checking amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dynamics)
+    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-relativistic)
+warning: unused import: `Sha256Digest`
+  --> amari-rewrite/tests/relation_grounding.rs:11:85
+   |
+11 |     ConstraintSet, GroundingDomain, GroundingOutcome, RankedSymbol, RelationLimits, Sha256Digest,
+   |                                                                                     ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Substitution`
+  --> amari-rewrite/tests/relation_grounding.rs:14:32
+   |
+14 | use amari_rewrite::trs::{Rule, Substitution, Term, TermSystem};
+   |                                ^^^^^^^^^^^^
+
+warning: unused import: `PreimageCertificate`
+  --> amari-rewrite/tests/saturation_preimage.rs:13:48
+   |
+13 |     saturation_preimage, CertificateAuthority, PreimageCertificate, PreimageConstruction,
+   |                                                ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "relation_grounding") generated 2 warnings (run `cargo fix --test "relation_grounding" -p amari-rewrite` to apply 2 suggestions)
+warning: `amari-rewrite` (test "saturation_preimage") generated 1 warning (run `cargo fix --test "saturation_preimage" -p amari-rewrite` to apply 1 suggestion)
+warning: unused imports: `GuidanceMode`, `ReplayCertificate`, `ReplayQuery`, and `ResourceObservation`
+ --> amari-rewrite/tests/inverse_remediation.rs:6:5
+  |
+6 |     GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayQuery, ResourceObservation,
+  |     ^^^^^^^^^^^^                       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "inverse_remediation") generated 1 warning (run `cargo fix --test "inverse_remediation" -p amari-rewrite` to apply 1 suggestion)
+warning: unused import: `RewriteResidual`
+  --> amari-rewrite/tests/residual_roundtrip.rs:10:49
+   |
+10 | use amari_rewrite::reversible::{ReversibleStep, RewriteResidual};
+   |                                                 ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "residual_roundtrip") generated 1 warning (run `cargo fix --test "residual_roundtrip" -p amari-rewrite` to apply 1 suggestion)
+    Checking amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-discovery)
+    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-gpu)
+    Checking amari v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02)
+    Checking amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-wasm)
+error[E0599]: no method named `magnitude` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:501:37
+    |
+501 |         if !verified_result.inner().magnitude().is_finite() {
+    |                                     ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:501:37
+    |
+501 |         if !verified_result.inner().magnitude().is_finite() {
+    |                                     ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:536:41
+    |
+536 |         let result_mag = result.inner().magnitude();
+    |                                         ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:537:31
+    |
+537 |         let a_mag = a.inner().magnitude();
+    |                               ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:538:31
+    |
+538 |         let b_mag = b.inner().magnitude();
+    |                               ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:536:41
+    |
+536 |         let result_mag = result.inner().magnitude();
+    |                                         ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:537:31
+    |
+537 |         let a_mag = a.inner().magnitude();
+    |                               ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/adaptive.rs:538:31
+    |
+538 |         let b_mag = b.inner().magnitude();
+    |                               ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/verification.rs:107:36
+    |
+107 |         let magnitude = self.inner.magnitude();
+    |                                    ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/verification.rs:344:35
+    |
+344 |                     if !result_mv.magnitude().is_finite() {
+    |                                   ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/verification.rs:107:36
+    |
+107 |         let magnitude = self.inner.magnitude();
+    |                                    ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-gpu/src/verification.rs:344:35
+    |
+344 |                     if !result_mv.magnitude().is_finite() {
+    |                                   ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+    --> amari-gpu/src/lib.rs:1515:24
+     |
+1515 |         assert!(result.magnitude() > 0.0);
+     |                        ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `amari-gpu` (lib) due to 6 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `amari-gpu` (lib test) due to 7 previous errors
+error[E0599]: no method named `norm` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-wasm/src/automata.rs:107:29
+    |
+107 |                     if cell.norm() > 1e-10 {
+    |                             ^^^^ method not found in `Multivector<3, 0, 0>`
+
+error[E0599]: no method named `magnitude` found for reference `&Multivector<8, 0, 0>` in the current scope
+   --> amari-wasm/src/fusion.rs:148:51
+    |
+148 |         let clifford_norm = self.inner.clifford().magnitude();
+    |                                                   ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for reference `&Multivector<8, 0, 0>` in the current scope
+   --> amari-wasm/src/fusion.rs:207:16
+    |
+207 |             mv.magnitude(),           // magnitude
+    |                ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-wasm/src/fusion.rs:208:26
+    |
+208 |             mv.reverse().magnitude(), // reverse magnitude
+    |                          ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2013:4
+     |
+2013 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2017:4
+     |
+2017 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2021:4
+     |
+2021 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2025:4
+     |
+2025 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2029:4
+     |
+2029 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2033:4
+     |
+2033 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2037:4
+     |
+2037 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2041:4
+     |
+2041 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2045:4
+     |
+2045 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2049:4
+     |
+2049 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2053:4
+     |
+2053 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2057:4
+     |
+2057 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2061:4
+     |
+2061 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2065:4
+     |
+2065 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2069:4
+     |
+2069 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2073:4
+     |
+2073 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2077:4
+     |
+2077 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2081:4
+     |
+2081 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2085:4
+     |
+2085 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2089:4
+     |
+2089 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2093:4
+     |
+2093 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2097:4
+     |
+2097 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2101:4
+     |
+2101 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2105:4
+     |
+2105 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2109:4
+     |
+2109 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2113:4
+     |
+2113 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2117:4
+     |
+2117 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2121:4
+     |
+2121 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2125:4
+     |
+2125 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2129:4
+     |
+2129 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2133:4
+     |
+2133 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2137:4
+     |
+2137 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2141:4
+     |
+2141 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2145:4
+     |
+2145 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2149:4
+     |
+2149 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2153:4
+     |
+2153 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2157:4
+     |
+2157 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2161:4
+     |
+2161 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2165:4
+     |
+2165 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2169:4
+     |
+2169 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2173:4
+     |
+2173 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2177:4
+     |
+2177 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2181:4
+     |
+2181 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2185:4
+     |
+2185 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2189:4
+     |
+2189 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2193:4
+     |
+2193 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2197:4
+     |
+2197 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2201:4
+     |
+2201 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2205:4
+     |
+2205 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2209:4
+     |
+2209 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2213:4
+     |
+2213 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2217:4
+     |
+2217 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2221:4
+     |
+2221 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2225:4
+     |
+2225 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2229:4
+     |
+2229 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2233:4
+     |
+2233 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2237:4
+     |
+2237 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2241:4
+     |
+2241 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2245:4
+     |
+2245 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2249:4
+     |
+2249 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2253:4
+     |
+2253 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2257:4
+     |
+2257 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2261:4
+     |
+2261 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2265:4
+     |
+2265 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2269:4
+     |
+2269 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2273:4
+     |
+2273 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2277:4
+     |
+2277 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2281:4
+     |
+2281 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2285:4
+     |
+2285 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2289:4
+     |
+2289 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2293:4
+     |
+2293 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2297:4
+     |
+2297 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2301:4
+     |
+2301 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2305:4
+     |
+2305 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2309:4
+     |
+2309 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2313:4
+     |
+2313 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2317:4
+     |
+2317 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2321:4
+     |
+2321 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2325:4
+     |
+2325 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2329:4
+     |
+2329 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2333:4
+     |
+2333 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2337:4
+     |
+2337 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2341:4
+     |
+2341 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2345:4
+     |
+2345 | mv.magnitude()
+     |    ^^^^^^^^^
+     |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+    --> amari-core/src/lib.rs:446:5
+     |
+ 446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2800:24
+     |
+2800 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 0, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2809:24
+     |
+2809 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 0, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2818:24
+     |
+2818 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 1, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2827:24
+     |
+2827 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 0, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2836:24
+     |
+2836 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 0, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2845:24
+     |
+2845 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 1, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2854:24
+     |
+2854 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 2, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2863:24
+     |
+2863 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 0, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2872:24
+     |
+2872 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 1, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2881:24
+     |
+2881 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 0, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2890:24
+     |
+2890 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 0, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2899:24
+     |
+2899 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 1, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2908:24
+     |
+2908 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 2, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2917:24
+     |
+2917 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 3, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2926:24
+     |
+2926 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 0, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2935:24
+     |
+2935 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 1, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2944:24
+     |
+2944 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 2, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2953:24
+     |
+2953 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 0, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2962:24
+     |
+2962 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 1, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2971:24
+     |
+2971 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 0, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2980:24
+     |
+2980 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 0, 4>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2989:24
+     |
+2989 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 1, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:2998:24
+     |
+2998 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 2, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3007:24
+     |
+3007 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 3, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3016:24
+     |
+3016 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 4, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3025:24
+     |
+3025 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 0, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3034:24
+     |
+3034 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 1, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3043:24
+     |
+3043 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 2, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3052:24
+     |
+3052 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 3, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3061:24
+     |
+3061 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 0, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3070:24
+     |
+3070 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 1, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3079:24
+     |
+3079 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 2, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3088:24
+     |
+3088 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 0, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3097:24
+     |
+3097 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 1, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3106:24
+     |
+3106 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<4, 0, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3115:24
+     |
+3115 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 0, 5>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3124:24
+     |
+3124 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 1, 4>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3133:24
+     |
+3133 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 2, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3142:24
+     |
+3142 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 3, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3151:24
+     |
+3151 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 4, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3160:24
+     |
+3160 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 5, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3169:24
+     |
+3169 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 0, 4>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3178:24
+     |
+3178 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 1, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3187:24
+     |
+3187 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 2, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3196:24
+     |
+3196 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 3, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3205:24
+     |
+3205 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 4, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3214:24
+     |
+3214 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 0, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3223:24
+     |
+3223 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 1, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3232:24
+     |
+3232 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 2, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3241:24
+     |
+3241 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 3, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3250:24
+     |
+3250 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 0, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3259:24
+     |
+3259 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 1, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3268:24
+     |
+3268 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 2, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3277:24
+     |
+3277 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<4, 0, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3286:24
+     |
+3286 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<4, 1, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3295:24
+     |
+3295 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<5, 0, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3304:24
+     |
+3304 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 0, 6>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3313:24
+     |
+3313 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 1, 5>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3322:24
+     |
+3322 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 2, 4>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3331:24
+     |
+3331 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 3, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3340:24
+     |
+3340 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 4, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3349:24
+     |
+3349 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 5, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3358:24
+     |
+3358 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<0, 6, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3367:24
+     |
+3367 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 0, 5>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3376:24
+     |
+3376 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 1, 4>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3385:24
+     |
+3385 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 2, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3394:24
+     |
+3394 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 3, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3403:24
+     |
+3403 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 4, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3412:24
+     |
+3412 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<1, 5, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3421:24
+     |
+3421 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 0, 4>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3430:24
+     |
+3430 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 1, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3439:24
+     |
+3439 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 2, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3448:24
+     |
+3448 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 3, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3457:24
+     |
+3457 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<2, 4, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3466:24
+     |
+3466 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 0, 3>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3475:24
+     |
+3475 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 1, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3484:24
+     |
+3484 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 2, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3493:24
+     |
+3493 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<3, 3, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3502:24
+     |
+3502 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<4, 0, 2>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3511:24
+     |
+3511 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<4, 1, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3520:24
+     |
+3520 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<4, 2, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3529:24
+     |
+3529 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<5, 0, 1>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3538:24
+     |
+3538 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<5, 1, 0>`
+
+error[E0599]: no method named `normalize` found for struct `Multivector<P, Q, R>` in the current scope
+    --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/build/amari-wasm-4bc2e5c10126ccc8/out/match_table.rs:3547:24
+     |
+3547 | if let Some(mv_r) = mv.normalize() {
+     |                        ^^^^^^^^^ method not found in `Multivector<6, 0, 0>`
+
+error: could not compile `amari-wasm` (lib test) due to 172 previous errors
+error: could not compile `amari-wasm` (lib) due to 172 previous errors

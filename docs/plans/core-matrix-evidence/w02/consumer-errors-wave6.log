@@ -1,0 +1,73 @@
+   Compiling amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-wasm)
+    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-gpu)
+    Checking amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-discovery)
+warning: unused imports: `RewriteGuidance` and `RewriteSearchMode`
+ --> amari-discovery/tests/probe_rewrite_inverse_search.rs:8:39
+  |
+8 |     RewriteBidirectionalSearchOutput, RewriteGuidance, RewriteSearchMode, RewriteTerm,
+  |                                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> amari-discovery/tests/probe_rewrite_inverse_search.rs:195:9
+    |
+195 |     let mut bad = backward_request(json!({"kind": "heuristic_pruning", "beam_width": 0}));
+    |         ----^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `var` is never used
+  --> amari-discovery/tests/probe_rewrite_inverse_search.rs:15:4
+   |
+15 | fn var(name: &str) -> RewriteTerm {
+   |    ^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-discovery` (test "probe_rewrite_inverse_search") generated 3 warnings (run `cargo fix --test "probe_rewrite_inverse_search" -p amari-discovery` to apply 2 suggestions)
+warning: unused import: `PreimageCertificate`
+  --> amari-rewrite/tests/saturation_preimage.rs:13:48
+   |
+13 |     saturation_preimage, CertificateAuthority, PreimageCertificate, PreimageConstruction,
+   |                                                ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "saturation_preimage") generated 1 warning (run `cargo fix --test "saturation_preimage" -p amari-rewrite` to apply 1 suggestion)
+warning: unused import: `RewriteResidual`
+  --> amari-rewrite/tests/residual_roundtrip.rs:10:49
+   |
+10 | use amari_rewrite::reversible::{ReversibleStep, RewriteResidual};
+   |                                                 ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "residual_roundtrip") generated 1 warning (run `cargo fix --test "residual_roundtrip" -p amari-rewrite` to apply 1 suggestion)
+warning: unused imports: `GuidanceMode`, `ReplayCertificate`, `ReplayQuery`, and `ResourceObservation`
+ --> amari-rewrite/tests/inverse_remediation.rs:6:5
+  |
+6 |     GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayQuery, ResourceObservation,
+  |     ^^^^^^^^^^^^                       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "inverse_remediation") generated 1 warning (run `cargo fix --test "inverse_remediation" -p amari-rewrite` to apply 1 suggestion)
+warning: unused import: `Sha256Digest`
+  --> amari-rewrite/tests/relation_grounding.rs:11:85
+   |
+11 |     ConstraintSet, GroundingDomain, GroundingOutcome, RankedSymbol, RelationLimits, Sha256Digest,
+   |                                                                                     ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Substitution`
+  --> amari-rewrite/tests/relation_grounding.rs:14:32
+   |
+14 | use amari_rewrite::trs::{Rule, Substitution, Term, TermSystem};
+   |                                ^^^^^^^^^^^^
+
+warning: `amari-rewrite` (test "relation_grounding") generated 2 warnings (run `cargo fix --test "relation_grounding" -p amari-rewrite` to apply 2 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.46s

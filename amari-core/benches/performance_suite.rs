@@ -251,7 +251,7 @@ fn bench_grade_operations(c: &mut Criterion) {
     });
 
     group.bench_function("magnitude_calculation", |b| {
-        b.iter(|| black_box(complex_mv.magnitude()))
+        b.iter(|| black_box(complex_mv.coefficient_norm()))
     });
 
     group.finish();

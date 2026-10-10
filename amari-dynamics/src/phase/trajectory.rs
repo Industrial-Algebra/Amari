@@ -162,7 +162,7 @@ fn compute_trajectory_metadata<const P: usize, const Q: usize, const R: usize>(
     let mut sum_dist = 0.0;
 
     for (i, state) in states.iter().enumerate() {
-        let dist = state.norm();
+        let dist = state.coefficient_norm();
         min_dist = min_dist.min(dist);
         max_dist = max_dist.max(dist);
         sum_dist += dist;
@@ -214,7 +214,7 @@ fn detect_period<const P: usize, const Q: usize, const R: usize>(
     let initial_time = times[times.len() / 2];
     let tolerance = 0.1; // Relative tolerance
 
-    let initial_norm = initial.norm();
+    let initial_norm = initial.coefficient_norm();
     if initial_norm < 1e-10 {
         return None;
     }

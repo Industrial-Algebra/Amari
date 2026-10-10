@@ -1,0 +1,28 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+     Running tests/numerical_contracts.rs (target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/deps/numerical_contracts-04a0e9ebf5f7dc0f)
+
+running 5 tests
+test approx_eq_nonfinite_is_false_unless_exactly_equal ... ok
+test approx_eq_rejects_nonzero_null_difference ... ok
+test approx_eq_accepts_relative_scales ... ok
+test exact_zero_rejects_tiny_but_nonzero_coefficients ... ok
+test vector_normalize_requires_strictly_positive_square ... FAILED
+
+failures:
+
+---- vector_normalize_requires_strictly_positive_square stdout ----
+
+thread 'vector_normalize_requires_strictly_positive_square' (1170159) panicked at amari-core/tests/numerical_contracts.rs:43:5:
+assertion `left == right` failed
+  left: Some(Vector { mv: Multivector { coefficients: [0.0, 0.0, 1.0, 0.0] } })
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    vector_normalize_requires_strictly_positive_square
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p amari-core --test numerical_contracts`

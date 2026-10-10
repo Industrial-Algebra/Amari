@@ -1,0 +1,38 @@
+    Checking num-traits v0.2.19
+    Checking serde_json v1.0.151
+    Checking bytemuck v1.25.2
+    Checking thiserror v2.0.21
+    Checking serde v1.0.229
+    Checking futures-util v0.3.34
+    Checking tokio v1.53.2
+    Checking tempfile v3.27.0
+    Checking safe_arch v1.2.0
+    Checking rusty-fork v0.3.1
+    Checking ciborium v0.2.2
+    Checking wide v1.7.1
+    Checking tinytemplate v1.2.1
+    Checking approx v0.5.1
+    Checking plotters v0.3.7
+    Checking num-complex v0.4.6
+    Checking num-integer v0.1.47
+    Checking naga v0.19.2
+    Checking proptest v1.11.0
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Checking num-rational v0.4.2
+    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-tropical)
+    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dual)
+    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-info-geom)
+    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-holographic)
+    Checking criterion v0.8.2
+    Checking amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-automata)
+    Checking futures-executor v0.3.34
+    Checking futures v0.3.34
+    Checking simba v0.10.2
+    Checking wgpu-hal v0.19.5
+    Checking wgpu-core v0.19.4
+    Checking nalgebra v0.35.0
+    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-network)
+    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-relativistic)
+    Checking wgpu v0.19.4
+    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-gpu)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.88s

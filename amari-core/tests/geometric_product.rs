@@ -13,7 +13,7 @@ mod geometric_product_tests {
         let result = e1.geometric_product(&e1);
 
         assert_relative_eq!(result.scalar_part(), 1.0);
-        assert_relative_eq!(result.vector_part().magnitude(), 0.0);
+        assert_relative_eq!(result.vector_part().coefficient_norm(), 0.0);
     }
 
     #[test]
@@ -48,7 +48,7 @@ mod geometric_product_tests {
 
         // And both should be pure bivectors (no scalar/vector parts)
         assert_relative_eq!(e1_e2.scalar_part(), 0.0);
-        assert_relative_eq!(e1_e2.vector_part().magnitude(), 0.0);
+        assert_relative_eq!(e1_e2.vector_part().coefficient_norm(), 0.0);
     }
 
     // ============ Associativity ============
@@ -125,8 +125,8 @@ mod geometric_product_tests {
 
         // Should be pure trivector
         assert_relative_eq!(result.scalar_part(), 0.0);
-        assert_relative_eq!(result.vector_part().magnitude(), 0.0);
-        assert_relative_eq!(result.bivector_part().magnitude(), 0.0);
+        assert_relative_eq!(result.vector_part().coefficient_norm(), 0.0);
+        assert_relative_eq!(result.bivector_part().coefficient_norm(), 0.0);
         assert_relative_eq!(result.trivector_part(), 1.0);
     }
 
@@ -165,8 +165,8 @@ mod geometric_product_tests {
         // Verify specific components based on multiplication table
         // This test drives implementation of the full Cayley table
         assert!(result.scalar_part().abs() > 0.0);
-        assert!(result.vector_part().magnitude() > 0.0);
-        assert!(result.bivector_part().magnitude() > 0.0);
+        assert!(result.vector_part().coefficient_norm() > 0.0);
+        assert!(result.bivector_part().coefficient_norm() > 0.0);
         assert!(result.trivector_part().abs() > 0.0);
     }
 
@@ -180,8 +180,8 @@ mod geometric_product_tests {
         let result1 = zero.geometric_product(&mv);
         let result2 = mv.geometric_product(&zero);
 
-        assert_relative_eq!(result1.norm(), 0.0);
-        assert_relative_eq!(result2.norm(), 0.0);
+        assert_relative_eq!(result1.coefficient_norm(), 0.0);
+        assert_relative_eq!(result2.coefficient_norm(), 0.0);
     }
 
     #[test]
@@ -191,7 +191,7 @@ mod geometric_product_tests {
 
         // |v|² should equal v * v for vectors in positive signature
         assert_relative_eq!(result.scalar_part(), 25.0); // 3² + 4² = 25
-        assert_relative_eq!(result.vector_part().magnitude(), 0.0);
+        assert_relative_eq!(result.vector_part().coefficient_norm(), 0.0);
     }
 
     // ============ Grade Mixing ============
@@ -207,7 +207,7 @@ mod geometric_product_tests {
         // e1 * e13 = e3 (vector grade)
         assert_relative_eq!(result.scalar_part(), 0.0);
         assert_relative_eq!(result.vector_component(2), 1.0); // e3 component
-        assert_relative_eq!(result.bivector_part().magnitude(), 0.0);
+        assert_relative_eq!(result.bivector_part().coefficient_norm(), 0.0);
         assert_relative_eq!(result.trivector_part(), 0.0);
     }
 }

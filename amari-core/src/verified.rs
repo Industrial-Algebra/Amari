@@ -439,7 +439,7 @@ where
     /// - Must have unit norm
     #[cfg_attr(feature = "formal-verification",
         requires(mv.is_even_grade()),
-        requires((mv.norm() - T::one()).abs() < T::from(0.0001).unwrap()),
+        requires((mv.coefficient_norm() - T::one()).abs() < T::from(0.0001).unwrap()),
         ensures(result.is_ok()))]
     pub fn new(mv: VerifiedMultivector<T, P, Q, R>) -> Result<Self, &'static str> {
         if !Self::is_even_grade(&mv) {

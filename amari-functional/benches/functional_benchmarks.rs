@@ -89,7 +89,7 @@ fn bench_multivector_magnitude(c: &mut Criterion) {
         + Cl3::basis_vector(2) * 4.0;
 
     group.bench_function("magnitude", |b| {
-        b.iter(|| black_box(black_box(&mv).magnitude()))
+        b.iter(|| black_box(black_box(&mv).coefficient_norm()))
     });
 
     group.bench_function("norm_squared", |b| {

@@ -120,7 +120,7 @@ impl<T: Float, const DIM: usize> TropicalDualClifford<T, DIM> {
     /// Check if all components are zero (within tolerance)
     pub fn is_zero(&self) -> bool {
         // Check if clifford norm is near zero
-        let clifford_norm = self.clifford_repr.norm();
+        let clifford_norm = self.clifford_repr.coefficient_norm();
         clifford_norm < 1e-10
     }
 
@@ -423,7 +423,7 @@ impl<T: Float, const DIM: usize> TropicalDualClifford<T, DIM> {
 
         // Clifford distance
         let clifford_diff = self.clifford_repr.clone() - other.clifford_repr.clone();
-        let clifford_dist = T::from(clifford_diff.norm()).unwrap_or(T::zero());
+        let clifford_dist = T::from(clifford_diff.coefficient_norm()).unwrap_or(T::zero());
 
         // Weighted combination
         let w1 = T::from(0.33).unwrap();
@@ -503,7 +503,7 @@ impl<T: Float, const DIM: usize> TropicalDualClifford<T, DIM> {
 
         // Clifford evaluation: geometric distance
         let clifford_diff = self.clifford_repr.clone() - other.clifford_repr.clone();
-        let geometric_distance = clifford_diff.norm();
+        let geometric_distance = clifford_diff.coefficient_norm();
 
         // Combined score
         let combined_score = T::from(best_path_score.value().to_f64().unwrap_or(0.0))
@@ -670,7 +670,7 @@ impl<T: Float, const DIM: usize> TropicalDualClifford<T, DIM> {
     ///
     /// This is the authoritative norm, derived from the Clifford representation.
     pub fn norm(&self) -> f64 {
-        self.clifford_repr.norm()
+        self.clifford_repr.coefficient_norm()
     }
 
     /// Compute similarity based on Clifford representation only.
@@ -681,8 +681,8 @@ impl<T: Float, const DIM: usize> TropicalDualClifford<T, DIM> {
     /// Uses the proper inner product: <A B̃>₀ / (|A| |B|)
     /// where B̃ is the reverse of B. This ensures similarity=1 for equal elements.
     pub fn clifford_similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.clifford_repr.norm();
-        let other_norm = other.clifford_repr.norm();
+        let self_norm = self.clifford_repr.coefficient_norm();
+        let other_norm = other.clifford_repr.coefficient_norm();
 
         if self_norm < 1e-10 || other_norm < 1e-10 {
             return 0.0;

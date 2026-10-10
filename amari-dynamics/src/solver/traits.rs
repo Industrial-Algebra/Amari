@@ -145,7 +145,7 @@ impl<const P: usize, const Q: usize, const R: usize> Trajectory<P, Q, R> {
             .windows(2)
             .map(|w| {
                 let diff = &w[1] - &w[0];
-                diff.norm()
+                diff.coefficient_norm()
             })
             .sum()
     }
@@ -473,7 +473,7 @@ pub trait AdaptiveODESolver<const P: usize, const Q: usize, const R: usize>:
 
             // Compute error scale
             let error = result.error_estimate.unwrap_or(0.0);
-            let scale = config.atol + config.rtol * state.norm();
+            let scale = config.atol + config.rtol * state.coefficient_norm();
             let error_ratio = error / scale;
 
             if error_ratio <= 1.0 {

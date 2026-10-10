@@ -30,7 +30,12 @@ fn make_flat_batches(batch_size: usize) -> (Vec<f64>, Vec<f64>) {
 
 fn cpu_batch_geometric_product(a_batch: &[f64], b_batch: &[f64]) -> Vec<f64> {
     let mut out = Vec::with_capacity(a_batch.len());
-    for (a, b) in a_batch.chunks_exact(8).zip(b_batch.chunks_exact(8)) {
+    for (a, b) in a_batch
+        .as_chunks::<8>()
+        .0
+        .iter()
+        .zip(b_batch.as_chunks::<8>().0)
+    {
         let a = Multivector::<3, 0, 0>::from_slice(a);
         let b = Multivector::<3, 0, 0>::from_slice(b);
         out.extend(a.geometric_product(&b).to_vec());

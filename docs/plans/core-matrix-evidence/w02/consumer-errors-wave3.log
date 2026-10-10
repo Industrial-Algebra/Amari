@@ -1,0 +1,110 @@
+    Checking nalgebra v0.35.0
+    Checking toml v0.8.23
+    Checking amari-fusion v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-fusion)
+    Checking amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-automata)
+    Checking amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-functional)
+    Checking amari-topology v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-topology)
+    Checking wgpu-core v0.19.4
+    Checking js-sys v0.3.106
+    Checking console_error_panic_hook v0.1.7
+    Checking amari-flynn v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-flynn)
+    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-tropical)
+    Checking amari-probabilistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-probabilistic)
+    Checking amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-optimization)
+    Checking amari-calculus v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-calculus)
+    Checking amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-enumerative)
+    Checking amari-measure v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-measure)
+warning: unused import: `RewriteResidual`
+  --> amari-rewrite/tests/residual_roundtrip.rs:10:49
+   |
+10 | use amari_rewrite::reversible::{ReversibleStep, RewriteResidual};
+   |                                                 ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "residual_roundtrip") generated 1 warning (run `cargo fix --test "residual_roundtrip" -p amari-rewrite` to apply 1 suggestion)
+warning: unused import: `PreimageCertificate`
+  --> amari-rewrite/tests/saturation_preimage.rs:13:48
+   |
+13 |     saturation_preimage, CertificateAuthority, PreimageCertificate, PreimageConstruction,
+   |                                                ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "saturation_preimage") generated 1 warning (run `cargo fix --test "saturation_preimage" -p amari-rewrite` to apply 1 suggestion)
+warning: unused import: `Sha256Digest`
+  --> amari-rewrite/tests/relation_grounding.rs:11:85
+   |
+11 |     ConstraintSet, GroundingDomain, GroundingOutcome, RankedSymbol, RelationLimits, Sha256Digest,
+   |                                                                                     ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Substitution`
+  --> amari-rewrite/tests/relation_grounding.rs:14:32
+   |
+14 | use amari_rewrite::trs::{Rule, Substitution, Term, TermSystem};
+   |                                ^^^^^^^^^^^^
+
+warning: `amari-rewrite` (test "relation_grounding") generated 2 warnings (run `cargo fix --test "relation_grounding" -p amari-rewrite` to apply 2 suggestions)
+warning: unused imports: `GuidanceMode`, `ReplayCertificate`, `ReplayQuery`, and `ResourceObservation`
+ --> amari-rewrite/tests/inverse_remediation.rs:6:5
+  |
+6 |     GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayQuery, ResourceObservation,
+  |     ^^^^^^^^^^^^                       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `amari-rewrite` (test "inverse_remediation") generated 1 warning (run `cargo fix --test "inverse_remediation" -p amari-rewrite` to apply 1 suggestion)
+    Checking amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-cgt)
+    Checking amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-surreal)
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-dual)
+    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-info-geom)
+error[E0599]: no method named `magnitude` found for reference `&Multivector<3, 0, 0>` in the current scope
+   --> amari-functional/benches/functional_benchmarks.rs:92:44
+    |
+ 92 |         b.iter(|| black_box(black_box(&mv).magnitude()))
+    |                                            ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `magnitude` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/benches/performance_suite.rs:254:40
+    |
+254 |         b.iter(|| black_box(complex_mv.magnitude()))
+    |                                        ^^^^^^^^^
+    |
+help: there is a method `grade_magnitude` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:446:5
+    |
+446 |     pub fn grade_magnitude(&self, grade: usize) -> f64 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `amari-functional` (bench "functional_benchmarks") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `amari-core` (bench "performance_suite") due to 1 previous error
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-info-geom/src/comprehensive_tests.rs:608:28
+    |
+608 |         let eta_norm = eta.norm();
+    |                            ^^^^ method not found in `amari_core::Multivector<3, 0, 0>`
+
+error[E0599]: no method named `norm` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
+   --> amari-info-geom/src/comprehensive_tests.rs:609:26
+    |
+609 |         let mu_norm = mu.norm();
+    |                          ^^^^ method not found in `amari_core::Multivector<3, 0, 0>`
+
+error[E0599]: no method named `norm` found for reference `&amari_core::Multivector<3, 0, 0>` in the current scope
+   --> amari-info-geom/src/comprehensive_tests.rs:715:27
+    |
+715 |             let norm = mv.norm();
+    |                           ^^^^ method not found in `&amari_core::Multivector<3, 0, 0>`
+
+error: could not compile `amari-info-geom` (lib test) due to 3 previous errors

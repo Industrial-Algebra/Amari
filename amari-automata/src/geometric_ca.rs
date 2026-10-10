@@ -424,7 +424,10 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricCA<P, Q, R> {
 
     /// Calculate total energy of the system
     pub fn total_energy(&self) -> f64 {
-        self.grid.iter().map(|cell| cell.magnitude().powi(2)).sum()
+        self.grid
+            .iter()
+            .map(|cell| cell.coefficient_norm().powi(2))
+            .sum()
     }
 
     /// Get current state snapshot for reversibility checks
@@ -458,7 +461,7 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricCA<P, Q, R> {
                 if idx >= self.size {
                     return false;
                 }
-                let actual = if self.grid[idx].magnitude() > 0.5 {
+                let actual = if self.grid[idx].coefficient_norm() > 0.5 {
                     1
                 } else {
                     0
@@ -514,19 +517,23 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricCA<P, Q, R> {
 
     /// Get total magnitude of all cells
     pub fn total_magnitude(&self) -> f64 {
-        self.grid.iter().map(|mv| mv.magnitude()).sum()
+        self.grid.iter().map(|mv| mv.coefficient_norm()).sum()
     }
 
     /// Check density
     pub fn density(&self) -> f64 {
-        let active_cells = self.grid.iter().filter(|mv| mv.magnitude() > 0.1).count();
+        let active_cells = self
+            .grid
+            .iter()
+            .filter(|mv| mv.coefficient_norm() > 0.1)
+            .count();
         active_cells as f64 / self.size as f64
     }
 
     /// Check connectivity
     pub fn connected_components(&self) -> usize {
         // Simplified implementation
-        if self.grid.iter().any(|mv| mv.magnitude() > 0.1) {
+        if self.grid.iter().any(|mv| mv.coefficient_norm() > 0.1) {
             1
         } else {
             0
@@ -701,8 +708,11 @@ impl<const P: usize, const Q: usize, const R: usize> CARule<P, Q, R> {
     pub fn game_of_life() -> Self {
         Self {
             rule_fn: |center, neighbors| {
-                let neighbor_count = neighbors.iter().filter(|n| n.magnitude() > 0.5).count();
-                if center.magnitude() > 0.5 {
+                let neighbor_count = neighbors
+                    .iter()
+                    .filter(|n| n.coefficient_norm() > 0.5)
+                    .count();
+                if center.coefficient_norm() > 0.5 {
                     // Alive cell
                     if neighbor_count == 2 || neighbor_count == 3 {
                         center.clone()
@@ -739,10 +749,16 @@ impl<const P: usize, const Q: usize, const R: usize> CARule<P, Q, R> {
     pub fn conservative() -> Self {
         Self {
             rule_fn: |center, neighbors| {
-                let total_magnitude =
-                    center.magnitude() + neighbors.iter().map(|n| n.magnitude()).sum::<f64>();
+                let total_magnitude = center.coefficient_norm()
+                    + neighbors.iter().map(|n| n.coefficient_norm()).sum::<f64>();
                 let avg_magnitude = total_magnitude / (neighbors.len() as f64 + 1.0);
-                center.normalize().unwrap_or(Multivector::zero()) * avg_magnitude
+                let center_norm = center.coefficient_norm();
+                let normalized = if center_norm > 0.0 {
+                    center.clone() / center_norm
+                } else {
+                    Multivector::zero()
+                };
+                normalized * avg_magnitude
             },
             rule_type: RuleType::Conservative,
         }
@@ -754,7 +770,7 @@ impl<const P: usize, const Q: usize, const R: usize> CARule<P, Q, R> {
             rule_fn: |center, neighbors| {
                 let mut result = center.clone();
                 for neighbor in neighbors {
-                    if neighbor.bivector_part().magnitude() > 0.1 {
+                    if neighbor.bivector_part().coefficient_norm() > 0.1 {
                         result = result + neighbor.bivector_part();
                     }
                 }
@@ -797,8 +813,9 @@ impl<const P: usize, const Q: usize, const R: usize> Default for CARule<P, Q, R>
             rule_fn: |center, neighbors| {
                 neighbors.iter().fold(center.clone(), |acc, n| {
                     let product = acc.geometric_product(n);
-                    if product.magnitude() > 0.5 {
-                        product.normalize().unwrap_or(Multivector::zero())
+                    let product_norm = product.coefficient_norm();
+                    if product_norm > 0.5 {
+                        product / product_norm
                     } else {
                         Multivector::zero()
                     }
@@ -834,9 +851,9 @@ impl<const P: usize, const Q: usize, const R: usize> HighestGrade for Multivecto
         // Simplified implementation
         if self.scalar_part() != 0.0 {
             0
-        } else if self.grade_projection(1).magnitude() > 0.0 {
+        } else if self.grade_projection(1).coefficient_norm() > 0.0 {
             1
-        } else if self.grade_projection(2).magnitude() > 0.0 {
+        } else if self.grade_projection(2).coefficient_norm() > 0.0 {
             2
         } else {
             3
