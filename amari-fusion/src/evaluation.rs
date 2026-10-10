@@ -296,7 +296,7 @@ impl<T: Float> LLMEvaluator<T> {
 
             // Compute geometric similarity using scalar product
             let similarity = prev_mv.scalar_product(curr_mv);
-            let norm_product = prev_mv.norm() * curr_mv.norm();
+            let norm_product = prev_mv.coefficient_norm() * curr_mv.coefficient_norm();
 
             // Coherence based on normalized similarity
             let coherence = if norm_product > 0.0 {

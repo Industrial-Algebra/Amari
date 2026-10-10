@@ -1,0 +1,9 @@
+   Compiling amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-gpu)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.79s
+     Running unittests src/lib.rs (target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/deps/amari_gpu-7e6b1a5fa73292c9)
+
+running 1 test
+test adaptive::tests::cauchy_schwarz_bound_accepts_correct_products ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 60 filtered out; finished in 0.00s
+

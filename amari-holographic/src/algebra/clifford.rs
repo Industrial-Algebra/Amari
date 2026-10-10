@@ -182,8 +182,8 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
     fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
         if beta.is_infinite() {
             // Hard bundling: winner-take-all
-            let self_norm = self.inner.norm();
-            let other_norm = other.inner.norm();
+            let self_norm = self.inner.coefficient_norm();
+            let other_norm = other.inner.coefficient_norm();
             if self_norm >= other_norm {
                 Ok(self.clone())
             } else {
@@ -191,8 +191,8 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
             }
         } else {
             // Soft bundling: weighted average
-            let self_norm = self.inner.norm();
-            let other_norm = other.inner.norm();
+            let self_norm = self.inner.coefficient_norm();
+            let other_norm = other.inner.coefficient_norm();
 
             let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
                 (0.5, 0.5)
@@ -210,8 +210,8 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
     }
 
     fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.inner.norm();
-        let other_norm = other.inner.norm();
+        let self_norm = self.inner.coefficient_norm();
+        let other_norm = other.inner.coefficient_norm();
 
         if self_norm < 1e-10 || other_norm < 1e-10 {
             return 0.0;
@@ -223,16 +223,14 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
     }
 
     fn norm(&self) -> f64 {
-        self.inner.norm()
+        self.inner.coefficient_norm()
     }
 
     fn normalize(&self) -> AlgebraResult<Self> {
-        self.inner
-            .normalize()
-            .map(Self::new)
-            .ok_or_else(|| AlgebraError::NormalizationFailed {
-                norm: self.inner.norm(),
-            })
+        let n = self.inner.coefficient_norm();
+        (n > 0.0)
+            .then(|| Self::new(self.inner.clone() / n))
+            .ok_or_else(|| AlgebraError::NormalizationFailed { norm: n })
     }
 
     fn permute(&self, shift: i32) -> Self {

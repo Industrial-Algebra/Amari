@@ -1,0 +1,46 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running tests/numerical_contracts.rs (target/d07-baseline/w02/stable/x86_64-unknown-linux-gnu/debug/deps/numerical_contracts-04a0e9ebf5f7dc0f)
+
+running 5 tests
+test approx_eq_accepts_relative_scales ... ok
+test approx_eq_rejects_nonzero_null_difference ... FAILED
+test approx_eq_nonfinite_is_false_unless_exactly_equal ... FAILED
+test exact_zero_rejects_tiny_but_nonzero_coefficients ... FAILED
+test vector_normalize_requires_strictly_positive_square ... FAILED
+
+failures:
+
+---- approx_eq_rejects_nonzero_null_difference stdout ----
+
+thread 'approx_eq_rejects_nonzero_null_difference' (1168651) panicked at amari-core/tests/numerical_contracts.rs:22:5:
+assertion failed: !null.approx_eq(&Deg::zero(), 1e-10)
+
+---- approx_eq_nonfinite_is_false_unless_exactly_equal stdout ----
+
+thread 'approx_eq_nonfinite_is_false_unless_exactly_equal' (1168650) panicked at amari-core/tests/numerical_contracts.rs:29:5:
+assertion failed: E3::scalar(f64::INFINITY).approx_eq(&E3::scalar(f64::INFINITY), 1e-10)
+
+---- exact_zero_rejects_tiny_but_nonzero_coefficients stdout ----
+
+thread 'exact_zero_rejects_tiny_but_nonzero_coefficients' (1168652) panicked at amari-core/tests/numerical_contracts.rs:13:5:
+assertion failed: !E3::scalar(1e-15).is_zero()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- vector_normalize_requires_strictly_positive_square stdout ----
+
+thread 'vector_normalize_requires_strictly_positive_square' (1168653) panicked at amari-core/tests/numerical_contracts.rs:43:5:
+assertion `left == right` failed
+  left: Some(Vector { mv: Multivector { coefficients: [0.0, 0.0, 1.0, 0.0] } })
+ right: None
+
+
+failures:
+    approx_eq_nonfinite_is_false_unless_exactly_equal
+    approx_eq_rejects_nonzero_null_difference
+    exact_zero_rejects_tiny_but_nonzero_coefficients
+    vector_normalize_requires_strictly_positive_square
+
+test result: FAILED. 1 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p amari-core --test numerical_contracts`

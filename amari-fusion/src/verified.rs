@@ -283,7 +283,7 @@ impl<
 
     /// Compute geometric norm
     pub fn geometric_norm(&self) -> T {
-        T::from(self.inner.clifford().norm()).unwrap_or(T::zero())
+        T::from(self.inner.clifford().coefficient_norm()).unwrap_or(T::zero())
     }
 }
 

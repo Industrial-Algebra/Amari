@@ -143,7 +143,7 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricVariety<P, Q, R> {
 
     /// Compute the geometric degree (related to multivector magnitude)
     pub fn geometric_degree(&self) -> f64 {
-        self.multivector.magnitude()
+        self.multivector.coefficient_norm()
     }
 
     /// Check if this variety contains a given point
@@ -157,7 +157,7 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricVariety<P, Q, R> {
         let self_dual = self.multivector.hodge_dual();
         let point_dual = point.multivector.hodge_dual();
         let meet = self_dual.outer_product(&point_dual).hodge_dual();
-        (meet - point.multivector.clone()).magnitude() < 1e-10
+        (meet - point.multivector.clone()).coefficient_norm() < 1e-10
     }
 }
 
@@ -350,7 +350,7 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricProjectiveSpace<P,
         let intersection_mv = variety1
             .multivector
             .geometric_product(&variety2.multivector);
-        let multiplicity = intersection_mv.magnitude();
+        let multiplicity = intersection_mv.coefficient_norm();
 
         IntersectionNumber::new(Rational64::from(multiplicity as i64))
     }
@@ -979,7 +979,7 @@ mod tests {
         // i=0: λ_0+0 = 0, i=1: λ_1+1 = 0+1 = 1
         // So the blade is e_0 ∧ e_1
         let s0 = GeometricSchubertClass::<4, 0, 0>::new(vec![], (2, 4)).unwrap();
-        assert!(s0.multivector.magnitude() > 1e-10);
+        assert!(s0.multivector.coefficient_norm() > 1e-10);
 
         // For σ_{2,1} in Gr(2,4):
         // i=0: λ_0+0 = 2, i=1: λ_1+1 = 1+1 = 2 — same index, degenerate

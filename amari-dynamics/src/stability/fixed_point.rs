@@ -267,7 +267,7 @@ where
                 // Check if this is a new fixed point
                 let is_new = fixed_points.iter().all(|fp| {
                     let diff = &result.point - &fp.point;
-                    diff.norm() > merge_tolerance
+                    diff.coefficient_norm() > merge_tolerance
                 });
 
                 if is_new {

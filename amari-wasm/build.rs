@@ -188,9 +188,9 @@ pub(crate) fn dispatch_inverse(
         arms_inner = arms.replace("__OP__", "inner_product"),
         arms_outer = arms.replace("__OP__", "outer_product"),
         arms_scalar = generate_scalar_arms(&sigs),
-        arms_mag = generate_unary_f64_arms(&sigs, "magnitude"),
+        arms_mag = generate_unary_f64_arms(&sigs, "coefficient_norm"),
         arms_exp = generate_unary_arms(&sigs, "exp"),
-        arms_norm = generate_unary_option_arms(&sigs, "normalize"),
+        arms_norm = generate_normalize_arms(&sigs),
         arms_inv = generate_unary_option_arms(&sigs, "inverse"),
     );
 
@@ -238,6 +238,29 @@ fn generate_unary_arms(sigs: &[(usize, usize, usize)], method: &str) -> String {
                       for (i, r) in result.iter_mut().enumerate() {{ *r = mv_r.get(i); }}\n\
              }}\n",
             p = p, q = q, r = r, method = method,
+        ));
+    }
+    arms
+}
+
+fn generate_normalize_arms(sigs: &[(usize, usize, usize)]) -> String {
+    let mut arms = String::new();
+    for &(p, q, r) in sigs {
+        arms.push_str(&format!(
+            "            ({p}, {q}, {r}) => {{\n\
+                      let mv = amari_core::Multivector::<{p}, {q}, {r}>::from_coefficients(a.to_vec());\n\
+                      let n = mv.coefficient_norm();\n\
+                      if n > 0.0 {{\n\
+                          let mv_r = mv / n;\n\
+                          for (i, r) in result.iter_mut().enumerate() {{ *r = mv_r.get(i); }}\n\
+                          true\n\
+                      }} else {{\n\
+                          false\n\
+                      }}\n\
+             }}\n",
+            p = p,
+            q = q,
+            r = r,
         ));
     }
     arms

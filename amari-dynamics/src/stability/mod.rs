@@ -144,7 +144,7 @@ mod parallel {
         for result in results {
             let is_new = unique.iter().all(|fp: &FixedPointResult<P, Q, R>| {
                 let diff = &result.point - &fp.point;
-                diff.norm() > merge_tolerance
+                diff.coefficient_norm() > merge_tolerance
             });
             if is_new {
                 unique.push(result);

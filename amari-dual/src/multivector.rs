@@ -124,7 +124,7 @@ impl<T: Float, const P: usize, const Q: usize, const R: usize> DualMultivector<T
 
     /// Compute magnitude of the real part
     pub fn magnitude(&self) -> T {
-        T::from(self.value().magnitude()).unwrap()
+        T::from(self.value().coefficient_norm()).unwrap()
     }
 
     /// Create from real multivector (alias for constant_mv)

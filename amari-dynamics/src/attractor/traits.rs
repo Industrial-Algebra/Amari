@@ -171,7 +171,7 @@ impl<const P: usize, const Q: usize, const R: usize> Attractor<P, Q, R>
 
     fn distance(&self, state: &Multivector<P, Q, R>) -> f64 {
         let diff = state - &self.point;
-        diff.norm()
+        diff.coefficient_norm()
     }
 
     fn basin(&self) -> Option<&Basin<P, Q, R>> {
@@ -251,7 +251,7 @@ impl<const P: usize, const Q: usize, const R: usize> LimitCycleAttractor<P, Q, R
         let mut avg_dist = 0.0;
         for point in &self.orbit_points {
             let diff = point - &center;
-            avg_dist += diff.norm();
+            avg_dist += diff.coefficient_norm();
         }
         avg_dist / n
     }
@@ -297,7 +297,7 @@ impl<const P: usize, const Q: usize, const R: usize> Attractor<P, Q, R>
             .iter()
             .map(|p| {
                 let diff = state - p;
-                diff.norm()
+                diff.coefficient_norm()
             })
             .fold(f64::INFINITY, f64::min)
     }
@@ -418,7 +418,7 @@ impl<const P: usize, const Q: usize, const R: usize> Attractor<P, Q, R>
             .iter()
             .map(|p| {
                 let diff = state - p;
-                diff.norm()
+                diff.coefficient_norm()
             })
             .fold(f64::INFINITY, f64::min)
     }
@@ -488,7 +488,7 @@ impl<const P: usize, const Q: usize, const R: usize> Basin<P, Q, R> {
     pub fn contains(&self, state: &Multivector<P, Q, R>, tolerance: f64) -> bool {
         self.points.iter().any(|p| {
             let diff = state - p;
-            diff.norm() < tolerance
+            diff.coefficient_norm() < tolerance
         })
     }
 

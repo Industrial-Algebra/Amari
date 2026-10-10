@@ -177,7 +177,7 @@ impl<const P: usize, const Q: usize, const R: usize> ODESolver<P, Q, R> for Dorm
         let result = state + &result_sum;
 
         // Check for NaN/Inf
-        if !result.norm().is_finite() {
+        if !result.coefficient_norm().is_finite() {
             return Err(DynamicsError::numerical_instability(
                 "Dormand-Prince step",
                 "result contains NaN or Inf",
@@ -247,10 +247,10 @@ impl<const P: usize, const Q: usize, const R: usize> AdaptiveODESolver<P, Q, R> 
             + &(&k5 * (dt * E5)))
             + &(&k6 * (dt * E6)))
             + &(&k7 * (dt * E7));
-        let error = error_vec.norm();
+        let error = error_vec.coefficient_norm();
 
         // Check for NaN/Inf
-        if !result.norm().is_finite() || !error.is_finite() {
+        if !result.coefficient_norm().is_finite() || !error.is_finite() {
             return Err(DynamicsError::numerical_instability(
                 "Dormand-Prince step",
                 "result contains NaN or Inf",

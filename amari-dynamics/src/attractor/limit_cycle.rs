@@ -310,17 +310,17 @@ where
     let states = &trajectory.states;
     let times = &trajectory.times;
 
-    let initial_norm = initial.norm();
+    let initial_norm = initial.coefficient_norm();
     let tolerance = config.period_tolerance * initial_norm.max(1.0);
 
     for i in 1..states.len() {
         let diff = &states[i] - &initial;
-        if diff.norm() < tolerance && times[i] > config.dt * 10.0 {
+        if diff.coefficient_norm() < tolerance && times[i] > config.dt * 10.0 {
             // Refine estimate using interpolation
             if i > 0 {
                 let diff_prev = &states[i - 1] - &initial;
-                let d0 = diff_prev.norm();
-                let d1 = diff.norm();
+                let d0 = diff_prev.coefficient_norm();
+                let d1 = diff.coefficient_norm();
 
                 // Linear interpolation for crossing
                 if d0 > d1 {

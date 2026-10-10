@@ -605,8 +605,8 @@ mod integration_tests {
         // Test that natural and expectation parameters are related
         // In exponential families: μ = ∇ψ(η) where ψ is log partition function
         // This is a simplified consistency check
-        let eta_norm = eta.norm();
-        let mu_norm = mu.norm();
+        let eta_norm = eta.coefficient_norm();
+        let mu_norm = mu.coefficient_norm();
 
         assert!(eta_norm > 0.0);
         assert!(mu_norm > 0.0);
@@ -712,7 +712,7 @@ mod error_handling_tests {
     fn test_bregman_divergence_error_propagation() {
         // Test with potential that could cause numerical issues
         let phi_problematic = |mv: &Multivector<3, 0, 0>| {
-            let norm = mv.norm();
+            let norm = mv.coefficient_norm();
             if norm > 0.0 {
                 1.0 / norm // Could cause division by zero
             } else {

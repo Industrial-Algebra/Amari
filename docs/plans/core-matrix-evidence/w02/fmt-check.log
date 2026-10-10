@@ -1,0 +1,12 @@
+Diff in /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core/examples/basic.rs:107:
+         rotor_mv.get(6),
+         rotor_mv.get(7)
+     );
+[31m-    println!("Rotor coefficient norm: {:.6}\n", rotor_mv.coefficient_norm());
+(B[m[32m+    println!(
+(B[m[32m+        "Rotor coefficient norm: {:.6}\n",
+(B[m[32m+        rotor_mv.coefficient_norm()
+(B[m[32m+    );
+(B[m 
+     // 5. Apply rotor to rotate vectors
+     println!("Rotation examples:");

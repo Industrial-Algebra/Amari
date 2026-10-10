@@ -291,7 +291,7 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricNetwork<P, Q, R> {
         }
 
         let diff = self.nodes[node1].clone() - self.nodes[node2].clone();
-        Ok(diff.norm())
+        Ok(diff.coefficient_norm())
     }
 
     /// Compute geometric centrality for all nodes
@@ -658,7 +658,7 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricNetwork<P, Q, R> {
 
                 for centroid in &centroids {
                     let diff = node.clone() - centroid.clone();
-                    let distance = diff.norm();
+                    let distance = diff.coefficient_norm();
                     if distance < min_distance_to_centroid {
                         min_distance_to_centroid = distance;
                     }
@@ -687,7 +687,7 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricNetwork<P, Q, R> {
 
                 for (cluster_idx, centroid) in centroids.iter().enumerate() {
                     let diff = node.clone() - centroid.clone();
-                    let distance = diff.norm();
+                    let distance = diff.coefficient_norm();
 
                     if distance < min_distance {
                         min_distance = distance;
@@ -881,8 +881,8 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricNetwork<P, Q, R> {
         let scalar_part = product.scalar_part();
 
         // Normalize by the norms to get a similarity measure
-        let norm1 = pos1.norm();
-        let norm2 = pos2.norm();
+        let norm1 = pos1.coefficient_norm();
+        let norm2 = pos2.coefficient_norm();
 
         if norm1 > 0.0 && norm2 > 0.0 {
             Ok((scalar_part / (norm1 * norm2)).abs())

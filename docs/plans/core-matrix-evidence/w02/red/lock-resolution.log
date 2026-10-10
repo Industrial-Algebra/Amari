@@ -1,0 +1,30 @@
+    Updating crates.io index
+     Locking 368 packages to latest compatible versions
+      Adding dashu-float v0.4.5 (available: v0.6.2)
+      Adding generic-array v0.14.7 (available: v0.14.9)
+      Adding minicov v0.3.8 (available: v0.3.9)
+      Adding num-bigint v0.4.8 (available: v0.5.1)
+      Adding sha2 v0.10.9 (available: v0.11.0)
+      Adding syn v2.0.119 (available: v3.0.6)
+      Adding toml v0.8.23 (available: v1.1.8+spec-1.1.0)
+      Adding wgpu v0.19.4 (available: v30.0.1)
+      Adding z3 v0.20.2 (available: v0.21.1)
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling rustversion v1.0.23
+   Compiling autocfg v1.5.1
+   Compiling dashu-int v0.4.3
+    Checking static_assertions v1.1.0
+    Checking dashu-base v0.4.3
+   Compiling thiserror v2.0.21
+    Checking cfg-if v1.0.5
+    Checking num-modular v0.6.6
+    Checking bytemuck v1.25.2
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.6
+    Checking approx v0.5.1
+    Checking dashu-float v0.4.5
+   Compiling thiserror-impl v2.0.21
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w02/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.30s

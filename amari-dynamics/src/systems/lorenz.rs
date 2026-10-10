@@ -257,7 +257,7 @@ mod tests {
         let vf = lorenz.vector_field(&origin).unwrap();
 
         // At origin, vector field should be zero
-        assert!(vf.norm() < 1e-10);
+        assert!(vf.coefficient_norm() < 1e-10);
     }
 
     #[test]

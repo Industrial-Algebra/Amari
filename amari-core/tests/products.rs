@@ -84,7 +84,7 @@ mod product_tests {
         let e2 = Vector::<3, 0, 0>::e2();
 
         let result = e1.inner_product(&e2);
-        assert_relative_eq!(result.norm(), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(result.coefficient_norm(), 0.0, epsilon = 1e-10);
     }
 
     #[test]
@@ -95,7 +95,11 @@ mod product_tests {
 
         let result = v1.inner_product(&v2);
         assert_relative_eq!(result.scalar_part(), 12.0, epsilon = 1e-10);
-        assert_relative_eq!(result.vector_part().magnitude(), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            result.vector_part().coefficient_norm(),
+            0.0,
+            epsilon = 1e-10
+        );
     }
 
     #[test]
@@ -117,7 +121,7 @@ mod product_tests {
         let v = Vector::<3, 0, 0>::from_components(1.0, 2.0, 3.0);
         let result = v.outer_product(&v);
 
-        assert_relative_eq!(result.norm(), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(result.coefficient_norm(), 0.0, epsilon = 1e-10);
     }
 
     #[test]
@@ -238,8 +242,8 @@ mod product_tests {
         let inner_result = v.inner_product_with_mv(&zero);
         let outer_result = v.outer_product_with_mv(&zero);
 
-        assert_relative_eq!(inner_result.norm(), 0.0);
-        assert_relative_eq!(outer_result.norm(), 0.0);
+        assert_relative_eq!(inner_result.coefficient_norm(), 0.0);
+        assert_relative_eq!(outer_result.coefficient_norm(), 0.0);
     }
 
     #[test]

@@ -463,8 +463,8 @@ mod tests {
                 .solve(&system, initial.clone(), 0.0, t_final, steps)
                 .unwrap();
 
-            let euler_error = (euler_traj.final_state().unwrap() - &exact_final).norm();
-            let rk4_error = (rk4_traj.final_state().unwrap() - &exact_final).norm();
+            let euler_error = (euler_traj.final_state().unwrap() - &exact_final).coefficient_norm();
+            let rk4_error = (rk4_traj.final_state().unwrap() - &exact_final).coefficient_norm();
 
             euler_errors.push(euler_error);
             rk4_errors.push(rk4_error);
