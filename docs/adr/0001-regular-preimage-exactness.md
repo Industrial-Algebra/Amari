@@ -73,16 +73,24 @@ finite ranked alphabet. Admitted Amari values do not guarantee this:
 `Rule::new_unchecked` bypasses the `Var(r) ⊆ Var(l)` check, and
 rewriting with such rules produces nonground terms (oracle
 `rule_contract_is_a_boundary_obligation_not_a_constructor_fact`).
-Therefore the classifier/exact API boundary MUST, before emitting
-any class or certificate:
+Therefore the boundary validates, before emitting any class or
+certificate (wording amended at cohort closeout to match the merged
+implementation):
 
-1. validate `Var(r) ⊆ Var(l)` for EVERY rule (checked or not),
-   returning a typed invalid/unsupported outcome otherwise;
-2. validate that rules and the language automaton share one finite
-   ranked alphabet, and complete the determinized automaton over
-   THAT alphabet (completion is load-bearing: erased-variable
-   arguments may have no accepting run in a partial automaton but
-   still need an evaluation state).
+1. `classify_system` validates `Var(r) ⊆ Var(l)` for EVERY rule
+   (checked or not), returning a typed invalid/unsupported outcome
+   otherwise. Classification is a property of the SYSTEM alone and
+   involves no language.
+2. The EXACT (system, language) pair boundary — certificate issuance
+   and verification — additionally validates that rules and the
+   language automaton share one finite ranked alphabet, and completes
+   the determinized automaton over THAT alphabet (completion is
+   load-bearing: erased-variable arguments may have no accepting run
+   in a partial automaton but still need an evaluation state).
+3. EXCEPTION: the witnessed lower bound (Task 27) replays rule
+   applications over its own candidate alphabet (the union of rule
+   and language symbols) and is issued WITHOUT the common-alphabet
+   requirement; its `Partial` authority records this.
 
 ## Construction (left-linear one-step preimage)
 
@@ -205,8 +213,11 @@ truncations.
 - Task 26 implements saturation for the linear variable-disjoint
   class via a justified representation-level fixpoint (e.g., the
   epsilon-edge closure behind Thm. 3.2.14) — NOT naive layer-union
-  (matrix §S2 warning); anything else returns partial frontier +
-  typed limits; certificates only after completed construction.
+  (matrix §S2 warning); certificates only after completed
+  construction. EXACT saturation that exhausts its budget returns a
+  typed limit error and NO frontier (amended at cohort closeout: the
+  recoverable frontier belongs to the witnessed lower bound, whose
+  truncation is an Ok outcome recorded in its evidence trace).
   Oracle P2 row pins the ground fixpoint behavior. Implemented as
   target-specialized right-ground backward epsilon saturation over a
   fixed state universe (Base/Any/Pat), justified by the independent

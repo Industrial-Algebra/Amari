@@ -46,6 +46,8 @@ const TERM_FRAME: &str = "amari-rewrite/preimage/term/v1";
 /// Digest frame for individual rules inside certificate bindings.
 const RULE_FRAME: &str = "amari-rewrite/preimage/rule/v1";
 /// Digest frame for a whole rule system.
+const CERTIFICATE_FRAME: &str = "amari.rewrite.certificate.v1";
+
 const SYSTEM_FRAME: &str = "amari-rewrite/preimage/system/v1";
 /// Digest frame for a language automaton.
 const LANGUAGE_FRAME: &str = "amari-rewrite/preimage/language/v1";
@@ -518,6 +520,76 @@ impl PreimageCertificate {
     }
 
     /// Whether a result language has been bound.
+    /// Canonical digest over EVERY binding field: operation, class,
+    /// construction (with payload), system and language digests, rule
+    /// count, horizon, the complete recorded limit profile, authority,
+    /// and the result when present. Two certificates differ in this
+    /// digest iff they differ in any recorded evidence (cohort 5
+    /// closeout F1: the limit profile is part of the evidence
+    /// identity — `verify` already binds it exactly).
+    #[must_use]
+    pub fn binding_digest(&self) -> Sha256Digest {
+        let mut payload = Vec::new();
+        payload.push(match self.operation {
+            PreimageOperation::OneStep => 0_u8,
+            PreimageOperation::FiniteHorizon(_) => 1,
+            PreimageOperation::Saturation => 2,
+        });
+        if let PreimageOperation::FiniteHorizon(bound) = self.operation {
+            payload.extend_from_slice(&bound.to_le_bytes());
+        }
+        payload.push(match self.class {
+            TrsClass::Ground => 0_u8,
+            TrsClass::LinearVariableDisjoint => 1,
+            TrsClass::LeftLinearShared => 2,
+            TrsClass::NonLeftLinear => 3,
+        });
+        payload.push(match self.construction {
+            PreimageConstruction::Identity => 0_u8,
+            PreimageConstruction::LeftLinearOneStep => 1,
+            PreimageConstruction::FiniteHorizonIteration(_) => 2,
+            PreimageConstruction::GttSaturation => 3,
+            PreimageConstruction::WitnessedLowerBound => 4,
+        });
+        if let PreimageConstruction::FiniteHorizonIteration(steps) = self.construction {
+            payload.extend_from_slice(&steps.to_le_bytes());
+        }
+        payload.extend_from_slice(self.system.as_bytes());
+        payload.extend_from_slice(self.language.as_bytes());
+        payload.extend_from_slice(&(self.rule_count as u64).to_le_bytes());
+        match self.horizon {
+            Some(horizon) => {
+                payload.push(1_u8);
+                payload.extend_from_slice(&horizon.to_le_bytes());
+            }
+            None => payload.push(0_u8),
+        }
+        for limit in [
+            self.max_term_nodes,
+            self.max_term_depth,
+            self.max_constraints,
+            self.max_operations,
+        ] {
+            payload.extend_from_slice(&(limit as u64).to_le_bytes());
+        }
+        match &self.authority {
+            CertificateAuthority::Exact => payload.push(0_u8),
+            CertificateAuthority::Partial { detail } => {
+                payload.push(1_u8);
+                payload.extend_from_slice(&(detail.len() as u32).to_le_bytes());
+                payload.extend_from_slice(detail.as_bytes());
+            }
+        }
+        match &self.result {
+            Some(result) => {
+                payload.push(1_u8);
+                payload.extend_from_slice(result.as_bytes());
+            }
+            None => payload.push(0_u8),
+        }
+        Sha256Digest::framed(CERTIFICATE_FRAME, &payload)
+    }
+
     pub fn is_complete(&self) -> bool {
         self.result.is_some()
     }

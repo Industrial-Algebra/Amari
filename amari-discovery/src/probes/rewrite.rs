@@ -10,10 +10,10 @@ use amari_rewrite::{
     language::{
         classify_and_query, classify_system, finite_horizon_lower_bound, finite_horizon_preimage,
         one_step_lower_bound, one_step_preimage, saturation_lower_bound, saturation_preimage,
-        ApproximationEvent, ApproximationOutcome, CertificateAuthority, MembershipVerdict,
-        PreimageCapability, PreimageCertificate, PreimageConstruction, PreimageOperation,
-        PreimageOutcome, RankedSymbol, RegularTreeGrammar, TreeAutomaton, TreeAutomatonLimits,
-        TreeState, TreeTransition, TrsClass,
+        ApproximationEvent, ApproximationOutcome, MembershipVerdict, PreimageCapability,
+        PreimageCertificate, PreimageConstruction, PreimageOperation, PreimageOutcome,
+        RankedSymbol, RegularTreeGrammar, TreeAutomaton, TreeAutomatonLimits, TreeState,
+        TreeTransition, TrsClass,
     },
     relation::{RelationLimits, RelationResources, Sha256Digest},
     synthesis::infer_rule,
@@ -3022,9 +3022,6 @@ const MAX_PREIMAGE_STEPS: u32 = 4;
 /// Digest frame for one witnessed ground term.
 #[cfg(feature = "standard-probes")]
 const PREIMAGE_WITNESS_FRAME: &str = "amari-discovery/rewrite-preimages/witness/v1";
-/// Digest frame for one preimage certificate binding.
-#[cfg(feature = "standard-probes")]
-const PREIMAGE_CERTIFICATE_FRAME: &str = "amari-discovery/rewrite-preimages/certificate/v1";
 
 /// Typed input for the regular-language preimage probe.
 #[derive(
@@ -3334,44 +3331,16 @@ fn run_lower_bound(
     }
 }
 
-/// Canonical digest of a certificate's binding fields (the library
-/// certificate does not expose canonical bytes).
+/// Canonical digest of a certificate's COMPLETE binding fields,
+/// including the recorded limit profile: delegated to the library so
+/// the probe's digest is exactly the certificate's evidence identity
+/// (cohort 5 closeout F1). NOTE: the values of this field changed
+/// when the limit profile became part of the digest.
 #[cfg(feature = "standard-probes")]
 fn certificate_digest(certificate: &PreimageCertificate) -> String {
-    use sha2::Digest;
-    let mut hasher = sha2::Sha256::new();
-    let frame = PREIMAGE_CERTIFICATE_FRAME.as_bytes();
-    hasher.update((frame.len() as u32).to_le_bytes());
-    hasher.update(frame);
-    hasher.update(certificate.system().as_bytes());
-    hasher.update(certificate.language().as_bytes());
-    hasher.update(preimage_operation_name(certificate.operation()).as_bytes());
-    hasher.update(class_name(certificate.class()).as_bytes());
-    hasher.update(preimage_construction_name(certificate.construction()).as_bytes());
-    match certificate.horizon() {
-        Some(horizon) => {
-            hasher.update([1_u8]);
-            hasher.update(horizon.to_le_bytes());
-        }
-        None => hasher.update([0_u8]),
-    }
-    match certificate.authority() {
-        CertificateAuthority::Exact => hasher.update([0_u8]),
-        CertificateAuthority::Partial { detail } => {
-            hasher.update([1_u8]);
-            hasher.update((detail.len() as u32).to_le_bytes());
-            hasher.update(detail.as_bytes());
-        }
-    }
-    match certificate.result() {
-        Some(result) => {
-            hasher.update([1_u8]);
-            hasher.update(result.as_bytes());
-        }
-        None => hasher.update([0_u8]),
-    }
-    hasher
-        .finalize()
+    certificate
+        .binding_digest()
+        .as_bytes()
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect()

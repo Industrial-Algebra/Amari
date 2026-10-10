@@ -112,6 +112,44 @@ pub struct TreeAutomaton {
 }
 
 impl TreeAutomaton {
+    /// Check this automaton against a DIFFERENT ceiling set than the
+    /// one it was constructed under. The identity preimage
+    /// constructions return the input representation itself, so they
+    /// must reject inputs that exceed the caller's supplied ceilings
+    /// rather than return them unexamined (cohort 5 closeout F2).
+    pub(crate) fn check_within_limits(&self, limits: &TreeAutomatonLimits) -> RewriteResult<()> {
+        for (resource, value, ceiling) in [
+            (
+                "tree automaton states",
+                self.states.len(),
+                limits.max_states(),
+            ),
+            (
+                "tree automaton transitions",
+                self.transitions.len(),
+                limits.max_transitions(),
+            ),
+        ] {
+            if value > ceiling {
+                return Err(RewriteError::InvalidLimit {
+                    resource,
+                    value,
+                    ceiling,
+                });
+            }
+        }
+        for ranked in &self.alphabet {
+            if usize::from(ranked.arity()) > limits.max_rank() {
+                return Err(RewriteError::InvalidLimit {
+                    resource: "tree automaton rank",
+                    value: usize::from(ranked.arity()),
+                    ceiling: limits.max_rank(),
+                });
+            }
+        }
+        Ok(())
+    }
+
     /// Construct and validate an automaton. Every malformed input is
     /// a typed [`RewriteError::MalformedAutomaton`]; every limit
     /// violation is [`RewriteError::InvalidLimit`].

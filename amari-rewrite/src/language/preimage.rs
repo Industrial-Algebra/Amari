@@ -180,7 +180,13 @@ pub(crate) fn finite_horizon_preimage_with_resources(
         // language. Bind the input representation itself — the
         // empty-system result semantics are digest equality (Task 24
         // round 2), and canonicalization would substitute an
-        // equivalent-but-different representation.
+        // equivalent-but-different representation. The identity is
+        // NOT exempt from the caller's ceilings or pool: the input
+        // must fit the supplied automaton limits, and the retained
+        // clone is billed (cohort 5 closeout F2).
+        language.check_within_limits(automaton_limits)?;
+        resources.record_constraints(language.states().len() + language.transitions().len())?;
+        resources.record_operations(1)?;
         let result = language.clone();
         return Ok(PreimageOutcome {
             certificate: certificate.complete(&result),

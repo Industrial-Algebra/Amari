@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "3b5c2aec759dcea90affbb1884cbc8da8bafcd09cc71d2eb6be6dfb2f31fabf4",
+  "content_hash": "02737e608bf485d97e7b22eaa62b30eded901fe16906b307f9922717e5e68d32",
   "crates": [
     {
       "name": "amari",
@@ -379356,6 +379356,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::PreimageCertificate::binding_digest",
+          "kind": "method",
+          "signature": "pub fn binding_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::certificate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn binding_digest (& self) -> Sha256Digest",
+              "source_path": "amari-rewrite/src/language/certificate.rs",
+              "source_module": "amari_rewrite::language::certificate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::certificate",
+              "declaration_ident": "PreimageCertificate::binding_digest"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::PreimageCertificate::class",
           "kind": "method",
           "signature": "pub fn class (& self) -> TrsClass",
@@ -387992,7 +388011,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -388118,7 +388137,7 @@
           "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "trait_endpoint": {
             "kind": "external",
             "path": "Clone"
@@ -390011,7 +390030,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -390137,7 +390156,7 @@
           "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "trait_endpoint": {
             "kind": "external",
             "path": "Debug"
@@ -391578,7 +391597,7 @@
           "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "Eq"
@@ -391704,7 +391723,7 @@
           "trait_path": "Eq",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "trait_endpoint": {
             "kind": "external",
             "path": "Eq"
@@ -394192,7 +394211,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -394318,7 +394337,7 @@
           "trait_path": "PartialEq",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "trait_endpoint": {
             "kind": "external",
             "path": "PartialEq"
@@ -395763,7 +395782,7 @@
           "trait_path": "serde::Deserialize",
           "impl_type_path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 9,
+          "source_ordinal": 10,
           "trait_endpoint": {
             "kind": "external",
             "path": "serde::Deserialize"
@@ -396903,7 +396922,7 @@
         {
           "path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -397087,7 +397106,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -397096,6 +397115,14 @@
           "path": "amari_rewrite::language::PreimageCertificate::authority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
           "source_ordinal": 14,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::PreimageCertificate::binding_digest",
+          "source_path": "amari-rewrite/src/language/certificate.rs",
+          "source_ordinal": 16,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397127,7 +397154,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::is_complete",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 16,
+          "source_ordinal": 17,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397391,7 +397418,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::accepting_run",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397399,7 +397426,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::accepting_run_with_resources",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 9,
+          "source_ordinal": 10,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397407,7 +397434,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::accepts",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 6,
+          "source_ordinal": 7,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397415,7 +397442,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::accepts_with_resources",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397423,7 +397450,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::alphabet",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 1,
+          "source_ordinal": 2,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397431,7 +397458,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::canonical_bytes",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 10,
+          "source_ordinal": 11,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397479,7 +397506,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::finals",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 4,
+          "source_ordinal": 5,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397535,7 +397562,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::limits",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397559,7 +397586,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::new",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 0,
+          "source_ordinal": 1,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397567,7 +397594,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::states",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 2,
+          "source_ordinal": 3,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397575,7 +397602,7 @@
         {
           "path": "amari_rewrite::language::TreeAutomaton::transitions",
           "source_path": "amari-rewrite/src/language/automaton.rs",
-          "source_ordinal": 3,
+          "source_ordinal": 4,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -397815,7 +397842,7 @@
         {
           "path": "amari_rewrite::language::language_digest",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
@@ -397863,7 +397890,7 @@
         {
           "path": "amari_rewrite::language::system_digest",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 4,
+          "source_ordinal": 5,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"

@@ -219,9 +219,9 @@ fn deep_term_is_rejected_before_path_materialization() {
     let exe = std::env::current_exe().unwrap();
     let status = std::process::Command::new("sh")
         .arg("-c")
-        .arg(format!(
-            "ulimit -v 262144 && exec \"$0\" --exact deep_term_is_rejected_before_path_materialization --nocapture"
-        ))
+        .arg(
+            "ulimit -v 262144 && exec \"$0\" --exact deep_term_is_rejected_before_path_materialization --nocapture",
+        )
         .arg(exe)
         .env("AMARI_DEEP_TERM_CHILD", "1")
         .status()
