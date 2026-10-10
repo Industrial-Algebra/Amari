@@ -1,0 +1,78 @@
+COMMAND: cargo +nightly clippy --locked --offline -p amari-core --all-targets -- -D warnings
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Checking bitflags v2.13.2
+    Checking clap_lex v1.1.1
+    Checking zerocopy v0.8.59
+    Checking getrandom v0.3.4
+    Checking getrandom v0.4.3
+    Checking serde v1.0.229
+    Checking cpufeatures v0.3.1
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+    Checking chacha20 v0.10.2
+    Checking rustix v1.1.5
+    Checking clap_builder v4.6.7
+    Checking rand_core v0.9.5
+    Checking rand v0.10.3
+error: the loop variable `j` is used to index `other.coefficients`
+   --> amari-core/src/verified.rs:159:22
+    |
+159 |             for j in 0..Self::BASIS_SIZE {
+    |                      ^^^^^^^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-core/src/verified.rs:163:46
+    |
+163 |                     + self.coefficients[i] * other.coefficients[j] * T::from(sign).unwrap();
+    |                                              ^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and `.enumerate()`
+    |
+159 -             for j in 0..Self::BASIS_SIZE {
+159 +             for (j, <item>) in other.coefficients.iter().enumerate().take(Self::BASIS_SIZE) {
+    |
+
+error: the loop variable `j` is used to index `other.multivector.coefficients`
+   --> amari-core/src/verified.rs:339:22
+    |
+339 |             for j in 0..basis_size {
+    |                      ^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-core/src/verified.rs:357:31
+    |
+357 | ...                   * other.multivector.coefficients[j];
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator and `.enumerate()`
+    |
+339 -             for j in 0..basis_size {
+339 +             for (j, <item>) in other.multivector.coefficients.iter().enumerate().take(basis_size) {
+    |
+
+error: the loop variable `i` is used to index `self.multivector.coefficients`
+   --> amari-core/src/verified.rs:387:18
+    |
+387 |         for i in 0..basis_size {
+    |                  ^^^^^^^^^^^^^
+    |
+note: for this index operation
+   --> amari-core/src/verified.rs:406:31
+    |
+406 | ...                   * self.multivector.coefficients[i]
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/main/index.html#needless_range_loop
+help: consider using an iterator and `.enumerate()`
+    |
+387 -         for i in 0..basis_size {
+387 +         for (i, <item>) in self.multivector.coefficients.iter().enumerate().take(basis_size) {
+    |
+
+    Checking rand v0.9.5
+    Checking rand_xorshift v0.4.0
+error: could not compile `amari-core` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
