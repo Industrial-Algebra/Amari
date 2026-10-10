@@ -269,21 +269,7 @@ pub(crate) fn witnessed_lower_bound_with_resources(
     )?;
 
     let candidate_alphabet = candidate_alphabet(system, language);
-    // Right-side shape, precomputed once per call: (lhs nodes,
-    // non-variable rhs nodes, rhs variable occurrences). The successor
-    // preflight bills variable-binding expansion and per-position
-    // multiplicity from these (review round 3).
-    let rule_shapes: Vec<(usize, usize, usize)> = system
-        .rules()
-        .iter()
-        .map(|rule| {
-            (
-                term_nodes(rule.lhs()),
-                term_nodes(rule.rhs()).saturating_sub(variable_occurrences(rule.rhs())),
-                variable_occurrences(rule.rhs()),
-            )
-        })
-        .collect();
+    let rule_shapes = rule_shapes(system);
     // The one-step relation is exactly one application (no reflexive
     // closure); finite horizon and saturation include zero steps.
     let min_steps = match operation {
@@ -469,6 +455,11 @@ fn enumerate_witnesses(
             if term_depth(term) > limits.max_term_depth() {
                 continue;
             }
+            // The enumeration itself stays sound under incomplete
+            // replays (the lower bound only shrinks); the flag matters
+            // for Task 28's exclusion gate, which replays its query
+            // term directly via `replay_term`.
+            let mut enumeration_incomplete = false;
             if replays_into(
                 system,
                 language,
@@ -478,6 +469,7 @@ fn enumerate_witnesses(
                 rule_shapes,
                 resources,
                 limits,
+                &mut enumeration_incomplete,
             )? {
                 let nodes = term_nodes(term);
                 charge_constraints(resources, limits.max_constraints(), 1 + nodes)?;
@@ -623,6 +615,71 @@ fn compositions(
 /// visited, so a GENUINE self-application (a rule that returns its
 /// own input) still counts as an application.
 #[allow(clippy::too_many_arguments)]
+/// Right-side shape per rule, precomputed once per call: (lhs nodes,
+/// non-variable rhs nodes, rhs variable occurrences). The successor
+/// preflight bills variable-binding expansion and per-position
+/// multiplicity from these (Task 27 review round 3).
+fn rule_shapes(system: &TermSystem) -> Vec<(usize, usize, usize)> {
+    system
+        .rules()
+        .iter()
+        .map(|rule| {
+            (
+                term_nodes(rule.lhs()),
+                term_nodes(rule.rhs()).saturating_sub(variable_occurrences(rule.rhs())),
+                variable_occurrences(rule.rhs()),
+            )
+        })
+        .collect()
+}
+
+/// A single term's metered forward replay, with a completeness flag:
+/// `complete` is false when the replay discarded evidence (a successor
+/// over the term ceilings was never explored further, a membership
+/// evaluation hit a per-term bound, or the budget truncated the
+/// search). Task 28's exclusion gate requires a complete replay —
+/// non-membership after an INCOMPLETE replay is `Unknown`, never
+/// `Excluded` (PR #284 round 1 P1).
+pub(crate) struct DirectReplay {
+    /// The replay explored everything the ceilings allowed it to see.
+    /// (The witnessed flag is deliberately not surfaced: `Proven`
+    /// evidence is the lower automaton's membership, so a directly
+    /// witnessed-but-unenumerated term is conservatively `Unknown`.)
+    pub(crate) complete: bool,
+}
+
+/// Replay one term forward under the caller's pool (Task 28).
+pub(crate) fn replay_term(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    term: &Term,
+    max_steps: u32,
+    min_steps: u32,
+    resources: &mut RelationResources,
+    limits: &RelationLimits,
+) -> Result<DirectReplay, RewriteError> {
+    let shapes = rule_shapes(system);
+    let mut incomplete = false;
+    match replays_into(
+        system,
+        language,
+        term,
+        max_steps,
+        min_steps,
+        &shapes,
+        resources,
+        limits,
+        &mut incomplete,
+    ) {
+        Ok(_) => Ok(DirectReplay {
+            complete: !incomplete,
+        }),
+        Err(Stop::Truncated { .. }) => Ok(DirectReplay { complete: false }),
+        Err(Stop::Hard(error)) => Err(error),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn replays_into(
     system: &TermSystem,
     language: &TreeAutomaton,
@@ -632,6 +689,7 @@ fn replays_into(
     rule_shapes: &[(usize, usize, usize)],
     resources: &mut RelationResources,
     limits: &RelationLimits,
+    incomplete: &mut bool,
 ) -> Result<bool, Stop> {
     let mut visited: BTreeSet<Term> = BTreeSet::new();
     let mut frontier: Vec<Term> = vec![start.clone()];
@@ -738,7 +796,11 @@ fn replays_into(
                                     limit,
                                 });
                             }
-                            // A per-term bound: this term cannot be a member.
+                            // The membership evaluation hit a per-term
+                            // bound: its result is UNKNOWN, not "not a
+                            // member" — the replay has discarded
+                            // evidence (PR #284 round 1 P1).
+                            *incomplete = true;
                         }
                         Err(error) => return Err(Stop::Hard(error)),
                     }
@@ -746,6 +808,10 @@ fn replays_into(
                 if term_nodes(&successor) > limits.max_term_nodes()
                     || term_depth(&successor) > limits.max_term_depth()
                 {
+                    // The oversized successor is never explored
+                    // further: any path THROUGH it is lost
+                    // (PR #284 round 1 P1).
+                    *incomplete = true;
                     continue;
                 }
                 if visited.contains(&successor) {

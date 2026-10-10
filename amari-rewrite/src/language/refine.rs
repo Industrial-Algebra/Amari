@@ -72,12 +72,17 @@ use alloc::string::String;
 use alloc::vec::Vec;
 
 use crate::error::{RewriteError, RewriteResult};
-use crate::language::approximate::{candidate_alphabet, witnessed_lower_bound_with_resources};
+use crate::language::approximate::{
+    candidate_alphabet, replay_term, witnessed_lower_bound_with_resources, DirectReplay,
+};
 use crate::language::certificate::PreimageCertificate;
 use crate::language::classify::{classify_system, PreimageCapability, PreimageOperation};
+use crate::language::preimage::{
+    finite_horizon_preimage_with_resources, one_step_preimage_with_resources,
+};
+use crate::language::saturation::saturation_preimage_with_resources;
 use crate::language::{
-    finite_horizon_preimage, one_step_preimage, saturation_preimage, ApproximationEvent,
-    ApproximationOutcome, RankedSymbol, TreeAutomaton, TreeAutomatonLimits,
+    ApproximationEvent, ApproximationOutcome, RankedSymbol, TreeAutomaton, TreeAutomatonLimits,
 };
 use crate::relation::{RelationLimits, RelationResources};
 use crate::trs::{Term, TermSystem};
@@ -189,19 +194,34 @@ fn exact_query(
     limits: &RelationLimits,
     automaton_limits: &TreeAutomatonLimits,
 ) -> RewriteResult<MembershipQuery> {
+    // ONE shared pool across construction and membership: the
+    // per-query ceiling covers both (PR #284 round 1 P2).
+    let mut resources = RelationResources::new(limits);
     let outcome = match operation {
-        PreimageOperation::OneStep => {
-            one_step_preimage(system, language, limits, automaton_limits)?
-        }
-        PreimageOperation::FiniteHorizon(horizon) => {
-            finite_horizon_preimage(system, language, horizon, limits, automaton_limits)?
-        }
-        PreimageOperation::Saturation => {
-            saturation_preimage(system, language, limits, automaton_limits)?
-        }
+        PreimageOperation::OneStep => one_step_preimage_with_resources(
+            system,
+            language,
+            limits,
+            automaton_limits,
+            &mut resources,
+        )?,
+        PreimageOperation::FiniteHorizon(horizon) => finite_horizon_preimage_with_resources(
+            system,
+            language,
+            horizon,
+            limits,
+            automaton_limits,
+            &mut resources,
+        )?,
+        PreimageOperation::Saturation => saturation_preimage_with_resources(
+            system,
+            language,
+            limits,
+            automaton_limits,
+            &mut resources,
+        )?,
     };
     let (automaton, certificate) = outcome.into_parts();
-    let mut resources = RelationResources::new(limits);
     let member = automaton.accepts_with_resources(term, &mut resources)?;
     let verdict = if member {
         MembershipVerdict::Proven(automaton)
@@ -245,12 +265,33 @@ fn approximation_query(
     } else {
         false
     };
+    // The exclusion gate additionally requires a COMPLETE direct
+    // replay of the query term itself (PR #284 round 1 P1): an
+    // untruncated enumeration is not enough, because a replay can
+    // silently discard evidence — an oversized successor is never
+    // explored further, and a membership evaluation that hits a
+    // per-term bound yields no answer. Without completeness,
+    // non-membership is `Unknown`, never `Excluded`.
+    let direct = if in_domain {
+        replay_term(
+            system,
+            language,
+            term,
+            max_steps,
+            operation_min_steps(operation),
+            &mut resources,
+            limits,
+        )?
+    } else {
+        DirectReplay { complete: false }
+    };
     let complete = in_domain
         && operation_covers_full_semantics(operation)
         && !outcome
             .trace()
             .iter()
-            .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. }));
+            .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. }))
+        && direct.complete;
     let verdict = if member {
         MembershipVerdict::Proven(lower)
     } else if complete {
@@ -264,6 +305,15 @@ fn approximation_query(
         certificate: outcome.certificate().clone(),
         trace: outcome.trace().to_vec(),
     })
+}
+
+/// The minimum number of applications a witness needs: exactly one
+/// for `OneStep` (no reflexive closure), zero otherwise.
+fn operation_min_steps(operation: PreimageOperation) -> u32 {
+    match operation {
+        PreimageOperation::OneStep => 1,
+        PreimageOperation::FiniteHorizon(_) | PreimageOperation::Saturation => 0,
+    }
 }
 
 /// The replay step budget a query derives from an operation. `OneStep`

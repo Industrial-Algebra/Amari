@@ -559,3 +559,90 @@ fn query_agrees_with_the_lower_bound_entry_point() {
         }
     }
 }
+
+/// Review round 1 (P1): replay incompleteness must prohibit
+/// exclusion. `g(a)` rewrites to the 5-node `f(g(a), g(a))` (rule
+/// `x -> f(x,x)`) and then to `b` — it IS in the concrete 2-step
+/// preimage — but under a 3-node replay ceiling the oversized
+/// intermediate is silently discarded. Non-membership in the lower
+/// bound is then incompleteness, not exclusion evidence: the verdict
+/// must be `Unknown`, never `Excluded`.
+#[test]
+fn oversized_intermediate_makes_the_replay_incomplete() {
+    let system = TermSystem::new(vec![
+        Rule::new(x(), f(x(), x())).unwrap(),
+        Rule::new(f(x(), x()), b()).unwrap(),
+    ]);
+    let language = accepts_exactly(&[("a", 0), ("b", 0), ("g", 1), ("f", 2)], &[b()]);
+    let limits = RelationLimits::new(3, 64, RelationLimits::MAX_CONSTRAINTS, 1_000_000)
+        .expect("valid limits");
+    let query = classify_and_query(
+        &system,
+        &language,
+        PreimageOperation::FiniteHorizon(2),
+        &g(a()),
+        &limits,
+        &TreeAutomatonLimits::default(),
+    )
+    .expect("query succeeds");
+    assert!(
+        matches!(query.verdict(), MembershipVerdict::Unknown),
+        "an incomplete replay must yield Unknown, got {:?}",
+        query.verdict()
+    );
+}
+
+/// Review round 1 (P1), one-step variant: the same oversized
+/// intermediate must block `Excluded` even when the language is the
+/// intermediate itself (so the concrete one-step preimage DOES contain
+/// `g(a)`).
+#[test]
+fn one_step_exclusion_respects_replay_incompleteness() {
+    let system = TermSystem::new(vec![
+        Rule::new(x(), f(x(), x())).unwrap(),
+        Rule::new(f(x(), x()), b()).unwrap(),
+    ]);
+    let language = accepts_exactly(
+        &[("a", 0), ("b", 0), ("g", 1), ("f", 2)],
+        &[f(g(a()), g(a()))],
+    );
+    let limits = RelationLimits::new(3, 64, RelationLimits::MAX_CONSTRAINTS, 1_000_000)
+        .expect("valid limits");
+    let query = classify_and_query(
+        &system,
+        &language,
+        PreimageOperation::OneStep,
+        &g(a()),
+        &limits,
+        &TreeAutomatonLimits::default(),
+    )
+    .expect("query succeeds");
+    assert!(
+        matches!(query.verdict(), MembershipVerdict::Unknown),
+        "one-step exclusion must respect replay incompleteness, got {:?}",
+        query.verdict()
+    );
+}
+
+/// Review round 1 (P2): the exact path shares ONE resource pool
+/// across construction and membership — a 101-operation construction
+/// plus the membership charge must exceed a 101-operation ceiling.
+#[test]
+fn exact_query_shares_one_resource_pool() {
+    let system = TermSystem::new(vec![Rule::new(a(), b()).unwrap()]);
+    let language = accepts_exactly(&[("a", 0), ("b", 0)], &[b()]);
+    let limits = RelationLimits::new(4_096, 64, RelationLimits::MAX_CONSTRAINTS, 101)
+        .expect("valid tight-operation limits");
+    let result = classify_and_query(
+        &system,
+        &language,
+        PreimageOperation::OneStep,
+        &a(),
+        &limits,
+        &TreeAutomatonLimits::default(),
+    );
+    assert!(
+        matches!(result, Err(RewriteError::RelationLimitExceeded { .. })),
+        "construction (101 ops) + membership must exceed the shared 101-op pool, got {result:?}"
+    );
+}
