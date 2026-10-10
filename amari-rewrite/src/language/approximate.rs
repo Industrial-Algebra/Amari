@@ -104,12 +104,22 @@ pub struct ApproximationOutcome {
     upper: Option<TreeAutomaton>,
     trace: Vec<ApproximationEvent>,
     certificate: PreimageCertificate,
+    witnesses: BTreeSet<Term>,
 }
 
 impl ApproximationOutcome {
     /// The canonicalized lower-bound automaton (the admitted witnesses).
     pub fn lower(&self) -> &TreeAutomaton {
         &self.lower
+    }
+
+    /// The admitted ground witnesses, in canonical order. The lower
+    /// automaton's language is exactly this set (Task 27 builds one
+    /// state per distinct witness subterm), so the witness set is the
+    /// finite representation of the lower language the Task 28
+    /// refinement guard compares against.
+    pub fn witnesses(&self) -> &BTreeSet<Term> {
+        &self.witnesses
     }
 
     /// The upper bound, always `None` in this revision.
@@ -204,13 +214,39 @@ pub fn saturation_lower_bound(
 }
 
 /// The shared witnessed-lower-bound engine.
-fn witnessed_lower_bound(
+pub(crate) fn witnessed_lower_bound(
     system: &TermSystem,
     language: &TreeAutomaton,
     operation: PreimageOperation,
     max_steps: u32,
     limits: &RelationLimits,
     automaton_limits: &TreeAutomatonLimits,
+) -> RewriteResult<ApproximationOutcome> {
+    let mut resources = RelationResources::new(limits);
+    witnessed_lower_bound_with_resources(
+        system,
+        language,
+        operation,
+        max_steps,
+        limits,
+        automaton_limits,
+        &mut resources,
+    )
+}
+
+/// [`witnessed_lower_bound`] under a caller-supplied resource pool.
+///
+/// The Task 28 refinement entry point reuses one per-query pool for
+/// both the re-run and its monotonicity guard.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn witnessed_lower_bound_with_resources(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    operation: PreimageOperation,
+    max_steps: u32,
+    limits: &RelationLimits,
+    automaton_limits: &TreeAutomatonLimits,
+    resources: &mut RelationResources,
 ) -> RewriteResult<ApproximationOutcome> {
     // Class gate: refuse cells the capability table approves exactly.
     let classification = classify_system(system)?;
@@ -255,7 +291,6 @@ fn witnessed_lower_bound(
         PreimageOperation::FiniteHorizon(_) | PreimageOperation::Saturation => 0,
     };
     let mut trace: Vec<ApproximationEvent> = Vec::new();
-    let mut resources = RelationResources::new(limits);
     let witnesses = if candidate_alphabet.iter().any(|ranked| ranked.arity() == 0) {
         let mut witnesses: BTreeSet<Term> = BTreeSet::new();
         match enumerate_witnesses(
@@ -265,7 +300,7 @@ fn witnessed_lower_bound(
             max_steps,
             min_steps,
             &rule_shapes,
-            &mut resources,
+            resources,
             limits,
             &mut witnesses,
             &mut trace,
@@ -303,7 +338,7 @@ fn witnessed_lower_bound(
         &candidate_alphabet,
         language,
         automaton_limits,
-        &mut resources,
+        resources,
     )?;
     let certificate = certificate.complete(&lower);
     Ok(ApproximationOutcome {
@@ -311,6 +346,7 @@ fn witnessed_lower_bound(
         upper: None,
         trace,
         certificate,
+        witnesses,
     })
 }
 
@@ -390,7 +426,10 @@ fn charge_constraints(
 
 /// The candidate ranked alphabet: every ranked symbol on a rule left
 /// side, unioned with the language alphabet, in canonical order.
-fn candidate_alphabet(system: &TermSystem, language: &TreeAutomaton) -> Vec<RankedSymbol> {
+pub(crate) fn candidate_alphabet(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+) -> Vec<RankedSymbol> {
     let mut ranked: BTreeSet<RankedSymbol> = BTreeSet::new();
     for entry in language.alphabet() {
         ranked.insert(entry.clone());
