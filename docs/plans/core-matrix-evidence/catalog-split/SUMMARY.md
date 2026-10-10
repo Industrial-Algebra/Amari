@@ -71,4 +71,10 @@ Post-fix gates: generation 46/46, integrity 11/11, split 5/5, macros 5/5; scoped
 
 ## Review round 2 — convergence
 
-Round 2 returned **0 P1 / 0 P2 / 1 P3** with verdict "Ready for PR." The P3 (the pre-round-1 gate counts above transposed integrity/generation) is corrected in place. Loop: R1 1/1/0 → R2 0/0/1, converged at 0 P1/P2. Reviewer independently verified: all 33 catalog files match the archived pre-change checksums; fresh suites 46/11/5/5; shared renderer genuinely single-source; all failure-mode regressions pin.
+Round 2 returned **0 P1 / 0 P2 / 1 P3** with verdict "Ready for PR." The P3 (the pre-round-1 gate counts above transposed integrity/generation) is corrected in place. Loop: R1 1/3/0 → R2 0/0/1, converged at 0 P1/P2. (An earlier "1/1/0" shorthand undercounted round 1 — corrected after the PR review flagged it.) Reviewer independently verified: all 33 catalog files match the archived pre-change checksums; fresh suites 46/11/5/5; shared renderer genuinely single-source; all failure-mode regressions pin.
+
+## PR review (posted on #287) — 1 P1 / 0 P2 / 2 P3, remediated
+
+1. **P1 `catalog_split` missing from CI shard assignments** (reproduced in failed CI by the reviewer). Fixed: added to the `catalog` shard in `scripts/run-discovery-test-shard.py`; `scripts/verify-discovery-ci-sharding.py` (the same script CI's "Verify discovery CI sharding" step runs) now verifies 70 targets across 3 shards, exhaustive and stable.
+2. **P3 review-loop shorthand** — SUMMARY round-2 section said "R1 1/1/0"; round 1 was 1 P1 / 3 P2 / 0 P3. Corrected with an in-place note.
+3. **P3 stale CI diagnostic** — drift error message still named the deleted `catalog/generated.json`. Updated to name the split layout.

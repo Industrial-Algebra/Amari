@@ -78,9 +78,9 @@ jobs:
           echo "==> Checking for drift in amari-discovery/catalog/"
           if ! git diff --exit-code -- amari-discovery/catalog/; then
             echo ""
-            echo "ERROR: catalog/generated.json is out of sync. Run:"
+            echo "ERROR: amari-discovery/catalog/ is out of sync. Run:"
             echo "  cargo run -p amari-discovery --example generate_catalog -- ."
-            echo "and commit the updated catalog files."
+            echo "and commit the updated catalog files (manifest.json, crates/, index.rs)."
             exit 1
           fi
           echo "==> Structural catalog is up to date"
