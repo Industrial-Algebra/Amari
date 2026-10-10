@@ -519,7 +519,6 @@ impl PreimageCertificate {
         self.result
     }
 
-    /// Whether a result language has been bound.
     /// Canonical digest over EVERY binding field: operation, class,
     /// construction (with payload), system and language digests, rule
     /// count, horizon, the complete recorded limit profile, authority,
@@ -590,6 +589,7 @@ impl PreimageCertificate {
         Sha256Digest::framed(CERTIFICATE_FRAME, &payload)
     }
 
+    /// Whether a result language has been bound.
     pub fn is_complete(&self) -> bool {
         self.result.is_some()
     }

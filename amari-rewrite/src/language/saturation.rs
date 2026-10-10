@@ -159,7 +159,9 @@ pub(crate) fn saturation_preimage_with_resources(
         // pool: the input must fit the supplied automaton limits, and
         // the retained clone is billed (cohort 5 closeout F2).
         language.check_within_limits(automaton_limits)?;
-        resources.record_constraints(language.states().len() + language.transitions().len())?;
+        resources.record_constraints(
+            language.states().len() + language.transitions().len() + language.alphabet().len(),
+        )?;
         let result = language.clone();
         let certificate = certificate.complete(&result);
         return Ok(PreimageOutcome::from_parts(result, certificate));

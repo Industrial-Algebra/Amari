@@ -887,3 +887,43 @@ fn identity_shortcuts_enforce_supplied_automaton_ceilings() {
     );
     assert!(certificate.verify(&empty, &one_state_language, &limits));
 }
+
+#[test]
+fn identity_clone_accounts_for_alphabet_storage() {
+    // PR #288 round 1: the identity clone retains the ALPHABET too —
+    // states + transitions alone undercount the retained buffers.
+    let alphabet: Vec<RankedSymbol> = (0..100)
+        .map(|i| RankedSymbol::new(Symbol::new(format!("c{i}")), 0))
+        .collect();
+    let language = TreeAutomaton::new(
+        alphabet,
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+        TreeAutomatonLimits::default(),
+    )
+    .unwrap();
+    let limits = RelationLimits::new(16, 8, 1, 128).unwrap();
+    let automaton_limits = TreeAutomatonLimits::default();
+    let empty = TermSystem::new(Vec::new());
+
+    for (name, outcome) in [
+        (
+            "horizon-0",
+            finite_horizon_preimage(&empty, &language, 0, &limits, &automaton_limits),
+        ),
+        (
+            "empty-system horizon-1",
+            finite_horizon_preimage(&empty, &language, 1, &limits, &automaton_limits),
+        ),
+        (
+            "empty-system saturation",
+            saturation_preimage(&empty, &language, &limits, &automaton_limits),
+        ),
+    ] {
+        assert!(
+            matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+            "{name}: expected a typed resource-limit error"
+        );
+    }
+}
