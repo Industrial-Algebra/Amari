@@ -78,3 +78,36 @@ fn compose_rejects_mismatched_crate_bodies() {
         .collect();
     assert!(compose_structural(&manifest_json, &refs).is_err());
 }
+
+#[test]
+fn compose_rejects_duplicate_manifest_references() {
+    // Round-1 review P2: duplicating one manifest entry while keeping all
+    // bodies must not silently drop the replaced crate.
+    let catalog = generate_workspace_catalog(workspace_root()).unwrap();
+    let (mut manifest, bodies) = split_catalog(&catalog).unwrap();
+    manifest.crates[1] = manifest.crates[0].clone();
+    let manifest_json = serde_json::to_string_pretty(&manifest).unwrap();
+    let refs: Vec<(&str, &str)> = bodies
+        .iter()
+        .map(|(n, b)| (n.as_str(), b.as_str()))
+        .collect();
+    let err = compose_structural(&manifest_json, &refs).unwrap_err();
+    assert!(err.to_string().contains("duplicate"), "{err}");
+}
+
+#[test]
+fn compose_rejects_unreferenced_crate_bodies() {
+    let catalog = generate_workspace_catalog(workspace_root()).unwrap();
+    let (mut manifest, bodies) = split_catalog(&catalog).unwrap();
+    // Drop only the manifest reference; keep every body. The orphaned body
+    // must be rejected rather than silently ignored.
+    let dropped = manifest.crates.pop().unwrap();
+    let manifest_json = serde_json::to_string_pretty(&manifest).unwrap();
+    let refs: Vec<(&str, &str)> = bodies
+        .iter()
+        .map(|(n, b)| (n.as_str(), b.as_str()))
+        .collect();
+    let err = compose_structural(&manifest_json, &refs).unwrap_err();
+    assert!(err.to_string().contains(&dropped.name), "{err}");
+    assert!(err.to_string().contains("not referenced"), "{err}");
+}

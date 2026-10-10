@@ -56,7 +56,7 @@ a test-profile executable.
 
 ## Interpretation
 
-The executable embeds `catalog/generated.json` and
+The executable embeds `catalog/manifest.json/crates/*.json` and
 `catalog/generated-wasm.json` so runtime discovery remains offline and cannot
 drift from reviewed authority. The uncompressed Rust catalog is currently the
 largest package input. Any future binary-size reduction must preserve catalog

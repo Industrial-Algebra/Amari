@@ -640,12 +640,10 @@ pub fn verify_checked_in(root: &Path, catalog_dir: &Path) -> DiscoveryResult<()>
     let (manifest, bodies) = crate::catalog::split::split_catalog(&generated)?;
 
     let mut expected: BTreeMap<std::path::PathBuf, Vec<u8>> = BTreeMap::new();
-    let manifest_bytes = {
-        let mut bytes = serde_json::to_vec_pretty(&manifest)?;
-        bytes.push(b'\n');
-        bytes
-    };
+    let manifest_bytes = crate::catalog::split::manifest_bytes(&manifest)?;
     expected.insert(catalog_dir.join("manifest.json"), manifest_bytes);
+    let index_bytes = crate::catalog::split::render_index_rs(&manifest).into_bytes();
+    expected.insert(catalog_dir.join("index.rs"), index_bytes);
     for (name, body) in &bodies {
         expected.insert(
             catalog_dir.join("crates").join(format!("{name}.json")),

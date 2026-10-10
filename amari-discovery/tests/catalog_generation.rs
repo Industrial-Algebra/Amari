@@ -35,12 +35,21 @@ fn catalog_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("catalog")
 }
 
-/// Writes a full split layout to `dir` with one crate body corrupted.
-fn write_split_with_corruption(dir: &Path, corrupt_crate: Option<&str>) {
-    use amari_discovery::split_catalog;
+fn first_crate_name() -> String {
+    generate_workspace_catalog(workspace_root())
+        .unwrap()
+        .crates
+        .first()
+        .map(|c| c.name.clone())
+        .unwrap()
+}
+
+/// Writes a full split layout to `dir` (canonical bytes) with an optional
+/// single crate body corrupted. Returns the first crate name.
+fn write_split_with_corruption(dir: &Path, corrupt_crate: Option<&str>) -> String {
+    use amari_discovery::{manifest_bytes, render_index_rs, split_catalog};
     let catalog = generate_workspace_catalog(workspace_root()).unwrap();
     let (manifest, bodies) = split_catalog(&catalog).unwrap();
-    let manifest_json = serde_json::to_string_pretty(&manifest).unwrap();
     std::fs::create_dir_all(dir.join("crates")).unwrap();
     for (name, body) in &bodies {
         let body = if Some(name.as_str()) == corrupt_crate {
@@ -50,7 +59,13 @@ fn write_split_with_corruption(dir: &Path, corrupt_crate: Option<&str>) {
         };
         std::fs::write(dir.join("crates").join(format!("{name}.json")), body).unwrap();
     }
-    std::fs::write(dir.join("manifest.json"), manifest_json).unwrap();
+    std::fs::write(
+        dir.join("manifest.json"),
+        manifest_bytes(&manifest).unwrap(),
+    )
+    .unwrap();
+    std::fs::write(dir.join("index.rs"), render_index_rs(&manifest)).unwrap();
+    manifest.crates.first().map(|e| e.name.clone()).unwrap()
 }
 
 // ============================================================================
@@ -515,21 +530,85 @@ fn generated_equals_checked_in() {
 }
 
 #[test]
+fn clean_split_fixture_passes_verification() {
+    // The corruption tests below are only meaningful if an unmodified
+    // split fixture verifies cleanly (round-1 review P2).
+    let temp_dir = tempfile::TempDir::new().unwrap();
+    write_split_with_corruption(temp_dir.path(), None);
+    verify_checked_in(workspace_root(), temp_dir.path()).expect("clean split fixture must verify");
+}
+
+#[test]
 fn modified_copy_produces_drift_error() {
     let temp_dir = tempfile::TempDir::new().unwrap();
-    let name = generate_workspace_catalog(workspace_root())
-        .unwrap()
-        .crates
-        .first()
-        .map(|c| c.name.clone())
-        .unwrap();
+    let name = first_crate_name();
     write_split_with_corruption(temp_dir.path(), Some(&name));
-
     let result = verify_checked_in(workspace_root(), temp_dir.path());
     assert!(result.is_err(), "drift must be detected");
     let err = result.unwrap_err();
     assert_eq!(err.kind(), "catalog_corruption");
     assert!(err.to_string().contains("drift"));
+}
+
+#[test]
+fn missing_crate_file_is_drift() {
+    let temp_dir = tempfile::TempDir::new().unwrap();
+    let name = write_split_with_corruption(temp_dir.path(), None);
+    std::fs::remove_file(temp_dir.path().join("crates").join(format!("{name}.json"))).unwrap();
+    let result = verify_checked_in(workspace_root(), temp_dir.path());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("cannot read"));
+}
+
+#[test]
+fn orphan_crate_file_is_drift() {
+    let temp_dir = tempfile::TempDir::new().unwrap();
+    write_split_with_corruption(temp_dir.path(), None);
+    std::fs::write(
+        temp_dir
+            .path()
+            .join("crates")
+            .join("amari-ghost-crate.json"),
+        "{}\n",
+    )
+    .unwrap();
+    let result = verify_checked_in(workspace_root(), temp_dir.path());
+    assert!(result.is_err());
+    let msg = result.unwrap_err().to_string();
+    assert!(
+        msg.contains("amari-ghost-crate"),
+        "orphan must be named: {msg}"
+    );
+}
+
+#[test]
+fn lingering_monolith_is_drift() {
+    let temp_dir = tempfile::TempDir::new().unwrap();
+    write_split_with_corruption(temp_dir.path(), None);
+    std::fs::write(temp_dir.path().join("generated.json"), "{}\n").unwrap();
+    let result = verify_checked_in(workspace_root(), temp_dir.path());
+    assert!(result.is_err());
+    let msg = result.unwrap_err().to_string();
+    assert!(
+        msg.contains("monolith"),
+        "legacy monolith must be named: {msg}"
+    );
+}
+
+#[test]
+fn corrupted_index_rs_is_drift() {
+    // The generated include table is a required loader artifact; its
+    // corruption or absence must be reported (round-1 review P2).
+    let temp_dir = tempfile::TempDir::new().unwrap();
+    write_split_with_corruption(temp_dir.path(), None);
+    std::fs::write(temp_dir.path().join("index.rs"), "not valid rust at all").unwrap();
+    let result = verify_checked_in(workspace_root(), temp_dir.path());
+    assert!(result.is_err());
+    let msg = result.unwrap_err().to_string();
+    assert!(
+        msg.contains("index.rs"),
+        "drifted index must be named: {msg}"
+    );
 }
 
 // ============================================================================
@@ -603,12 +682,7 @@ fn verify_checked_in_drift_message_names_drifted_files() {
     // Drift messages must name the drifted file(s) so authors can locate
     // the difference in the split layout.
     let temp_dir = tempfile::TempDir::new().unwrap();
-    let name = generate_workspace_catalog(workspace_root())
-        .unwrap()
-        .crates
-        .first()
-        .map(|c| c.name.clone())
-        .unwrap();
+    let name = first_crate_name();
     write_split_with_corruption(temp_dir.path(), Some(&name));
 
     let result = verify_checked_in(workspace_root(), temp_dir.path());

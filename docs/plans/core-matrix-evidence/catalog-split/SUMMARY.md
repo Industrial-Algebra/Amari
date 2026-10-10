@@ -57,3 +57,14 @@ The loader includes generated `catalog/index.rs` at compile time; a
 fresh workspace (no index.rs yet) bootstraps by stubbing the include
 once, running the generator, then restoring the include. Bootstrap
 machinery is not committed — the generator output is.
+
+## Review round 1 — findings and remediation
+
+Round 1 returned **1 P1 / 3 P2** — all verified real, all remediated:
+
+1. **P1 `rewrite_discovery_macros.rs` still read the removed monolith** (my consumer search missed it). Fixed: the test composes the embedded split sources (`compose_structural` over the generated include table) — 5/5 green. Guide and benchmarks documentation updated to the split layout; remaining `generated.json` references are historical plans/release notes, intentionally untouched.
+2. **P2 verifier ignored `index.rs`.** Fixed: `render_index_rs` (and `manifest_bytes`) extracted into the lib as shared machinery; the generator example and `verify_checked_in` both use them, so index corruption/absence is drift. New test `corrupted_index_rs_is_drift` pins it.
+3. **P2 composition accepted duplicate manifest refs and silently dropped the replaced crate.** Fixed: duplicate references rejected; every supplied body must be consumed exactly once (unreferenced bodies rejected by name). Two new split tests pin both. Process disclosure: the first application of this fix was silently lost to a stale-variable overwrite in my edit script (two "success" prints, one write) — caught by the new tests failing, re-applied with a persistence assertion. The interim test failure was my own harness, not the reviewer's finding regressing.
+4. **P2 corruption fixtures were already drifted (non-canonical manifest bytes) and failure modes were uncovered.** Fixed: `write_split_with_corruption` writes canonical manifest/index via the shared machinery; new `clean_split_fixture_passes_verification` establishes the baseline; added missing-file, orphan-file, lingering-monolith, and index-corruption tests (generation suite 41→46).
+
+Post-fix gates: generation 46/46, integrity 11/11, split 5/5, macros 5/5; scoped clippy 0; workspace all-targets check 0; fmt clean; catalog tree **byte-identical** through the remediation (hash `3b5c2aec…` unchanged; the fixes are machinery-only).
