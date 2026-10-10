@@ -15,9 +15,14 @@
 //! constructions (ADR 0001); Task 25 adds the approved exact one-step
 //! and finite-horizon preimage constructions ([`one_step_preimage`],
 //! [`finite_horizon_preimage`]); Task 26 adds the exact unbounded
-//! saturation preimage ([`saturation_preimage`]).
+//! saturation preimage ([`saturation_preimage`]); Task 27 adds the
+//! witnessed lower-bound approximation surface for approximation-only
+//! cells ([`one_step_lower_bound`], [`finite_horizon_lower_bound`],
+//! [`saturation_lower_bound`]), with `Partial` authority and an absent
+//! upper bound.
 
 mod alphabet;
+mod approximate;
 mod automaton;
 mod certificate;
 mod classify;
@@ -31,6 +36,10 @@ mod saturation;
 mod witness;
 
 pub use alphabet::RankedSymbol;
+pub use approximate::{
+    finite_horizon_lower_bound, one_step_lower_bound, saturation_lower_bound, ApproximationEvent,
+    ApproximationOutcome,
+};
 pub use automaton::{AcceptingRun, TreeAutomaton, TreeState, TreeTransition};
 pub use certificate::{language_digest, system_digest, CertificateAuthority, PreimageCertificate};
 pub use classify::{

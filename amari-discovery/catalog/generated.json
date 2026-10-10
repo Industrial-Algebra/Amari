@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "65718faca99b3791a4c3e95f8c4f4ac3761d735fb8ee12af132a156ca4480571",
+  "content_hash": "8a353f2379aafa54f1e5182ccc54d194aa5892d96bb4d73f74775d19652da92b",
   "crates": [
     {
       "name": "amari",
@@ -378459,6 +378459,218 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::ApproximationEvent",
+          "kind": "enum",
+          "signature": "pub enum ApproximationEvent",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "WitnessAdmitted",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "term_size",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "EnumerationTruncated",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "UpperUnavailable",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "enum",
+              "signature": "pub enum ApproximationEvent",
+              "shape": {
+                "kind": "enum",
+                "variants": [
+                  {
+                    "name": "WitnessAdmitted",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "term_size",
+                          "ty": "usize"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "EnumerationTruncated",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "resource",
+                          "ty": "& 'static str"
+                        },
+                        {
+                          "name": "limit",
+                          "ty": "usize"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "UpperUnavailable",
+                    "data": {
+                      "kind": "struct",
+                      "fields": [
+                        {
+                          "name": "reason",
+                          "ty": "& 'static str"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "ApproximationEvent"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome",
+          "kind": "struct",
+          "signature": "pub struct ApproximationOutcome",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "struct",
+              "signature": "pub struct ApproximationOutcome",
+              "shape": {
+                "kind": "struct",
+                "fields": []
+              },
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "ApproximationOutcome"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::certificate",
+          "kind": "method",
+          "signature": "pub fn certificate (& self) -> & PreimageCertificate",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn certificate (& self) -> & PreimageCertificate",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "ApproximationOutcome::certificate"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::lower",
+          "kind": "method",
+          "signature": "pub fn lower (& self) -> & TreeAutomaton",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn lower (& self) -> & TreeAutomaton",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "ApproximationOutcome::lower"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::trace",
+          "kind": "method",
+          "signature": "pub fn trace (& self) -> & [ApproximationEvent]",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn trace (& self) -> & [ApproximationEvent]",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "ApproximationOutcome::trace"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::upper",
+          "kind": "method",
+          "signature": "pub fn upper (& self) -> Option < & TreeAutomaton >",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "method",
+              "signature": "pub fn upper (& self) -> Option < & TreeAutomaton >",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "ApproximationOutcome::upper"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::CertificateAuthority",
           "kind": "enum",
           "signature": "pub enum CertificateAuthority",
@@ -379160,6 +379372,12 @@
                 "data": {
                   "kind": "unit"
                 }
+              },
+              {
+                "name": "WitnessedLowerBound",
+                "data": {
+                  "kind": "unit"
+                }
               }
             ]
           },
@@ -379196,6 +379414,12 @@
                   },
                   {
                     "name": "GttSaturation",
+                    "data": {
+                      "kind": "unit"
+                    }
+                  },
+                  {
+                    "name": "WitnessedLowerBound",
                     "data": {
                       "kind": "unit"
                     }
@@ -380764,6 +380988,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::finite_horizon_lower_bound",
+          "kind": "fn",
+          "signature": "pub fn finite_horizon_lower_bound (system : & TermSystem , language : & TreeAutomaton , horizon : u32 , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn finite_horizon_lower_bound (system : & TermSystem , language : & TreeAutomaton , horizon : u32 , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "finite_horizon_lower_bound"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::finite_horizon_preimage",
           "kind": "fn",
           "signature": "pub fn finite_horizon_preimage (system : & TermSystem , language : & TreeAutomaton , horizon : u32 , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < PreimageOutcome >",
@@ -380821,6 +381064,25 @@
           ]
         },
         {
+          "path": "amari_rewrite::language::one_step_lower_bound",
+          "kind": "fn",
+          "signature": "pub fn one_step_lower_bound (system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn one_step_lower_bound (system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "one_step_lower_bound"
+            }
+          ]
+        },
+        {
           "path": "amari_rewrite::language::one_step_preimage",
           "kind": "fn",
           "signature": "pub fn one_step_preimage (system : & TermSystem , language : & TreeAutomaton , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < PreimageOutcome >",
@@ -380836,6 +381098,25 @@
               "is_reexport": true,
               "declaration_module": "amari_rewrite::language::preimage",
               "declaration_ident": "one_step_preimage"
+            }
+          ]
+        },
+        {
+          "path": "amari_rewrite::language::saturation_lower_bound",
+          "kind": "fn",
+          "signature": "pub fn saturation_lower_bound (system : & TermSystem , language : & TreeAutomaton , max_steps : u32 , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "is_reexport": true,
+          "source_module": "amari_rewrite::language::approximate",
+          "variants": [
+            {
+              "kind": "fn",
+              "signature": "pub fn saturation_lower_bound (system : & TermSystem , language : & TreeAutomaton , max_steps : u32 , limits : & RelationLimits , automaton_limits : & TreeAutomatonLimits ,) -> RewriteResult < ApproximationOutcome >",
+              "source_path": "amari-rewrite/src/language/approximate.rs",
+              "source_module": "amari_rewrite::language::approximate",
+              "is_reexport": true,
+              "declaration_module": "amari_rewrite::language::approximate",
+              "declaration_ident": "saturation_lower_bound"
             }
           ]
         },
@@ -387386,6 +387667,42 @@
         },
         {
           "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::ApproximationEvent",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::approximate",
+            "ident": "ApproximationEvent"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
+          "impl_type_path": "amari_rewrite::language::ApproximationOutcome",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Clone"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::approximate",
+            "ident": "ApproximationOutcome"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Clone",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
           "source_ordinal": 7,
@@ -389333,6 +389650,42 @@
         },
         {
           "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::ApproximationEvent",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::approximate",
+            "ident": "ApproximationEvent"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
+          "impl_type_path": "amari_rewrite::language::ApproximationOutcome",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 1,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Debug"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::approximate",
+            "ident": "ApproximationOutcome"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Debug",
           "impl_type_path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
           "source_ordinal": 7,
@@ -390839,6 +391192,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "AcceptingRun"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "Eq",
+          "impl_type_path": "amari_rewrite::language::ApproximationEvent",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "Eq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::approximate",
+            "ident": "ApproximationEvent"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -393399,6 +393770,24 @@
             "kind": "local",
             "module": "amari_rewrite::language::automaton",
             "ident": "AcceptingRun"
+          },
+          "unsafe_trait": false,
+          "negative": false,
+          "is_derived": true
+        },
+        {
+          "trait_path": "PartialEq",
+          "impl_type_path": "amari_rewrite::language::ApproximationEvent",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 0,
+          "trait_endpoint": {
+            "kind": "external",
+            "path": "PartialEq"
+          },
+          "impl_type_endpoint": {
+            "kind": "local",
+            "module": "amari_rewrite::language::approximate",
+            "ident": "ApproximationEvent"
           },
           "unsafe_trait": false,
           "negative": false,
@@ -396025,6 +396414,54 @@
           "surface_kind": "inherent_method"
         },
         {
+          "path": "amari_rewrite::language::ApproximationEvent",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::certificate",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::lower",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 0,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::trace",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
+          "path": "amari_rewrite::language::ApproximationOutcome::upper",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 1,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "inherent_method"
+        },
+        {
           "path": "amari_rewrite::language::CertificateAuthority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
           "source_ordinal": 7,
@@ -396163,7 +396600,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::authority",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 13,
+          "source_ordinal": 14,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396171,7 +396608,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::class",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 8,
+          "source_ordinal": 9,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396179,7 +396616,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::construction",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 9,
+          "source_ordinal": 10,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396187,7 +396624,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::horizon",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 12,
+          "source_ordinal": 13,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396195,7 +396632,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::is_complete",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 15,
+          "source_ordinal": 16,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396211,7 +396648,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::language",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 11,
+          "source_ordinal": 12,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396219,7 +396656,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::operation",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 7,
+          "source_ordinal": 8,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396227,7 +396664,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::result",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 14,
+          "source_ordinal": 15,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396235,7 +396672,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::system",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 10,
+          "source_ordinal": 11,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396243,7 +396680,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::verify",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 2,
+          "source_ordinal": 3,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396251,7 +396688,7 @@
         {
           "path": "amari_rewrite::language::PreimageCertificate::verify_result",
           "source_path": "amari-rewrite/src/language/certificate.rs",
-          "source_ordinal": 5,
+          "source_ordinal": 6,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "inherent_method"
@@ -396849,6 +397286,14 @@
           "surface_kind": "top_level"
         },
         {
+          "path": "amari_rewrite::language::finite_horizon_lower_bound",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 4,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::language::finite_horizon_preimage",
           "source_path": "amari-rewrite/src/language/preimage.rs",
           "source_ordinal": 3,
@@ -396873,9 +397318,25 @@
           "surface_kind": "top_level"
         },
         {
+          "path": "amari_rewrite::language::one_step_lower_bound",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 3,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
           "path": "amari_rewrite::language::one_step_preimage",
           "source_path": "amari-rewrite/src/language/preimage.rs",
           "source_ordinal": 2,
+          "gate": "always",
+          "status": "enabled",
+          "surface_kind": "top_level"
+        },
+        {
+          "path": "amari_rewrite::language::saturation_lower_bound",
+          "source_path": "amari-rewrite/src/language/approximate.rs",
+          "source_ordinal": 5,
           "gate": "always",
           "status": "enabled",
           "surface_kind": "top_level"
