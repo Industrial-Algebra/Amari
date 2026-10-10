@@ -385,3 +385,32 @@ example_refs = []
 probe_refs = []
 stability = "stable"
 cost = "moderate"
+
+[[relations]]
+from = "amari:amari-rewrite:language:automata"
+to = "amari:amari-rewrite:language:preimages"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:language:grammars"
+to = "amari:amari-rewrite:language:preimages"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:inverse:predecessors"
+to = "amari:amari-rewrite:language:preimages"
+kind = "composes_with"
+
+[[capabilities]]
+id = "amari:amari-rewrite:language:preimages"
+name = "Certified regular language preimages"
+description = "Classifies rewrite systems under the ADR 0001 closure taxonomy and computes exact one-step, finite-horizon, and saturation preimages, witnessed lower bounds, and three-valued membership verdicts with evidence certificates."
+aliases = ["language preimage", "predecessor language", "certified preimage"]
+concepts = ["term rewriting system", "regular languages", "inverse rewriting", "verification"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::language::classify_and_query"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:preimages:v1"]
+stability = "stable"
+cost = "moderate"

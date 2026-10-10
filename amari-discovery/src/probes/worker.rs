@@ -12,6 +12,16 @@ use crate::{DiscoveryError, DiscoveryResult, ProbeId, Provenance};
 
 const FRAME_HEADER_BYTES: usize = 4;
 pub(super) const MAX_FRAME_BYTES: usize = 2 * 1024 * 1024;
+
+/// The stderr line prefix a probe worker emits before exiting nonzero
+/// on a typed domain error. The supervisor recovers the typed error
+/// from this marker (gated on parse success, exit-code agreement, and
+/// message hygiene). The marker is an OPT-IN protocol channel: stderr
+/// content that is not so marked is never surfaced, while marked
+/// content is published by the worker's own choice (PR #286 rounds
+/// 1–2).
+pub(crate) const WORKER_ERROR_MARKER: &str = "amari-discovery-worker-error: ";
+
 pub(super) const MAX_ENCODED_FRAME_BYTES: usize = FRAME_HEADER_BYTES + MAX_FRAME_BYTES;
 
 #[derive(Debug, Deserialize, Serialize)]

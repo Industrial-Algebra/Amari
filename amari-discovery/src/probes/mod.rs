@@ -41,11 +41,11 @@ pub use rewrite::{
     RewriteInferRuleRequest, RewriteInverseAnalysisOutput, RewriteInverseAnalysisRequest,
     RewriteInverseRuleReport, RewriteLanguagesOutput, RewriteLanguagesRequest,
     RewriteNormalizeOutput, RewriteNormalizeRequest, RewritePredecessorsOutput,
-    RewritePredecessorsRequest, RewriteRankedSymbol, RewriteResidualAuthority,
-    RewriteResidualReplayOutput, RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode,
-    RewriteSymbolicPredecessor, RewriteSymbolicPredecessorsOutput,
-    RewriteSymbolicPredecessorsRequest, RewriteSymbolicProvenance, RewriteTerm,
-    RewriteTermConstraint,
+    RewritePredecessorsRequest, RewritePreimagesOutput, RewritePreimagesRequest,
+    RewriteRankedSymbol, RewriteResidualAuthority, RewriteResidualReplayOutput,
+    RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode, RewriteSymbolicPredecessor,
+    RewriteSymbolicPredecessorsOutput, RewriteSymbolicPredecessorsRequest,
+    RewriteSymbolicProvenance, RewriteTerm, RewriteTermConstraint,
 };
 pub use surreal::{
     DecimalRational, DecimalSurcomplex, RationalSurcomplexDivisionOutput,
@@ -421,6 +421,12 @@ fn schema_document(schema_id: &str) -> DiscoveryResult<ProbeSchemaDocument> {
         "amari.discovery/probe/rewrite-languages/output/v1" => {
             ProbeSchemaDocument::from_contract::<rewrite::RewriteLanguagesOutput>()
         }
+        "amari.discovery/probe/rewrite-preimages/input/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewritePreimagesRequest>()
+        }
+        "amari.discovery/probe/rewrite-preimages/output/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewritePreimagesOutput>()
+        }
         "amari.discovery/probe/rewrite-symbolic-predecessors/input/v1" => {
             ProbeSchemaDocument::from_contract::<RewriteSymbolicPredecessorsRequest>()
         }
@@ -512,6 +518,7 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
         rewrite::inverse_analysis_registration()?,
         rewrite::normalize_registration()?,
         rewrite::predecessors_registration()?,
+        rewrite::preimages_registration()?,
         rewrite::residual_replay_registration()?,
         rewrite::symbolic_predecessors_registration()?,
         surreal::surcomplex_division_registration()?,

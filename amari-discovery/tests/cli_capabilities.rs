@@ -91,6 +91,7 @@ fn embedded_catalog_capabilities_derive_probe_execution_from_registry() {
                         | "amari-probe:rewrite:inverse-analysis:v1"
                         | "amari-probe:rewrite:normalize:v1"
                         | "amari-probe:rewrite:predecessors:v1"
+                        | "amari-probe:rewrite:preimages:v1"
                         | "amari-probe:rewrite:residual-replay:v1"
                         | "amari-probe:rewrite:symbolic-predecessors:v1"
                         | "amari-probe:surcomplex:rational-division:v1"

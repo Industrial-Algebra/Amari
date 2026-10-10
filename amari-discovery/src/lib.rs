@@ -111,11 +111,12 @@ pub use probes::{
     RewriteInferRuleRequest, RewriteInverseAnalysisOutput, RewriteInverseAnalysisRequest,
     RewriteInverseRuleReport, RewriteLanguagesOutput, RewriteLanguagesRequest,
     RewriteNormalizeOutput, RewriteNormalizeRequest, RewritePredecessorsOutput,
-    RewritePredecessorsRequest, RewriteRankedSymbol, RewriteResidualAuthority,
-    RewriteResidualReplayOutput, RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode,
-    RewriteSymbolicPredecessor, RewriteSymbolicPredecessorsOutput,
-    RewriteSymbolicPredecessorsRequest, RewriteSymbolicProvenance, RewriteTerm,
-    RewriteTermConstraint, TropicalViterbiOutput, TropicalViterbiRequest,
+    RewritePredecessorsRequest, RewritePreimagesOutput, RewritePreimagesRequest,
+    RewriteRankedSymbol, RewriteResidualAuthority, RewriteResidualReplayOutput,
+    RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode, RewriteSymbolicPredecessor,
+    RewriteSymbolicPredecessorsOutput, RewriteSymbolicPredecessorsRequest,
+    RewriteSymbolicProvenance, RewriteTerm, RewriteTermConstraint, TropicalViterbiOutput,
+    TropicalViterbiRequest,
 };
 pub use protocol::{
     CandidatePlan, CapabilityId, CatalogIdentity, Compatibility, DiscoveryOutcome, Envelope,

@@ -104,6 +104,51 @@ def main() -> int:
     if mode == "nonzero":
         print("SECRET_DIAGNOSTIC_MUST_NOT_LEAK", file=sys.stderr)
         return 17
+    if mode == "typed-error":
+        sys.stderr.write(
+            "amari-discovery-worker-error: "
+            '{"kind":"invalid_input","message":"fixture typed failure"}\n'
+        )
+        return 2
+    if mode == "marker-mismatch":
+        sys.stderr.write(
+            "amari-discovery-worker-error: "
+            '{"kind":"invalid_input","message":"wrong exit code"}\n'
+        )
+        return 3
+    if mode == "marker-malformed":
+        sys.stderr.write("amari-discovery-worker-error: {not json}\n")
+        return 2
+    if mode == "foreign-marker":
+        # A foreign worker that emits the marker has OPTED IN to the
+        # protocol channel: its marked message is surfaced.
+        sys.stderr.write(
+            "amari-discovery-worker-error: "
+            '{"kind":"invalid_input","message":"FOREIGN_SECRET"}\n'
+        )
+        return 2
+    if mode == "code2-no-marker":
+        print("SECRET_DIAGNOSTIC_MUST_NOT_LEAK", file=sys.stderr)
+        return 2
+    if mode == "marker-multiline-message":
+        sys.stderr.write(
+            "amari-discovery-worker-error: "
+            '{"kind":"invalid_input","message":"line1\\nline2"}\n'
+        )
+        return 2
+    if mode == "marker-unicode-separator":
+        sys.stderr.write(
+            "amari-discovery-worker-error: "
+            '{"kind":"invalid_input","message":"first\\u2028second"}\n'
+        )
+        return 2
+    if mode == "marker-oversized-message":
+        big = "x" * 4096
+        sys.stderr.write(
+            "amari-discovery-worker-error: "
+            '{"kind":"invalid_input","message":"' + big + '"}\n'
+        )
+        return 2
     if mode == "crash":
         os.abort()
     if mode == "simultaneous":

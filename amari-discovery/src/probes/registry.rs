@@ -244,6 +244,7 @@ mod tests {
                 "amari-probe:rewrite:languages:v1".parse().unwrap(),
                 "amari-probe:rewrite:normalize:v1".parse().unwrap(),
                 "amari-probe:rewrite:predecessors:v1".parse().unwrap(),
+                "amari-probe:rewrite:preimages:v1".parse().unwrap(),
                 "amari-probe:rewrite:residual-replay:v1".parse().unwrap(),
                 "amari-probe:rewrite:symbolic-predecessors:v1"
                     .parse()
