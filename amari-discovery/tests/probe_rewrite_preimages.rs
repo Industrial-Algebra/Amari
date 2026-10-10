@@ -40,6 +40,20 @@ fn accepts_b() -> serde_json::Value {
     })
 }
 
+/// The language `{ b }` over the alphabet `{a, b, c}`.
+fn accepts_b_with_c() -> serde_json::Value {
+    json!({
+        "alphabet": [
+            {"name": "a", "arity": 0},
+            {"name": "b", "arity": 0},
+            {"name": "c", "arity": 0}
+        ],
+        "states": ["q0"],
+        "transitions": [{"symbol": "b", "children": [], "parent": "q0"}],
+        "finals": ["q0"]
+    })
+}
+
 /// The language `{ g(a) }`.
 fn accepts_g_a() -> serde_json::Value {
     json!({
@@ -232,8 +246,11 @@ fn membership_verdicts_have_known_answers() {
     }));
     assert_eq!(excluded.verdict.as_deref(), Some("excluded"));
 
-    // Saturation is unbounded, so non-membership is never an
-    // exclusion: the verdict is unknown at worst.
+    // APPROXIMATION-path saturation is bounded by a derived horizon,
+    // so its non-membership is never an exclusion: the verdict is
+    // unknown at worst. (Exact saturation is a complete construction
+    // and CAN exclude — see exact_saturation_excludes_when_complete,
+    // PR #286 round 1.)
     let saturation = run_typed(&json!({
         "operation": "membership",
         "preimage": "saturation",
@@ -362,4 +379,93 @@ fn unknown_operation_and_preimage_are_typed_errors() {
         matches!(error, DiscoveryError::InvalidInput(ref message) if message.contains("preimage")),
         "unexpected error: {error}"
     );
+}
+
+#[test]
+fn supplied_fields_are_validated_even_when_unused() {
+    // `classify` does not consume the horizon, but a supplied
+    // over-ceiling horizon is still a typed error: no supplied
+    // bounded field bypasses the ceilings (PR #286 round 1).
+    let error = run_error(&json!({
+        "operation": "classify",
+        "rules": [ground_rule()],
+        "horizon": 5
+    }));
+    assert!(
+        matches!(error, DiscoveryError::InvalidInput(_)),
+        "over-ceiling supplied horizon: {error}"
+    );
+
+    // `preimage` does not consume the term either.
+    let mut big = json!({"kind": "symbol", "name": "a", "arguments": []});
+    for _ in 0..33 {
+        big = json!({"kind": "symbol", "name": "f", "arguments": [big]});
+    }
+    let error = run_error(&json!({
+        "operation": "preimage",
+        "rules": [ground_rule()],
+        "language": accepts_b(),
+        "term": big
+    }));
+    assert!(
+        matches!(error, DiscoveryError::LimitExceeded(_)),
+        "over-ceiling supplied term: {error}"
+    );
+
+    // And an over-ceiling supplied language (nine states) fails
+    // `classify` too.
+    let error = run_error(&json!({
+        "operation": "classify",
+        "rules": [ground_rule()],
+        "language": {
+            "alphabet": [{"name": "a", "arity": 0}],
+            "states": ["q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8"],
+            "transitions": [{"symbol": "a", "children": [], "parent": "q0"}],
+            "finals": ["q0"]
+        }
+    }));
+    assert!(
+        matches!(error, DiscoveryError::InvalidInput(_)),
+        "over-ceiling supplied language: {error}"
+    );
+}
+
+#[test]
+fn zero_horizon_finite_preimage_is_the_identity() {
+    // Horizon zero is the identity construction: membership reduces to
+    // membership in the language itself (PR #286 round 1).
+    let member = run_typed(&json!({
+        "operation": "membership",
+        "preimage": "finite_horizon",
+        "horizon": 0,
+        "rules": [ground_rule()],
+        "language": accepts_b_with_c(),
+        "term": {"kind": "symbol", "name": "b", "arguments": []}
+    }));
+    assert_eq!(member.verdict.as_deref(), Some("proven"));
+
+    let excluded = run_typed(&json!({
+        "operation": "membership",
+        "preimage": "finite_horizon",
+        "horizon": 0,
+        "rules": [ground_rule()],
+        "language": accepts_b_with_c(),
+        "term": {"kind": "symbol", "name": "c", "arguments": []}
+    }));
+    assert_eq!(excluded.verdict.as_deref(), Some("excluded"));
+}
+
+#[test]
+fn exact_saturation_excludes_when_complete() {
+    // EXACT saturation is a complete construction: non-membership is
+    // sound exclusion. The never-excluded guarantee holds only for
+    // the APPROXIMATION path (PR #286 round 1).
+    let verdict = run_typed(&json!({
+        "operation": "membership",
+        "preimage": "saturation",
+        "rules": [ground_rule()],
+        "language": accepts_b_with_c(),
+        "term": {"kind": "symbol", "name": "c", "arguments": []}
+    }));
+    assert_eq!(verdict.verdict.as_deref(), Some("excluded"));
 }

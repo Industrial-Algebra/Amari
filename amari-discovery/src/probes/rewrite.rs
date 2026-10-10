@@ -3071,7 +3071,10 @@ pub struct RewritePreimagesRequest {
     pub language: Option<RewriteAutomaton>,
     /// The query term for `membership` (required there).
     pub term: Option<RewriteTerm>,
-    /// The horizon for `finite_horizon` (required there, at most 4).
+    /// The horizon for `finite_horizon` (required there, 0..=4; zero
+    /// is the identity construction). Every supplied bounded field is
+    /// validated against the probe ceilings even when the selected
+    /// operation does not consume it.
     pub horizon: Option<u64>,
 }
 
@@ -3143,9 +3146,12 @@ fn parse_preimage_operation(
                     "the finite_horizon preimage requires a `horizon`".to_owned(),
                 )
             })?;
-            if horizon == 0 || horizon > MAX_PREIMAGE_HORIZON {
+            // Zero is the identity construction (Task 24): the
+            // library supports it, so the probe does too
+            // (PR #286 round 1).
+            if horizon > MAX_PREIMAGE_HORIZON {
                 return Err(DiscoveryError::InvalidInput(format!(
-                    "finite_horizon horizon {horizon} is outside 1..={MAX_PREIMAGE_HORIZON}"
+                    "finite_horizon horizon {horizon} is outside 0..={MAX_PREIMAGE_HORIZON}"
                 )));
             }
             let horizon = u32::try_from(horizon).map_err(|_| {
@@ -3389,6 +3395,23 @@ fn execute_preimages(
     for rule in &request.rules {
         term_stats(&rule.lhs, MAX_PREIMAGE_TERM_DEPTH, MAX_PREIMAGE_TERM_NODES)?;
         term_stats(&rule.rhs, MAX_PREIMAGE_TERM_DEPTH, MAX_PREIMAGE_TERM_NODES)?;
+    }
+    // Every SUPPLIED bounded field is validated before dispatch —
+    // including fields the selected operation does not consume — so a
+    // request can never carry an over-ceiling payload past the gate
+    // (PR #286 round 1).
+    if let Some(horizon) = request.horizon {
+        if horizon > MAX_PREIMAGE_HORIZON {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "horizon {horizon} is outside 0..={MAX_PREIMAGE_HORIZON}"
+            )));
+        }
+    }
+    if let Some(term) = &request.term {
+        term_stats(term, MAX_PREIMAGE_TERM_DEPTH, MAX_PREIMAGE_TERM_NODES)?;
+    }
+    if let Some(language) = &request.language {
+        validate_preimage_automaton_bounds(language)?;
     }
     let rules = request
         .rules

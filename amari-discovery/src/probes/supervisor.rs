@@ -161,12 +161,42 @@ fn send_worker_request(child: &mut Child, request: &WorkerRequest) -> DiscoveryR
     Ok(())
 }
 
+/// Reconstructs a typed domain error from the worker's stderr marker
+/// line (PR #286 round 1). Recovery is gated on the marker parsing
+/// AND the process exit code agreeing with the kind's stable code, so
+/// a malformed or foreign worker can never inject a typed error;
+/// markerless exits keep the privacy-preserving `ProbeWorkerExited`
+/// mapping. `InvalidId` carries structured fields a flat message
+/// cannot reconstruct, so it is intentionally not recovered.
+fn recover_worker_error(stderr: &[u8], code: i32) -> Option<DiscoveryError> {
+    let text = std::str::from_utf8(stderr).ok()?;
+    let line = text
+        .lines()
+        .find(|line| line.starts_with(worker::WORKER_ERROR_MARKER))?;
+    let payload: serde_json::Value =
+        serde_json::from_str(&line[worker::WORKER_ERROR_MARKER.len()..]).ok()?;
+    let kind = payload.get("kind")?.as_str()?;
+    let message = payload.get("message")?.as_str()?.to_owned();
+    let error = match kind {
+        "invalid_input" => DiscoveryError::InvalidInput(message),
+        "limit_exceeded" => DiscoveryError::LimitExceeded(message),
+        "probe_unavailable" => DiscoveryError::ProbeUnavailable(message),
+        "catalog_corruption" => DiscoveryError::CatalogCorruption(message),
+        "inspection_failure" => DiscoveryError::InspectionFailure(message),
+        _ => return None,
+    };
+    (i32::from(error.exit_code()) == code).then_some(error)
+}
+
 fn map_worker_outcome(
     captured: CapturedOutput,
     expected_provenance: &Provenance,
 ) -> DiscoveryResult<WorkerResponse> {
     if !captured.status.success() {
         if let Some(code) = captured.status.code() {
+            if let Some(error) = recover_worker_error(&captured.stderr, code) {
+                return Err(error);
+            }
             return Err(DiscoveryError::ProbeWorkerExited { code });
         }
         return Err(DiscoveryError::ProbeWorkerCrashed {
@@ -683,6 +713,37 @@ mod tests {
             crate::DiscoveryError::ProbeWorkerExited { code: 17 }
         ));
         assert!(!error.to_string().contains("SECRET_DIAGNOSTIC"));
+    }
+
+    #[test]
+    fn worker_error_marker_recovers_typed_domain_error() {
+        let error = run_fixture("typed-error").unwrap_err();
+        assert!(
+            matches!(
+                error,
+                crate::DiscoveryError::InvalidInput(ref message)
+                    if message == "fixture typed failure"
+            ),
+            "marker should recover the typed error: {error}"
+        );
+    }
+
+    #[test]
+    fn marker_with_mismatched_exit_code_falls_back_to_exit_mapping() {
+        let error = run_fixture("marker-mismatch").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerExited { code: 3 }
+        ));
+    }
+
+    #[test]
+    fn malformed_marker_falls_back_to_exit_mapping() {
+        let error = run_fixture("marker-malformed").unwrap_err();
+        assert!(matches!(
+            error,
+            crate::DiscoveryError::ProbeWorkerExited { code: 2 }
+        ));
     }
 
     #[test]

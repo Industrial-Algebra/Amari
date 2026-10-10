@@ -311,7 +311,13 @@ pub fn run() -> DiscoveryResult<()> {
                 }
             }
         }
-        Command::ProbeWorker => crate::probes::worker::run_stdio(),
+        Command::ProbeWorker => match crate::probes::worker::run_stdio() {
+            Ok(()) => Ok(()),
+            Err(error) => {
+                report_worker_error_marker(&error);
+                Err(error)
+            }
+        },
         command => {
             let mut stdout = io::stdout().lock();
             dispatch_command(command, mode, &mut stdout)
@@ -415,6 +421,23 @@ fn dispatch_command<W: Write>(
             command.unavailable_name()
         ))),
     }
+}
+
+/// Emits the machine-readable worker error marker the probe
+/// supervisor consumes to recover typed domain errors through process
+/// framing (PR #286 round 1). Rendering failures are ignored; the
+/// process exit status still comes from the returned error.
+fn report_worker_error_marker(error: &DiscoveryError) {
+    let payload = serde_json::json!({
+        "kind": error.kind(),
+        "message": error.to_string(),
+    });
+    let mut stderr = io::stderr().lock();
+    let _ = writeln!(
+        stderr,
+        "{}{payload}",
+        crate::probes::worker::WORKER_ERROR_MARKER
+    );
 }
 
 /// Renders a process-level error according to the selected machine mode.

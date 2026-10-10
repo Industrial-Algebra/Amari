@@ -12,6 +12,15 @@ use crate::{DiscoveryError, DiscoveryResult, ProbeId, Provenance};
 
 const FRAME_HEADER_BYTES: usize = 4;
 pub(super) const MAX_FRAME_BYTES: usize = 2 * 1024 * 1024;
+
+/// The stderr line prefix a probe worker emits before exiting nonzero
+/// on a typed domain error. The supervisor recovers the typed error
+/// from this marker (gated on parse success and exit-code agreement);
+/// markerless or mismatched exits keep the privacy-preserving
+/// `ProbeWorkerExited` mapping, and foreign-worker stderr never leaks
+/// (PR #286 round 1).
+pub(crate) const WORKER_ERROR_MARKER: &str = "amari-discovery-worker-error: ";
+
 pub(super) const MAX_ENCODED_FRAME_BYTES: usize = FRAME_HEADER_BYTES + MAX_FRAME_BYTES;
 
 #[derive(Debug, Deserialize, Serialize)]

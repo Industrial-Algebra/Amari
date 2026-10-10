@@ -8,7 +8,7 @@
 use std::fs;
 
 use amari_discovery::{
-    Catalog, ProbeSchemaDocument, RewritePreimagesOutput, RewritePreimagesRequest,
+    Catalog, ProbeEngine, ProbeSchemaDocument, RewritePreimagesOutput, RewritePreimagesRequest,
 };
 use assert_cmd::Command;
 use serde_json::json;
@@ -144,4 +144,62 @@ fn cli_run_matches_engine_output_for_preimages() {
     let output: RewritePreimagesOutput =
         serde_json::from_value(cli["data"]["result"]["output"].clone()).unwrap();
     assert_eq!(output.verdict.as_deref(), Some("proven"));
+}
+
+/// Runs `probe run` expecting failure; returns (exit code, stderr).
+fn command_run_error(input: &serde_json::Value) -> (i32, String) {
+    let temporary = TempDir::new().unwrap();
+    let path = temporary.path().join("request.json");
+    std::fs::write(&path, serde_json::to_vec(input).unwrap()).unwrap();
+    let output = Command::cargo_bin("amari")
+        .unwrap()
+        .args(["probe", "run", PREIMAGES, "--input", path.to_str().unwrap()])
+        .arg("--json")
+        .assert()
+        .failure()
+        .get_output()
+        .clone();
+    (
+        output.status.code().unwrap_or(-1),
+        String::from_utf8_lossy(&output.stderr).into_owned(),
+    )
+}
+
+#[test]
+fn cli_preserves_typed_domain_errors() {
+    // The process-isolated worker surfaces typed domain errors with
+    // the same kind and exit code the in-process engine reports
+    // (PR #286 round 1: worker framing must not flatten them).
+    let cases = [
+        // Unknown top-level field.
+        json!({"operation": "classify", "rules": [], "bogus": true}),
+        // Unknown NESTED DTO field.
+        json!({
+            "operation": "classify",
+            "rules": [{
+                "lhs": {"kind": "symbol", "name": "a", "arguments": [], "bogus": true},
+                "rhs": {"kind": "symbol", "name": "b", "arguments": []}
+            }]
+        }),
+        // Over-ceiling horizon.
+        json!({"operation": "classify", "rules": [], "horizon": 5}),
+    ];
+    for input in &cases {
+        let direct = ProbeEngine::new()
+            .unwrap()
+            .execute(&PREIMAGES.parse().unwrap(), input)
+            .unwrap_err();
+        let (code, stderr) = command_run_error(input);
+        assert_eq!(
+            code,
+            i32::from(direct.exit_code()),
+            "exit-code parity for {input}: {stderr}"
+        );
+        let rendered: serde_json::Value = serde_json::from_str(stderr.trim()).unwrap();
+        assert_eq!(
+            rendered["kind"].as_str().unwrap(),
+            direct.kind(),
+            "kind parity for {input}: {stderr}"
+        );
+    }
 }
