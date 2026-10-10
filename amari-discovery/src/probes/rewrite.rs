@@ -8,10 +8,14 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 #[cfg(feature = "standard-probes")]
 use amari_rewrite::{
     language::{
-        RankedSymbol, RegularTreeGrammar, TreeAutomaton, TreeAutomatonLimits, TreeState,
-        TreeTransition,
+        classify_and_query, classify_system, finite_horizon_lower_bound, finite_horizon_preimage,
+        one_step_lower_bound, one_step_preimage, saturation_lower_bound, saturation_preimage,
+        ApproximationEvent, ApproximationOutcome, CertificateAuthority, MembershipVerdict,
+        PreimageCapability, PreimageCertificate, PreimageConstruction, PreimageOperation,
+        PreimageOutcome, RankedSymbol, RegularTreeGrammar, TreeAutomaton, TreeAutomatonLimits,
+        TreeState, TreeTransition, TrsClass,
     },
-    relation::{RelationLimits, RelationResources},
+    relation::{RelationLimits, RelationResources, Sha256Digest},
     synthesis::infer_rule,
     trs::{match_pattern, Rule, Term, TermSystem},
     RewriteError,
@@ -2983,5 +2987,559 @@ pub(super) fn languages_registration() -> DiscoveryResult<AdapterRegistration> {
         side_effects: SideEffectPolicy::None,
         network: false,
         execute: execute_languages,
+    })
+}
+
+// ---- Regular language preimage probe (0.25 Cohort 5, Task 29)
+
+/// Probe-tightened rule-count ceiling (library default is 256).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_RULES: u64 = 32;
+/// Probe-tightened automaton state ceiling (library default 4096).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_AUTOMATON_STATES: usize = 8;
+/// Probe-tightened automaton transition ceiling (library default 65536).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_AUTOMATON_TRANSITIONS: usize = 32;
+/// Probe-tightened finite-horizon ceiling (library default 64).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_HORIZON: u64 = 4;
+/// Probe-tightened per-term node ceiling (library default 4096).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_TERM_NODES: u64 = 32;
+/// Probe-tightened per-term depth ceiling (library default 64).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_TERM_DEPTH: u64 = 16;
+/// Probe-tightened constraint ceiling (library default 4096).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_CONSTRAINTS: u64 = 128;
+/// Probe-tightened operation ceiling (library default 1000000).
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_OPERATIONS: u64 = 20_000;
+/// Fixed witnessed-replay horizon for a saturation approximation.
+#[cfg(feature = "standard-probes")]
+const MAX_PREIMAGE_STEPS: u32 = 4;
+/// Digest frame for one witnessed ground term.
+#[cfg(feature = "standard-probes")]
+const PREIMAGE_WITNESS_FRAME: &str = "amari-discovery/rewrite-preimages/witness/v1";
+/// Digest frame for one preimage certificate binding.
+#[cfg(feature = "standard-probes")]
+const PREIMAGE_CERTIFICATE_FRAME: &str = "amari-discovery/rewrite-preimages/certificate/v1";
+
+/// Typed input for the regular-language preimage probe.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-preimages/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        automaton_bounds = "at most 8 states, 32 transitions, 64 alphabet symbols, and 16 children per transition",
+        horizon_limit = "horizon is no greater than 4",
+        name_bytes_limit = "names contain at most 256 bytes",
+        operation_known = "operation is classify, preimage, approximate, or membership",
+        preimage_known = "preimage is one_step, finite_horizon, or saturation",
+        rules_checked = "every rule RHS variable occurs in its LHS",
+        rules_count_limit = "at most 32 ordered rules are accepted",
+        term_bounds = "terms have depth at most 16 and at most 32 nodes"
+    ),
+    example(
+        label = "one_step_membership",
+        value = "{\"operation\":\"membership\",\"preimage\":\"one_step\",\"rules\":[{\"lhs\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]}}],\"language\":{\"alphabet\":[{\"name\":\"a\",\"arity\":0},{\"name\":\"b\",\"arity\":0}],\"states\":[\"q0\"],\"transitions\":[{\"symbol\":\"b\",\"children\":[],\"parent\":\"q0\"}],\"finals\":[\"q0\"]},\"term\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"horizon\":null}"
+    )
+)]
+pub struct RewritePreimagesRequest {
+    /// The operation: `classify`, `preimage`, `approximate`, or
+    /// `membership`.
+    pub operation: String,
+    /// The preimage operation the request answers: `one_step`,
+    /// `finite_horizon`, or `saturation`. Defaults to `one_step`.
+    pub preimage: Option<String>,
+    /// Ordered checked rewrite rules forming the system.
+    pub rules: Vec<RewriteRule>,
+    /// The target language automaton (required for `preimage`,
+    /// `approximate`, and `membership`).
+    pub language: Option<RewriteAutomaton>,
+    /// The query term for `membership` (required there).
+    pub term: Option<RewriteTerm>,
+    /// The horizon for `finite_horizon` (required there, at most 4).
+    pub horizon: Option<u64>,
+}
+
+/// Typed output of the regular-language preimage probe: typed
+/// outcomes and canonical digests, never source automata.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-preimages/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        certificates_only = "preimage results report the result digest and state/transition counts, never the source automaton",
+        membership_three_valued = "verdict is proven, excluded, or unknown",
+        witness_digests_truthful = "witness_hashes has exactly witness_count entries"
+    ),
+    example(
+        label = "one_step_membership",
+        value = "{\"outcome\":\"ok\",\"class\":\"ground\",\"capability\":\"exact\",\"construction\":\"left_linear_one_step\",\"unsupported_reasons\":[],\"result_hash\":null,\"result_states\":null,\"result_transitions\":null,\"certificate_hash\":null,\"witness_count\":null,\"witness_hashes\":[],\"truncated\":null,\"verdict\":\"proven\"}"
+    )
+)]
+pub struct RewritePreimagesOutput {
+    /// `ok` for classify/membership, `exact` for an exact preimage,
+    /// `bounded` for a witnessed lower bound.
+    pub outcome: String,
+    /// The classified TRS class.
+    pub class: String,
+    /// `exact` or `approximation_only`.
+    pub capability: String,
+    /// The approved exact construction, or `witnessed_lower_bound`.
+    pub construction: Option<String>,
+    /// Why the selected cell has no exact construction.
+    pub unsupported_reasons: Vec<String>,
+    /// sha256 hex of the result automaton's canonical bytes.
+    pub result_hash: Option<String>,
+    /// Result automaton state count.
+    pub result_states: Option<u64>,
+    /// Result automaton transition count.
+    pub result_transitions: Option<u64>,
+    /// sha256 hex of the certificate's binding fields.
+    pub certificate_hash: Option<String>,
+    /// Admitted witness count for `approximate`.
+    pub witness_count: Option<u64>,
+    /// Canonical digest of each admitted witness.
+    pub witness_hashes: Vec<String>,
+    /// Whether the approximation enumeration was truncated.
+    pub truncated: Option<bool>,
+    /// The three-valued membership verdict.
+    pub verdict: Option<String>,
+}
+
+#[cfg(feature = "standard-probes")]
+fn parse_preimage_operation(
+    request: &RewritePreimagesRequest,
+) -> DiscoveryResult<PreimageOperation> {
+    match request.preimage.as_deref().unwrap_or("one_step") {
+        "one_step" => Ok(PreimageOperation::OneStep),
+        "finite_horizon" => {
+            let horizon = request.horizon.ok_or_else(|| {
+                DiscoveryError::InvalidInput(
+                    "the finite_horizon preimage requires a `horizon`".to_owned(),
+                )
+            })?;
+            if horizon == 0 || horizon > MAX_PREIMAGE_HORIZON {
+                return Err(DiscoveryError::InvalidInput(format!(
+                    "finite_horizon horizon {horizon} is outside 1..={MAX_PREIMAGE_HORIZON}"
+                )));
+            }
+            let horizon = u32::try_from(horizon).map_err(|_| {
+                DiscoveryError::LimitExceeded("preimage horizon overflow".to_owned())
+            })?;
+            Ok(PreimageOperation::FiniteHorizon(horizon))
+        }
+        "saturation" => Ok(PreimageOperation::Saturation),
+        other => Err(DiscoveryError::InvalidInput(format!(
+            "unknown preimage {other:?}: expected one_step, finite_horizon, or saturation"
+        ))),
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn class_name(class: TrsClass) -> &'static str {
+    match class {
+        TrsClass::Ground => "ground",
+        TrsClass::LinearVariableDisjoint => "linear_variable_disjoint",
+        TrsClass::LeftLinearShared => "left_linear_shared",
+        TrsClass::NonLeftLinear => "non_left_linear",
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn capability_name(capability: PreimageCapability) -> &'static str {
+    match capability {
+        PreimageCapability::Exact(_) => "exact",
+        PreimageCapability::ApproximationOnly => "approximation_only",
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn preimage_operation_name(operation: PreimageOperation) -> &'static str {
+    match operation {
+        PreimageOperation::OneStep => "one_step",
+        PreimageOperation::FiniteHorizon(_) => "finite_horizon",
+        PreimageOperation::Saturation => "saturation",
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn preimage_construction_name(construction: PreimageConstruction) -> &'static str {
+    match construction {
+        PreimageConstruction::Identity => "identity",
+        PreimageConstruction::LeftLinearOneStep => "left_linear_one_step",
+        PreimageConstruction::FiniteHorizonIteration(_) => "finite_horizon_iteration",
+        PreimageConstruction::GttSaturation => "gtt_saturation",
+        PreimageConstruction::WitnessedLowerBound => "witnessed_lower_bound",
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn membership_verdict_name(verdict: &MembershipVerdict) -> &'static str {
+    match verdict {
+        MembershipVerdict::Proven(_) => "proven",
+        MembershipVerdict::Excluded => "excluded",
+        MembershipVerdict::Unknown => "unknown",
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn preimage_output_base(class: &str, capability: &str) -> RewritePreimagesOutput {
+    RewritePreimagesOutput {
+        outcome: "ok".to_owned(),
+        class: class.to_owned(),
+        capability: capability.to_owned(),
+        construction: None,
+        unsupported_reasons: Vec::new(),
+        result_hash: None,
+        result_states: None,
+        result_transitions: None,
+        certificate_hash: None,
+        witness_count: None,
+        witness_hashes: Vec::new(),
+        truncated: None,
+        verdict: None,
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn validate_preimage_automaton_bounds(automaton: &RewriteAutomaton) -> DiscoveryResult<()> {
+    validate_automaton_dto(automaton)?;
+    if automaton.states.len() > MAX_PREIMAGE_AUTOMATON_STATES {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "automaton declares {} states; the preimage probe ceiling is \
+             {MAX_PREIMAGE_AUTOMATON_STATES}",
+            automaton.states.len()
+        )));
+    }
+    if automaton.transitions.len() > MAX_PREIMAGE_AUTOMATON_TRANSITIONS {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "automaton declares {} transitions; the preimage probe ceiling is \
+             {MAX_PREIMAGE_AUTOMATON_TRANSITIONS}",
+            automaton.transitions.len()
+        )));
+    }
+    Ok(())
+}
+
+#[cfg(feature = "standard-probes")]
+fn require_preimage_language(request: &RewritePreimagesRequest) -> DiscoveryResult<TreeAutomaton> {
+    let automaton = request.language.as_ref().ok_or_else(|| {
+        DiscoveryError::InvalidInput(format!(
+            "{} requires a `language` automaton",
+            request.operation
+        ))
+    })?;
+    validate_preimage_automaton_bounds(automaton)?;
+    build_automaton(automaton)
+}
+
+#[cfg(feature = "standard-probes")]
+fn preimage_relation_limits(limits: &EffectiveProbeLimits) -> DiscoveryResult<RelationLimits> {
+    fn clamp(value: u64, ceiling: u64) -> usize {
+        usize::try_from(value.min(ceiling)).unwrap_or(1).max(1)
+    }
+    RelationLimits::new(
+        clamp(limits.max_nodes, MAX_PREIMAGE_TERM_NODES),
+        MAX_PREIMAGE_TERM_DEPTH as usize,
+        clamp(limits.max_nodes, MAX_PREIMAGE_CONSTRAINTS),
+        clamp(limits.max_operations, MAX_PREIMAGE_OPERATIONS),
+    )
+    .map_err(|error| DiscoveryError::InvalidInput(format!("preimage limit profile: {error}")))
+}
+
+#[cfg(feature = "standard-probes")]
+fn preimage_automaton_limits() -> DiscoveryResult<TreeAutomatonLimits> {
+    TreeAutomatonLimits::new(
+        MAX_PREIMAGE_AUTOMATON_STATES,
+        MAX_PREIMAGE_AUTOMATON_TRANSITIONS,
+        TreeAutomatonLimits::MAX_RANK,
+    )
+    .map_err(|error| {
+        DiscoveryError::InvalidInput(format!("preimage automaton limit profile: {error}"))
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn run_exact_preimage(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    operation: PreimageOperation,
+    limits: &RelationLimits,
+    automaton_limits: &TreeAutomatonLimits,
+) -> Result<PreimageOutcome, RewriteError> {
+    match operation {
+        PreimageOperation::OneStep => one_step_preimage(system, language, limits, automaton_limits),
+        PreimageOperation::FiniteHorizon(horizon) => {
+            finite_horizon_preimage(system, language, horizon, limits, automaton_limits)
+        }
+        PreimageOperation::Saturation => {
+            saturation_preimage(system, language, limits, automaton_limits)
+        }
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn run_lower_bound(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    operation: PreimageOperation,
+    limits: &RelationLimits,
+    automaton_limits: &TreeAutomatonLimits,
+) -> Result<ApproximationOutcome, RewriteError> {
+    match operation {
+        PreimageOperation::OneStep => {
+            one_step_lower_bound(system, language, limits, automaton_limits)
+        }
+        PreimageOperation::FiniteHorizon(horizon) => {
+            finite_horizon_lower_bound(system, language, horizon, limits, automaton_limits)
+        }
+        PreimageOperation::Saturation => saturation_lower_bound(
+            system,
+            language,
+            MAX_PREIMAGE_STEPS,
+            limits,
+            automaton_limits,
+        ),
+    }
+}
+
+/// Canonical digest of a certificate's binding fields (the library
+/// certificate does not expose canonical bytes).
+#[cfg(feature = "standard-probes")]
+fn certificate_digest(certificate: &PreimageCertificate) -> String {
+    use sha2::Digest;
+    let mut hasher = sha2::Sha256::new();
+    let frame = PREIMAGE_CERTIFICATE_FRAME.as_bytes();
+    hasher.update((frame.len() as u32).to_le_bytes());
+    hasher.update(frame);
+    hasher.update(certificate.system().as_bytes());
+    hasher.update(certificate.language().as_bytes());
+    hasher.update(preimage_operation_name(certificate.operation()).as_bytes());
+    hasher.update(class_name(certificate.class()).as_bytes());
+    hasher.update(preimage_construction_name(certificate.construction()).as_bytes());
+    match certificate.horizon() {
+        Some(horizon) => {
+            hasher.update([1_u8]);
+            hasher.update(horizon.to_le_bytes());
+        }
+        None => hasher.update([0_u8]),
+    }
+    match certificate.authority() {
+        CertificateAuthority::Exact => hasher.update([0_u8]),
+        CertificateAuthority::Partial { detail } => {
+            hasher.update([1_u8]);
+            hasher.update((detail.len() as u32).to_le_bytes());
+            hasher.update(detail.as_bytes());
+        }
+    }
+    match certificate.result() {
+        Some(result) => {
+            hasher.update([1_u8]);
+            hasher.update(result.as_bytes());
+        }
+        None => hasher.update([0_u8]),
+    }
+    hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_preimages(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewritePreimagesRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "preimages request has an invalid operation, preimage, rule, automaton, term, \
+                 or horizon shape: {error}"
+            ))
+        })?;
+    let rule_count = u64::try_from(request.rules.len())
+        .map_err(|_| DiscoveryError::LimitExceeded("preimage rule count overflow".to_owned()))?;
+    enforce("preimage rule count", rule_count, MAX_PREIMAGE_RULES)?;
+    for rule in &request.rules {
+        term_stats(&rule.lhs, MAX_PREIMAGE_TERM_DEPTH, MAX_PREIMAGE_TERM_NODES)?;
+        term_stats(&rule.rhs, MAX_PREIMAGE_TERM_DEPTH, MAX_PREIMAGE_TERM_NODES)?;
+    }
+    let rules = request
+        .rules
+        .iter()
+        .map(RewriteRule::to_rule)
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let system = TermSystem::new(rules);
+    let operation = parse_preimage_operation(&request)?;
+    let classification =
+        classify_system(&system).map_err(|error| language_error("classify", error))?;
+    let capability = classification.capability(operation);
+    let class = class_name(classification.class());
+    let capability_label = capability_name(capability);
+
+    let (output, operations, nodes) = match request.operation.as_str() {
+        "classify" => {
+            let construction = match capability {
+                PreimageCapability::Exact(construction) => construction,
+                PreimageCapability::ApproximationOnly => PreimageConstruction::WitnessedLowerBound,
+            };
+            let mut output = preimage_output_base(class, capability_label);
+            output.construction = Some(preimage_construction_name(construction).to_owned());
+            if matches!(capability, PreimageCapability::ApproximationOnly) {
+                output.unsupported_reasons.push(format!(
+                    "class {class} has no approved exact construction for {} (ADR 0001)",
+                    preimage_operation_name(operation)
+                ));
+            }
+            (output, rule_count, 0_u64)
+        }
+        "preimage" => {
+            let language = require_preimage_language(&request)?;
+            let relation_limits = preimage_relation_limits(limits)?;
+            let automaton_limits = preimage_automaton_limits()?;
+            let outcome = run_exact_preimage(
+                &system,
+                &language,
+                operation,
+                &relation_limits,
+                &automaton_limits,
+            )
+            .map_err(|error| language_error("preimage", error))?;
+            let (result, certificate) = outcome.into_parts();
+            let (hash, states, transitions) = automaton_certificate(&result);
+            let mut output = preimage_output_base(class, "exact");
+            output.outcome = "exact".to_owned();
+            output.construction =
+                Some(preimage_construction_name(certificate.construction()).to_owned());
+            output.result_hash = Some(hash);
+            output.result_states = Some(states);
+            output.result_transitions = Some(transitions);
+            output.certificate_hash = Some(certificate_digest(&certificate));
+            let operations = rule_count
+                .saturating_add(states)
+                .saturating_add(transitions);
+            (output, operations, states)
+        }
+        "approximate" => {
+            let language = require_preimage_language(&request)?;
+            let relation_limits = preimage_relation_limits(limits)?;
+            let automaton_limits = preimage_automaton_limits()?;
+            let outcome = run_lower_bound(
+                &system,
+                &language,
+                operation,
+                &relation_limits,
+                &automaton_limits,
+            )
+            .map_err(|error| language_error("approximate", error))?;
+            let witness_hashes: Vec<String> = outcome
+                .witnesses()
+                .iter()
+                .map(|term| Sha256Digest::canonical_term(PREIMAGE_WITNESS_FRAME, term).to_hex())
+                .collect();
+            let truncated = outcome
+                .trace()
+                .iter()
+                .any(|event| matches!(event, ApproximationEvent::EnumerationTruncated { .. }));
+            let witness_count = u64::try_from(witness_hashes.len())
+                .map_err(|_| DiscoveryError::LimitExceeded("witness count overflow".to_owned()))?;
+            let mut output = preimage_output_base(class, "approximation_only");
+            output.outcome = "bounded".to_owned();
+            output.construction = Some("witnessed_lower_bound".to_owned());
+            output.witness_count = Some(witness_count);
+            output.witness_hashes = witness_hashes;
+            output.truncated = Some(truncated);
+            output.certificate_hash = Some(certificate_digest(outcome.certificate()));
+            let operations = rule_count.saturating_add(witness_count);
+            (output, operations, witness_count)
+        }
+        "membership" => {
+            let language = require_preimage_language(&request)?;
+            let term = request.term.as_ref().ok_or_else(|| {
+                DiscoveryError::InvalidInput("membership requires a `term`".to_owned())
+            })?;
+            let stats = term_stats(term, MAX_PREIMAGE_TERM_DEPTH, MAX_PREIMAGE_TERM_NODES)?;
+            let term = term.to_term()?;
+            let relation_limits = preimage_relation_limits(limits)?;
+            let automaton_limits = preimage_automaton_limits()?;
+            let query = classify_and_query(
+                &system,
+                &language,
+                operation,
+                &term,
+                &relation_limits,
+                &automaton_limits,
+            )
+            .map_err(|error| language_error("membership", error))?;
+            let mut output = preimage_output_base(class, capability_label);
+            output.verdict = Some(membership_verdict_name(query.verdict()).to_owned());
+            output.certificate_hash = Some(certificate_digest(query.certificate()));
+            (output, rule_count.saturating_add(1), stats.nodes)
+        }
+        other => {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "unknown operation {other:?}: expected classify, preimage, approximate, or \
+                 membership"
+            )));
+        }
+    };
+
+    let bounds = effective_bounds(limits);
+    let _ = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations,
+            nodes,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn preimages_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:preimages:v1".parse()?,
+        capability_id: "amari:amari-rewrite:language:preimages".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-preimages/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-preimages/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_preimages,
     })
 }

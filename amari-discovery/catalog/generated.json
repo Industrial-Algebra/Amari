@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "6df7478b83dcec64be5a5267e148eee8a7f6ea4487faaef15d80dc3f47553a2e",
+  "content_hash": "98558e41c06411d6ba387df0f603e6e9fdf9f530837dc223649283802f0cf48f",
   "crates": [
     {
       "name": "amari",
@@ -482533,6 +482533,24 @@
       "capability_id": "amari:amari-rewrite:language:automata",
       "input_schema": "amari.discovery/probe/rewrite-languages/input/v1",
       "output_schema": "amari.discovery/probe/rewrite-languages/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:preimages:v1",
+      "capability_id": "amari:amari-rewrite:language:preimages",
+      "input_schema": "amari.discovery/probe/rewrite-preimages/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-preimages/output/v1",
       "required_features": [
         "standard-probes"
       ],

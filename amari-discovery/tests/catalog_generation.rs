@@ -410,8 +410,8 @@ timeout_millis = 1000
 fn probe_descriptors_equal_manifest() {
     let catalog = generate_workspace_catalog(workspace_root()).unwrap();
 
-    // probes.toml has 20 probes.
-    assert_eq!(catalog.probe_descriptors.len(), 20);
+    // probes.toml has 21 probes.
+    assert_eq!(catalog.probe_descriptors.len(), 21);
 
     let ids: BTreeSet<String> = catalog
         .probe_descriptors
@@ -425,6 +425,7 @@ fn probe_descriptors_equal_manifest() {
     assert!(ids.contains("amari-probe:rewrite:backward-search:v1"));
     assert!(ids.contains("amari-probe:rewrite:bidirectional-search:v1"));
     assert!(ids.contains("amari-probe:rewrite:languages:v1"));
+    assert!(ids.contains("amari-probe:rewrite:preimages:v1"));
     assert!(ids.contains("amari-probe:rewrite:symbolic-predecessors:v1"));
     assert!(ids.contains("amari-probe:rewrite:inverse-analysis:v1"));
     assert!(ids.contains("amari-probe:rewrite:residual-replay:v1"));
