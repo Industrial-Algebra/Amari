@@ -927,3 +927,62 @@ fn identity_clone_accounts_for_alphabet_storage() {
         );
     }
 }
+
+#[test]
+fn identity_clone_accounts_for_finals_storage() {
+    // PR #288 round 2: the identity clone retains the finals set as
+    // well — the billed cells are states + transitions + alphabet +
+    // finals.
+    let states: Vec<TreeState> = (0..100)
+        .map(|i| TreeState::new(Symbol::new(format!("q{i}"))))
+        .collect();
+    let language = TreeAutomaton::new(
+        Vec::new(),
+        states.clone(),
+        Vec::new(),
+        states,
+        TreeAutomatonLimits::default(),
+    )
+    .unwrap();
+    let automaton_limits = TreeAutomatonLimits::default();
+    let empty = TermSystem::new(Vec::new());
+    let tight = |constraints| RelationLimits::new(16, 8, constraints, 1024).unwrap();
+
+    // 100 states + 100 finals = 200 retained cells: budget 199 must
+    // fail, budget 200 must succeed, on every identity route.
+    for (name, outcome) in [
+        (
+            "horizon-0",
+            finite_horizon_preimage(&empty, &language, 0, &tight(199), &automaton_limits),
+        ),
+        (
+            "empty-system horizon-1",
+            finite_horizon_preimage(&empty, &language, 1, &tight(199), &automaton_limits),
+        ),
+        (
+            "empty-system saturation",
+            saturation_preimage(&empty, &language, &tight(199), &automaton_limits),
+        ),
+    ] {
+        assert!(
+            matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+            "{name} at budget 199: {outcome:?}"
+        );
+    }
+    for (name, outcome) in [
+        (
+            "horizon-0",
+            finite_horizon_preimage(&empty, &language, 0, &tight(200), &automaton_limits),
+        ),
+        (
+            "empty-system horizon-1",
+            finite_horizon_preimage(&empty, &language, 1, &tight(200), &automaton_limits),
+        ),
+        (
+            "empty-system saturation",
+            saturation_preimage(&empty, &language, &tight(200), &automaton_limits),
+        ),
+    ] {
+        assert!(outcome.is_ok(), "{name} at budget 200: {outcome:?}");
+    }
+}

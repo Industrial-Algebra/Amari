@@ -160,7 +160,10 @@ pub(crate) fn saturation_preimage_with_resources(
         // the retained clone is billed (cohort 5 closeout F2).
         language.check_within_limits(automaton_limits)?;
         resources.record_constraints(
-            language.states().len() + language.transitions().len() + language.alphabet().len(),
+            language.states().len()
+                + language.transitions().len()
+                + language.alphabet().len()
+                + language.finals().len(),
         )?;
         let result = language.clone();
         let certificate = certificate.complete(&result);

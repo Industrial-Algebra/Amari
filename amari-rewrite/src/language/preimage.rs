@@ -186,7 +186,10 @@ pub(crate) fn finite_horizon_preimage_with_resources(
         // clone is billed (cohort 5 closeout F2).
         language.check_within_limits(automaton_limits)?;
         resources.record_constraints(
-            language.states().len() + language.transitions().len() + language.alphabet().len(),
+            language.states().len()
+                + language.transitions().len()
+                + language.alphabet().len()
+                + language.finals().len(),
         )?;
         resources.record_operations(1)?;
         let result = language.clone();
