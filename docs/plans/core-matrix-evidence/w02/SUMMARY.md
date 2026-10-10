@@ -85,7 +85,7 @@ Verified-by-reviewer highlights: division vs reciprocal behavior exactly as docu
 
 PR-level comment review posted 0 P1 / 1 P2 / 1 P3:
 - **P2 catalog conflict with develop** — develop had advanced via PR #283 (amari-rewrite cohort 5 + its catalog regen from a pre-W02 tree). Resolved per catalog discipline: merged origin/develop, regenerated from the merged tree — `822baaf8…`, 11,086 items (+9 from #283's new amari-rewrite surface). amari-rewrite required no W02 migration (workspace all-targets check clean, `merge-283-workspace.log`).
-- **P3 PR description omission** — `approx_eq` also treats exact equality (including ±inf == ±inf via the leading `a == b` arm) as equal; PR body amended.
+- **P3 PR description omission** — `approx_eq` also treats exact equality (including ±inf == ±inf via the leading `a == b` arm) as equal. The first body amendment silently failed to match; verified applied only now (round-2 PR review P3-1).
 
 Merged-tree gates: 306 tests / 11 suites stable AND nightly, clippy 0, fmt clean, lock `ba6b36cf…` unchanged (`merge-283-core-test*.log`, `merge-283-core-clippy.log`).
 
@@ -95,6 +95,14 @@ Four red checks, one root cause class — clippy lints on W02-authored code, inv
 
 1. `amari-holographic/clifford.rs:233` — `ok_or_else` with a cheap struct-literal closure (`unnecessary_lazy_evaluations`) → `ok_or`. This alone explained "Mathematical Code Quality" AND the "Mathematical Correctness" aggregator (which gates on CODE_QUALITY) AND both "Test Suite (Native Precision)" jobs (each embeds a clippy step).
 2. `amari-automata/geometric_ca.rs:756,816` — `.then(|| x).unwrap_or(y)` chains (`obfuscated_if_else`) → plain `if/else` (division semantics preserved; automata suite re-run green: 55+1 passed).
-3. `amari-gpu/tests/core_ga_benchmark_crossover.rs:33` — `chunks_exact(8)` → `as_chunks::<8>()` (pre-existing file, untouched by W02, fixed anyway; test green).
+3. `amari-gpu/tests/core_ga_benchmark_crossover.rs:33` — `chunks_exact(8)` → `as_chunks::<8>()` (pre-existing file, untouched by W02, fixed anyway). Evidence qualification: the crossover test is an ignored benchmark harness — the log (`ci-fix-gpu-crossover-test.log`, 0 passed / 1 ignored) verifies compilation and lint cleanliness of the change, not executed assertions; batch-multiple equivalence of `as_chunks` rests on inspection (exact-multiple chunking, same iteration order).
 
-Verification uplift recorded: local workspace-wide clippy is now part of the evidence set (`ci-fix-workspace-clippy-*.log`). Remaining local-only failures are pre-existing or arrived via the #283 develop merge — `amari-discovery/tests/probe_rewrite_inverse_search.rs` (dead code; file byte-identical to develop), `amari-rewrite/tests/*` (unused imports etc.; introduced by #283), and local-nightly-1.100 `needless_range_loop` sites in amari-tropical/dual/info-geom (files unchanged by this branch) — all CI-green on develop `8c6c8b6`, all excluded from this PR's scope.
+Verification uplift recorded: local workspace-wide clippy is now part of the evidence set (`ci-fix-workspace-clippy-*.log`). Remaining local-only failures are pre-existing or arrived via the #283 develop merge — `amari-discovery/tests/probe_rewrite_inverse_search.rs` (dead code; file byte-identical to develop), `amari-rewrite/tests/*` (unused imports etc.; introduced by #283), and local-nightly-1.100 `needless_range_loop` sites in amari-tropical/dual/info-geom (files unchanged by this branch) — all verified unchanged since the branch point `3dc4c31` (git diff; the rewrite files arrived with the #283 merge), and all tolerated by the last green predecessor checks (which ran on PR #283's head, not on merge commit `8c6c8b6` itself — that commit has no fresh independent check run), all excluded from this PR's scope.
+
+## PR review round 2 (post-CI-fix) — 0 P1 / 0 P2 / 3 P3
+
+1. P3-1 infinity-exception disclosure missing from the PR body (first amendment had silently failed to match) — now verified applied (`a == b` arm note on the Equality bullet).
+2. P3-2 crossover evidence overstated — qualified above (ignored benchmark harness; compilation/lint verification only).
+3. P3-3 provenance/CI-coverage wording overstated — corrected above (unchanged-since-branch-point vs byte-identical-to-develop; predecessor checks ran on #283's head, not the merge commit).
+
+CI at review time: 5 pass / 9 running / 1 skipped, no failures.
