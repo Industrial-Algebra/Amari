@@ -102,6 +102,16 @@ pub enum RewriteError {
         /// Validation failure detail.
         message: String,
     },
+    /// A lower-bound refinement violated the monotonicity contract:
+    /// the refined construction is not a superset of the prior bound
+    /// (or it produced an upper bound the prior did not have). Always
+    /// a hard error — the prior evidence is preserved and nothing is
+    /// silently returned (Task 28).
+    #[error("refinement violation: {message}")]
+    RefinementViolation {
+        /// Violation detail.
+        message: String,
+    },
 }
 
 /// Result type used throughout `amari-rewrite`.

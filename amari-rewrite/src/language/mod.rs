@@ -19,7 +19,9 @@
 //! witnessed lower-bound approximation surface for approximation-only
 //! cells ([`one_step_lower_bound`], [`finite_horizon_lower_bound`],
 //! [`saturation_lower_bound`]), with `Partial` authority and an absent
-//! upper bound.
+//! upper bound; Task 28 adds the three-valued membership query
+//! ([`classify_and_query`], [`MembershipVerdict`]) and the monotone
+//! lower-bound refinement ([`refine_lower_bound`]).
 
 mod alphabet;
 mod approximate;
@@ -32,6 +34,7 @@ mod limits;
 mod minimize;
 mod operations;
 mod preimage;
+mod refine;
 mod saturation;
 mod witness;
 
@@ -52,4 +55,5 @@ pub use limits::TreeAutomatonLimits;
 pub use preimage::{
     finite_horizon_preimage, identity_preimage, one_step_preimage, PreimageOutcome,
 };
+pub use refine::{classify_and_query, refine_lower_bound, MembershipQuery, MembershipVerdict};
 pub use saturation::saturation_preimage;

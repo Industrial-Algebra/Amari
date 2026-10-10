@@ -112,10 +112,23 @@ pub fn one_step_preimage(
     limits: &RelationLimits,
     automaton_limits: &TreeAutomatonLimits,
 ) -> RewriteResult<PreimageOutcome> {
+    let mut resources = RelationResources::new(limits);
+    one_step_preimage_with_resources(system, language, limits, automaton_limits, &mut resources)
+}
+
+/// The exact one-step preimage drawing on the CALLER's pool, so a
+/// query can share one per-query budget across construction and
+/// membership (Task 28, PR #284 round 1 P2).
+pub(crate) fn one_step_preimage_with_resources(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    limits: &RelationLimits,
+    automaton_limits: &TreeAutomatonLimits,
+    resources: &mut RelationResources,
+) -> RewriteResult<PreimageOutcome> {
     let certificate =
         PreimageCertificate::issue(PreimageOperation::OneStep, system, language, limits)?;
-    let mut resources = RelationResources::new(limits);
-    let result = one_step_construction(system, language, limits, automaton_limits, &mut resources)?;
+    let result = one_step_construction(system, language, limits, automaton_limits, resources)?;
     Ok(PreimageOutcome {
         certificate: certificate.complete(&result),
         automaton: result,
@@ -132,6 +145,28 @@ pub fn finite_horizon_preimage(
     horizon: u32,
     limits: &RelationLimits,
     automaton_limits: &TreeAutomatonLimits,
+) -> RewriteResult<PreimageOutcome> {
+    let mut resources = RelationResources::new(limits);
+    finite_horizon_preimage_with_resources(
+        system,
+        language,
+        horizon,
+        limits,
+        automaton_limits,
+        &mut resources,
+    )
+}
+
+/// The exact finite-horizon preimage drawing on the CALLER's pool
+/// (Task 28, PR #284 round 1 P2).
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn finite_horizon_preimage_with_resources(
+    system: &TermSystem,
+    language: &TreeAutomaton,
+    horizon: u32,
+    limits: &RelationLimits,
+    automaton_limits: &TreeAutomatonLimits,
+    resources: &mut RelationResources,
 ) -> RewriteResult<PreimageOutcome> {
     let certificate = PreimageCertificate::issue(
         PreimageOperation::FiniteHorizon(horizon),
@@ -152,19 +187,12 @@ pub fn finite_horizon_preimage(
             automaton: result,
         });
     }
-    let mut resources = RelationResources::new(limits);
-    let mut accumulator = canonicalize(language.clone(), automaton_limits, &mut resources)?;
+    let mut accumulator = canonicalize(language.clone(), automaton_limits, resources)?;
     for _ in 0..horizon {
-        let preimage = one_step_construction(
-            system,
-            &accumulator,
-            limits,
-            automaton_limits,
-            &mut resources,
-        )?;
-        let union =
-            accumulator.union_with_resources(&preimage, automaton_limits, &mut resources)?;
-        accumulator = canonicalize(union, automaton_limits, &mut resources)?;
+        let preimage =
+            one_step_construction(system, &accumulator, limits, automaton_limits, resources)?;
+        let union = accumulator.union_with_resources(&preimage, automaton_limits, resources)?;
+        accumulator = canonicalize(union, automaton_limits, resources)?;
     }
     Ok(PreimageOutcome {
         certificate: certificate.complete(&accumulator),
