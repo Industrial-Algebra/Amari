@@ -7,7 +7,9 @@
 //! with no returned reconstruction.
 
 use amari_rewrite::relation::{RelationLimits, Sha256Digest};
-use amari_rewrite::reversible::{ReversibleStep, RewriteResidual};
+use amari_rewrite::reversible::ReversibleStep;
+#[cfg(feature = "serialize")]
+use amari_rewrite::reversible::RewriteResidual;
 use amari_rewrite::trs::{Rule, Term, TermSystem};
 use amari_rewrite::RewriteError;
 

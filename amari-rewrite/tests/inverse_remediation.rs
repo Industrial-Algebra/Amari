@@ -3,9 +3,10 @@
 
 use amari_rewrite::inverse::{
     BackwardExplorer, BackwardSearchOutcome, BidirectionalExplorer, BidirectionalSearchOutcome,
-    GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayQuery, ResourceObservation,
-    SearchMode, SymbolicState,
+    InverseSearchConfig, SearchMode, SymbolicState,
 };
+#[cfg(feature = "serialize")]
+use amari_rewrite::inverse::{GuidanceMode, ReplayCertificate, ReplayQuery, ResourceObservation};
 use amari_rewrite::relation::{ConstraintSet, TermConstraint};
 use amari_rewrite::trs::{Term, TermSystem};
 

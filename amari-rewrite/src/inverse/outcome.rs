@@ -147,26 +147,6 @@ pub enum BackwardSearchOutcome {
     Unsupported(UnsupportedRelation),
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn certified_exhaustion_carries_authority_and_evidence() {
-        let certified = CertifiedExhaustion::certify(
-            ExhaustionAuthority::FiniteGroundingDomain,
-            b"domain:3-terms",
-        );
-        assert_eq!(
-            certified.authority(),
-            &ExhaustionAuthority::FiniteGroundingDomain
-        );
-        assert_eq!(certified.evidence_hash().as_bytes().len(), 32);
-        let outcome = BackwardSearchOutcome::Exhausted(certified);
-        assert!(matches!(outcome, BackwardSearchOutcome::Exhausted(_)));
-    }
-}
-
 /// Certified exhaustion is never accepted from callers: any attempt
 /// to deserialize it (including inside `BackwardSearchOutcome` or
 /// `BidirectionalSearchOutcome`) is an error. This keeps the
@@ -185,5 +165,25 @@ impl<'de> serde::Deserialize<'de> for CertifiedExhaustion {
             "CertifiedExhaustion cannot be deserialized: exhaustion \
              certificates are minted only inside amari-rewrite",
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn certified_exhaustion_carries_authority_and_evidence() {
+        let certified = CertifiedExhaustion::certify(
+            ExhaustionAuthority::FiniteGroundingDomain,
+            b"domain:3-terms",
+        );
+        assert_eq!(
+            certified.authority(),
+            &ExhaustionAuthority::FiniteGroundingDomain
+        );
+        assert_eq!(certified.evidence_hash().as_bytes().len(), 32);
+        let outcome = BackwardSearchOutcome::Exhausted(certified);
+        assert!(matches!(outcome, BackwardSearchOutcome::Exhausted(_)));
     }
 }
