@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-//! Generates `catalog/generated.json` from the workspace root.
+//! Generates the per-crate split catalog under `catalog/` (CORE-CAT1).
 //!
 //! Usage: cargo run -p amari-discovery --example generate_catalog <workspace-root>
 //!
-//! The example canonicalizes the supplied workspace root, requires that an
-//! `amari-discovery` package exists, writes only the fixed output path
-//! `<root>/amari-discovery/catalog/generated.json`, and performs no other
-//! filesystem writes. The output is deterministic: running the example twice
-//! on the same workspace produces identical output.
+//! Writes, under `<root>/amari-discovery/catalog/`:
+//! - `manifest.json` — non-crate fields, aggregate hash, crate file refs;
+//! - `crates/<crate>.json` — one canonical file per crate;
+//! - `index.rs` — generated compile-time include table for the loader.
 //!
-//! The parent directory `amari-discovery/catalog/` must already exist;
-//! this example does not create arbitrary directories.
+//! Removes the legacy monolithic `generated.json` and any stale per-crate
+//! files. Output is deterministic: running twice produces an identical tree.
 
 use std::env;
 use std::fs;
@@ -18,7 +17,36 @@ use std::io::Write;
 use std::path::Path;
 use std::process;
 
-use amari_discovery::generate_workspace_catalog;
+use amari_discovery::{generate_workspace_catalog, manifest_bytes, render_index_rs, split_catalog};
+
+fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    let tmp_path = path.with_extension(
+        path.extension()
+            .map(|e| e.to_string_lossy().into_owned() + ".tmp")
+            .unwrap_or_else(|| "tmp".into()),
+    );
+    let write_result = (|| -> Result<(), String> {
+        let mut file = fs::File::create(&tmp_path)
+            .map_err(|e| format!("Error creating temp file {}: {e}", tmp_path.display()))?;
+        file.write_all(bytes)
+            .map_err(|e| format!("Error writing temp file {}: {e}", tmp_path.display()))?;
+        file.sync_all()
+            .map_err(|e| format!("Error syncing temp file {}: {e}", tmp_path.display()))?;
+        drop(file);
+        fs::rename(&tmp_path, path).map_err(|e| {
+            format!(
+                "Error renaming {} to {}: {e}",
+                tmp_path.display(),
+                path.display()
+            )
+        })?;
+        Ok(())
+    })();
+    if write_result.is_err() {
+        let _ = fs::remove_file(&tmp_path);
+    }
+    write_result
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -27,17 +55,14 @@ fn main() {
         process::exit(1);
     }
 
-    let root = &args[1];
-    let root_path = Path::new(root);
+    let root = Path::new(&args[1]);
 
-    let catalog = generate_workspace_catalog(root_path).unwrap_or_else(|error| {
+    let catalog = generate_workspace_catalog(root).unwrap_or_else(|error| {
         eprintln!("Error generating catalog: {error}");
         process::exit(1);
     });
 
-    // Write canonical JSON to the fixed output path.
-    // Parent must already exist; do not create arbitrary directories.
-    let output_dir = root_path.join("amari-discovery/catalog");
+    let output_dir = root.join("amari-discovery/catalog");
     if !output_dir.is_dir() {
         eprintln!(
             "Error: output directory {} must already exist",
@@ -45,50 +70,82 @@ fn main() {
         );
         process::exit(1);
     }
+    let crates_dir = output_dir.join("crates");
+    if let Err(error) = fs::create_dir_all(&crates_dir) {
+        eprintln!("Error creating {}: {error}", crates_dir.display());
+        process::exit(1);
+    }
 
-    let output_path = output_dir.join("generated.json");
-    let tmp_path = output_dir.join("generated.json.tmp");
+    let (manifest, bodies) = split_catalog(&catalog).unwrap_or_else(|error| {
+        eprintln!("Error splitting catalog: {error}");
+        process::exit(1);
+    });
 
-    let json_bytes = {
-        let mut bytes = serde_json::to_vec_pretty(&catalog).unwrap_or_else(|error| {
-            eprintln!("Error serializing catalog: {error}");
-            process::exit(1);
-        });
-        bytes.push(b'\n');
-        bytes
-    };
-
-    // Atomic write with tmp cleanup on any error.
-    let write_result = (|| -> Result<(), String> {
-        let mut file = fs::File::create(&tmp_path)
-            .map_err(|e| format!("Error creating temp file {}: {e}", tmp_path.display()))?;
-        file.write_all(&json_bytes)
-            .map_err(|e| format!("Error writing temp file: {e}"))?;
-        file.sync_all()
-            .map_err(|e| format!("Error syncing temp file: {e}"))?;
-        drop(file);
-        fs::rename(&tmp_path, &output_path).map_err(|e| {
-            format!(
-                "Error renaming {} to {}: {e}",
-                tmp_path.display(),
-                output_path.display()
-            )
-        })?;
-        Ok(())
-    })();
-
-    if let Err(msg) = write_result {
-        // Best-effort cleanup of the temp file.
-        let _ = fs::remove_file(&tmp_path);
+    // manifest.json (canonical bytes via shared machinery)
+    let manifest_bytes = manifest_bytes(&manifest).unwrap_or_else(|error| {
+        eprintln!("Error serializing manifest: {error}");
+        process::exit(1);
+    });
+    if let Err(msg) = atomic_write(&output_dir.join("manifest.json"), &manifest_bytes) {
         eprintln!("{msg}");
         process::exit(1);
     }
 
-    let crate_count = catalog.crates.len();
-    let item_count: usize = catalog.crates.iter().map(|c| c.items.len()).sum();
-    let edge_count = catalog.dependency_edges.len();
-    let hash = catalog.content_hash.as_deref().unwrap_or("none");
+    // crates/<name>.json
+    for (name, body) in &bodies {
+        if let Err(msg) = atomic_write(&crates_dir.join(format!("{name}.json")), body.as_bytes()) {
+            eprintln!("{msg}");
+            process::exit(1);
+        }
+    }
+
+    // Remove stale per-crate files (renamed/removed crates).
+    let expected: std::collections::HashSet<String> = manifest
+        .crates
+        .iter()
+        .map(|e| format!("{}.json", e.name))
+        .collect();
+    let stale: Vec<_> = fs::read_dir(&crates_dir)
+        .unwrap_or_else(|error| {
+            eprintln!("Error listing {}: {error}", crates_dir.display());
+            process::exit(1);
+        })
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| {
+            entry.file_name().to_string_lossy().ends_with(".json")
+                && !expected.contains(entry.file_name().to_string_lossy().as_ref())
+        })
+        .map(|entry| entry.path())
+        .collect();
+    for path in stale {
+        if let Err(error) = fs::remove_file(&path) {
+            eprintln!("Error removing stale {}: {error}", path.display());
+            process::exit(1);
+        }
+    }
+
+    // index.rs — generated include table for the compile-time loader
+    // (rendered by the shared machinery the drift verifier also uses).
+    let index = render_index_rs(&manifest);
+    if let Err(msg) = atomic_write(&output_dir.join("index.rs"), index.as_bytes()) {
+        eprintln!("{msg}");
+        process::exit(1);
+    }
+
+    // Remove the legacy monolith.
+    let monolith = output_dir.join("generated.json");
+    if monolith.exists() {
+        if let Err(error) = fs::remove_file(&monolith) {
+            eprintln!("Error removing legacy {}: {error}", monolith.display());
+            process::exit(1);
+        }
+    }
+
+    let item_count = manifest.totals.items;
+    let edge_count = manifest.totals.dependency_edges;
+    let hash = manifest.content_hash.as_deref().unwrap_or("none");
     eprintln!(
-        "Generated catalog: {crate_count} crates, {item_count} items, {edge_count} dependency edges, hash {hash}"
+        "Generated split catalog: {crate_count} crates, {item_count} items, {edge_count} dependency edges, hash {hash} ({crate_count} crate files + manifest.json + index.rs)",
+        crate_count = manifest.totals.crates
     );
 }

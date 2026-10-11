@@ -1,0 +1,3169 @@
+{
+  "name": "amari",
+  "version": "0.24.1",
+  "description": "Advanced mathematical computing library with geometric algebra, tropical algebra, and automatic differentiation",
+  "license": "MIT OR Apache-2.0",
+  "edition": "2021",
+  "manifest_path": "Cargo.toml",
+  "library_outputs": [
+    "lib"
+  ],
+  "features": [
+    {
+      "name": "calculus",
+      "enables": [
+        "dep:amari-calculus"
+      ]
+    },
+    {
+      "name": "cgt",
+      "enables": [
+        "amari-enumerative/cgt-bridge",
+        "dep:amari-cgt"
+      ]
+    },
+    {
+      "name": "default"
+    },
+    {
+      "name": "deterministic"
+    },
+    {
+      "name": "dynamics",
+      "enables": [
+        "dep:amari-dynamics"
+      ]
+    },
+    {
+      "name": "flynn",
+      "enables": [
+        "dep:amari-flynn"
+      ]
+    },
+    {
+      "name": "full",
+      "enables": [
+        "calculus",
+        "cgt",
+        "dynamics",
+        "flynn",
+        "functional",
+        "gpu",
+        "holographic",
+        "measure",
+        "optimization",
+        "probabilistic",
+        "rewrite",
+        "surcomplex",
+        "surreal",
+        "topology"
+      ]
+    },
+    {
+      "name": "functional",
+      "enables": [
+        "dep:amari-functional"
+      ]
+    },
+    {
+      "name": "gpu",
+      "enables": [
+        "dep:amari-gpu"
+      ]
+    },
+    {
+      "name": "holographic",
+      "enables": [
+        "dep:amari-holographic"
+      ]
+    },
+    {
+      "name": "measure",
+      "enables": [
+        "dep:amari-measure"
+      ]
+    },
+    {
+      "name": "optimization",
+      "enables": [
+        "dep:amari-optimization"
+      ]
+    },
+    {
+      "name": "probabilistic",
+      "enables": [
+        "dep:amari-probabilistic"
+      ]
+    },
+    {
+      "name": "rewrite",
+      "enables": [
+        "dep:amari-rewrite"
+      ]
+    },
+    {
+      "name": "surcomplex",
+      "enables": [
+        "dep:amari-surcomplex",
+        "surreal"
+      ]
+    },
+    {
+      "name": "surreal",
+      "enables": [
+        "cgt",
+        "dep:amari-surreal"
+      ]
+    },
+    {
+      "name": "topology",
+      "enables": [
+        "dep:amari-topology"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "alias": "amari-automata",
+      "package": "amari-automata",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-automata",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "amari-calculus",
+      "package": "amari-calculus",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-calculus",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-cgt",
+      "package": "amari-cgt",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-cgt",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-core",
+      "package": "amari-core",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-core",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "high-precision",
+        "phantom-types",
+        "std"
+      ]
+    },
+    {
+      "alias": "amari-dual",
+      "package": "amari-dual",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-dual",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "amari-dynamics",
+      "package": "amari-dynamics",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-dynamics",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-enumerative",
+      "package": "amari-enumerative",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-enumerative",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "amari-flynn",
+      "package": "amari-flynn",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-flynn",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-functional",
+      "package": "amari-functional",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-functional",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-fusion",
+      "package": "amari-fusion",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-fusion",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "amari-gpu",
+      "package": "amari-gpu",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-gpu",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-holographic",
+      "package": "amari-holographic",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-holographic",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-info-geom",
+      "package": "amari-info-geom",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-info-geom",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "amari-measure",
+      "package": "amari-measure",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-measure",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-network",
+      "package": "amari-network",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-network",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "amari-optimization",
+      "package": "amari-optimization",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-optimization",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-probabilistic",
+      "package": "amari-probabilistic",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-probabilistic",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-relativistic",
+      "package": "amari-relativistic",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-relativistic",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "amari-rewrite",
+      "package": "amari-rewrite",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-rewrite",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-surcomplex",
+      "package": "amari-surcomplex",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-surcomplex",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-surreal",
+      "package": "amari-surreal",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-surreal",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-topology",
+      "package": "amari-topology",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-topology",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "amari-tropical",
+      "package": "amari-tropical",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-tropical",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "thiserror",
+      "package": "thiserror",
+      "kind": "normal",
+      "version": "2.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "approx",
+      "package": "approx",
+      "kind": "development",
+      "version": "0.5",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "criterion",
+      "package": "criterion",
+      "kind": "development",
+      "version": "0.8",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "tokio",
+      "package": "tokio",
+      "kind": "development",
+      "version": "1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "full"
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "name": "amari",
+      "kind": "library",
+      "path": "src/lib.rs",
+      "crate_types": [
+        "lib"
+      ]
+    },
+    {
+      "name": "networked_physics",
+      "kind": "example",
+      "path": "examples/networked_physics.rs",
+      "required_features": [
+        "deterministic"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "path": "amari::AmariError",
+      "kind": "enum",
+      "signature": "pub enum AmariError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Core",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_core :: CoreError"
+              ]
+            }
+          },
+          {
+            "name": "Automata",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_automata :: AutomataError"
+              ]
+            }
+          },
+          {
+            "name": "Enumerative",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_enumerative :: EnumerativeError"
+              ]
+            }
+          },
+          {
+            "name": "Gpu",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_gpu :: GpuError"
+              ]
+            }
+          },
+          {
+            "name": "InfoGeom",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_info_geom :: InfoGeomError"
+              ]
+            }
+          },
+          {
+            "name": "Network",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_network :: NetworkError"
+              ]
+            }
+          },
+          {
+            "name": "Fusion",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_fusion :: EvaluationError"
+              ]
+            }
+          },
+          {
+            "name": "Tropical",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_tropical :: TropicalError"
+              ]
+            }
+          },
+          {
+            "name": "Dual",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_dual :: DualError"
+              ]
+            }
+          },
+          {
+            "name": "Calculus",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_calculus :: CalculusError"
+              ]
+            }
+          },
+          {
+            "name": "Holographic",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_holographic :: HolographicError"
+              ]
+            }
+          },
+          {
+            "name": "Probabilistic",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_probabilistic :: ProbabilisticError"
+              ]
+            }
+          },
+          {
+            "name": "Functional",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_functional :: FunctionalError"
+              ]
+            }
+          },
+          {
+            "name": "Topology",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_topology :: TopologyError"
+              ]
+            }
+          },
+          {
+            "name": "Dynamics",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_dynamics :: DynamicsError"
+              ]
+            }
+          },
+          {
+            "name": "Cgt",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_cgt :: CgtError"
+              ]
+            }
+          },
+          {
+            "name": "Surreal",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_surreal :: SurrealError"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum AmariError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Core",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_core :: CoreError"
+                  ]
+                }
+              },
+              {
+                "name": "Automata",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_automata :: AutomataError"
+                  ]
+                }
+              },
+              {
+                "name": "Enumerative",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_enumerative :: EnumerativeError"
+                  ]
+                }
+              },
+              {
+                "name": "Gpu",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_gpu :: GpuError"
+                  ]
+                }
+              },
+              {
+                "name": "InfoGeom",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_info_geom :: InfoGeomError"
+                  ]
+                }
+              },
+              {
+                "name": "Network",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_network :: NetworkError"
+                  ]
+                }
+              },
+              {
+                "name": "Fusion",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_fusion :: EvaluationError"
+                  ]
+                }
+              },
+              {
+                "name": "Tropical",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_tropical :: TropicalError"
+                  ]
+                }
+              },
+              {
+                "name": "Dual",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_dual :: DualError"
+                  ]
+                }
+              },
+              {
+                "name": "Calculus",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_calculus :: CalculusError"
+                  ]
+                }
+              },
+              {
+                "name": "Holographic",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_holographic :: HolographicError"
+                  ]
+                }
+              },
+              {
+                "name": "Probabilistic",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_probabilistic :: ProbabilisticError"
+                  ]
+                }
+              },
+              {
+                "name": "Functional",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_functional :: FunctionalError"
+                  ]
+                }
+              },
+              {
+                "name": "Topology",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_topology :: TopologyError"
+                  ]
+                }
+              },
+              {
+                "name": "Dynamics",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_dynamics :: DynamicsError"
+                  ]
+                }
+              },
+              {
+                "name": "Cgt",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_cgt :: CgtError"
+                  ]
+                }
+              },
+              {
+                "name": "Surreal",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_surreal :: SurrealError"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "src/lib.rs",
+          "source_module": "amari",
+          "is_reexport": false,
+          "declaration_module": "amari",
+          "declaration_ident": "AmariError"
+        }
+      ]
+    },
+    {
+      "path": "amari::AmariResult",
+      "kind": "type",
+      "signature": "pub type AmariResult < T > = Result < T , AmariError >",
+      "source_path": "src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari",
+      "variants": [
+        {
+          "kind": "type",
+          "signature": "pub type AmariResult < T > = Result < T , AmariError >",
+          "source_path": "src/lib.rs",
+          "source_module": "amari",
+          "is_reexport": false,
+          "declaration_module": "amari",
+          "declaration_ident": "AmariResult"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32",
+      "kind": "struct",
+      "signature": "pub struct DetF32",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DetF32",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::HALF",
+      "kind": "const",
+      "signature": "pub const HALF : Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const HALF : Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::HALF"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::ONE",
+      "kind": "const",
+      "signature": "pub const ONE : Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ONE : Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::ONE"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::PI",
+      "kind": "const",
+      "signature": "pub const PI : Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const PI : Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::PI"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::TWO",
+      "kind": "const",
+      "signature": "pub const TWO : Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const TWO : Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::TWO"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::ZERO",
+      "kind": "const",
+      "signature": "pub const ZERO : Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ZERO : Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::ZERO"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::abs",
+      "kind": "method",
+      "signature": "pub fn abs (self) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn abs (self) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::abs"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::atan2",
+      "kind": "method",
+      "signature": "pub fn atan2 (y : Self , x : Self) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn atan2 (y : Self , x : Self) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::atan2"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::cos",
+      "kind": "method",
+      "signature": "pub fn cos (self) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn cos (self) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::cos"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::from_bits",
+      "kind": "method",
+      "signature": "pub fn from_bits (bits : u32) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_bits (bits : u32) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::from_bits"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::from_f32",
+      "kind": "method",
+      "signature": "pub fn from_f32 (value : f32) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_f32 (value : f32) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::from_f32"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::rsqrt",
+      "kind": "method",
+      "signature": "pub fn rsqrt (self) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn rsqrt (self) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::rsqrt"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::sin",
+      "kind": "method",
+      "signature": "pub fn sin (self) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sin (self) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::sin"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::sqrt",
+      "kind": "method",
+      "signature": "pub fn sqrt (self) -> Self",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sqrt (self) -> Self",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::sqrt"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::to_bits",
+      "kind": "method",
+      "signature": "pub fn to_bits (self) -> u32",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn to_bits (self) -> u32",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::to_bits"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetF32::to_f32",
+      "kind": "method",
+      "signature": "pub fn to_f32 (self) -> f32",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn to_f32 (self) -> f32",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "DetF32::to_f32"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2",
+      "kind": "struct",
+      "signature": "pub struct DetRotor2",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "s",
+            "ty": "DetF32"
+          },
+          {
+            "label": "b",
+            "ty": "DetF32"
+          }
+        ]
+      },
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DetRotor2",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "s",
+                "ty": "DetF32"
+              },
+              {
+                "label": "b",
+                "ty": "DetF32"
+              }
+            ]
+          },
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::IDENTITY",
+      "kind": "const",
+      "signature": "pub const IDENTITY : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const IDENTITY : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::IDENTITY"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::compose",
+      "kind": "method",
+      "signature": "pub fn compose (self , other : Self) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn compose (self , other : Self) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::compose"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::from_angle",
+      "kind": "method",
+      "signature": "pub fn from_angle (angle : DetF32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_angle (angle : DetF32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::from_angle"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::inverse",
+      "kind": "method",
+      "signature": "pub fn inverse (self) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn inverse (self) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::inverse"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::new",
+      "kind": "method",
+      "signature": "pub const fn new (s : DetF32 , b : DetF32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn new (s : DetF32 , b : DetF32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::new"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::to_angle",
+      "kind": "method",
+      "signature": "pub fn to_angle (self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn to_angle (self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::to_angle"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::transform",
+      "kind": "method",
+      "signature": "pub fn transform (self , v : DetVector2) -> DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn transform (self , v : DetVector2) -> DetVector2",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::transform"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2",
+      "kind": "struct",
+      "signature": "pub struct DetVector2",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "x",
+            "ty": "DetF32"
+          },
+          {
+            "label": "y",
+            "ty": "DetF32"
+          }
+        ]
+      },
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DetVector2",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "x",
+                "ty": "DetF32"
+              },
+              {
+                "label": "y",
+                "ty": "DetF32"
+              }
+            ]
+          },
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::X_AXIS",
+      "kind": "const",
+      "signature": "pub const X_AXIS : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const X_AXIS : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::X_AXIS"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::Y_AXIS",
+      "kind": "const",
+      "signature": "pub const Y_AXIS : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const Y_AXIS : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::Y_AXIS"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::ZERO",
+      "kind": "const",
+      "signature": "pub const ZERO : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ZERO : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::ZERO"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::dot",
+      "kind": "method",
+      "signature": "pub fn dot (self , other : Self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn dot (self , other : Self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::dot"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::from_f32",
+      "kind": "method",
+      "signature": "pub fn from_f32 (x : f32 , y : f32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_f32 (x : f32 , y : f32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::from_f32"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::magnitude",
+      "kind": "method",
+      "signature": "pub fn magnitude (self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn magnitude (self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::magnitude"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::magnitude_sq",
+      "kind": "method",
+      "signature": "pub fn magnitude_sq (self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn magnitude_sq (self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::magnitude_sq"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::new",
+      "kind": "method",
+      "signature": "pub const fn new (x : DetF32 , y : DetF32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn new (x : DetF32 , y : DetF32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::new"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::normalize",
+      "kind": "method",
+      "signature": "pub fn normalize (self) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn normalize (self) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::normalize"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::DetVector2::wedge",
+      "kind": "method",
+      "signature": "pub fn wedge (self , other : Self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn wedge (self , other : Self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::wedge"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::Deterministic",
+      "kind": "trait",
+      "signature": "pub trait Deterministic",
+      "source_path": "src/deterministic/scalar.rs",
+      "is_reexport": true,
+      "source_module": "amari::deterministic::scalar",
+      "variants": [
+        {
+          "kind": "trait",
+          "signature": "pub trait Deterministic",
+          "source_path": "src/deterministic/scalar.rs",
+          "source_module": "amari::deterministic::scalar",
+          "is_reexport": true,
+          "declaration_module": "amari::deterministic::scalar",
+          "declaration_ident": "Deterministic"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2",
+      "kind": "struct",
+      "signature": "pub struct DetRotor2",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "s",
+            "ty": "DetF32"
+          },
+          {
+            "label": "b",
+            "ty": "DetF32"
+          }
+        ]
+      },
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DetRotor2",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "s",
+                "ty": "DetF32"
+              },
+              {
+                "label": "b",
+                "ty": "DetF32"
+              }
+            ]
+          },
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::IDENTITY",
+      "kind": "const",
+      "signature": "pub const IDENTITY : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const IDENTITY : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::IDENTITY"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::compose",
+      "kind": "method",
+      "signature": "pub fn compose (self , other : Self) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn compose (self , other : Self) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::compose"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::from_angle",
+      "kind": "method",
+      "signature": "pub fn from_angle (angle : DetF32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_angle (angle : DetF32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::from_angle"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::inverse",
+      "kind": "method",
+      "signature": "pub fn inverse (self) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn inverse (self) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::inverse"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::new",
+      "kind": "method",
+      "signature": "pub const fn new (s : DetF32 , b : DetF32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn new (s : DetF32 , b : DetF32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::new"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::to_angle",
+      "kind": "method",
+      "signature": "pub fn to_angle (self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn to_angle (self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::to_angle"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::transform",
+      "kind": "method",
+      "signature": "pub fn transform (self , v : DetVector2) -> DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn transform (self , v : DetVector2) -> DetVector2",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetRotor2::transform"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2",
+      "kind": "struct",
+      "signature": "pub struct DetVector2",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "x",
+            "ty": "DetF32"
+          },
+          {
+            "label": "y",
+            "ty": "DetF32"
+          }
+        ]
+      },
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DetVector2",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "x",
+                "ty": "DetF32"
+              },
+              {
+                "label": "y",
+                "ty": "DetF32"
+              }
+            ]
+          },
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::X_AXIS",
+      "kind": "const",
+      "signature": "pub const X_AXIS : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const X_AXIS : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::X_AXIS"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::Y_AXIS",
+      "kind": "const",
+      "signature": "pub const Y_AXIS : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const Y_AXIS : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::Y_AXIS"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::ZERO",
+      "kind": "const",
+      "signature": "pub const ZERO : Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ZERO : Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::ZERO"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::dot",
+      "kind": "method",
+      "signature": "pub fn dot (self , other : Self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn dot (self , other : Self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::dot"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::from_f32",
+      "kind": "method",
+      "signature": "pub fn from_f32 (x : f32 , y : f32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_f32 (x : f32 , y : f32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::from_f32"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::magnitude",
+      "kind": "method",
+      "signature": "pub fn magnitude (self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn magnitude (self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::magnitude"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::magnitude_sq",
+      "kind": "method",
+      "signature": "pub fn magnitude_sq (self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn magnitude_sq (self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::magnitude_sq"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::new",
+      "kind": "method",
+      "signature": "pub const fn new (x : DetF32 , y : DetF32) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn new (x : DetF32 , y : DetF32) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::new"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::normalize",
+      "kind": "method",
+      "signature": "pub fn normalize (self) -> Self",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn normalize (self) -> Self",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::normalize"
+        }
+      ]
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::wedge",
+      "kind": "method",
+      "signature": "pub fn wedge (self , other : Self) -> DetF32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "is_reexport": false,
+      "source_module": "amari::deterministic::ga2d",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn wedge (self , other : Self) -> DetF32",
+          "source_path": "src/deterministic/ga2d.rs",
+          "source_module": "amari::deterministic::ga2d",
+          "is_reexport": false,
+          "declaration_module": "amari::deterministic::ga2d",
+          "declaration_ident": "DetVector2::wedge"
+        }
+      ]
+    }
+  ],
+  "trait_definitions": [
+    {
+      "export_path": "amari::deterministic::Deterministic",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "Deterministic"
+      }
+    }
+  ],
+  "trait_implementations": [
+    {
+      "trait_path": "Add",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Add"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Add",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Add"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Add",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Add"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari::deterministic::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari::deterministic::ga2d::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari::deterministic::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari::deterministic::ga2d::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari::AmariError",
+      "source_path": "src/lib.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari",
+        "ident": "AmariError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari::deterministic::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari::deterministic::ga2d::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Div",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Div"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari::AmariError",
+      "source_path": "src/lib.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari",
+        "ident": "AmariError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "From",
+      "impl_type_path": "amari::AmariError",
+      "source_path": "src/lib.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "From"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari",
+        "ident": "AmariError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari::deterministic::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari::deterministic::ga2d::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Mul",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Mul"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Neg",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Neg"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari::deterministic::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari::deterministic::ga2d::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari::deterministic::Deterministic",
+      "impl_type_path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "Deterministic"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "DetF32"
+      },
+      "unsafe_trait": true,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari::deterministic::Deterministic",
+      "impl_type_path": "amari::deterministic::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "Deterministic"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": true,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari::deterministic::Deterministic",
+      "impl_type_path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "Deterministic"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": true,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari::deterministic::Deterministic",
+      "impl_type_path": "amari::deterministic::ga2d::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "Deterministic"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetRotor2"
+      },
+      "unsafe_trait": true,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari::deterministic::Deterministic",
+      "impl_type_path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::scalar",
+        "ident": "Deterministic"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari::deterministic::ga2d",
+        "ident": "DetVector2"
+      },
+      "unsafe_trait": true,
+      "negative": false,
+      "is_derived": false
+    }
+  ],
+  "cfg_gates": [
+    {
+      "path": "amari::AmariError",
+      "source_path": "src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::AmariResult",
+      "source_path": "src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::deterministic",
+      "source_path": "src/deterministic/mod.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari::deterministic::DetF32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::deterministic::DetF32::HALF",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetF32::ONE",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetF32::PI",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetF32::TWO",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetF32::ZERO",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetF32::abs",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::atan2",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::cos",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::from_bits",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::from_f32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::rsqrt",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::sin",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::sqrt",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::to_bits",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetF32::to_f32",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::IDENTITY",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::compose",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::from_angle",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::inverse",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::new",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::to_angle",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetRotor2::transform",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::X_AXIS",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::Y_AXIS",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::ZERO",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::dot",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::from_f32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::magnitude",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::magnitude_sq",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::new",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::normalize",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::DetVector2::wedge",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::Deterministic",
+      "source_path": "src/deterministic/scalar.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::deterministic::ga2d",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::IDENTITY",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::compose",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::from_angle",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::inverse",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::new",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::to_angle",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetRotor2::transform",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::X_AXIS",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::Y_AXIS",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::ZERO",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::dot",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::from_f32",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::magnitude",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::magnitude_sq",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::new",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::normalize",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari::deterministic::ga2d::DetVector2::wedge",
+      "source_path": "src/deterministic/ga2d.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"deterministic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    }
+  ],
+  "examples": [
+    {
+      "name": "networked_physics",
+      "path": "examples/networked_physics.rs",
+      "required_features": [
+        "deterministic"
+      ]
+    }
+  ],
+  "modules": [
+    "amari",
+    "amari::deterministic",
+    "amari::deterministic::ga2d"
+  ],
+  "readme": "README.md"
+}

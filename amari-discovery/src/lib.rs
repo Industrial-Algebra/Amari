@@ -47,6 +47,9 @@ pub use catalog::generator::wasm::{
     WasmInterface, WasmInterfaceMember, WasmMethod, WasmSurface, WasmSurfaceWarning, WasmTypeAlias,
 };
 pub use catalog::generator::{generate_workspace_catalog, verify_checked_in};
+pub use catalog::split::{
+    compose_structural, manifest_bytes, render_index_rs, split_catalog, CatalogManifest,
+};
 pub use catalog::{
     AssociatedItemRecord, CapabilityRecord, CapabilityRelation, Catalog, CfgGateRecord, CostHint,
     CrateRecord, DependencyEdgeRecord, DependencyRecord, ExampleRecord, FeatureRecord, FieldRecord,

@@ -85,11 +85,17 @@ fn graph_connects_macro_capability_to_crate() {
 
 #[test]
 fn structural_catalog_lists_macro_package_exactly_once() {
-    let raw = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/catalog/generated.json"
-    ))
+    // Split layout (CORE-CAT1): compose the embedded manifest + per-crate
+    // bodies instead of reading the removed monolith.
+    mod generated_index {
+        include!(concat!(env!("CARGO_MANIFEST_DIR"), "/catalog/index.rs"));
+    }
+    let structural = amari_discovery::compose_structural(
+        generated_index::MANIFEST_JSON,
+        generated_index::CRATE_JSON,
+    )
     .unwrap();
+    let raw = serde_json::to_string(&structural).unwrap();
     let catalog: Value = serde_json::from_str(&raw).unwrap();
     let crates = catalog["crates"].as_array().unwrap();
     let macro_packages = crates
