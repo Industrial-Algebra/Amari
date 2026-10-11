@@ -19,6 +19,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "catalog_exports",
         "catalog_generation",
         "catalog_integrity",
+        "catalog_split",
         "catalog_macros",
         "catalog_modules",
         "catalog_package_links",

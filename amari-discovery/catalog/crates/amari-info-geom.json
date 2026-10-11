@@ -1,0 +1,4656 @@
+{
+  "name": "amari-info-geom",
+  "version": "0.24.1",
+  "description": "Information geometry and statistical manifolds",
+  "license": "MIT OR Apache-2.0",
+  "edition": "2021",
+  "manifest_path": "amari-info-geom/Cargo.toml",
+  "library_outputs": [
+    "lib"
+  ],
+  "features": [
+    {
+      "name": "bytemuck",
+      "enables": [
+        "dep:bytemuck"
+      ]
+    },
+    {
+      "name": "default",
+      "enables": [
+        "high-precision",
+        "std"
+      ]
+    },
+    {
+      "name": "futures",
+      "enables": [
+        "dep:futures"
+      ]
+    },
+    {
+      "name": "gpu",
+      "enables": [
+        "bytemuck",
+        "futures",
+        "pollster",
+        "tokio",
+        "wgpu"
+      ]
+    },
+    {
+      "name": "high-precision",
+      "enables": [
+        "amari-core/high-precision"
+      ]
+    },
+    {
+      "name": "pollster",
+      "enables": [
+        "dep:pollster"
+      ]
+    },
+    {
+      "name": "std",
+      "enables": [
+        "amari-core/std"
+      ]
+    },
+    {
+      "name": "tokio",
+      "enables": [
+        "dep:tokio"
+      ]
+    },
+    {
+      "name": "wgpu",
+      "enables": [
+        "dep:wgpu"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "alias": "amari-core",
+      "package": "amari-core",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-core",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "approx",
+      "package": "approx",
+      "kind": "normal",
+      "version": "0.5",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "bytemuck",
+      "package": "bytemuck",
+      "kind": "normal",
+      "version": "1.14",
+      "optional": true,
+      "default_features": true,
+      "features": [
+        "derive"
+      ]
+    },
+    {
+      "alias": "futures",
+      "package": "futures",
+      "kind": "normal",
+      "version": "0.3",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "num-traits",
+      "package": "num-traits",
+      "kind": "normal",
+      "version": "0.2",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "pollster",
+      "package": "pollster",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "thiserror",
+      "package": "thiserror",
+      "kind": "normal",
+      "version": "2.0",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "tokio",
+      "package": "tokio",
+      "kind": "normal",
+      "version": "1.0",
+      "optional": true,
+      "default_features": true,
+      "features": [
+        "macros",
+        "rt-multi-thread"
+      ]
+    },
+    {
+      "alias": "wgpu",
+      "package": "wgpu",
+      "kind": "normal",
+      "version": "0.19",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "criterion",
+      "package": "criterion",
+      "kind": "development",
+      "version": "0.8",
+      "optional": false,
+      "default_features": true
+    }
+  ],
+  "targets": [
+    {
+      "name": "amari_info_geom",
+      "kind": "library",
+      "path": "amari-info-geom/src/lib.rs",
+      "crate_types": [
+        "lib"
+      ]
+    },
+    {
+      "name": "gpu_information_geometry",
+      "kind": "example",
+      "path": "amari-info-geom/examples/gpu_information_geometry.rs",
+      "required_features": [
+        "gpu"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "path": "amari_info_geom::AlphaConnection",
+      "kind": "trait",
+      "signature": "pub trait AlphaConnection < T : Parameter >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "trait",
+          "signature": "pub trait AlphaConnection < T : Parameter >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "AlphaConnection"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::AlphaConnection::alpha",
+      "kind": "method",
+      "signature": "fn alpha (& self) -> f64",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn alpha (& self) -> f64",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "AlphaConnection::alpha"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::AlphaConnection::christoffel_symbols",
+      "kind": "method",
+      "signature": "fn christoffel_symbols (& self , point : & T) -> Result < Vec < Vec < Vec < T :: Scalar > > > , InfoGeomError >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn christoffel_symbols (& self , point : & T) -> Result < Vec < Vec < Vec < T :: Scalar > > > , InfoGeomError >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "AlphaConnection::christoffel_symbols"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::AlphaConnection::covariant_derivative",
+      "kind": "method",
+      "signature": "fn covariant_derivative (& self , point : & T , vector : & T , direction : & T ,) -> Result < T , InfoGeomError >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn covariant_derivative (& self , point : & T , vector : & T , direction : & T ,) -> Result < T , InfoGeomError >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "AlphaConnection::covariant_derivative"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::AlphaConnectionFactory",
+      "kind": "struct",
+      "signature": "pub struct AlphaConnectionFactory",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct AlphaConnectionFactory",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "AlphaConnectionFactory"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::AlphaConnectionFactory::create",
+      "kind": "method",
+      "signature": "pub fn create < T : Parameter + Clone + 'static > (alpha : f64) -> Box < dyn AlphaConnection < T > >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn create < T : Parameter + Clone + 'static > (alpha : f64) -> Box < dyn AlphaConnection < T > >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "AlphaConnectionFactory::create"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold",
+      "kind": "struct",
+      "signature": "pub struct DuallyFlatManifold",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DuallyFlatManifold",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "DuallyFlatManifold"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold::bregman_divergence",
+      "kind": "method",
+      "signature": "pub fn bregman_divergence (& self , p : & [f64] , q : & [f64]) -> f64",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn bregman_divergence (& self , p : & [f64] , q : & [f64]) -> f64",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "DuallyFlatManifold::bregman_divergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold::fisher_metric_at",
+      "kind": "method",
+      "signature": "pub fn fisher_metric_at (& self , point : & [f64]) -> FisherInformationMatrix",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn fisher_metric_at (& self , point : & [f64]) -> FisherInformationMatrix",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "DuallyFlatManifold::fisher_metric_at"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold::new",
+      "kind": "method",
+      "signature": "pub fn new (dimension : usize , alpha : f64) -> Self",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (dimension : usize , alpha : f64) -> Self",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "DuallyFlatManifold::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::FisherInformationMatrix",
+      "kind": "struct",
+      "signature": "pub struct FisherInformationMatrix",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct FisherInformationMatrix",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "FisherInformationMatrix"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::FisherInformationMatrix::eigenvalues",
+      "kind": "method",
+      "signature": "pub fn eigenvalues (& self) -> Vec < f64 >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn eigenvalues (& self) -> Vec < f64 >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "FisherInformationMatrix::eigenvalues"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::FisherMetric",
+      "kind": "trait",
+      "signature": "pub trait FisherMetric < T : Parameter >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "trait",
+          "signature": "pub trait FisherMetric < T : Parameter >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "FisherMetric"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::FisherMetric::fisher_inner_product",
+      "kind": "method",
+      "signature": "fn fisher_inner_product (& self , point : & T , v1 : & T , v2 : & T) -> Result < T :: Scalar , InfoGeomError >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn fisher_inner_product (& self , point : & T , v1 : & T , v2 : & T) -> Result < T :: Scalar , InfoGeomError >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "FisherMetric::fisher_inner_product"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::FisherMetric::fisher_matrix",
+      "kind": "method",
+      "signature": "fn fisher_matrix (& self , point : & T) -> Result < Vec < Vec < T :: Scalar > > , InfoGeomError >",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn fisher_matrix (& self , point : & T) -> Result < Vec < Vec < T :: Scalar > > , InfoGeomError >",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "FisherMetric::fisher_matrix"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::InfoGeomError",
+      "kind": "enum",
+      "signature": "pub enum InfoGeomError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NumericalInstability",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "InvalidDimension",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "expected",
+                  "ty": "usize"
+                },
+                {
+                  "name": "actual",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ParameterOutOfRange",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InfoGeomError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NumericalInstability",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "InvalidDimension",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "expected",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "actual",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ParameterOutOfRange",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "InfoGeomError"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::InfoGeomGpuConfig",
+      "kind": "struct",
+      "signature": "pub struct InfoGeomGpuConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "preferred_backend",
+            "ty": "wgpu :: Backends"
+          },
+          {
+            "label": "power_preference",
+            "ty": "wgpu :: PowerPreference"
+          },
+          {
+            "label": "max_manifold_dimension",
+            "ty": "usize"
+          },
+          {
+            "label": "max_batch_size",
+            "ty": "usize"
+          },
+          {
+            "label": "workgroup_size",
+            "ty": "(u32 , u32 , u32)"
+          },
+          {
+            "label": "numerical_precision",
+            "ty": "f32"
+          }
+        ]
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomGpuConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "preferred_backend",
+                "ty": "wgpu :: Backends"
+              },
+              {
+                "label": "power_preference",
+                "ty": "wgpu :: PowerPreference"
+              },
+              {
+                "label": "max_manifold_dimension",
+                "ty": "usize"
+              },
+              {
+                "label": "max_batch_size",
+                "ty": "usize"
+              },
+              {
+                "label": "workgroup_size",
+                "ty": "(u32 , u32 , u32)"
+              },
+              {
+                "label": "numerical_precision",
+                "ty": "f32"
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::InfoGeomGpuError",
+      "kind": "enum",
+      "signature": "pub enum InfoGeomGpuError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "DeviceCreationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "ShaderCompilationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "BufferAllocationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "PipelineCreationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "FisherComputationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "GpuError",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InfoGeomGpuError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "DeviceCreationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "ShaderCompilationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "BufferAllocationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "PipelineCreationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "FisherComputationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "GpuError",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuError"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::InfoGeomGpuResult",
+      "kind": "type",
+      "signature": "pub type InfoGeomGpuResult < T > = Result < T , InfoGeomGpuError >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "type",
+          "signature": "pub type InfoGeomGpuResult < T > = Result < T , InfoGeomGpuError >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuResult"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::Parameter",
+      "kind": "trait",
+      "signature": "pub trait Parameter",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "trait",
+          "signature": "pub trait Parameter",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "Parameter"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::Parameter::Scalar",
+      "kind": "type",
+      "signature": "type Scalar : Float",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "type",
+          "signature": "type Scalar : Float",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "Parameter::Scalar"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::Parameter::dimension",
+      "kind": "method",
+      "signature": "fn dimension (& self) -> usize",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn dimension (& self) -> usize",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "Parameter::dimension"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::Parameter::get_component",
+      "kind": "method",
+      "signature": "fn get_component (& self , index : usize) -> Self :: Scalar",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn get_component (& self , index : usize) -> Self :: Scalar",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "Parameter::get_component"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::Parameter::set_component",
+      "kind": "method",
+      "signature": "fn set_component (& mut self , index : usize , value : Self :: Scalar)",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn set_component (& mut self , index : usize , value : Self :: Scalar)",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "Parameter::set_component"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::SimpleAlphaConnection",
+      "kind": "struct",
+      "signature": "pub struct SimpleAlphaConnection",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct SimpleAlphaConnection",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "SimpleAlphaConnection"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::SimpleAlphaConnection::alpha",
+      "kind": "method",
+      "signature": "pub fn alpha (& self) -> f64",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn alpha (& self) -> f64",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "SimpleAlphaConnection::alpha"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::SimpleAlphaConnection::new",
+      "kind": "method",
+      "signature": "pub fn new (alpha : f64) -> Self",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (alpha : f64) -> Self",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "SimpleAlphaConnection::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::amari_chentsov_tensor",
+      "kind": "fn",
+      "signature": "pub fn amari_chentsov_tensor (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > ,) -> f64",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn amari_chentsov_tensor (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > ,) -> f64",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "amari_chentsov_tensor"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::bregman_divergence",
+      "kind": "fn",
+      "signature": "pub fn bregman_divergence < F > (phi : F , p : & Multivector < 3 , 0 , 0 > , q : & Multivector < 3 , 0 , 0 > ,) -> Result < f64 , InfoGeomError > where F : Fn (& Multivector < 3 , 0 , 0 >) -> f64 ,",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn bregman_divergence < F > (phi : F , p : & Multivector < 3 , 0 , 0 > , q : & Multivector < 3 , 0 , 0 > ,) -> Result < f64 , InfoGeomError > where F : Fn (& Multivector < 3 , 0 , 0 >) -> f64 ,",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "bregman_divergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuBregmanData",
+      "is_reexport": false,
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuBregmanData",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "GpuBregmanData"
+        },
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuBregmanData",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "p_param0",
+                "ty": "f32"
+              },
+              {
+                "label": "p_param1",
+                "ty": "f32"
+              },
+              {
+                "label": "p_param2",
+                "ty": "f32"
+              },
+              {
+                "label": "p_param3",
+                "ty": "f32"
+              },
+              {
+                "label": "q_param0",
+                "ty": "f32"
+              },
+              {
+                "label": "q_param1",
+                "ty": "f32"
+              },
+              {
+                "label": "q_param2",
+                "ty": "f32"
+              },
+              {
+                "label": "q_param3",
+                "ty": "f32"
+              },
+              {
+                "label": "potential_type",
+                "ty": "f32"
+              },
+              {
+                "label": "potential_scale",
+                "ty": "f32"
+              },
+              {
+                "label": "potential_offset",
+                "ty": "f32"
+              },
+              {
+                "label": "regularization",
+                "ty": "f32"
+              },
+              {
+                "label": "gradient_p0",
+                "ty": "f32"
+              },
+              {
+                "label": "gradient_p1",
+                "ty": "f32"
+              },
+              {
+                "label": "gradient_q0",
+                "ty": "f32"
+              },
+              {
+                "label": "gradient_q1",
+                "ty": "f32"
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "GpuBregmanData"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuFisherData",
+      "is_reexport": false,
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuFisherData",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "GpuFisherData"
+        },
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuFisherData",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "param0",
+                "ty": "f32"
+              },
+              {
+                "label": "param1",
+                "ty": "f32"
+              },
+              {
+                "label": "param2",
+                "ty": "f32"
+              },
+              {
+                "label": "param3",
+                "ty": "f32"
+              },
+              {
+                "label": "param4",
+                "ty": "f32"
+              },
+              {
+                "label": "param5",
+                "ty": "f32"
+              },
+              {
+                "label": "param6",
+                "ty": "f32"
+              },
+              {
+                "label": "param7",
+                "ty": "f32"
+              },
+              {
+                "label": "dimension",
+                "ty": "f32"
+              },
+              {
+                "label": "log_partition_value",
+                "ty": "f32"
+              },
+              {
+                "label": "regularization",
+                "ty": "f32"
+              },
+              {
+                "label": "numerical_stability",
+                "ty": "f32"
+              },
+              {
+                "label": "curvature_scalar",
+                "ty": "f32"
+              },
+              {
+                "label": "connection_alpha",
+                "ty": "f32"
+              },
+              {
+                "label": "manifold_type",
+                "ty": "f32"
+              },
+              {
+                "label": "entropy_value",
+                "ty": "f32"
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "GpuFisherData"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "is_reexport": false,
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuStatisticalManifold",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "GpuStatisticalManifold"
+        },
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuStatisticalManifold",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "eta0",
+                "ty": "f32"
+              },
+              {
+                "label": "eta1",
+                "ty": "f32"
+              },
+              {
+                "label": "eta2",
+                "ty": "f32"
+              },
+              {
+                "label": "eta3",
+                "ty": "f32"
+              },
+              {
+                "label": "mu0",
+                "ty": "f32"
+              },
+              {
+                "label": "mu1",
+                "ty": "f32"
+              },
+              {
+                "label": "mu2",
+                "ty": "f32"
+              },
+              {
+                "label": "mu3",
+                "ty": "f32"
+              },
+              {
+                "label": "alpha_connection",
+                "ty": "f32"
+              },
+              {
+                "label": "fisher_metric_det",
+                "ty": "f32"
+              },
+              {
+                "label": "entropy",
+                "ty": "f32"
+              },
+              {
+                "label": "temperature",
+                "ty": "f32"
+              },
+              {
+                "label": "batch_id",
+                "ty": "f32"
+              },
+              {
+                "label": "convergence_threshold",
+                "ty": "f32"
+              },
+              {
+                "label": "max_iterations",
+                "ty": "f32"
+              },
+              {
+                "label": "stability_factor",
+                "ty": "f32"
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "GpuStatisticalManifold"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuConfig",
+      "kind": "struct",
+      "signature": "pub struct InfoGeomGpuConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "preferred_backend",
+            "ty": "wgpu :: Backends"
+          },
+          {
+            "label": "power_preference",
+            "ty": "wgpu :: PowerPreference"
+          },
+          {
+            "label": "max_manifold_dimension",
+            "ty": "usize"
+          },
+          {
+            "label": "max_batch_size",
+            "ty": "usize"
+          },
+          {
+            "label": "workgroup_size",
+            "ty": "(u32 , u32 , u32)"
+          },
+          {
+            "label": "numerical_precision",
+            "ty": "f32"
+          }
+        ]
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomGpuConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "preferred_backend",
+                "ty": "wgpu :: Backends"
+              },
+              {
+                "label": "power_preference",
+                "ty": "wgpu :: PowerPreference"
+              },
+              {
+                "label": "max_manifold_dimension",
+                "ty": "usize"
+              },
+              {
+                "label": "max_batch_size",
+                "ty": "usize"
+              },
+              {
+                "label": "workgroup_size",
+                "ty": "(u32 , u32 , u32)"
+              },
+              {
+                "label": "numerical_precision",
+                "ty": "f32"
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuContext",
+      "kind": "struct",
+      "signature": "pub struct InfoGeomGpuContext",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomGpuContext",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuContext"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuError",
+      "kind": "enum",
+      "signature": "pub enum InfoGeomGpuError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "DeviceCreationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "ShaderCompilationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "BufferAllocationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "PipelineCreationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "FisherComputationFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          },
+          {
+            "name": "GpuError",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "String"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InfoGeomGpuError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "DeviceCreationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "ShaderCompilationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "BufferAllocationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "PipelineCreationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "FisherComputationFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              },
+              {
+                "name": "GpuError",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "String"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuError"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps",
+      "is_reexport": false,
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomGpuOps",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "InfoGeomGpuOps"
+        },
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomGpuOps",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuOps"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_bregman_divergence",
+      "kind": "method",
+      "signature": "pub async fn batch_bregman_divergence (& mut self , divergence_data : & [GpuBregmanData] ,) -> InfoGeomGpuResult < Vec < f32 > >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub async fn batch_bregman_divergence (& mut self , divergence_data : & [GpuBregmanData] ,) -> InfoGeomGpuResult < Vec < f32 > >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuOps::batch_bregman_divergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_fisher_information",
+      "kind": "method",
+      "signature": "pub async fn batch_fisher_information (& mut self , statistical_points : & [GpuFisherData] ,) -> InfoGeomGpuResult < Vec < Vec < f32 > > >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub async fn batch_fisher_information (& mut self , statistical_points : & [GpuFisherData] ,) -> InfoGeomGpuResult < Vec < Vec < f32 > > >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuOps::batch_fisher_information"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_kl_divergence",
+      "kind": "method",
+      "signature": "pub async fn batch_kl_divergence (& mut self , manifold_data : & [GpuStatisticalManifold] ,) -> InfoGeomGpuResult < Vec < f32 > >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub async fn batch_kl_divergence (& mut self , manifold_data : & [GpuStatisticalManifold] ,) -> InfoGeomGpuResult < Vec < f32 > >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuOps::batch_kl_divergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_manifold_operations",
+      "kind": "method",
+      "signature": "pub async fn batch_manifold_operations (& mut self , manifold_data : & [GpuStatisticalManifold] ,) -> InfoGeomGpuResult < Vec < GpuStatisticalManifold > >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub async fn batch_manifold_operations (& mut self , manifold_data : & [GpuStatisticalManifold] ,) -> InfoGeomGpuResult < Vec < GpuStatisticalManifold > >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuOps::batch_manifold_operations"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::new",
+      "is_reexport": false,
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub async fn new () -> Result < Self , InfoGeomError >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "InfoGeomGpuOps::new"
+        },
+        {
+          "kind": "method",
+          "signature": "pub async fn new () -> InfoGeomGpuResult < Self >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuOps::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::with_config",
+      "kind": "method",
+      "signature": "pub async fn with_config (config : InfoGeomGpuConfig) -> InfoGeomGpuResult < Self >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub async fn with_config (config : InfoGeomGpuConfig) -> InfoGeomGpuResult < Self >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuOps::with_config"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuResult",
+      "kind": "type",
+      "signature": "pub type InfoGeomGpuResult < T > = Result < T , InfoGeomGpuError >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": true,
+      "source_module": "amari_info_geom::gpu::gpu_impl",
+      "variants": [
+        {
+          "kind": "type",
+          "signature": "pub type InfoGeomGpuResult < T > = Result < T , InfoGeomGpuError >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_impl",
+          "is_reexport": true,
+          "declaration_module": "amari_info_geom::gpu::gpu_impl",
+          "declaration_ident": "InfoGeomGpuResult"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::GpuBregmanData",
+      "kind": "struct",
+      "signature": "pub struct GpuBregmanData",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::gpu::gpu_fallback",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuBregmanData",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "GpuBregmanData"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::GpuFisherData",
+      "kind": "struct",
+      "signature": "pub struct GpuFisherData",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::gpu::gpu_fallback",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuFisherData",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "GpuFisherData"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::GpuStatisticalManifold",
+      "kind": "struct",
+      "signature": "pub struct GpuStatisticalManifold",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::gpu::gpu_fallback",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GpuStatisticalManifold",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "GpuStatisticalManifold"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::InfoGeomGpuOps",
+      "kind": "struct",
+      "signature": "pub struct InfoGeomGpuOps",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::gpu::gpu_fallback",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomGpuOps",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "InfoGeomGpuOps"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::InfoGeomGpuOps::new",
+      "kind": "method",
+      "signature": "pub async fn new () -> Result < Self , InfoGeomError >",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::gpu::gpu_fallback",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub async fn new () -> Result < Self , InfoGeomError >",
+          "source_path": "amari-info-geom/src/gpu.rs",
+          "source_module": "amari_info_geom::gpu::gpu_fallback",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::gpu::gpu_fallback",
+          "declaration_ident": "InfoGeomGpuOps::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::kl_divergence",
+      "kind": "fn",
+      "signature": "pub fn kl_divergence (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > ,) -> f64",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn kl_divergence (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > ,) -> f64",
+          "source_path": "amari-info-geom/src/lib.rs",
+          "source_module": "amari_info_geom",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom",
+          "declaration_ident": "kl_divergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::FisherVerified",
+      "kind": "struct",
+      "signature": "pub struct FisherVerified",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct FisherVerified",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "FisherVerified"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws",
+      "kind": "struct",
+      "signature": "pub struct InfoGeomLaws",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomLaws",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "InfoGeomLaws"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws::verify_dualities",
+      "kind": "method",
+      "signature": "pub fn verify_dualities < T : Parameter > (alpha_conn : & VerifiedContractAlphaConnection < T > , minus_alpha_conn : & VerifiedContractAlphaConnection < T > ,) -> bool where T :: Scalar : Float ,",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_dualities < T : Parameter > (alpha_conn : & VerifiedContractAlphaConnection < T > , minus_alpha_conn : & VerifiedContractAlphaConnection < T > ,) -> bool where T :: Scalar : Float ,",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "InfoGeomLaws::verify_dualities"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws::verify_fundamental_theorem",
+      "kind": "method",
+      "signature": "pub fn verify_fundamental_theorem < T : Parameter > (_fisher_metric : & VerifiedContractFisherMetric < T > , alpha_conn : & VerifiedContractAlphaConnection < T > , _bregman_div : & VerifiedContractBregmanDivergence < T :: Scalar > ,) -> bool where T :: Scalar : Float ,",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_fundamental_theorem < T : Parameter > (_fisher_metric : & VerifiedContractFisherMetric < T > , alpha_conn : & VerifiedContractAlphaConnection < T > , _bregman_div : & VerifiedContractBregmanDivergence < T :: Scalar > ,) -> bool where T :: Scalar : Float ,",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "InfoGeomLaws::verify_fundamental_theorem"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws::verify_pythagorean_theorem",
+      "kind": "method",
+      "signature": "pub fn verify_pythagorean_theorem < T : Float > (bregman : & VerifiedContractBregmanDivergence < T > , p : & [T] , q : & [T] , r : & [T] ,) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_pythagorean_theorem < T : Float > (bregman : & VerifiedContractBregmanDivergence < T > , p : & [T] , q : & [T] , r : & [T] ,) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "InfoGeomLaws::verify_pythagorean_theorem"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomVerified",
+      "kind": "struct",
+      "signature": "pub struct InfoGeomVerified",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InfoGeomVerified",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "InfoGeomVerified"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::ManifoldVerified",
+      "kind": "struct",
+      "signature": "pub struct ManifoldVerified",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct ManifoldVerified",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "ManifoldVerified"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection",
+      "kind": "struct",
+      "signature": "pub struct VerifiedContractAlphaConnection < T : Parameter >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct VerifiedContractAlphaConnection < T : Parameter >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAlphaConnection"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::alpha",
+      "kind": "method",
+      "signature": "pub fn alpha (& self) -> f64",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn alpha (& self) -> f64",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAlphaConnection::alpha"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::new",
+      "kind": "method",
+      "signature": "pub fn new (alpha : f64) -> Result < Self , InfoGeomError >",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (alpha : f64) -> Result < Self , InfoGeomError >",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAlphaConnection::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::verify_duality",
+      "kind": "method",
+      "signature": "pub fn verify_duality (& self , other : & Self) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_duality (& self , other : & Self) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAlphaConnection::verify_duality"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::verify_special_connections",
+      "kind": "method",
+      "signature": "pub fn verify_special_connections (& self) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_special_connections (& self) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAlphaConnection::verify_special_connections"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov",
+      "kind": "struct",
+      "signature": "pub struct VerifiedContractAmariChentsov",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct VerifiedContractAmariChentsov",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAmariChentsov"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::tensor",
+      "kind": "method",
+      "signature": "pub fn tensor (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > ,) -> f64",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn tensor (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > ,) -> f64",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAmariChentsov::tensor"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::verify_alternating_property",
+      "kind": "method",
+      "signature": "pub fn verify_alternating_property (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > ,) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_alternating_property (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > ,) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAmariChentsov::verify_alternating_property"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::verify_multilinearity",
+      "kind": "method",
+      "signature": "pub fn verify_multilinearity (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > , w : & Multivector < 3 , 0 , 0 > , a : f64 , b : f64 ,) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_multilinearity (x : & Multivector < 3 , 0 , 0 > , y : & Multivector < 3 , 0 , 0 > , z : & Multivector < 3 , 0 , 0 > , w : & Multivector < 3 , 0 , 0 > , a : f64 , b : f64 ,) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAmariChentsov::verify_multilinearity"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::verify_statistical_invariance",
+      "kind": "method",
+      "signature": "pub fn verify_statistical_invariance (& self) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_statistical_invariance (& self) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractAmariChentsov::verify_statistical_invariance"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence",
+      "kind": "struct",
+      "signature": "pub struct VerifiedContractBregmanDivergence < T : Float >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct VerifiedContractBregmanDivergence < T : Float >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractBregmanDivergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::divergence",
+      "kind": "method",
+      "signature": "pub fn divergence (& self , p : & [T] , q : & [T]) -> T",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn divergence (& self , p : & [T] , q : & [T]) -> T",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractBregmanDivergence::divergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::new",
+      "kind": "method",
+      "signature": "pub fn new (dimension : usize) -> Self",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (dimension : usize) -> Self",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractBregmanDivergence::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::verify_convexity",
+      "kind": "method",
+      "signature": "pub fn verify_convexity (& self , p1 : & [T] , p2 : & [T] , q : & [T] , lambda : T) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_convexity (& self , p1 : & [T] , p2 : & [T] , q : & [T] , lambda : T) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractBregmanDivergence::verify_convexity"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::verify_divergence_properties",
+      "kind": "method",
+      "signature": "pub fn verify_divergence_properties (& self , p : & [T] , q : & [T]) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_divergence_properties (& self , p : & [T] , q : & [T]) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractBregmanDivergence::verify_divergence_properties"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric",
+      "kind": "struct",
+      "signature": "pub struct VerifiedContractFisherMetric < T : Parameter >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct VerifiedContractFisherMetric < T : Parameter >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractFisherMetric"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::fisher_inner_product",
+      "kind": "method",
+      "signature": "pub fn fisher_inner_product (& self , point : & [T :: Scalar] , v1 : & [T :: Scalar] , v2 : & [T :: Scalar] ,) -> T :: Scalar",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn fisher_inner_product (& self , point : & [T :: Scalar] , v1 : & [T :: Scalar] , v2 : & [T :: Scalar] ,) -> T :: Scalar",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractFisherMetric::fisher_inner_product"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::fisher_matrix",
+      "kind": "method",
+      "signature": "pub fn fisher_matrix (& self , point : & [T :: Scalar]) -> VerifiedFisherMatrix < T :: Scalar >",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn fisher_matrix (& self , point : & [T :: Scalar]) -> VerifiedFisherMatrix < T :: Scalar >",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractFisherMetric::fisher_matrix"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::new",
+      "kind": "method",
+      "signature": "pub fn new (dimension : usize) -> Self",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (dimension : usize) -> Self",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractFisherMetric::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::verify_positive_definiteness",
+      "kind": "method",
+      "signature": "pub fn verify_positive_definiteness (& self , point : & [T :: Scalar]) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_positive_definiteness (& self , point : & [T :: Scalar]) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractFisherMetric::verify_positive_definiteness"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence",
+      "kind": "struct",
+      "signature": "pub struct VerifiedContractKLDivergence",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct VerifiedContractKLDivergence",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractKLDivergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence::divergence",
+      "kind": "method",
+      "signature": "pub fn divergence (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > ,) -> f64",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn divergence (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > ,) -> f64",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractKLDivergence::divergence"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence::verify_exponential_family_duality",
+      "kind": "method",
+      "signature": "pub fn verify_exponential_family_duality (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > , mu_q : & Multivector < 3 , 0 , 0 > ,) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_exponential_family_duality (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > , mu_q : & Multivector < 3 , 0 , 0 > ,) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractKLDivergence::verify_exponential_family_duality"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence::verify_kl_properties",
+      "kind": "method",
+      "signature": "pub fn verify_kl_properties (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > ,) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_kl_properties (eta_p : & Multivector < 3 , 0 , 0 > , eta_q : & Multivector < 3 , 0 , 0 > , mu_p : & Multivector < 3 , 0 , 0 > ,) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedContractKLDivergence::verify_kl_properties"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix",
+      "kind": "struct",
+      "signature": "pub struct VerifiedFisherMatrix < T : Float >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct VerifiedFisherMatrix < T : Float >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedFisherMatrix"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix::eigenvalues",
+      "kind": "method",
+      "signature": "pub fn eigenvalues (& self) -> Vec < f64 >",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn eigenvalues (& self) -> Vec < f64 >",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedFisherMatrix::eigenvalues"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix::inner_product",
+      "kind": "method",
+      "signature": "pub fn inner_product (& self , v1 : & [T] , v2 : & [T]) -> T",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn inner_product (& self , v1 : & [T] , v2 : & [T]) -> T",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedFisherMatrix::inner_product"
+        }
+      ]
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix::verify_positive_definite",
+      "kind": "method",
+      "signature": "pub fn verify_positive_definite (& self) -> bool",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "is_reexport": false,
+      "source_module": "amari_info_geom::verified_contracts",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_positive_definite (& self) -> bool",
+          "source_path": "amari-info-geom/src/verified_contracts.rs",
+          "source_module": "amari_info_geom::verified_contracts",
+          "is_reexport": false,
+          "declaration_module": "amari_info_geom::verified_contracts",
+          "declaration_ident": "VerifiedFisherMatrix::verify_positive_definite"
+        }
+      ]
+    }
+  ],
+  "trait_definitions": [
+    {
+      "export_path": "amari_info_geom::AlphaConnection",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "AlphaConnection"
+      },
+      "required_items": [
+        {
+          "name": "alpha",
+          "kind": "method",
+          "signature": "fn alpha (& self) -> f64",
+          "status": "required"
+        },
+        {
+          "name": "christoffel_symbols",
+          "kind": "method",
+          "signature": "fn christoffel_symbols (& self , point : & T) -> Result < Vec < Vec < Vec < T :: Scalar > > > , InfoGeomError >",
+          "status": "required"
+        },
+        {
+          "name": "covariant_derivative",
+          "kind": "method",
+          "signature": "fn covariant_derivative (& self , point : & T , vector : & T , direction : & T ,) -> Result < T , InfoGeomError >",
+          "status": "required"
+        }
+      ]
+    },
+    {
+      "export_path": "amari_info_geom::FisherMetric",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "FisherMetric"
+      },
+      "required_items": [
+        {
+          "name": "fisher_matrix",
+          "kind": "method",
+          "signature": "fn fisher_matrix (& self , point : & T) -> Result < Vec < Vec < T :: Scalar > > , InfoGeomError >",
+          "status": "required"
+        }
+      ],
+      "provided_items": [
+        {
+          "name": "fisher_inner_product",
+          "kind": "method",
+          "signature": "fn fisher_inner_product (& self , point : & T , v1 : & T , v2 : & T) -> Result < T :: Scalar , InfoGeomError >",
+          "status": "provided"
+        }
+      ]
+    },
+    {
+      "export_path": "amari_info_geom::Parameter",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "Parameter"
+      },
+      "required_items": [
+        {
+          "name": "Scalar",
+          "kind": "type",
+          "signature": "type Scalar : Float",
+          "status": "required"
+        },
+        {
+          "name": "dimension",
+          "kind": "method",
+          "signature": "fn dimension (& self) -> usize",
+          "status": "required"
+        },
+        {
+          "name": "get_component",
+          "kind": "method",
+          "signature": "fn get_component (& self , index : usize) -> Self :: Scalar",
+          "status": "required"
+        },
+        {
+          "name": "set_component",
+          "kind": "method",
+          "signature": "fn set_component (& mut self , index : usize , value : Self :: Scalar)",
+          "status": "required"
+        }
+      ]
+    }
+  ],
+  "trait_implementations": [
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::DuallyFlatManifold",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "DuallyFlatManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::FisherInformationMatrix",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "FisherInformationMatrix"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::InfoGeomGpuConfig",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::SimpleAlphaConnection",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "SimpleAlphaConnection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 21,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::InfoGeomGpuConfig",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::gpu_fallback::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::gpu_fallback::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::gpu::gpu_fallback::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 21,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::verified_contracts::FisherVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "FisherVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::verified_contracts::InfoGeomVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "InfoGeomVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::verified_contracts::ManifoldVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "ManifoldVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedContractAlphaConnection"
+      },
+      "generics": "< T : Parameter >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedContractBregmanDivergence"
+      },
+      "generics": "< T : Float >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedContractFisherMetric"
+      },
+      "generics": "< T : Parameter >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedFisherMatrix"
+      },
+      "generics": "< T : Float >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_info_geom::verified_contracts::FisherVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "FisherVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_info_geom::verified_contracts::InfoGeomVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "InfoGeomVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_info_geom::verified_contracts::ManifoldVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "ManifoldVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::DuallyFlatManifold",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "DuallyFlatManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::FisherInformationMatrix",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "FisherInformationMatrix"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::InfoGeomError",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "InfoGeomError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::InfoGeomGpuError",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::SimpleAlphaConnection",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "SimpleAlphaConnection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 21,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::InfoGeomGpuError",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::gpu_fallback::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::gpu_fallback::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::gpu::gpu_fallback::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 21,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_fallback",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::verified_contracts::FisherVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "FisherVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::verified_contracts::InfoGeomVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "InfoGeomVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::verified_contracts::ManifoldVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "ManifoldVerified"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedContractAlphaConnection"
+      },
+      "generics": "< T : Parameter >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedContractBregmanDivergence"
+      },
+      "generics": "< T : Float >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedContractFisherMetric"
+      },
+      "generics": "< T : Parameter >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::verified_contracts",
+        "ident": "VerifiedFisherMatrix"
+      },
+      "generics": "< T : Float >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_info_geom::InfoGeomGpuConfig",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_info_geom::gpu::InfoGeomGpuConfig",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_info_geom::InfoGeomError",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "InfoGeomError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "From",
+      "impl_type_path": "amari_info_geom::InfoGeomError",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 16,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "From"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "InfoGeomError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "From",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "From"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Pod",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Pod"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Pod",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Pod"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Pod",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Pod"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Zeroable",
+      "impl_type_path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Zeroable"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuBregmanData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Zeroable",
+      "impl_type_path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Zeroable"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuFisherData"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Zeroable",
+      "impl_type_path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Zeroable"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "GpuStatisticalManifold"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "amari_info_geom::Parameter",
+      "impl_type_path": "Multivector",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom",
+        "ident": "Parameter"
+      },
+      "impl_type_endpoint": {
+        "kind": "external",
+        "path": "Multivector"
+      },
+      "generics": "< const P : usize , const Q : usize , const R : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_info_geom::InfoGeomGpuError",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 15,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_info_geom::gpu::InfoGeomGpuError",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 15,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_info_geom::gpu::gpu_impl",
+        "ident": "InfoGeomGpuError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    }
+  ],
+  "cfg_gates": [
+    {
+      "path": "amari_info_geom::AlphaConnection",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::AlphaConnection::alpha",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::AlphaConnection::christoffel_symbols",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::AlphaConnection::covariant_derivative",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::AlphaConnectionFactory",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 14,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::AlphaConnectionFactory::create",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold::bregman_divergence",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold::fisher_metric_at",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::DuallyFlatManifold::new",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::FisherInformationMatrix",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::FisherInformationMatrix::eigenvalues",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::FisherMetric",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::FisherMetric::fisher_inner_product",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::FisherMetric::fisher_matrix",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::InfoGeomError",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::InfoGeomGpuConfig",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 6,
+      "gate": "all(feature(\"gpu\"), all(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::InfoGeomGpuError",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 3,
+      "gate": "all(feature(\"gpu\"), all(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::InfoGeomGpuResult",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 4,
+      "gate": "all(feature(\"gpu\"), all(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::Parameter",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::Parameter::Scalar",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_type"
+    },
+    {
+      "path": "amari_info_geom::Parameter::dimension",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::Parameter::get_component",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::Parameter::set_component",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_info_geom::SimpleAlphaConnection",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::SimpleAlphaConnection::alpha",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::SimpleAlphaConnection::new",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::amari_chentsov_tensor",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 13,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::bregman_divergence",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 11,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::comprehensive_tests",
+      "source_path": "amari-info-geom/src/comprehensive_tests.rs",
+      "source_ordinal": 0,
+      "gate": "unknown(test)",
+      "status": "unknown",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_info_geom::gpu",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"gpu\")",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 1,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 20,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"), not(feature(\"gpu\")))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 19,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"), not(feature(\"gpu\")))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 2,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 21,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"), not(feature(\"gpu\")))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuConfig",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 6,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuContext",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 5,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuError",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 3,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 8,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 17,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"), not(feature(\"gpu\")))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_bregman_divergence",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 3,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_fisher_information",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 2,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_kl_divergence",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 4,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::batch_manifold_operations",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 5,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::new",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"), not(feature(\"gpu\")))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::new",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuOps::with_config",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 1,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::gpu::InfoGeomGpuResult",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 4,
+      "gate": "conditional(all(feature(\"gpu\"), all(feature(\"gpu\"))))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback",
+      "source_path": "amari-info-geom/",
+      "source_ordinal": 0,
+      "gate": "all(feature(\"gpu\"), not(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::GpuBregmanData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 20,
+      "gate": "all(feature(\"gpu\"), not(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::GpuFisherData",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 19,
+      "gate": "all(feature(\"gpu\"), not(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::GpuStatisticalManifold",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 21,
+      "gate": "all(feature(\"gpu\"), not(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::InfoGeomGpuOps",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 17,
+      "gate": "all(feature(\"gpu\"), not(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::gpu::gpu_fallback::InfoGeomGpuOps::new",
+      "source_path": "amari-info-geom/src/gpu.rs",
+      "source_ordinal": 0,
+      "gate": "all(feature(\"gpu\"), not(feature(\"gpu\")))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::kl_divergence",
+      "source_path": "amari-info-geom/src/lib.rs",
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::FisherVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 15,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws::verify_dualities",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws::verify_fundamental_theorem",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomLaws::verify_pythagorean_theorem",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::InfoGeomVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::ManifoldVerified",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::alpha",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::new",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::verify_duality",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAlphaConnection::verify_special_connections",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 11,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::tensor",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::verify_alternating_property",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::verify_multilinearity",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractAmariChentsov::verify_statistical_invariance",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::divergence",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::new",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::verify_convexity",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractBregmanDivergence::verify_divergence_properties",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::fisher_inner_product",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::fisher_matrix",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::new",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractFisherMetric::verify_positive_definiteness",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 13,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence::divergence",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence::verify_exponential_family_duality",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedContractKLDivergence::verify_kl_properties",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix::eigenvalues",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix::inner_product",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_info_geom::verified_contracts::VerifiedFisherMatrix::verify_positive_definite",
+      "source_path": "amari-info-geom/src/verified_contracts.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    }
+  ],
+  "examples": [
+    {
+      "name": "gpu_information_geometry",
+      "path": "amari-info-geom/examples/gpu_information_geometry.rs",
+      "required_features": [
+        "gpu"
+      ]
+    }
+  ],
+  "modules": [
+    "amari_info_geom",
+    "amari_info_geom::comprehensive_tests",
+    "amari_info_geom::gpu",
+    "amari_info_geom::gpu::gpu_fallback",
+    "amari_info_geom::verified_contracts"
+  ],
+  "readme": "amari-info-geom/README.md"
+}

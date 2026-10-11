@@ -4,7 +4,19 @@ use std::collections::HashSet;
 
 use amari_discovery::{Catalog, SideEffectPolicy, StructuralCatalog};
 
-const STRUCTURAL: &str = include_str!("../catalog/generated.json");
+// Compose the split layout exactly as the embedded loader does.
+mod generated_index {
+    include!("../catalog/index.rs");
+}
+
+fn structural_source() -> String {
+    use amari_discovery::compose_structural;
+    let structural =
+        compose_structural(generated_index::MANIFEST_JSON, generated_index::CRATE_JSON).unwrap();
+    let mut json = serde_json::to_vec_pretty(&structural).unwrap();
+    json.push(b'\n');
+    String::from_utf8(json).unwrap()
+}
 const SEMANTIC: &str = include_str!("../catalog/semantic/core.toml");
 const PROBES: &str = include_str!("../catalog/probes.toml");
 
@@ -205,7 +217,8 @@ fn catalog_hash_is_deterministic_and_content_sensitive() {
 
     // Modify the structural content AND recompute the content_hash so
     // validation passes. The composite Catalog.content_hash must differ.
-    let mut changed_structural: StructuralCatalog = serde_json::from_str(STRUCTURAL).unwrap();
+    let mut changed_structural: StructuralCatalog =
+        serde_json::from_str(&structural_source()).unwrap();
     changed_structural.description = "Changed structural catalog for Amari".to_string();
     // Recompute content_hash for the modified structural JSON.
     let mut for_hash = changed_structural.clone();
@@ -223,7 +236,7 @@ fn catalog_hash_is_deterministic_and_content_sensitive() {
 
 #[test]
 fn validation_rejects_wasm_mapping_to_unknown_semantic_capability() {
-    let mut structural: StructuralCatalog = serde_json::from_str(STRUCTURAL).unwrap();
+    let mut structural: StructuralCatalog = serde_json::from_str(&structural_source()).unwrap();
     let wasm = structural
         .wasm_surface
         .as_mut()
@@ -249,31 +262,31 @@ fn validation_rejects_dangling_semantic_and_relationship_references() {
         "crate_refs = [\"amari-core\"]",
         "crate_refs = [\"amari-missing\"]",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, &bad_crate, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &bad_crate, PROBES).is_err());
 
     let bad_feature = SEMANTIC.replace("amari-core:std", "amari-core:missing");
-    assert!(Catalog::from_sources(STRUCTURAL, &bad_feature, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &bad_feature, PROBES).is_err());
 
     let bad_example = SEMANTIC.replace("amari-core:basic", "amari-core:missing");
-    assert!(Catalog::from_sources(STRUCTURAL, &bad_example, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &bad_example, PROBES).is_err());
 
     let bad_symbol = SEMANTIC.replace(
         "amari_core::Multivector::geometric_product",
         "amari_core::Missing::operation",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, &bad_symbol, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &bad_symbol, PROBES).is_err());
 
     let bad_probe = SEMANTIC.replace(
         "amari-probe:core:geometric-product:v1",
         "amari-probe:core:missing:v1",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, &bad_probe, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &bad_probe, PROBES).is_err());
 
     let bad_relation = SEMANTIC.replace(
         "to = \"amari:amari-core:rotor:rotation\"",
         "to = \"amari:missing:module:capability\"",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, &bad_relation, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &bad_relation, PROBES).is_err());
 }
 
 #[test]
@@ -282,25 +295,25 @@ fn validation_rejects_probe_schema_mismatch_and_wrong_ownership() {
         "probe_refs = [\"amari-probe:core:geometric-product:v1\"]",
         "probe_refs = [\"amari-probe:tropical:viterbi:v1\"]",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, &wrong_owner, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &wrong_owner, PROBES).is_err());
 
     let missing_contract = PROBES.replace(
         "amari.discovery/probe/core-geometric-product/input/v1",
         "amari.discovery/probe/input/v1",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, SEMANTIC, &missing_contract).is_err());
+    assert!(Catalog::from_sources(&structural_source(), SEMANTIC, &missing_contract).is_err());
 
     let mismatched_version = PROBES.replace(
         "amari.discovery/probe/core-geometric-product/output/v1",
         "amari.discovery/probe/core-geometric-product/output/v2",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, SEMANTIC, &mismatched_version).is_err());
+    assert!(Catalog::from_sources(&structural_source(), SEMANTIC, &mismatched_version).is_err());
 
     let mismatched_contract = PROBES.replace(
         "amari.discovery/probe/core-geometric-product/output/v1",
         "amari.discovery/probe/other-contract/output/v1",
     );
-    assert!(Catalog::from_sources(STRUCTURAL, SEMANTIC, &mismatched_contract).is_err());
+    assert!(Catalog::from_sources(&structural_source(), SEMANTIC, &mismatched_contract).is_err());
 }
 
 #[cfg(feature = "standard-probes")]
@@ -329,10 +342,10 @@ fn validation_rejects_duplicate_capability_and_probe_ids() {
     let duplicate_capability = format!(
         "{SEMANTIC}\n[[capabilities]]\nid = \"amari:amari-core:product:geometric-product\"\nname = \"Duplicate\"\ndescription = \"Duplicate ID\"\naliases = []\nconcepts = []\ncrate_refs = [\"amari-core\"]\nfeature_refs = []\nsymbol_refs = []\nexample_refs = []\nprobe_refs = []\nstability = \"stable\"\ncost = \"low\"\n"
     );
-    assert!(Catalog::from_sources(STRUCTURAL, &duplicate_capability, PROBES).is_err());
+    assert!(Catalog::from_sources(&structural_source(), &duplicate_capability, PROBES).is_err());
 
     let duplicate_probe = format!(
         "{PROBES}\n[[probes]]\nid = \"amari-probe:core:geometric-product:v1\"\ncapability_id = \"amari:amari-core:product:geometric-product\"\ninput_schema = \"amari.discovery/probe/core-geometric-product/input/v1\"\noutput_schema = \"amari.discovery/probe/core-geometric-product/output/v1\"\nrequired_features = []\ncost = \"low\"\ndeterministic = true\nside_effects = \"none\"\n[probes.limits]\nmax_input_bytes = 1\nmax_output_bytes = 1\nmax_operations = 1\ntimeout_millis = 1\n"
     );
-    assert!(Catalog::from_sources(STRUCTURAL, SEMANTIC, &duplicate_probe).is_err());
+    assert!(Catalog::from_sources(&structural_source(), SEMANTIC, &duplicate_probe).is_err());
 }

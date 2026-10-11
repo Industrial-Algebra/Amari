@@ -319,7 +319,7 @@ bounded typed result.
 
 The runtime catalog is hybrid:
 
-1. `catalog/generated.json` records deterministic Rust workspace structure;
+1. `catalog/manifest.json` + `catalog/crates/<crate>.json` (split layout) records deterministic Rust workspace structure;
 2. `catalog/generated-wasm.json` records the authoritative generated `.d.ts`
    surface;
 3. `catalog/semantic/*.toml` supplies curated concepts and relations;

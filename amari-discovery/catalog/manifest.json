@@ -1,0 +1,1018 @@
+{
+  "schema_version": 2,
+  "version": "0.24.1",
+  "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
+  "content_hash": "3b5c2aec759dcea90affbb1884cbc8da8bafcd09cc71d2eb6be6dfb2f31fabf4",
+  "probe_descriptors": [
+    {
+      "id": "amari-probe:core:geometric-product:v1",
+      "capability_id": "amari:amari-core:product:geometric-product",
+      "input_schema": "amari.discovery/probe/core-geometric-product/input/v1",
+      "output_schema": "amari.discovery/probe/core-geometric-product/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "low",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 4096,
+        "max_output_bytes": 4096,
+        "max_operations": 1024,
+        "timeout_millis": 1000
+      }
+    },
+    {
+      "id": "amari-probe:tropical:shortest-path:v1",
+      "capability_id": "amari:amari-tropical:paths:shortest-path",
+      "input_schema": "amari.discovery/probe/tropical-shortest-path/input/v1",
+      "output_schema": "amari.discovery/probe/tropical-shortest-path/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:tropical:viterbi:v1",
+      "capability_id": "amari:amari-tropical:sequence:viterbi",
+      "input_schema": "amari.discovery/probe/tropical-viterbi/input/v1",
+      "output_schema": "amari.discovery/probe/tropical-viterbi/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:dual:polynomial-derivative:v1",
+      "capability_id": "amari:amari-dual:autodiff:forward-derivative",
+      "input_schema": "amari.discovery/probe/dual-polynomial-derivative/input/v1",
+      "output_schema": "amari.discovery/probe/dual-polynomial-derivative/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "low",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 16384,
+        "max_output_bytes": 4096,
+        "max_operations": 10000,
+        "timeout_millis": 1000
+      }
+    },
+    {
+      "id": "amari-probe:network:shortest-path:v1",
+      "capability_id": "amari:amari-network:paths:geometric-shortest-path",
+      "input_schema": "amari.discovery/probe/network-shortest-path/input/v1",
+      "output_schema": "amari.discovery/probe/network-shortest-path/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:optimization:pareto-front:v1",
+      "capability_id": "amari:amari-optimization:multiobjective:pareto-front",
+      "input_schema": "amari.discovery/probe/optimization-pareto-front/input/v1",
+      "output_schema": "amari.discovery/probe/optimization-pareto-front/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:holographic:recall:v1",
+      "capability_id": "amari:amari-holographic:memory:retrieval",
+      "input_schema": "amari.discovery/probe/holographic-recall/input/v1",
+      "output_schema": "amari.discovery/probe/holographic-recall/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:holographic:superposition:v1",
+      "capability_id": "amari:amari-holographic:algebra:superposition",
+      "input_schema": "amari.discovery/probe/holographic-superposition/input/v1",
+      "output_schema": "amari.discovery/probe/holographic-superposition/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "low",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:cgt:nim-sum:v1",
+      "capability_id": "amari:amari-cgt:nim:grundy-sum",
+      "input_schema": "amari.discovery/probe/cgt-nim-sum/input/v1",
+      "output_schema": "amari.discovery/probe/cgt-nim-sum/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "low",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 16384,
+        "max_output_bytes": 4096,
+        "max_operations": 10000,
+        "timeout_millis": 1000
+      }
+    },
+    {
+      "id": "amari-probe:surreal:rational-arithmetic:v1",
+      "capability_id": "amari:amari-surreal:rational:exact-arithmetic",
+      "input_schema": "amari.discovery/probe/surreal-rational-arithmetic/input/v1",
+      "output_schema": "amari.discovery/probe/surreal-rational-arithmetic/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "low",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 16384,
+        "max_output_bytes": 16384,
+        "max_operations": 10000,
+        "timeout_millis": 1000
+      }
+    },
+    {
+      "id": "amari-probe:surcomplex:rational-division:v1",
+      "capability_id": "amari:amari-surcomplex:rational:exact-division",
+      "input_schema": "amari.discovery/probe/surcomplex-rational-division/input/v1",
+      "output_schema": "amari.discovery/probe/surcomplex-rational-division/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "low",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 16384,
+        "max_output_bytes": 16384,
+        "max_operations": 10000,
+        "timeout_millis": 1000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:normalize:v1",
+      "capability_id": "amari:amari-rewrite:trs:normalization",
+      "input_schema": "amari.discovery/probe/rewrite-normalize/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-normalize/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:predecessors:v1",
+      "capability_id": "amari:amari-rewrite:inverse:predecessors",
+      "input_schema": "amari.discovery/probe/rewrite-predecessors/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-predecessors/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:infer-rule:v1",
+      "capability_id": "amari:amari-rewrite:synthesis:infer-rule",
+      "input_schema": "amari.discovery/probe/rewrite-infer-rule/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-infer-rule/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:backward-search:v1",
+      "capability_id": "amari:amari-rewrite:inverse:backward-search",
+      "input_schema": "amari.discovery/probe/rewrite-backward-search/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-backward-search/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:bidirectional-search:v1",
+      "capability_id": "amari:amari-rewrite:inverse:bidirectional-search",
+      "input_schema": "amari.discovery/probe/rewrite-bidirectional-search/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-bidirectional-search/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:symbolic-predecessors:v1",
+      "capability_id": "amari:amari-rewrite:inverse:symbolic-predecessors",
+      "input_schema": "amari.discovery/probe/rewrite-symbolic-predecessors/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-symbolic-predecessors/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:inverse-analysis:v1",
+      "capability_id": "amari:amari-rewrite:inverse:analysis",
+      "input_schema": "amari.discovery/probe/rewrite-inverse-analysis/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-inverse-analysis/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:residual-replay:v1",
+      "capability_id": "amari:amari-rewrite:reversible:residual-replay",
+      "input_schema": "amari.discovery/probe/rewrite-residual-replay/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-residual-replay/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:languages:v1",
+      "capability_id": "amari:amari-rewrite:language:automata",
+      "input_schema": "amari.discovery/probe/rewrite-languages/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-languages/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:preimages:v1",
+      "capability_id": "amari:amari-rewrite:language:preimages",
+      "input_schema": "amari.discovery/probe/rewrite-preimages/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-preimages/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    }
+  ],
+  "wasm_surface": {
+    "path": "amari-discovery/catalog/generated-wasm.json",
+    "source_hash": "d9487f0fdc2055eb5a6f45505db8f1ac212a51396e36eb5af6bc52a90361e93c",
+    "class_count": 153,
+    "function_count": 30,
+    "enum_count": 2,
+    "interface_count": 1,
+    "type_alias_count": 2,
+    "capability_mappings": [
+      {
+        "wasm_path": "WasmGenericMultivector.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmGenericRotor.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmMultivector030.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmMultivector110.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmMultivector200.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmMultivector210.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmMultivector300.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmMultivector310.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmMultivector410.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmMultivector500.geometricProduct",
+        "capability_id": "amari:amari-core:product:geometric-product"
+      },
+      {
+        "wasm_path": "WasmRotor030.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmRotor110.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmRotor200.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmRotor210.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmRotor300.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmRotor310.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmRotor410.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      },
+      {
+        "wasm_path": "WasmRotor500.apply",
+        "capability_id": "amari:amari-core:rotor:rotation"
+      }
+    ]
+  },
+  "dependency_edges": [
+    {
+      "from": "amari",
+      "to": "amari-automata"
+    },
+    {
+      "from": "amari",
+      "to": "amari-calculus"
+    },
+    {
+      "from": "amari",
+      "to": "amari-cgt"
+    },
+    {
+      "from": "amari",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari",
+      "to": "amari-dynamics"
+    },
+    {
+      "from": "amari",
+      "to": "amari-enumerative"
+    },
+    {
+      "from": "amari",
+      "to": "amari-flynn"
+    },
+    {
+      "from": "amari",
+      "to": "amari-functional"
+    },
+    {
+      "from": "amari",
+      "to": "amari-fusion"
+    },
+    {
+      "from": "amari",
+      "to": "amari-gpu"
+    },
+    {
+      "from": "amari",
+      "to": "amari-holographic"
+    },
+    {
+      "from": "amari",
+      "to": "amari-info-geom"
+    },
+    {
+      "from": "amari",
+      "to": "amari-measure"
+    },
+    {
+      "from": "amari",
+      "to": "amari-network"
+    },
+    {
+      "from": "amari",
+      "to": "amari-optimization"
+    },
+    {
+      "from": "amari",
+      "to": "amari-probabilistic"
+    },
+    {
+      "from": "amari",
+      "to": "amari-relativistic"
+    },
+    {
+      "from": "amari",
+      "to": "amari-rewrite"
+    },
+    {
+      "from": "amari",
+      "to": "amari-surcomplex"
+    },
+    {
+      "from": "amari",
+      "to": "amari-surreal"
+    },
+    {
+      "from": "amari",
+      "to": "amari-topology"
+    },
+    {
+      "from": "amari",
+      "to": "amari-tropical"
+    },
+    {
+      "from": "amari-automata",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-automata",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-automata",
+      "to": "amari-tropical"
+    },
+    {
+      "from": "amari-calculus",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-calculus",
+      "to": "amari-measure"
+    },
+    {
+      "from": "amari-dual",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-dynamics",
+      "to": "amari-calculus"
+    },
+    {
+      "from": "amari-dynamics",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-dynamics",
+      "to": "amari-functional"
+    },
+    {
+      "from": "amari-dynamics",
+      "to": "amari-probabilistic"
+    },
+    {
+      "from": "amari-dynamics",
+      "to": "amari-topology"
+    },
+    {
+      "from": "amari-enumerative",
+      "to": "amari-cgt"
+    },
+    {
+      "from": "amari-enumerative",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-flynn",
+      "to": "amari-flynn-macros"
+    },
+    {
+      "from": "amari-functional",
+      "to": "amari-calculus"
+    },
+    {
+      "from": "amari-functional",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-functional",
+      "to": "amari-measure"
+    },
+    {
+      "from": "amari-fusion",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-fusion",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-fusion",
+      "to": "amari-holographic"
+    },
+    {
+      "from": "amari-fusion",
+      "to": "amari-tropical"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-automata"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-calculus"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-enumerative"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-functional"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-fusion"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-holographic"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-info-geom"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-measure"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-network"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-probabilistic"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-relativistic"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-topology"
+    },
+    {
+      "from": "amari-gpu",
+      "to": "amari-tropical"
+    },
+    {
+      "from": "amari-holographic",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-info-geom",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-measure",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-measure",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-measure",
+      "to": "amari-info-geom"
+    },
+    {
+      "from": "amari-measure",
+      "to": "amari-tropical"
+    },
+    {
+      "from": "amari-network",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-network",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-network",
+      "to": "amari-tropical"
+    },
+    {
+      "from": "amari-optimization",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-optimization",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-optimization",
+      "to": "amari-gpu"
+    },
+    {
+      "from": "amari-optimization",
+      "to": "amari-info-geom"
+    },
+    {
+      "from": "amari-optimization",
+      "to": "amari-tropical"
+    },
+    {
+      "from": "amari-probabilistic",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-probabilistic",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-probabilistic",
+      "to": "amari-info-geom"
+    },
+    {
+      "from": "amari-probabilistic",
+      "to": "amari-measure"
+    },
+    {
+      "from": "amari-relativistic",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-rewrite",
+      "to": "amari-holographic"
+    },
+    {
+      "from": "amari-rewrite",
+      "to": "amari-network"
+    },
+    {
+      "from": "amari-rewrite",
+      "to": "amari-rewrite-macros"
+    },
+    {
+      "from": "amari-rewrite-macros",
+      "to": "amari-rewrite"
+    },
+    {
+      "from": "amari-surcomplex",
+      "to": "amari-surreal"
+    },
+    {
+      "from": "amari-surreal",
+      "to": "amari-cgt"
+    },
+    {
+      "from": "amari-topology",
+      "to": "amari-calculus"
+    },
+    {
+      "from": "amari-topology",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-tropical",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-automata"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-calculus"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-cgt"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-core"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-dual"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-enumerative"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-flynn"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-functional"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-fusion"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-holographic"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-info-geom"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-measure"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-network"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-optimization"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-probabilistic"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-relativistic"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-surcomplex"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-surreal"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-topology"
+    },
+    {
+      "from": "amari-wasm",
+      "to": "amari-tropical"
+    }
+  ],
+  "crates": [
+    {
+      "name": "amari",
+      "file": "crates/amari.json"
+    },
+    {
+      "name": "amari-automata",
+      "file": "crates/amari-automata.json"
+    },
+    {
+      "name": "amari-calculus",
+      "file": "crates/amari-calculus.json"
+    },
+    {
+      "name": "amari-cgt",
+      "file": "crates/amari-cgt.json"
+    },
+    {
+      "name": "amari-core",
+      "file": "crates/amari-core.json"
+    },
+    {
+      "name": "amari-discovery-macros",
+      "file": "crates/amari-discovery-macros.json"
+    },
+    {
+      "name": "amari-dual",
+      "file": "crates/amari-dual.json"
+    },
+    {
+      "name": "amari-dynamics",
+      "file": "crates/amari-dynamics.json"
+    },
+    {
+      "name": "amari-enumerative",
+      "file": "crates/amari-enumerative.json"
+    },
+    {
+      "name": "amari-flynn",
+      "file": "crates/amari-flynn.json"
+    },
+    {
+      "name": "amari-flynn-macros",
+      "file": "crates/amari-flynn-macros.json"
+    },
+    {
+      "name": "amari-functional",
+      "file": "crates/amari-functional.json"
+    },
+    {
+      "name": "amari-fusion",
+      "file": "crates/amari-fusion.json"
+    },
+    {
+      "name": "amari-gpu",
+      "file": "crates/amari-gpu.json"
+    },
+    {
+      "name": "amari-holographic",
+      "file": "crates/amari-holographic.json"
+    },
+    {
+      "name": "amari-info-geom",
+      "file": "crates/amari-info-geom.json"
+    },
+    {
+      "name": "amari-measure",
+      "file": "crates/amari-measure.json"
+    },
+    {
+      "name": "amari-network",
+      "file": "crates/amari-network.json"
+    },
+    {
+      "name": "amari-optimization",
+      "file": "crates/amari-optimization.json"
+    },
+    {
+      "name": "amari-probabilistic",
+      "file": "crates/amari-probabilistic.json"
+    },
+    {
+      "name": "amari-relativistic",
+      "file": "crates/amari-relativistic.json"
+    },
+    {
+      "name": "amari-rewrite",
+      "file": "crates/amari-rewrite.json"
+    },
+    {
+      "name": "amari-rewrite-macros",
+      "file": "crates/amari-rewrite-macros.json"
+    },
+    {
+      "name": "amari-surcomplex",
+      "file": "crates/amari-surcomplex.json"
+    },
+    {
+      "name": "amari-surreal",
+      "file": "crates/amari-surreal.json"
+    },
+    {
+      "name": "amari-topology",
+      "file": "crates/amari-topology.json"
+    },
+    {
+      "name": "amari-tropical",
+      "file": "crates/amari-tropical.json"
+    },
+    {
+      "name": "amari-wasm",
+      "file": "crates/amari-wasm.json"
+    }
+  ],
+  "totals": {
+    "crates": 28,
+    "items": 11096,
+    "dependency_edges": 107
+  }
+}
