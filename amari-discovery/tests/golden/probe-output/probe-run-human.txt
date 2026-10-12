@@ -6,7 +6,7 @@ Isolation: process
 Deterministic: yes
 Hard timeout: yes
 Crash isolation: yes
-Timeout (millis): 5000
+Timeout (millis): 15000
 Duration (micros): <duration_micros>
 Resources:
   operations: 14
