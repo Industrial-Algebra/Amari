@@ -1,0 +1,19 @@
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.23s
+     Running tests/inverse_contracts_green.rs (target/w03/debug/deps/inverse_contracts_green-894788247fae1b76)
+
+running 11 tests
+test nilpotent_and_zero_divisors_return_none ... ok
+test vector_inverse_is_self_when_square_one ... ok
+test scalar_overflow_scale_inverse ... ok
+test scalar_inverse_across_signatures ... ok
+test non_versor_inverse_across_signatures ... ok
+test null_generator_is_not_invertible ... ok
+test versor_inverse_across_signatures ... ok
+test well_conditioned_random_inverses_euclidean ... ok
+test well_conditioned_random_inverses_null_generator ... ok
+test well_conditioned_random_inverses_degenerate_mixed ... ok
+test well_conditioned_random_inverses_mixed ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

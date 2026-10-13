@@ -1,0 +1,4 @@
+   Compiling amari-discovery v0.24.1 ($AMARI/.worktrees/core-w03/amari-discovery)
+    Checking amari-rewrite v0.24.1 ($AMARI/.worktrees/core-w03/amari-rewrite)
+    Checking amari-rewrite-macros v0.24.1 ($AMARI/.worktrees/core-w03/amari-rewrite-macros)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.39s

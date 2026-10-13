@@ -1,0 +1,103 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling regex-syntax v0.8.11
+   Compiling safe_arch v1.2.0
+   Compiling rawpointer v0.2.1
+   Compiling typenum v1.20.1
+   Compiling num-complex v0.4.6
+   Compiling nalgebra-macros v0.3.0
+   Compiling num-rational v0.4.2
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+   Compiling matrixmultiply v0.3.11
+   Compiling wide v1.7.1
+   Compiling regex-automata v0.4.18
+   Compiling regex v1.13.1
+   Compiling criterion v0.8.2
+   Compiling simba v0.10.2
+   Compiling nalgebra v0.35.0
+   Compiling amari-relativistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-relativistic)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.35s
+     Running unittests src/lib.rs (target/w03/debug/deps/amari_relativistic-84684f693335648c)
+
+running 53 tests
+test geodesic::tests::test_flat_spacetime_geodesic ... ignored
+test constants::tests::test_physical_relationships ... ok
+test constants::tests::test_derived_constants ... ok
+test geodesic::tests::test_integration_config ... ok
+test constants::tests::test_precision_constants ... ok
+test geodesic::tests::test_integration_stats ... ok
+test geodesic::tests::test_step_size_validation ... ok
+test integration_tests::test_four_velocity_consistency ... ok
+test integration_tests::test_light_deflection_calculation ... ok
+test integration_tests::test_schwarzschild_coordinate_singularity ... ok
+test particle::tests::test_cyclotron_frequency ... ok
+test particle::tests::test_de_broglie_wavelength ... ok
+test geodesic::tests::test_four_velocity_normalization ... ok
+test particle::tests::test_energy_momentum_relations ... ok
+test particle::tests::test_gyroradius ... ok
+test particle::tests::test_invalid_mass ... ok
+test particle::tests::test_light_deflection ... ok
+test particle::tests::test_non_relativistic_limit ... ok
+test particle::tests::test_particle_creation ... ok
+test particle::tests::test_particle_with_energy ... ok
+test particle::tests::test_shapiro_delay ... ok
+test integration_tests::test_energy_conservation_in_flat_spacetime ... ok
+test particle::tests::test_superluminal_velocity_error ... ok
+test particle::tests::test_time_tracking ... ok
+test particle::tests::test_ultra_relativistic_limit ... ok
+test precision_geodesic::tests::test_component_access ... ok
+test precision_geodesic::tests::test_precision_config_defaults ... ok
+test precision_geodesic::tests::test_precision_spacetime_vector ... ok
+test schwarzschild::tests::test_bound_orbit_classification ... ok
+test schwarzschild::tests::test_circular_orbital_velocity ... ok
+test schwarzschild::tests::test_effective_potential ... ok
+test schwarzschild::tests::test_escape_velocity ... ok
+test schwarzschild::tests::test_has_singularity ... ok
+test schwarzschild::tests::test_metric_tensor_far_field ... ok
+test schwarzschild::tests::test_orbital_period ... ok
+test schwarzschild::tests::test_photon_sphere ... ok
+test schwarzschild::tests::test_schwarzschild_radius ... ok
+test spacetime::tests::test_coordinates_roundtrip ... ok
+test spacetime::tests::test_four_velocity_at_rest ... ok
+test spacetime::tests::test_faster_than_light_panic - should panic ... ok
+test spacetime::tests::test_four_velocity_normalization ... ok
+test spacetime::tests::test_minkowski_metric ... ok
+test spacetime::tests::test_spacetime_vector_creation ... ok
+test spacetime::tests::test_rapidity ... ok
+test spacetime::tests::test_lorentz_boost_identity ... ok
+test verified::tests::test_causality_classification ... ok
+test verified::tests::test_verified_four_velocity_normalization ... ok
+test verified::tests::test_verified_particle_energy_momentum ... ok
+test verified::tests::test_verified_spacetime_vector ... ok
+test verified::tests::test_minkowski_metric_properties ... ok
+test spacetime::tests::test_boost_composition ... ok
+test particle::tests::test_propagation_time_update ... ok
+test integration_tests::test_complete_ion_simulation ... ok
+
+test result: ok. 52 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests amari_relativistic
+
+running 18 tests
+test amari-relativistic/src/lib.rs - (line 171) ... ignored
+test amari-relativistic/src/lib.rs - (line 114) ... ok
+test amari-relativistic/src/geodesic.rs - geodesic::GenericGeodesicIntegrator (line 404) ... ok
+test amari-relativistic/src/lib.rs - (line 87) ... ok
+test amari-relativistic/src/spacetime.rs - spacetime::GenericSpacetimeVector<T>::new (line 84) ... ok
+test amari-relativistic/src/spacetime.rs - spacetime::LorentzRotor::boost (line 500) ... ok
+test amari-relativistic/src/schwarzschild.rs - schwarzschild::SchwarzschildMetric::sun (line 113) ... ok
+test amari-relativistic/src/spacetime.rs - spacetime::GenericFourVelocity<T>::from_velocity (line 349) ... ok
+test amari-relativistic/src/lib.rs - (line 69) ... ok
+test amari-relativistic/src/schwarzschild.rs - schwarzschild::SchwarzschildMetric::new (line 85) ... ok
+test amari-relativistic/src/particle.rs - particle::RelativisticParticle::with_energy (line 287) ... ok
+test amari-relativistic/src/particle.rs - particle::RelativisticParticle (line 161) ... ok
+test amari-relativistic/src/lib.rs - (line 146) ... ok
+test amari-relativistic/src/spacetime.rs - spacetime::GenericSpacetimeVector<T>::minkowski_dot (line 173) ... ok
+test amari-relativistic/src/lib.rs - doctests::_doctest_main_example (line 551) ... ok
+test amari-relativistic/src/particle.rs - particle::RelativisticParticle::new (line 207) ... ok
+test amari-relativistic/src/particle.rs - particle::propagate_relativistic (line 582) ... ok
+test amari-relativistic/src/lib.rs - (line 34) ... ok
+
+test result: ok. 17 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.61s
+

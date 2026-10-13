@@ -176,6 +176,14 @@
       "default_features": true
     },
     {
+      "alias": "num-bigint",
+      "package": "num-bigint",
+      "kind": "development",
+      "version": "0.4",
+      "optional": false,
+      "default_features": true
+    },
+    {
       "alias": "num-traits",
       "package": "num-traits",
       "kind": "development",
@@ -903,6 +911,99 @@
       ]
     },
     {
+      "path": "amari_core::ExpError",
+      "kind": "enum",
+      "signature": "pub enum ExpError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoConvergence",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "terms",
+                  "ty": "usize"
+                },
+                {
+                  "name": "last_term_norm",
+                  "ty": "f64"
+                },
+                {
+                  "name": "result_scale",
+                  "ty": "f64"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NonFiniteResult",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "stage",
+                  "ty": "NonFiniteStage"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-core/src/error.rs",
+      "is_reexport": true,
+      "source_module": "amari_core::error",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum ExpError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NoConvergence",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "terms",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "last_term_norm",
+                      "ty": "f64"
+                    },
+                    {
+                      "name": "result_scale",
+                      "ty": "f64"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonFiniteResult",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "ty": "NonFiniteStage"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-core/src/error.rs",
+          "source_module": "amari_core::error",
+          "is_reexport": true,
+          "declaration_module": "amari_core::error",
+          "declaration_ident": "ExpError"
+        }
+      ]
+    },
+    {
       "path": "amari_core::ExtendedFloat",
       "is_reexport": false,
       "variants": [
@@ -1188,14 +1289,14 @@
     {
       "path": "amari_core::Multivector::exp",
       "kind": "method",
-      "signature": "pub fn exp (& self) -> Self",
+      "signature": "pub fn exp (& self) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_core",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn exp (& self) -> Self",
+          "signature": "pub fn exp (& self) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/lib.rs",
           "source_module": "amari_core",
           "is_reexport": false,
@@ -1870,6 +1971,95 @@
       ]
     },
     {
+      "path": "amari_core::NonFiniteStage",
+      "kind": "enum",
+      "signature": "pub enum NonFiniteStage",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ScalarRoute",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "ClosedForm",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "SeriesScaling",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "SeriesAccumulation",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Squaring",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-core/src/error.rs",
+      "is_reexport": true,
+      "source_module": "amari_core::error",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum NonFiniteStage",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "ScalarRoute",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "ClosedForm",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "SeriesScaling",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "SeriesAccumulation",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Squaring",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-core/src/error.rs",
+          "source_module": "amari_core::error",
+          "is_reexport": true,
+          "declaration_module": "amari_core::error",
+          "declaration_ident": "NonFiniteStage"
+        }
+      ]
+    },
+    {
       "path": "amari_core::PrecisionFloat",
       "kind": "trait",
       "signature": "pub trait PrecisionFloat : Clone + Debug + Display + PartialEq + PartialOrd + core :: ops :: Add < Output = Self > + core :: ops :: Sub < Output = Self > + core :: ops :: Mul < Output = Self > + core :: ops :: Div < Output = Self > + core :: ops :: Neg < Output = Self > + Send + Sync + 'static",
@@ -2526,14 +2716,14 @@
     {
       "path": "amari_core::Rotor::from_axis_angle",
       "kind": "method",
-      "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Self",
+      "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": true,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Self",
+          "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": true,
@@ -2545,14 +2735,14 @@
     {
       "path": "amari_core::Rotor::from_bivector",
       "kind": "method",
-      "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Self",
+      "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": true,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Self",
+          "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": true,
@@ -2564,14 +2754,14 @@
     {
       "path": "amari_core::Rotor::from_multivector_bivector",
       "kind": "method",
-      "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64) -> Self",
+      "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64 ,) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": true,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64) -> Self",
+          "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64 ,) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": true,
@@ -2716,14 +2906,14 @@
     {
       "path": "amari_core::Rotor::power",
       "kind": "method",
-      "signature": "pub fn power (& self , exponent : f64) -> Self",
+      "signature": "pub fn power (& self , exponent : f64) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": true,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn power (& self , exponent : f64) -> Self",
+          "signature": "pub fn power (& self , exponent : f64) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": true,
@@ -4095,6 +4285,188 @@
           "is_reexport": false,
           "declaration_module": "amari_core::error",
           "declaration_ident": "CoreResult"
+        }
+      ]
+    },
+    {
+      "path": "amari_core::error::ExpError",
+      "kind": "enum",
+      "signature": "pub enum ExpError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoConvergence",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "terms",
+                  "ty": "usize"
+                },
+                {
+                  "name": "last_term_norm",
+                  "ty": "f64"
+                },
+                {
+                  "name": "result_scale",
+                  "ty": "f64"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NonFiniteResult",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "stage",
+                  "ty": "NonFiniteStage"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-core/src/error.rs",
+      "is_reexport": false,
+      "source_module": "amari_core::error",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum ExpError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NoConvergence",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "terms",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "last_term_norm",
+                      "ty": "f64"
+                    },
+                    {
+                      "name": "result_scale",
+                      "ty": "f64"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonFiniteResult",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "ty": "NonFiniteStage"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-core/src/error.rs",
+          "source_module": "amari_core::error",
+          "is_reexport": false,
+          "declaration_module": "amari_core::error",
+          "declaration_ident": "ExpError"
+        }
+      ]
+    },
+    {
+      "path": "amari_core::error::NonFiniteStage",
+      "kind": "enum",
+      "signature": "pub enum NonFiniteStage",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ScalarRoute",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "ClosedForm",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "SeriesScaling",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "SeriesAccumulation",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Squaring",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-core/src/error.rs",
+      "is_reexport": false,
+      "source_module": "amari_core::error",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum NonFiniteStage",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "ScalarRoute",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "ClosedForm",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "SeriesScaling",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "SeriesAccumulation",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Squaring",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-core/src/error.rs",
+          "source_module": "amari_core::error",
+          "is_reexport": false,
+          "declaration_module": "amari_core::error",
+          "declaration_ident": "NonFiniteStage"
         }
       ]
     },
@@ -6451,14 +6823,14 @@
     {
       "path": "amari_core::rotor::Rotor::from_axis_angle",
       "kind": "method",
-      "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Self",
+      "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": false,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Self",
+          "signature": "pub fn from_axis_angle (axis : & Vector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": false,
@@ -6470,14 +6842,14 @@
     {
       "path": "amari_core::rotor::Rotor::from_bivector",
       "kind": "method",
-      "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Self",
+      "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": false,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Self",
+          "signature": "pub fn from_bivector (bivector : & Bivector < P , Q , R > , angle : f64) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": false,
@@ -6489,14 +6861,14 @@
     {
       "path": "amari_core::rotor::Rotor::from_multivector_bivector",
       "kind": "method",
-      "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64) -> Self",
+      "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64 ,) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": false,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64) -> Self",
+          "signature": "pub fn from_multivector_bivector (bivector : & Multivector < P , Q , R > , angle : f64 ,) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": false,
@@ -6641,14 +7013,14 @@
     {
       "path": "amari_core::rotor::Rotor::power",
       "kind": "method",
-      "signature": "pub fn power (& self , exponent : f64) -> Self",
+      "signature": "pub fn power (& self , exponent : f64) -> Result < Self , ExpError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": false,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn power (& self , exponent : f64) -> Self",
+          "signature": "pub fn power (& self , exponent : f64) -> Result < Self , ExpError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": false,
@@ -8112,7 +8484,7 @@
       "trait_path": "Add",
       "impl_type_path": "&amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -8168,7 +8540,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -8259,7 +8631,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_core::Bivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -8315,7 +8687,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_core::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -8331,9 +8703,45 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -8350,9 +8758,45 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_core::Scalar",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 14,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -8371,7 +8815,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_core::Vector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -8427,7 +8871,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_core::error::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -8436,6 +8880,78 @@
         "kind": "local",
         "module": "amari_core::error",
         "ident": "CoreError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -8571,6 +9087,150 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_core::gf2::GF2",
       "source_path": "amari-core/src/gf2/scalar.rs",
       "source_ordinal": 0,
@@ -8591,7 +9251,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_core::Bivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -8628,7 +9288,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_core::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -8644,9 +9304,45 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -8663,9 +9359,45 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_core::Scalar",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 14,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -8684,7 +9416,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_core::Vector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -8721,7 +9453,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_core::error::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -8730,6 +9462,78 @@
         "kind": "local",
         "module": "amari_core::error",
         "ident": "CoreError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -8978,7 +9782,7 @@
       "trait_path": "Div",
       "impl_type_path": "&amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Div"
@@ -8997,7 +9801,7 @@
       "trait_path": "Div",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Div"
@@ -9011,6 +9815,78 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": false
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
     },
     {
       "trait_path": "Eq",
@@ -9105,6 +9981,42 @@
     },
     {
       "trait_path": "Error",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Error",
       "impl_type_path": "amari_core::error::CoreError",
       "source_path": "amari-core/src/error.rs",
       "source_ordinal": 0,
@@ -9122,10 +10034,46 @@
       "is_derived": true
     },
     {
+      "trait_path": "Error",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
       "trait_path": "From",
       "impl_type_path": "amari_core::Scalar",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 16,
       "trait_endpoint": {
         "kind": "external",
         "path": "From"
@@ -9269,7 +10217,7 @@
       "trait_path": "Mul",
       "impl_type_path": "&amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 11,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -9307,7 +10255,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 10,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -9362,7 +10310,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -9399,7 +10347,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_core::Bivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -9436,7 +10384,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_core::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -9452,9 +10400,45 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -9471,9 +10455,45 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_core::Scalar",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 14,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -9492,7 +10512,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_core::Vector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -9529,7 +10549,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_core::error::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -9538,6 +10558,78 @@
         "kind": "local",
         "module": "amari_core::error",
         "ident": "CoreError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -9692,7 +10784,7 @@
       "trait_path": "Sub",
       "impl_type_path": "&amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 7,
       "trait_endpoint": {
         "kind": "external",
         "path": "Sub"
@@ -9711,7 +10803,7 @@
       "trait_path": "Sub",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Sub"
@@ -9766,7 +10858,7 @@
       "trait_path": "Zero",
       "impl_type_path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 13,
       "trait_endpoint": {
         "kind": "external",
         "path": "Zero"
@@ -9955,7 +11047,7 @@
       "trait_path": "core::ops::Index",
       "impl_type_path": "amari_core::Bivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 19,
+      "source_ordinal": 21,
       "trait_endpoint": {
         "kind": "external",
         "path": "core::ops::Index"
@@ -10028,7 +11120,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_core::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -10044,9 +11136,45 @@
     },
     {
       "trait_path": "fmt::Display",
+      "impl_type_path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
       "impl_type_path": "amari_core::error::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -10055,6 +11183,42 @@
         "kind": "local",
         "module": "amari_core::error",
         "ident": "CoreError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "ExpError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::error",
+        "ident": "NonFiniteStage"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -10228,7 +11392,7 @@
     {
       "path": "amari_core::Bivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 19,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -10388,7 +11552,7 @@
     {
       "path": "amari_core::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "not(feature(\"std\"))",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -10396,7 +11560,7 @@
     {
       "path": "amari_core::CoreResult",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -10404,9 +11568,25 @@
     {
       "path": "amari_core::E",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 20,
+      "source_ordinal": 22,
       "gate": "always",
       "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "gate": "not(feature(\"std\"))",
+      "status": "disabled",
       "surface_kind": "top_level"
     },
     {
@@ -10460,7 +11640,7 @@
     {
       "path": "amari_core::Multivector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -10548,7 +11728,7 @@
     {
       "path": "amari_core::Multivector::exp",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 47,
+      "source_ordinal": 48,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10644,7 +11824,7 @@
     {
       "path": "amari_core::Multivector::hodge_dual",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 51,
+      "source_ordinal": 58,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10684,7 +11864,7 @@
     {
       "path": "amari_core::Multivector::left_contraction",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 49,
+      "source_ordinal": 56,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10724,7 +11904,7 @@
     {
       "path": "amari_core::Multivector::right_contraction",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 50,
+      "source_ordinal": 57,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10832,6 +12012,22 @@
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "gate": "not(feature(\"std\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_core::PrecisionFloat",
@@ -11220,7 +12416,7 @@
     {
       "path": "amari_core::Scalar",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -11268,7 +12464,7 @@
     {
       "path": "amari_core::Vector",
       "source_path": "amari-core/src/lib.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 17,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -11668,7 +12864,7 @@
     {
       "path": "amari_core::error::CoreError",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "not(feature(\"std\"))",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -11676,9 +12872,41 @@
     {
       "path": "amari_core::error::CoreResult",
       "source_path": "amari-core/src/error.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::error::ExpError",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 5,
+      "gate": "not(feature(\"std\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::error::NonFiniteStage",
+      "source_path": "amari-core/src/error.rs",
+      "source_ordinal": 4,
+      "gate": "not(feature(\"std\"))",
+      "status": "disabled",
       "surface_kind": "top_level"
     },
     {

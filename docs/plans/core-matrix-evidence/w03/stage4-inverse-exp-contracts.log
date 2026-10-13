@@ -1,0 +1,29 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/inverse_exp_contracts.rs (target/w03/debug/deps/inverse_exp_contracts-1aecfc38d8399f85)
+
+running 22 tests
+test exp_zero_is_identity_and_scalar_uses_f64 ... ok
+test crafted_dyadic_false_zero ... ok
+test huge_circular_single_blade_bounded ... ok
+test degenerate_mixed_hyperbolic ... ok
+test huge_exact_nilpotent_returns_exactly_one_plus_b ... ok
+test large_norm_scalar_vector_exponential_converges ... ok
+test erratum_case_huge_simple_circular ... ok
+test hyperbolic_overflow_is_error ... ok
+test degenerate_nilpotent_blade ... ok
+test mixed_signature_circular_plane ... ok
+test long_angle_general_multivector ... ok
+test near_zero_circular_and_hyperbolic ... ok
+test mixed_signature_hyperbolic_plane ... ok
+test nilpotent_bivector_exponential_is_exact ... ok
+test non_versor_inverse_solves_both_orders ... ok
+test rounded_false_zero_routes_by_exact_square ... ok
+test small_scale_versor_inverse_not_rejected ... ok
+test scalar_overflow_scale_inverse ... ok
+test subnormal_square_extraction ... ok
+test square_zero_vector_exponential_survives ... ok
+test non_simple_bivector_scalar_zero_grade4_nonzero ... ok
+test non_simple_bivector_euclidean ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

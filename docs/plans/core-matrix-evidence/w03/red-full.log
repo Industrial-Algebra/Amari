@@ -1,0 +1,255 @@
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+error[E0432]: unresolved import `amari_core::ExpError`
+  --> amari-core/tests/inverse_exp_contracts.rs:16:18
+   |
+16 | use amari_core::{ExpError, Multivector};
+   |                  ^^^^^^^^ no `ExpError` in the root
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:101:21
+    |
+101 |     let e = b.exp().expect("exact nilpotent bivector");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:112:21
+    |
+112 |     let e = v.exp().expect("square-zero vector");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:126:21
+    |
+126 |     let e = m.exp().expect("scaling-and-squaring converges");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:140:21
+    |
+140 |     let e = b.exp().expect("non-simple bivector -> series");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:159:21
+    |
+159 |     let e = b.exp().expect("scalar-zero non-nilpotent -> series");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:178:21
+    |
+178 |     let e = z.exp().expect("exp(0)");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:184:21
+    |
+184 |     let e = s.exp().expect("scalar exp");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:198:21
+    |
+198 |     let e = b.exp().expect("bounded circular exponential");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> amari-core/tests/inverse_exp_contracts.rs:211:9
+    |
+210 |     match b.exp() {
+    |           ------- this expression has type `Multivector<1, 1, 0>`
+211 |         Err(ExpError::NonFiniteResult { .. }) => {}
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Multivector<1, 1, 0>`, found `Result<_, _>`
+    |
+    = note: expected struct `Multivector<1, 1, 0>`
+                 found enum `Result<_, _>`
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:221:21
+    |
+221 |     let e = b.exp().expect("certified exact nilpotent");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:233:21
+    |
+233 |     let e = b.exp().expect("huge simple circular via exact route");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:251:21
+    |
+251 |     let e = b.exp().expect("tiny circular");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:256:21
+    |
+256 |     let e = b.exp().expect("tiny hyperbolic");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:266:21
+    |
+266 |     let e = b.exp().expect("mixed-signature circular");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:278:21
+    |
+278 |     let e = b.exp().expect("mixed-signature hyperbolic");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `unwrap_or_else` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:293:25
+    |
+293 |         let e = m.exp().unwrap_or_else(|err| panic!("t={t}: {err:?}"));
+    |                         ^^^^^^^^^^^^^^ method not found in `Multivector<2, 0, 0>`
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:307:21
+    |
+307 |     let e = b.exp().expect("null-blade nilpotent");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:317:21
+    |
+317 |     let e = b.exp().expect("degenerate mixed hyperbolic");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:332:21
+    |
+332 |     let e = b.exp().expect("exact square 1 routes hyperbolic");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:359:21
+    |
+359 |     let e = m.exp().expect("exact square is nonzero: hyperbolic");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `expect` found for struct `Multivector<P, Q, R>` in the current scope
+   --> amari-core/tests/inverse_exp_contracts.rs:394:21
+    |
+394 |     let e = b.exp().expect("subnormal circular");
+    |                     ^^^^^^
+    |
+help: there is a method `exp` with a similar name, but with different arguments
+   --> amari-core/src/lib.rs:579:5
+    |
+579 |     pub fn exp(&self) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some errors have detailed explanations: E0308, E0432, E0599.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `amari-core` (test "inverse_exp_contracts") due to 22 previous errors

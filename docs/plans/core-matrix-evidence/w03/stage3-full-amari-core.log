@@ -1,0 +1,25 @@
+     Running unittests src/lib.rs (target/w03/debug/deps/amari_core-49bf71031213e896)
+test result: ok. 210 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/arithmetic_regressions.rs (target/w03/debug/deps/arithmetic_regressions-d9a7d7a3d38aa8ba)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/audit_tests.rs (target/w03/debug/deps/audit_tests-f4eed6f964ce987e)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/basis_word_oracle.rs (target/w03/debug/deps/basis_word_oracle-4f2087de642f77e6)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+     Running tests/geometric_product.rs (target/w03/debug/deps/geometric_product-d449feb6ebddd9e5)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/gf2_tests.rs (target/w03/debug/deps/gf2_tests-9be41156fcc25cd4)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/inverse_contracts_green.rs (target/w03/debug/deps/inverse_contracts_green-894788247fae1b76)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/inverse_exp_contracts.rs (target/w03/debug/deps/inverse_exp_contracts-1aecfc38d8399f85)
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/macro_contracts.rs (target/w03/debug/deps/macro_contracts-613e2e68d7f49c37)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/numerical_contracts.rs (target/w03/debug/deps/numerical_contracts-e69e13c73c13ddae)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/products.rs (target/w03/debug/deps/products-c8c899388e41dcf6)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/rotors.rs (target/w03/debug/deps/rotors-a014b89dbc73948b)
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s

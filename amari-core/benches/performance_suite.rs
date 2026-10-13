@@ -124,7 +124,8 @@ fn bench_rotor_operations(c: &mut Criterion) {
         b.iter(|| black_box(Rotor::from_bivector(black_box(&bivector), black_box(angle))))
     });
 
-    let rotor = Rotor::from_bivector(&bivector, angle);
+    let rotor =
+        Rotor::from_bivector(&bivector, angle).expect("bounded Euclidean bivector exponential");
     let vector = e1
         .add(&Vector::from_multivector(&(e2.mv.clone() * 0.5)))
         .add(&Vector::from_multivector(&(e3.mv.clone() * 0.3)));
@@ -134,7 +135,8 @@ fn bench_rotor_operations(c: &mut Criterion) {
     });
 
     group.bench_function("rotor_composition", |b| {
-        let rotor2 = Rotor::from_bivector(&Bivector::from_components(0.5, 1.0, 0.2), angle * 0.5);
+        let rotor2 = Rotor::from_bivector(&Bivector::from_components(0.5, 1.0, 0.2), angle * 0.5)
+            .expect("bounded Euclidean bivector exponential");
         b.iter(|| black_box(rotor.compose(black_box(&rotor2))))
     });
 
