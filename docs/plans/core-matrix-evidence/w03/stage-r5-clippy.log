@@ -1,0 +1,3 @@
+# toolchain: rustc 1.100.0-nightly (787af2b8c 2026-08-25) | cargo 1.100.0-nightly (e8cb624d5 2026-08-22) | clippy 0.1.100 (787af2b8c8 2026-08-25)
+# command: cargo clippy -p amari-core --all-targets -- -D warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s

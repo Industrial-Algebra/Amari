@@ -137,6 +137,8 @@ pub(crate) fn dispatch_magnitude(
 
 // ---- exp ----
 
+/// Returns `Ok(())` when the exponential succeeded; propagates the
+/// `amari_core::ExpError` produced by the fallible `Multivector::exp()`.
 #[inline]
 pub(crate) fn dispatch_exp(
     p: usize,
@@ -144,7 +146,7 @@ pub(crate) fn dispatch_exp(
     r: usize,
     a: &[f64],
     result: &mut [f64],
-) {{
+) -> Result<(), amari_core::ExpError> {{
     match (p, q, r) {{
 {arms_exp}        _ => unreachable!("signature not in match table"),
     }}
@@ -234,8 +236,9 @@ fn generate_unary_arms(sigs: &[(usize, usize, usize)], method: &str) -> String {
         arms.push_str(&format!(
             "            ({p}, {q}, {r}) => {{\n\
                       let mv = amari_core::Multivector::<{p}, {q}, {r}>::from_coefficients(a.to_vec());\n\
-                      let mv_r = mv.{method}();\n\
+                      let mv_r = mv.{method}()?;\n\
                       for (i, r) in result.iter_mut().enumerate() {{ *r = mv_r.get(i); }}\n\
+                      Ok(())\n\
              }}\n",
             p = p, q = q, r = r, method = method,
         ));

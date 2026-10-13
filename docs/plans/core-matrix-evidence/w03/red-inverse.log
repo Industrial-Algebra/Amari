@@ -1,0 +1,36 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running tests/zz_red_inverse_only.rs (target/w03/debug/deps/zz_red_inverse_only-96bc4d4e9d5fc7f5)
+
+running 3 tests
+test scalar_overflow_scale_inverse ... FAILED
+test non_versor_inverse_solves_both_orders ... FAILED
+test small_scale_versor_inverse_not_rejected ... FAILED
+
+failures:
+
+---- scalar_overflow_scale_inverse stdout ----
+
+thread 'scalar_overflow_scale_inverse' (2744525) panicked at amari-core/tests/zz_red_inverse_only.rs:51:9:
+residual 1 > 0.000001
+
+---- non_versor_inverse_solves_both_orders stdout ----
+
+thread 'non_versor_inverse_solves_both_orders' (2744524) panicked at amari-core/tests/zz_red_inverse_only.rs:51:9:
+residual 0.9428090415820634 > 0.000001
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- small_scale_versor_inverse_not_rejected stdout ----
+
+thread 'small_scale_versor_inverse_not_rejected' (2744526) panicked at amari-core/tests/zz_red_inverse_only.rs:78:25:
+small-scale scalar is invertible
+
+
+failures:
+    non_versor_inverse_solves_both_orders
+    scalar_overflow_scale_inverse
+    small_scale_versor_inverse_not_rejected
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p amari-core --test zz_red_inverse_only`

@@ -258,7 +258,7 @@ proptest! {
         let e1 = Multivector::<3, 0, 0>::basis_vector(0);
         let e2 = Multivector::<3, 0, 0>::basis_vector(1);
         let bivector = e1.outer_product(&e2) * (angle / 2.0);
-        let rotor = bivector.exp();
+        let rotor = bivector.exp().expect("bounded half-angle bivector");
 
         // Apply rotation
         let rotated = rotor.geometric_product(&v).geometric_product(&rotor.reverse());

@@ -544,8 +544,12 @@ impl LorentzRotor {
         let half_angle_bivector = boost_bivector.clone() * (-0.5);
         let _rotor_mv = half_angle_bivector.exp();
 
-        // Create rotor from the exponential
-        let rotor = Rotor::from_multivector_bivector(&boost_bivector, rapidity);
+        // Create rotor from the exponential. The rapidity is finite (the
+        // `v < c` guard above bounds it) and the input is a pure grade-2
+        // bivector, so the exact/closed-form route is established; `.expect`
+        // is justified.
+        let rotor = Rotor::from_multivector_bivector(&boost_bivector, rapidity)
+            .expect("finite rapidity pure bivector exponential");
 
         Self { rotor }
     }

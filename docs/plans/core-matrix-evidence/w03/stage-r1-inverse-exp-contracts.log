@@ -1,0 +1,36 @@
+   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.37s
+     Running tests/inverse_exp_contracts.rs (target/w03/debug/deps/inverse_exp_contracts-1aecfc38d8399f85)
+
+running 28 tests
+test degenerate_mixed_hyperbolic ... ok
+test erratum_case_huge_simple_circular ... ok
+test exp_zero_is_identity_and_scalar_uses_f64 ... ok
+test crafted_dyadic_false_zero ... ok
+test degenerate_nilpotent_blade ... ok
+test huge_exact_nilpotent_returns_exactly_one_plus_b ... ok
+test mixed_signature_hyperbolic_plane ... ok
+test mixed_signature_circular_plane ... ok
+test hyperbolic_overflow_is_error ... ok
+test near_zero_circular_and_hyperbolic ... ok
+test long_angle_general_multivector ... ok
+test huge_circular_single_blade_bounded ... ok
+test nilpotent_bivector_exponential_is_exact ... ok
+test large_norm_scalar_vector_exponential_converges ... ok
+test non_versor_inverse_solves_both_orders ... ok
+test round1_inverse_fast_path_rejects_non_finite_quotient ... ok
+test round1_disjoint_null_pairs_scalar_square_is_exact ... ok
+test round1_circular_vector_at_scale_bit_exact ... ok
+test round1_square_zero_vector_at_scale_is_exact ... ok
+test round1_scaling_boundary_norm_errors_honestly ... ok
+test small_scale_versor_inverse_not_rejected ... ok
+test scalar_overflow_scale_inverse ... ok
+test rounded_false_zero_routes_by_exact_square ... ok
+test non_simple_bivector_euclidean ... ok
+test square_zero_vector_exponential_survives ... ok
+test subnormal_square_extraction ... ok
+test non_simple_bivector_scalar_zero_grade4_nonzero ... ok
+test round1_squaring_cancellation_detector_fires ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

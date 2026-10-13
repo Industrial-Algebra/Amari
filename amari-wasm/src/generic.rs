@@ -449,7 +449,8 @@ impl WasmGenericMultivector {
         }
         let n = self.coefficients.len();
         let mut result = vec![0.0; n];
-        dispatch_exp(self.p, self.q, self.r, &self.coefficients, &mut result);
+        dispatch_exp(self.p, self.q, self.r, &self.coefficients, &mut result)
+            .map_err(|e| JsValue::from_str(&format!("exp failed: {e}")))?;
         Ok(self.make_result(result))
     }
 

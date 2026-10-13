@@ -31,6 +31,12 @@ pub mod precision;
 pub mod rotor;
 pub mod unicode_ops;
 
+/// Exact dyadic bivector square (CORE-W03 stage 1).
+///
+/// Consumed by the stage-2 `exp()` routing (`crate::Multivector::exp`).
+mod exact_square;
+pub(crate) use exact_square::exact_x2;
+
 #[cfg(feature = "gf2")]
 pub mod gf2;
 
@@ -39,7 +45,7 @@ pub mod gf2;
 pub(crate) mod simd;
 
 // Re-export error types
-pub use error::{CoreError, CoreResult};
+pub use error::{CoreError, CoreResult, ExpError, NonFiniteStage};
 
 // Re-export precision types for high-precision arithmetic
 pub use precision::{PrecisionFloat, StandardFloat};
@@ -72,6 +78,65 @@ pub mod property_tests;
 pub mod comprehensive_tests;
 
 pub use cayley::CayleyTable;
+
+/// Overflow-safe squaring cancellation test for the series route.
+///
+/// The round-1 form `new_norm < previous_norm * previous_norm * 2^-62` forms
+/// `previous_norm²`, which overflows to `+inf` for `previous_norm > 2^512`
+/// and then rejects every squaring at that scale. This ratio form computes the
+/// identical predicate with both factors representable: for `previous_norm > 0`,
+/// `new_norm < previous_norm² · 2^-62` iff
+/// `new_norm / previous_norm < previous_norm · 2^-62`. The threshold
+/// `previous_norm · 2^-62` is finite for every finite `previous_norm`, and the
+/// ratio is `0` when `new_norm` underflows, which is still a genuine collapse.
+fn squaring_is_collapse(previous_norm: f64, new_norm: f64) -> bool {
+    previous_norm > 1073741824.0 // 2^30
+        && new_norm / previous_norm < previous_norm * 2f64.powi(-62)
+}
+
+/// Symbolic decomposition of the scalar exponential: `exp(s) = m · 2^E`
+/// with `m a rounded f64 and integer `E`, the base-2 exponent of the result.
+///
+/// This is the round-3 P1-1 fix for scalar factoring. Computing `f64::exp(s)`
+/// first loses the answer when `exp(s)` underflows to `0` (large negative `s`)
+/// or overflows to `+inf` (large positive `s`), even though multiplying by a
+/// non-scalar coefficient can bring the product back into range. Carrying the
+/// exponent separately keeps that information: the mantissa is the
+/// accurately-reduced `exp(s - E·ln2)` (one `f64::exp`, ~1 ulp), and the
+/// integer `E` is applied per coefficient with a single
+/// round-to-nearest-even exponent step.
+///
+/// The reduction uses the split `ln2 = LN2_HI + LN2_LO` (fdlibm constants).
+/// `LN2_HI` has enough trailing zero bits that `E · LN2_HI` is exact for
+/// `|E| < 2^21`, and `s - E · LN2_HI` is exact by Sterbenz, so the reduced
+/// argument loses only the `E · LN2_LO` rounding (~2^-70·E). A naive
+/// `2^(s·log2 e)` decomposition with a single rounded `LOG2_E` instead carries
+/// the constant's ~1e-16 relative error into the mantissa (~7 ulp here), which
+/// is not acceptable.
+///
+/// For `|s|` beyond the reduced range (`|s/ln2| > 2^20`) the true exponential
+/// is beyond any rescuing by a finite `f64` coefficient, so a saturated
+/// exponent is returned and the per-coefficient scaling resolves it to `0` or
+/// `+inf` (the honest representability outcome).
+fn symbolic_exp_scale(s: f64) -> (f64, i64) {
+    const LOG2_E: f64 = core::f64::consts::LOG2_E;
+    const LN2_HI: f64 = f64::from_bits(0x3FE6_2E42_FEE0_0000);
+    const LN2_LO: f64 = f64::from_bits(0x3DEA_39EF_3579_3C76);
+
+    let estimate = s * LOG2_E;
+    if !estimate.is_finite() || estimate.abs() > 1_048_576.0 {
+        return if s > 0.0 {
+            (1.0, i64::MAX / 2)
+        } else {
+            (1.0, i64::MIN / 2)
+        };
+    }
+    // Nearest integer to `s / ln2`, and the accurately reduced argument
+    // `r = s - E·ln2` (`|r| <= ln2/2` to within the estimate's rounding).
+    let exponent = estimate.round();
+    let reduced = (s - exponent * LN2_HI) - exponent * LN2_LO;
+    (reduced.exp(), exponent as i64)
+}
 
 /// A multivector in a Clifford algebra Cl(P,Q,R)
 ///
@@ -560,69 +625,716 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         (q > 0.0).then(|| self / q.sqrt())
     }
 
-    /// Compute multiplicative inverse if it exists
+    /// Compute the multiplicative inverse, if the computed-pivot route certifies one.
+    ///
+    /// # Domain rule (computed-pivot policy)
+    ///
+    /// `inverse()` returns `Some(X)` when the fast path below certifies a
+    /// computed scalar, or when LU with partial pivoting on the
+    /// left-multiplication matrix completes without a zero pivot or a
+    /// non-finite value. It returns `None` iff any post-pivot pivot is exactly
+    /// `0.0` or any elimination/solution step produces a non-finite value.
+    ///
+    /// This is a **numerical accept/reject rule, not an exact-arithmetic
+    /// invertibility certificate.** Rounding can erase a mathematically
+    /// nonzero pivot — the near-singular input `1 + e1 + 1e-9·e2` in
+    /// `Cl(2,0,0)` lies close to the zero divisor `(1+e1)(1-e1) = 0`, and a
+    /// small enough perturbation rounds the last pivot to exactly zero — or it
+    /// can admit an ill-conditioned solve whose result carries a large forward
+    /// error even though the backward residual is small. There is **no
+    /// `Some`-guarantee for every mathematically invertible `f64` input**;
+    /// correctness is bounded by conditioning and by the representability of
+    /// the coefficients.
+    ///
+    /// # Fast path
+    ///
+    /// The fast path computes `P = M·rev(M)` and, iff every non-scalar
+    /// coefficient of `P` is exactly `0.0` **and** the scalar part is finite
+    /// and nonzero, returns `rev(M) / λ` (a division, never a reciprocal
+    /// multiplication). The membership test runs on the **computed** product:
+    /// overflow, underflow, or cancellation can make a mathematically scalar
+    /// product look non-scalar, or vice versa, so the fast path is not a
+    /// certificate. In particular the scalar `1e200` has `λ = 1e400 = inf`, so
+    /// it does **not** take the fast path; the LU route still returns the
+    /// representable inverse `1e-200`. The quotient is accepted only when every
+    /// coefficient is finite: a non-finite component means the true inverse is
+    /// unrepresentable, so the fast path returns `None` instead of a `Some` with
+    /// an infinite coefficient (round-1 P1-2: `1e-150 + 1e200·e3` in
+    /// `Cl(1,0,1)`).
+    ///
+    /// # General path: LU with partial pivoting
+    ///
+    /// The general path forms the left-multiplication matrix `A` of `M`,
+    /// whose column `j` holds the coefficients of `M·e_j` (`e_j` the `j`-th
+    /// basis blade, `j = 0..N`, `N = 2^(P+Q+R)`), and solves `A·x = b` with
+    /// `b` the coefficients of the scalar `1`. The result is `X = Σ_j x_j e_j`.
+    /// Because the algebra is finite-dimensional and unital, a right inverse
+    /// from `M·X = 1` is automatically the two-sided inverse.
+    ///
+    /// # Cost and storage
+    ///
+    /// The matrix is stored in a heap-allocated `Vec<f64>` of length `N²`
+    /// (`N ≤ 64` for the workspace signatures), so the route costs `O(N²)`
+    /// storage and `O(N³)` solve time. A `Vec` is used rather than a
+    /// fixed-size array because this is not the exact-square hot path and `N`
+    /// is a compile-time constant per instantiation.
     pub fn inverse(&self) -> Option<Self> {
         let rev = self.reverse();
-        let norm_sq = self.scalar_product(&rev);
+        let product = self.geometric_product(&rev);
+        let scalar = product.as_slice()[0];
+        let non_scalar_is_zero = product.as_slice()[1..].iter().all(|&c| c == 0.0);
 
-        if norm_sq.abs() > 1e-14 {
-            Some(rev * (1.0 / norm_sq))
-        } else {
-            None
-        }
-    }
-
-    /// Exponential map for bivectors (creates rotors)
-    ///
-    /// For a bivector B, exp(B) creates a rotor that performs rotation
-    /// in the plane defined by B.
-    pub fn exp(&self) -> Self {
-        // Check if this is a bivector (grade 2)
-        let grade2 = self.grade_projection(2);
-        if (self - &grade2).coefficient_norm() > 1e-10 {
-            // For general multivectors, use series expansion
-            return self.exp_series();
-        }
-
-        // For pure bivectors, use closed form
-        let b_squared = grade2.geometric_product(&grade2).scalar_part();
-
-        if b_squared > -1e-14 {
-            // Hyperbolic case: exp(B) = cosh(|B|) + sinh(|B|) * B/|B|
-            let norm = b_squared.abs().sqrt();
-            if norm < 1e-14 {
-                return Self::scalar(1.0);
+        if non_scalar_is_zero && scalar.is_finite() && scalar != 0.0 {
+            let candidate = rev / scalar;
+            // Finite-quotient guard (round-1 P1-2): a finite nonzero scalar
+            // product does not guarantee a representable inverse. For
+            // `1e-150 + 1e200·e3` in Cl(1,0,1) the e3 quotient is
+            // `1e200 / 1e-300 = -inf`; the true inverse is unrepresentable, so
+            // reject the candidate rather than return a `Some` with an infinite
+            // component.
+            if candidate.as_slice().iter().all(|c| c.is_finite()) {
+                return Some(candidate);
             }
-            let cosh_norm = norm.cosh();
-            let sinh_norm = norm.sinh();
-            Self::scalar(cosh_norm) + grade2 * (sinh_norm / norm)
+            return None;
+        }
+
+        self.inverse_via_lu()
+    }
+
+    /// General inverse route: LU with partial pivoting (computed-pivot policy).
+    ///
+    /// See [`Self::inverse`] for the domain rule. Returns `None` on a zero
+    /// post-pivot pivot or a non-finite elimination/solution value.
+    #[allow(clippy::needless_range_loop)] // matrix is addressed by computed row*N+col
+    fn inverse_via_lu(&self) -> Option<Self> {
+        let n = Self::BASIS_COUNT;
+
+        // Column j of the left-multiplication matrix is the coefficient vector
+        // of `self · e_j`.
+        let mut matrix = vec![0.0f64; n * n];
+        for j in 0..n {
+            let mut basis_blade = Self::zero();
+            basis_blade.set(j, 1.0);
+            let column = self.geometric_product(&basis_blade);
+            for (i, &value) in column.as_slice().iter().enumerate() {
+                if !value.is_finite() {
+                    return None;
+                }
+                matrix[i * n + j] = value;
+            }
+        }
+
+        // Right-hand side: coefficients of the scalar `1`.
+        let mut rhs = vec![0.0f64; n];
+        rhs[0] = 1.0;
+
+        // Forward elimination with partial pivoting.
+        for k in 0..n {
+            let mut pivot_row = k;
+            let mut pivot_magnitude = matrix[k * n + k].abs();
+            if !pivot_magnitude.is_finite() {
+                return None;
+            }
+            for r in (k + 1)..n {
+                let magnitude = matrix[r * n + k].abs();
+                if !magnitude.is_finite() {
+                    return None;
+                }
+                if magnitude > pivot_magnitude {
+                    pivot_magnitude = magnitude;
+                    pivot_row = r;
+                }
+            }
+            if pivot_magnitude == 0.0 {
+                return None;
+            }
+            if pivot_row != k {
+                for c in 0..n {
+                    matrix.swap(k * n + c, pivot_row * n + c);
+                }
+                rhs.swap(k, pivot_row);
+            }
+
+            let pivot = matrix[k * n + k];
+            for r in (k + 1)..n {
+                let factor = matrix[r * n + k] / pivot;
+                if !factor.is_finite() {
+                    return None;
+                }
+                matrix[r * n + k] = 0.0;
+                rhs[r] -= factor * rhs[k];
+                if !rhs[r].is_finite() {
+                    return None;
+                }
+                for c in (k + 1)..n {
+                    matrix[r * n + c] -= factor * matrix[k * n + c];
+                    if !matrix[r * n + c].is_finite() {
+                        return None;
+                    }
+                }
+            }
+        }
+
+        // Back substitution.
+        let mut solution = vec![0.0f64; n];
+        for i in (0..n).rev() {
+            let mut value = rhs[i];
+            for j in (i + 1)..n {
+                value -= matrix[i * n + j] * solution[j];
+            }
+            if !value.is_finite() {
+                return None;
+            }
+            let quotient = value / matrix[i * n + i];
+            if !quotient.is_finite() {
+                return None;
+            }
+            solution[i] = quotient;
+        }
+
+        Some(Self::from_coefficients(solution))
+    }
+
+    /// Exponential map `exp(x)`.
+    ///
+    /// Returns `Result<Self, ExpError>` under the frozen CORE-W03 routing
+    /// precedence (`docs/plans/2026-10-10-amari-core-w03-inverse-exp-contract.md`,
+    /// D02.3), with the round-2 scalar-factoring and exact-nilpotent
+    /// amendments. In order:
+    ///
+    /// 1. exact zero — `1` exactly;
+    /// 2. exact pure scalar `s` — `f64::exp(s)`, that value exactly;
+    /// 3. **scalar factoring** (round-2): every scalar is central, so
+    ///    `exp(s + y) = exp(s) · exp(y)`. The route writes `s` for the scalar
+    ///    coefficient and `y` for the remaining non-scalar part and computes
+    ///    `exp(y)` on the routes below, then multiplies the final result by the
+    ///    `f64` coefficient `exp(s)`. A non-finite `exp(s)` is
+    ///    `Err(NonFiniteResult { stage: ScalarRoute })`. Factoring makes the
+    ///    scalar-plus-square-zero class exact (`y` nilpotent -> `1 + y`, times
+    ///    `exp(s)`) and keeps every other route from spending squarings on the
+    ///    (non-oscillatory) scalar direction.
+    ///
+    ///    On `y` (which has an exactly zero scalar part):
+    ///    1. `y = 0` — result `1` (normally subsumed by precedence 2);
+    ///    2. exact scalar square — if the exact dyadic square `y·y` is exactly
+    ///       the scalar `lambda`: `lambda = 0` (with `y != 0`) is square-zero
+    ///       and returns `1 + y` exactly; `lambda > 0` returns
+    ///       `cosh(a) + (sinh(a)/a)·y`; `lambda < 0` returns
+    ///       `cos(a) + (sin(a)/a)·y`. `a` comes from the exact magnitude
+    ///       extraction (single-blade inputs short-circuit to `|c|`
+    ///       bit-for-bit). When `cosh`/`sinh` overflow (large `a`) the
+    ///       hyperbolic branch evaluates the symbolic exponential terms
+    ///       `(e^{s+a} ± e^{s-a})/2` instead, so a finite `e^s·cosh(a)` is not
+    ///       lost to an intermediate overflow. Non-finite trig or output ->
+    ///       `ClosedForm`; a finite closed form pushed out of range only by the
+    ///       symbolic scalar factor -> `ScalarRoute`;
+    ///    3. **exact nilpotent of any index** (round-2, round-3 amendment):
+    ///       iterate `y^(j+1) = y^j · y` with exact dyadic bignum powers until
+    ///       the all-zero certificate (index `d <= 16`). The certification
+    ///       search never converts to floating point; on a certificate the
+    ///       polynomial `sum_{j<d} y^j / j!` is accumulated **coefficientwise
+    ///       in exact integer arithmetic** as `N = sum_j y^j[blade]·(16!/j!)`
+    ///       and `N / 16!` is rounded to `f64` **once** per coefficient. This
+    ///       is exact where the exact rational value is representable and
+    ///       preserves near-cancelling coefficients through the single final
+    ///       rounding (the crafted `nextafter(1e10)` case). A missing
+    ///       certificate (power or accumulator overflow, or the cap reached
+    ///       with `y^d != 0`) is `NotNilpotent`; only a *certified* polynomial
+    ///       with a non-finite post-division coefficient is `ClosedForm`;
+    ///    4. bounded scaling-and-squaring series `exp(y)`.
+    ///
+    /// # Accuracy
+    ///
+    /// The scalar-square closed form is exact in its routing (the dyadic square
+    /// is evaluated exactly) and loses only the final `sin`/`cos`/`sinh`/`cosh`
+    /// evaluation and the single scaling of `y` by `sin(angle)/angle`: the
+    /// angle is within 1 ulp of the exact value. The exact-nilpotent route is
+    /// exact up to the single per-coefficient round-to-nearest-even conversion
+    /// of `N/16!`; the certificate and the whole polynomial accumulation are
+    /// exact, so it is exact wherever the exact rational coefficient is
+    /// representable as `f64` and correctly rounded otherwise.
+    ///
+    /// The scalar-factoring route (precedence 3) carries `exp(s)` as a
+    /// symbolic `mantissa · 2^E` (fdlibm `ln2` reduction), so a representable
+    /// product survives even when `f64::exp(s)` itself underflows to `0` or
+    /// overflows to `+inf`. The scale is composed **into** the downstream
+    /// routes — the exact-polynomial finalization folds it into the single
+    /// division rounding, and the other closed forms apply it through the
+    /// single correctly-rounded `apply_symbolic_scale` — so no intermediate
+    /// `c · mantissa` is ever formed in `f64` and no normalized-then-subnormal
+    /// double rounding exists. If the result's scalar coefficient (`exp(s)`
+    /// itself) is not representable the route reports
+    /// `NonFiniteResult { stage: ScalarRoute }`.
+    ///
+    /// The series route is condition-aware: for an input whose dominant
+    /// coefficient scale is `S`, the final relative error is at most
+    /// `max(1e-6, C·S·u)`, where `u` is the f64 unit roundoff and `C = 2e4` is
+    /// calibrated empirically (stage-2 evidence,
+    /// `docs/plans/core-matrix-evidence/w03/stage2-*.log`). Repeated squaring
+    /// amplifies absolute angle error by about `2^k`, so long-scale oscillatory
+    /// inputs are inherently conditioned on their own f64 representation — an
+    /// angle near `1e12` is only specified to `ulp(1e12) ≈ 1.2e-4` — and this
+    /// API promises nothing tighter for them. **Scalar-square and nilpotent
+    /// inputs never reach the series route** (precedences 3.2 and 3.3 carry
+    /// exact certificates); the long-angle trio `0.1 + t·e12` is now routed
+    /// through the closed form (its `y` has an exact scalar square) rather than
+    /// the series, so the former series-route calibration numbers no longer
+    /// describe it.
+    ///
+    /// Repeated squaring still evaluates the scalar channel through products
+    /// whose cancellation can erase it at extreme scales (the documented
+    /// squaring-channel hazard). With scalar factoring and the exact nilpotent
+    /// route in place, the residual class that reaches the series is
+    /// non-nilpotent with non-scalar square; the cancellation detector converts
+    /// a silent collapse into an honest
+    /// `Err(NonFiniteResult { stage: Squaring })`. The detector is conservative
+    /// — it can also reject a legitimate sub-quadratic-growth input — and is a
+    /// heuristic, not a proof: an honest error is preferred over a silent wrong
+    /// result.
+    pub fn exp(&self) -> Result<Self, ExpError> {
+        // 1. Exact zero -> identity exactly.
+        if self.is_zero() {
+            return Ok(Self::scalar(1.0));
+        }
+
+        // 2. Exact pure scalar: every non-scalar coefficient is exactly zero.
+        if self.as_slice()[1..].iter().all(|&c| c == 0.0) {
+            let value = self.as_slice()[0].exp();
+            if value.is_finite() {
+                return Ok(Self::scalar(value));
+            }
+            return Err(ExpError::NonFiniteResult {
+                stage: NonFiniteStage::ScalarRoute,
+            });
+        }
+
+        // 3. Scalar factoring (round-2): scalars are central, so
+        //    `exp(s + y) = exp(s) · exp(y)`. Route all of the downstream
+        //    machinery on the non-scalar part `y`, then scale by `exp(s)`.
+        let scalar = self.as_slice()[0];
+        let mut y = self.clone();
+        y.set(0, 0.0);
+        // Symbolic scalar exponential (round-3 P1-1, unified round-4): exp(s)
+        // is carried as `scale_mantissa * 2^scale_exponent` and composed into
+        // the downstream routes, so a representable final result is reached
+        // even when exp(s) itself underflows to 0 or overflows to +inf in f64.
+        // Every route applies the scale with a single correctly-rounded
+        // composition (`apply_symbolic_scale`, or the scaled exact-polynomial
+        // finalization); no intermediate `c * scale_mantissa` is ever formed in
+        // `f64`, which is what previously overflowed before the exponent could
+        // rescue the product and double-rounded across the subnormal boundary.
+        let (scale_mantissa, scale_exponent) = symbolic_exp_scale(scalar);
+        let result = y.exp_nonscalar(scalar, scale_mantissa, scale_exponent)?;
+        if result.as_slice().iter().all(|c| c.is_finite()) {
+            Ok(result)
         } else {
-            // Circular case: exp(B) = cos(|B|) + sin(|B|) * B/|B|
-            let norm = (-b_squared).sqrt();
-            let cos_norm = norm.cos();
-            let sin_norm = norm.sin();
-            Self::scalar(cos_norm) + grade2 * (sin_norm / norm)
+            Err(ExpError::NonFiniteResult {
+                stage: NonFiniteStage::ScalarRoute,
+            })
         }
     }
 
-    /// Series expansion for exponential (fallback for general multivectors)
-    fn exp_series(&self) -> Self {
+    /// `exp` of a multivector with an exactly zero scalar part (the `y` of the
+    /// scalar-factoring route in [`Self::exp`]).
+    ///
+    /// Precedence on `y`: zero -> identity; exact scalar square -> closed form;
+    /// exact nilpotent of any index `<= 16` -> exact polynomial; otherwise the
+    /// bounded scaling-and-squaring series.
+    fn exp_nonscalar(
+        &self,
+        scalar: f64,
+        scale_mantissa: f64,
+        scale_exponent: i64,
+    ) -> Result<Self, ExpError> {
+        // 3.0 Defensive: `exp(0) = 1` (precedence 2 normally consumes this).
+        if self.is_zero() {
+            return Ok(Self::scale_by_symbolic(
+                Self::scalar(1.0),
+                scale_mantissa,
+                scale_exponent,
+            ));
+        }
+
+        // 3.1 Exact scalar square: the whole square-zero / circular /
+        //     hyperbolic class has a closed form valid at ANY scale. The exact
+        //     dyadic square is the only certificate used; no floating-point
+        //     test guards the decision.
+        let square = exact_x2(self);
+        if !square.is_unsupported() && !square.has_non_finite_source() && square.is_exactly_scalar()
+        {
+            return self.exp_scalar_square(&square, scalar, scale_mantissa, scale_exponent);
+        }
+
+        // 3.2 Exact nilpotent of any index <= 16: `exp(y) = sum y^j / j!`,
+        //     exact for the whole nilpotent class at any scale. The symbolic
+        //     scalar scale is composed into the single final rounding of each
+        //     coefficient. A missing certificate falls through to the series.
+        match exact_square::exact_nilpotent_exp_scaled(self, scale_mantissa, scale_exponent) {
+            exact_square::NilpotentOutcome::Exp(value) => return Ok(value),
+            exact_square::NilpotentOutcome::NonFiniteClosedForm => {
+                return Err(ExpError::NonFiniteResult {
+                    stage: NonFiniteStage::ClosedForm,
+                });
+            }
+            exact_square::NilpotentOutcome::NonFiniteScalarRoute => {
+                return Err(ExpError::NonFiniteResult {
+                    stage: NonFiniteStage::ScalarRoute,
+                });
+            }
+            exact_square::NilpotentOutcome::NotNilpotent => {}
+        }
+
+        // 3.3 General non-nilpotent multivector -> bounded series on `y`, then
+        //     the symbolic scale.
+        let series = self.exp_series()?;
+        Ok(Self::scale_by_symbolic(
+            series,
+            scale_mantissa,
+            scale_exponent,
+        ))
+    }
+
+    /// Precedence 3.1: exact scalar-square closed form for `y·y = lambda`.
+    ///
+    /// `self` is the non-scalar part `y` of the scalar-factoring route
+    /// (exactly zero scalar coefficient); the caller multiplies the returned
+    /// `exp(y)` by `exp(s)`.
+    ///
+    /// - `lambda == 0` (and `y != 0`): `y` is square-zero, so `exp(y) = 1 + y`
+    ///   exactly, with every coefficient of `y` left untouched.
+    /// - `lambda < 0`: `cos(a) + (sin(a)/a)·y` with `a = sqrt(|lambda|)`.
+    /// - `lambda > 0`: `cosh(a) + (sinh(a)/a)·y`.
+    ///
+    /// `a` comes from the exact extraction in `exact_square`; the only
+    /// floating-point operations are the final trig/hyperbolic evaluations and
+    /// the single correctly-rounded symbolic scaling of `x`. A non-finite
+    /// unscaled closed form is reported as `ExpError::NonFiniteResult { stage:
+    /// ClosedForm }`; a finite closed form pushed out of range only by the
+    /// symbolic scalar factor is `ScalarRoute`.
+    fn exp_scalar_square(
+        &self,
+        square: &exact_square::ExactSquare,
+        scalar: f64,
+        scale_mantissa: f64,
+        scale_exponent: i64,
+    ) -> Result<Self, ExpError> {
+        let (sign, angle) = square.scalar_sign_and_angle();
+
+        // Scalar coefficient and the (vector) closed-form factor:
+        //   lambda == 0 -> (1, 1);  circular -> (cos a, sin a / a);
+        //   hyperbolic -> (cosh a, sinh a / a). `a` is positive here.
+        let (scalar_coefficient, factor) = if sign == 0 {
+            debug_assert!(
+                square.is_zero(),
+                "zero scalar square must certify square-zero on the scalar-square route"
+            );
+            (1.0, 1.0)
+        } else if sign < 0 {
+            // Circular: cos(angle) + (sin(angle)/angle)·x; cos/sin are bounded
+            // for a finite angle (a non-finite angle is unrepresentable).
+            (angle.cos(), angle.sin() / angle)
+        } else {
+            // Hyperbolic: cosh(angle) + (sinh(angle)/angle)·x. cosh/sinh may
+            // overflow even when `e^s · cosh(a)` is finite, so in that regime
+            // the scale is composed symbolically with the two exponential terms
+            // `e^{s+a}` and `e^{s-a}` (a closed-form failure if the dominant
+            // term is itself non-representable).
+            let cosh = angle.cosh();
+            let sinhc = angle.sinh() / angle;
+            if !cosh.is_finite() || !sinhc.is_finite() {
+                let result = self.exp_hyperbolic_symbolic(scalar, angle);
+                return if result.as_slice().iter().all(|c| c.is_finite()) {
+                    Ok(result)
+                } else {
+                    Err(ExpError::NonFiniteResult {
+                        stage: NonFiniteStage::ClosedForm,
+                    })
+                };
+            }
+            (cosh, sinhc)
+        };
+
+        if !scalar_coefficient.is_finite() || !factor.is_finite() {
+            // A non-finite angle made the unscaled closed form unrepresentable.
+            return Err(ExpError::NonFiniteResult {
+                stage: NonFiniteStage::ClosedForm,
+            });
+        }
+
+        // Round-5: the vector coefficients are finalized with the three-way
+        // symbolic multiply `c · factor · scale` (one rounding at destination
+        // precision), never the `f64` `c · factor` that overflowed before the
+        // scalar exponent rescued the finite result.
+        let mut result = Self::zero();
+        result.set(
+            0,
+            exact_square::apply_symbolic_scale(scalar_coefficient, scale_mantissa, scale_exponent),
+        );
+
+        let mut unscaled_finite = true;
+        for (index, &coefficient) in self.as_slice().iter().enumerate().skip(1) {
+            if coefficient == 0.0 {
+                continue;
+            }
+            if !exact_square::apply_symbolic_scale3(coefficient, factor, 1.0, 0).is_finite() {
+                unscaled_finite = false;
+            }
+            result.set(
+                index,
+                exact_square::apply_symbolic_scale3(
+                    coefficient,
+                    factor,
+                    scale_mantissa,
+                    scale_exponent,
+                ),
+            );
+        }
+
+        if result.as_slice().iter().all(|c| c.is_finite()) {
+            Ok(result)
+        } else if unscaled_finite {
+            // The closed form was finite; the symbolic scalar scale pushed the
+            // product out of range (the honest `ScalarRoute` outcome).
+            Err(ExpError::NonFiniteResult {
+                stage: NonFiniteStage::ScalarRoute,
+            })
+        } else {
+            Err(ExpError::NonFiniteResult {
+                stage: NonFiniteStage::ClosedForm,
+            })
+        }
+    }
+
+    /// Apply the symbolic scalar scale `scale_mantissa * 2^scale_exponent` to
+    /// every coefficient of `value` with one correctly-rounded composition per
+    /// coefficient. This is the unified round-4 replacement for the former
+    /// `scale_by_pow2_rne(c * scale_mantissa, scale_exponent)`, which formed the
+    /// mantissa product in `f64` first and could overflow before the exponent
+    /// rescued it.
+    fn scale_by_symbolic(mut value: Self, scale_mantissa: f64, scale_exponent: i64) -> Self {
+        for coefficient in value.coefficients.iter_mut() {
+            *coefficient =
+                exact_square::apply_symbolic_scale(*coefficient, scale_mantissa, scale_exponent);
+        }
+        value
+    }
+
+    /// Hyperbolic scalar-square closed form in the regime where `cosh`/`sinh`
+    /// overflow: `exp(s) · exp(a)` with `a` a positive hyperbolic angle.
+    ///
+    /// `exp(s)·cosh(a) = (e^{s+a} + e^{s-a})/2` and
+    /// `exp(s)·sinh(a)/a = (e^{s+a} - e^{s-a})/(2a)`. Both exponentials are
+    /// carried symbolically, so `e^{s+a}/2` may be representable even though
+    /// `cosh(a)` is not. `cosh`/`sinh` overflow only for `a >~ 710`, where
+    /// `e^{2a} > 2^2048`; the smaller term is then dominated by more than 53
+    /// bits and is absorbed (its relative weight is below `2^-984`, far below
+    /// the final rounding). If the dominant term `e^{s+a}/2` is itself not
+    /// representable the caller sees a non-finite coefficient and reports the
+    /// honest `ClosedForm` error.
+    fn exp_hyperbolic_symbolic(&self, scalar: f64, angle: f64) -> Self {
+        let (plus_mantissa, plus_exponent) = symbolic_exp_scale(scalar + angle);
+        let (minus_mantissa, minus_exponent) = symbolic_exp_scale(scalar - angle);
+        let (dominant_mantissa, dominant_exponent) = if plus_exponent >= minus_exponent {
+            (plus_mantissa, plus_exponent)
+        } else {
+            (minus_mantissa, minus_exponent)
+        };
+        let scalar_part =
+            exact_square::scale_by_pow2_rne(0.5 * dominant_mantissa, dominant_exponent);
+        let mut result = Self::scalar(scalar_part);
+        for (index, &coefficient) in self.as_slice().iter().enumerate().skip(1) {
+            if coefficient != 0.0 {
+                // Round-5: `e^{s+a}/(2a)·c` is finalized symbolically — the
+                // exact rational `1/(2a) = 1/(2·m_a)·2^{-e_a}` is folded into
+                // the single destination rounding, so `c = a` reproduces the
+                // scalar `e^{s+a}/2` bit-for-bit. `2.0 * angle` is never formed.
+                result.set(
+                    index,
+                    exact_square::apply_symbolic_scale_over_2a(
+                        coefficient,
+                        angle,
+                        dominant_mantissa,
+                        dominant_exponent,
+                    ),
+                );
+            }
+        }
+        result
+    }
+
+    /// Smallest `k` with `||self / 2^k||_coeff <= 0.5`, together with the
+    /// scaled element.
+    ///
+    /// The `log2` estimate is corrected against the actual scaled norm, so the
+    /// frozen target and minimality hold even when `log2` rounds the
+    /// next-above-power-of-two boundary the wrong way (round-1 P2: the norm
+    /// `f64::from_bits((1123<<52)+1)` estimates `k = 101` while the frozen
+    /// smallest `k` is 102).
+    fn series_scaling(&self) -> Result<(usize, Self), ExpError> {
+        let norm = self.coefficient_norm();
+        if !norm.is_finite() {
+            return Err(ExpError::NonFiniteResult {
+                stage: NonFiniteStage::SeriesScaling,
+            });
+        }
+
+        let mut k = if norm <= 0.5 {
+            0usize
+        } else {
+            // `log2(2·norm)` without forming `2·norm`, which may overflow.
+            let l = norm.log2() + 1.0;
+            l.ceil().max(0.0) as usize
+        };
+
+        let mut scaled = self.scale_down(k);
+        let mut scaled_norm = scaled.coefficient_norm();
+        while scaled_norm > 0.5 {
+            k += 1;
+            scaled = self.scale_down(k);
+            scaled_norm = scaled.coefficient_norm();
+        }
+        while k > 0 {
+            let finer = self.scale_down(k - 1);
+            if finer.coefficient_norm() <= 0.5 {
+                k -= 1;
+                scaled = finer;
+                scaled_norm = scaled.coefficient_norm();
+            } else {
+                break;
+            }
+        }
+        if !scaled_norm.is_finite() {
+            return Err(ExpError::NonFiniteResult {
+                stage: NonFiniteStage::SeriesScaling,
+            });
+        }
+        Ok((k, scaled))
+    }
+
+    /// Bounded scaling-and-squaring series (D02.4).
+    ///
+    /// Scaling divides by a staged sequence of representable powers of two
+    /// (never constructing `2^k`, which may be unrepresentable) until the
+    /// scaled coefficient norm is at most `0.5`, accumulates at most 64 terms
+    /// with `term_n = term_{n-1}·x/n` (division, never a reciprocal multiply),
+    /// then applies the `k` squarings. Non-finite scaling, accumulation, and
+    /// squaring values are reported as `ExpError::NonFiniteResult`; exhaustion
+    /// of the 64-term cap is `ExpError::NoConvergence`.
+    ///
+    /// The `log2` scaling estimate is corrected against the actual scaled norm
+    /// (round-1 P2), and each squaring is checked by the overflow-safe
+    /// cancellation predicate [`squaring_is_collapse`] (round-1 detector,
+    /// round-2 threshold fix): a norm collapse of more than ~62 bits while the
+    /// previous norm is large is reported as
+    /// `Err(NonFiniteResult { stage: Squaring })` rather than a silently wrong
+    /// result. The detector is a heuristic, not a proof — it can miss
+    /// cancellation (false negatives) and, being conservative, it can also
+    /// reject a legitimate sub-quadratic-growth input (a residual false
+    /// positive). Scalar-square and nilpotent inputs never reach this path
+    /// (precedences 3.1 and 3.2 carry exact certificates), so the residual
+    /// false-positive class is non-nilpotent, non-scalar-square growth; the
+    /// outcome is an honest error, never a silently wrong value.
+    fn exp_series(&self) -> Result<Self, ExpError> {
+        // Degenerate zero input (precedence 1 normally handles this).
+        if self.is_zero() {
+            return Ok(Self::scalar(1.0));
+        }
+
+        // Smallest `k` with `||self / 2^k||_coeff <= 0.5`, with the `log2`
+        // estimate corrected against the actual scaled norm (round-1 P2).
+        let (k, scaled) = self.series_scaling()?;
+
+        const MAX_TERMS: usize = 64;
+        const EPS_REL: f64 = 1.0 / 68719476736.0; // 2^-36
+
         let mut result = Self::scalar(1.0);
         let mut term = Self::scalar(1.0);
+        let mut term_peak_norm = term.coefficient_norm();
+        let mut last_term_norm = term_peak_norm;
+        let mut terms = 0usize;
+        let mut converged = false;
 
-        for n in 1..20 {
-            term = term.geometric_product(self) * (1.0 / n as f64);
-            let old_result = result.clone();
+        for n in 1..=MAX_TERMS {
+            term = term.geometric_product(&scaled) / (n as f64);
+            let term_norm = term.coefficient_norm();
+            if !term_norm.is_finite() {
+                return Err(ExpError::NonFiniteResult {
+                    stage: NonFiniteStage::SeriesAccumulation,
+                });
+            }
             result = result + term.clone();
+            let result_scale = result.coefficient_norm();
+            if !result_scale.is_finite() {
+                return Err(ExpError::NonFiniteResult {
+                    stage: NonFiniteStage::SeriesAccumulation,
+                });
+            }
 
-            // Check convergence
-            // difference-magnitude convergence; exponential structure remains CORE-W03
-            if (result.clone() - old_result).coefficient_norm() < 1e-14 {
+            terms = n;
+            last_term_norm = term_norm;
+            if term_norm > term_peak_norm {
+                term_peak_norm = term_norm;
+            }
+
+            if term_norm <= EPS_REL * result_scale.max(term_peak_norm) {
+                converged = true;
                 break;
             }
         }
 
-        result
+        if !converged {
+            return Err(ExpError::NoConvergence {
+                terms,
+                last_term_norm,
+                result_scale: result.coefficient_norm(),
+            });
+        }
+
+        let mut previous_norm = result.coefficient_norm();
+        for _ in 0..k {
+            result = result.geometric_product(&result);
+            let new_norm = result.coefficient_norm();
+            if !new_norm.is_finite() {
+                return Err(ExpError::NonFiniteResult {
+                    stage: NonFiniteStage::Squaring,
+                });
+            }
+            // Squaring cancellation detector (round-1 remediation, made
+            // overflow-safe in round 2): a norm collapse of more than ~62 bits
+            // while the previous norm is large means the scalar channel
+            // cancelled catastrophically (the documented squaring-channel
+            // hazard). Reported as an honest error rather than a silently
+            // wrong representable result. This is a detector, not a proof; it
+            // has false negatives, and it can conservatively reject a
+            // legitimate sub-quadratic-growth input.
+            if squaring_is_collapse(previous_norm, new_norm) {
+                return Err(ExpError::NonFiniteResult {
+                    stage: NonFiniteStage::Squaring,
+                });
+            }
+            previous_norm = new_norm;
+        }
+
+        Ok(result)
+    }
+
+    /// Divide by `2^k` using staged divisions by representable powers of two.
+    ///
+    /// Never constructs `2^k` (unrepresentable for large `k`). Divisions by a
+    /// power of two are exact exponent shifts while coefficients remain normal;
+    /// subnormal coefficients round toward zero (documented in [`Self::exp`]).
+    fn scale_down(&self, mut k: usize) -> Self {
+        const POW2_64: f64 = 18446744073709551616.0; // 2^64, exactly representable
+        let mut out = self.clone();
+        while k >= 64 {
+            out = out / POW2_64;
+            k -= 64;
+        }
+        while k > 0 {
+            out = out / 2.0;
+            k -= 1;
+        }
+        out
     }
 
     /// Left contraction: a ⌟ b
@@ -1236,7 +1948,7 @@ mod tests {
         // Create 90 degree rotation in e1-e2 plane
         let angle = core::f64::consts::PI / 4.0; // Half angle for rotor
         let bivector = e12 * angle;
-        let rotor = bivector.exp();
+        let rotor = bivector.exp().expect("bounded bivector exponential");
 
         // Check that rotor has unit norm
         assert!((rotor.coefficient_norm() - 1.0).abs() < 1e-10);
@@ -1327,5 +2039,124 @@ mod tests {
         let bivector = e1.outer_product(&e2);
         let trivector = bivector.outer_product(&e3);
         assert_eq!(trivector.get(7), 1.0); // e123 component
+    }
+
+    // ------------------------------------------------------------------
+    // CORE-W03 round-1 remediation: scaling minimality / frozen target (P2)
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn series_scaling_meets_frozen_target_for_boundary_norm() {
+        // Reviewer's next-above-power-of-two norm: the `log2` estimate rounds
+        // to `k = 101`, whose scaled norm is 0.5000000000000001 > 0.5. The
+        // corrected scaling must pick the frozen smallest `k = 102` (scaled
+        // norm <= 0.5) and that `k` must be minimal.
+        let norm = f64::from_bits((1123u64 << 52) + 1);
+        let mut m = Multivector::<2, 0, 0>::zero();
+        // Scalar + vector: the exact square carries a grade-1 part, so this
+        // input routes to the series rather than the scalar-square class.
+        m.set(0, 1.0);
+        m.set(1, norm);
+
+        let (k, scaled) = m.series_scaling().expect("finite scaling");
+        assert_eq!(k, 102, "frozen smallest k for the boundary norm");
+        assert!(
+            scaled.coefficient_norm() <= 0.5,
+            "scaled norm {} exceeds 0.5",
+            scaled.coefficient_norm()
+        );
+        // Minimality: one less exponent exceeds the target.
+        let finer = m.scale_down(k - 1);
+        assert!(finer.coefficient_norm() > 0.5, "k is not minimal");
+        // The estimate alone would have been 101 for the pure norm; the
+        // scaled norm of the unrepaired estimate exceeds the target.
+        let estimate = (norm.log2() + 1.0).ceil() as usize;
+        assert_eq!(estimate, 101);
+        assert!(m.scale_down(estimate).coefficient_norm() > 0.5);
+    }
+
+    // ------------------------------------------------------------------
+    // CORE-W03 round-2 remediation: overflow-safe detector threshold
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn squaring_detector_threshold_is_overflow_safe() {
+        // The old `prev * prev * 2^-62` form overflows to `+inf` at the
+        // `1e155`/`f64::MAX` scale (well before `1e80` squared), which would
+        // make every squaring look like a collapse. The ratio form keeps the
+        // threshold `prev * 2^-62` finite for every finite `prev`.
+        for previous in [1e80, 1e155, 1e200, f64::MAX] {
+            let naive = previous * previous;
+            let safe = previous * 2f64.powi(-62);
+            assert!(safe.is_finite(), "threshold for {previous} is {safe}");
+            if previous >= 1e155 {
+                assert!(
+                    naive.is_infinite(),
+                    "precondition: naive square of {previous} overflows"
+                );
+            }
+        }
+
+        // Genuine collapse: the new norm is far below the previous square.
+        assert!(squaring_is_collapse(1e200, 1.0));
+        // Below the 2^30 gate the detector never fires.
+        assert!(!squaring_is_collapse(1e8, 0.0));
+        // A one-bit (factor-2) growth at a degenerate scale is conservative:
+        // the detector may still reject it (documented false positive), but it
+        // must not be driven by an infinitary threshold.
+        let threshold = 1e80 * 2f64.powi(-62);
+        assert!(threshold.is_finite() && threshold > 0.0);
+    }
+
+    // ------------------------------------------------------------------
+    // CORE-W03 round-3 remediation: symbolic scalar scale composition
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn symbolic_scalar_scale_composition_matches_exp() {
+        // The reduced-argument decomposition (fdlibm ln2 split) must reproduce
+        // `f64::exp(s)` to ~1 ulp for in-range scalars.
+        for s in [-20.0f64, -1.0, -0.5, 0.0, 0.3, 1.0, 5.0, 100.0] {
+            let (mantissa, exponent) = symbolic_exp_scale(s);
+            let composed = exact_square::scale_by_pow2_rne(mantissa, exponent);
+            let reference = s.exp();
+            let diff = (composed.to_bits() as i64 - reference.to_bits() as i64).unsigned_abs();
+            assert!(diff <= 1, "s={s}: {composed} vs {reference} ({diff} ulp)");
+        }
+
+        // P1-1 underflow rescue: e^-750·1e300 must be bit-exact even though
+        // `f64::exp(-750)` underflows to 0.
+        let (mantissa, exponent) = symbolic_exp_scale(-750.0);
+        let composed = exact_square::scale_by_pow2_rne(1e300 * mantissa, exponent);
+        assert_eq!(
+            composed.to_bits(),
+            f64::from_bits(0x3A97_8AAE_2278_9158).to_bits()
+        );
+
+        // P1-1 overflow side: e^750·1e-300 is representable (the scalar
+        // coefficient e^750 is not, so `exp` errors honestly, but the vector
+        // coefficient must be right).
+        let (mantissa, exponent) = symbolic_exp_scale(750.0);
+        let composed = exact_square::scale_by_pow2_rne(1e-300 * mantissa, exponent);
+        assert_eq!(
+            composed.to_bits(),
+            f64::from_bits(0x4545_BFA5_CD2C_9F0B).to_bits()
+        );
+
+        // `scale_by_pow2_rne` is a single correctly-rounded exponent step:
+        // exact power-of-two rescales are bit-exact and subnormal results
+        // round once (ties to even).
+        assert_eq!(
+            exact_square::scale_by_pow2_rne(1.5, 4).to_bits(),
+            24f64.to_bits()
+        );
+        assert_eq!(
+            exact_square::scale_by_pow2_rne(1.0, -1075).to_bits(),
+            0.0f64.to_bits()
+        );
+        assert_eq!(
+            exact_square::scale_by_pow2_rne(1.5, -1075).to_bits(),
+            f64::from_bits(1).to_bits()
+        );
     }
 }

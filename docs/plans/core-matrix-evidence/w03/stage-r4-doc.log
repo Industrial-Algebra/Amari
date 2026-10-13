@@ -1,0 +1,4 @@
+# command: RUSTDOCFLAGS='-D warnings' cargo doc -p amari-core --no-deps
+ Documenting amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.25s
+   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/target/w03/doc/amari_core/index.html

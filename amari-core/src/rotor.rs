@@ -1,6 +1,6 @@
 //! Rotor operations for rotations and reflections
 
-use crate::{Bivector, Multivector, Vector};
+use crate::{Bivector, ExpError, Multivector, Vector};
 use alloc::vec::Vec;
 
 /// Rotor in a Clifford algebra (even-grade multivector with unit norm)
@@ -17,26 +17,37 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     /// The negative sign ensures the rotation follows the right-hand rule convention:
     /// when the thumb points in the direction of the bivector orientation,
     /// the fingers curl in the direction of positive rotation.
-    pub fn from_bivector(bivector: &Bivector<P, Q, R>, angle: f64) -> Self {
-        let half_angle_bivector = &bivector.mv * (-angle / 2.0); // Negative for right-handed rotation
-        let rotor = half_angle_bivector.exp();
+    ///
+    /// Returns the exponential's [`ExpError`] if the half-angle bivector has no
+    /// representable exponential (see [`Multivector::exp`]).
+    pub fn from_bivector(bivector: &Bivector<P, Q, R>, angle: f64) -> Result<Self, ExpError> {
+        // Negative for right-handed rotation.
+        let half_angle_bivector = &bivector.mv * (-angle / 2.0);
+        let rotor = half_angle_bivector.exp()?;
 
-        Self {
+        Ok(Self {
             multivector: rotor.normalize_versor().unwrap_or(Multivector::scalar(1.0)),
-        }
+        })
     }
 
     /// Create a rotor from a raw multivector bivector
     ///
     /// Similar to `from_bivector` but accepts a raw `Multivector` representing a bivector.
     /// Uses the same right-handed rotation convention.
-    pub fn from_multivector_bivector(bivector: &Multivector<P, Q, R>, angle: f64) -> Self {
-        let half_angle_bivector = bivector * (-angle / 2.0); // Negative for right-handed rotation
-        let rotor = half_angle_bivector.exp();
+    ///
+    /// Returns the exponential's [`ExpError`] if the half-angle bivector has no
+    /// representable exponential (see [`Multivector::exp`]).
+    pub fn from_multivector_bivector(
+        bivector: &Multivector<P, Q, R>,
+        angle: f64,
+    ) -> Result<Self, ExpError> {
+        // Negative for right-handed rotation.
+        let half_angle_bivector = bivector * (-angle / 2.0);
+        let rotor = half_angle_bivector.exp()?;
 
-        Self {
+        Ok(Self {
             multivector: rotor.normalize_versor().unwrap_or(Multivector::scalar(1.0)),
-        }
+        })
     }
 
     /// Apply rotor to transform a multivector: R * v * R†
@@ -126,7 +137,10 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     }
 
     /// Create rotor from axis-angle representation
-    pub fn from_axis_angle(axis: &Vector<P, Q, R>, angle: f64) -> Self {
+    ///
+    /// Returns the exponential's [`ExpError`] if the resulting bivector has no
+    /// representable exponential (see [`Multivector::exp`]).
+    pub fn from_axis_angle(axis: &Vector<P, Q, R>, angle: f64) -> Result<Self, ExpError> {
         // Convert axis to a bivector perpendicular to it
         // For 3D, the bivector is the dual of the axis vector
         let normalized_axis = axis.mv.normalize_versor().unwrap_or(axis.mv.clone());
@@ -260,26 +274,29 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     ///
     /// Computes R^t = exp(t * log(R)) for any real exponent t.
     /// For a rotor representing rotation by angle θ, R^t rotates by tθ.
-    pub fn power(&self, exponent: f64) -> Self {
+    ///
+    /// Returns the exponential's [`ExpError`] if the scaled rotor logarithm has
+    /// no representable exponential (see [`Multivector::exp`]).
+    pub fn power(&self, exponent: f64) -> Result<Self, ExpError> {
         if exponent.abs() < 1e-14 {
-            return Self::identity();
+            return Ok(Self::identity());
         }
 
         let log_r = self.logarithm();
 
         // If log is zero (identity rotor), any power is still identity
         if log_r.coefficient_norm() < 1e-14 {
-            return Self::identity();
+            return Ok(Self::identity());
         }
 
         let scaled = log_r * exponent;
-        let result = scaled.exp();
+        let result = scaled.exp()?;
 
-        Self {
+        Ok(Self {
             multivector: result
                 .normalize_versor()
                 .unwrap_or(Multivector::scalar(1.0)),
-        }
+        })
     }
 }
 
@@ -303,7 +320,10 @@ mod tests {
         let e12 = Bivector::<3, 0, 0>::e12();
 
         // Create 90-degree rotation in e1-e2 plane
-        let rotor = Rotor::from_bivector(&e12, core::f64::consts::PI / 2.0);
+        // Bounded Euclidean bivector with a small finite angle: the exact
+        // bivector route cannot overflow, so `.expect` is justified.
+        let rotor = Rotor::from_bivector(&e12, core::f64::consts::PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
 
         // Apply to e1, should get e2
         let rotated = rotor.apply_to_vector(&e1);
@@ -316,14 +336,17 @@ mod tests {
         let e12 = Bivector::<3, 0, 0>::e12();
 
         // Two 45-degree rotations
-        let rotor1 = Rotor::from_bivector(&e12, core::f64::consts::PI / 4.0);
-        let rotor2 = Rotor::from_bivector(&e12, core::f64::consts::PI / 4.0);
+        let rotor1 = Rotor::from_bivector(&e12, core::f64::consts::PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
+        let rotor2 = Rotor::from_bivector(&e12, core::f64::consts::PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
 
         // Compose them
         let composed = rotor1.compose(&rotor2);
 
         // Should equal a single 90-degree rotation
-        let rotor90 = Rotor::from_bivector(&e12, core::f64::consts::PI / 2.0);
+        let rotor90 = Rotor::from_bivector(&e12, core::f64::consts::PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
 
         let diff = composed.as_multivector() - rotor90.as_multivector();
         assert!(diff.coefficient_norm() < 1e-10);

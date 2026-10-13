@@ -9,7 +9,8 @@ mod rotor_tests {
     fn test_rotor_from_bivector() {
         // Create rotor for 90° rotation in e12 plane
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 2.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
 
         // Rotor should be normalized
         assert_relative_eq!(
@@ -23,7 +24,8 @@ mod rotor_tests {
     fn test_rotor_rotation_of_vector() {
         // Rotate e1 by 90° in the e12 plane to get e2
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 2.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
         let e1 = Vector::<3, 0, 0>::e1();
 
         // Apply rotation: R * v * R†
@@ -40,7 +42,8 @@ mod rotor_tests {
     fn test_rotor_double_cover() {
         // 2π rotation should give negative of identity (double cover of SO(3))
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor_2pi = Rotor::from_bivector(&bivector, 2.0 * PI);
+        let rotor_2pi = Rotor::from_bivector(&bivector, 2.0 * PI)
+            .expect("bounded Euclidean bivector exponential");
 
         // Should be -1 in scalar part
         assert_relative_eq!(rotor_2pi.scalar_part(), -1.0, epsilon = 1e-10);
@@ -50,8 +53,10 @@ mod rotor_tests {
     fn test_rotor_composition() {
         // Two 45° rotations should equal one 90° rotation
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor_45 = Rotor::from_bivector(&bivector, PI / 4.0);
-        let rotor_90 = Rotor::from_bivector(&bivector, PI / 2.0);
+        let rotor_45 = Rotor::from_bivector(&bivector, PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
+        let rotor_90 = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
 
         let composed = rotor_45.geometric_product(&rotor_45);
 
@@ -77,7 +82,8 @@ mod rotor_tests {
     fn test_rotor_inverse() {
         // R * R† = 1 for unit rotors
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 3.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 3.0)
+            .expect("bounded Euclidean bivector exponential");
         let inverse = rotor.inverse();
 
         let product = rotor.geometric_product(&inverse);
@@ -108,11 +114,13 @@ mod rotor_tests {
         // Test spherical linear interpolation (slerp) between rotors
         let identity = Rotor::<3, 0, 0>::identity();
         let bivector = Bivector::<3, 0, 0>::e12();
-        let target = Rotor::from_bivector(&bivector, PI / 2.0);
+        let target = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
 
         // Interpolate halfway
         let halfway = identity.slerp(&target, 0.5);
-        let expected = Rotor::from_bivector(&bivector, PI / 4.0);
+        let expected = Rotor::from_bivector(&bivector, PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
 
         assert_relative_eq!(halfway.as_slice(), expected.as_slice(), epsilon = 1e-10);
     }
@@ -121,7 +129,8 @@ mod rotor_tests {
     fn test_rotor_to_matrix() {
         // 90° rotation in e12 plane: e1→e2, e2→-e1, e3 unchanged
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 2.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
         let matrix = rotor.to_rotation_matrix();
 
         // Verify against apply_to_vector
@@ -148,10 +157,12 @@ mod rotor_tests {
         // Create rotor from axis-angle representation
         let axis = Vector::<3, 0, 0>::from_components(0.0, 0.0, 1.0);
         let angle = PI / 2.0;
-        let rotor = Rotor::from_axis_angle(&axis, angle);
+        let rotor =
+            Rotor::from_axis_angle(&axis, angle).expect("bounded Euclidean bivector exponential");
 
         // Should be equivalent to e12 bivector rotation
-        let bivector_rotor = Rotor::from_bivector(&Bivector::<3, 0, 0>::e12(), angle);
+        let bivector_rotor = Rotor::from_bivector(&Bivector::<3, 0, 0>::e12(), angle)
+            .expect("bounded Euclidean bivector exponential");
 
         assert_relative_eq!(rotor.as_slice(), bivector_rotor.as_slice(), epsilon = 1e-10);
     }
@@ -160,7 +171,8 @@ mod rotor_tests {
     fn test_rotor_preserves_magnitude() {
         // Rotation should preserve vector magnitudes
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 3.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 3.0)
+            .expect("bounded Euclidean bivector exponential");
         let vector = Vector::<3, 0, 0>::from_components(3.0, 4.0, 5.0);
 
         let rotated = rotor.apply_to_vector(&vector);
@@ -176,7 +188,8 @@ mod rotor_tests {
     fn test_rotor_preserves_angles() {
         // Rotation should preserve angles between vectors
         let bivector = Bivector::<3, 0, 0>::e23(); // Rotate in yz plane
-        let rotor = Rotor::from_bivector(&bivector, PI / 6.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 6.0)
+            .expect("bounded Euclidean bivector exponential");
 
         let v1 = Vector::<3, 0, 0>::from_components(1.0, 1.0, 0.0);
         let v2 = Vector::<3, 0, 0>::from_components(1.0, 0.0, 1.0);
@@ -195,9 +208,12 @@ mod rotor_tests {
     #[test]
     fn test_euler_angle_composition() {
         // Test composition of Euler angle rotations
-        let x_rot = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e1(), PI / 4.0);
-        let y_rot = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e2(), PI / 3.0);
-        let z_rot = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e3(), PI / 6.0);
+        let x_rot = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e1(), PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
+        let y_rot = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e2(), PI / 3.0)
+            .expect("bounded Euclidean bivector exponential");
+        let z_rot = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e3(), PI / 6.0)
+            .expect("bounded Euclidean bivector exponential");
 
         // Compose rotations: first z, then y, then x
         let composed = x_rot.geometric_product(&y_rot.geometric_product(&z_rot));
@@ -213,8 +229,10 @@ mod rotor_tests {
     #[test]
     fn test_rotor_commutator() {
         // Test commutator of non-commuting rotations
-        let rotor_a = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e1(), PI / 4.0);
-        let rotor_b = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e2(), PI / 4.0);
+        let rotor_a = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e1(), PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
+        let rotor_b = Rotor::from_axis_angle(&Vector::<3, 0, 0>::e2(), PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
 
         let ab = rotor_a.geometric_product(&rotor_b);
         let ba = rotor_b.geometric_product(&rotor_a);
@@ -236,7 +254,8 @@ mod rotor_tests {
         // from_bivector creates R = exp(-B*θ/2), so log(R) = -B*θ/2
         let bivector = Bivector::<3, 0, 0>::e12();
         let angle = PI / 3.0;
-        let rotor = Rotor::from_bivector(&bivector, angle);
+        let rotor =
+            Rotor::from_bivector(&bivector, angle).expect("bounded Euclidean bivector exponential");
 
         let log_rotor = rotor.logarithm();
         // The rotor stores exp(-B*angle/2), so log gives back -B*angle/2
@@ -253,9 +272,10 @@ mod rotor_tests {
     fn test_rotor_power() {
         // Test raising rotor to a power
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 4.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
 
-        let squared = rotor.power(2.0);
+        let squared = rotor.power(2.0).expect("bounded rotor power exponential");
         let manual_square = rotor.geometric_product(&rotor);
 
         assert_relative_eq!(
@@ -271,10 +291,14 @@ mod rotor_tests {
     fn test_rotor_power_fractional() {
         // R^0.5 of a 90° rotation should give a 45° rotation
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor_90 = Rotor::from_bivector(&bivector, PI / 2.0);
-        let rotor_45 = Rotor::from_bivector(&bivector, PI / 4.0);
+        let rotor_90 = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
+        let rotor_45 = Rotor::from_bivector(&bivector, PI / 4.0)
+            .expect("bounded Euclidean bivector exponential");
 
-        let half_power = rotor_90.power(0.5);
+        let half_power = rotor_90
+            .power(0.5)
+            .expect("bounded rotor power exponential");
 
         assert_relative_eq!(half_power.as_slice(), rotor_45.as_slice(), epsilon = 1e-10);
     }
@@ -283,10 +307,11 @@ mod rotor_tests {
     fn test_rotor_power_zero() {
         // R^0 should give identity
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 3.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 3.0)
+            .expect("bounded Euclidean bivector exponential");
         let identity = Rotor::<3, 0, 0>::identity();
 
-        let power_zero = rotor.power(0.0);
+        let power_zero = rotor.power(0.0).expect("bounded rotor power exponential");
 
         assert_relative_eq!(power_zero.as_slice(), identity.as_slice(), epsilon = 1e-10);
     }
@@ -295,10 +320,11 @@ mod rotor_tests {
     fn test_rotor_power_negative() {
         // R^-1 should give the inverse
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 3.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 3.0)
+            .expect("bounded Euclidean bivector exponential");
         let inverse = rotor.inverse();
 
-        let power_neg1 = rotor.power(-1.0);
+        let power_neg1 = rotor.power(-1.0).expect("bounded rotor power exponential");
 
         assert_relative_eq!(power_neg1.as_slice(), inverse.as_slice(), epsilon = 1e-10);
     }
@@ -307,9 +333,10 @@ mod rotor_tests {
     fn test_rotor_power_third() {
         // R^3 = R * R * R
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI / 6.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 6.0)
+            .expect("bounded Euclidean bivector exponential");
 
-        let cubed = rotor.power(3.0);
+        let cubed = rotor.power(3.0).expect("bounded rotor power exponential");
         let manual_cube = rotor.geometric_product(&rotor).geometric_product(&rotor);
 
         assert_relative_eq!(cubed.as_slice(), manual_cube.as_slice(), epsilon = 1e-10);
@@ -319,7 +346,8 @@ mod rotor_tests {
     fn test_rotor_rotation_e13_plane() {
         // Rotate e1 by 90° in the e13 plane → should get e3
         let bivector = Bivector::<3, 0, 0>::e13();
-        let rotor = Rotor::from_bivector(&bivector, PI / 2.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
         let e1 = Vector::<3, 0, 0>::e1();
 
         let rotated = rotor.apply_to_vector(&e1);
@@ -334,7 +362,8 @@ mod rotor_tests {
     fn test_rotor_rotation_e23_plane() {
         // Rotate e2 by 90° in the e23 plane → should get e3
         let bivector = Bivector::<3, 0, 0>::e23();
-        let rotor = Rotor::from_bivector(&bivector, PI / 2.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
         let e2 = Vector::<3, 0, 0>::e2();
 
         let rotated = rotor.apply_to_vector(&e2);
@@ -349,7 +378,8 @@ mod rotor_tests {
     fn test_rotor_180_degree() {
         // 180° rotation of e1 in e12 plane → should get -e1
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, PI);
+        let rotor =
+            Rotor::from_bivector(&bivector, PI).expect("bounded Euclidean bivector exponential");
         let e1 = Vector::<3, 0, 0>::e1();
 
         let rotated = rotor.apply_to_vector(&e1);
@@ -363,7 +393,8 @@ mod rotor_tests {
     fn test_rotor_small_angle() {
         // Very small rotation should be near identity
         let bivector = Bivector::<3, 0, 0>::e12();
-        let rotor = Rotor::from_bivector(&bivector, 1e-10);
+        let rotor =
+            Rotor::from_bivector(&bivector, 1e-10).expect("bounded Euclidean bivector exponential");
         let e1 = Vector::<3, 0, 0>::e1();
 
         let rotated = rotor.apply_to_vector(&e1);
@@ -376,7 +407,8 @@ mod rotor_tests {
     fn test_to_rotation_matrix_e13_plane() {
         // Verify matrix matches apply() for e13 rotation
         let bivector = Bivector::<3, 0, 0>::e13();
-        let rotor = Rotor::from_bivector(&bivector, PI / 2.0);
+        let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
         let matrix = rotor.to_rotation_matrix();
 
         // Compute expected via apply
@@ -404,7 +436,8 @@ mod rotor_tests {
         // Rotation around (1,1,1)/sqrt(3) axis
         let axis = Vector::<3, 0, 0>::from_components(1.0, 1.0, 1.0);
         let angle = 2.0 * PI / 3.0; // 120°
-        let rotor = Rotor::from_axis_angle(&axis, angle);
+        let rotor =
+            Rotor::from_axis_angle(&axis, angle).expect("bounded Euclidean bivector exponential");
 
         // 120° rotation around (1,1,1) cycles e1→e2→e3→e1
         let e1 = Vector::<3, 0, 0>::e1();
@@ -419,8 +452,10 @@ mod rotor_tests {
     #[test]
     fn test_slerp_endpoints() {
         let bivector = Bivector::<3, 0, 0>::e12();
-        let r1 = Rotor::from_bivector(&bivector, PI / 6.0);
-        let r2 = Rotor::from_bivector(&bivector, PI / 2.0);
+        let r1 = Rotor::from_bivector(&bivector, PI / 6.0)
+            .expect("bounded Euclidean bivector exponential");
+        let r2 = Rotor::from_bivector(&bivector, PI / 2.0)
+            .expect("bounded Euclidean bivector exponential");
 
         // t=0 should give r1
         let at_0 = r1.slerp(&r2, 0.0);
