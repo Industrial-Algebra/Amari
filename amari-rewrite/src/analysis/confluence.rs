@@ -14,8 +14,8 @@
 //! grow *forward* from the two sides of the pair — the root side
 //! (`pair.root_step`) and the position side (`pair.position_step`) —
 //! and the meet is a frontier intersection, never backward rewriting.
-//! Each side runs a breadth-first enumeration of metered successors
-//! (lazy, shape-validated before construction; see `metered_successors`)
+//! Each side runs a breadth-first enumeration of shape-preflighted
+//! successors (validated before construction; see `metered_successors`)
 //! in its deterministic order; a `BTreeSet` visited set kills cycles,
 //! so a cyclic successor graph terminates as soon as both closures are
 //! exhausted.
@@ -125,13 +125,21 @@ pub fn local_confluence(
     })
 }
 
-/// Lazily enumerated one-step successors with PRE-CONSTRUCTION shape
-/// validation (PR #302 round 1): the rewritten shape is computed
-/// from the match substitution before any allocation, so an
-/// oversized candidate errors regardless of rule order and no
-/// oversized term is ever materialized. Every matched application is
-/// charged (including identity instances, which are constructed and
-/// then filtered, matching `TermSystem::successors` semantics).
+/// One-step successors as an EAGER batch with PRE-CONSTRUCTION shape
+/// validation (PR #302 rounds 1–2): each matched application's
+/// rewritten shape is computed from the match substitution and
+/// validated with `record_term` BEFORE `replace_at` constructs it,
+/// so an oversized candidate errors regardless of rule order and no
+/// oversized term is ever materialized. The batch itself is built
+/// eagerly (like `TermSystem::successors`); accounting is
+/// expansion-only: the caller charges one operation per expanded
+/// node, and `record_term` validates each candidate's shape without
+/// charging cumulative work. Search storage (visited sets, parent
+/// maps, frontier queues) is bounded INDIRECTLY — by the admitted
+/// rules, the term-shape bounds, and the charged expansions — not
+/// metered per successor. Identity instances are constructed,
+/// validated, and then filtered, matching
+/// `TermSystem::successors` semantics.
 fn metered_successors(
     system: &TermSystem,
     term: &Term,

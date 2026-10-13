@@ -456,7 +456,10 @@ impl<'a> BackwardExplorer<'a> {
                 }
             })?;
             current = current
-                .replace_at(&step.provenance.position, bindings.apply(rule.rhs()))
+                .replace_at(
+                    &step.provenance.position,
+                    bindings.apply_matcher(rule.rhs()),
+                )
                 .map_err(|_| RewriteError::ResidualMismatch {
                     message: "witness replay failed to rebuild the term".to_string(),
                 })?;

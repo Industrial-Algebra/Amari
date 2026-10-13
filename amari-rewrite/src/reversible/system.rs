@@ -134,7 +134,7 @@ impl BidirectionalSystem {
             match_pattern(rule.forward().lhs(), subterm).ok_or(RewriteError::NoRule {
                 rule_name: rule_id.to_string(),
             })?;
-        let target_subterm = substitution.apply(rule.forward().rhs());
+        let target_subterm = substitution.apply_matcher(rule.forward().rhs());
         let target = source.replace_at(position, target_subterm.clone())?;
         Ok(BidirectionalStep {
             target,

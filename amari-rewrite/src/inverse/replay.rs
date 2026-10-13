@@ -269,7 +269,10 @@ fn replay_backward(
         let bindings = match_pattern(rule.lhs(), position)
             .ok_or_else(|| mismatch("replay failed to match the lhs"))?;
         current = current
-            .replace_at(&step.provenance.position, bindings.apply(rule.rhs()))
+            .replace_at(
+                &step.provenance.position,
+                bindings.apply_matcher(rule.rhs()),
+            )
             .map_err(|_| mismatch("replay failed to rebuild the term"))?;
     }
     if canonical(&current) != canonical(target) {
@@ -304,7 +307,7 @@ fn replay_bidirectional(
         let bindings = match_pattern(rule.lhs(), position)
             .ok_or_else(|| mismatch("replay failed the forward lhs"))?;
         current = current
-            .replace_at(&step.position, bindings.apply(rule.rhs()))
+            .replace_at(&step.position, bindings.apply_matcher(rule.rhs()))
             .map_err(|_| mismatch("replay failed a forward rebuild"))?;
     }
     if canonical(&current) != canonical(&derivation.meeting_forward) {
@@ -323,7 +326,10 @@ fn replay_bidirectional(
         let bindings = match_pattern(rule.lhs(), position)
             .ok_or_else(|| mismatch("replay failed the backward lhs"))?;
         current = current
-            .replace_at(&step.provenance.position, bindings.apply(rule.rhs()))
+            .replace_at(
+                &step.provenance.position,
+                bindings.apply_matcher(rule.rhs()),
+            )
             .map_err(|_| mismatch("replay failed a backward rebuild"))?;
     }
     // The backward half starts from the meeting substitution's
