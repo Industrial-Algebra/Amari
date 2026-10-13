@@ -279,7 +279,7 @@ fn forward_duplication_witness_is_the_real_exercise_1_17_3() {
     let rules = [Rule::new(g(Term::var("x")), f(Term::var("x"), Term::var("x"))).unwrap()];
     // Seeds g(a), g(h(a)), g(h(h(a))) — the bounded slice of
     // {g(h^n(a))}. Seeds contain g only at the root.
-    let seeds = vec![g(a()), g(h(a())), g(h(h(a())))];
+    let seeds = [g(a()), g(h(a())), g(h(h(a())))];
     let descendants: Vec<Term> = seeds
         .iter()
         .flat_map(|seed| successors(&rules, seed))

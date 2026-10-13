@@ -7,11 +7,14 @@
 //! oversized domains fail before allocation.
 
 use amari_rewrite::inverse::{symbolic_predecessors, SymbolicPredecessor};
+#[cfg(feature = "serialize")]
+use amari_rewrite::relation::Sha256Digest;
 use amari_rewrite::relation::{
-    ConstraintSet, GroundingDomain, GroundingOutcome, RankedSymbol, RelationLimits, Sha256Digest,
-    TermConstraint,
+    ConstraintSet, GroundingDomain, GroundingOutcome, RankedSymbol, RelationLimits, TermConstraint,
 };
-use amari_rewrite::trs::{Rule, Substitution, Term, TermSystem};
+#[cfg(feature = "serialize")]
+use amari_rewrite::trs::Substitution;
+use amari_rewrite::trs::{Rule, Term, TermSystem};
 use amari_rewrite::RewriteError;
 
 fn domain(

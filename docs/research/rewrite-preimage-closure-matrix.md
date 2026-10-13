@@ -43,7 +43,7 @@ complement in `K` is the Example 1.2.1 diagonal). Consequences:
 | Literature | Amari |
 |---|---|
 | ground terms `T(F)` | `trs::Term` (ground; ranked symbols checked at use) |
-| TRS `R` | `trs::TermSystem`; `Rule::new` enforces `Var(rhs) ⊆ Var(lhs)` (rule.rs:20) — but `Rule::new_unchecked` bypasses it (R5): the classifier/exact API boundary MUST validate the containment for every rule, and the common finite ranked alphabet of rules and language, before emitting any class or certificate (`rule_contract_is_a_boundary_obligation_not_a_constructor_fact`) |
+| TRS `R` | `trs::TermSystem`; `Rule::new` enforces `Var(rhs) ⊆ Var(lhs)` (rule.rs:20) — but `Rule::new_unchecked` bypasses it (R5): `classify_system` validates the containment for every rule before emitting any class, and the exact (system, language) pair boundary additionally validates the common finite ranked alphabet before issuing an exact certificate (`rule_contract_is_a_boundary_obligation_not_a_constructor_fact`). Amended at cohort closeout: the witnessed lower bound (Task 27) is the documented exception — it replays over the union alphabet and carries `Partial` authority |
 | one-step rewrite at a position | application relation: `match_pattern` + `Substitution::apply` + `Term::replace_at` (oracle `successors()`) — see R1 resolution above |
 | recognizable language `L` | `language::TreeAutomaton` (bottom-up NFTA), canonical byte certificates |
 | determinization/completion | Task 20 (`determinize`, `completed`, `minimized`) |
@@ -195,11 +195,13 @@ is approximation/partial-authority only.
   must be provably a superset, and every linearization/merge/widen
   event must be recorded in the certificate. Design is Task 27
   research; this gate approves no specific upper construction.
-- **Partial authority:** saturation attempts that exceed budgets
-  return the partial frontier plus typed limit information — never a
-  silently truncated "fixpoint". Exact certificates are emitted only
-  after construction and canonicalization complete under budgets
-  (Task 26).
+- **Partial authority (amended at cohort closeout):** EXACT
+  saturation that exceeds budgets returns a typed limit error with no
+  frontier — never a silently truncated "fixpoint". The recoverable
+  frontier belongs to the witnessed lower bound (Task 27), a separate
+  API whose truncation is an Ok outcome recorded in its evidence
+  trace. Exact certificates are emitted only after construction and
+  canonicalization complete under budgets (Task 26).
 
 ## Resource obligations (R7)
 

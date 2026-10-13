@@ -5,18 +5,12 @@
 
 use amari_discovery::{
     ProbeEngine, RewriteBackwardSearchOutput, RewriteBackwardSearchRequest,
-    RewriteBidirectionalSearchOutput, RewriteGuidance, RewriteSearchMode, RewriteTerm,
+    RewriteBidirectionalSearchOutput, RewriteTerm,
 };
 use serde_json::json;
 
 const BACKWARD: &str = "amari-probe:rewrite:backward-search:v1";
 const BIDIRECTIONAL: &str = "amari-probe:rewrite:bidirectional-search:v1";
-
-fn var(name: &str) -> RewriteTerm {
-    RewriteTerm::Variable {
-        name: name.to_owned(),
-    }
-}
 
 fn sym(name: &str, arguments: Vec<RewriteTerm>) -> RewriteTerm {
     RewriteTerm::Symbol {
@@ -192,7 +186,7 @@ fn backward_search_input_is_strict_and_bounded() {
         .execute(&BACKWARD.parse().unwrap(), &bad)
         .is_err());
     // Beam width zero is rejected.
-    let mut bad = backward_request(json!({"kind": "heuristic_pruning", "beam_width": 0}));
+    let bad = backward_request(json!({"kind": "heuristic_pruning", "beam_width": 0}));
     assert!(ProbeEngine::new()
         .unwrap()
         .execute(&BACKWARD.parse().unwrap(), &bad)
