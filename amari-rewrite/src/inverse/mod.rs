@@ -97,7 +97,7 @@ impl<'a> BackwardSearch<'a> {
 
             for rule in self.system.rules() {
                 if let Some(subst) = match_pattern(rule.rhs(), subterm) {
-                    let predecessor_subterm = subst.apply(rule.lhs());
+                    let predecessor_subterm = subst.apply_matcher(rule.lhs());
                     if let Ok(predecessor) = term.replace_at(&path, predecessor_subterm) {
                         if predecessor != *term {
                             out.push(predecessor);

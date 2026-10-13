@@ -226,3 +226,40 @@ fn logic_var_display_is_stable() {
     let var = LogicVar::new(3, 7);
     assert_eq!(var.to_string(), "?3.7");
 }
+
+/// PR #302 round 3 P1 (reviewer repro): backward matching used deep
+/// application on matcher bindings. Matching `g(X, Y)` (the rhs of
+/// `f(X, Y) -> g(X, Y)`) against `g(Y, a)` bound `X := Y` and
+/// `Y := a`, and deep resolution collapsed the predecessor to
+/// `f(a, a)`. One-level matcher application yields `f(Y, a)`.
+#[test]
+fn backward_match_does_not_capture_same_named_target_variables() {
+    let sys = TermSystem::new(vec![Rule::new(parse("f(X, Y)"), parse("g(X, Y)")).unwrap()]);
+    let preds = predecessors(&sys, parse("g(Y, a)"), 1);
+    assert_eq!(preds, vec![parse("f(Y, a)")], "{preds:?}");
+}
+
+/// PR #302 round 3 P2 (reviewer repro): clause freshening applied
+/// the renaming DEEPLY, so a rule variable named like a fresh name
+/// in the same scope (`?0.1` under scope 0) chained
+/// `x -> ?0.1 -> ?0.0` and collapsed distinct rule variables —
+/// `symbolic_predecessors` wrongly returned []. Simultaneous
+/// (one-level) renaming keeps them distinct and finds `f(a, b)`.
+#[test]
+fn freshening_does_not_collapse_variables_named_like_fresh_names() {
+    let collision = Term::var("?0.1");
+    let plain = Term::var("x");
+    let rule = Rule::new(
+        Term::sym("f", [collision.clone(), plain.clone()]),
+        Term::sym("g", [collision, plain]),
+    )
+    .unwrap();
+    let sys = TermSystem::new(vec![rule]);
+    let target = Term::sym("g", [Term::constant("a"), Term::constant("b")]);
+    let preds = symbolic_predecessors(&sys, &target, &limits(), 0).unwrap();
+    assert_eq!(preds.len(), 1, "{preds:?}");
+    assert_eq!(
+        preds[0].term,
+        Term::sym("f", [Term::constant("a"), Term::constant("b")])
+    );
+}

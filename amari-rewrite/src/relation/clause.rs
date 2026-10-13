@@ -142,8 +142,8 @@ impl BackwardClause {
             }
         }
         FreshenedClause {
-            lhs: renaming.apply(&self.lhs),
-            rhs: renaming.apply(&self.rhs),
+            lhs: renaming.apply_matcher(&self.lhs),
+            rhs: renaming.apply_matcher(&self.rhs),
             erased: erased_vars,
         }
     }
