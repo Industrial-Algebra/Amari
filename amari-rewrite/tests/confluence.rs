@@ -339,3 +339,79 @@ fn assert_chain(system: &TermSystem, chain: &[Term]) {
         );
     }
 }
+
+/// PR #302 round 1 P1 (reviewer repro): a user variable literally
+/// named `cpRy` collides with the critical-pair rename prefix. The
+/// concrete peak from `k(c)` reaches distinct irreducibles `c` and
+/// `b`; the pair must be NotJoinable and the certificate false.
+#[test]
+fn certificate_is_capture_free_for_prefixed_user_variables() {
+    let original = system(vec![
+        rule(app("k", [y()]), app("f", [y(), a()])),
+        rule(app("k", [y()]), b()),
+        rule(app("f", [x(), Term::var("cpRy")]), x()),
+        rule(a(), b()),
+    ]);
+    let limits = RelationLimits::new(64, 16, 64, 1_000_000).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let outcome = local_confluence(&original, &mut resources).expect("report computed");
+    assert_eq!(outcome.pairs.len(), 1, "{outcome:#?}");
+    assert!(
+        matches!(outcome.pairs[0].1, PairJoinability::NotJoinable),
+        "{outcome:#?}"
+    );
+    assert!(!outcome.locally_confluent, "{outcome:#?}");
+    // Renaming the user variable must not change the verdict.
+    let renamed_system = system(vec![
+        rule(app("k", [y()]), app("f", [y(), a()])),
+        rule(app("k", [y()]), b()),
+        rule(app("f", [x(), Term::var("w")]), x()),
+        rule(a(), b()),
+    ]);
+    let mut resources = RelationResources::new(&limits);
+    let renamed = local_confluence(&renamed_system, &mut resources).expect("report computed");
+    assert_eq!(renamed.locally_confluent, outcome.locally_confluent);
+    assert!(
+        matches!(renamed.pairs[0].1, PairJoinability::NotJoinable),
+        "{renamed:#?}"
+    );
+}
+
+/// PR #302 round 1 P1 (allocation bypass): an oversized candidate
+/// must be shape-checked BEFORE construction, so rule order cannot
+/// skip its validation. Both orders of the `f` rules must produce
+/// the same typed error.
+#[test]
+fn oversized_successor_is_rejected_regardless_of_rule_order() {
+    // wide(x) = g(x, a x40): 42 nodes. big = wide(a) is 42 nodes
+    // (fits the 70-node limit); wide(big) is 83 nodes (does not).
+    let wide = |inner: Term| -> Term {
+        let mut args = Vec::from([inner]);
+        for _ in 0..40 {
+            args.push(a());
+        }
+        app("g", args)
+    };
+    let big = wide(a());
+    assert_eq!(big.positions().len(), 42);
+    let duplicating = || rule(app("f", [x()]), wide(x()));
+    let small_rule = rule(app("f", [x()]), app("end", []));
+    let base = vec![
+        rule(Term::var("z"), app("f", [big.clone()])),
+        rule(Term::var("z"), app("end", [])),
+    ];
+    let mut forward = base.clone();
+    forward.extend([small_rule.clone(), duplicating()]);
+    let mut reversed = base;
+    reversed.extend([duplicating(), small_rule]);
+    for rules in [forward, reversed] {
+        let system = system(rules);
+        let limits = RelationLimits::new(70, 16, 64, 1_000_000).expect("valid limits");
+        let mut resources = RelationResources::new(&limits);
+        let outcome = local_confluence(&system, &mut resources);
+        assert!(
+            matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+            "{outcome:?}"
+        );
+    }
+}

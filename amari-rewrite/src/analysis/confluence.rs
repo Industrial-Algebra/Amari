@@ -14,7 +14,8 @@
 //! grow *forward* from the two sides of the pair — the root side
 //! (`pair.root_step`) and the position side (`pair.position_step`) —
 //! and the meet is a frontier intersection, never backward rewriting.
-//! Each side runs a breadth-first enumeration of [`TermSystem::successors`]
+//! Each side runs a breadth-first enumeration of metered successors
+//! (lazy, shape-validated before construction; see `metered_successors`)
 //! in its deterministic order; a `BTreeSet` visited set kills cycles,
 //! so a cyclic successor graph terminates as soon as both closures are
 //! exhausted.
@@ -48,9 +49,10 @@ use alloc::vec::Vec;
 use crate::analysis::critical_pairs::critical_pairs;
 use crate::analysis::unify::{term_depth, term_nodes};
 use crate::analysis::CriticalPair;
-use crate::error::RewriteResult;
+use crate::error::{RewriteError, RewriteResult};
 use crate::relation::RelationResources;
-use crate::trs::{Term, TermSystem};
+use crate::trs::{Substitution, Term, TermSystem};
+use crate::Path;
 
 /// A concrete common reduct of a critical pair, with both derivation
 /// chains.
@@ -123,6 +125,122 @@ pub fn local_confluence(
     })
 }
 
+/// Lazily enumerated one-step successors with PRE-CONSTRUCTION shape
+/// validation (PR #302 round 1): the rewritten shape is computed
+/// from the match substitution before any allocation, so an
+/// oversized candidate errors regardless of rule order and no
+/// oversized term is ever materialized. Every matched application is
+/// charged (including identity instances, which are constructed and
+/// then filtered, matching `TermSystem::successors` semantics).
+fn metered_successors(
+    system: &TermSystem,
+    term: &Term,
+    resources: &mut RelationResources,
+) -> RewriteResult<Vec<Term>> {
+    let mut out = Vec::new();
+    for path in term.positions() {
+        let subterm = term.subterm(&path).ok_or(RewriteError::InvalidPath)?;
+        let (spine_nodes, spine_depth) = spine_shape(term, &path);
+        for rule in system.rules() {
+            let Some(subst) = rule.matches(subterm) else {
+                continue;
+            };
+            let (inner_nodes, inner_depth) = matched_shape(rule.rhs(), &subst);
+            let nodes = spine_nodes.saturating_add(inner_nodes);
+            let depth = spine_depth.max(path.as_slice().len().saturating_add(inner_depth));
+            resources.record_term(nodes, depth)?;
+            let replacement = subst.apply_matcher(rule.rhs());
+            let rewritten = term.replace_at(&path, replacement)?;
+            if rewritten != *term {
+                out.push(rewritten);
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// Exact `(nodes, depth)` of `template` under a MATCH substitution:
+/// one-level, ranges counted verbatim (never chain-resolved), so the
+/// shape equals what [`Substitution::apply_matcher`] will build.
+/// Saturating arithmetic fails closed.
+fn matched_shape(template: &Term, subst: &Substitution) -> (usize, usize) {
+    struct Frame<'a> {
+        term: &'a Term,
+        path_len: usize,
+    }
+    let mut nodes = 0usize;
+    let mut depth = 0usize;
+    let mut stack = Vec::from([Frame {
+        term: template,
+        path_len: 0,
+    }]);
+    while let Some(frame) = stack.pop() {
+        match frame.term {
+            Term::Var(variable) => {
+                let (bound_nodes, bound_depth) = subst
+                    .get_var(variable)
+                    .map(|bound| (term_nodes(bound), term_depth(bound)))
+                    .unwrap_or((1, 1));
+                nodes = nodes.saturating_add(bound_nodes);
+                depth = depth.max(frame.path_len.saturating_add(bound_depth));
+            }
+            Term::Sym(_, args) => {
+                nodes = nodes.saturating_add(1);
+                if args.is_empty() {
+                    depth = depth.max(frame.path_len + 1);
+                }
+                for arg in args.iter() {
+                    stack.push(Frame {
+                        term: arg,
+                        path_len: frame.path_len + 1,
+                    });
+                }
+            }
+        }
+    }
+    (nodes, depth)
+}
+
+/// Exact `(nodes, depth)` of `term` with the subtree at `except`
+/// removed (the spine): `spine_shape(t, p)` plus the shape of the
+/// replacement gives the exact shape of `t.replace_at(p, _)`.
+fn spine_shape(term: &Term, except: &Path) -> (usize, usize) {
+    struct Frame<'a> {
+        term: &'a Term,
+        path: Path,
+    }
+    let mut nodes = 0usize;
+    let mut depth = 0usize;
+    let mut stack = Vec::from([Frame {
+        term,
+        path: Path::root(),
+    }]);
+    while let Some(frame) = stack.pop() {
+        if frame.path.as_slice() == except.as_slice() {
+            continue;
+        }
+        match frame.term {
+            Term::Var(_) => {
+                nodes = nodes.saturating_add(1);
+                depth = depth.max(frame.path.as_slice().len() + 1);
+            }
+            Term::Sym(_, args) => {
+                nodes = nodes.saturating_add(1);
+                if args.is_empty() {
+                    depth = depth.max(frame.path.as_slice().len() + 1);
+                }
+                for (index, arg) in args.iter().enumerate() {
+                    stack.push(Frame {
+                        term: arg,
+                        path: frame.path.child(index),
+                    });
+                }
+            }
+        }
+    }
+    (nodes, depth)
+}
+
 /// One bounded bidirectional search over the pair's two sides.
 fn analyze_pair(
     system: &TermSystem,
@@ -155,8 +273,7 @@ fn analyze_pair(
         let mut next_left = VecDeque::new();
         while let Some(node) = left_frontier.pop_front() {
             resources.record_operations(1)?;
-            for successor in system.successors(&node)? {
-                resources.record_term(term_nodes(&successor), term_depth(&successor))?;
+            for successor in metered_successors(system, &node, resources)? {
                 if !left_visited.insert(successor.clone()) {
                     continue;
                 }
@@ -179,8 +296,7 @@ fn analyze_pair(
         let mut next_right = VecDeque::new();
         while let Some(node) = right_frontier.pop_front() {
             resources.record_operations(1)?;
-            for successor in system.successors(&node)? {
-                resources.record_term(term_nodes(&successor), term_depth(&successor))?;
+            for successor in metered_successors(system, &node, resources)? {
                 if !right_visited.insert(successor.clone()) {
                     continue;
                 }

@@ -9151,6 +9151,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::prelude::Substitution::apply_matcher",
+      "kind": "method",
+      "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::substitution",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+          "source_path": "amari-rewrite/src/trs/substitution.rs",
+          "source_module": "amari_rewrite::trs::substitution",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::substitution",
+          "declaration_ident": "Substitution::apply_matcher"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::prelude::Substitution::compose",
       "kind": "method",
       "signature": "pub fn compose (& self , inner : & Self) -> crate :: error :: RewriteResult < Self >",
@@ -13059,6 +13078,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::trs::substitution",
           "declaration_ident": "Substitution::apply"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::trs::Substitution::apply_matcher",
+      "kind": "method",
+      "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::substitution",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+          "source_path": "amari-rewrite/src/trs/substitution.rs",
+          "source_module": "amari_rewrite::trs::substitution",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::substitution",
+          "declaration_ident": "Substitution::apply_matcher"
         }
       ]
     },
@@ -25328,9 +25366,17 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::prelude::Substitution::apply_matcher",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::prelude::Substitution::compose",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -25362,7 +25408,7 @@
     {
       "path": "amari_rewrite::prelude::Substitution::is_empty",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -25378,7 +25424,7 @@
     {
       "path": "amari_rewrite::prelude::Substitution::len",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26792,9 +26838,17 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::trs::Substitution::apply_matcher",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::trs::Substitution::compose",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26826,7 +26880,7 @@
     {
       "path": "amari_rewrite::trs::Substitution::is_empty",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26842,7 +26896,7 @@
     {
       "path": "amari_rewrite::trs::Substitution::len",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
