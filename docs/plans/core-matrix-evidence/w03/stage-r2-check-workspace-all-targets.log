@@ -34,7 +34,7 @@ warning: unused import: `RewriteResidual`
    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 warning: `amari-rewrite` (test "residual_roundtrip") generated 1 warning (run `cargo fix --test "residual_roundtrip" -p amari-rewrite` to apply 1 suggestion)
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
 warning: unused import: `PreimageCertificate`
   --> amari-rewrite/tests/saturation_preimage.rs:13:48
    |

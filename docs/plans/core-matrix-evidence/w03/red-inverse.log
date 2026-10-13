@@ -1,4 +1,4 @@
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
      Running tests/zz_red_inverse_only.rs (target/w03/debug/deps/zz_red_inverse_only-96bc4d4e9d5fc7f5)
 

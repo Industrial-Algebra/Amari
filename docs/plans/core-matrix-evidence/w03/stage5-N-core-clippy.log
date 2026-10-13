@@ -67,7 +67,7 @@
     Checking regex v1.13.1
     Checking tinytemplate v1.2.1
     Checking dashu-float v0.4.5
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
     Checking half v2.7.1
     Checking ppv-lite86 v0.2.21
     Checking ciborium-ll v0.2.2

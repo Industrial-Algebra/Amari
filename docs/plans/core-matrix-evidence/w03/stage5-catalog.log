@@ -51,28 +51,28 @@
    Compiling schemars_derive v1.2.2
    Compiling ref-cast v1.0.27
    Compiling thiserror v2.0.21
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
-   Compiling amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-cgt)
-   Compiling amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-rewrite)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+   Compiling amari-cgt v0.24.1 ($AMARI/.worktrees/core-w03/amari-cgt)
+   Compiling amari-rewrite v0.24.1 ($AMARI/.worktrees/core-w03/amari-rewrite)
    Compiling nalgebra-macros v0.3.0
    Compiling regex v1.13.1
    Compiling bstr v1.13.1
    Compiling clap v4.6.7
-   Compiling amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-surreal)
-   Compiling amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-dual)
-   Compiling amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-tropical)
-   Compiling amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-info-geom)
-   Compiling amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-holographic)
-   Compiling amari-surcomplex v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-surcomplex)
+   Compiling amari-surreal v0.24.1 ($AMARI/.worktrees/core-w03/amari-surreal)
+   Compiling amari-dual v0.24.1 ($AMARI/.worktrees/core-w03/amari-dual)
+   Compiling amari-tropical v0.24.1 ($AMARI/.worktrees/core-w03/amari-tropical)
+   Compiling amari-info-geom v0.24.1 ($AMARI/.worktrees/core-w03/amari-info-geom)
+   Compiling amari-holographic v0.24.1 ($AMARI/.worktrees/core-w03/amari-holographic)
+   Compiling amari-surcomplex v0.24.1 ($AMARI/.worktrees/core-w03/amari-surcomplex)
    Compiling predicates v3.1.4
    Compiling nalgebra v0.35.0
-   Compiling amari-discovery-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-discovery-macros)
-   Compiling amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-optimization)
+   Compiling amari-discovery-macros v0.24.1 ($AMARI/.worktrees/core-w03/amari-discovery-macros)
+   Compiling amari-optimization v0.24.1 ($AMARI/.worktrees/core-w03/amari-optimization)
    Compiling assert_cmd v2.2.2
    Compiling serde v1.0.229
    Compiling schemars v1.2.2
-   Compiling amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-network)
-   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-discovery)
+   Compiling amari-network v0.24.1 ($AMARI/.worktrees/core-w03/amari-network)
+   Compiling amari-discovery v0.24.1 ($AMARI/.worktrees/core-w03/amari-discovery)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.98s
      Running `target/w03/debug/examples/generate_catalog .`
 Generated split catalog: 28 crates, 11100 items, 107 dependency edges, hash 751756ba3aec2371abf282a36b1b16c8c4fc459996239388823cb1ae1cabe546 (28 crate files + manifest.json + index.rs)

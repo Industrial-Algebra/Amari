@@ -440,3 +440,15 @@ Reviewer validation totals: 20,000 + 3,000 (R4 primitives) + 50,000 (25k per R5 
 PR-level comment review posted 0 P1 / 2 P2:
 - **P2 catalog manifest conflict with develop** — develop advanced via PRs #288 (cohort5 closeout) and #297 (netlify bump). Merged origin/develop @4af4d08; manifest conflicted (the one shared catalog file — expected under CAT1 when both sides regen); resolved by regenerating from the merged tree: `5442f990…`, 11,101 items (+1 surface item from #288's changes). Workspace check 0, 385 core tests, fmt clean, lock unchanged (`merge-297-288-*.log`).
 - **P2 universal bit-exact claim** — the PR body said "every executed counterexample pinned bit-exact"; two regressions use the disclosed ≤1-ulp convention (round-3 e123, round-4 P1-2b e123). PR body amended to "pinned exactly or within the disclosed 1-ulp mantissa convention".
+
+## Evidence hygiene (pre-merge, 2026-10-13)
+
+All 57 evidence files carrying local absolute paths were scrubbed before merge:
+`/home/lucien/working/industrial-algebra/Amari` → `$AMARI`, remaining `/home/lucien` → `$HOME`
+(286 occurrences; zero remain; no other file content altered). **Gate recipe addition for all
+future work packages:** apply this rewrite to archived logs before committing evidence —
+```
+python3 -c "from pathlib import Path; import sys; [Path(f).write_text(Path(f).read_text().replace('/home/lucien/working/industrial-algebra/Amari','\$AMARI').replace('/home/lucien','\$HOME')) for f in sys.argv[1:]]" <files>
+```
+Develop's pre-existing evidence (w00–w02, audits) still carries unscrubbed paths; a one-sweep
+cleanup PR can follow at the operator's discretion.

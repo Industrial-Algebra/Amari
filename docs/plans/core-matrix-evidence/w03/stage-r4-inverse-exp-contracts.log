@@ -1,5 +1,5 @@
 # command: cargo test -p amari-core --test inverse_exp_contracts
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.51s
      Running tests/inverse_exp_contracts.rs (target/w03/debug/build/amari-core/eaaa4498fc3420b4/out/inverse_exp_contracts-eaaa4498fc3420b4)
 

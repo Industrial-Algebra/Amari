@@ -1,4 +1,4 @@
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.22s
      Running tests/inverse_contracts_green.rs (target/w03/debug/deps/inverse_contracts_green-894788247fae1b76)
 

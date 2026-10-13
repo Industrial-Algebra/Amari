@@ -1,4 +1,4 @@
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
 warning: unused imports: `GuidanceMode`, `ReplayCertificate`, `ReplayQuery`, and `ResourceObservation`
  --> amari-rewrite/tests/inverse_remediation.rs:6:5
   |
@@ -41,26 +41,26 @@ warning: unused import: `RewriteResidual`
    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 warning: `amari-rewrite` (test "residual_roundtrip") generated 1 warning (run `cargo fix --test "residual_roundtrip" -p amari-rewrite` to apply 1 suggestion)
-    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-dual)
-    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-tropical)
-    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-info-geom)
-    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-holographic)
-    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-relativistic)
-    Checking amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-enumerative)
-    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-network)
-    Checking amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-optimization)
-    Checking amari-measure v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-measure)
-    Checking amari-fusion v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-fusion)
-    Checking amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-automata)
-    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-gpu)
-    Checking amari-calculus v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-calculus)
-    Checking amari-probabilistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-probabilistic)
-    Checking amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-discovery)
-    Checking amari v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03)
-    Checking amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-functional)
-    Checking amari-topology v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-topology)
-    Checking amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-dynamics)
-    Checking amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-wasm)
+    Checking amari-dual v0.24.1 ($AMARI/.worktrees/core-w03/amari-dual)
+    Checking amari-tropical v0.24.1 ($AMARI/.worktrees/core-w03/amari-tropical)
+    Checking amari-info-geom v0.24.1 ($AMARI/.worktrees/core-w03/amari-info-geom)
+    Checking amari-holographic v0.24.1 ($AMARI/.worktrees/core-w03/amari-holographic)
+    Checking amari-relativistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-relativistic)
+    Checking amari-enumerative v0.24.1 ($AMARI/.worktrees/core-w03/amari-enumerative)
+    Checking amari-network v0.24.1 ($AMARI/.worktrees/core-w03/amari-network)
+    Checking amari-optimization v0.24.1 ($AMARI/.worktrees/core-w03/amari-optimization)
+    Checking amari-measure v0.24.1 ($AMARI/.worktrees/core-w03/amari-measure)
+    Checking amari-fusion v0.24.1 ($AMARI/.worktrees/core-w03/amari-fusion)
+    Checking amari-automata v0.24.1 ($AMARI/.worktrees/core-w03/amari-automata)
+    Checking amari-gpu v0.24.1 ($AMARI/.worktrees/core-w03/amari-gpu)
+    Checking amari-calculus v0.24.1 ($AMARI/.worktrees/core-w03/amari-calculus)
+    Checking amari-probabilistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-probabilistic)
+    Checking amari-discovery v0.24.1 ($AMARI/.worktrees/core-w03/amari-discovery)
+    Checking amari v0.24.1 ($AMARI/.worktrees/core-w03)
+    Checking amari-functional v0.24.1 ($AMARI/.worktrees/core-w03/amari-functional)
+    Checking amari-topology v0.24.1 ($AMARI/.worktrees/core-w03/amari-topology)
+    Checking amari-dynamics v0.24.1 ($AMARI/.worktrees/core-w03/amari-dynamics)
+    Checking amari-wasm v0.24.1 ($AMARI/.worktrees/core-w03/amari-wasm)
 warning: unused imports: `RewriteGuidance` and `RewriteSearchMode`
  --> amari-discovery/tests/probe_rewrite_inverse_search.rs:8:39
   |

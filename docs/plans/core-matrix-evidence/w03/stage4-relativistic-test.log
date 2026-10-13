@@ -8,7 +8,7 @@
    Compiling num-complex v0.4.6
    Compiling nalgebra-macros v0.3.0
    Compiling num-rational v0.4.2
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
    Compiling matrixmultiply v0.3.11
    Compiling wide v1.7.1
    Compiling regex-automata v0.4.18
@@ -16,7 +16,7 @@
    Compiling criterion v0.8.2
    Compiling simba v0.10.2
    Compiling nalgebra v0.35.0
-   Compiling amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-relativistic)
+   Compiling amari-relativistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-relativistic)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 7.35s
      Running unittests src/lib.rs (target/w03/debug/deps/amari_relativistic-84684f693335648c)
 

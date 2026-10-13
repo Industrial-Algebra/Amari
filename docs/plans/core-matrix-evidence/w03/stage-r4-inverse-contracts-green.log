@@ -1,5 +1,5 @@
 # command: cargo test -p amari-core --test inverse_contracts_green
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.21s
      Running tests/inverse_contracts_green.rs (target/w03/debug/build/amari-core/f5ddd313d12c0184/out/inverse_contracts_green-f5ddd313d12c0184)
 

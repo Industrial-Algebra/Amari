@@ -35,7 +35,7 @@
    Compiling itoa v1.0.18
     Checking dyn-clone v1.0.20
     Checking predicates-core v1.0.10
-   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-discovery)
+   Compiling amari-discovery v0.24.1 ($AMARI/.worktrees/core-w03/amari-discovery)
     Checking hex v0.4.3
     Checking termtree v0.5.1
     Checking difflib v0.4.0
@@ -113,12 +113,12 @@
     Checking toml_parser v1.1.5+spec-1.1.0
     Checking regex-automata v0.4.18
     Checking gpu-descriptor v0.2.4
-   Compiling amari-flynn-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-flynn-macros)
+   Compiling amari-flynn-macros v0.24.1 ($AMARI/.worktrees/core-w03/amari-flynn-macros)
    Compiling serde v1.0.229
     Checking toml v1.1.8+spec-1.1.0
     Checking glob v0.3.4
    Compiling thiserror v2.0.21
-   Compiling amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-wasm)
+   Compiling amari-wasm v0.24.1 ($AMARI/.worktrees/core-w03/amari-wasm)
     Checking cfg-if v1.0.5
     Checking approx v0.5.1
     Checking num-integer v0.1.47
@@ -131,7 +131,7 @@
     Checking nu-ansi-term v0.50.3
     Checking wasm-bindgen-test-shared v0.2.129
     Checking tempfile v3.27.0
-    Checking amari-flynn v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-flynn)
+    Checking amari-flynn v0.24.1 ($AMARI/.worktrees/core-w03/amari-flynn)
     Checking rusty-fork v0.3.1
     Checking proptest v1.11.0
     Checking naga v0.19.2
@@ -139,10 +139,10 @@
     Checking num-rational v0.4.2
    Compiling serde_derive_internals v0.30.0
    Compiling wasm-bindgen-macro-support v0.2.129
-   Compiling amari-discovery-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-discovery-macros)
+   Compiling amari-discovery-macros v0.24.1 ($AMARI/.worktrees/core-w03/amari-discovery-macros)
     Checking regex v1.13.1
     Checking bstr v1.13.1
-    Checking amari-rewrite-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-rewrite-macros)
+    Checking amari-rewrite-macros v0.24.1 ($AMARI/.worktrees/core-w03/amari-rewrite-macros)
     Checking predicates v3.1.4
    Compiling thiserror-impl v2.0.21
    Compiling serde_derive v1.0.229
@@ -158,22 +158,22 @@
     Checking futures-util v0.3.34
     Checking bytemuck v1.25.2
     Checking safe_arch v1.2.0
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
-    Checking amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-rewrite)
-    Checking amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-cgt)
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+    Checking amari-rewrite v0.24.1 ($AMARI/.worktrees/core-w03/amari-rewrite)
+    Checking amari-cgt v0.24.1 ($AMARI/.worktrees/core-w03/amari-cgt)
     Checking wide v1.7.1
-    Checking amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-surreal)
-    Checking amari-surcomplex v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-surcomplex)
+    Checking amari-surreal v0.24.1 ($AMARI/.worktrees/core-w03/amari-surreal)
+    Checking amari-surcomplex v0.24.1 ($AMARI/.worktrees/core-w03/amari-surcomplex)
     Checking clap v4.6.7
-    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-dual)
-    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-tropical)
-    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-info-geom)
-    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-holographic)
-    Checking amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-enumerative)
-    Checking amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-optimization)
-    Checking amari-measure v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-measure)
-    Checking amari-fusion v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-fusion)
-    Checking amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-automata)
+    Checking amari-dual v0.24.1 ($AMARI/.worktrees/core-w03/amari-dual)
+    Checking amari-tropical v0.24.1 ($AMARI/.worktrees/core-w03/amari-tropical)
+    Checking amari-info-geom v0.24.1 ($AMARI/.worktrees/core-w03/amari-info-geom)
+    Checking amari-holographic v0.24.1 ($AMARI/.worktrees/core-w03/amari-holographic)
+    Checking amari-enumerative v0.24.1 ($AMARI/.worktrees/core-w03/amari-enumerative)
+    Checking amari-optimization v0.24.1 ($AMARI/.worktrees/core-w03/amari-optimization)
+    Checking amari-measure v0.24.1 ($AMARI/.worktrees/core-w03/amari-measure)
+    Checking amari-fusion v0.24.1 ($AMARI/.worktrees/core-w03/amari-fusion)
+    Checking amari-automata v0.24.1 ($AMARI/.worktrees/core-w03/amari-automata)
 warning: unused import: `RewriteResidual`
   --> amari-rewrite/tests/residual_roundtrip.rs:10:49
    |
@@ -217,14 +217,14 @@ warning: unused import: `Substitution`
 warning: `amari-rewrite` (test "saturation_preimage") generated 1 warning (run `cargo fix --test "saturation_preimage" -p amari-rewrite` to apply 1 suggestion)
    Compiling wasm-bindgen-macro v0.2.129
 warning: `amari-rewrite` (test "relation_grounding") generated 2 warnings (run `cargo fix --test "relation_grounding" -p amari-rewrite` to apply 2 suggestions)
-    Checking amari-calculus v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-calculus)
-    Checking amari-probabilistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-probabilistic)
+    Checking amari-calculus v0.24.1 ($AMARI/.worktrees/core-w03/amari-calculus)
+    Checking amari-probabilistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-probabilistic)
     Checking trybuild v1.0.122
     Checking schemars v1.2.2
     Checking tinytemplate v1.2.1
     Checking ciborium v0.2.2
-    Checking amari-topology v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-topology)
-    Checking amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-functional)
+    Checking amari-topology v0.24.1 ($AMARI/.worktrees/core-w03/amari-topology)
+    Checking amari-functional v0.24.1 ($AMARI/.worktrees/core-w03/amari-functional)
     Checking futures-executor v0.3.34
     Checking futures v0.3.34
     Checking criterion v0.8.2
@@ -236,11 +236,11 @@ warning: `amari-rewrite` (test "relation_grounding") generated 2 warnings (run `
     Checking web-sys v0.3.106
     Checking serde-wasm-bindgen v0.6.5
     Checking wasm-bindgen-test v0.3.79
-    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-network)
-    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-relativistic)
-    Checking amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-dynamics)
-    Checking amari v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03)
-    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-gpu)
+    Checking amari-network v0.24.1 ($AMARI/.worktrees/core-w03/amari-network)
+    Checking amari-relativistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-relativistic)
+    Checking amari-dynamics v0.24.1 ($AMARI/.worktrees/core-w03/amari-dynamics)
+    Checking amari v0.24.1 ($AMARI/.worktrees/core-w03)
+    Checking amari-gpu v0.24.1 ($AMARI/.worktrees/core-w03/amari-gpu)
 warning: unused imports: `RewriteGuidance` and `RewriteSearchMode`
  --> amari-discovery/tests/probe_rewrite_inverse_search.rs:8:39
   |

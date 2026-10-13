@@ -1,6 +1,6 @@
 # toolchain: rustc 1.100.0-nightly (787af2b8c 2026-08-25) | cargo: cargo 1.100.0-nightly (e8cb624d5 2026-08-22) | clippy: clippy 0.1.100 (787af2b8c8 2026-08-25)
 # command: cargo test -p amari-core --lib
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.53s
      Running unittests src/lib.rs (target/w03/debug/build/amari-core/45414bd1af55ed51/out/amari_core-45414bd1af55ed51)
 

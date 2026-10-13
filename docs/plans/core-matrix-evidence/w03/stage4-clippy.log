@@ -1,8 +1,8 @@
    Compiling syn v3.0.7
     Checking serde_json v1.0.151
     Checking safe_arch v1.2.0
-   Compiling amari-flynn-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-flynn-macros)
-   Compiling amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-wasm)
+   Compiling amari-flynn-macros v0.24.1 ($AMARI/.worktrees/core-w03/amari-flynn-macros)
+   Compiling amari-wasm v0.24.1 ($AMARI/.worktrees/core-w03/amari-wasm)
     Checking ppv-lite86 v0.2.21
     Checking tempfile v3.27.0
     Checking futures-util v0.3.34
@@ -11,34 +11,34 @@
     Checking rand_chacha v0.10.0
     Checking proptest v1.11.0
     Checking wide v1.7.1
-    Checking amari-flynn v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-flynn)
+    Checking amari-flynn v0.24.1 ($AMARI/.worktrees/core-w03/amari-flynn)
    Compiling wasm-bindgen-macro-support v0.2.129
    Compiling thiserror-impl v2.0.21
    Compiling serde_derive v1.0.229
    Compiling async-trait v0.1.92
    Compiling wasm-bindgen-test-macro v0.3.79
     Checking thiserror v2.0.21
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
-    Checking amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-cgt)
-    Checking amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-surreal)
-    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-tropical)
-    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-dual)
-    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-info-geom)
-    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-holographic)
-    Checking amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-enumerative)
-    Checking amari-surcomplex v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-surcomplex)
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+    Checking amari-cgt v0.24.1 ($AMARI/.worktrees/core-w03/amari-cgt)
+    Checking amari-surreal v0.24.1 ($AMARI/.worktrees/core-w03/amari-surreal)
+    Checking amari-tropical v0.24.1 ($AMARI/.worktrees/core-w03/amari-tropical)
+    Checking amari-dual v0.24.1 ($AMARI/.worktrees/core-w03/amari-dual)
+    Checking amari-info-geom v0.24.1 ($AMARI/.worktrees/core-w03/amari-info-geom)
+    Checking amari-holographic v0.24.1 ($AMARI/.worktrees/core-w03/amari-holographic)
+    Checking amari-enumerative v0.24.1 ($AMARI/.worktrees/core-w03/amari-enumerative)
+    Checking amari-surcomplex v0.24.1 ($AMARI/.worktrees/core-w03/amari-surcomplex)
     Checking simba v0.10.2
-    Checking amari-measure v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-measure)
-    Checking amari-fusion v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-fusion)
-    Checking amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-optimization)
-    Checking amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-automata)
+    Checking amari-measure v0.24.1 ($AMARI/.worktrees/core-w03/amari-measure)
+    Checking amari-fusion v0.24.1 ($AMARI/.worktrees/core-w03/amari-fusion)
+    Checking amari-optimization v0.24.1 ($AMARI/.worktrees/core-w03/amari-optimization)
+    Checking amari-automata v0.24.1 ($AMARI/.worktrees/core-w03/amari-automata)
     Checking serde v1.0.229
-    Checking amari-calculus v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-calculus)
-    Checking amari-probabilistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-probabilistic)
+    Checking amari-calculus v0.24.1 ($AMARI/.worktrees/core-w03/amari-calculus)
+    Checking amari-probabilistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-probabilistic)
     Checking ciborium v0.2.2
     Checking tinytemplate v1.2.1
-    Checking amari-topology v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-topology)
-    Checking amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-functional)
+    Checking amari-topology v0.24.1 ($AMARI/.worktrees/core-w03/amari-topology)
+    Checking amari-functional v0.24.1 ($AMARI/.worktrees/core-w03/amari-functional)
    Compiling wasm-bindgen-macro v0.2.129
     Checking criterion v0.8.2
     Checking wasm-bindgen v0.2.129
@@ -49,7 +49,7 @@
     Checking serde-wasm-bindgen v0.6.5
     Checking web-sys v0.3.106
     Checking wasm-bindgen-test v0.3.79
-    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-network)
-    Checking amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-dynamics)
-    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-relativistic)
+    Checking amari-network v0.24.1 ($AMARI/.worktrees/core-w03/amari-network)
+    Checking amari-dynamics v0.24.1 ($AMARI/.worktrees/core-w03/amari-dynamics)
+    Checking amari-relativistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-relativistic)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.23s

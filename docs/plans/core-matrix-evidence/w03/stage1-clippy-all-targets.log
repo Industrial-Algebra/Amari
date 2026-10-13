@@ -1,4 +1,4 @@
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
 error[E0599]: no method named `expect` found for struct `amari_core::Multivector<P, Q, R>` in the current scope
    --> amari-core/tests/inverse_exp_contracts.rs:101:21
     |

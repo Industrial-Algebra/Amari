@@ -79,7 +79,7 @@
    Compiling thiserror-impl v2.0.21
    Compiling regex v1.13.1
    Compiling zerocopy-derive v0.8.62
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
    Compiling tinytemplate v1.2.1
    Compiling half v2.7.1
    Compiling ppv-lite86 v0.2.21

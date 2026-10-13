@@ -1,4 +1,4 @@
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w03/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 1.33s
      Running unittests src/lib.rs (target/w03-nightly/x86_64-unknown-linux-gnu/debug/build/amari-core/0076f28a83050aa3/out/amari_core-0076f28a83050aa3)
 
