@@ -324,7 +324,7 @@ fn explicit_input_routes_through_process_supervisor_with_math_parity() {
     assert_eq!(value["data"]["isolation"], "process");
     assert_eq!(value["data"]["hard_timeout"], true);
     assert_eq!(value["data"]["crash_isolation"], true);
-    assert_eq!(value["data"]["timeout_millis"], 5_000);
+    assert_eq!(value["data"]["timeout_millis"], 15_000);
     assert_eq!(
         value["provenance"]["catalog"]["hash"],
         value["data"]["result"]["catalog_hash"]

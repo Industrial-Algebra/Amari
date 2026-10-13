@@ -104,7 +104,13 @@ impl Default for ResourceLimits {
             max_inspection_wall_millis: 60_000, // 60 seconds
             max_probe_input_bytes: 1024 * 1024,
             max_probe_output_bytes: 1024 * 1024,
-            probe_timeout_millis: 5_000,
+            // Bounds a hung or runaway worker process, including spawn,
+            // startup (catalog load), and probe execution. Sized for the
+            // debug-profile startup margin observed on hosted CI runners
+            // (~5 s worker lifetime vs the former 5 s deadline — Amari
+            // PR #288 CI flake, 2026-10-12); 15 s restores headroom while
+            // still bounding hung workers tightly.
+            probe_timeout_millis: 15_000,
         }
     }
 }
