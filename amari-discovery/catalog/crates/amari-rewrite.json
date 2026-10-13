@@ -982,6 +982,136 @@
       ]
     },
     {
+      "path": "amari_rewrite::analysis::CriticalPair",
+      "kind": "struct",
+      "signature": "pub struct CriticalPair",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "left_rule",
+            "ty": "usize"
+          },
+          {
+            "label": "right_rule",
+            "ty": "usize"
+          },
+          {
+            "label": "path",
+            "ty": "Path"
+          },
+          {
+            "label": "overlap",
+            "ty": "Term"
+          },
+          {
+            "label": "root_step",
+            "ty": "Term"
+          },
+          {
+            "label": "position_step",
+            "ty": "Term"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::critical_pairs",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CriticalPair",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "left_rule",
+                "ty": "usize"
+              },
+              {
+                "label": "right_rule",
+                "ty": "usize"
+              },
+              {
+                "label": "path",
+                "ty": "Path"
+              },
+              {
+                "label": "overlap",
+                "ty": "Term"
+              },
+              {
+                "label": "root_step",
+                "ty": "Term"
+              },
+              {
+                "label": "position_step",
+                "ty": "Term"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+          "source_module": "amari_rewrite::analysis::critical_pairs",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::critical_pairs",
+          "declaration_ident": "CriticalPair"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::CriticalPairReport",
+      "kind": "struct",
+      "signature": "pub struct CriticalPairReport",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "pairs",
+            "ty": "Vec < CriticalPair >"
+          },
+          {
+            "label": "trivial_excluded",
+            "ty": "usize"
+          },
+          {
+            "label": "non_left_linear_rules",
+            "ty": "Vec < usize >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::critical_pairs",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CriticalPairReport",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "pairs",
+                "ty": "Vec < CriticalPair >"
+              },
+              {
+                "label": "trivial_excluded",
+                "ty": "usize"
+              },
+              {
+                "label": "non_left_linear_rules",
+                "ty": "Vec < usize >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+          "source_module": "amari_rewrite::analysis::critical_pairs",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::critical_pairs",
+          "declaration_ident": "CriticalPairReport"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::analysis::InverseAnalyzer",
       "kind": "struct",
       "signature": "pub struct InverseAnalyzer",
@@ -1211,6 +1341,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::analysis::inverse",
           "declaration_ident": "RuleAnalysis"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::critical_pairs",
+      "kind": "fn",
+      "signature": "pub fn critical_pairs (system : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < CriticalPairReport >",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::critical_pairs",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn critical_pairs (system : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < CriticalPairReport >",
+          "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+          "source_module": "amari_rewrite::analysis::critical_pairs",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::critical_pairs",
+          "declaration_ident": "critical_pairs"
         }
       ]
     },
@@ -9368,6 +9517,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::prelude::Term::variable_occurrences",
+      "kind": "method",
+      "signature": "pub fn variable_occurrences (& self) -> Vec < (Variable , Path) >",
+      "source_path": "amari-rewrite/src/trs/term.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::term",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn variable_occurrences (& self) -> Vec < (Variable , Path) >",
+          "source_path": "amari-rewrite/src/trs/term.rs",
+          "source_module": "amari_rewrite::trs::term",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::term",
+          "declaration_ident": "Term::variable_occurrences"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::prelude::Term::variables",
       "kind": "method",
       "signature": "pub fn variables (& self) -> Vec < Variable >",
@@ -9608,6 +9776,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::trs::rule",
           "declaration_ident": "Rule::apply_root"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::prelude::TrsRule::is_left_linear",
+      "kind": "method",
+      "signature": "pub fn is_left_linear (& self) -> bool",
+      "source_path": "amari-rewrite/src/trs/rule.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::rule",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_left_linear (& self) -> bool",
+          "source_path": "amari-rewrite/src/trs/rule.rs",
+          "source_module": "amari_rewrite::trs::rule",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::rule",
+          "declaration_ident": "Rule::is_left_linear"
         }
       ]
     },
@@ -12532,6 +12719,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::trs::Rule::is_left_linear",
+      "kind": "method",
+      "signature": "pub fn is_left_linear (& self) -> bool",
+      "source_path": "amari-rewrite/src/trs/rule.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::rule",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_left_linear (& self) -> bool",
+          "source_path": "amari-rewrite/src/trs/rule.rs",
+          "source_module": "amari_rewrite::trs::rule",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::rule",
+          "declaration_ident": "Rule::is_left_linear"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::trs::Rule::lhs",
       "kind": "method",
       "signature": "pub fn lhs (& self) -> & Term",
@@ -13128,6 +13334,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::trs::Term::variable_occurrences",
+      "kind": "method",
+      "signature": "pub fn variable_occurrences (& self) -> Vec < (Variable , Path) >",
+      "source_path": "amari-rewrite/src/trs/term.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::term",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn variable_occurrences (& self) -> Vec < (Variable , Path) >",
+          "source_path": "amari-rewrite/src/trs/term.rs",
+          "source_module": "amari_rewrite::trs::term",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::term",
+          "declaration_ident": "Term::variable_occurrences"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::trs::Term::variables",
       "kind": "method",
       "signature": "pub fn variables (& self) -> Vec < Variable >",
@@ -13717,6 +13942,42 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPair",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPair"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPairReport",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPairReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::analysis::InverseReport",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 4,
@@ -15736,6 +15997,42 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPair",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPair"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPairReport",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPairReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::analysis::InverseReport",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 4,
@@ -17323,6 +17620,24 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPairReport",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPairReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::ars::Strategy",
       "source_path": "amari-rewrite/src/ars/mod.rs",
       "source_ordinal": 3,
@@ -17640,6 +17955,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "BranchingEstimate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPair",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPair"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPairReport",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPairReport"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -19991,6 +20342,42 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPair",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPair"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::CriticalPairReport",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::critical_pairs",
+        "ident": "CriticalPairReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::analysis::InverseReport",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 4,
@@ -22267,6 +22654,22 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::analysis::CriticalPair",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::CriticalPairReport",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::analysis::InverseAnalyzer",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 5,
@@ -22302,6 +22705,14 @@
       "path": "amari_rewrite::analysis::RuleAnalysis",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::critical_pairs",
+      "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -24675,6 +25086,14 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::prelude::Term::variable_occurrences",
+      "source_path": "amari-rewrite/src/trs/term.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::prelude::Term::variables",
       "source_path": "amari-rewrite/src/trs/term.rs",
       "source_ordinal": 8,
@@ -24765,7 +25184,15 @@
     {
       "path": "amari_rewrite::prelude::TrsRule::apply_root",
       "source_path": "amari-rewrite/src/trs/rule.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::prelude::TrsRule::is_left_linear",
+      "source_path": "amari-rewrite/src/trs/rule.rs",
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -24781,7 +25208,7 @@
     {
       "path": "amari_rewrite::prelude::TrsRule::matches",
       "source_path": "amari-rewrite/src/trs/rule.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -25845,7 +26272,15 @@
     {
       "path": "amari_rewrite::trs::Rule::apply_root",
       "source_path": "amari-rewrite/src/trs/rule.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::trs::Rule::is_left_linear",
+      "source_path": "amari-rewrite/src/trs/rule.rs",
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -25861,7 +26296,7 @@
     {
       "path": "amari_rewrite::trs::Rule::matches",
       "source_path": "amari-rewrite/src/trs/rule.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26070,6 +26505,14 @@
       "path": "amari_rewrite::trs::Term::var",
       "source_path": "amari-rewrite/src/trs/term.rs",
       "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::trs::Term::variable_occurrences",
+      "source_path": "amari-rewrite/src/trs/term.rs",
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
