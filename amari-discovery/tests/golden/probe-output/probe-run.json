@@ -32,7 +32,7 @@
       "validated_assumptions": [],
       "warnings": []
     },
-    "timeout_millis": 5000
+    "timeout_millis": 15000
   },
   "provenance": {
     "catalog": {

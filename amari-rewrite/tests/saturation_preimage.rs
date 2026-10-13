@@ -9,9 +9,11 @@
 //! negative claims are explicit mathematical expectations (not depth
 //! cutoffs). Deep growing systems are built iteratively.
 
+#[cfg(feature = "serialize")]
+use amari_rewrite::language::PreimageCertificate;
 use amari_rewrite::language::{
-    saturation_preimage, CertificateAuthority, PreimageCertificate, PreimageConstruction,
-    PreimageOperation, RankedSymbol, TreeAutomaton, TreeAutomatonLimits, TreeState, TreeTransition,
+    saturation_preimage, CertificateAuthority, PreimageConstruction, PreimageOperation,
+    RankedSymbol, TreeAutomaton, TreeAutomatonLimits, TreeState, TreeTransition,
 };
 use amari_rewrite::relation::RelationLimits;
 use amari_rewrite::trs::{Rule, Symbol, Term, TermSystem};

@@ -469,3 +469,51 @@ fn exact_saturation_excludes_when_complete() {
     }));
     assert_eq!(verdict.verdict.as_deref(), Some("excluded"));
 }
+
+/// The language `{ a }` (single state).
+fn accepts_a() -> serde_json::Value {
+    json!({
+        "alphabet": [{"name": "a", "arity": 0}],
+        "states": ["q0"],
+        "transitions": [{"symbol": "a", "children": [], "parent": "q0"}],
+        "finals": ["q0"]
+    })
+}
+
+#[test]
+fn certificate_digest_binds_the_recorded_limit_profile() {
+    // Cohort 5 closeout F1: the certificate's recorded limit profile
+    // is part of the evidence identity — the same request under two
+    // engine operation budgets must yield distinct certificate
+    // digests even when the mathematical result is identical.
+    let input = json!({
+        "operation": "preimage",
+        "preimage": "finite_horizon",
+        "horizon": 0,
+        "rules": [],
+        "language": accepts_a()
+    });
+    let loose = run_typed(&input);
+    let tight_limits = amari_discovery::ProbeEngineLimits {
+        max_operations: 10_000,
+        ..Default::default()
+    };
+    let tight: RewritePreimagesOutput = serde_json::from_value(
+        ProbeEngine::with_limits(tight_limits)
+            .unwrap()
+            .execute(&PREIMAGES.parse().unwrap(), &input)
+            .unwrap()
+            .output,
+    )
+    .unwrap();
+    assert_eq!(loose.outcome, "exact");
+    assert_eq!(tight.outcome, "exact");
+    assert!(
+        loose.certificate_hash.is_some(),
+        "an exact preimage carries a certificate digest"
+    );
+    assert_ne!(
+        loose.certificate_hash, tight.certificate_hash,
+        "the recorded operation budget is part of the certificate's          evidence identity"
+    );
+}

@@ -434,3 +434,9 @@ Reviewer validation totals: 20,000 + 3,000 (R4 primitives) + 50,000 (25k per R5 
 - Catalog regenerated from the split layout: `9d480608…`, 11,100 items — only `crates/amari-core.json` + `manifest.json` changed (CAT1 isolation holding).
 - Lock `83cedd17…` (num-bigint dev-dep; regenerated at stage 1, stable since).
 - Residual disclosed limitations: conservative residual-route rejection (finite-representable inputs of the commuting-factorization class return Err); randomized verification is evidence, not proof; "single rounding" composes already-rounded transcendental factors.
+
+## PR review + develop integration (#288, #297 concurrent activity)
+
+PR-level comment review posted 0 P1 / 2 P2:
+- **P2 catalog manifest conflict with develop** — develop advanced via PRs #288 (cohort5 closeout) and #297 (netlify bump). Merged origin/develop @4af4d08; manifest conflicted (the one shared catalog file — expected under CAT1 when both sides regen); resolved by regenerating from the merged tree: `5442f990…`, 11,101 items (+1 surface item from #288's changes). Workspace check 0, 385 core tests, fmt clean, lock unchanged (`merge-297-288-*.log`).
+- **P2 universal bit-exact claim** — the PR body said "every executed counterexample pinned bit-exact"; two regressions use the disclosed ≤1-ulp convention (round-3 e123, round-4 P1-2b e123). PR body amended to "pinned exactly or within the disclosed 1-ulp mantissa convention".

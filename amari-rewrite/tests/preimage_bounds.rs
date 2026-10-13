@@ -15,7 +15,8 @@ use std::collections::{BTreeMap, BTreeSet};
 #[cfg(feature = "serialize")]
 use amari_rewrite::language::PreimageCertificate;
 use amari_rewrite::language::{
-    finite_horizon_lower_bound, one_step_lower_bound, saturation_lower_bound, ApproximationEvent,
+    finite_horizon_lower_bound, finite_horizon_preimage, identity_preimage, language_digest,
+    one_step_lower_bound, saturation_lower_bound, saturation_preimage, ApproximationEvent,
     CertificateAuthority, RankedSymbol, TreeAutomaton, TreeAutomatonLimits, TreeState,
     TreeTransition,
 };
@@ -831,5 +832,170 @@ fn binding_reconstruction_work_is_bounded() {
             matches!(error, RewriteError::RelationLimitExceeded { .. }),
             "the only legal failure is a typed limit error, got {error:?}"
         ),
+    }
+}
+
+#[test]
+fn identity_shortcuts_enforce_supplied_automaton_ceilings() {
+    // Cohort 5 closeout F2: the identity constructions (horizon zero,
+    // empty-system finite horizon, empty-system saturation) must
+    // reject an input automaton that exceeds the CALLER's supplied
+    // ceilings, not return it unexamined.
+    let two_state_language = TreeAutomaton::new(
+        Vec::new(),
+        vec![TreeState::new("q0"), TreeState::new("q1")],
+        Vec::new(),
+        Vec::new(),
+        TreeAutomatonLimits::default(),
+    )
+    .unwrap();
+    let tight = TreeAutomatonLimits::new(1, 1, 1).unwrap();
+    let limits = RelationLimits::new(16, 8, 16, 128).unwrap();
+    let empty = TermSystem::new(Vec::new());
+
+    let outcome = finite_horizon_preimage(&empty, &two_state_language, 0, &limits, &tight);
+    assert!(
+        matches!(outcome, Err(RewriteError::InvalidLimit { .. })),
+        "horizon-0 identity: {outcome:?}"
+    );
+    let outcome = finite_horizon_preimage(&empty, &two_state_language, 1, &limits, &tight);
+    assert!(
+        matches!(outcome, Err(RewriteError::InvalidLimit { .. })),
+        "empty-system finite horizon: {outcome:?}"
+    );
+    let outcome = saturation_preimage(&empty, &two_state_language, &limits, &tight);
+    assert!(
+        matches!(outcome, Err(RewriteError::InvalidLimit { .. })),
+        "empty-system saturation: {outcome:?}"
+    );
+
+    // Within the ceilings the identity still returns the input
+    // representation (digest equality preserved, Task 24).
+    let one_state_language = TreeAutomaton::new(
+        Vec::new(),
+        vec![TreeState::new("q0")],
+        Vec::new(),
+        Vec::new(),
+        TreeAutomatonLimits::default(),
+    )
+    .unwrap();
+    let outcome = finite_horizon_preimage(&empty, &one_state_language, 0, &limits, &tight)
+        .expect("identity within ceilings");
+    let (automaton, certificate) = outcome.into_parts();
+    assert_eq!(
+        language_digest(&automaton),
+        language_digest(&one_state_language)
+    );
+    assert!(certificate.verify(&empty, &one_state_language, &limits));
+}
+
+#[test]
+fn identity_clone_accounts_for_alphabet_storage() {
+    // PR #288 round 1: the identity clone retains the ALPHABET too —
+    // states + transitions alone undercount the retained buffers.
+    let alphabet: Vec<RankedSymbol> = (0..100)
+        .map(|i| RankedSymbol::new(Symbol::new(format!("c{i}")), 0))
+        .collect();
+    let language = TreeAutomaton::new(
+        alphabet,
+        Vec::new(),
+        Vec::new(),
+        Vec::new(),
+        TreeAutomatonLimits::default(),
+    )
+    .unwrap();
+    let limits = RelationLimits::new(16, 8, 1, 128).unwrap();
+    let automaton_limits = TreeAutomatonLimits::default();
+    let empty = TermSystem::new(Vec::new());
+
+    for (name, outcome) in [
+        (
+            "horizon-0",
+            finite_horizon_preimage(&empty, &language, 0, &limits, &automaton_limits),
+        ),
+        (
+            "empty-system horizon-1",
+            finite_horizon_preimage(&empty, &language, 1, &limits, &automaton_limits),
+        ),
+        (
+            "empty-system saturation",
+            saturation_preimage(&empty, &language, &limits, &automaton_limits),
+        ),
+    ] {
+        assert!(
+            matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+            "{name}: expected a typed resource-limit error"
+        );
+    }
+}
+
+#[test]
+fn identity_clone_accounts_for_finals_storage() {
+    // PR #288 round 2: the identity clone retains the finals set as
+    // well — the billed cells are states + transitions + alphabet +
+    // finals.
+    let states: Vec<TreeState> = (0..100)
+        .map(|i| TreeState::new(Symbol::new(format!("q{i}"))))
+        .collect();
+    let language = TreeAutomaton::new(
+        Vec::new(),
+        states.clone(),
+        Vec::new(),
+        states,
+        TreeAutomatonLimits::default(),
+    )
+    .unwrap();
+    let automaton_limits = TreeAutomatonLimits::default();
+    let empty = TermSystem::new(Vec::new());
+    let tight = |constraints| RelationLimits::new(16, 8, constraints, 1024).unwrap();
+
+    // 100 states + 100 finals = 200 retained cells: budget 199 must
+    // fail, budget 200 must succeed, on every identity route.
+    for (name, outcome) in [
+        (
+            "horizon-0",
+            finite_horizon_preimage(&empty, &language, 0, &tight(199), &automaton_limits)
+                .map(|_| ()),
+        ),
+        (
+            "empty-system horizon-1",
+            finite_horizon_preimage(&empty, &language, 1, &tight(199), &automaton_limits)
+                .map(|_| ()),
+        ),
+        (
+            "empty-system saturation",
+            saturation_preimage(&empty, &language, &tight(199), &automaton_limits).map(|_| ()),
+        ),
+        (
+            "direct identity_preimage",
+            identity_preimage(&empty, &language, &tight(199)).map(|_| ()),
+        ),
+    ] {
+        assert!(
+            matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+            "{name} at budget 199: {outcome:?}"
+        );
+    }
+    for (name, outcome) in [
+        (
+            "horizon-0",
+            finite_horizon_preimage(&empty, &language, 0, &tight(200), &automaton_limits)
+                .map(|_| ()),
+        ),
+        (
+            "empty-system horizon-1",
+            finite_horizon_preimage(&empty, &language, 1, &tight(200), &automaton_limits)
+                .map(|_| ()),
+        ),
+        (
+            "empty-system saturation",
+            saturation_preimage(&empty, &language, &tight(200), &automaton_limits).map(|_| ()),
+        ),
+        (
+            "direct identity_preimage",
+            identity_preimage(&empty, &language, &tight(200)).map(|_| ()),
+        ),
+    ] {
+        assert!(outcome.is_ok(), "{name} at budget 200: {outcome:?}");
     }
 }

@@ -155,6 +155,16 @@ pub(crate) fn saturation_preimage_with_resources(
     // equality (Task 24), and canonicalization would substitute an
     // equivalent-but-different representation.
     if system.rules().is_empty() {
+        // The identity is NOT exempt from the caller's ceilings or
+        // pool: the input must fit the supplied automaton limits, and
+        // the retained clone is billed (cohort 5 closeout F2).
+        language.check_within_limits(automaton_limits)?;
+        resources.record_constraints(
+            language.states().len()
+                + language.transitions().len()
+                + language.alphabet().len()
+                + language.finals().len(),
+        )?;
         let result = language.clone();
         let certificate = certificate.complete(&result);
         return Ok(PreimageOutcome::from_parts(result, certificate));
