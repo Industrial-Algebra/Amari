@@ -515,7 +515,7 @@ fn position_step_shape_resolves_chained_bindings() {
     // Overlap at [0]: unify f(h(a), x) with f(y', g(y')) giving
     // y' := h(a), x := g(y') -> g(h(a)). Shapes: overlap
     // k(f(h(a), g(h(a)))) 7 nodes / depth 5; root step g(h(a)) 3/3;
-    // position step k(h(a)) 3/2. Depth 4 must fail on the overlap
+    // position step k(h(a)) 3/3. Depth 4 must fail on the overlap
     // alone; depth 5 admits.
     let limits = RelationLimits::new(8, 4, 16, 1_000_000).expect("valid limits");
     let mut resources = RelationResources::new(&limits);
