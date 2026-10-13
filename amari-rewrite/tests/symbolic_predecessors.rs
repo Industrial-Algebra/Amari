@@ -263,3 +263,22 @@ fn freshening_does_not_collapse_variables_named_like_fresh_names() {
         Term::sym("f", [Term::constant("a"), Term::constant("b")])
     );
 }
+
+/// PR #302 round 4 P2 (reviewer repro): fresh clause names were not
+/// reserved against TARGET variables — a target variable literally
+/// named `?0.0` collided with the freshened rule variable, producing
+/// a spurious occurs-check failure and silently omitting the root
+/// predecessor. Reserved namespaces keep them distinct.
+#[test]
+fn freshening_reserves_target_variable_names() {
+    let sys = TermSystem::new(vec![Rule::new(parse("f(X)"), parse("g(X)")).unwrap()]);
+    // The target's variable is named exactly like scope-0's first
+    // fresh variable.
+    let target = Term::sym("g", [Term::sym("h", [Term::var("?0.0")])]);
+    let preds = symbolic_predecessors(&sys, &target, &limits(), 0).unwrap();
+    let expected = Term::sym("f", [Term::sym("h", [Term::var("?0.0")])]);
+    assert!(
+        preds.iter().any(|p| p.term == expected),
+        "missing root predecessor {expected:?}: {preds:?}"
+    );
+}

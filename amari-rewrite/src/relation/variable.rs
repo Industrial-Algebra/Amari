@@ -10,6 +10,7 @@
 //! renumbers by first structural occurrence, so caller names and
 //! traversal accidents cannot change hashes.
 
+use alloc::string::ToString;
 use core::fmt;
 
 /// A freshened logic variable: `(scope, index)` within a query.
@@ -54,19 +55,46 @@ impl fmt::Display for LogicVar {
 pub struct LogicVarNamespace {
     scope: u32,
     next: u32,
+    /// Names that must never be allocated (e.g. variables already
+    /// present in the query term — PR #302 round 4: an unreserved
+    /// collision produced spurious occurs-check failures and silently
+    /// dropped predecessors).
+    #[cfg_attr(feature = "serialize", serde(default))]
+    reserved: alloc::collections::BTreeSet<alloc::string::String>,
 }
 
 impl LogicVarNamespace {
     /// Open a namespace for one query scope.
     pub fn new(scope: u32) -> Self {
-        Self { scope, next: 0 }
+        Self {
+            scope,
+            next: 0,
+            reserved: alloc::collections::BTreeSet::new(),
+        }
     }
 
-    /// Allocate the next logic variable in this scope.
+    /// Open a namespace that never allocates `reserved` names.
+    pub fn with_reserved(
+        scope: u32,
+        reserved: impl IntoIterator<Item = alloc::string::String>,
+    ) -> Self {
+        Self {
+            scope,
+            next: 0,
+            reserved: reserved.into_iter().collect(),
+        }
+    }
+
+    /// Allocate the next logic variable in this scope, skipping any
+    /// reserved name. Deterministic per `(scope, reserved)`.
     pub fn fresh(&mut self) -> LogicVar {
-        let var = LogicVar::new(self.scope, self.next);
-        self.next = self.next.saturating_add(1);
-        var
+        loop {
+            let var = LogicVar::new(self.scope, self.next);
+            self.next = self.next.saturating_add(1);
+            if !self.reserved.contains(&var.to_string()) {
+                return var;
+            }
+        }
     }
 
     /// Number of variables allocated so far.

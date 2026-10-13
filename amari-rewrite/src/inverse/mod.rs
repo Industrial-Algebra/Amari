@@ -5,6 +5,7 @@
 //! subterm and instantiating `lhs` with the same substitution.
 
 use alloc::collections::{BTreeSet, VecDeque};
+use alloc::string::ToString;
 use alloc::vec::Vec;
 
 mod backward;
@@ -192,7 +193,10 @@ pub fn symbolic_predecessors(
 ) -> RewriteResult<alloc::vec::Vec<SymbolicPredecessor>> {
     let mut resources = RelationResources::new(limits);
     resources.record_term(term_nodes(target), term_depth(target))?;
-    let mut namespace = LogicVarNamespace::new(scope);
+    // Reserve the target's variable names so freshened clause
+    // variables can never collide with query variables.
+    let mut namespace =
+        LogicVarNamespace::with_reserved(scope, target.variables().iter().map(ToString::to_string));
     let target_hash = Sha256Digest::canonical_term("amari.relation.term/v1", target);
     let mut out = alloc::vec::Vec::new();
     for path in target.positions() {

@@ -11055,6 +11055,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::relation::LogicVarNamespace::with_reserved",
+      "kind": "method",
+      "signature": "pub fn with_reserved (scope : u32 , reserved : impl IntoIterator < Item = alloc :: string :: String > ,) -> Self",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::relation::variable",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_reserved (scope : u32 , reserved : impl IntoIterator < Item = alloc :: string :: String > ,) -> Self",
+          "source_path": "amari-rewrite/src/relation/variable.rs",
+          "source_module": "amari_rewrite::relation::variable",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::relation::variable",
+          "declaration_ident": "LogicVarNamespace::with_reserved"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::relation::RankedSymbol",
       "kind": "struct",
       "signature": "pub struct RankedSymbol",
@@ -26048,7 +26067,7 @@
     {
       "path": "amari_rewrite::relation::LogicVarNamespace::allocated",
       "source_path": "amari-rewrite/src/relation/variable.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26056,7 +26075,7 @@
     {
       "path": "amari_rewrite::relation::LogicVarNamespace::fresh",
       "source_path": "amari-rewrite/src/relation/variable.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26065,6 +26084,14 @@
       "path": "amari_rewrite::relation::LogicVarNamespace::new",
       "source_path": "amari-rewrite/src/relation/variable.rs",
       "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::relation::LogicVarNamespace::with_reserved",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
