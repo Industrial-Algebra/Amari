@@ -30,19 +30,19 @@ jobs:
           components: rustfmt, clippy
 
       - name: Cache cargo registry
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo index
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo build
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
@@ -100,7 +100,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Cache cargo registry
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-wasm-compat-${{ hashFiles('**/Cargo.lock') }}
@@ -134,7 +134,7 @@ jobs:
           rustup show
 
       - name: Cache cargo registry
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -250,7 +250,7 @@ jobs:
         uses: dtolnay/rust-toolchain@1.89.0
 
       - name: Cache cargo registry
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-msrv-${{ hashFiles('**/Cargo.lock') }}
@@ -274,7 +274,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache cargo registry
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-z3-${{ hashFiles('**/Cargo.lock') }}
@@ -283,7 +283,7 @@ jobs:
       # cache the full build output keyed by compiler and lockfile so only
       # lockfile changes rebuild Z3 (cold build ~4-5 min on hosted runners).
       - name: Cache vendored Z3 build
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: target
           key: ${{ runner.os }}-z3-vendored-${{ hashFiles('**/Cargo.lock') }}-v1
