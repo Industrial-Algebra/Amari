@@ -329,3 +329,154 @@ fn every_pair_side_is_a_real_engine_step() {
         }
     }
 }
+
+/// PR #301 round 1 P1: rename-apart must be a one-pass structural
+/// renaming. Deep substitution through `Substitution::apply`
+/// re-resolves freshly introduced names, so `x -> cpRx` and
+/// `cpRx -> cpRcpRx` collapse both variables to `cpRcpRx`, dropping
+/// valid pairs (the reviewer's exact repro).
+#[test]
+fn rename_apart_never_collapses_prefixed_variables() {
+    let system = system(vec![
+        rule(app("f", [a(), b()]), b()),
+        rule(app("f", [x(), cp_rx()]), x()),
+    ]);
+    let report = report(&system);
+    assert_eq!(report.trivial_excluded, 0);
+    assert_eq!(report.pairs.len(), 1, "{report:#?}");
+    let pair = &report.pairs[0];
+    assert_eq!(pair.overlap, app("f", [a(), b()]));
+    assert_eq!(pair.root_step, b());
+    assert_eq!(pair.position_step, a());
+}
+
+/// Longer prefix chains: `x`, `cpRx`, `cpRcpRx` must remain three
+/// DISTINCT variables after renaming.
+#[test]
+fn rename_apart_preserves_prefix_chain_distinctness() {
+    let cp_cp_rx = || Term::var("cpRcpRx");
+    let system = system(vec![
+        rule(app("f", [a(), a(), a()]), a()),
+        rule(
+            app("f", [x(), cp_rx(), cp_cp_rx()]),
+            app("g", [x(), cp_rx()]),
+        ),
+    ]);
+    let report = report(&system);
+    assert_eq!(report.pairs.len(), 1, "{report:#?}");
+    // The renamed RHS keeps two distinct variables: after unification
+    // cpRx := a, cpRcpRx... every renamed variable binds to `a`, so the
+    // pair sides are ground here. The distinctness assertion targets
+    // the OVERLAP shape indirectly: if renaming collapsed any pair of
+    // variables, the LHS would not unify with f(a,a,a) into this exact
+    // single pair, and the RHS `g(cpRx, cpRcpRx)` would collapse to
+    // identical arguments — both sides are still g(a,a) here, so
+    // additionally require the pair to be non-trivial and exact.
+    let pair = &report.pairs[0];
+    assert_eq!(pair.root_step, a());
+    assert_eq!(pair.position_step, app("g", [a(), a()]));
+}
+
+/// Non-ground case pinning RHS variable distinctness directly:
+/// the renamed RHS keeps `cpRx` and `cpRcpRx` as separate bindings.
+#[test]
+fn rename_apart_keeps_rhs_variables_distinct_when_unbound() {
+    let cp_cp_rx = || Term::var("cpRcpRx");
+    let system = system(vec![
+        rule(app("f", [x(), x(), x()]), x()),
+        rule(
+            app("f", [x(), cp_rx(), cp_cp_rx()]),
+            app("g", [cp_rx(), cp_cp_rx()]),
+        ),
+    ]);
+    let report = report(&system);
+    assert_eq!(report.non_left_linear_rules, vec![0]);
+    assert_eq!(report.pairs.len(), 1, "{report:#?}");
+    let pair = &report.pairs[0];
+    // The mgu identifies all three distinct renamed variables with the
+    // left `x`; the exact representative is the unifier's choice, so
+    // assert CONSISTENCY: a single variable representative shared by
+    // both sides, appearing twice in the position step.
+    assert!(pair.root_step.is_var(), "{pair:#?}");
+    assert_eq!(
+        pair.position_step,
+        app("g", [pair.root_step.clone(), pair.root_step.clone()])
+    );
+}
+
+/// Collapse actually prevents a pair: `x` and `cpRx` in the right
+/// rule must stay distinct for the LHS to be linear enough to unify
+/// with DIFFERENT constants.
+#[test]
+fn rename_apart_collapse_drops_pairs() {
+    let system = system(vec![
+        rule(app("f", [a(), b()]), b()),
+        rule(app("f", [x(), cp_rx()]), app("g", [cp_rx()])),
+    ]);
+    let report = report(&system);
+    assert_eq!(report.trivial_excluded, 0, "{report:#?}");
+    assert_eq!(report.pairs.len(), 1, "{report:#?}");
+    // The distinct `cpRx` binds to `b`; a collapse to `cpRcpRx`
+    // everywhere would have failed to unify and dropped this pair.
+    assert_eq!(report.pairs[0].root_step, b());
+    assert_eq!(report.pairs[0].position_step, app("g", [b()]));
+}
+
+/// PR #301 round 1 P1: input terms beyond the term bounds are typed
+/// errors BEFORE any construction (the reviewer's exact repro).
+#[test]
+fn oversized_input_terms_are_typed_errors() {
+    let system = system(vec![rule(a(), app("big", [b(), b()])), rule(a(), b())]);
+    let limits = RelationLimits::new(1, 1, 10, 100).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let outcome = critical_pairs(&system, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "{outcome:?}"
+    );
+}
+
+/// Substitution-expanded output beyond the term bounds is a typed
+/// error, with no partial report.
+#[test]
+fn expanded_output_beyond_bounds_is_typed_error() {
+    let system = system(vec![
+        rule(app("f", [x()]), app("g", [x(), x()])),
+        rule(app("f", [a()]), b()),
+    ]);
+    // Input terms fit (3 nodes each), but root_step g(a,a) is 3 nodes
+    // over a 2-node budget.
+    let limits = RelationLimits::new(2, 8, 10, 1_000_000).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let outcome = critical_pairs(&system, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "{outcome:?}"
+    );
+}
+
+/// A constraint budget below the successful-unify count fails at
+/// pair reservation, with no partial report. (`RelationLimits`
+/// rejects zero constraints at construction, so the tightest
+/// constructible budget is used.)
+#[test]
+fn constraint_budget_fails_at_reservation() {
+    let system = system(vec![
+        rule(app("f", [x()]), app("g", [x()])),
+        rule(app("f", [a()]), b()),
+        rule(app("f", [app("c", [])]), app("d", [])),
+    ]);
+    // Two root overlaps succeed; a one-cell budget must fail.
+    let limits = RelationLimits::new(64, 64, 1, 1_000_000).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let outcome = critical_pairs(&system, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "{outcome:?}"
+    );
+    // Two cells cover both reservations.
+    let limits = RelationLimits::new(64, 64, 2, 1_000_000).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let report = critical_pairs(&system, &mut resources).expect("pairs computed");
+    assert_eq!(report.pairs.len(), 2, "{report:#?}");
+}

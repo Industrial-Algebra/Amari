@@ -21,7 +21,7 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use crate::analysis::unify::unify;
+use crate::analysis::unify::{term_depth, term_nodes, unify};
 use crate::error::{RewriteError, RewriteResult};
 use crate::relation::RelationResources;
 use crate::trs::{Rule, Substitution, Term, TermSystem};
@@ -73,6 +73,12 @@ pub fn critical_pairs(
     let rules = system.rules();
     let mut non_left_linear_rules = Vec::new();
     for (index, rule) in rules.iter().enumerate() {
+        // Validate every input term and meter preprocessing BEFORE
+        // any enumeration state is built (PR #301 round 1): every
+        // later traversal and construction operates on bounded terms.
+        resources.record_operations(1)?;
+        resources.record_term(term_nodes(rule.lhs()), term_depth(rule.lhs()))?;
+        resources.record_term(term_nodes(rule.rhs()), term_depth(rule.rhs()))?;
         if !rule.is_left_linear() {
             non_left_linear_rules.push(index);
         }
@@ -110,13 +116,28 @@ pub fn critical_pairs(
                     Err(other) => return Err(other),
                 };
 
+                // Bounds before allocation (PR #301 round 1): the
+                // exact shape of every evidence term is computed from
+                // the templates and substitution ranges, enforced
+                // against the term limits, and the evidence cell is
+                // reserved BEFORE anything is materialized.
+                let (overlap_nodes, overlap_depth) = applied_shape(left_lhs, &subst, None);
+                let (root_nodes, root_depth) = applied_shape(left.rhs(), &subst, None);
+                let (inner_nodes, inner_depth) = applied_shape(renamed.rhs(), &subst, None);
+                let (spine_nodes, spine_depth) = applied_shape(left_lhs, &subst, Some(path));
+                let position_nodes = spine_nodes + inner_nodes;
+                let position_depth = spine_depth.max(path.as_slice().len() + inner_depth);
+                resources.record_term(overlap_nodes, overlap_depth)?;
+                resources.record_term(root_nodes, root_depth)?;
+                resources.record_term(position_nodes, position_depth)?;
+                resources.record_constraints(1)?;
+
                 let overlap = subst.apply(left_lhs);
                 let root_step = subst.apply(left.rhs());
                 // `overlap|path == subst.apply(renamed.lhs())` by
                 // construction, so the replacement position exists.
                 let position_step = overlap.replace_at(path, subst.apply(renamed.rhs()))?;
 
-                resources.record_constraints(1)?;
                 if root_step == position_step {
                     trivial_excluded += 1;
                     continue;
@@ -161,19 +182,85 @@ fn fresh_prefix(left_lhs: &Term) -> String {
 }
 
 /// Return `rule` with every variable `v` renamed to `"{prefix}{v}"`.
+///
+/// One-pass structural renaming (PR #301 round 1): deep substitution
+/// through [`Substitution::apply`] re-resolves freshly introduced
+/// names, so a rule mentioning `x` and `cpRx` would collapse both to
+/// `cpRcpRx` (and further). Building the renamed term directly makes
+/// capture impossible by construction. Renaming preserves rule
+/// validity (RHS variables remain a subset of LHS variables), so the
+/// rule is rebuilt unchecked.
 fn rename_rule_variables(rule: &Rule, prefix: &str) -> Rule {
-    let mut subst = Substitution::new();
-    for variable in rule.lhs().variables() {
-        let mut name = String::from(prefix);
-        name.push_str(variable.as_str());
-        subst.insert(variable, Term::var(name));
-    }
-    for variable in rule.rhs().variables() {
-        if subst.get_var(&variable).is_none() {
-            let mut name = String::from(prefix);
+    Rule::new_unchecked(
+        rename_variables(rule.lhs(), prefix),
+        rename_variables(rule.rhs(), prefix),
+    )
+}
+
+/// Structural one-pass variable renaming; recursion depth is bounded
+/// by the caller's input term-depth validation.
+fn rename_variables(term: &Term, prefix: &str) -> Term {
+    match term {
+        Term::Var(variable) => {
+            let mut name = String::with_capacity(prefix.len() + variable.as_str().len());
+            name.push_str(prefix);
             name.push_str(variable.as_str());
-            subst.insert(variable, Term::var(name));
+            Term::var(name)
+        }
+        Term::Sym(symbol, args) => Term::Sym(
+            symbol.clone(),
+            args.iter()
+                .map(|arg| rename_variables(arg, prefix))
+                .collect(),
+        ),
+    }
+}
+
+/// Exact `(nodes, depth)` of `σ(template)` computed from the template
+/// and the substitution ranges WITHOUT materializing the application
+/// (PR #301 round 1: term limits are enforced before any evidence
+/// term is allocated). With `except`, the subtree at that path is
+/// skipped; `applied_shape(template, σ, Some(p))` plus the shape of
+/// the replacement gives the exact shape of the position step.
+fn applied_shape(template: &Term, subst: &Substitution, except: Option<&Path>) -> (usize, usize) {
+    struct Frame<'a> {
+        term: &'a Term,
+        path: Path,
+    }
+    let mut nodes = 0usize;
+    let mut depth = 0usize;
+    let mut stack = Vec::from([Frame {
+        term: template,
+        path: Path::root(),
+    }]);
+    while let Some(frame) = stack.pop() {
+        if let Some(skip) = except {
+            if frame.path.as_slice() == skip.as_slice() {
+                continue;
+            }
+        }
+        match frame.term {
+            Term::Var(variable) => {
+                let (bound_nodes, bound_depth) = subst
+                    .get_var(variable)
+                    .map(|bound| (term_nodes(bound), term_depth(bound)))
+                    .unwrap_or((1, 1));
+                nodes += bound_nodes;
+                depth = depth.max(frame.path.as_slice().len() + bound_depth);
+            }
+            Term::Sym(_, args) => {
+                nodes += 1;
+                if args.is_empty() {
+                    depth = depth.max(frame.path.as_slice().len() + 1);
+                }
+                for (index, arg) in args.iter().enumerate() {
+                    stack.push(Frame {
+                        term: arg,
+                        path: frame.path.child(index),
+                    });
+                }
+            }
         }
     }
-    Rule::new_unchecked(subst.apply(rule.lhs()), subst.apply(rule.rhs()))
+    (nodes, depth)
 }
