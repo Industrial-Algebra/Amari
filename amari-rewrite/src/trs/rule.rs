@@ -43,6 +43,15 @@ impl Rule {
         &self.rhs
     }
 
+    /// True when no variable occurs more than once in the LHS.
+    pub fn is_left_linear(&self) -> bool {
+        let mut seen = BTreeSet::new();
+        self.lhs
+            .variable_occurrences()
+            .into_iter()
+            .all(|(variable, _)| seen.insert(variable))
+    }
+
     /// Match the LHS against `term`.
     pub fn matches(&self, term: &Term) -> Option<Substitution> {
         match_pattern(&self.lhs, term)

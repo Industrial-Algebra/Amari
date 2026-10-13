@@ -138,6 +138,20 @@ impl Term {
         vars
     }
 
+    /// Every `(variable, path)` occurrence in preorder, with repeats.
+    ///
+    /// Unlike [`Term::variables`], occurrences are NOT deduplicated —
+    /// left-linearity and overlap analysis need the repeated positions.
+    pub fn variable_occurrences(&self) -> Vec<(Variable, Path)> {
+        let mut occurrences = Vec::new();
+        for path in self.positions() {
+            if let Some(Self::Var(variable)) = self.subterm(&path) {
+                occurrences.push((variable.clone(), path));
+            }
+        }
+        occurrences
+    }
+
     fn collect_variables(&self, vars: &mut Vec<Variable>) {
         // Iterative (explicit worklist): callers sort and dedup, so
         // traversal order is irrelevant, but depth must not depend on
