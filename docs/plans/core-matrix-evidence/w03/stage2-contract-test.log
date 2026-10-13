@@ -1,0 +1,55 @@
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.39s
+     Running tests/inverse_exp_contracts.rs (target/w03/debug/deps/inverse_exp_contracts-1aecfc38d8399f85)
+
+running 22 tests
+test degenerate_mixed_hyperbolic ... ok
+test crafted_dyadic_false_zero ... ok
+test degenerate_nilpotent_blade ... ok
+test exp_zero_is_identity_and_scalar_uses_f64 ... ok
+test huge_circular_single_blade_bounded ... ok
+test erratum_case_huge_simple_circular ... ok
+test huge_exact_nilpotent_returns_exactly_one_plus_b ... ok
+test hyperbolic_overflow_is_error ... ok
+test large_norm_scalar_vector_exponential_converges ... ok
+test near_zero_circular_and_hyperbolic ... ok
+test mixed_signature_circular_plane ... ok
+test mixed_signature_hyperbolic_plane ... ok
+test nilpotent_bivector_exponential_is_exact ... ok
+test rounded_false_zero_routes_by_exact_square ... ok
+test non_versor_inverse_solves_both_orders ... FAILED
+test scalar_overflow_scale_inverse ... FAILED
+test subnormal_square_extraction ... ok
+test long_angle_general_multivector ... ok
+test small_scale_versor_inverse_not_rejected ... FAILED
+test square_zero_vector_exponential_survives ... ok
+test non_simple_bivector_euclidean ... ok
+test non_simple_bivector_scalar_zero_grade4_nonzero ... ok
+
+failures:
+
+---- non_versor_inverse_solves_both_orders stdout ----
+
+thread 'non_versor_inverse_solves_both_orders' (2762958) panicked at amari-core/tests/inverse_exp_contracts.rs:51:9:
+residual 0.9428090415820634 > 0.000001
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- scalar_overflow_scale_inverse stdout ----
+
+thread 'scalar_overflow_scale_inverse' (2762960) panicked at amari-core/tests/inverse_exp_contracts.rs:51:9:
+residual 1 > 0.000001
+
+---- small_scale_versor_inverse_not_rejected stdout ----
+
+thread 'small_scale_versor_inverse_not_rejected' (2762961) panicked at amari-core/tests/inverse_exp_contracts.rs:78:25:
+small-scale scalar is invertible
+
+
+failures:
+    non_versor_inverse_solves_both_orders
+    scalar_overflow_scale_inverse
+    small_scale_versor_inverse_not_rejected
+
+test result: FAILED. 19 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p amari-core --test inverse_exp_contracts`

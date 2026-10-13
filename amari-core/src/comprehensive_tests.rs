@@ -446,12 +446,15 @@ mod utility_tests {
 
     #[test]
     fn test_inverse_small() {
-        // Test inverse of very small multivector
+        // Scale-relative domain policy (CORE-W03 D02.1): the former absolute
+        // `1e-14` threshold is deleted, so a small nonzero scalar is
+        // invertible whenever its computed inverse is representable.
         let small = Cl3::scalar(1e-15);
-        let result = small.inverse();
-
-        // Should return None for multivector below threshold
-        assert!(result.is_none());
+        let inv = small
+            .inverse()
+            .expect("small nonzero scalar is invertible under the new policy");
+        let product = small.geometric_product(&inv);
+        assert!((product.scalar_part() - 1.0).abs() <= 1e-12);
     }
 }
 
@@ -936,7 +939,7 @@ mod advanced_operations_tests {
         let e2 = Cl3::basis_vector(1);
         let bivector = e1.outer_product(&e2) * (consts::PI / 4.0); // 45 degree rotation
 
-        let rotor = bivector.exp();
+        let rotor = bivector.exp().expect("bounded bivector exponential");
 
         // For a pure bivector B, exp(B) should be a rotor
         // Verify it has unit norm
@@ -967,7 +970,7 @@ mod advanced_operations_tests {
     fn test_exp_scalar() {
         // exp(scalar) should be scalar exponential
         let scalar = Cl3::scalar(1.0);
-        let exp_scalar = scalar.exp();
+        let exp_scalar = scalar.exp().expect("scalar exponential");
 
         // Should be approximately e ≈ 2.718
         assert!((exp_scalar.scalar_part() - consts::E).abs() < 1e-10);
@@ -982,7 +985,7 @@ mod advanced_operations_tests {
     fn test_exp_zero() {
         // exp(0) should be 1
         let zero = Cl3::zero();
-        let exp_zero = zero.exp();
+        let exp_zero = zero.exp().expect("zero exponential");
 
         assert!((exp_zero.scalar_part() - 1.0).abs() < 1e-10);
         for i in 1..8 {

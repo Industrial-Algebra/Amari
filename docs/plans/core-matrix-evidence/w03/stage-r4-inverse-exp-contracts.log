@@ -1,0 +1,52 @@
+# command: cargo test -p amari-core --test inverse_exp_contracts
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.51s
+     Running tests/inverse_exp_contracts.rs (target/w03/debug/build/amari-core/eaaa4498fc3420b4/out/inverse_exp_contracts-eaaa4498fc3420b4)
+
+running 43 tests
+test exp_zero_is_identity_and_scalar_uses_f64 ... ok
+test degenerate_nilpotent_blade ... ok
+test crafted_dyadic_false_zero ... ok
+test degenerate_mixed_hyperbolic ... ok
+test huge_circular_single_blade_bounded ... ok
+test erratum_case_huge_simple_circular ... ok
+test near_zero_circular_and_hyperbolic ... ok
+test mixed_signature_hyperbolic_plane ... ok
+test mixed_signature_circular_plane ... ok
+test hyperbolic_overflow_is_error ... ok
+test round1_circular_vector_at_scale_bit_exact ... ok
+test huge_exact_nilpotent_returns_exactly_one_plus_b ... ok
+test non_versor_inverse_solves_both_orders ... ok
+test nilpotent_bivector_exponential_is_exact ... ok
+test round1_inverse_fast_path_rejects_non_finite_quotient ... ok
+test large_norm_scalar_vector_exponential_converges ... ok
+test round1_disjoint_null_pairs_scalar_square_is_exact ... ok
+test long_angle_general_multivector ... ok
+test round1_scaling_boundary_norm_errors_honestly ... ok
+test round1_square_zero_vector_at_scale_is_exact ... ok
+test round2_scalar_factored_closed_form_long_angle ... ok
+test round2_scalar_plus_square_zero_is_exact ... ok
+test round3_scalar_factoring_overflow_is_honest_error ... ok
+test round3_scalar_factoring_rescues_underflowed_scale ... ok
+test round4_hyperbolic_closed_form_carries_symbolic_scale ... ok
+test round4_symbolic_scale_overflow_composition_is_finite ... ok
+test round2_nilpotent_index_three_exact_at_scale ... ok
+test round4_symbolic_scale_subnormal_order_is_correct ... ok
+test scalar_overflow_scale_inverse ... ok
+test small_scale_versor_inverse_not_rejected ... ok
+test round3_nilpotent_single_final_rounding_after_division ... ok
+test subnormal_square_extraction ... ok
+test round3_nilpotent_near_cancellation_is_exact ... ok
+test rounded_false_zero_routes_by_exact_square ... ok
+test square_zero_vector_exponential_survives ... ok
+test round4_nilpotent_finalization_carries_symbolic_scale ... ok
+test round4_subnormal_division_rounds_once_at_destination ... ok
+test non_simple_bivector_euclidean ... ok
+test round3_uncertified_input_never_reports_closed_form ... ok
+test non_simple_bivector_scalar_zero_grade4_nonzero ... ok
+test round2_nilpotent_index_four_polynomial ... ok
+test round1_squaring_cancellation_detector_fires ... ok
+test round3_index_eight_nilpotent_polynomial ... ok
+
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

@@ -1,0 +1,222 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+   Compiling unicode-ident v1.0.26
+   Compiling libc v0.2.190
+   Compiling once_cell v1.21.4
+   Compiling slab v0.4.12
+   Compiling futures-core v0.3.34
+   Compiling pin-project-lite v0.2.17
+   Compiling futures-task v0.3.34
+   Compiling zerocopy v0.8.62
+   Compiling libm v0.2.16
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling memchr v2.8.3
+   Compiling either v1.19.0
+   Compiling wasm-bindgen-test-shared v0.2.129
+   Compiling nu-ansi-term v0.50.3
+   Compiling proc-macro2 v1.0.107
+   Compiling wasm-bindgen-shared v0.2.129
+   Compiling rayon v1.12.0
+   Compiling futures-util v0.3.34
+   Compiling quote v1.0.47
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.7
+   Compiling syn v2.0.119
+   Compiling getrandom v0.4.3
+   Compiling approx v0.5.1
+   Compiling num-integer v0.1.47
+   Compiling num-complex v0.4.6
+   Compiling rand v0.10.3
+   Compiling num-bigint v0.4.8
+   Compiling simba v0.10.2
+   Compiling rand_distr v0.6.0
+   Compiling num-rational v0.4.2
+   Compiling nalgebra-macros v0.3.0
+   Compiling amari-flynn-macros v0.24.1 ($AMARI/.worktrees/core-w03/amari-flynn-macros)
+   Compiling ppv-lite86 v0.2.21
+   Compiling amari-flynn v0.24.1 ($AMARI/.worktrees/core-w03/amari-flynn)
+   Compiling wasm-bindgen-macro-support v0.2.129
+   Compiling rand_chacha v0.10.0
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_derive v1.0.229
+   Compiling async-trait v0.1.92
+   Compiling wasm-bindgen-test-macro v0.3.79
+   Compiling thiserror v2.0.21
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+   Compiling amari-cgt v0.24.1 ($AMARI/.worktrees/core-w03/amari-cgt)
+   Compiling nalgebra v0.35.0
+   Compiling amari-surreal v0.24.1 ($AMARI/.worktrees/core-w03/amari-surreal)
+   Compiling amari-dual v0.24.1 ($AMARI/.worktrees/core-w03/amari-dual)
+   Compiling amari-tropical v0.24.1 ($AMARI/.worktrees/core-w03/amari-tropical)
+   Compiling amari-info-geom v0.24.1 ($AMARI/.worktrees/core-w03/amari-info-geom)
+   Compiling amari-enumerative v0.24.1 ($AMARI/.worktrees/core-w03/amari-enumerative)
+   Compiling amari-holographic v0.24.1 ($AMARI/.worktrees/core-w03/amari-holographic)
+   Compiling amari-surcomplex v0.24.1 ($AMARI/.worktrees/core-w03/amari-surcomplex)
+   Compiling amari-measure v0.24.1 ($AMARI/.worktrees/core-w03/amari-measure)
+   Compiling amari-optimization v0.24.1 ($AMARI/.worktrees/core-w03/amari-optimization)
+   Compiling amari-fusion v0.24.1 ($AMARI/.worktrees/core-w03/amari-fusion)
+   Compiling amari-automata v0.24.1 ($AMARI/.worktrees/core-w03/amari-automata)
+   Compiling amari-calculus v0.24.1 ($AMARI/.worktrees/core-w03/amari-calculus)
+   Compiling amari-probabilistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-probabilistic)
+   Compiling amari-functional v0.24.1 ($AMARI/.worktrees/core-w03/amari-functional)
+   Compiling amari-topology v0.24.1 ($AMARI/.worktrees/core-w03/amari-topology)
+   Compiling wasm-bindgen-macro v0.2.129
+   Compiling wasm-bindgen v0.2.129
+   Compiling js-sys v0.3.106
+   Compiling console_error_panic_hook v0.1.7
+   Compiling amari-network v0.24.1 ($AMARI/.worktrees/core-w03/amari-network)
+   Compiling amari-relativistic v0.24.1 ($AMARI/.worktrees/core-w03/amari-relativistic)
+   Compiling wasm-bindgen-futures v0.4.79
+   Compiling web-sys v0.3.106
+   Compiling serde-wasm-bindgen v0.6.5
+   Compiling wasm-bindgen-test v0.3.79
+   Compiling amari-wasm v0.24.1 ($AMARI/.worktrees/core-w03/amari-wasm)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.42s
+     Running unittests src/lib.rs (target/w03/debug/deps/amari_wasm-489f4565ce53f285)
+
+running 139 tests
+test dual::tests::test_autodiff_polynomial_constant ... ok
+test dual::tests::test_autodiff_mse_with_difference ... ok
+test dual::tests::test_dual_addition ... ok
+test dual::tests::test_dual_branch_policy_ties_are_exposed ... ok
+test dual::tests::test_autodiff_polynomial ... ok
+test cgt::tests::wasm_cgt_exposes_nimbers_and_canonical_forms ... ok
+test dual::tests::test_dual_cos ... ok
+test dual::tests::test_dual_division ... ok
+test dual::tests::test_autodiff_mean_squared_error ... ok
+test dual::tests::test_dual_exp ... ok
+test dual::tests::test_dual_multiplication ... ok
+test dual::tests::test_dual_chain_rule ... ok
+test dual::tests::test_dual_constant ... ok
+test dual::tests::test_dual_multiplication_two_vars ... ok
+test dual::tests::test_dual_new ... ok
+test cgt::tests::wasm_cgt_arena_builds_and_inspects_small_games ... ok
+test dual::tests::test_dual_pow ... ok
+test dual::tests::test_dual_relu ... ok
+test dual::tests::test_dual_sigmoid ... ok
+test dual::tests::test_dual_sin ... ok
+test dual::tests::test_dual_sqrt ... ok
+test dual::tests::test_dual_subtraction ... ok
+test dual::tests::test_dual_tanh ... ok
+test dual::tests::test_dual_variable ... ok
+test dual::tests::test_multi_dual_add ... ok
+test dual::tests::test_multi_dual_constant ... ok
+test dual::tests::test_multi_dual_mul ... ok
+test dual::tests::test_multi_dual_variable ... ok
+test dual::tests::test_multi_dual_variables_and_branch_policy_are_exposed ... ok
+test dual::tests::test_static_multi_dual2_arithmetic_is_exposed ... ok
+test flynn::tests::test_prob_and_then ... ok
+test flynn::tests::test_prob_map ... ok
+test flynn::tests::test_prob_new ... ok
+test flynn::tests::test_convenience_constructors ... ok
+test flynn::tests::test_prob_with_probability ... ok
+test flynn::tests::test_rare_event ... ok
+test flynn::tests::test_rare_event_classify ... ok
+test flynn::tests::test_smt_obligation_constructor ... ok
+test flynn::tests::test_smt_add_variable_and_assertion ... ok
+test flynn::tests::test_smt_verify_monte_carlo ... ok
+test flynn::tests::test_smt_to_smtlib2 ... ok
+test generic::tests::test_generic_add ... ok
+test generic::tests::test_generic_basis_vector ... ok
+test generic::tests::test_generic_cl210_basis_squares ... ok
+test generic::tests::test_generic_geometric_product_cl300 ... ok
+test generic::tests::test_generic_grade_projection ... ok
+test generic::tests::test_generic_cl310_basis_squares ... ok
+test generic::tests::test_generic_geometric_product_self_cl300 ... ok
+test generic::tests::test_generic_scalar ... ok
+test generic::tests::test_generic_outer_product ... ok
+test generic::tests::test_generic_scale ... ok
+test generic::tests::test_generic_new ... ok
+test flynn::tests::test_monte_carlo_verifier ... ok
+test gf2::tests::test_binary_grassmannian_size ... ok
+test generic::tests::test_generic_reverse_bivector ... ok
+test gf2::tests::test_binary_mv_grade_projection ... ok
+test gf2::tests::test_binary_code_weight_distribution ... ok
+test gf2::tests::test_gaussian_binomial ... ok
+test gf2::tests::test_binary_mv_basis_vector_square ... ok
+test gf2::tests::test_coding_bounds ... ok
+test generic::tests::test_generic_rotor_cl300 ... ok
+test gf2::tests::test_gf2_matrix_mul_vec ... ok
+test gf2::tests::test_gf2_matrix_null_space ... ok
+test gf2::tests::test_gf2_vector_add_dot ... ok
+test gf2::tests::test_gf2_matrix_transpose_roundtrip ... ok
+test gf2::tests::test_binary_mv_degenerate_square ... ok
+test gf2::tests::test_gf2_matrix_identity ... ok
+test gf2::tests::test_gf2_matrix_solve ... ok
+test gf2::tests::test_gf2_vector_creation ... ok
+test gf2::tests::test_grassmannian_points ... ok
+test gf2::tests::test_fano_matroid_construction ... ok
+test gf2::tests::test_gf2_vector_from_bits ... ok
+test gf2::tests::test_gf2_vector_hamming ... ok
+test gf2::tests::test_hamming_code_params ... ok
+test gf2::tests::test_hamming_code_encode_syndrome ... ok
+test surreal::tests::epsilon_div_by_zero_is_err ... ok
+test surreal::tests::epsilon_zero_reciprocal_is_err ... ok
+test surreal::tests::rational_div_by_zero_is_err ... ok
+test surreal::tests::rational_compare ... ok
+test surreal::tests::rational_arithmetic_and_reciprocal ... ok
+test surreal::tests::epsilon_reciprocal_larger_than_large_integer ... ok
+test surreal::tests::epsilon_squared_lt_epsilon ... ok
+test gf2::tests::test_kl_non_negative ... ok
+test surreal::tests::rational_from_integer_and_sign ... ok
+test surreal::tests::epsilon_epsilon_gt_zero ... ok
+test surreal::tests::epsilon_arithmetic_basics ... ok
+test surreal::tests::rational_from_ratio_zero_denominator_is_err ... ok
+test surreal::tests::rational_numerator_denominator_strings ... ok
+test surreal::tests::rational_to_short_if_dyadic_one_half_is_some ... ok
+test surreal::tests::rational_exact_one_third_plus_one_sixth_is_one_half ... ok
+test surreal::tests::rational_to_short_if_dyadic_one_third_is_none ... ok
+test surreal::tests::rational_zero_reciprocal_is_err ... ok
+test surreal::tests::wasm_dyadic_and_short_surreal_arithmetic_are_exact ... ok
+test tests::test_batch_add ... ok
+test tests::test_batch_geometric_product_single ... ok
+test tests::test_batch_normalize ... ok
+test surreal::tests::wasm_short_surreal_converts_from_and_to_cgt_games ... ok
+test tests::test_grade_decomposition_sums_to_original ... ok
+test gf2::tests::test_kl_polynomial_uniform ... ok
+test tests::test_clifford_algebra_identity ... ok
+test tests::test_fast_geometric_product ... ok
+test tests::test_multivector030_basis_squares ... ok
+test tests::test_multivector110_basis_squares ... ok
+test tests::test_full_rotation_chain ... ok
+test tests::test_multivector_all_basis_vectors_valid ... ok
+test tests::test_multivector_basis_vector ... ok
+test tests::test_multivector200_basis_squares ... ok
+test tests::test_multivector_exp_scalar ... ok
+test tests::test_multivector210_basis_squares ... ok
+test tests::test_multivector_exp_zero ... ok
+test tests::test_multivector310_basis_squares ... ok
+test tests::test_multivector_from_coefficients ... ok
+test tests::test_multivector_from_coefficients_correct_size ... ok
+test tests::test_multivector_get_coefficients ... ok
+test tests::test_multivector_grade_projection ... ok
+test tests::test_multivector_geometric_product_self ... ok
+test tests::test_multivector_geometric_product_basis ... ok
+test tests::test_multivector_magnitude ... ok
+test tests::test_multivector_new ... ok
+test tests::test_multivector_inner_product ... ok
+test tests::test_multivector_normalize ... ok
+test tests::test_multivector_scalar ... ok
+test tests::test_multivector_outer_product ... ok
+test tests::test_multivector_reverse ... ok
+test tests::test_multivector_set_coefficient ... ok
+test tests::test_multivector_scalar_product ... ok
+test tests::test_rotor_apply ... ok
+test tests::test_vector_cross_product ... ok
+test tests::test_rotor_compose ... ok
+test tests::test_vector_dot_product ... ok
+test tests::test_rotor_creation ... ok
+test tests::test_rotor_inverse ... ok
+test topology::tests::test_simplex ... ok
+test tropical::tests::test_tropical_semiring_folds_are_exposed ... ok
+test tropical::tests::test_ordinal_weight_optimization_helpers_are_exposed ... ok
+test topology::tests::test_circle_betti ... ok
+test topology::tests::test_complex_betti ... ok
+test generic::tests::test_fallback_dim7_self_square ... ok
+test generic::tests::test_fallback_dim7_basis_product ... ok
+
+test result: ok. 139 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

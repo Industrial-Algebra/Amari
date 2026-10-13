@@ -1,0 +1,23 @@
+=== default check ===
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
+=== no-default check ===
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w03/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+=== fmt ===
+(B[m         assert_inverse_acceptable(&m, &x);
+         accepted += 1;
+     }
+Diff in $AMARI/.worktrees/core-w03/amari-core/tests/inverse_contracts_green.rs:256:
+ 
+     // In Cl(2,0,1) the third generator e3 is null (the dispatch's `e3` case).
+     let m = mv::<2, 0, 1>(&[(1.0, &[3])]);
+[31m-    assert!(m.inverse().is_none(), "null vector e3 must not be invertible");
+(B[m[32m+    assert!(
+(B[m[32m+        m.inverse().is_none(),
+(B[m[32m+        "null vector e3 must not be invertible"
+(B[m[32m+    );
+(B[m }
+ 
+ #[test]
+FMT CLEAN

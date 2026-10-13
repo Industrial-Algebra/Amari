@@ -92,7 +92,8 @@ fn main() {
 
     // 4. Create a rotor for 90-degree rotation in the e1-e2 plane
     let angle = std::f64::consts::PI / 2.0; // 90 degrees
-    let rotor = Rotor::from_multivector_bivector(&e12, angle);
+    let rotor = Rotor::from_multivector_bivector(&e12, angle)
+        .expect("bounded Euclidean bivector exponential");
 
     println!("Rotor for 90° rotation in e1-e2 plane:");
     let rotor_mv = rotor.as_multivector();
@@ -171,7 +172,8 @@ fn main() {
 
     // Demonstrate composition of rotations
     println!("Rotor composition:");
-    let half_rotor = Rotor::from_multivector_bivector(&e12, angle / 2.0); // 45 degrees
+    let half_rotor = Rotor::from_multivector_bivector(&e12, angle / 2.0)
+        .expect("bounded Euclidean bivector exponential"); // 45 degrees
     let composed = half_rotor.compose(&half_rotor); // 45 + 45 = 90 degrees
 
     let composed_mv = composed.as_multivector();

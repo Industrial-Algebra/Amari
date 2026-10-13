@@ -1,0 +1,20 @@
+# toolchain: rustc 1.100.0-nightly (787af2b8c 2026-08-25) | cargo 1.100.0-nightly (e8cb624d5 2026-08-22) | clippy 0.1.100 (787af2b8c8 2026-08-25)
+# command: cargo test -p amari-core --test inverse_contracts_green
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/inverse_contracts_green.rs (target/debug/build/amari-core/f5ddd313d12c0184/out/inverse_contracts_green-f5ddd313d12c0184)
+
+running 11 tests
+test scalar_inverse_across_signatures ... ok
+test nilpotent_and_zero_divisors_return_none ... ok
+test scalar_overflow_scale_inverse ... ok
+test null_generator_is_not_invertible ... ok
+test versor_inverse_across_signatures ... ok
+test non_versor_inverse_across_signatures ... ok
+test vector_inverse_is_self_when_square_one ... ok
+test well_conditioned_random_inverses_euclidean ... ok
+test well_conditioned_random_inverses_null_generator ... ok
+test well_conditioned_random_inverses_degenerate_mixed ... ok
+test well_conditioned_random_inverses_mixed ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
