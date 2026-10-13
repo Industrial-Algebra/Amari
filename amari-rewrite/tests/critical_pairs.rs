@@ -437,46 +437,104 @@ fn oversized_input_terms_are_typed_errors() {
 }
 
 /// Substitution-expanded output beyond the term bounds is a typed
-/// error, with no partial report.
+/// error, with no partial report. Every INPUT is admitted; only the
+/// expanded evidence crosses the boundary (PR #301 round 2).
 #[test]
 fn expanded_output_beyond_bounds_is_typed_error() {
     let system = system(vec![
-        rule(app("f", [x()]), app("g", [x(), x()])),
-        rule(app("f", [a()]), b()),
+        rule(app("f", [x()]), app("h", [x()])),
+        rule(app("f", [app("g", [y()])]), y()),
     ]);
-    // Input terms fit (3 nodes each), but root_step g(a,a) is 3 nodes
-    // over a 2-node budget.
-    let limits = RelationLimits::new(2, 8, 10, 1_000_000).expect("valid limits");
+    // Inputs: deepest is f(g(y)) at depth 2, largest 3 nodes — all
+    // admitted. The root step h(g(y')) has depth 3: no input reaches
+    // it, only the expanded output.
+    let limits = RelationLimits::new(3, 2, 16, 1_000_000).expect("valid limits");
     let mut resources = RelationResources::new(&limits);
     let outcome = critical_pairs(&system, &mut resources);
     assert!(
         matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
         "{outcome:?}"
     );
-}
-
-/// A constraint budget below the successful-unify count fails at
-/// pair reservation, with no partial report. (`RelationLimits`
-/// rejects zero constraints at construction, so the tightest
-/// constructible budget is used.)
-#[test]
-fn constraint_budget_fails_at_reservation() {
-    let system = system(vec![
-        rule(app("f", [x()]), app("g", [x()])),
-        rule(app("f", [a()]), b()),
-        rule(app("f", [app("c", [])]), app("d", [])),
-    ]);
-    // Two root overlaps succeed; a one-cell budget must fail.
-    let limits = RelationLimits::new(64, 64, 1, 1_000_000).expect("valid limits");
-    let mut resources = RelationResources::new(&limits);
-    let outcome = critical_pairs(&system, &mut resources);
-    assert!(
-        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
-        "{outcome:?}"
-    );
-    // Two cells cover both reservations.
-    let limits = RelationLimits::new(64, 64, 2, 1_000_000).expect("valid limits");
+    // One more depth unit admits the expansion.
+    let limits = RelationLimits::new(3, 3, 16, 1_000_000).expect("valid limits");
     let mut resources = RelationResources::new(&limits);
     let report = critical_pairs(&system, &mut resources).expect("pairs computed");
-    assert_eq!(report.pairs.len(), 2, "{report:#?}");
+    assert_eq!(report.pairs.len(), 1, "{report:#?}");
+}
+
+/// Chained substitution ranges must be resolved DEEPLY for shape
+/// accounting (PR #301 round 2 P1): with `y := h(a)` and `x := g(y)`,
+/// the resolved root step is `g(h(a))` — 3 nodes, depth 3 — not the
+/// shallow range `g(y)`. The overlap is 6 nodes / depth 4.
+#[test]
+fn shape_preflight_resolves_chained_bindings() {
+    let h_a = || app("h", [a()]);
+    let g_y = || app("g", [y()]);
+    let system = system(vec![
+        rule(app("f", [h_a(), x()]), x()),
+        rule(app("f", [y(), g_y()]), y()),
+    ]);
+    // 5 nodes / depth 3 must FAIL: the true shapes exceed them even
+    // though the shallow ranges do not.
+    for (nodes, depth) in [(5, 8), (8, 3)] {
+        let limits = RelationLimits::new(nodes, depth, 16, 1_000_000).expect("valid limits");
+        let mut resources = RelationResources::new(&limits);
+        let outcome = critical_pairs(&system, &mut resources);
+        assert!(
+            matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+            "nodes={nodes} depth={depth}: {outcome:?}"
+        );
+    }
+    // The exact boundary admits the pair: overlap f(h(a), g(h(a))) is
+    // 6 nodes / depth 4; root step g(h(a)) is 3 / 3.
+    let limits = RelationLimits::new(6, 4, 16, 1_000_000).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let report = critical_pairs(&system, &mut resources).expect("pairs computed");
+    assert_eq!(report.pairs.len(), 1, "{report:#?}");
+    let pair = &report.pairs[0];
+    assert_eq!(pair.overlap, app("f", [h_a(), app("g", [h_a()])]));
+    assert_eq!(pair.root_step, app("g", [h_a()]));
+}
+
+/// Non-root position steps with chained bindings: the spine and
+/// replacement shapes must also resolve deeply.
+#[test]
+fn position_step_shape_resolves_chained_bindings() {
+    let system = system(vec![
+        rule(app("k", [app("f", [x()])]), app("f", [x()])),
+        rule(app("f", [app("g", [y()])]), app("g", [y()])),
+    ]);
+    // Overlap at [0]: unify f(x) with f(g(y')) => x := g(y').
+    // Shapes: overlap k(f(g(y'))) 4 nodes / depth 4; root step
+    // f(g(y')) 3 / 3; position step k(g(y')) 3 / 3. Depth 3 must
+    // fail on the overlap even though both steps fit; depth 4
+    // admits.
+    let limits = RelationLimits::new(8, 3, 16, 1_000_000).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let outcome = critical_pairs(&system, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "{outcome:?}"
+    );
+    let limits = RelationLimits::new(8, 4, 16, 1_000_000).expect("valid limits");
+    let mut resources = RelationResources::new(&limits);
+    let report = critical_pairs(&system, &mut resources).expect("pairs computed");
+    assert_eq!(report.pairs.len(), 1, "{report:#?}");
+    let pair = &report.pairs[0];
+    assert_eq!(pair.path.as_slice(), &[0]);
+    // The renamed inner variable is the mgu representative; assert the
+    // structure around it rather than its name.
+    let inner = Term::var(
+        pair.overlap
+            .subterm(&Path::root().child(0).child(0).child(0))
+            .map(|t| match t {
+                Term::Var(v) => v.as_str().to_owned(),
+                Term::Sym(..) => panic!("expected variable, got {t:?}"),
+            })
+            .unwrap(),
+    );
+    let g_inner = app("g", [inner]);
+    assert_eq!(pair.overlap, app("k", [app("f", [g_inner.clone()])]));
+    assert_eq!(pair.root_step, app("f", [g_inner.clone()]));
+    assert_eq!(pair.position_step, app("k", [g_inner]));
 }

@@ -18,13 +18,14 @@
 //! `left_rule < right_rule`; non-root overlaps over all ordered rule
 //! pairs, and self-overlaps only at non-root positions.
 
+use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
 
 use crate::analysis::unify::{term_depth, term_nodes, unify};
 use crate::error::{RewriteError, RewriteResult};
 use crate::relation::RelationResources;
-use crate::trs::{Rule, Substitution, Term, TermSystem};
+use crate::trs::{Rule, Substitution, Term, TermSystem, Variable};
 use crate::Path;
 
 /// One overlap of `right_rule` renamed apart and unified into
@@ -121,12 +122,20 @@ pub fn critical_pairs(
                 // the templates and substitution ranges, enforced
                 // against the term limits, and the evidence cell is
                 // reserved BEFORE anything is materialized.
-                let (overlap_nodes, overlap_depth) = applied_shape(left_lhs, &subst, None);
-                let (root_nodes, root_depth) = applied_shape(left.rhs(), &subst, None);
-                let (inner_nodes, inner_depth) = applied_shape(renamed.rhs(), &subst, None);
-                let (spine_nodes, spine_depth) = applied_shape(left_lhs, &subst, Some(path));
-                let position_nodes = spine_nodes + inner_nodes;
-                let position_depth = spine_depth.max(path.as_slice().len() + inner_depth);
+                // Shapes are resolved through the substitution (deep,
+                // memoized, saturating), so one memo serves every
+                // template of this attempt.
+                let mut memo = BTreeMap::new();
+                let (overlap_nodes, overlap_depth) =
+                    applied_shape(left_lhs, &subst, None, &mut memo);
+                let (root_nodes, root_depth) = applied_shape(left.rhs(), &subst, None, &mut memo);
+                let (inner_nodes, inner_depth) =
+                    applied_shape(renamed.rhs(), &subst, None, &mut memo);
+                let (spine_nodes, spine_depth) =
+                    applied_shape(left_lhs, &subst, Some(path), &mut memo);
+                let position_nodes = spine_nodes.saturating_add(inner_nodes);
+                let position_depth =
+                    spine_depth.max(path.as_slice().len().saturating_add(inner_depth));
                 resources.record_term(overlap_nodes, overlap_depth)?;
                 resources.record_term(root_nodes, root_depth)?;
                 resources.record_term(position_nodes, position_depth)?;
@@ -222,7 +231,19 @@ fn rename_variables(term: &Term, prefix: &str) -> Term {
 /// term is allocated). With `except`, the subtree at that path is
 /// skipped; `applied_shape(template, σ, Some(p))` plus the shape of
 /// the replacement gives the exact shape of the position step.
-fn applied_shape(template: &Term, subst: &Substitution, except: Option<&Path>) -> (usize, usize) {
+/// Ranges are resolved DEEPLY (PR #301 round 2): a binding like
+/// `x := g(y)` with `y := h(a)` contributes the resolved shape of
+/// `g(h(a))`, not the shallow range literal. Resolution is memoized
+/// per variable (the occurs check guarantees acyclicity) and uses
+/// saturating arithmetic — resolved chains can grow exponentially,
+/// and any saturated value exceeds every enforceable limit, which is
+/// the fail-safe direction.
+fn applied_shape(
+    template: &Term,
+    subst: &Substitution,
+    except: Option<&Path>,
+    memo: &mut BTreeMap<Variable, (usize, usize)>,
+) -> (usize, usize) {
     struct Frame<'a> {
         term: &'a Term,
         path: Path,
@@ -241,15 +262,12 @@ fn applied_shape(template: &Term, subst: &Substitution, except: Option<&Path>) -
         }
         match frame.term {
             Term::Var(variable) => {
-                let (bound_nodes, bound_depth) = subst
-                    .get_var(variable)
-                    .map(|bound| (term_nodes(bound), term_depth(bound)))
-                    .unwrap_or((1, 1));
-                nodes += bound_nodes;
-                depth = depth.max(frame.path.as_slice().len() + bound_depth);
+                let (bound_nodes, bound_depth) = resolved_var_shape(variable, subst, memo);
+                nodes = nodes.saturating_add(bound_nodes);
+                depth = depth.max(frame.path.as_slice().len().saturating_add(bound_depth));
             }
             Term::Sym(_, args) => {
-                nodes += 1;
+                nodes = nodes.saturating_add(1);
                 if args.is_empty() {
                     depth = depth.max(frame.path.as_slice().len() + 1);
                 }
@@ -263,4 +281,44 @@ fn applied_shape(template: &Term, subst: &Substitution, except: Option<&Path>) -
         }
     }
     (nodes, depth)
+}
+
+/// Fully resolved `(nodes, depth)` of a variable under `subst`,
+/// memoized per variable. Unbound variables contribute `(1, 1)`.
+fn resolved_var_shape(
+    variable: &Variable,
+    subst: &Substitution,
+    memo: &mut BTreeMap<Variable, (usize, usize)>,
+) -> (usize, usize) {
+    if let Some(shape) = memo.get(variable) {
+        return *shape;
+    }
+    let shape = match subst.get_var(variable) {
+        None => (1, 1),
+        Some(bound) => resolved_term_shape(bound, subst, memo),
+    };
+    memo.insert(variable.clone(), shape);
+    shape
+}
+
+/// Fully resolved `(nodes, depth)` of a term whose variables are
+/// themselves resolved through `subst`.
+fn resolved_term_shape(
+    term: &Term,
+    subst: &Substitution,
+    memo: &mut BTreeMap<Variable, (usize, usize)>,
+) -> (usize, usize) {
+    match term {
+        Term::Var(variable) => resolved_var_shape(variable, subst, memo),
+        Term::Sym(_, args) => {
+            let mut nodes = 1usize;
+            let mut depth = 1usize;
+            for arg in args.iter() {
+                let (arg_nodes, arg_depth) = resolved_term_shape(arg, subst, memo);
+                nodes = nodes.saturating_add(arg_nodes);
+                depth = depth.max(1usize.saturating_add(arg_depth));
+            }
+            (nodes, depth)
+        }
+    }
 }
