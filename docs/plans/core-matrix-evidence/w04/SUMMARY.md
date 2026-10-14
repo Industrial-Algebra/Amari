@@ -236,7 +236,7 @@ IMPLEMENTATION COMPLETE AND STAGED. R1 returned 7 P1, R2 returned 3 P1 / 1 P2 /
 all were remediated in the same worktree (2026-10-14) and the full pinned matrix
 re-ran green. Awaiting re-review / operator go-no-go.
 
-## Loop record (implementation review, 6 rounds, cap reached)
+## Loop record (implementation review; converged at R8 under the 12-round protocol — rounds 1–6 at the historical 6-round cap, R7–R8 under the operator's updated skill)
 R1 7P1 (dimension guards, exact-quotient inverse, sticky-bit ratio, exp-route
 scale preservation, binary gate, antipodal routing/derivation, axis range)
 -> d173ab8. R2 3P1/1P2/2P3 (slerp scale, output certification/inf, symbolic
@@ -256,3 +256,11 @@ r7-final-catalog.log (241 lib / 489 total both compilers, catalog 09c3ab7c).
 The pre-loop S5 matrix remains in final-*.log (historical, SUPERSEDED).
 Convergence: mathematical defects zero from R5 on; formal 0-P1/0-P2
 convergence pending the R8 confirmation round.
+
+R8 (confirmation @ b567392): 0 P1 / 0 P2 / 1 P3 — **CONVERGED**. Both R7
+fixes probe-verified; 489-test inventories and genuine nightly provenance
+confirmed; catalog hash consistent; docs-only scope confirmed; full pinned
+matrix green. The P3 (these headings previously said "6 rounds, cap") fixed
+in this commit. Standing residual risks: 24 discovery host-excluded python3
+fixtures; documented Multivector::basis_vector panic primitive; standalone
+repro crates; R2 orchestrator pin correction (disclosed inline at R2).
