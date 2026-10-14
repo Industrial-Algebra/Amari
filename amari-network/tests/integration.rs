@@ -10,11 +10,11 @@ use approx::assert_relative_eq;
 
 // Helper function to create multivectors from components
 fn mv2(x: f64, y: f64) -> Multivector<2, 0, 0> {
-    Vector::from_components(x, y, 0.0).mv
+    Vector::from_components(x, y, 0.0).into_multivector()
 }
 
 fn mv3(x: f64, y: f64, z: f64) -> Multivector<3, 0, 0> {
-    Vector::from_components(x, y, z).mv
+    Vector::from_components(x, y, z).into_multivector()
 }
 
 #[test]

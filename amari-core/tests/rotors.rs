@@ -29,12 +29,26 @@ mod rotor_tests {
         let e1 = Vector::<3, 0, 0>::e1();
 
         // Apply rotation: R * v * R†
-        let rotated = rotor.apply_to_vector(&e1);
+        let rotated = rotor
+            .apply_to_vector(&e1)
+            .expect("certified rotor acts on a vector");
 
         // Should be close to e2
-        assert_relative_eq!(rotated.mv.vector_component(0), 0.0, epsilon = 1e-10); // e1 component
-        assert_relative_eq!(rotated.mv.vector_component(1), 1.0, epsilon = 1e-10); // e2 component
-        assert_relative_eq!(rotated.mv.vector_component(2), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(0),
+            0.0,
+            epsilon = 1e-10
+        ); // e1 component
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(1),
+            1.0,
+            epsilon = 1e-10
+        ); // e2 component
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(2),
+            0.0,
+            epsilon = 1e-10
+        );
         // e3 component
     }
 
@@ -84,7 +98,7 @@ mod rotor_tests {
         let bivector = Bivector::<3, 0, 0>::e12();
         let rotor = Rotor::from_bivector(&bivector, PI / 3.0)
             .expect("bounded Euclidean bivector exponential");
-        let inverse = rotor.inverse();
+        let inverse = rotor.inverse().expect("certified rotor inverse");
 
         let product = rotor.geometric_product(&inverse);
 
@@ -103,7 +117,9 @@ mod rotor_tests {
         let to = Vector::<3, 0, 0>::e2();
 
         let rotor = Rotor::from_vectors(&from, &to).expect("Should be able to create rotor");
-        let rotated = rotor.apply_to_vector(&from);
+        let rotated = rotor
+            .apply_to_vector(&from)
+            .expect("certified rotor acts on a vector");
 
         // Should rotate e1 to e2
         assert_relative_eq!(rotated.as_slice(), to.as_slice(), epsilon = 1e-10);
@@ -118,7 +134,7 @@ mod rotor_tests {
             .expect("bounded Euclidean bivector exponential");
 
         // Interpolate halfway
-        let halfway = identity.slerp(&target, 0.5);
+        let halfway = identity.slerp(&target, 0.5).expect("interior slerp");
         let expected = Rotor::from_bivector(&bivector, PI / 4.0)
             .expect("bounded Euclidean bivector exponential");
 
@@ -138,14 +154,32 @@ mod rotor_tests {
         let e2 = Vector::<3, 0, 0>::e2();
         let e3 = Vector::<3, 0, 0>::e3();
 
-        let r_e1 = rotor.apply_to_vector(&e1);
-        let r_e2 = rotor.apply_to_vector(&e2);
-        let r_e3 = rotor.apply_to_vector(&e3);
+        let r_e1 = rotor
+            .apply_to_vector(&e1)
+            .expect("certified rotor acts on a vector");
+        let r_e2 = rotor
+            .apply_to_vector(&e2)
+            .expect("certified rotor acts on a vector");
+        let r_e3 = rotor
+            .apply_to_vector(&e3)
+            .expect("certified rotor acts on a vector");
 
         for (i, row) in matrix.iter().enumerate() {
-            assert_relative_eq!(row[0], r_e1.mv.vector_component(i), epsilon = 1e-10);
-            assert_relative_eq!(row[1], r_e2.mv.vector_component(i), epsilon = 1e-10);
-            assert_relative_eq!(row[2], r_e3.mv.vector_component(i), epsilon = 1e-10);
+            assert_relative_eq!(
+                row[0],
+                r_e1.as_multivector().vector_component(i),
+                epsilon = 1e-10
+            );
+            assert_relative_eq!(
+                row[1],
+                r_e2.as_multivector().vector_component(i),
+                epsilon = 1e-10
+            );
+            assert_relative_eq!(
+                row[2],
+                r_e3.as_multivector().vector_component(i),
+                epsilon = 1e-10
+            );
         }
 
         // e3 should be unchanged
@@ -175,7 +209,9 @@ mod rotor_tests {
             .expect("bounded Euclidean bivector exponential");
         let vector = Vector::<3, 0, 0>::from_components(3.0, 4.0, 5.0);
 
-        let rotated = rotor.apply_to_vector(&vector);
+        let rotated = rotor
+            .apply_to_vector(&vector)
+            .expect("certified rotor acts on a vector");
 
         assert_relative_eq!(
             vector.coefficient_norm(),
@@ -196,8 +232,12 @@ mod rotor_tests {
 
         let original_dot = v1.inner_product(&v2).scalar_part();
 
-        let r1 = rotor.apply_to_vector(&v1);
-        let r2 = rotor.apply_to_vector(&v2);
+        let r1 = rotor
+            .apply_to_vector(&v1)
+            .expect("certified rotor acts on a vector");
+        let r2 = rotor
+            .apply_to_vector(&v2)
+            .expect("certified rotor acts on a vector");
         let rotated_dot = r1.inner_product(&r2).scalar_part();
 
         assert_relative_eq!(original_dot, rotated_dot, epsilon = 1e-10);
@@ -257,9 +297,11 @@ mod rotor_tests {
         let rotor =
             Rotor::from_bivector(&bivector, angle).expect("bounded Euclidean bivector exponential");
 
-        let log_rotor = rotor.logarithm();
+        let log_rotor = rotor
+            .logarithm()
+            .expect("bounded Euclidean rotor is a certified log class");
         // The rotor stores exp(-B*angle/2), so log gives back -B*angle/2
-        let expected_bivector = bivector.mv * (-angle / 2.0);
+        let expected_bivector = bivector.as_multivector() * (-angle / 2.0);
 
         assert_relative_eq!(
             log_rotor.as_slice(),
@@ -322,7 +364,7 @@ mod rotor_tests {
         let bivector = Bivector::<3, 0, 0>::e12();
         let rotor = Rotor::from_bivector(&bivector, PI / 3.0)
             .expect("bounded Euclidean bivector exponential");
-        let inverse = rotor.inverse();
+        let inverse = rotor.inverse().expect("certified rotor inverse");
 
         let power_neg1 = rotor.power(-1.0).expect("bounded rotor power exponential");
 
@@ -350,11 +392,25 @@ mod rotor_tests {
             .expect("bounded Euclidean bivector exponential");
         let e1 = Vector::<3, 0, 0>::e1();
 
-        let rotated = rotor.apply_to_vector(&e1);
+        let rotated = rotor
+            .apply_to_vector(&e1)
+            .expect("certified rotor acts on a vector");
 
-        assert_relative_eq!(rotated.mv.vector_component(0), 0.0, epsilon = 1e-10); // e1
-        assert_relative_eq!(rotated.mv.vector_component(1), 0.0, epsilon = 1e-10); // e2
-        assert_relative_eq!(rotated.mv.vector_component(2), 1.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(0),
+            0.0,
+            epsilon = 1e-10
+        ); // e1
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(1),
+            0.0,
+            epsilon = 1e-10
+        ); // e2
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(2),
+            1.0,
+            epsilon = 1e-10
+        );
         // e3
     }
 
@@ -366,11 +422,25 @@ mod rotor_tests {
             .expect("bounded Euclidean bivector exponential");
         let e2 = Vector::<3, 0, 0>::e2();
 
-        let rotated = rotor.apply_to_vector(&e2);
+        let rotated = rotor
+            .apply_to_vector(&e2)
+            .expect("certified rotor acts on a vector");
 
-        assert_relative_eq!(rotated.mv.vector_component(0), 0.0, epsilon = 1e-10); // e1
-        assert_relative_eq!(rotated.mv.vector_component(1), 0.0, epsilon = 1e-10); // e2
-        assert_relative_eq!(rotated.mv.vector_component(2), 1.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(0),
+            0.0,
+            epsilon = 1e-10
+        ); // e1
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(1),
+            0.0,
+            epsilon = 1e-10
+        ); // e2
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(2),
+            1.0,
+            epsilon = 1e-10
+        );
         // e3
     }
 
@@ -382,10 +452,20 @@ mod rotor_tests {
             Rotor::from_bivector(&bivector, PI).expect("bounded Euclidean bivector exponential");
         let e1 = Vector::<3, 0, 0>::e1();
 
-        let rotated = rotor.apply_to_vector(&e1);
+        let rotated = rotor
+            .apply_to_vector(&e1)
+            .expect("certified rotor acts on a vector");
 
-        assert_relative_eq!(rotated.mv.vector_component(0), -1.0, epsilon = 1e-10); // e1
-        assert_relative_eq!(rotated.mv.vector_component(1), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(0),
+            -1.0,
+            epsilon = 1e-10
+        ); // e1
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(1),
+            0.0,
+            epsilon = 1e-10
+        );
         // e2
     }
 
@@ -397,10 +477,20 @@ mod rotor_tests {
             Rotor::from_bivector(&bivector, 1e-10).expect("bounded Euclidean bivector exponential");
         let e1 = Vector::<3, 0, 0>::e1();
 
-        let rotated = rotor.apply_to_vector(&e1);
+        let rotated = rotor
+            .apply_to_vector(&e1)
+            .expect("certified rotor acts on a vector");
 
-        assert_relative_eq!(rotated.mv.vector_component(0), 1.0, epsilon = 1e-8);
-        assert_relative_eq!(rotated.mv.vector_component(1), 0.0, epsilon = 1e-8);
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(0),
+            1.0,
+            epsilon = 1e-8
+        );
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(1),
+            0.0,
+            epsilon = 1e-8
+        );
     }
 
     #[test]
@@ -416,15 +506,33 @@ mod rotor_tests {
         let e2 = Vector::<3, 0, 0>::e2();
         let e3 = Vector::<3, 0, 0>::e3();
 
-        let r_e1 = rotor.apply_to_vector(&e1);
-        let r_e2 = rotor.apply_to_vector(&e2);
-        let r_e3 = rotor.apply_to_vector(&e3);
+        let r_e1 = rotor
+            .apply_to_vector(&e1)
+            .expect("certified rotor acts on a vector");
+        let r_e2 = rotor
+            .apply_to_vector(&e2)
+            .expect("certified rotor acts on a vector");
+        let r_e3 = rotor
+            .apply_to_vector(&e3)
+            .expect("certified rotor acts on a vector");
 
         // Matrix columns should match rotated basis vectors
         for (i, row) in matrix.iter().enumerate() {
-            assert_relative_eq!(row[0], r_e1.mv.vector_component(i), epsilon = 1e-10);
-            assert_relative_eq!(row[1], r_e2.mv.vector_component(i), epsilon = 1e-10);
-            assert_relative_eq!(row[2], r_e3.mv.vector_component(i), epsilon = 1e-10);
+            assert_relative_eq!(
+                row[0],
+                r_e1.as_multivector().vector_component(i),
+                epsilon = 1e-10
+            );
+            assert_relative_eq!(
+                row[1],
+                r_e2.as_multivector().vector_component(i),
+                epsilon = 1e-10
+            );
+            assert_relative_eq!(
+                row[2],
+                r_e3.as_multivector().vector_component(i),
+                epsilon = 1e-10
+            );
         }
 
         // e2 should be unchanged by e13 rotation
@@ -441,11 +549,25 @@ mod rotor_tests {
 
         // 120° rotation around (1,1,1) cycles e1→e2→e3→e1
         let e1 = Vector::<3, 0, 0>::e1();
-        let rotated = rotor.apply_to_vector(&e1);
+        let rotated = rotor
+            .apply_to_vector(&e1)
+            .expect("certified rotor acts on a vector");
 
-        assert_relative_eq!(rotated.mv.vector_component(0), 0.0, epsilon = 1e-10); // e1
-        assert_relative_eq!(rotated.mv.vector_component(1), 1.0, epsilon = 1e-10); // e2
-        assert_relative_eq!(rotated.mv.vector_component(2), 0.0, epsilon = 1e-10);
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(0),
+            0.0,
+            epsilon = 1e-10
+        ); // e1
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(1),
+            1.0,
+            epsilon = 1e-10
+        ); // e2
+        assert_relative_eq!(
+            rotated.as_multivector().vector_component(2),
+            0.0,
+            epsilon = 1e-10
+        );
         // e3
     }
 
@@ -458,11 +580,11 @@ mod rotor_tests {
             .expect("bounded Euclidean bivector exponential");
 
         // t=0 should give r1
-        let at_0 = r1.slerp(&r2, 0.0);
+        let at_0 = r1.slerp(&r2, 0.0).expect("endpoint t = 0");
         assert_relative_eq!(at_0.as_slice(), r1.as_slice(), epsilon = 1e-10);
 
         // t=1 should give r2
-        let at_1 = r1.slerp(&r2, 1.0);
+        let at_1 = r1.slerp(&r2, 1.0).expect("endpoint t = 1");
         assert_relative_eq!(at_1.as_slice(), r2.as_slice(), epsilon = 1e-10);
     }
 }

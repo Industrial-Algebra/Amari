@@ -117,7 +117,7 @@ fn main() {
     println!("Rotation examples:");
 
     // Rotate e1 (should become e2)
-    let rotated_e1 = rotor.apply(&e1);
+    let rotated_e1 = rotor.apply(&e1).expect("certified rotor acts");
     println!(
         "R · e1 · R† = [{:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}]",
         rotated_e1.get(0),
@@ -135,7 +135,7 @@ fn main() {
     );
 
     // Rotate e2 (should become -e1)
-    let rotated_e2 = rotor.apply(&e2);
+    let rotated_e2 = rotor.apply(&e2).expect("certified rotor acts");
     println!(
         "R · e2 · R† = [{:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}]",
         rotated_e2.get(0),
@@ -153,7 +153,7 @@ fn main() {
     );
 
     // e3 should be unchanged (rotation is in e1-e2 plane)
-    let rotated_e3 = rotor.apply(&e3);
+    let rotated_e3 = rotor.apply(&e3).expect("certified rotor acts");
     println!(
         "R · e3 · R† = [{:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}]",
         rotated_e3.get(0),
@@ -214,7 +214,7 @@ fn main() {
         vector.get(7)
     );
 
-    let rotated_vector = rotor.apply(&vector);
+    let rotated_vector = rotor.apply(&vector).expect("certified rotor acts");
     println!("Rotated vector R·v·R†:");
     println!(
         "R·v·R† = [{:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}, {:.3}]",

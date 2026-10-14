@@ -1,0 +1,65 @@
+{
+  "workflow": {
+    "phases": {
+      "brainstorm": "pending",
+      "plan": "pending",
+      "execute": "pending",
+      "verify": "pending",
+      "review": "pending",
+      "finish": "pending"
+    },
+    "currentPhase": null,
+    "artifacts": {
+      "brainstorm": null,
+      "plan": null,
+      "execute": null,
+      "verify": null,
+      "review": null,
+      "finish": null
+    },
+    "prompted": {
+      "brainstorm": false,
+      "plan": false,
+      "execute": false,
+      "verify": false,
+      "review": false,
+      "finish": false
+    }
+  },
+  "tdd": {
+    "phase": "green",
+    "testFiles": [
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/products.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/rotor_error_privacy_s1.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/rotors.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/rotor_log_powers_s2.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/rotor_slerp_vectors_reflect_s3.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/audit_tests.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/arithmetic_regressions.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/basis_word_oracle.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/geometric_product.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/tests/rotor_duals_components_s4.rs"
+    ],
+    "sourceFiles": [
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/src/error.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/src/lib.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/src/exact_square.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/src/rotor.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-relativistic/src/spacetime.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-enumerative/src/geometric_algebra.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core/src/comprehensive_tests.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-calculus/src/derivative.rs",
+      "/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-gpu/src/calculus.rs"
+    ],
+    "redVerificationPending": false
+  },
+  "debug": {
+    "active": false,
+    "investigated": true,
+    "fixAttempts": 0
+  },
+  "verification": {
+    "verified": true,
+    "verificationWaived": false
+  }
+}

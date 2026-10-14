@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut community1_indices = Vec::new();
     for (name, x, y) in research_nodes {
         let node = network.add_node_with_metadata(
-            Vector::from_components(x, y, 0.0).mv,
+            Vector::from_components(x, y, 0.0).into_multivector(),
             NodeMetadata::with_label(format!("Research-{}", name))
                 .with_property("group", 1.0)
                 .with_property("activity", 0.8),
@@ -49,7 +49,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut community2_indices = Vec::new();
     for (name, x, y) in engineering_nodes {
         let node = network.add_node_with_metadata(
-            Vector::from_components(x, y, 0.0).mv,
+            Vector::from_components(x, y, 0.0).into_multivector(),
             NodeMetadata::with_label(format!("Engineering-{}", name))
                 .with_property("group", 2.0)
                 .with_property("activity", 0.9),
@@ -68,7 +68,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut community3_indices = Vec::new();
     for (name, x, y) in design_nodes {
         let node = network.add_node_with_metadata(
-            Vector::from_components(x, y, 0.0).mv,
+            Vector::from_components(x, y, 0.0).into_multivector(),
             NodeMetadata::with_label(format!("Design-{}", name))
                 .with_property("group", 3.0)
                 .with_property("activity", 0.7),

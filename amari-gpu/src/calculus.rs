@@ -197,10 +197,11 @@ impl GpuCalculus {
         // curl_y = ∂Fx/∂z - ∂Fz/∂x  →  e_3 ∧ e_1
         // curl_z = ∂Fy/∂x - ∂Fx/∂y  →  e_1 ∧ e_2
 
-        // For 3D geometric algebra, bivectors are indices 3,4,5 (e_12, e_13, e_23)
-        curl.set_bivector_component(0, derivatives[1][2] - derivatives[2][1]); // e_1∧e_2
-        curl.set_bivector_component(1, derivatives[2][0] - derivatives[0][2]); // e_1∧e_3
-        curl.set_bivector_component(2, derivatives[0][1] - derivatives[1][0]); // e_2∧e_3
+        // For 3D geometric algebra, bivector components 0, 1, 2 are
+        // e_12, e_13, e_23 (dimension-general lexicographic order).
+        let _ = curl.set_bivector_component(0, derivatives[1][2] - derivatives[2][1]); // e_1∧e_2
+        let _ = curl.set_bivector_component(1, derivatives[2][0] - derivatives[0][2]); // e_1∧e_3
+        let _ = curl.set_bivector_component(2, derivatives[0][1] - derivatives[1][0]); // e_2∧e_3
 
         curl
     }

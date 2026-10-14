@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut node_indices = Vec::new();
     for (name, x, y, personality, receptivity) in individuals {
         let node = network.add_node_with_metadata(
-            Vector::from_components(x, y, 0.0).mv,
+            Vector::from_components(x, y, 0.0).into_multivector(),
             NodeMetadata::with_label(name)
                 .with_property("receptivity", receptivity)
                 .with_property("x_position", x)

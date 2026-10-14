@@ -18,19 +18,19 @@ mod hodge_dual_tests {
         let e2 = Multivector::<3, 0, 0>::basis_vector(1);
         let e3 = Multivector::<3, 0, 0>::basis_vector(2);
 
-        let dual_e1 = e1.hodge_dual();
+        let dual_e1 = e1.hodge_dual().expect("non-degenerate 3D signature");
         // e23 = index 6 (0b110)
         assert_relative_eq!(dual_e1.get(6), 1.0, epsilon = 1e-14);
         assert_relative_eq!(dual_e1.get(3), 0.0, epsilon = 1e-14);
         assert_relative_eq!(dual_e1.get(5), 0.0, epsilon = 1e-14);
 
-        let dual_e2 = e2.hodge_dual();
+        let dual_e2 = e2.hodge_dual().expect("non-degenerate 3D signature");
         // -e13 = -1 at index 5 (0b101)
         assert_relative_eq!(dual_e2.get(5), -1.0, epsilon = 1e-14);
         assert_relative_eq!(dual_e2.get(3), 0.0, epsilon = 1e-14);
         assert_relative_eq!(dual_e2.get(6), 0.0, epsilon = 1e-14);
 
-        let dual_e3 = e3.hodge_dual();
+        let dual_e3 = e3.hodge_dual().expect("non-degenerate 3D signature");
         // e12 = index 3 (0b011)
         assert_relative_eq!(dual_e3.get(3), 1.0, epsilon = 1e-14);
         assert_relative_eq!(dual_e3.get(5), 0.0, epsilon = 1e-14);
@@ -49,13 +49,13 @@ mod hodge_dual_tests {
         let mut e23 = Multivector::<3, 0, 0>::zero();
         e23.set(6, 1.0); // index 6 = e23
 
-        let dual_e12 = e12.hodge_dual();
+        let dual_e12 = e12.hodge_dual().expect("non-degenerate 3D signature");
         assert_relative_eq!(dual_e12.get(4), 1.0, epsilon = 1e-14); // e3 = index 4
 
-        let dual_e13 = e13.hodge_dual();
+        let dual_e13 = e13.hodge_dual().expect("non-degenerate 3D signature");
         assert_relative_eq!(dual_e13.get(2), -1.0, epsilon = 1e-14); // -e2 = index 2
 
-        let dual_e23 = e23.hodge_dual();
+        let dual_e23 = e23.hodge_dual().expect("non-degenerate 3D signature");
         assert_relative_eq!(dual_e23.get(1), 1.0, epsilon = 1e-14); // e1 = index 1
     }
 
@@ -63,12 +63,14 @@ mod hodge_dual_tests {
     fn test_hodge_dual_scalar_pseudoscalar_3d() {
         // ⋆1 = e123, ⋆e123 = 1
         let scalar = Multivector::<3, 0, 0>::scalar(1.0);
-        let dual_scalar = scalar.hodge_dual();
+        let dual_scalar = scalar.hodge_dual().expect("non-degenerate 3D signature");
         assert_relative_eq!(dual_scalar.get(7), 1.0, epsilon = 1e-14); // e123 = index 7
 
         let mut pseudoscalar = Multivector::<3, 0, 0>::zero();
         pseudoscalar.set(7, 1.0);
-        let dual_pseudo = pseudoscalar.hodge_dual();
+        let dual_pseudo = pseudoscalar
+            .hodge_dual()
+            .expect("non-degenerate 3D signature");
         assert_relative_eq!(dual_pseudo.get(0), 1.0, epsilon = 1e-14); // scalar
     }
 
@@ -77,13 +79,21 @@ mod hodge_dual_tests {
         // In 3D: ⋆⋆a = (-1)^{k(n-k)} * a for k-vector in n dimensions
         // For vectors (k=1, n=3): ⋆⋆v = (-1)^(1*2) * v = v
         let v = Multivector::<3, 0, 0>::basis_vector(0); // e1
-        let double_dual = v.hodge_dual().hodge_dual();
+        let double_dual = v
+            .hodge_dual()
+            .expect("non-degenerate 3D signature")
+            .hodge_dual()
+            .expect("non-degenerate 3D signature");
         assert_relative_eq!(double_dual.as_slice(), v.as_slice(), epsilon = 1e-14);
 
         // For bivectors (k=2, n=3): ⋆⋆B = (-1)^(2*1) * B = B
         let mut b = Multivector::<3, 0, 0>::zero();
         b.set(3, 1.0); // e12
-        let double_dual_b = b.hodge_dual().hodge_dual();
+        let double_dual_b = b
+            .hodge_dual()
+            .expect("non-degenerate 3D signature")
+            .hodge_dual()
+            .expect("non-degenerate 3D signature");
         assert_relative_eq!(double_dual_b.as_slice(), b.as_slice(), epsilon = 1e-14);
     }
 
@@ -93,7 +103,7 @@ mod hodge_dual_tests {
         let mut mv = Multivector::<3, 0, 0>::scalar(2.0);
         mv.set(1, 3.0); // e1 component
 
-        let dual = mv.hodge_dual();
+        let dual = mv.hodge_dual().expect("non-degenerate 3D signature");
 
         // ⋆2 = 2*e123, ⋆3e1 = 3*e23
         assert_relative_eq!(dual.get(7), 2.0, epsilon = 1e-14); // e123

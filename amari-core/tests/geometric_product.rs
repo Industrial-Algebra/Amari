@@ -109,7 +109,7 @@ mod geometric_product_tests {
         let result = one.geometric_product(&mv);
         assert_relative_eq!(result.as_slice(), mv.as_slice());
 
-        let result = mv.geometric_product(&one.mv);
+        let result = mv.geometric_product(one.as_multivector());
         assert_relative_eq!(result.as_slice(), mv.as_slice());
     }
 
@@ -153,12 +153,12 @@ mod geometric_product_tests {
         let mut mv1 = Multivector::<3, 0, 0>::zero();
         mv1.set_scalar(1.0);
         mv1.set_vector_component(0, 1.0); // e1
-        mv1.set_bivector_component(0, 1.0); // e12
+        assert!(mv1.set_bivector_component(0, 1.0)); // e12
 
         let mut mv2 = Multivector::<3, 0, 0>::zero();
         mv2.set_scalar(2.0);
         mv2.set_vector_component(1, 1.0); // e2
-        mv2.set_bivector_component(2, 1.0); // e23
+        assert!(mv2.set_bivector_component(2, 1.0)); // e23
 
         let result = mv1.geometric_product(&mv2);
 

@@ -147,8 +147,8 @@ mod product_tests {
         let scalar = Multivector::<3, 0, 0>::scalar(2.5);
         let vector = Vector::<3, 0, 0>::from_components(1.0, 2.0, 3.0);
 
-        let result = scalar.outer_product(&vector.mv);
-        let expected = &vector.mv * 2.5;
+        let result = scalar.outer_product(vector.as_multivector());
+        let expected = vector.as_multivector() * 2.5;
 
         // Should equal scalar multiplication of the vector
         assert_relative_eq!(result.as_slice(), expected.as_slice(), epsilon = 1e-10);

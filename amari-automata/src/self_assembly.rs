@@ -379,7 +379,9 @@ impl<const P: usize, const Q: usize, const R: usize> Assembly<P, Q, R> {
         let attraction = -sig_a.inner_product(&sig_b).coefficient_norm();
 
         // Distance penalty
-        let distance = (comp_a.position.mv.clone() - comp_b.position.mv.clone()).coefficient_norm();
+        let distance = (comp_a.position.as_multivector().clone()
+            - comp_b.position.as_multivector().clone())
+        .coefficient_norm();
         let distance_penalty = distance * distance;
 
         attraction + distance_penalty
@@ -458,7 +460,8 @@ impl<const P: usize, const Q: usize, const R: usize> SelfAssembler<P, Q, R> {
         let geometric_affinity = sig_a.inner_product(&sig_b).coefficient_norm();
 
         // Distance-based modulation
-        let distance = (a.position.mv.clone() - b.position.mv.clone()).coefficient_norm();
+        let distance = (a.position.as_multivector().clone() - b.position.as_multivector().clone())
+            .coefficient_norm();
         let distance_factor = (-distance * distance).exp();
 
         // Type compatibility bonus

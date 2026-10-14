@@ -7,9 +7,9 @@ use common::direct_gpu_runtime_available;
 
 fn sample_network() -> GeometricNetwork<3, 0, 0> {
     let mut network = GeometricNetwork::<3, 0, 0>::new();
-    let a = network.add_node(Vector::from_components(0.0, 0.0, 0.0).mv);
-    let b = network.add_node(Vector::from_components(3.0, 4.0, 0.0).mv);
-    let c = network.add_node(Vector::from_components(0.0, 0.0, 12.0).mv);
+    let a = network.add_node(Vector::from_components(0.0, 0.0, 0.0).into_multivector());
+    let b = network.add_node(Vector::from_components(3.0, 4.0, 0.0).into_multivector());
+    let c = network.add_node(Vector::from_components(0.0, 0.0, 12.0).into_multivector());
     network.add_undirected_edge(a, b, 1.0).unwrap();
     network.add_undirected_edge(b, c, 2.0).unwrap();
     network
@@ -120,8 +120,8 @@ async fn test_network_direct_gpu_rejects_unsupported_embeddings() {
     };
 
     let mut unsupported_signature = GeometricNetwork::<2, 1, 0>::new();
-    unsupported_signature.add_node(Vector::from_components(0.0, 0.0, 0.0).mv);
-    unsupported_signature.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
+    unsupported_signature.add_node(Vector::from_components(0.0, 0.0, 0.0).into_multivector());
+    unsupported_signature.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
     assert!(matches!(
         gpu.compute_all_pairwise_distances(&unsupported_signature)
             .await,
@@ -132,7 +132,7 @@ async fn test_network_direct_gpu_rejects_unsupported_embeddings() {
     let mut mv = Multivector::<3, 0, 0>::zero();
     mv.set(0, 1.0);
     non_vector.add_node(mv);
-    non_vector.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
+    non_vector.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
     assert!(matches!(
         gpu.compute_all_pairwise_distances(&non_vector).await,
         Err(GpuNetworkError::UnsupportedEmbedding(_))

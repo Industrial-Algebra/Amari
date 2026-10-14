@@ -122,7 +122,7 @@ mod accessor_tests {
     #[test]
     fn test_set_bivector_component() {
         let mut mv = Cl3::zero();
-        mv.set_bivector_component(0, 42.0); // e1∧e2 maps to index 3
+        assert!(mv.set_bivector_component(0, 42.0)); // e1∧e2 maps to index 3
         assert_eq!(mv.get(3), 42.0);
     }
 
@@ -500,7 +500,7 @@ mod vector_tests {
     #[test]
     fn test_vector_from_multivector() {
         let mv = Cl3::from_coefficients(vec![0.0, 1.0, 2.0, 3.0, 4.0, 0.0, 0.0, 0.0]);
-        let v = Vector::from_multivector(&mv);
+        let v = Vector::try_from(mv.grade_projection(1)).expect("grade-1 projection");
 
         // Should extract only vector part (grade projection removes scalar/bivector parts)
         assert_eq!(v.mv.vector_component(0), 1.0);
@@ -698,7 +698,7 @@ mod vector_tests {
     #[test]
     fn test_vector_hodge_dual() {
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
-        let dual = v.hodge_dual();
+        let dual = v.hodge_dual().expect("non-degenerate 3D signature");
 
         // In 3D, hodge dual of e1 is e23
         assert_eq!(dual.get(2), 1.0); // e23 component
@@ -740,7 +740,7 @@ mod bivector_tests {
     #[test]
     fn test_bivector_from_multivector() {
         let mv = Cl3::from_coefficients(vec![1.0, 0.0, 0.0, 2.0, 0.0, 3.0, 4.0, 0.0]);
-        let bv = Bivector::from_multivector(&mv);
+        let bv = Bivector::try_from(mv.grade_projection(2)).expect("grade-2 projection");
 
         // Should extract only bivector part (grade 2)
         assert_eq!(bv.get(0), 2.0); // e12

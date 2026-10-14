@@ -45,7 +45,10 @@ pub mod gf2;
 pub(crate) mod simd;
 
 // Re-export error types
-pub use error::{CoreError, CoreResult, ExpError, NonFiniteStage};
+pub use error::{
+    ComponentError, CoreError, CoreResult, DualError, ExpError, GradeError, NonFiniteStage,
+    RotorError,
+};
 
 // Re-export precision types for high-precision arithmetic
 pub use precision::{PrecisionFloat, StandardFloat};
@@ -152,6 +155,32 @@ pub struct Multivector<const P: usize, const Q: usize, const R: usize> {
     coefficients: Box<[f64]>,
 }
 
+/// Blade mask for the `k`-th bivector component in zero-based lexicographic
+/// order over the pairs `(i, j)`, `1 <= i < j <= DIM`.
+///
+/// This is the **dimension-general component indexing** (`0 ↦ e12`,
+/// `1 ↦ e13`, `2 ↦ e14`, `3 ↦ e23`, ... in 4D) used by
+/// [`Multivector::set_bivector_component`] and the [`Bivector`] component API.
+/// It is deliberately distinct from the **blade-mask indexing** of
+/// [`Multivector::get`], where the index is the binary mask of the blade
+/// (`0b011 = 3 ↦ e12`). The two indexing systems are documented side by side on
+/// those methods.
+fn bivector_blade_mask<const P: usize, const Q: usize, const R: usize>(
+    component: usize,
+) -> Option<usize> {
+    let n = P + Q + R;
+    let mut index = 0;
+    for i in 1..=n {
+        for j in (i + 1)..=n {
+            if index == component {
+                return Some((1 << (i - 1)) | (1 << (j - 1)));
+            }
+            index += 1;
+        }
+    }
+    None
+}
+
 impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
     /// Total dimension of the algebra's vector space
     pub const DIM: usize = P + Q + R;
@@ -214,7 +243,15 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         Self::from_coefficients(coefficients.to_vec())
     }
 
-    /// Get coefficient for a specific basis blade (by index)
+    /// Get coefficient for a specific basis blade (by **blade mask**).
+    ///
+    /// The index is the binary mask of the basis blade: bit `i` set means the
+    /// basis vector `e_{i+1}` is present (`1 ↦ e1`, `3 ↦ e12`, `7 ↦ e123`).
+    /// This is the **blade-mask** indexing used throughout [`Multivector`].
+    /// It is distinct from the **dimension-general component** indexing of
+    /// [`Multivector::set_bivector_component`] / [`Bivector::component`], where
+    /// a bivector component is addressed by its zero-based lexicographic rank
+    /// (`0 ↦ e12`, `1 ↦ e13`, `2 ↦ e14`, `3 ↦ e23`, ...).
     #[inline(always)]
     pub fn get(&self, index: usize) -> f64 {
         self.coefficients.get(index).copied().unwrap_or(0.0)
@@ -242,7 +279,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
 
     /// Get vector part as a Vector type
     pub fn vector_part(&self) -> Vector<P, Q, R> {
-        Vector::from_multivector(&self.grade_projection(1))
+        Vector::from_grade_projection(&self.grade_projection(1))
     }
 
     /// Get bivector part as a Multivector (grade 2 projection)
@@ -252,7 +289,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
 
     /// Get bivector part as a Bivector type wrapper
     pub fn bivector_type(&self) -> Bivector<P, Q, R> {
-        Bivector::from_multivector(&self.grade_projection(2))
+        Bivector::from_grade_projection(&self.grade_projection(2))
     }
 
     /// Get trivector part (scalar for 3D)
@@ -271,15 +308,24 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         }
     }
 
-    /// Set bivector component
-    pub fn set_bivector_component(&mut self, index: usize, value: f64) {
-        // Map index to bivector blade indices
-        let bivector_indices = match Self::DIM {
-            3 => [3, 5, 6], // e12, e13, e23
-            _ => [3, 5, 6], // Default mapping
-        };
-        if index < bivector_indices.len() {
-            self.coefficients[bivector_indices[index]] = value;
+    /// Set a bivector coefficient by its **dimension-general component** index.
+    ///
+    /// Components are the pairs `(i, j)` with `1 <= i < j <= DIM` in zero-based
+    /// lexicographic order: `0 ↦ e12`, `1 ↦ e13`, `2 ↦ e14`, `3 ↦ e23`,
+    /// `4 ↦ e24`, `5 ↦ e34` in 4D (in 3D the first three are `e12`, `e13`,
+    /// `e23`). The index is **not** the blade mask; see [`Multivector::get`]
+    /// for the blade-mask system.
+    ///
+    /// Returns `true` when the component was written and `false` for an
+    /// out-of-range index (with no write). The former silent zeroing of
+    /// out-of-range and non-3D indices is deleted.
+    pub fn set_bivector_component(&mut self, index: usize, value: f64) -> bool {
+        match bivector_blade_mask::<P, Q, R>(index) {
+            Some(mask) => {
+                self.coefficients[mask] = value;
+                true
+            }
+            None => false,
         }
     }
 
@@ -1401,17 +1447,26 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         result
     }
 
-    /// Hodge dual: ⋆a
+    /// Formal complement of a multivector (permutation sign only).
     ///
-    /// Maps k-vectors to (n-k)-vectors in n-dimensional space.
-    /// Defined such that `e_A ∧ ⋆e_A = |e_A|² · I` where I is the pseudoscalar.
+    /// The formal (metric-free) Hodge complement `e_A ↦ sign · e_{A^c}`, where
+    /// `A^c` is the complementary index set and `sign` is the inversion parity
+    /// between the sorted word `A` and the sorted word `A^c` (the number of
+    /// pairs `(a, c)` with `a ∈ A`, `c ∈ A^c`, `a > c`). No metric factor is
+    /// applied, so the map is well-defined in **every** signature, including
+    /// degenerate ones (`R > 0`).
     ///
-    /// In 3D Euclidean (Cl(3,0,0)): ⋆e1 = e23, ⋆e2 = -e13, ⋆e3 = e12
+    /// The map is linear (it acts coefficientwise), sends a pure grade-`k`
+    /// blade to a pure grade-`(n − k)` blade, and satisfies
+    /// `formal_complement(formal_complement(A)) = (−1)^{k(n−k)} A` on a pure
+    /// grade-`k` element. This is an infallible operation: use
+    /// [`Self::hodge_dual`] for the metric operation (which rejects degenerate
+    /// signatures).
     ///
-    /// For degenerate algebras (R > 0), the pseudoscalar squares to zero
-    /// and the Hodge dual is not well-defined. In this case, the function
-    /// computes a formal complement using only the permutation sign.
-    pub fn hodge_dual(&self) -> Self {
+    /// Pin: in `Cl(2,0,1)`, `formal_complement(e3) = e12` (the metric dual of
+    /// the same input would be a zero divisor and is rejected by
+    /// [`Self::hodge_dual`]).
+    pub fn formal_complement(&self) -> Self {
         let n = Self::DIM;
         if n == 0 {
             return self.clone();
@@ -1427,43 +1482,56 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
 
             let dual_index = i ^ pseudoscalar_index;
 
-            // Compute permutation sign: e_A ∧ e_complement = sign * I
-            // Count swaps needed to interleave bits of i with bits of dual_index
-            // into canonical order (ascending bit positions)
+            // Inversion parity between the sorted word `i` and the sorted word
+            // `dual_index`: count the pairs (a in i, c in dual_index) with a > c.
             let mut swaps = 0u32;
             for bit_pos in 0..n {
                 if (i >> bit_pos) & 1 == 1 {
-                    // Count bits in dual_index at positions below bit_pos
                     let below_mask = (1 << bit_pos) - 1;
                     swaps += (dual_index & below_mask).count_ones();
                 }
             }
             let permutation_sign: f64 = if swaps.is_multiple_of(2) { 1.0 } else { -1.0 };
 
-            // Apply metric factor for the blade being dualized
-            // |e_A|² = product of e_i² for each basis vector in A
-            let mut metric_factor = 1.0;
-            for j in 0..n {
-                if (i >> j) & 1 == 1 {
-                    if j >= P + Q {
-                        // Null basis vector: |e_A|² = 0
-                        metric_factor = 0.0;
-                        break;
-                    } else if j >= P {
-                        // Negative basis vector: contributes -1
-                        metric_factor *= -1.0;
-                    }
-                    // Positive basis vector: contributes +1
-                }
-            }
-
-            // ⋆e_A = metric(A) * permutation_sign * e_complement
-            let sign = metric_factor * permutation_sign;
-
-            result.coefficients[dual_index] += sign * self.coefficients[i];
+            result.coefficients[dual_index] += permutation_sign * self.coefficients[i];
         }
 
         result
+    }
+
+    /// Metric Hodge dual `A ↦ reverse(A)·I`.
+    ///
+    /// Here `I` is the unit pseudoscalar `e_{1..n}` and `reverse` is the grade
+    /// reversal, so a pure grade-`k` element maps to a pure grade-`(n − k)`
+    /// element and the map is linear on mixed grades. The grade-dependent
+    /// reversal sign is exactly what produces the standard Euclidean tables,
+    /// e.g. in `Cl(3,0,0)`:
+    ///
+    /// ```text
+    /// ⋆e1 = e23,  ⋆e2 = −e13,  ⋆e3 = e12,  ⋆e12 = e3,
+    /// ⋆1 = e123,  ⋆e123 = 1.
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DualError::DegeneratePseudoscalar`] when `R > 0`: in a
+    /// degenerate signature the pseudoscalar is a zero divisor (`I² = 0`), so
+    /// the metric dual is not defined. The former behavior of silently zeroing
+    /// any blade containing a null generator is deleted; degenerate inputs are
+    /// rejected rather than partially annihilated. Non-degenerate signatures
+    /// (`R = 0`) are always accepted. Use [`Self::formal_complement`] for the
+    /// metric-free complement in any signature.
+    pub fn hodge_dual(&self) -> Result<Self, DualError> {
+        if R > 0 {
+            return Err(DualError::DegeneratePseudoscalar);
+        }
+
+        let n = Self::DIM;
+        // The unit pseudoscalar `I = e_{1..n}` (bit mask with every bit set).
+        let mut pseudoscalar = Self::zero();
+        pseudoscalar.coefficients[(1 << n) - 1] = 1.0;
+
+        Ok(self.reverse().geometric_product(&pseudoscalar))
     }
 }
 
@@ -1591,10 +1659,24 @@ impl<const P: usize, const Q: usize, const R: usize> Zero for Multivector<P, Q, 
     }
 }
 
+/// Exact foreign-grade predicate (contract §1.1).
+///
+/// True iff any coefficient whose grade differs from `grade` is nonzero.
+/// The comparison is the exact predicate `coefficient != 0.0`: `±0.0` counts
+/// as zero, while NaN or infinity in a foreign grade counts as nonzero and
+/// therefore rejects.
+fn has_foreign_grade<const P: usize, const Q: usize, const R: usize>(
+    mv: &Multivector<P, Q, R>,
+    grade: usize,
+) -> bool {
+    (0..Multivector::<P, Q, R>::BASIS_COUNT)
+        .any(|index| (index.count_ones() as usize) != grade && mv.get(index) != 0.0)
+}
+
 /// Scalar type - wrapper around Multivector with only grade 0
 #[derive(Debug, Clone, PartialEq)]
 pub struct Scalar<const P: usize, const Q: usize, const R: usize> {
-    pub mv: Multivector<P, Q, R>,
+    mv: Multivector<P, Q, R>,
 }
 
 impl<const P: usize, const Q: usize, const R: usize> Scalar<P, Q, R> {
@@ -1608,12 +1690,48 @@ impl<const P: usize, const Q: usize, const R: usize> Scalar<P, Q, R> {
         Self::from(1.0)
     }
 
+    /// Borrow the underlying multivector (contract §1.1 escape).
+    pub fn as_multivector(&self) -> &Multivector<P, Q, R> {
+        &self.mv
+    }
+
+    /// Consume the wrapper and return the underlying multivector (§1.1).
+    pub fn into_multivector(self) -> Multivector<P, Q, R> {
+        self.mv
+    }
+
+    /// Checked conversion from a multivector (contract §1.1).
+    ///
+    /// Rejects any nonzero foreign-grade coefficient with
+    /// [`GradeError::ForeignGrade`].
+    pub fn try_from_multivector(mv: &Multivector<P, Q, R>) -> Result<Self, GradeError> {
+        if has_foreign_grade(mv, 0) {
+            Err(GradeError::ForeignGrade)
+        } else {
+            Ok(Self { mv: mv.clone() })
+        }
+    }
+
     pub fn geometric_product(&self, other: &Multivector<P, Q, R>) -> Multivector<P, Q, R> {
         self.mv.geometric_product(other)
     }
 
     pub fn geometric_product_with_vector(&self, other: &Vector<P, Q, R>) -> Multivector<P, Q, R> {
-        self.mv.geometric_product(&other.mv)
+        self.mv.geometric_product(other.as_multivector())
+    }
+}
+
+impl<const P: usize, const Q: usize, const R: usize> TryFrom<Multivector<P, Q, R>>
+    for Scalar<P, Q, R>
+{
+    type Error = GradeError;
+
+    fn try_from(mv: Multivector<P, Q, R>) -> Result<Self, Self::Error> {
+        if has_foreign_grade(&mv, 0) {
+            Err(GradeError::ForeignGrade)
+        } else {
+            Ok(Self { mv })
+        }
     }
 }
 
@@ -1624,9 +1742,30 @@ impl<const P: usize, const Q: usize, const R: usize> From<f64> for Scalar<P, Q, 
 }
 
 /// Vector type - wrapper around Multivector with only grade 1
+///
+/// # Duality
+///
+/// Duals are split by signature and by operation (contract §4.3):
+///
+/// - the **metric** dual [`Vector::hodge_dual`] exists only for the definite 3D
+///   signatures `Cl(3,0,0)` and `Cl(0,3,0)`, where a vector duals to a bivector;
+/// - the **metric-free** [`Vector::formal_complement`] is likewise provided for
+///   those signatures;
+/// - every other dimension/signature uses the [`Multivector::hodge_dual`] and
+///   [`Multivector::formal_complement`] methods.
+///
+/// The former generic `Vector::<P,Q,R>::hodge_dual() -> Bivector` is deleted,
+/// because dualizing a vector does not generally produce a bivector. Calling it
+/// on another signature is a compile error:
+///
+/// ```compile_fail
+/// use amari_core::Vector;
+/// // `Vector::<4,0,0>` has no `hodge_dual`; use `Multivector::hodge_dual`.
+/// let _ = Vector::<4, 0, 0>::e1().hodge_dual();
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vector<const P: usize, const Q: usize, const R: usize> {
-    pub mv: Multivector<P, Q, R>,
+    mv: Multivector<P, Q, R>,
 }
 
 impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
@@ -1637,6 +1776,12 @@ impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
         }
     }
 
+    /// Create a vector from its first three components `(x, y, z)`.
+    ///
+    /// This is a **3D convenience**: components beyond the third are left at
+    /// zero, and in fewer than three dimensions the missing arguments are
+    /// ignored. For arbitrary dimensions construct a [`Multivector`] and use
+    /// [`Vector::try_from_multivector`] / `TryFrom<Multivector>`.
     pub fn from_components(x: f64, y: f64, z: f64) -> Self {
         let mut mv = Multivector::zero();
         if P + Q + R >= 1 {
@@ -1669,9 +1814,36 @@ impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
         }
     }
 
-    pub fn from_multivector(mv: &Multivector<P, Q, R>) -> Self {
+    /// Crate-internal grade-1 projection.
+    ///
+    /// This is the behavior of the removed public projecting constructor
+    /// (contract C3): external callers migrate to [`Self::try_from_multivector`]
+    /// or `TryFrom<Multivector>` with an explicit grade projection.
+    pub(crate) fn from_grade_projection(mv: &Multivector<P, Q, R>) -> Self {
         Self {
             mv: mv.grade_projection(1),
+        }
+    }
+
+    /// Borrow the underlying multivector (contract §1.1 escape).
+    pub fn as_multivector(&self) -> &Multivector<P, Q, R> {
+        &self.mv
+    }
+
+    /// Consume the wrapper and return the underlying multivector (§1.1).
+    pub fn into_multivector(self) -> Multivector<P, Q, R> {
+        self.mv
+    }
+
+    /// Checked conversion from a multivector (contract §1.1).
+    ///
+    /// Rejects any nonzero foreign-grade coefficient with
+    /// [`GradeError::ForeignGrade`].
+    pub fn try_from_multivector(mv: &Multivector<P, Q, R>) -> Result<Self, GradeError> {
+        if has_foreign_grade(mv, 1) {
+            Err(GradeError::ForeignGrade)
+        } else {
+            Ok(Self { mv: mv.clone() })
         }
     }
 
@@ -1777,58 +1949,199 @@ impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
             mv: self.mv.reverse(),
         }
     }
+}
 
-    /// Hodge dual of the vector
-    /// Maps vectors to bivectors in 3D space
-    pub fn hodge_dual(&self) -> Bivector<P, Q, R> {
+/// Typed metric and formal duals for `Cl(3,0,0)` vectors (contract §4.3).
+///
+/// In a definite 3D signature the Hodge dual of a vector is a bivector and the
+/// formal complement has the same grade image; on other signatures use the
+/// [`Multivector::hodge_dual`] / [`Multivector::formal_complement`] routes.
+impl Vector<3, 0, 0> {
+    /// Metric Hodge dual `v ↦ reverse(v)·I` in `Cl(3,0,0)`.
+    ///
+    /// Basis table: `⋆e1 = e23`, `⋆e2 = −e13`, `⋆e3 = e12`. `Cl(3,0,0)` is
+    /// non-degenerate, so this is always `Ok`; the `Result` mirrors the
+    /// fallible metric dual on the other signature (`Cl(0,3,0)`) and the
+    /// dimension-general [`Multivector::hodge_dual`].
+    pub fn hodge_dual(&self) -> Result<Bivector<3, 0, 0>, DualError> {
+        Ok(Bivector {
+            mv: self.mv.hodge_dual()?,
+        })
+    }
+
+    /// Formal (metric-free) complement in `Cl(3,0,0)`: a grade-1 element maps
+    /// to a grade-2 element using the permutation sign only.
+    pub fn formal_complement(&self) -> Bivector<3, 0, 0> {
         Bivector {
-            mv: self.mv.hodge_dual(),
+            mv: self.mv.formal_complement(),
         }
     }
 }
 
-/// Bivector type - wrapper around Multivector with only grade 2
+/// Typed metric and formal duals for `Cl(0,3,0)` vectors (contract §4.3).
+impl Vector<0, 3, 0> {
+    /// Metric Hodge dual `v ↦ reverse(v)·I` in `Cl(0,3,0)` (fallible for
+    /// uniformity with the dimension-general route; this signature is
+    /// non-degenerate).
+    pub fn hodge_dual(&self) -> Result<Bivector<0, 3, 0>, DualError> {
+        Ok(Bivector {
+            mv: self.mv.hodge_dual()?,
+        })
+    }
+
+    /// Formal (metric-free) complement in `Cl(0,3,0)`.
+    pub fn formal_complement(&self) -> Bivector<0, 3, 0> {
+        Bivector {
+            mv: self.mv.formal_complement(),
+        }
+    }
+}
+
+impl<const P: usize, const Q: usize, const R: usize> TryFrom<Multivector<P, Q, R>>
+    for Vector<P, Q, R>
+{
+    type Error = GradeError;
+
+    fn try_from(mv: Multivector<P, Q, R>) -> Result<Self, Self::Error> {
+        if has_foreign_grade(&mv, 1) {
+            Err(GradeError::ForeignGrade)
+        } else {
+            Ok(Self { mv })
+        }
+    }
+}
+
+/// Bivector type - wrapper around `Multivector` with only grade 2.
+///
+/// # Component indexing (two systems)
+///
+/// Bivector coefficients are addressed by two distinct index systems:
+///
+/// - **Dimension-general component** ([`Self::component`],
+///   [`Self::set_component`], [`Self::e_ij`]): the zero-based lexicographic
+///   rank of the pair `(i, j)` with `1 <= i < j <= DIM`. In 4D the order is
+///   `0 ↦ e12`, `1 ↦ e13`, `2 ↦ e14`, `3 ↦ e23`, `4 ↦ e24`, `5 ↦ e34`.
+///   [`Self::get`] and the [`core::ops::Index`] impl use this same map.
+/// - **Blade mask** ([`Multivector::get`]): the index is the binary mask of
+///   the basis blade (`3 ↦ e12`, `5 ↦ e13`, `6 ↦ e23`).
+///
+/// The two coincide only for the first three components in 3D. The old
+/// hard-coded `[3, 5, 6]` layout is gone from the generic code: the
+/// convenience constructors delegate to the general map.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Bivector<const P: usize, const Q: usize, const R: usize> {
-    pub mv: Multivector<P, Q, R>,
+    mv: Multivector<P, Q, R>,
 }
 
 impl<const P: usize, const Q: usize, const R: usize> Bivector<P, Q, R> {
+    /// Zero bivector.
+    pub fn zero() -> Self {
+        Self {
+            mv: Multivector::zero(),
+        }
+    }
+
+    /// Create a bivector from the first three lexicographic components
+    /// `(xy, xz, yz)`.
+    ///
+    /// Delegates to the dimension-general component map: component `0` is
+    /// `e12`, component `1` is `e13`, and component `2` is the third
+    /// lexicographic pair (`e23` in 3D, `e14` in 4D). Components beyond the
+    /// ambient dimension are not written.
     pub fn from_components(xy: f64, xz: f64, yz: f64) -> Self {
-        let mut mv = Multivector::zero();
-        if P + Q + R >= 2 {
-            mv.set_bivector_component(0, xy);
-        } // e12
-        if P + Q + R >= 3 {
-            mv.set_bivector_component(1, xz);
-        } // e13
-        if P + Q + R >= 3 {
-            mv.set_bivector_component(2, yz);
-        } // e23
-        Self { mv }
+        let mut bivector = Self::zero();
+        let _ = bivector.set_component(0, xy);
+        let _ = bivector.set_component(1, xz);
+        let _ = bivector.set_component(2, yz);
+        bivector
     }
 
+    /// Basis bivector `e_{ij}` in the dimension-general component map.
+    ///
+    /// Strict domain: `1 <= i < j <= DIM`, otherwise
+    /// [`ComponentError::OutOfRange`]. Reversed indices are **not** silently
+    /// sign-flipped: the sign rule `e_{ji} = e_{ij}` with a `−` (`e_{ji} =
+    /// −e_{ij}`) is documented here, but this constructor rejects `i > j`
+    /// rather than applying it.
+    pub fn e_ij(i: usize, j: usize) -> Result<Self, ComponentError> {
+        let n = P + Q + R;
+        if i < 1 || j < 1 || i >= j || j > n {
+            return Err(ComponentError::OutOfRange);
+        }
+        let mut bivector = Self::zero();
+        bivector.mv.set((1 << (i - 1)) | (1 << (j - 1)), 1.0);
+        Ok(bivector)
+    }
+
+    /// The `e12` basis bivector.
     pub fn e12() -> Self {
-        let mut mv = Multivector::zero();
-        mv.set_bivector_component(0, 1.0); // e12
-        Self { mv }
+        Self::e_ij(1, 2).expect("e12 requires DIM >= 2")
     }
 
+    /// The `e13` basis bivector.
     pub fn e13() -> Self {
-        let mut mv = Multivector::zero();
-        mv.set_bivector_component(1, 1.0); // e13
-        Self { mv }
+        Self::e_ij(1, 3).expect("e13 requires DIM >= 3")
     }
 
+    /// The `e23` basis bivector.
     pub fn e23() -> Self {
-        let mut mv = Multivector::zero();
-        mv.set_bivector_component(2, 1.0); // e23
-        Self { mv }
+        Self::e_ij(2, 3).expect("e23 requires DIM >= 3")
     }
 
-    pub fn from_multivector(mv: &Multivector<P, Q, R>) -> Self {
+    /// Coefficient of the `k`-th dimension-general bivector component.
+    ///
+    /// The component order is the zero-based lexicographic rank of the pairs
+    /// `(i, j)`, `1 <= i < j <= DIM` (4D: `0 ↦ e12`, `1 ↦ e13`, `2 ↦ e14`,
+    /// `3 ↦ e23`, `4 ↦ e24`, `5 ↦ e34`). Returns `None` for an out-of-range
+    /// index. This is **not** the blade-mask indexing of [`Multivector::get`].
+    pub fn component(&self, k: usize) -> Option<f64> {
+        bivector_blade_mask::<P, Q, R>(k).map(|mask| self.mv.get(mask))
+    }
+
+    /// Set the `k`-th dimension-general bivector component.
+    ///
+    /// Returns `true` when the component was written and `false` for an
+    /// out-of-range index (with no write). See [`Self::component`] for the
+    /// order and the relationship to blade-mask indexing.
+    pub fn set_component(&mut self, k: usize, value: f64) -> bool {
+        match bivector_blade_mask::<P, Q, R>(k) {
+            Some(mask) => {
+                self.mv.set(mask, value);
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Crate-internal grade-2 projection.
+    ///
+    /// This is the behavior of the removed public projecting constructor
+    /// (contract C3).
+    pub(crate) fn from_grade_projection(mv: &Multivector<P, Q, R>) -> Self {
         Self {
             mv: mv.grade_projection(2),
+        }
+    }
+
+    /// Borrow the underlying multivector (contract §1.1 escape).
+    pub fn as_multivector(&self) -> &Multivector<P, Q, R> {
+        &self.mv
+    }
+
+    /// Consume the wrapper and return the underlying multivector (§1.1).
+    pub fn into_multivector(self) -> Multivector<P, Q, R> {
+        self.mv
+    }
+
+    /// Checked conversion from a multivector (contract §1.1).
+    ///
+    /// Rejects any nonzero foreign-grade coefficient with
+    /// [`GradeError::ForeignGrade`].
+    pub fn try_from_multivector(mv: &Multivector<P, Q, R>) -> Result<Self, GradeError> {
+        if has_foreign_grade(mv, 2) {
+            Err(GradeError::ForeignGrade)
+        } else {
+            Ok(Self { mv: mv.clone() })
         }
     }
 
@@ -1846,14 +2159,16 @@ impl<const P: usize, const Q: usize, const R: usize> Bivector<P, Q, R> {
         self.mv.coefficient_norm()
     }
 
-    /// Index access for bivector components
+    /// Index access for bivector components.
+    ///
+    /// Uses the dimension-general lexicographic component order (see
+    /// [`Self::component`]); an out-of-range index returns `0.0`. This
+    /// preserves the historical 3D mapping (`0 ↦ e12`, `1 ↦ e13`,
+    /// `2 ↦ e23`) while extending it dimension-generally. For the raw
+    /// blade-mask accessor use [`Multivector::get`] on
+    /// [`Self::as_multivector`].
     pub fn get(&self, index: usize) -> f64 {
-        match index {
-            0 => self.mv.get(3), // e12
-            1 => self.mv.get(5), // e13
-            2 => self.mv.get(6), // e23
-            _ => 0.0,
-        }
+        self.component(index).unwrap_or(0.0)
     }
 
     /// Inner product with another bivector
@@ -1885,15 +2200,68 @@ impl<const P: usize, const Q: usize, const R: usize> Bivector<P, Q, R> {
     }
 }
 
+/// Typed metric and formal duals for `Cl(3,0,0)` bivectors (contract §4.3).
+///
+/// In a definite 3D signature the Hodge dual of a bivector is a vector; on
+/// other signatures use the [`Multivector::hodge_dual`] /
+/// [`Multivector::formal_complement`] routes.
+impl Bivector<3, 0, 0> {
+    /// Metric Hodge dual `B ↦ reverse(B)·I` in `Cl(3,0,0)`.
+    ///
+    /// Basis table: `⋆e12 = e3`, `⋆e13 = −e2`, `⋆e23 = e1`.
+    pub fn hodge_dual(&self) -> Result<Vector<3, 0, 0>, DualError> {
+        Ok(Vector {
+            mv: self.mv.hodge_dual()?,
+        })
+    }
+
+    /// Formal (metric-free) complement in `Cl(3,0,0)`: a grade-2 element maps
+    /// to a grade-1 element.
+    pub fn formal_complement(&self) -> Vector<3, 0, 0> {
+        Vector {
+            mv: self.mv.formal_complement(),
+        }
+    }
+}
+
+/// Typed metric and formal duals for `Cl(0,3,0)` bivectors (contract §4.3).
+impl Bivector<0, 3, 0> {
+    /// Metric Hodge dual `B ↦ reverse(B)·I` in `Cl(0,3,0)`.
+    pub fn hodge_dual(&self) -> Result<Vector<0, 3, 0>, DualError> {
+        Ok(Vector {
+            mv: self.mv.hodge_dual()?,
+        })
+    }
+
+    /// Formal (metric-free) complement in `Cl(0,3,0)`.
+    pub fn formal_complement(&self) -> Vector<0, 3, 0> {
+        Vector {
+            mv: self.mv.formal_complement(),
+        }
+    }
+}
+
+impl<const P: usize, const Q: usize, const R: usize> TryFrom<Multivector<P, Q, R>>
+    for Bivector<P, Q, R>
+{
+    type Error = GradeError;
+
+    fn try_from(mv: Multivector<P, Q, R>) -> Result<Self, Self::Error> {
+        if has_foreign_grade(&mv, 2) {
+            Err(GradeError::ForeignGrade)
+        } else {
+            Ok(Self { mv })
+        }
+    }
+}
+
 impl<const P: usize, const Q: usize, const R: usize> core::ops::Index<usize> for Bivector<P, Q, R> {
     type Output = f64;
 
     fn index(&self, index: usize) -> &Self::Output {
-        match index {
-            0 => &self.mv.coefficients[3], // e12
-            1 => &self.mv.coefficients[5], // e13
-            2 => &self.mv.coefficients[6], // e23
-            _ => panic!("Bivector index out of range: {}", index),
+        match bivector_blade_mask::<P, Q, R>(index) {
+            Some(mask) => &self.mv.coefficients[mask],
+            None => panic!("Bivector index out of range: {}", index),
         }
     }
 }

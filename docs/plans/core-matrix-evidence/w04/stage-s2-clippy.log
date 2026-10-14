@@ -1,0 +1,8 @@
+# CORE-W04 stage 2 green evidence
+# lock: 50e9b46e
+# rustc: rustc 1.100.0-nightly (787af2b8c 2026-08-25)
+# cargo: cargo 1.100.0-nightly (e8cb624d5 2026-08-22)
+# recipe: RUSTC_WRAPPER='' RUSTC_WORKSPACE_WRAPPER='' RUSTC=/home/lucien/.nix-profile/bin/rustc RUSTFLAGS='-C target-cpu=x86-64 -C target-feature=-avx2' CARGO_TARGET_DIR=target/w04 --locked
+# command: cargo clippy -p amari-core --all-targets --locked -- -D warnings
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.48s

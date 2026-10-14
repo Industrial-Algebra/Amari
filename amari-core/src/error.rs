@@ -276,3 +276,159 @@ impl fmt::Display for CoreError {
 
 /// Result type for core operations
 pub type CoreResult<T> = Result<T, CoreError>;
+
+// ======================================================================
+// CORE-W04 error surface (contract §5)
+// ======================================================================
+//
+// The W04 enums are defined once, independent of the `std` feature, with a
+// manual `Display` implementation and (under `std`) an `std::error::Error`
+// impl. This avoids the historical std/no_std duplication while keeping the
+// existing `CoreError`/`ExpError` layout untouched.
+
+/// Errors from rotor construction and domain-checked rotor operations.
+///
+/// Contract: `docs/plans/2026-10-13-amari-core-w04-rotor-duality-contract.md`
+/// §5. `Exp(ExpError)` is a lossless carrier for the frozen W03 exponential
+/// error surface; the `From<ExpError>` impl is the only conversion the
+/// rotor constructors need.
+#[derive(Debug, Clone, PartialEq)]
+pub enum RotorError {
+    /// An input to `from_vectors` / `reflect` was not a pure grade-1 element.
+    NotAVector,
+    /// `from_multivector_bivector` received a nonzero foreign-grade part.
+    NotABivector,
+    /// A normalization step had no positive square to scale by.
+    NotNormalizable,
+    /// The scalar part is outside the certified logarithm domain.
+    NotALogDomain,
+    /// A negative scalar cannot select a log branch plane.
+    BranchAmbiguous,
+    /// The logarithm class is not certified (multi-plane / non-simple).
+    Uncertified,
+    /// A null (zero-square) input vector.
+    NullVector,
+    /// Antipodal inputs that are not resolvable by a unique Euclidean plane.
+    Antipodal,
+    /// The two vectors have opposite causal type.
+    CausalTypeMismatch,
+    /// The connecting even versor is a zero divisor.
+    NullCandidate,
+    /// The connecting even versor lies off the identity component.
+    SheetChange,
+    /// A reflection normal is not a certified unit vector of square `±1`.
+    NotUnitNormal,
+    /// An odd-grade element was supplied where an even rotor is required.
+    NotEven,
+    /// The certified stored reverse norm is non-positive or non-scalar.
+    Degenerate,
+    /// Overflow inside an unnormalized composition step.
+    Composition,
+    /// The underlying exponential map failed; carried losslessly.
+    Exp(ExpError),
+}
+
+impl From<ExpError> for RotorError {
+    fn from(error: ExpError) -> Self {
+        RotorError::Exp(error)
+    }
+}
+
+impl core::fmt::Display for RotorError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            RotorError::NotAVector => write!(f, "expected a pure vector (grade 1)"),
+            RotorError::NotABivector => write!(f, "expected a pure bivector (grade 2)"),
+            RotorError::NotNormalizable => {
+                write!(f, "element has no positive square to normalize by")
+            }
+            RotorError::NotALogDomain => write!(f, "scalar part is outside the log domain"),
+            RotorError::BranchAmbiguous => {
+                write!(f, "negative scalar selects no log branch plane")
+            }
+            RotorError::Uncertified => write!(f, "logarithm class is not certified"),
+            RotorError::NullVector => write!(f, "null vector has zero square"),
+            RotorError::Antipodal => write!(f, "antipodal vectors are not resolvable"),
+            RotorError::CausalTypeMismatch => {
+                write!(f, "vectors have opposite causal type")
+            }
+            RotorError::NullCandidate => {
+                write!(f, "connecting even versor is a zero divisor")
+            }
+            RotorError::SheetChange => {
+                write!(f, "connecting even versor lies off the identity component")
+            }
+            RotorError::NotUnitNormal => {
+                write!(f, "reflection normal is not a unit vector of square ±1")
+            }
+            RotorError::NotEven => write!(f, "rotor must have even grade"),
+            RotorError::Degenerate => {
+                write!(f, "stored reverse norm is non-positive or non-scalar")
+            }
+            RotorError::Composition => write!(f, "composition overflowed the finite domain"),
+            RotorError::Exp(error) => write!(f, "exponential failed: {error}"),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for RotorError {}
+
+/// Errors from the metric Hodge dual operation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DualError {
+    /// The pseudoscalar is not invertible (degenerate signature).
+    DegeneratePseudoscalar,
+}
+
+impl core::fmt::Display for DualError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            DualError::DegeneratePseudoscalar => {
+                write!(f, "pseudoscalar is not invertible (degenerate signature)")
+            }
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for DualError {}
+
+/// Errors from checked `Multivector`-to-`Scalar`/`Vector`/`Bivector`
+/// conversions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GradeError {
+    /// A coefficient outside the wrapper's grade is nonzero.
+    ForeignGrade,
+}
+
+impl core::fmt::Display for GradeError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            GradeError::ForeignGrade => {
+                write!(f, "multivector has a nonzero foreign-grade coefficient")
+            }
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for GradeError {}
+
+/// Errors from checked bivector-component construction.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ComponentError {
+    /// The requested component index is out of range.
+    OutOfRange,
+}
+
+impl core::fmt::Display for ComponentError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            ComponentError::OutOfRange => write!(f, "component index out of range"),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for ComponentError {}

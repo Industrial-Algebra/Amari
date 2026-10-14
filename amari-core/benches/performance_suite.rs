@@ -127,11 +127,17 @@ fn bench_rotor_operations(c: &mut Criterion) {
     let rotor =
         Rotor::from_bivector(&bivector, angle).expect("bounded Euclidean bivector exponential");
     let vector = e1
-        .add(&Vector::from_multivector(&(e2.mv.clone() * 0.5)))
-        .add(&Vector::from_multivector(&(e3.mv.clone() * 0.3)));
+        .add(&Vector::try_from(e2.as_multivector().clone() * 0.5).expect("pure vector"))
+        .add(&Vector::try_from(e3.as_multivector().clone() * 0.3).expect("pure vector"));
 
     group.bench_function("rotor_application", |b| {
-        b.iter(|| black_box(rotor.apply(black_box(&vector.mv))))
+        b.iter(|| {
+            black_box(
+                rotor
+                    .apply(black_box(vector.as_multivector()))
+                    .expect("certified rotor acts"),
+            )
+        })
     });
 
     group.bench_function("rotor_composition", |b| {

@@ -24,8 +24,8 @@
 //! let mut network = GeometricNetwork::<3, 0, 0>::new();
 //!
 //! // Add nodes at specific geometric positions
-//! let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-//! let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).mv);
+//! let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+//! let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).into_multivector());
 //!
 //! // Connect nodes with weighted edges
 //! network.add_edge(node1, node2, 1.0).unwrap();

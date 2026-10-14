@@ -83,7 +83,10 @@ fn projected_inner_and_contractions_keep_small_grade_components() {
 fn structural_hodge_transport_is_linear_at_small_scale() {
     let small = E3::basis_vector(0) * SMALL;
     assert_eq!(
-        small.hodge_dual().as_slice(),
+        small
+            .hodge_dual()
+            .expect("non-degenerate 3D signature")
+            .as_slice(),
         blade::<3, 0, 0>(6, SMALL).as_slice()
     );
 }

@@ -310,7 +310,7 @@ fn topologically_reachable(request: &NetworkShortestPathRequest) -> bool {
 
 #[cfg(feature = "standard-probes")]
 fn deterministic_position(index: usize) -> amari_core::Multivector<3, 0, 0> {
-    Vector::from_components(index as f64, 0.0, 0.0).mv
+    Vector::from_components(index as f64, 0.0, 0.0).into_multivector()
 }
 
 #[cfg(feature = "standard-probes")]

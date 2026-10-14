@@ -129,9 +129,9 @@ impl<const P: usize, const Q: usize, const R: usize> VectorDerivative<P, Q, R> {
         // Maps to bivectors: e_2∧e_3, e_3∧e_1, e_1∧e_2
 
         let mut curl = Multivector::zero();
-        curl.set_bivector_component(2, fz_y - fy_z); // e_2∧e_3 (index 2)
-        curl.set_bivector_component(1, fx_z - fz_x); // e_1∧e_3 (index 1)
-        curl.set_bivector_component(0, fy_x - fx_y); // e_1∧e_2 (index 0)
+        let _ = curl.set_bivector_component(2, fz_y - fy_z); // e_2∧e_3 (index 2)
+        let _ = curl.set_bivector_component(1, fx_z - fz_x); // e_1∧e_3 (index 1)
+        let _ = curl.set_bivector_component(0, fy_x - fx_y); // e_1∧e_2 (index 0)
 
         curl
     }

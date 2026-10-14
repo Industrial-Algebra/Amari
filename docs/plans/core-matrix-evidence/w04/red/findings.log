@@ -1,0 +1,11 @@
+1 CORE-08: star(e3) Cl(2,0,1) = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+2 CORE-09: e1 dual typed-Bivector = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+3 CORE-10: slerp Cl(2,0,0) = Err("PANIC")
+4 CORE-10: slerp t=1 coeff12 = 0
+5 CORE-11: boost power(1) = [1, 0] (stored [1.127625965206381, -0.5210953054937475])
+6 CORE-11: small power(1) biv = 0 (stored -0.000000005)
+7 CORE-11: 2pi power(1) scalar = 1 (stored -1)
+8 CORE-12: from_vectors(e1,e2) = None, (e1,e1) = None
+9 CORE-13: reflect(e1,e1) = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+10 CORE-14: vector ctor Ok grade-1 = -0.4194911955787122
+11 CORE-15: set_bivector_component(3) -> coeffs[3]=0 coeffs[14]=0

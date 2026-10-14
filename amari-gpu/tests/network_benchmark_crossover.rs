@@ -22,7 +22,7 @@ fn make_network(positions: &[(f64, f64, f64)]) -> GeometricNetwork<3, 0, 0> {
     let mut network = GeometricNetwork::<3, 0, 0>::new();
     let mut nodes = Vec::with_capacity(positions.len());
     for &(x, y, z) in positions {
-        nodes.push(network.add_node(Vector::from_components(x, y, z).mv));
+        nodes.push(network.add_node(Vector::from_components(x, y, z).into_multivector()));
     }
     for i in 1..nodes.len() {
         network

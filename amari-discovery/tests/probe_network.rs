@@ -47,7 +47,7 @@ fn direct_shortest_path(request: &NetworkShortestPathRequest) -> Option<(Vec<usi
             .count(),
     );
     for index in 0..request.adjacency.len() {
-        network.add_node(Vector::from_components(index as f64, 0.0, 0.0).mv);
+        network.add_node(Vector::from_components(index as f64, 0.0, 0.0).into_multivector());
     }
     for (source, row) in request.adjacency.iter().enumerate() {
         for (target, weight) in row.iter().enumerate() {
