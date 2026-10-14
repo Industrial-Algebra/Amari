@@ -242,6 +242,15 @@ touch):
   `e1`/`e2` need `n >= 1`/`n >= 2`). Valid-signature callers migrate with a
   justification `.expect("Cl(P,Q,R) has blade e…")`; generic callers handle
   `ComponentError::OutOfRange`.
+  *Compilation classes (R6-F20 disclosure, same standard as the
+  `Option → Result` split above):* code requiring the constructor's old
+  concrete value (binding to `Vector`/`Bivector`/`Multivector` directly,
+  passing it by value, chaining value methods) breaks with E0308/E0507;
+  discarded expressions (`Vector::e1();`) still compile; `Result`-only
+  operations (`.is_ok()`, `.unwrap_or(...)`, `match` on `Ok`/`Err`) become
+  *newly compilable* where they were E0599 under the infallible constructors
+  — migration review must treat their appearance as new code paths, not
+  preserved behavior.
 
 ### C7. `from_bivector`/`from_axis_angle` error-type migration — **forced failure-representation; new type is a design choice**
 

@@ -28,7 +28,7 @@ Red: 11 findings reproduced (findings.log); baseline 222 lib tests.
   pin); concrete 3D typed duals; lexicographic component map (relativistic
   boost-bivector fix fallout); e_ij strict. 234 lib / 466.
 
-## Final matrix (final-*.log)
+## Implementation-review-entry matrix (SUPERSEDED — see "Loop record" for final numbers)
 - amari-core: 466 tests / 17 suites on stable AND nightly, identical
   inventories; clippy 0 both; workspace all-targets 0; no-default 0; fmt clean.
   Test lineage: 385 (W03) -> 466.
@@ -235,3 +235,20 @@ IMPLEMENTATION COMPLETE AND STAGED. R1 returned 7 P1, R2 returned 3 P1 / 1 P2 /
 2 P3, R3 returned 2 P1 / 1 P2, R4 returned 3 P1, and R5 returned 1 P1 / 1 P2;
 all were remediated in the same worktree (2026-10-14) and the full pinned matrix
 re-ran green. Awaiting re-review / operator go-no-go.
+
+## Loop record (implementation review, 6 rounds, cap reached)
+R1 7P1 (dimension guards, exact-quotient inverse, sticky-bit ratio, exp-route
+scale preservation, binary gate, antipodal routing/derivation, axis range)
+-> d173ab8. R2 3P1/1P2/2P3 (slerp scale, output certification/inf, symbolic
+axis, disclosure, records, N=289/64) -> c495ab5. R3 2P1/1P2 (pre-rounding
+zero detection, subnormal from_vectors, power disclosure precision) ->
+286a001. R4 3P1 (exact-sandwich wide accumulation, fallible matrix
+conversion, exact slerp dot sign) -> 1db80bc. R5 1P1/1P2 (fallible named
+constructors incl. same-class Vector/Basis, §5 records amendment) ->
+bf38e58. R6 0P1/2P2/1P3 — ALL documentation accuracy (F20 compile-enabling
+disclosure, §5 Basis return type, this record's superseded label); applied
+directly by the orchestrator per the W03 cap-residue precedent, disclosed in
+the PR. Final state: 241 lib / 489 total stable AND nightly identical
+(final-*.log below), catalog 09c3ab7c… (11,134 items; amari-core.json +
+manifest.json only). Convergence: mathematical defects zero from R5 on;
+remaining residue documentation-only, cleared at commit (R6 fixes).

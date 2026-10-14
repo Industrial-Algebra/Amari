@@ -398,7 +398,9 @@ fn set_bivector_component(&mut self, k: usize, v: f64) -> bool           // Mult
 fn e12()                                 -> Result<Self, ComponentError>  // Bivector; n >= 2; added R5-F20
 fn e13()                                 -> Result<Self, ComponentError>  // Bivector; n >= 3; added R5-F20
 fn e23()                                 -> Result<Self, ComponentError>  // Bivector; n >= 3; added R5-F20
-fn e1()/e2()/e3()                        -> Result<Self, ComponentError>  // Vector/Basis; added R5-F20
+fn e1()/e2()/e3()                        -> Result<Self, ComponentError>  // Vector; n >= 1/2/3; added R5-F20
+fn e1()/e2()/e3()/e12()/e23()/e31()/e123()
+                                        -> Result<Multivector<P,Q,R>, ComponentError> // Basis; n per blade; added R5-F20
 // §1.1 escape/conversion surface (listed here for migration completeness):
 fn as_multivector(&self)                 -> &Multivector                  // Scalar/Vector/Bivector
 fn into_multivector(self)                -> Multivector                   // Scalar/Vector/Bivector
