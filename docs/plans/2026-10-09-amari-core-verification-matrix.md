@@ -4,7 +4,7 @@
 > (PR #304 merge). W00/W01/W02/CAT1/W03/W04 executed and merged under the
 > validated baseline recipe (§2); per-package gates ran *representative* H
 > rows, not full H. Blocker table (§8) reconciled against merged outcomes:
-> MATRIX-06 resolved; MATRIX-05 partially resolved (bare no-default green;
+> MATRIX-05 partially resolved (bare no-default green;
 > gf2/phantom/formal no-default rows remain red). Sections 2/8/9 carry dated
 > refresh annotations; the 320-row H enumeration and compiler table are
 > unchanged pending execution-time revalidation of the manifest closure.
@@ -167,6 +167,15 @@ For W01 add debug/release exact dyadic arithmetic regressions, the full independ
 
 ## 4. Compiler matrix and package scheduling
 
+> **2026-10-14 SUPERSESSION (review round 2):** the package assignments in
+> the table below are HISTORICAL — W00–W04 are merged (representative H
+> rows only). The full-H execution of this table, the alias/default/
+> all-feature rows, and the §5 target rows now belong to **milestone M-H**:
+> post-D07-approval execution on then-current develop by the core-audit
+> session under this matrix's owner accountability (§10). No completed
+> package owes further gates; no future package inherits this table's
+> W00/W01 wording. Rows are otherwise unchanged.
+
 | Compiler | Scope | Gate / owner |
 |---|---|---|
 | `1.98.0` (current researched stable) | Full H commands; alias/default/all-feature rows | W00/W01 local acceptance; session executes, core maintainer accountable |
@@ -269,7 +278,7 @@ These are bounded matrix-research observations, not completion of the remaining 
 | MATRIX-05 | True no_std target support blocked by dependency std activation, not just imports; feature-off host tests reveal further missing imports in GF(2)/verified/test modules
     **[2026-10-14: PARTIALLY RESOLVED.]** Bare `--no-default-features` lib check green on `354945a` (W04 repaired `exact_square.rs` no-default imports). Still RED: `+gf2` (1 error), `+phantom-types` (27 errors), `+formal-verification` (32 errors) — the GF(2)/verified-module import repairs remain owed to W00-scope host repair + P-EMBED. | W00 bounded host repairs plus separate P-EMBED portability contract/implementation; pre-1.0 |
 | MATRIX-06 | Core manifest does not inherit workspace rust-version; local MSRV and target/proof tools not installed
-    **[2026-10-14: RESOLVED (metadata half).]** `amari-core/Cargo.toml` now carries `rust-version.workspace = true` (workspace 1.89). Local MSRV/target/proof tool installation remains an execution-time prerequisite, not a blocker. | Metadata/MSRV evidence package; MSRV checks at W00/W01, target/proof prerequisites as scheduled |
+    **[2026-10-14: STILL OPEN — an earlier refresh draft misread the ROOT workspace manifest's `rust-version.workspace = true` as amari-core's; the crate manifest carries NO rust-version and does not inherit. Caught by review round 2.]** The metadata repair remains owed to a bounded package. Local MSRV/target/proof tool installation remains an execution-time prerequisite. | Metadata/MSRV evidence package; MSRV checks at W00/W01, target/proof prerequisites as scheduled |
 | MATRIX-07 | Serialized/parallel advertised capabilities lack a corresponding gated core operation surface in this source inventory | API/capability inventory under remaining core audit/W09; no new feature implementation authorized; before claiming capability coverage |
 | MATRIX-08 | Visible GitHub configuration does not enforce status checks | Maintainer CI administration; workflow green evidence still required, never substitute absent enforcement for permission |
 
@@ -284,9 +293,10 @@ Do not renumber these into closed CORE findings or claim the original report alr
 > `ensures(result >= T::zero())` dot annotation still present at
 > `verified.rs:564` (M02 open); `verified_laws.rs` still dormant (M03);
 > no serialize/parallel gated operation surface in `amari-core/src` (M07
-> open). Feature inventory: 12 declared names + 3 implicit dep features
-> (serde, rayon, creusot-contracts) — same 13 selectable names as the
-> draft; the 8192→1440→320 closure math must be revalidated at execution.
+> open). Feature inventory: 10 declared non-default names + 3
+> implicit dep features (serde, rayon, creusot-contracts) = 13 selectable
+> names, same as the draft; the 8192→1440→320 closure math was INDEPENDENTLY
+> REPRODUCED by review round 2 and holds at this manifest.
 
 After resolving missing downloaded artifacts under the unchanged lock:
 
@@ -302,6 +312,15 @@ After resolving missing downloaded artifacts under the unchanged lock:
 Not executed: full H, every alias equivalence gate, MSRV/pinned-CI-nightly local rows, target builds/runtimes, explicit AVX2 paths, Miri/sanitizers, proof translation/discharge. No full-matrix-green or merge-ready claim is made. Research made no production edits and did not change any workflow or remote setting.
 
 ## 10. Proposed owners, milestones and execution handoff
+
+> **2026-10-14 SUPERSESSION:** milestones 2–4 below (W00/W01 authoring and
+> execution) are COMPLETE HISTORY — both packages merged (#280/#282) and
+> the programme advanced through W02/CAT1/W03/W04. The LIVE milestone set
+> after D07 approval: **M-H** full-H + compiler-table + alias-row execution
+> (§4); **M-TGT** P-AVX2/P-WASM-closure/P-EMBED (§5); **M-C2/C3/C4**
+> negative-compile tooling, proof-toolchain conformance, discharged
+> obligations (§7); **M-REP** the phantom/formal + unsafe audits and
+> W09-class evidence-integrity repairs (§8); all pre-1.0 per §5/§7 timing.
 
 The **operator/core maintainer** is accountable for the matrix/support decisions and all unassigned specialist roles until explicitly delegated. The current session owns W00/W01 contract authoring, generation dispatch, local verification and triage; ordinary CI executes repository integration rows. Portability, unsafe/SIMD and formal-methods work need explicit subplans and operator delegation before execution. Role ownership here is a proposal requiring approval, not an assertion that another person accepted work.
 
