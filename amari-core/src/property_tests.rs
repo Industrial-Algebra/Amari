@@ -7,9 +7,6 @@
 use crate::*;
 use proptest::prelude::*;
 
-#[cfg(not(feature = "std"))]
-use alloc::format;
-
 #[cfg(feature = "std")]
 use std::f64::consts;
 

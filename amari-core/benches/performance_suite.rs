@@ -113,9 +113,9 @@ fn bench_batch_operations(c: &mut Criterion) {
 fn bench_rotor_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("rotor_operations");
 
-    let e1 = Vector::<3, 0, 0>::e1();
-    let e2 = Vector::<3, 0, 0>::e2();
-    let e3 = Vector::<3, 0, 0>::e3();
+    let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+    let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
+    let e3 = Vector::<3, 0, 0>::e3().expect("Cl(3,0,0) has basis vector e3");
 
     let bivector = Bivector::from_components(1.0, 0.5, 0.3);
     let angle = std::f64::consts::PI / 4.0;
@@ -127,11 +127,17 @@ fn bench_rotor_operations(c: &mut Criterion) {
     let rotor =
         Rotor::from_bivector(&bivector, angle).expect("bounded Euclidean bivector exponential");
     let vector = e1
-        .add(&Vector::from_multivector(&(e2.mv.clone() * 0.5)))
-        .add(&Vector::from_multivector(&(e3.mv.clone() * 0.3)));
+        .add(&Vector::try_from(e2.as_multivector().clone() * 0.5).expect("pure vector"))
+        .add(&Vector::try_from(e3.as_multivector().clone() * 0.3).expect("pure vector"));
 
     group.bench_function("rotor_application", |b| {
-        b.iter(|| black_box(rotor.apply(black_box(&vector.mv))))
+        b.iter(|| {
+            black_box(
+                rotor
+                    .apply(black_box(vector.as_multivector()))
+                    .expect("certified rotor acts"),
+            )
+        })
     });
 
     group.bench_function("rotor_composition", |b| {

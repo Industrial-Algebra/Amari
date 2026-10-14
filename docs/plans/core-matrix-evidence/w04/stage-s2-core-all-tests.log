@@ -1,0 +1,42 @@
+# CORE-W04 stage 2 green evidence
+# lock: 50e9b46e
+# rustc: rustc 1.100.0-nightly (787af2b8c 2026-08-25)
+# cargo: cargo 1.100.0-nightly (e8cb624d5 2026-08-22)
+# recipe: RUSTC_WRAPPER='' RUSTC_WORKSPACE_WRAPPER='' RUSTC=/home/lucien/.nix-profile/bin/rustc RUSTFLAGS='-C target-cpu=x86-64 -C target-feature=-avx2' CARGO_TARGET_DIR=target/w04 --locked
+# command: cargo test -p amari-core --locked
+
+     Running unittests src/lib.rs (target/w04/debug/build/amari-core/f8f31d1d25f79957/out/amari_core-f8f31d1d25f79957)
+test result: ok. 231 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/arithmetic_regressions.rs (target/w04/debug/build/amari-core/55b53bd32afed63a/out/arithmetic_regressions-55b53bd32afed63a)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/audit_tests.rs (target/w04/debug/build/amari-core/a809077e10c1877b/out/audit_tests-a809077e10c1877b)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/basis_word_oracle.rs (target/w04/debug/build/amari-core/4743d5a435c10b16/out/basis_word_oracle-4743d5a435c10b16)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+     Running tests/geometric_product.rs (target/w04/debug/build/amari-core/26cfe42604dffcfe/out/geometric_product-26cfe42604dffcfe)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/gf2_tests.rs (target/w04/debug/build/amari-core/378bad717e4edd87/out/gf2_tests-378bad717e4edd87)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/inverse_contracts_green.rs (target/w04/debug/build/amari-core/76b0cfae80fdfeee/out/inverse_contracts_green-76b0cfae80fdfeee)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/inverse_exp_contracts.rs (target/w04/debug/build/amari-core/b32a40328cb86d7f/out/inverse_exp_contracts-b32a40328cb86d7f)
+test hyperbolic_overflow_is_error ... ok
+test round1_scaling_boundary_norm_errors_honestly ... ok
+test round3_scalar_factoring_overflow_is_honest_error ... ok
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/macro_contracts.rs (target/w04/debug/build/amari-core/c15ad1b0f65b94e0/out/macro_contracts-c15ad1b0f65b94e0)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/numerical_contracts.rs (target/w04/debug/build/amari-core/5fe4f14eadf8bda7/out/numerical_contracts-5fe4f14eadf8bda7)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/products.rs (target/w04/debug/build/amari-core/df9c83755829225f/out/products-df9c83755829225f)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/rotor_error_privacy_s1.rs (target/w04/debug/build/amari-core/62f90ad55f8ef3d3/out/rotor_error_privacy_s1-62f90ad55f8ef3d3)
+test exp_error_carrier_is_lossless ... ok
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/rotor_log_powers_s2.rs (target/w04/debug/build/amari-core/74d3906d836b7d84/out/rotor_log_powers_s2-74d3906d836b7d84)
+test non_integral_power_propagates_log_domain_errors ... ok
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/rotors.rs (target/w04/debug/build/amari-core/9e661feb9b18104e/out/rotors-9e661feb9b18104e)
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests amari_core
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s

@@ -1,0 +1,31 @@
+# CORE-W04 stage 4 green evidence
+# lock: eb2442dc06bf9200 (Cargo.lock sha256 prefix)
+# head: 50e9b46
+# rustc: rustc 1.100.0-nightly (787af2b8c 2026-08-25)
+# cargo: cargo 1.100.0-nightly (e8cb624d5 2026-08-22)
+# recipe: RUSTC_WRAPPER='' RUSTC_WORKSPACE_WRAPPER='' RUSTC=/home/lucien/.nix-profile/bin/rustc RUSTFLAGS='-C target-cpu=x86-64 -C target-feature=-avx2' CARGO_TARGET_DIR=target/w04 --locked
+# command: cargo check --workspace --all-targets --locked
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core)
+    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-tropical)
+    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-dual)
+    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-info-geom)
+    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-holographic)
+    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-relativistic)
+    Checking amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-enumerative)
+    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-network)
+    Checking amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-optimization)
+    Checking amari-measure v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-measure)
+    Checking amari-fusion v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-fusion)
+    Checking amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-automata)
+    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-gpu)
+    Checking amari-calculus v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-calculus)
+    Checking amari-probabilistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-probabilistic)
+    Checking amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-discovery)
+    Checking amari v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04)
+    Checking amari-topology v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-topology)
+    Checking amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-functional)
+    Checking amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-dynamics)
+    Checking amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-wasm)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.55s
+warning: the following packages contain code that will be rejected by a future version of Rust: wgpu v0.19.4, wgpu-core v0.19.4, wgpu-hal v0.19.5
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`

@@ -1,0 +1,2 @@
+# CORE-W04 R3 remediation green evidence
+# command: cargo +stable fmt --all -- --check

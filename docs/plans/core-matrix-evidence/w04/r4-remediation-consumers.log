@@ -1,0 +1,915 @@
+# CORE-W04 R4 remediation green evidence
+# command: timeout 590 cargo +stable test -p amari-relativistic -p amari-enumerative -p amari-gpu -p amari-automata --locked
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (target/w04/debug/deps/amari_automata-51f7782cde0ac7f7)
+
+running 55 tests
+test comprehensive_tests_simple::boundary_tests::test_boundary_setting ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_rotor_ca_rule ... ok
+test comprehensive_tests_simple::boundary_tests::test_fixed_boundary ... ok
+test comprehensive_tests_simple::boundary_tests::test_periodic_boundary ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_reversible_rule ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_rule_apply ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_grade_preserving_rule ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_add_node ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_creation ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_graph_navigator_new ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_custom_rule ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_generator_rotation ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_node_state_hash ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_conservative_rule ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_group_element_identity ... ok
+test comprehensive_tests_simple::constructor_tests::test_from_seed ... ok
+test comprehensive_tests_simple::boundary_tests::test_moore_neighborhood_2d ... ok
+test comprehensive_tests_simple::constructor_tests::test_with_cached_cayley ... ok
+test comprehensive_tests_simple::ca_rule_tests::test_game_of_life_rule ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_cell_operations ... ok
+test comprehensive_tests_simple::constructor_tests::test_with_group_structure ... ok
+test comprehensive_tests_simple::cayley_navigation_tests::test_cayley_node_creation ... ok
+test comprehensive_tests_simple::metrics_tests::test_connected_components ... ok
+test comprehensive_tests_simple::metrics_tests::test_density ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_creation ... ok
+test comprehensive_tests_simple::metrics_tests::test_state_snapshot ... ok
+test comprehensive_tests_simple::metrics_tests::test_total_energy ... ok
+test comprehensive_tests_simple::metrics_tests::test_total_magnitude ... ok
+test comprehensive_tests_simple::metrics_tests::test_reset ... ok
+test comprehensive_tests_simple::multivector_verification_tests::test_multivector_properties ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_config_default ... ok
+test comprehensive_tests_simple::multivector_verification_tests::test_multivector_associativity ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_constraint_variants ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_rule ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_assembly_rule_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_polyomino_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_polyomino_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_shape_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_shape_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_tile_set_creation ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_tile_set_default ... ok
+test comprehensive_tests_simple::self_assembly_tests::test_wang_tile_set ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_solver_config_default ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_type_equality ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_type_inequality ... ok
+test comprehensive_tests_simple::tropical_solver_tests::test_tropical_constraint_types_all ... ok
+test comprehensive_tests_simple::verification_framework_tests::test_error_handling ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_ca_creation ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_ca_invalid_dimensions ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_geometric_closure ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_cayley_table ... ok
+test comprehensive_tests_simple::verification_framework_tests::test_mathematical_invariants ... ok
+test verified_contracts_simple::verified_contract_tests::test_verified_evolution ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_evolution ... ok
+test comprehensive_tests_simple::geometric_ca_basic_tests::test_ca_rule_types ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/w04/debug/deps/amari_enumerative-f85afff6b30c6246)
+
+running 239 tests
+test comprehensive_tests::error_handling_tests::test_invalid_dimensions ... ok
+test comprehensive_tests::error_handling_tests::test_computation_error_handling ... ok
+test comprehensive_tests::error_handling_tests::test_invalid_grassmannian_parameters ... ok
+test comprehensive_tests::error_handling_tests::test_overflow_protection ... ok
+test comprehensive_tests::error_handling_tests::test_tropical_curve_validation ... ok
+test comprehensive_tests::error_handling_tests::test_schubert_class_validation ... ok
+test comprehensive_tests::gromov_witten_tests::test_enumerative_predictions ... ok
+test comprehensive_tests::gromov_witten_tests::test_gw_invariant_basic_properties ... ok
+test comprehensive_tests::gromov_witten_tests::test_gw_recursive_structure ... ok
+test comprehensive_tests::gromov_witten_tests::test_gw_invariant_symmetries ... ok
+test comprehensive_tests::gromov_witten_tests::test_quantum_cohomology_properties ... ok
+test comprehensive_tests::higher_genus_tests::test_donaldson_thomas_invariants ... ok
+test comprehensive_tests::higher_genus_tests::test_higher_genus_curve_properties ... ok
+test comprehensive_tests::higher_genus_tests::test_jacobian_properties ... ok
+test comprehensive_tests::higher_genus_tests::test_moduli_compactification ... ok
+test comprehensive_tests::higher_genus_tests::test_pandharipande_thomas_invariants ... ok
+test comprehensive_tests::intersection_theory_tests::test_bezout_bound_verification ... ok
+test comprehensive_tests::intersection_theory_tests::test_dimension_consistency ... ok
+test comprehensive_tests::intersection_theory_tests::test_empty_intersection_cases ... ok
+test comprehensive_tests::higher_genus_tests::test_advanced_curve_counting ... ok
+test comprehensive_tests::intersection_theory_tests::test_intersection_commutativity ... ok
+test comprehensive_tests::intersection_theory_tests::test_intersection_multiplicativity ... ok
+test comprehensive_tests::intersection_theory_tests::test_intersection_theory_bilinearity ... ok
+test comprehensive_tests::schubert_calculus_tests::test_classical_schubert_problems ... ok
+test comprehensive_tests::schubert_calculus_tests::test_pieri_rule_verification ... ok
+test comprehensive_tests::schubert_calculus_tests::test_schubert_class_dimensions ... ok
+test comprehensive_tests::schubert_calculus_tests::test_schubert_class_properties ... ok
+test comprehensive_tests::schubert_calculus_tests::test_schubert_commutativity ... ok
+test comprehensive_tests::schubert_calculus_tests::test_schubert_product_associativity ... ok
+test comprehensive_tests::tropical_geometry_tests::test_tropical_correspondence ... ok
+test comprehensive_tests::tropical_geometry_tests::test_tropical_curve_basic_properties ... ok
+test comprehensive_tests::tropical_geometry_tests::test_tropical_intersection_theory ... ok
+test comprehensive_tests::tropical_geometry_tests::test_tropical_linear_systems ... ok
+test comprehensive_tests::tropical_geometry_tests::test_tropical_moduli_spaces ... ok
+test csm::tests::test_csm_class_point ... ok
+test csm::tests::test_csm_top_cell ... ok
+test csm::tests::test_csm_euler_characteristic_top_cell ... ok
+test csm::tests::test_csm_agrees_transverse ... ok
+test csm::tests::test_csm_intersection ... ok
+test csm::tests::test_dual_partition ... ok
+test csm::tests::test_csm_variety ... ok
+test csm::tests::test_segre_from_chern ... ok
+test csm::tests::test_namespace_is_degenerate ... ok
+test finite_field::tests::test_grassmannian_points_gr13 ... ok
+test finite_field::tests::test_grassmannian_points_gr24 ... ok
+test finite_field::tests::test_poincare_polynomial_gr24_at_q ... ok
+test finite_field::tests::test_point_counts_extensions ... ok
+test finite_field::tests::test_schubert_cell_points ... ok
+test finite_field::tests::test_schubert_variety_sum_equals_grassmannian ... ok
+test finite_field::tests::test_zeta_exponents ... ok
+test geometric_algebra::tests::test_adams_operations ... ok
+test geometric_algebra::tests::test_chern_character_total ... ok
+test finite_field::tests::test_transverse_intersection ... ok
+test geometric_algebra::tests::test_dual_bundle ... ok
+test geometric_algebra::tests::test_dual_involution ... ok
+test geometric_algebra::tests::test_euler_characteristic ... ok
+test geometric_algebra::tests::test_geometric_projective_space ... ok
+test geometric_algebra::tests::test_line_bundle_creation ... ok
+test geometric_algebra::tests::test_geometric_variety_point_dimension_check ... ok
+test geometric_algebra::tests::test_localized_integral_empty ... ok
+test geometric_algebra::tests::test_line_through_points ... ok
+test geometric_algebra::tests::test_plucker_embedding_error_case ... ok
+test geometric_algebra::tests::test_geometric_intersection_mismatched_grassmannians ... ok
+test geometric_algebra::tests::test_point_creation ... ok
+test geometric_algebra::tests::test_quantum_k_class_creation ... ok
+test geometric_algebra::tests::test_quantum_k_ring_grassmannian ... ok
+test geometric_algebra::tests::test_quantum_k_ring_projective_space ... ok
+test geometric_algebra::tests::test_quantum_product_basic ... ok
+test geometric_algebra::tests::test_riemann_roch_computation ... ok
+test geometric_algebra::tests::test_tangent_bundle_projective ... ok
+test geometric_algebra::tests::test_plucker_embedding_indices ... ok
+test geometric_algebra::tests::test_schubert_class_creation ... ok
+test kazhdan_lusztig::tests::test_kl_rank_0 ... ok
+test kazhdan_lusztig::tests::test_flag_f_vector_boolean ... ok
+test kazhdan_lusztig::tests::test_kl_rank_1 ... ok
+test littlewood_richardson::tests::test_lattice_condition ... ok
+test littlewood_richardson::tests::test_lr_coefficient_simple ... ok
+test geometric_algebra::tests::test_plucker_intersection_agrees_with_lr ... ok
+test littlewood_richardson::tests::test_lr_coefficient_zero ... ok
+test littlewood_richardson::tests::test_lr_coefficient_symmetry ... ok
+test littlewood_richardson::tests::test_partition_conjugate ... ok
+test littlewood_richardson::tests::test_partition_contains ... ok
+test littlewood_richardson::tests::test_partition_default ... ok
+test littlewood_richardson::tests::test_partition_fits_in_box ... ok
+test littlewood_richardson::tests::test_partition_from_iterator ... ok
+test kazhdan_lusztig::tests::test_z_polynomial_rank_1 ... ok
+test littlewood_richardson::tests::test_partition_new ... ok
+test littlewood_richardson::tests::test_partition_size_length ... ok
+test littlewood_richardson::tests::test_schubert_product ... ok
+test kazhdan_lusztig::tests::test_schubert_kl ... ok
+test littlewood_richardson::tests::test_schubert_product_larger ... ok
+test littlewood_richardson::tests::test_skew_shape ... ok
+test littlewood_richardson::tests::test_skew_shape_invalid ... ok
+test localization::tests::test_custom_weights ... ok
+test localization::tests::test_fixed_point_analysis ... ok
+test localization::tests::test_fixed_point_count ... ok
+test localization::tests::test_fixed_point_count_gr35 ... ok
+test localization::tests::test_fixed_point_partition ... ok
+test localization::tests::test_invalid_weights_duplicate ... ok
+test localization::tests::test_invalid_weights_zero ... ok
+test localization::tests::test_k_subsets ... ok
+test localization::tests::test_localization_overdetermined ... ok
+test localization::tests::test_localization_four_lines ... ok
+test localization::tests::test_localization_point_class ... ok
+test localization::tests::test_localization_sigma1_cubed_sigma1 ... ok
+test localization::tests::test_localization_sigma1_squared_gr24 ... ok
+test localization::tests::test_tangent_euler_class_nonzero ... ok
+test matroid::tests::test_beta_invariant ... ok
+test kazhdan_lusztig::tests::test_kl_u24 ... ok
+test matroid::tests::test_closure_idempotent ... ok
+test matroid::tests::test_characteristic_polynomial_eval_at_1 ... ok
+test matroid::tests::test_characteristic_polynomial_u24 ... ok
+test matroid::tests::test_contraction_deletion_pair ... ok
+test matroid::tests::test_f_vector_uniform ... ok
+test matroid::tests::test_connected_components_direct_sum ... ok
+test matroid::tests::test_connected_uniform ... ok
+test matroid::tests::test_matroid_delete_contract ... ok
+test matroid::tests::test_has_excluded_minor_u24 ... ok
+test matroid::tests::test_matroid_direct_sum ... ok
+test matroid::tests::test_matroid_dual ... ok
+test matroid::tests::test_matroid_from_plucker_partial ... ok
+test matroid::tests::test_matroid_circuits ... ok
+test matroid::tests::test_matroid_from_plucker ... ok
+test matroid::tests::test_flats_of_u24 ... ok
+test matroid::tests::test_matroid_loop_coloop ... ok
+test matroid::tests::test_matroid_intersection_cardinality ... ok
+test matroid::tests::test_namespace_capability_matroid ... ok
+test matroid::tests::test_schubert_matroid ... ok
+test matroid::tests::test_restrict ... ok
+test matroid::tests::test_schubert_matroid_empty_partition ... ok
+test matroid::tests::test_uniform_matroid ... ok
+test matroid::tests::test_tutte_polynomial_uniform ... ok
+test kazhdan_lusztig::tests::test_kl_degree_bound ... ok
+test namespace::tests::test_capability_accessible ... ok
+test namespace::tests::test_capability_conflict ... ok
+test namespace::tests::test_adams_amplification ... ok
+test namespace::tests::test_capability_creation ... ok
+test matroid::tests::test_valuated_matroid_tropical_plucker ... ok
+test namespace::tests::test_capability_dependency ... ok
+test namespace::tests::test_capability_id_from ... ok
+test namespace::tests::test_grant_all ... ok
+test namespace::tests::test_amplify_preserves_capability ... ok
+test namespace::tests::test_namespace_builder ... ok
+test namespace::tests::test_namespace_full ... ok
+test namespace::tests::test_count_configurations ... ok
+test namespace::tests::test_namespace_grant ... ok
+test namespace::tests::test_namespace_incompatible ... ok
+test namespace::tests::test_namespace_intersection ... ok
+test namespace::tests::test_namespace_intersection_default ... ok
+test namespace::tests::test_quantum_capability_creation ... ok
+test matroid::tests::test_whitney_second_kind ... ok
+test namespace::tests::test_quantum_capability_with_explicit_k_class ... ok
+test namespace::tests::test_quantum_count_empty_caps ... ok
+test namespace::tests::test_revoke_capability ... ok
+test namespace::tests::test_quantum_count_configurations ... ok
+test namespace::tests::test_would_overdetermine ... ok
+test namespace::tests::test_quantum_entanglement ... ok
+test operad::tests::test_composable_outputs_inputs ... ok
+test operad::tests::test_compose_incompatible_fails ... ok
+test operad::tests::test_compose_namespaces ... ok
+test operad::tests::test_composition_multiplicity ... ok
+test operad::tests::test_effective_capability_count ... ok
+test operad::tests::test_interface_compatibility ... ok
+test operad::tests::test_interface_incompatible_same_direction ... ok
+test operad::tests::test_interface_incompatible_wrong_codim ... ok
+test phantom::tests::test_phantom_types_are_copy ... ok
+test phantom::tests::test_phantom_types_are_zero_sized ... ok
+test phantom::tests::test_phantom_types_implement_traits ... ok
+test representability::tests::test_column_matroid_roundtrip ... ok
+test representability::tests::test_is_not_regular_u24 ... ok
+test schubert::tests::test_flag_variety ... ok
+test schubert::tests::test_intersection_result_default ... ok
+test representability::tests::test_fano_matroid_properties ... ok
+test representability::tests::test_u23_is_binary ... ok
+test representability::tests::test_dual_fano ... ok
+test representability::tests::test_u24_not_binary ... ok
+test schubert::tests::test_multi_intersect_four_lines ... ok
+test stability::tests::test_central_charge ... ok
+test stability::tests::test_stability_high_trust ... ok
+test stability::tests::test_point_class_stability ... ok
+test schubert::tests::test_multi_intersect_underdetermined ... ok
+test stability::tests::test_phase_diagram ... ok
+test stability::tests::test_stability_standard ... ok
+test representability::tests::test_fano_not_ternary ... ok
+test stability::tests::test_stable_count_monotone ... ok
+test schubert::tests::test_multi_intersect_overdetermined ... ok
+test schubert::tests::test_schubert_calculus_default ... ok
+test stability::tests::test_wall_computation ... ok
+test stability::tests::test_stability_low_trust ... ok
+test tropical_curves::tests::test_is_balanced ... ok
+test tropical_curves::tests::test_mikhalkin_point_count_validation ... ok
+test tropical_curves::tests::test_mikhalkin_degree6_now_verified ... ok
+test tropical_curves::tests::test_mikhalkin_result_equality ... ok
+test tropical_curves::tests::test_mikhalkin_unverified_range ... ok
+test tropical_curves::tests::test_mikhalkin_known_values ... ok
+test tropical_curves::tests::test_moduli_space_dimension ... ok
+test tropical_curves::tests::test_sample_curve ... ok
+test tropical_curves::tests::test_tropical_bezout_bound ... ok
+test tropical_curves::tests::test_tropical_curve_empty_multiplicity ... ok
+test tropical_curves::tests::test_tropical_curve_multiplicity ... ok
+test tropical_curves::tests::test_tropical_curve_multiplicity_nontrivial ... ok
+test tropical_curves::tests::test_tropical_distance ... ok
+test tropical_curves::tests::test_verify_mikhalkin_gw ... ok
+test verified_contracts::tests::test_intersection_commutativity ... ok
+test verified_contracts::tests::test_enumerative_geometry_laws ... ok
+test schubert::tests::test_schubert_class_creation ... ok
+test verified_contracts::tests::test_mathematical_consistency ... ok
+test verified_contracts::tests::test_parameter_validation ... ok
+test representability::tests::test_is_regular_u23 ... ok
+test verified_contracts::tests::test_verified_grassmannian ... ok
+test verified_contracts::tests::test_verified_schubert_power ... ok
+test verified_contracts::tests::test_verified_tropical_curve ... ok
+test schubert::tests::test_product ... ok
+test wdvv::tests::test_binomial ... ok
+test schubert::tests::test_partition_conversion ... ok
+test wdvv::tests::test_engine_default ... ok
+test verified_contracts::tests::test_verified_gromov_witten ... ok
+test wdvv::tests::test_p1xp1_counts ... ok
+test wdvv::tests::test_gw_invariant_rational ... ok
+test wdvv::tests::test_p3_counts ... ok
+test wdvv::tests::test_required_points ... ok
+test tropical_curves::tests::test_mikhalkin_genus_zero ... ok
+test stability::tests::test_phase_range ... ok
+test wdvv::tests::test_binomial_symmetry ... ok
+test wdvv::tests::test_wdvv_degree_6 ... ok
+test wdvv::tests::test_wdvv_known_values ... ok
+test wdvv::tests::test_wdvv_degree_7 ... ok
+test verified_contracts::tests::test_verified_projective_space ... ok
+test weight_enumerator::tests::test_hamming_weight_distribution ... ok
+test weight_enumerator::tests::test_singleton_bound ... ok
+test weight_enumerator::tests::test_hamming_code_parameters ... ok
+test weight_enumerator::tests::test_reed_muller_rm1_3 ... ok
+test wdvv::tests::test_wdvv_table ... ok
+test weight_enumerator::tests::test_simplex_is_dual_of_hamming ... ok
+test weight_enumerator::tests::test_macwilliams_consistency ... ok
+test weight_enumerator::tests::test_encode_syndrome_roundtrip ... ok
+test weight_enumerator::tests::test_extended_golay_code ... ok
+test kazhdan_lusztig::tests::test_kl_non_negative ... ok
+test representability::tests::test_fano_is_binary ... ok
+
+test result: ok. 239 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests/classical_problems.rs (target/w04/debug/deps/classical_problems-e1db2a3b35fe2ea8)
+
+running 10 tests
+test test_27_lines_on_cubic_surface ... ok
+test test_space_of_triangles ... ok
+test test_pascal_hexagon ... ok
+test test_twisted_cubic_lines ... ok
+test test_hilberts_15th_problem ... ok
+test test_bitangents_to_quartic ... ok
+test test_apollonius_problem ... ok
+test test_four_spheres_problem ... ok
+test test_conics_through_five_points ... ok
+test test_steiner_conic_problem ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/finite_field_tests.rs (target/w04/debug/deps/finite_field_tests-2a955ea2f0446f93)
+
+running 9 tests
+test test_grassmannian_gr14_over_f2 ... ok
+test test_grassmannian_gr24_over_f2 ... ok
+test test_grassmannian_gr24_over_f3 ... ok
+test test_grassmannian_poincare_polynomial_gr13 ... ok
+test test_schubert_cell_points ... ok
+test test_point_counts_over_extensions ... ok
+test test_schubert_zeta_exponents ... ok
+test test_schubert_variety_sum_equals_grassmannian ... ok
+test test_schubert_poincare_polynomial ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gromov_witten_test.rs (target/w04/debug/deps/gromov_witten_test-2ceaf880ae6768e9)
+
+running 9 tests
+test test_curve_class_operations ... ok
+test test_gromov_witten_basic_properties ... ok
+test test_lines_on_cubic_surface ... ok
+test test_kontsevich_formula ... ok
+test test_moduli_space_dimensions ... ok
+test test_quantum_cohomology_ring ... ok
+test test_rational_curves_on_quintic_threefold ... ok
+test test_stable_maps_moduli ... ok
+test test_witten_conjecture ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/higher_genus_test.rs (target/w04/debug/deps/higher_genus_test-6371855b1c6f62ab)
+
+running 19 tests
+test test_brill_noether_theory ... ok
+test test_clifford_index ... ok
+test test_dt_invariant ... ok
+test test_advanced_curve_counting ... ok
+test test_gieseker_petri_defect ... ok
+test test_jacobian_data ... ok
+test test_higher_genus_edge_cases ... ok
+test test_jacobian_edge_cases ... ok
+test test_higher_genus_curve_creation ... ok
+test test_mathematical_consistency ... ok
+test test_mnop_correspondence ... ok
+test test_moduli_space_intersection_numbers ... ok
+test test_moduli_stack_data ... ok
+test test_pt_invariant ... ok
+test test_riemann_roch_dimension ... ok
+test test_theta_divisor ... ok
+test test_torelli_map ... ok
+test test_virtual_dimension_computations ... ok
+test test_virtual_gw_invariant ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/intersection_test.rs (target/w04/debug/deps/intersection_test-f0fffcaa0f2654c3)
+
+running 10 tests
+test test_chow_class_operations ... ok
+test test_bezouts_theorem ... ok
+test test_grassmannian_creation ... ok
+test test_chow_ring_product ... ok
+test test_empty_intersection ... ok
+test test_hypersurface_intersections ... ok
+test test_intersection_with_geometric_algebra ... ok
+test test_degree_genus_formula ... ok
+test test_lines_through_points ... ok
+test test_projective_space_dimension ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/kazhdan_lusztig_tests.rs (target/w04/debug/deps/kazhdan_lusztig_tests-eed3c80dfe124c8e)
+
+running 7 tests
+test test_inverse_kl_polynomial_rank_one ... ok
+test test_flag_f_vector_u23 ... ok
+test test_z_polynomial_rank_one ... ok
+test test_kl_polynomial_boolean_matroid ... ok
+test test_kl_polynomial_uniform_u24 ... ok
+test test_kl_non_negativity ... ok
+test test_kl_polynomial_consistency ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/representability_tests.rs (target/w04/debug/deps/representability_tests-b2a0d2fd1a298153)
+
+running 9 tests
+test test_u23_is_binary ... ok
+test test_u24_not_binary ... ok
+test test_dual_fano_matroid ... ok
+test test_fano_not_ternary ... ok
+test test_fano_not_regular ... ok
+test test_has_minor_u24_in_fano ... ok
+test test_standard_representation ... ok
+test test_column_matroid_roundtrip ... ok
+test test_fano_matroid_is_binary ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/schubert_integration.rs (target/w04/debug/deps/schubert_integration-ed069e8f83032754)
+
+running 21 tests
+test test_capability_accessible_check ... ok
+test test_empty_intersection ... ok
+test test_fundamental_class ... ok
+test test_lines_meeting_four_lines ... ok
+test test_lr_coefficient_box_partition ... ok
+test test_capability_restricts_configurations ... ok
+test test_lr_coefficient_identity ... ok
+test test_namespace_builder ... ok
+test test_lr_coefficient_zero_cases ... ok
+test test_lr_coefficient_symmetry ... ok
+test test_namespace_capability_dependency_chain ... ok
+test test_namespace_configuration_count ... ok
+test test_namespace_intersection_different_grassmannian ... ok
+test test_namespace_intersection_same_grassmannian ... ok
+test test_partition_containment ... ok
+test test_partition_conjugate_involution ... ok
+test test_partition_self_conjugate ... ok
+test test_pieri_rule ... ok
+test test_single_class_intersection ... ok
+test test_planes_meeting_conditions ... ok
+test test_schubert_product_commutativity ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/schubert_test.rs (target/w04/debug/deps/schubert_test-36b509d4fc862cb7)
+
+running 8 tests
+test test_giambelli_formula ... ok
+test test_flag_variety_basics ... ok
+test test_grassmannian_dimension ... ok
+test test_pieri_rule ... ok
+test test_quantum_schubert_calculus ... ok
+test test_schubert_class_basic_properties ... ok
+test test_lines_meeting_four_lines ... ok
+test test_schubert_intersection_numbers ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tropical_test.rs (target/w04/debug/deps/tropical_test-602f63225f9b492e)
+
+running 10 tests
+test test_tropical_bezout ... ok
+test test_mikhalkin_correspondence ... ok
+test test_tropical_curve_balancing ... ok
+test test_tropical_grassmannian ... ok
+test test_tropical_linear_systems ... ok
+test test_tropical_moduli_space ... ok
+test test_tropical_degree_calculation ... ok
+test test_tropical_polynomial_curves ... ok
+test test_tropical_distance_function ... ok
+test test_tropical_intersection_multiplicity ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/weight_enumerator_tests.rs (target/w04/debug/deps/weight_enumerator_tests-c84a5b5ac8cba29d)
+
+running 14 tests
+test test_golay_is_self_dual ... ok
+test test_hamming_bound_basic ... ok
+test test_hamming_7_4_parameters ... ok
+test test_encode_decode_roundtrip ... ok
+test test_hamming_code_is_self_orthogonal ... ok
+test test_hamming_dual_is_simplex ... ok
+test test_plotkin_bound ... ok
+test test_singleton_bound_basic ... ok
+test test_simplex_code_parameters ... ok
+test test_reed_muller_1_3 ... ok
+test test_hamming_weight_distribution ... ok
+test test_macwilliams_duality ... ok
+test test_hamming_15_11_parameters ... ok
+test test_extended_golay_parameters ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/w04/debug/deps/amari_gpu-34406052bb38bc98)
+
+running 61 tests
+test adaptive::tests::test_adaptive_verifier_creation ... ignored, GPU hardware required, may fail in CI/CD environments
+test adaptive::tests::test_platform_capabilities ... ok
+test benchmarks::tests::test_benchmark_runner_creation ... ignored, GPU hardware required, may fail in CI/CD environments
+test adaptive::tests::cauchy_schwarz_bound_accepts_correct_products ... ok
+test adaptive::tests::test_cpu_features_detection ... ok
+test multi_gpu::tests::test_device_id_creation ... ok
+test adaptive::tests::test_verification_level_determination ... ok
+test multi_gpu::tests::test_workload_creation ... ok
+test multi_gpu::tests::test_load_balancer_creation ... ok
+test relativistic::tests::test_gpu_minkowski_products ... ignored
+test network::tests::test_should_use_gpu ... ok
+test relativistic::tests::test_gpu_spacetime_vector_conversion ... ok
+test shaders::tests::test_shader_constants ... ok
+test benchmarks::tests::test_benchmark_config ... ok
+test shaders::tests::test_holographic_shaders ... ok
+test tests::test_adaptive_compute_batch_small ... ignored, GPU hardware required, may fail in CI/CD environments
+test tests::test_adaptive_compute_geometric_product ... ignored, GPU hardware required, may fail in CI/CD environments
+test adaptive::tests::test_verification_with_config ... ok
+test shaders::tests::test_shader_retrieval ... ok
+test multi_gpu::tests::test_workload_coordinator ... ok
+test shaders::tests::test_shader_library_creation ... ok
+test tests::test_adaptive_compute_cpu_fallback_small_batch ... ok
+test tests::test_cayley_entry_struct ... ok
+test tests::test_cayley_entry_zero ... ok
+test tests::test_adaptive_compute_geometric_product_cpu ... ok
+test tests::test_geometric_product_shader_not_empty ... ok
+test tests::test_gpu_device_info_cpu ... ok
+test tests::test_adaptive_compute_geometric_product_basis_vectors ... ok
+test tests::test_adaptive_compute_cpu_fallback_multiple_elements ... ok
+test tests::test_gpu_device_info_initialized_always_true ... ok
+test tests::test_gpu_device_info_methods ... ok
+test tests::test_gpu_error_debug ... ok
+test tests::test_gpu_error_display ... ok
+test tests::test_gpu_error_from_string ... ok
+test tests::test_gpu_error_variants ... ok
+test tests::test_gpu_fisher_matrix_eigenvalues ... ok
+test tests::test_gpu_fisher_matrix_empty ... ok
+test tests::test_gpu_fisher_matrix_single_element ... ok
+test tests::test_should_use_gpu ... ok
+test tests::test_gpu_info_geometry_creation ... ok
+test tests::test_should_use_gpu_large_batch ... ok
+test tests::test_should_use_gpu_near_threshold ... ok
+test tests::test_should_use_gpu_single_element ... ok
+test network::tests::test_adaptive_network_creation ... ok
+test tests::test_should_use_gpu_threshold ... ok
+test tests::test_should_use_gpu_zero_batch ... ok
+test tests::test_tensor_compute_shader_not_empty ... ok
+test unified::tests::test_gpu_context_creation ... ignored, GPU hardware required, may fail in CI/CD environments
+test timeline::tests::test_performance_monitor ... ok
+test unified::tests::test_gpu_dispatcher ... ignored, GPU hardware required, may fail in CI/CD environments
+test timeline::tests::test_timeline_event_creation ... ok
+test unified::tests::test_gpu_operation_params ... ok
+test verification::relativistic_tests::test_causality_verification ... ok
+test verification::relativistic_tests::test_four_velocity_normalization_verification ... ok
+test verification::relativistic_tests::test_minkowski_signature_verification ... ok
+test verification::tests::test_performance_stats ... ok
+test verification::tests::test_boundary_verifier_creation ... ok
+test verification::tests::test_statistical_verifier_sampling ... ok
+test verification::tests::test_verification_config_default ... ok
+test verification::tests::test_verified_multivector_creation ... ok
+test timeline::tests::test_timeline_analyzer ... ok
+
+test result: ok. 54 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/automata_benchmark_crossover.rs (target/w04/debug/deps/automata_benchmark_crossover-41bdfdd07b21892c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/automata_public_api.rs (target/w04/debug/deps/automata_public_api-ae7380f4248240c9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/calculus_public_api.rs (target/w04/debug/deps/calculus_public_api-0e1a6afb233623bb)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/core_ga_benchmark_crossover.rs (target/w04/debug/deps/core_ga_benchmark_crossover-120ceb7e9cf97f13)
+
+running 1 test
+test benchmark_core_ga_batch_geometric_product_cpu_vs_gpu ... ignored, Manual GB10/RTX benchmark harness for core GA batch crossover work
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/core_info_geometry_public_api.rs (target/w04/debug/deps/core_info_geometry_public_api-c775ec75364f5338)
+
+running 3 tests
+test test_info_geometry_public_cpu_baselines_when_available ... ok
+test test_adaptive_core_ga_cpu_baseline_and_validation ... ok
+test test_direct_core_ga_gpu_path_when_available ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/dual_public_api.rs (target/w04/debug/deps/dual_public_api-3ddd35e5cbe69513)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/enumerative_public_api.rs (target/w04/debug/deps/enumerative_public_api-d6577dff9d25cb74)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/functional_benchmark_crossover.rs (target/w04/debug/deps/functional_benchmark_crossover-af1d3677233a2d1c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/functional_public_api.rs (target/w04/debug/deps/functional_public_api-26a74d90857dfda6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fusion_public_api.rs (target/w04/debug/deps/fusion_public_api-d629414bd53192af)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gf2_benchmark_crossover.rs (target/w04/debug/deps/gf2_benchmark_crossover-f471bd8f6f785064)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gf2_cpu_parity.rs (target/w04/debug/deps/gf2_cpu_parity-7ae7dc2a98599e98)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gf2_public_api.rs (target/w04/debug/deps/gf2_public_api-f8f0e135aa28fcc3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/holographic_benchmark_crossover.rs (target/w04/debug/deps/holographic_benchmark_crossover-0f6f6636a19176aa)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/holographic_public_api.rs (target/w04/debug/deps/holographic_public_api-f6e987b5815c00ec)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/infra_public_api.rs (target/w04/debug/deps/infra_public_api-0eefe01ab8b0fb4c)
+
+running 6 tests
+test test_platform_capabilities_public_api ... ok
+test test_recommendation_priority_import_path ... ok
+test test_unified_dispatcher_public_cpu_fallback_and_params ... ok
+test test_performance_policy_and_optimizer_public_api ... ok
+test test_adaptive_verifier_public_cpu_forced_baseline ... ok
+test test_timeline_public_api_baselines ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (target/w04/debug/deps/integration_tests-63c9f1acfba86455)
+
+running 10 tests
+test test_benchmark_runner_quick_validation ... ignored
+test test_device_failure_handling ... ok
+test test_multi_gpu_context_graceful_fallback ... ok
+test test_workload_distribution_algorithms ... ok
+test test_load_balancer_integration ... ok
+test test_memory_management_under_load ... ok
+test test_benchmark_configuration_validation ... ok
+test test_performance_monitor_integration ... ok
+test test_concurrent_workload_handling ... ok
+test test_scaling_efficiency_calculation ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/measure_benchmark_crossover.rs (target/w04/debug/deps/measure_benchmark_crossover-b438f0af0074904c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/measure_public_api.rs (target/w04/debug/deps/measure_public_api-bdc765c20a7309bb)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/network_benchmark_crossover.rs (target/w04/debug/deps/network_benchmark_crossover-cec7ec9bbb3feca6)
+
+running 1 test
+test benchmark_network_cpu_vs_gpu ... ignored, Manual benchmark harness for network distance/centrality/clustering crossover work
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/network_public_api.rs (target/w04/debug/deps/network_public_api-c7807471817c4e6f)
+
+running 3 tests
+test test_network_direct_gpu_rejects_unsupported_embeddings ... ok
+test test_network_direct_gpu_paths_when_available ... ok
+test test_network_public_api_adaptive_cpu_baseline ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/performance_tests.rs (target/w04/debug/deps/performance_tests-a6328546810e1cab)
+
+running 10 tests
+test test_adaptive_dispatch_policy ... ok
+test integration_tests::test_end_to_end_optimization ... ok
+test test_buffer_pool_performance ... ok
+test integration_tests::test_memory_efficiency ... ok
+test test_cross_crate_gpu_sharing ... ok
+test test_memory_usage_tracking ... ok
+test test_shared_gpu_context_creation ... ok
+test test_shader_caching_performance ... ok
+test test_workgroup_optimization ... ok
+test test_gpu_profiling_infrastructure ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/probabilistic_benchmark_crossover.rs (target/w04/debug/deps/probabilistic_benchmark_crossover-b0ea1b9f67d7b710)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/probabilistic_public_api.rs (target/w04/debug/deps/probabilistic_public_api-693f15b4fac567b4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/relativistic_public_api.rs (target/w04/debug/deps/relativistic_public_api-6e4274585ad91dd6)
+
+running 2 tests
+test test_relativistic_public_conversions_and_errors ... ok
+test test_relativistic_public_gpu_paths_when_available ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/topology_benchmark_crossover.rs (target/w04/debug/deps/topology_benchmark_crossover-57c1b440ce358cc1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/topology_public_api.rs (target/w04/debug/deps/topology_public_api-e6de96e64c5a025f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tropical_attention_benchmark_crossover.rs (target/w04/debug/deps/tropical_attention_benchmark_crossover-8b274de63f3ecd15)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tropical_public_api.rs (target/w04/debug/deps/tropical_public_api-e671ab5537899889)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/verification_integration.rs (target/w04/debug/deps/verification_integration-3b2c23ebb752e145)
+
+running 9 tests
+test test_platform_capabilities ... ok
+test test_verification_strategies ... ok
+test test_boundary_verification_small_batch ... ok
+test test_adaptive_verification_strategies ... ok
+test test_verification_error_handling ... ok
+test test_verification_performance_overhead ... ok
+test test_statistical_verification ... ok
+test test_verification_level_adaptation ... ok
+test test_verified_multivector_operations ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/webgpu_info_geom.rs (target/w04/debug/deps/webgpu_info_geom-29808d36a824b314)
+
+running 7 tests
+test test_gpu_amari_chentsov_tensor_batch ... ok
+test test_gpu_amari_chentsov_tensor_single ... ok
+test test_gpu_fisher_information_matrix ... ok
+test test_gpu_bregman_divergence_scaling ... ok
+test test_wasm_typed_array_integration ... ok
+test test_memory_efficiency_large_batches ... ok
+test test_edge_computing_device_fallback ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/w04/debug/deps/amari_relativistic-03a62cb91d9f4ee3)
+
+running 53 tests
+test geodesic::tests::test_flat_spacetime_geodesic ... ignored
+test constants::tests::test_derived_constants ... ok
+test constants::tests::test_physical_relationships ... ok
+test constants::tests::test_precision_constants ... ok
+test geodesic::tests::test_integration_config ... ok
+test geodesic::tests::test_step_size_validation ... ok
+test geodesic::tests::test_integration_stats ... ok
+test integration_tests::test_four_velocity_consistency ... ok
+test integration_tests::test_light_deflection_calculation ... ok
+test integration_tests::test_schwarzschild_coordinate_singularity ... ok
+test particle::tests::test_cyclotron_frequency ... ok
+test particle::tests::test_de_broglie_wavelength ... ok
+test particle::tests::test_energy_momentum_relations ... ok
+test particle::tests::test_gyroradius ... ok
+test particle::tests::test_invalid_mass ... ok
+test particle::tests::test_light_deflection ... ok
+test geodesic::tests::test_four_velocity_normalization ... ok
+test particle::tests::test_non_relativistic_limit ... ok
+test particle::tests::test_particle_creation ... ok
+test particle::tests::test_particle_with_energy ... ok
+test particle::tests::test_shapiro_delay ... ok
+test particle::tests::test_superluminal_velocity_error ... ok
+test integration_tests::test_energy_conservation_in_flat_spacetime ... ok
+test particle::tests::test_time_tracking ... ok
+test particle::tests::test_ultra_relativistic_limit ... ok
+test precision_geodesic::tests::test_component_access ... ok
+test precision_geodesic::tests::test_precision_config_defaults ... ok
+test precision_geodesic::tests::test_precision_spacetime_vector ... ok
+test schwarzschild::tests::test_bound_orbit_classification ... ok
+test schwarzschild::tests::test_circular_orbital_velocity ... ok
+test schwarzschild::tests::test_effective_potential ... ok
+test schwarzschild::tests::test_escape_velocity ... ok
+test schwarzschild::tests::test_has_singularity ... ok
+test schwarzschild::tests::test_metric_tensor_far_field ... ok
+test schwarzschild::tests::test_orbital_period ... ok
+test schwarzschild::tests::test_photon_sphere ... ok
+test schwarzschild::tests::test_schwarzschild_radius ... ok
+test spacetime::tests::test_coordinates_roundtrip ... ok
+test spacetime::tests::test_four_velocity_at_rest ... ok
+test spacetime::tests::test_four_velocity_normalization ... ok
+test spacetime::tests::test_faster_than_light_panic - should panic ... ok
+test spacetime::tests::test_minkowski_metric ... ok
+test spacetime::tests::test_rapidity ... ok
+test spacetime::tests::test_spacetime_vector_creation ... ok
+test verified::tests::test_causality_classification ... ok
+test verified::tests::test_minkowski_metric_properties ... ok
+test verified::tests::test_verified_four_velocity_normalization ... ok
+test verified::tests::test_verified_particle_energy_momentum ... ok
+test verified::tests::test_verified_spacetime_vector ... ok
+test particle::tests::test_propagation_time_update ... ok
+test spacetime::tests::test_lorentz_boost_identity ... ok
+test spacetime::tests::test_boost_composition ... ok
+test integration_tests::test_complete_ion_simulation ... ok
+
+test result: ok. 52 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests amari_automata
+
+running 1 test
+test amari-automata/src/lib.rs - (line 24) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+   Doc-tests amari_enumerative
+
+running 3 tests
+test amari-enumerative/src/lib.rs - (line 21) ... ok
+test amari-enumerative/src/lib.rs - (line 38) ... ok
+test amari-enumerative/src/wdvv.rs - wdvv::WDVVEngine (line 27) ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+   Doc-tests amari_gpu
+
+running 4 tests
+test amari-gpu/src/lib.rs - (line 105) ... ignored
+test amari-gpu/src/lib.rs - (line 24) ... ignored
+test amari-gpu/src/lib.rs - (line 42) ... ignored
+test amari-gpu/src/lib.rs - (line 60) ... ignored
+
+test result: ok. 0 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests amari_relativistic
+
+running 18 tests
+test amari-relativistic/src/lib.rs - (line 171) ... ignored
+test amari-relativistic/src/spacetime.rs - spacetime::GenericSpacetimeVector<T>::minkowski_dot (line 173) ... ok
+test amari-relativistic/src/schwarzschild.rs - schwarzschild::SchwarzschildMetric::new (line 85) ... ok
+test amari-relativistic/src/lib.rs - (line 87) ... ok
+test amari-relativistic/src/geodesic.rs - geodesic::GenericGeodesicIntegrator (line 404) ... ok
+test amari-relativistic/src/lib.rs - (line 69) ... ok
+test amari-relativistic/src/lib.rs - (line 114) ... ok
+test amari-relativistic/src/schwarzschild.rs - schwarzschild::SchwarzschildMetric::sun (line 113) ... ok
+test amari-relativistic/src/spacetime.rs - spacetime::GenericFourVelocity<T>::from_velocity (line 349) ... ok
+test amari-relativistic/src/particle.rs - particle::RelativisticParticle::new (line 207) ... ok
+test amari-relativistic/src/lib.rs - doctests::_doctest_main_example (line 551) ... ok
+test amari-relativistic/src/spacetime.rs - spacetime::GenericSpacetimeVector<T>::new (line 84) ... ok
+test amari-relativistic/src/particle.rs - particle::RelativisticParticle (line 161) ... ok
+test amari-relativistic/src/spacetime.rs - spacetime::LorentzRotor::boost (line 500) ... ok
+test amari-relativistic/src/lib.rs - (line 146) ... ok
+test amari-relativistic/src/particle.rs - particle::RelativisticParticle::with_energy (line 287) ... ok
+test amari-relativistic/src/particle.rs - particle::propagate_relativistic (line 582) ... ok
+test amari-relativistic/src/lib.rs - (line 34) ... ok
+
+test result: ok. 17 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.38s
+

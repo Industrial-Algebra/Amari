@@ -116,9 +116,18 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricVariety<P, Q, R> {
     pub fn intersect_with(&self, other: &Self) -> EnumerativeResult<Vec<Self>> {
         // In geometric algebra, intersection can be computed using the meet operation
         // Meet operation: a ∨ b = ⋆(⋆a ∧ ⋆b) where ⋆ is the Hodge dual
-        let self_dual = self.multivector.hodge_dual();
-        let other_dual = other.multivector.hodge_dual();
-        let intersection_mv = self_dual.outer_product(&other_dual).hodge_dual();
+        let self_dual = self
+            .multivector
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
+        let other_dual = other
+            .multivector
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
+        let intersection_mv = self_dual
+            .outer_product(&other_dual)
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
         let intersection_dim = (P + Q + R).saturating_sub(self.dimension + other.dimension);
 
         let intersection_degree = self.degree * other.degree;
@@ -132,7 +141,9 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricVariety<P, Q, R> {
 
     /// Apply a rotor transformation to the variety
     pub fn transform(&self, rotor: &Rotor<P, Q, R>) -> Self {
-        let transformed_mv = rotor.apply(&self.multivector);
+        let transformed_mv = rotor
+            .apply(&self.multivector)
+            .expect("enumerative rotor is within the certified positive-norm domain");
         Self {
             multivector: transformed_mv,
             dimension: self.dimension,
@@ -154,9 +165,18 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricVariety<P, Q, R> {
 
         // In GA, point lies on variety if their meet equals the point
         // Meet operation: a ∨ b = ⋆(⋆a ∧ ⋆b)
-        let self_dual = self.multivector.hodge_dual();
-        let point_dual = point.multivector.hodge_dual();
-        let meet = self_dual.outer_product(&point_dual).hodge_dual();
+        let self_dual = self
+            .multivector
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
+        let point_dual = point
+            .multivector
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
+        let meet = self_dual
+            .outer_product(&point_dual)
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
         (meet - point.multivector.clone()).coefficient_norm() < 1e-10
     }
 }
@@ -241,9 +261,18 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricSchubertClass<P, Q
 
         // Meet (regressive product): a ∨ b = ⋆(⋆a ∧ ⋆b)
         // This is the correct GA intersection for subspaces
-        let self_dual = self.multivector.hodge_dual();
-        let other_dual = other.multivector.hodge_dual();
-        let intersection_mv = self_dual.outer_product(&other_dual).hodge_dual();
+        let self_dual = self
+            .multivector
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
+        let other_dual = other
+            .multivector
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
+        let intersection_mv = self_dual
+            .outer_product(&other_dual)
+            .hodge_dual()
+            .expect("Euclidean GA pseudoscalar is non-degenerate");
 
         // The resulting partition comes from the Schubert product via LR coefficients
         let mut calc = crate::SchubertCalculus::new(self.grassmannian_dim);

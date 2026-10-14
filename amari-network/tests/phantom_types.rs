@@ -40,8 +40,8 @@ mod verified_tests {
         assert_eq!(network.num_edges(), 0);
 
         // Add some nodes
-        let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-        let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).mv);
+        let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+        let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).into_multivector());
 
         assert_eq!(network.num_nodes(), 2);
         assert!(!network.is_empty());
@@ -60,9 +60,9 @@ mod verified_tests {
             VerifiedContractGeometricNetwork::new();
 
         // Add nodes and edges
-        let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-        let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).mv);
-        let node3 = network.add_node(Vector::from_components(0.0, 0.0, 1.0).mv);
+        let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+        let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).into_multivector());
+        let node3 = network.add_node(Vector::from_components(0.0, 0.0, 1.0).into_multivector());
 
         network.add_edge(node1, node2, 1.0).unwrap();
         network.add_edge(node2, node3, 1.0).unwrap();
@@ -78,9 +78,9 @@ mod verified_tests {
         let mut network: VerifiedContractGeometricNetwork<3, 0, 0> =
             VerifiedContractGeometricNetwork::new();
 
-        let node1 = network.add_node(Vector::from_components(0.0, 0.0, 0.0).mv);
-        let node2 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-        let node3 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).mv);
+        let node1 = network.add_node(Vector::from_components(0.0, 0.0, 0.0).into_multivector());
+        let node2 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+        let node3 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).into_multivector());
 
         // Test metric properties
         let d12 = network.geometric_distance_verified(node1, node2);
@@ -108,8 +108,8 @@ mod verified_tests {
         let mut network: VerifiedContractGeometricNetwork<3, 0, 0> =
             VerifiedContractGeometricNetwork::new();
 
-        let node1 = network.add_node(Vector::from_components(0.0, 0.0, 0.0).mv);
-        let node2 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
+        let node1 = network.add_node(Vector::from_components(0.0, 0.0, 0.0).into_multivector());
+        let node2 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
 
         network.add_edge(node1, node2, 1.0).unwrap();
 
@@ -129,8 +129,10 @@ mod verified_tests {
     fn test_conversion_between_types() {
         // Create a regular GeometricNetwork
         let mut regular_network = GeometricNetwork::<3, 0, 0>::new();
-        let node1 = regular_network.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-        let node2 = regular_network.add_node(Vector::from_components(0.0, 1.0, 0.0).mv);
+        let node1 =
+            regular_network.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+        let node2 =
+            regular_network.add_node(Vector::from_components(0.0, 1.0, 0.0).into_multivector());
         regular_network.add_edge(node1, node2, 1.0).unwrap();
 
         // Convert to verified network
@@ -154,8 +156,8 @@ mod regular_tests {
     fn test_regular_network_without_verification() {
         let mut network = GeometricNetwork::<3, 0, 0>::new();
 
-        let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-        let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).mv);
+        let node1 = network.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+        let node2 = network.add_node(Vector::from_components(0.0, 1.0, 0.0).into_multivector());
 
         network
             .add_edge(node1, node2, 1.0)
@@ -172,8 +174,8 @@ fn test_type_safety_compilation() {
     let mut network1 = GeometricNetwork::<3, 0, 0>::new();
     let mut network2 = GeometricNetwork::<3, 0, 0>::new();
 
-    let node1 = network1.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-    let _node2 = network2.add_node(Vector::from_components(0.0, 1.0, 0.0).mv);
+    let node1 = network1.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+    let _node2 = network2.add_node(Vector::from_components(0.0, 1.0, 0.0).into_multivector());
 
     // This is fine - within the same network
     network1.add_edge(node1, node1, 1.0).unwrap();
@@ -188,8 +190,8 @@ fn test_different_signatures() {
     let mut euclidean = GeometricNetwork::<3, 0, 0>::new();
     let mut minkowski = GeometricNetwork::<1, 3, 0>::new();
 
-    let e_node = euclidean.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
-    let m_node = minkowski.add_node(Vector::from_components(1.0, 0.0, 0.0).mv);
+    let e_node = euclidean.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
+    let m_node = minkowski.add_node(Vector::from_components(1.0, 0.0, 0.0).into_multivector());
 
     // Each network maintains its own signature
     assert_eq!(euclidean.num_nodes(), 1);

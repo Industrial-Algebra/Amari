@@ -1,0 +1,2 @@
+# CORE-W04 R2 remediation green evidence
+# command: timeout 200 cargo +stable fmt --all -- --check

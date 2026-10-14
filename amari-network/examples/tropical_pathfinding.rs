@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut city_indices = Vec::new();
     for (i, (name, x, y)) in cities.iter().enumerate() {
-        let node = network.add_node(Vector::from_components(*x, *y, 0.0).mv);
+        let node = network.add_node(Vector::from_components(*x, *y, 0.0).into_multivector());
         city_indices.push((node, *name));
         println!("  🏙️  {}: City {} at ({:.1}, {:.1})", i, name, x, y);
     }

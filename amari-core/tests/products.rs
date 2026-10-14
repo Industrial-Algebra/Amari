@@ -8,8 +8,8 @@ mod product_tests {
     #[test]
     fn test_inner_product_grade_lowering() {
         // Inner product of grade-k with grade-j gives grade |k-j|
-        let vector = Vector::<3, 0, 0>::e1();
-        let bivector = Bivector::<3, 0, 0>::e12();
+        let vector = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
 
         let result = vector.inner_product_with_bivector(&bivector);
         // Should give a vector (grade 1)
@@ -19,8 +19,8 @@ mod product_tests {
     #[test]
     fn test_outer_product_grade_raising() {
         // Outer product of grade-k with grade-j gives grade k+j
-        let v1 = Vector::<3, 0, 0>::e1();
-        let v2 = Vector::<3, 0, 0>::e2();
+        let v1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let v2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
 
         let result = v1.outer_product(&v2);
         // Should give a bivector (grade 2)
@@ -47,9 +47,9 @@ mod product_tests {
     #[test]
     fn test_inner_product_metric_signature() {
         // Test that inner product respects the metric
-        let v_pos = Vector::<1, 0, 0>::e1();
-        let v_neg = Vector::<0, 1, 0>::e1();
-        let v_null = Vector::<0, 0, 1>::e1();
+        let v_pos = Vector::<1, 0, 0>::e1().expect("Cl(1,0,0) has basis vector e1");
+        let v_neg = Vector::<0, 1, 0>::e1().expect("Cl(0,1,0) has basis vector e1");
+        let v_null = Vector::<0, 0, 1>::e1().expect("Cl(0,0,1) has basis vector e1");
 
         assert_relative_eq!(v_pos.inner_product(&v_pos).scalar_part(), 1.0);
         assert_relative_eq!(v_neg.inner_product(&v_neg).scalar_part(), -1.0);
@@ -80,8 +80,8 @@ mod product_tests {
     #[test]
     fn test_vector_inner_product_orthogonality() {
         // Orthogonal vectors should have zero inner product
-        let e1 = Vector::<3, 0, 0>::e1();
-        let e2 = Vector::<3, 0, 0>::e2();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
 
         let result = e1.inner_product(&e2);
         assert_relative_eq!(result.coefficient_norm(), 0.0, epsilon = 1e-10);
@@ -105,8 +105,8 @@ mod product_tests {
     #[test]
     fn test_bivector_vector_inner_product() {
         // Bivector · Vector should give a vector (when not orthogonal)
-        let e12 = Bivector::<3, 0, 0>::e12();
-        let e1 = Vector::<3, 0, 0>::e1();
+        let e12 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
 
         let result = e12.inner_product_with_vector(&e1);
         assert_eq!(result.grade(), 1); // Should be grade 1 (vector)
@@ -147,8 +147,8 @@ mod product_tests {
         let scalar = Multivector::<3, 0, 0>::scalar(2.5);
         let vector = Vector::<3, 0, 0>::from_components(1.0, 2.0, 3.0);
 
-        let result = scalar.outer_product(&vector.mv);
-        let expected = &vector.mv * 2.5;
+        let result = scalar.outer_product(vector.as_multivector());
+        let expected = vector.as_multivector() * 2.5;
 
         // Should equal scalar multiplication of the vector
         assert_relative_eq!(result.as_slice(), expected.as_slice(), epsilon = 1e-10);
@@ -159,8 +159,8 @@ mod product_tests {
     #[test]
     fn test_vector_bivector_products() {
         // Test all combinations of vector-bivector products
-        let v = Vector::<3, 0, 0>::e1();
-        let b = Bivector::<3, 0, 0>::e23();
+        let v = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let b = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
 
         let geometric = v.geometric_product_with_bivector(&b);
         let inner = v.inner_product_with_bivector(&b);
@@ -178,8 +178,8 @@ mod product_tests {
     #[test]
     fn test_bivector_bivector_products() {
         // Test bivector-bivector products
-        let b1 = Bivector::<3, 0, 0>::e12();
-        let b2 = Bivector::<3, 0, 0>::e23();
+        let b1 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
+        let b2 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
 
         let _geometric = b1.geometric_product_with_bivector(&b2);
         let _inner = b1.inner_product(&b2);
@@ -196,9 +196,9 @@ mod product_tests {
     #[test]
     fn test_hodge_duality_preview() {
         // Test relationships that preview Hodge duality
-        let e1 = Vector::<3, 0, 0>::e1();
-        let e2 = Vector::<3, 0, 0>::e2();
-        let e3 = Vector::<3, 0, 0>::e3();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
+        let e3 = Vector::<3, 0, 0>::e3().expect("Cl(3,0,0) has basis vector e3");
 
         // e1 ∧ e2 should be dual to e3 in some sense
         let e12 = e1.outer_product(&e2);

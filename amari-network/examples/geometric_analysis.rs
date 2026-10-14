@@ -28,7 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for (name, x, y, z) in euclidean_points {
         euclidean_network.add_node_with_metadata(
-            Vector::from_components(x, y, z).mv,
+            Vector::from_components(x, y, z).into_multivector(),
             NodeMetadata::with_label(name)
                 .with_property("x", x)
                 .with_property("y", y)
@@ -81,7 +81,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for (name, t, x, _z) in spacetime_events {
         minkowski_network.add_node_with_metadata(
-            Vector::from_components(t, x, 0.0).mv,
+            Vector::from_components(t, x, 0.0).into_multivector(),
             NodeMetadata::with_label(name)
                 .with_property("time", t)
                 .with_property("space", x),
@@ -125,7 +125,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for (name, x, y, n) in projective_points {
         projective_network.add_node_with_metadata(
-            Vector::from_components(x, y, n).mv,
+            Vector::from_components(x, y, n).into_multivector(),
             NodeMetadata::with_label(name)
                 .with_property("euclidean_x", x)
                 .with_property("euclidean_y", y)
@@ -221,7 +221,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for (i, (x, y, z)) in community_points.iter().enumerate() {
         euclidean_network.add_node_with_metadata(
-            Vector::from_components(*x, *y, *z).mv,
+            Vector::from_components(*x, *y, *z).into_multivector(),
             NodeMetadata::with_label(format!("Cluster-{}", i + 1))
                 .with_property("cluster_id", if i < 3 { 1.0 } else { 2.0 }),
         );

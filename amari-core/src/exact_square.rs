@@ -69,6 +69,8 @@
 //! `|c|` bit-for-bit, without extraction.
 
 use crate::Multivector;
+use alloc::vec;
+use alloc::vec::Vec;
 use core::cmp::Ordering;
 
 /// Number of `u64` words in the fixed signed accumulator (`66 * 64 = 4224` bits).
@@ -490,6 +492,34 @@ impl ExactSquare {
             None => self.coeffs[0].sqrt_angle(),
         };
         (sign, angle)
+    }
+
+    /// Symbolic `(sign, gamma, q)` of the exact scalar part, with
+    /// `sqrt(|x^2|) = gamma * 2^q` and `gamma in [1, 2*sqrt(2))`.
+    ///
+    /// Unlike [`Self::scalar_sign_and_angle`], no power-of-two range is
+    /// materialized: a scalar square whose root overflows `f64` still yields a
+    /// finite `gamma` and an out-of-range `q`. Single-blade inputs keep the
+    /// bit-for-bit `|c|` with `q = 0` (CORE-W04 R2-F10).
+    pub(crate) fn scalar_sign_and_symbolic_angle(&self) -> (i32, f64, i64) {
+        if self.scalar_is_zero {
+            return (0, 0.0, 0);
+        }
+        let sign = self.coeffs[0].sign();
+        if let Some(angle) = self.single_blade_angle {
+            return (sign, angle, 0);
+        }
+        match self.coeffs[0].extracted() {
+            Some((top, b, sticky)) => {
+                let (mantissa, carry) = round_mantissa_to_f64(top, sticky);
+                let e = b as i64 + i64::from(carry) + BASE_EXP as i64;
+                let r = e.rem_euclid(2);
+                let q = (e - r) / 2;
+                let radicand = if r == 1 { mantissa * 2.0 } else { mantissa };
+                (sign, radicand.sqrt(), q)
+            }
+            None => (0, 0.0, 0),
+        }
     }
 
     /// Whether a source coefficient was non-finite. The exact route requires
@@ -1082,6 +1112,135 @@ fn slice_mul_u64(words: &[u64], multiplier: u64) -> Vec<u64> {
     out
 }
 
+/// Compare two little-endian nonnegative magnitudes.
+fn slice_cmp(a: &[u64], b: &[u64]) -> Ordering {
+    let ab = slice_bit_len(a);
+    let bb = slice_bit_len(b);
+    if ab != bb {
+        return ab.cmp(&bb);
+    }
+    let words = ab.div_ceil(64);
+    for i in (0..words).rev() {
+        let av = a.get(i).copied().unwrap_or(0);
+        let bv = b.get(i).copied().unwrap_or(0);
+        if av != bv {
+            return av.cmp(&bv);
+        }
+    }
+    Ordering::Equal
+}
+
+/// `a -= b` over little-endian magnitudes; callers guarantee `a >= b`.
+fn slice_sub_assign(a: &mut [u64], b: &[u64]) {
+    let mut borrow = 0u64;
+    for (i, word) in a.iter_mut().enumerate() {
+        let bv = b.get(i).copied().unwrap_or(0);
+        let (d1, b1) = word.overflowing_sub(bv);
+        let (d2, b2) = d1.overflowing_sub(borrow);
+        *word = d2;
+        borrow = u64::from(b1) + u64::from(b2);
+    }
+    debug_assert_eq!(borrow, 0, "slice subtraction underflow");
+}
+
+/// Exact binary long division of two nonnegative little-endian magnitudes,
+/// returning `(quotient, remainder)`.
+///
+/// The whole quotient is computed (no truncation) so the caller can take the
+/// single correctly rounded step at the destination precision. The widths
+/// involved are bounded by the 66-word exact-dyadic magnitude, so the
+/// bit-serial loop is cheap.
+fn slice_div_rem(num: &[u64], den: &[u64]) -> (Vec<u64>, Vec<u64>) {
+    let db = slice_bit_len(den);
+    assert!(db > 0, "division by zero exact-dyadic magnitude");
+    let nb = slice_bit_len(num);
+    let mut quotient = vec![0u64; nb.div_ceil(64).max(1)];
+    // The running remainder stays strictly below `den`, so `db` bits (plus one
+    // for the pre-subtraction doubling) suffice.
+    let mut rem = vec![0u64; db.div_ceil(64) + 1];
+    for bit in (0..nb).rev() {
+        // `rem = rem * 2 + bit(num, bit)`.
+        let mut carry = u64::from(slice_bit(num, bit));
+        for word in rem.iter_mut() {
+            let next = *word >> 63;
+            *word = (*word << 1) | carry;
+            carry = next;
+        }
+        if slice_cmp(&rem, den) != Ordering::Less {
+            slice_sub_assign(&mut rem, den);
+            quotient[bit / 64] |= 1u64 << (bit % 64);
+        }
+    }
+    (quotient, rem)
+}
+
+/// Correctly rounded `f64` of the exact rational
+/// `(-1)^negative * (num * 2^num_exp) / (den * 2^den_exp)`.
+///
+/// This is the single-rounding rational division the CORE-W04 exact-`N`
+/// inverse and the `delta = delta_num / N` logarithm branch require: the
+/// numerator and denominator are never independently rounded before dividing.
+/// The numerator is pre-scaled so the integer quotient carries at least 55
+/// bits, the division remainder is folded into the sticky bit, and exactly one
+/// round-to-nearest-even is taken at the destination precision.
+fn exact_division_to_f64(
+    num: &[u64],
+    num_exp: i32,
+    den: &[u64],
+    den_exp: i32,
+    negative: bool,
+) -> f64 {
+    let nb = slice_bit_len(num);
+    let db = slice_bit_len(den);
+    if nb == 0 {
+        return 0.0;
+    }
+    if db == 0 {
+        return if negative {
+            f64::NEG_INFINITY
+        } else {
+            f64::INFINITY
+        };
+    }
+    // 55 quotient bits: 53 significand bits plus guard and sticky headroom.
+    const TARGET: i64 = 55;
+    let shift = db as i64 + TARGET - nb as i64;
+    let (scaled_num, scaled_den, adj_shift) = if shift >= 0 {
+        (slice_shl(num, shift as usize), den.to_vec(), shift)
+    } else {
+        (num.to_vec(), slice_shl(den, (-shift) as usize), shift)
+    };
+    let (quotient, remainder) = slice_div_rem(&scaled_num, &scaled_den);
+    let sticky = remainder.iter().any(|&word| word != 0);
+    let e_offset = num_exp as i64 - den_exp as i64 - adj_shift;
+    round_words_scaled_to_f64(negative, &quotient, e_offset, sticky)
+}
+
+/// Correctly rounded `f64` of `numerator / denominator`, with `denominator` an
+/// exact positive dyadic (CORE-W04 R1-F2: the stored-`N` inverse and sandwich
+/// divide each coefficient by the exact `N`, never by a pre-rounded `f64`).
+///
+/// A non-finite numerator is returned unchanged (the exact route cannot
+/// represent it); callers that reach this point have already passed the
+/// finite-input reverse-norm gate for `inverse`, and preserve the existing
+/// overflow semantics for `apply`.
+pub(crate) fn divide_f64_by_positive(numerator: f64, denominator: &ExactPositive) -> f64 {
+    if numerator == 0.0 {
+        return 0.0;
+    }
+    let Some((mantissa, exponent, negative)) = decompose(numerator) else {
+        return numerator;
+    };
+    let single = [mantissa];
+    exact_division_to_f64(
+        &single,
+        exponent,
+        &denominator.magnitude,
+        denominator.exponent,
+        negative,
+    )
+}
+
 /// Correctly rounded `f64` of `(-1)^negative * words * 2^e_offset`, where
 /// `words` is an exact nonnegative integer and `external_sticky` reports any
 /// nonzero bits below the least-significant bit of `words` (used for the
@@ -1318,6 +1477,13 @@ impl ExactPower {
         x: &Multivector<P, Q, R>,
     ) -> Option<Self> {
         let basis_count = Multivector::<P, Q, R>::BASIS_COUNT;
+        // The exact certification machinery supports at most `MAX_BASIS`
+        // coefficients (`n <= 6`); a larger signature is reported as
+        // uncertified rather than pretending a partial table is a certificate
+        // (CORE-W04 R1-F1).
+        if basis_count > MAX_BASIS {
+            return None;
+        }
         let mut coeffs = [ExactDyadic::zero(); MAX_BASIS];
         for (index, slot) in coeffs.iter_mut().enumerate().take(basis_count) {
             let coefficient = x.get(index);
@@ -1334,8 +1500,11 @@ impl ExactPower {
 
     /// Full square-zero certificate for a power.
     fn is_zero(&self) -> bool {
-        self.coeffs[..self.basis_count]
+        // `take` rather than a slice so an over-wide `basis_count` can never
+        // index past the fixed table (CORE-W04 R1-F1).
+        self.coeffs
             .iter()
+            .take(self.basis_count)
             .all(ExactDyadic::is_zero)
     }
 }
@@ -1380,7 +1549,609 @@ fn mul_exact<const P: usize, const Q: usize, const R: usize>(
     })
 }
 
-/// Result of the exact any-index nilpotent route (precedence 3c).
+/// Exact per-coefficient quotient of the versor sandwich `R·A·R† / N`.
+///
+/// The numerator coefficients are accumulated **directly** from the exact
+/// dyadic triple products `R_i·A_j·R†_l` in the wide (133-word) accumulator,
+/// never by collapsing an intermediate product to the 66-word dyadic form.
+/// That intermediate collapse is what overflowed the window for a rotor whose
+/// coefficients span a wide magnitude range (e.g. a stored `e13` coefficient
+/// at `2^-1070`) composited with a mixed-magnitude operand: the exact value
+/// `R·A·R†` legitimately spans more than the 66-word single-product window
+/// (up to `~6300` bits for three full-range `f64` factors), so the direct
+/// triple accumulation is the widening that certifies **every finite stored
+/// input** (CORE-W04 F17). The certified exact positive `N` is then divided
+/// through the sticky-bit divider with a single destination-precision
+/// rounding. No `f64` numerator is ever materialized, so a nonzero image
+/// whose coefficients underflow is still rounded correctly (CORE-W04 R3-F14).
+///
+/// `None` only when an input coefficient is non-finite, or the signature
+/// exceeds the fixed table; the caller reports those as `Err(Degenerate)`
+/// rather than substituting floating arithmetic.
+pub(crate) fn exact_sandwich_divide<const P: usize, const Q: usize, const R: usize>(
+    rotor: &Multivector<P, Q, R>,
+    v: &Multivector<P, Q, R>,
+    n: &ExactPositive,
+) -> Option<Multivector<P, Q, R>> {
+    if Multivector::<P, Q, R>::BASIS_COUNT > MAX_BASIS {
+        return None;
+    }
+    let left = ExactPower::from_multivector(rotor)?;
+    let middle = ExactPower::from_multivector(v)?;
+    let reversed = rotor.reverse();
+    let right = ExactPower::from_multivector(&reversed)?;
+    let dim = P + Q + R;
+    // The triple product is accumulated in the wide (`2*WORDS+1`) form: the
+    // 66-word `ExactDyadic` is only the *single-product* capacity, while the
+    // sandwich numerator of three full-range `f64` factors spans up to about
+    // `3*2045 + 159 + 9 < 2^(WIDE_WORDS*64)` bits, so no `add_term` alignment
+    // can fail for finite inputs.
+    let mut accumulators = [WideAccumulator::zero(); MAX_BASIS];
+    for (i, a_coeff) in left.coeffs.iter().enumerate().take(left.basis_count) {
+        if a_coeff.is_zero() {
+            continue;
+        }
+        for (j, b_coeff) in middle.coeffs.iter().enumerate().take(middle.basis_count) {
+            if b_coeff.is_zero() {
+                continue;
+            }
+            let (sign1, m) = product_sign_and_index(i, j, P, Q, dim);
+            if sign1 == 0 {
+                continue;
+            }
+            for (l, c_coeff) in right.coeffs.iter().enumerate().take(right.basis_count) {
+                if c_coeff.is_zero() {
+                    continue;
+                }
+                let (sign2, k) = product_sign_and_index(m, l, P, Q, dim);
+                if sign2 == 0 {
+                    continue;
+                }
+                let exponent = a_coeff
+                    .exponent
+                    .checked_add(b_coeff.exponent)?
+                    .checked_add(c_coeff.exponent)?;
+                let magnitude =
+                    triple_magnitude(&a_coeff.magnitude, &b_coeff.magnitude, &c_coeff.magnitude);
+                let negative = a_coeff.negative
+                    ^ b_coeff.negative
+                    ^ c_coeff.negative
+                    ^ (sign1 < 0)
+                    ^ (sign2 < 0);
+                if !accumulators[k].add_term(&magnitude, exponent, negative) {
+                    return None;
+                }
+            }
+        }
+    }
+    let mut out = Multivector::<P, Q, R>::zero();
+    for (index, accumulator) in accumulators.iter().enumerate().take(left.basis_count) {
+        if !accumulator.initialized || accumulator.magnitude.iter().all(|&word| word == 0) {
+            continue;
+        }
+        // `N` is strictly positive, so no sign or zero gate is needed here:
+        // the single sticky-bit division rounds at the destination.
+        let (magnitude, negative, exponent) = accumulator.parts();
+        out.set(
+            index,
+            exact_division_to_f64(&magnitude, exponent, &n.magnitude, n.exponent, negative),
+        );
+    }
+    Some(out)
+}
+
+/// Sign `(-1/0/+1)` of the exact coefficient dot `Σ aᵢbᵢ`, or `None` when any
+/// coefficient is non-finite (the caller then retains the floating path).
+///
+/// The products `aᵢbᵢ` are exact `f64`×`f64` dyadics, so the sum is certified
+/// by the same wide signed accumulator used for the exact dyadic products. It
+/// is the exact sign (not a rounded `f64` dot) that selects the `slerp`
+/// representative; a floating dot can overflow to `NaN` and silently select
+/// the wrong hemisphere (CORE-W04 F19).
+///
+/// # Panics
+///
+/// Never: the accumulator alignment bound (`~4300` bits) is far inside the
+/// wide window for the at-most-`MAX_BASIS` coefficient dot.
+pub(crate) fn exact_dot_sign<const P: usize, const Q: usize, const R: usize>(
+    a: &Multivector<P, Q, R>,
+    b: &Multivector<P, Q, R>,
+) -> Option<i32> {
+    let mut accumulator = WideAccumulator::zero();
+    let mut any_nonzero = false;
+    for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
+        let x = a.get(index);
+        let y = b.get(index);
+        let (Some((mx, ex, nx)), Some((my, ey, ny))) = (decompose(x), decompose(y)) else {
+            return None;
+        };
+        if mx == 0 || my == 0 {
+            continue;
+        }
+        let product = (mx as u128) * (my as u128);
+        let mut magnitude = [0u64; WIDE_WORDS];
+        magnitude[0] = product as u64;
+        magnitude[1] = (product >> 64) as u64;
+        if !accumulator.add_term(&magnitude, ex.checked_add(ey)?, nx ^ ny) {
+            return None;
+        }
+        any_nonzero = true;
+    }
+    if !any_nonzero || accumulator.magnitude.iter().all(|&word| word == 0) {
+        return Some(0);
+    }
+    Some(if accumulator.negative { -1 } else { 1 })
+}
+
+/// Exact product of the three single-limb `f64` mantissa magnitudes of one
+/// `R_i·A_j·R†_l` sandwich term, in the wide accumulator form.
+///
+/// [`ExactPower::from_multivector`] builds every coefficient from a single
+/// `f64`, so each magnitude is one limb (`<= 2^53`); the exact triple product
+/// is at most `159` bits and always fits the wide form.
+fn triple_magnitude(
+    first: &[u64; WORDS],
+    second: &[u64; WORDS],
+    third: &[u64; WORDS],
+) -> [u64; WIDE_WORDS] {
+    debug_assert!(first[1..].iter().all(|&word| word == 0));
+    debug_assert!(second[1..].iter().all(|&word| word == 0));
+    debug_assert!(third[1..].iter().all(|&word| word == 0));
+    let pair = (first[0] as u128) * (second[0] as u128);
+    let mut pair_words = [0u64; WORDS];
+    pair_words[0] = pair as u64;
+    pair_words[1] = (pair >> 64) as u64;
+    mul_magnitude_by_u64(&pair_words, third[0])
+}
+
+/// Outcome of the exact reverse-norm certificate `N = R·R†` (CORE-W04 §1.4b).
+///
+/// `Positive` carries the certified scalar `N` rounded once to `f64`
+/// (round-to-nearest-even). The other variants are the distinct rejection
+/// classes the rotor gate must report as [`crate::RotorError::Degenerate`].
+pub(crate) enum ReverseNorm {
+    /// `R·R†` is exactly a positive scalar.
+    Positive,
+    /// `R·R†` has a nonzero non-scalar part.
+    NonScalar,
+    /// `R·R†` is exactly a scalar but is `<= 0` (including the zero rotor).
+    NonPositive,
+    /// The exact product left the representable dyadic window, or an input
+    /// coefficient was non-finite.
+    Uncertified,
+}
+
+/// Exact certification of the scalar reverse norm `N = R·R†`.
+///
+/// Uses the W03 exact dyadic product machinery ([`ExactPower`] + [`mul_exact`])
+/// rather than a floating-point scalar product, so near-cancelling cases such as
+/// `w = β = 1e154` and the finite `R^32 = [2³¹, 2³¹]` chain (`N = 0` exactly)
+/// are classified without overflow or rounding. The scalar is rounded once
+/// through [`round_words_scaled_to_f64`].
+pub(crate) fn exact_reverse_norm<const P: usize, const Q: usize, const R: usize>(
+    r: &Multivector<P, Q, R>,
+) -> ReverseNorm {
+    if Multivector::<P, Q, R>::BASIS_COUNT > MAX_BASIS {
+        return ReverseNorm::Uncertified;
+    }
+    let Some(left) = ExactPower::from_multivector(r) else {
+        return ReverseNorm::Uncertified;
+    };
+    let reversed = r.reverse();
+    let Some(right) = ExactPower::from_multivector(&reversed) else {
+        return ReverseNorm::Uncertified;
+    };
+    let Some(product) = mul_exact::<P, Q, R>(&left, &right) else {
+        return ReverseNorm::Uncertified;
+    };
+    for coefficient in product.coeffs.iter().take(product.basis_count).skip(1) {
+        if !coefficient.is_zero() {
+            return ReverseNorm::NonScalar;
+        }
+    }
+    let scalar = product.coeffs[0];
+    if scalar.is_zero() || scalar.negative {
+        return ReverseNorm::NonPositive;
+    }
+    ReverseNorm::Positive
+}
+
+// ======================================================================
+// CORE-W04 §2c range-safe logarithm scalars.
+//
+// The domain-aware rotor logarithm evaluates every scalar stage on exact
+// dyadic rationals and only rounds once at the destination precision, via the
+// symbolic mantissa/exponent decomposition `value = significand * 2^e` with
+// `significand in [1, 2)`. These helpers expose the W03 dyadic machinery as an
+// exact positive dyadic (`ExactPositive`), an exact signed dyadic
+// (`ExactSigned`), exact add/mul/sub, an exact magnitude comparison, and a
+// range-safe `ln`. Direct `f64` evaluation of `w^2 + beta^2` (which overflows
+// for `w = beta = 1e154`) is thereby impossible.
+// ======================================================================
+
+/// An exact positive dyadic scalar `magnitude * 2^exponent`.
+#[derive(Clone, Copy)]
+pub(crate) struct ExactPositive {
+    magnitude: [u64; WORDS],
+    exponent: i32,
+}
+
+/// An exact signed dyadic scalar `(-1)^negative * magnitude * 2^exponent`.
+#[derive(Clone, Copy)]
+pub(crate) struct ExactSigned {
+    magnitude: [u64; WORDS],
+    exponent: i32,
+    negative: bool,
+}
+
+/// Widen a 66-word magnitude into the wide accumulator form.
+fn to_wide(words: &[u64; WORDS]) -> [u64; WIDE_WORDS] {
+    let mut out = [0u64; WIDE_WORDS];
+    out[..WORDS].copy_from_slice(words);
+    out
+}
+
+/// Correctly rounded significand in `[1, 2)` and the binary exponent `e` of an
+/// exact dyadic `magnitude * 2^exponent`, so the value is
+/// `significand * 2^e`.
+fn normalized_dyadic(magnitude: &[u64; WORDS], exponent: i32) -> (f64, i64) {
+    let bits = slice_bit_len(magnitude);
+    let (top, sticky) = top_128(magnitude, bits - 1);
+    let (significand, carry) = round_mantissa_to_f64(top, sticky);
+    (
+        significand,
+        exponent as i64 + bits as i64 - 1 + i64::from(carry),
+    )
+}
+
+impl ExactPositive {
+    /// Exact value of a finite, strictly positive `f64`.
+    pub(crate) fn from_f64(c: f64) -> Option<Self> {
+        if !c.is_finite() || c <= 0.0 {
+            return None;
+        }
+        let (mantissa, exponent, _) = decompose(c)?;
+        if mantissa == 0 {
+            return None;
+        }
+        let mut magnitude = [0u64; WORDS];
+        magnitude[0] = mantissa;
+        Some(Self {
+            magnitude,
+            exponent,
+        })
+    }
+
+    /// Exact product, or `None` when the magnitude leaves the 66-word window.
+    pub(crate) fn mul(&self, other: &Self) -> Option<Self> {
+        let product = mul_magnitude(&self.magnitude, &other.magnitude);
+        if product[WORDS..].iter().any(|&word| word != 0) {
+            return None;
+        }
+        let mut magnitude = [0u64; WORDS];
+        magnitude.copy_from_slice(&product[..WORDS]);
+        let exponent = self.exponent.checked_add(other.exponent)?;
+        Some(Self {
+            magnitude,
+            exponent,
+        })
+    }
+
+    /// Exact sum of two positive dyadics.
+    pub(crate) fn add(&self, other: &Self) -> Option<Self> {
+        let mut accumulator = WideAccumulator::zero();
+        if !accumulator.add_term(&to_wide(&self.magnitude), self.exponent, false) {
+            return None;
+        }
+        if !accumulator.add_term(&to_wide(&other.magnitude), other.exponent, false) {
+            return None;
+        }
+        let dyadic = accumulator.to_exact()?;
+        if dyadic.negative || dyadic.is_zero() {
+            return None;
+        }
+        Some(Self {
+            magnitude: dyadic.magnitude,
+            exponent: dyadic.exponent,
+        })
+    }
+
+    /// Exact `self - other` as a signed dyadic.
+    pub(crate) fn sub(&self, other: &Self) -> Option<ExactSigned> {
+        let mut accumulator = WideAccumulator::zero();
+        if !accumulator.add_term(&to_wide(&self.magnitude), self.exponent, false) {
+            return None;
+        }
+        if !accumulator.add_term(&to_wide(&other.magnitude), other.exponent, true) {
+            return None;
+        }
+        let dyadic = accumulator.to_exact()?;
+        Some(ExactSigned {
+            magnitude: dyadic.magnitude,
+            exponent: dyadic.exponent,
+            negative: dyadic.negative,
+        })
+    }
+
+    /// Range-safe natural logarithm `ln(m) + e·ln 2` with `m in [1, 2)`.
+    pub(crate) fn ln(&self) -> f64 {
+        let (significand, exponent) = normalized_dyadic(&self.magnitude, self.exponent);
+        significand.ln() + (exponent as f64) * core::f64::consts::LN_2
+    }
+
+    /// Range-safe half logarithm `½·ln(self)`.
+    pub(crate) fn ln_half(&self) -> f64 {
+        0.5 * self.ln()
+    }
+
+    /// Range-safe `ln(self / denominator)`, combining the two normalized
+    /// significands with a single shared power-of-two exponent term.
+    ///
+    /// Compared with `self.ln() - denominator.ln()`, this avoids one rounding
+    /// of the dominant `e·ln 2` term and is what makes the R8 round-trip
+    /// witness's rapidity correctly rounded.
+    pub(crate) fn ln_ratio(&self, denominator: &Self) -> f64 {
+        let (num_significand, num_exponent) = normalized_dyadic(&self.magnitude, self.exponent);
+        let (den_significand, den_exponent) =
+            normalized_dyadic(&denominator.magnitude, denominator.exponent);
+        num_significand.ln() - den_significand.ln()
+            + ((num_exponent - den_exponent) as f64) * core::f64::consts::LN_2
+    }
+}
+
+impl ExactSigned {
+    /// Quotient `self / denominator` as one correctly rounded `f64`.
+    ///
+    /// CORE-W04 R1-F3: the quotient is formed from the exact dyadic
+    /// magnitudes by a single long division with the remainder folded into the
+    /// sticky bit, so the result is correctly rounded once (the previous
+    /// "normalize each significand, then divide" double-rounded and was 2-3 ulp
+    /// off for the `delta = delta_num / N` rapidity branch).
+    pub(crate) fn ratio_to_f64(&self, denominator: &ExactPositive) -> f64 {
+        exact_division_to_f64(
+            &self.magnitude,
+            self.exponent,
+            &denominator.magnitude,
+            denominator.exponent,
+            self.negative,
+        )
+    }
+
+    /// Exact magnitude comparison `|self|` vs `other`.
+    pub(crate) fn cmp_abs(&self, other: &ExactPositive) -> Option<Ordering> {
+        let mut accumulator = WideAccumulator::zero();
+        if !accumulator.add_term(&to_wide(&self.magnitude), self.exponent, self.negative) {
+            return None;
+        }
+        if !accumulator.add_term(&to_wide(&other.magnitude), other.exponent, true) {
+            return None;
+        }
+        let (magnitude, negative, _) = accumulator.parts();
+        Some(signed_order(&magnitude, negative))
+    }
+}
+
+/// Order of a wide signed magnitude (`negative` is the sign flag).
+fn signed_order(magnitude: &[u64; WIDE_WORDS], negative: bool) -> Ordering {
+    if magnitude.iter().all(|&word| word == 0) {
+        Ordering::Equal
+    } else if negative {
+        Ordering::Less
+    } else {
+        Ordering::Greater
+    }
+}
+
+/// Exact scalar reverse norm `N = R·R†` when it is exactly a positive scalar,
+/// returned as an exact dyadic for the CORE-W04 hyperbolic logarithm.
+///
+/// `None` for a non-scalar product, a `<= 0` scalar, or an uncertified
+/// product; the logarithm maps every `None` to an error.
+pub(crate) fn exact_reverse_norm_positive<const P: usize, const Q: usize, const R: usize>(
+    r: &Multivector<P, Q, R>,
+) -> Option<ExactPositive> {
+    if Multivector::<P, Q, R>::BASIS_COUNT > MAX_BASIS {
+        return None;
+    }
+    let left = ExactPower::from_multivector(r)?;
+    let reversed = r.reverse();
+    let right = ExactPower::from_multivector(&reversed)?;
+    let product = mul_exact::<P, Q, R>(&left, &right)?;
+    for coefficient in product.coeffs.iter().take(product.basis_count).skip(1) {
+        if !coefficient.is_zero() {
+            return None;
+        }
+    }
+    let scalar = product.coeffs[0];
+    if scalar.is_zero() || scalar.negative {
+        return None;
+    }
+    Some(ExactPositive {
+        magnitude: scalar.magnitude,
+        exponent: scalar.exponent,
+    })
+}
+
+/// Sign of the exact scalar part of `N = R·R†`, ignoring any non-scalar
+/// rounding residue.
+///
+/// Superseded by the full positive-scalar certificate
+/// [`exact_reverse_norm`] at the CORE-W04 binary-power boundary (R1-F5): a
+/// multi-plane product whose exact `R·R†` has non-scalar content must be
+/// rejected, not accepted on the sign of the scalar part alone. Retained as
+/// the documented previous gate.
+#[allow(dead_code)]
+pub(crate) enum ReverseNormScalarSign {
+    /// The exact scalar part is strictly positive.
+    Positive,
+    /// The exact scalar part is exactly zero or negative.
+    NonPositive,
+    /// The exact product left the representable dyadic window, or an input
+    /// coefficient was non-finite.
+    Uncertified,
+}
+
+/// Sign classification of the exact scalar part of `N = R·R†` (superseded by
+/// [`exact_reverse_norm`]; see [`ReverseNormScalarSign`]).
+#[allow(dead_code)]
+pub(crate) fn exact_reverse_norm_scalar_sign<const P: usize, const Q: usize, const R: usize>(
+    r: &Multivector<P, Q, R>,
+) -> ReverseNormScalarSign {
+    if Multivector::<P, Q, R>::BASIS_COUNT > MAX_BASIS {
+        return ReverseNormScalarSign::Uncertified;
+    }
+    let Some(left) = ExactPower::from_multivector(r) else {
+        return ReverseNormScalarSign::Uncertified;
+    };
+    let reversed = r.reverse();
+    let Some(right) = ExactPower::from_multivector(&reversed) else {
+        return ReverseNormScalarSign::Uncertified;
+    };
+    let Some(product) = mul_exact::<P, Q, R>(&left, &right) else {
+        return ReverseNormScalarSign::Uncertified;
+    };
+    let scalar = product.coeffs[0];
+    if scalar.negative || scalar.is_zero() {
+        ReverseNormScalarSign::NonPositive
+    } else {
+        ReverseNormScalarSign::Positive
+    }
+}
+
+/// Exact sign/value classification of the scalar `N = R·R†`.
+///
+/// Unlike [`ReverseNorm`], this distinguishes the exact scalar zero from an
+/// exact negative scalar (CORE-W04 §3a candidate trichotomy: `CC† = 0` ->
+/// [`crate::RotorError::NullCandidate`], `CC† < 0` ->
+/// [`crate::RotorError::SheetChange`]).
+pub(crate) enum ReverseNormState {
+    /// `R·R†` is exactly a positive scalar.
+    Positive,
+    /// `R·R†` is exactly the scalar zero.
+    Zero,
+    /// `R·R†` is exactly a negative scalar.
+    Negative,
+    /// `R·R†` has a nonzero non-scalar part.
+    NonScalar,
+    /// The exact product left the representable dyadic window, or an input
+    /// coefficient was non-finite.
+    Uncertified,
+}
+
+/// Exact sign/value classification of `N = R·R†` (see [`ReverseNormState`]).
+pub(crate) fn exact_reverse_norm_state<const P: usize, const Q: usize, const R: usize>(
+    r: &Multivector<P, Q, R>,
+) -> ReverseNormState {
+    if Multivector::<P, Q, R>::BASIS_COUNT > MAX_BASIS {
+        return ReverseNormState::Uncertified;
+    }
+    let Some(left) = ExactPower::from_multivector(r) else {
+        return ReverseNormState::Uncertified;
+    };
+    let reversed = r.reverse();
+    let Some(right) = ExactPower::from_multivector(&reversed) else {
+        return ReverseNormState::Uncertified;
+    };
+    let Some(product) = mul_exact::<P, Q, R>(&left, &right) else {
+        return ReverseNormState::Uncertified;
+    };
+    for coefficient in product.coeffs.iter().take(product.basis_count).skip(1) {
+        if !coefficient.is_zero() {
+            return ReverseNormState::NonScalar;
+        }
+    }
+    let scalar = product.coeffs[0];
+    if scalar.is_zero() {
+        return ReverseNormState::Zero;
+    }
+    if scalar.negative {
+        return ReverseNormState::Negative;
+    }
+    let value = round_words_scaled_to_f64(false, &scalar.magnitude, scalar.exponent as i64, false);
+    if value.is_finite() && value > 0.0 {
+        ReverseNormState::Positive
+    } else {
+        ReverseNormState::Uncertified
+    }
+}
+
+/// Exact scalar `N = R·R†` when it is exactly `+1` or `-1`; `None` otherwise
+/// (non-scalar, non-finite, uncertified, or any other value).
+///
+/// CORE-W04 §3b: a reflection normal must be a certified pure vector with
+/// `n·n = ±1` exactly; a rounded `sqrt` check cannot certify exactness, so the
+/// exact dyadic magnitude is compared against the exact unit.
+pub(crate) fn exact_reverse_norm_unit<const P: usize, const Q: usize, const R: usize>(
+    r: &Multivector<P, Q, R>,
+) -> Option<f64> {
+    if Multivector::<P, Q, R>::BASIS_COUNT > MAX_BASIS {
+        return None;
+    }
+    let left = ExactPower::from_multivector(r)?;
+    let reversed = r.reverse();
+    let right = ExactPower::from_multivector(&reversed)?;
+    let product = mul_exact::<P, Q, R>(&left, &right)?;
+    for coefficient in product.coeffs.iter().take(product.basis_count).skip(1) {
+        if !coefficient.is_zero() {
+            return None;
+        }
+    }
+    let scalar = product.coeffs[0];
+    if scalar.is_zero() {
+        return None;
+    }
+    // Exactly `±1` iff the exact magnitude is a single power of two `2^b` and
+    // `b + exponent == 0`.
+    let mut set_bit: Option<usize> = None;
+    for (word_index, &word) in scalar.magnitude.iter().enumerate() {
+        if word == 0 {
+            continue;
+        }
+        if word.count_ones() != 1 || set_bit.is_some() {
+            return None;
+        }
+        set_bit = Some(word.trailing_zeros() as usize + word_index * 64);
+    }
+    let bit = set_bit?;
+    if scalar.exponent as i64 + bit as i64 != 0 {
+        return None;
+    }
+    Some(if scalar.negative { -1.0 } else { 1.0 })
+}
+
+/// Exact equality of the two dyadic products `x1·y1` and `x2·y2`.
+///
+/// Used by the CORE-W04 §3a direction pre-test: every finite `f64` is
+/// `(-1)^n · m · 2^e` with a 53-bit integer `m`, so each product is the exact
+/// 106-bit dyadic `(-1)^(n1^n2) · (m1·m2) · 2^(e1+e2)`. Canonicalizing each
+/// product by stripping its power-of-two factor makes the comparison exact and
+/// overflow-free. `false` for any non-finite input.
+pub(crate) fn exact_product_eq(x1: f64, y1: f64, x2: f64, y2: f64) -> bool {
+    let (Some((m1, e1, n1)), Some((m2, e2, n2))) = (decompose(x1), decompose(y1)) else {
+        return false;
+    };
+    let (Some((m3, e3, n3)), Some((m4, e4, n4))) = (decompose(x2), decompose(y2)) else {
+        return false;
+    };
+    let p_zero = m1 == 0 || m2 == 0;
+    let q_zero = m3 == 0 || m4 == 0;
+    if p_zero || q_zero {
+        return p_zero && q_zero;
+    }
+    if (n1 ^ n2) != (n3 ^ n4) {
+        return false;
+    }
+    let p = (m1 as u128) * (m2 as u128);
+    let q = (m3 as u128) * (m4 as u128);
+    let p_tz = p.trailing_zeros();
+    let q_tz = q.trailing_zeros();
+    let p_odd = p >> p_tz;
+    let q_odd = q >> q_tz;
+    let p_exp = e1 as i64 + e2 as i64 + p_tz as i64;
+    let q_exp = e3 as i64 + e4 as i64 + q_tz as i64;
+    p_odd == q_odd && p_exp == q_exp
+}
+
 pub(crate) enum NilpotentOutcome<const P: usize, const Q: usize, const R: usize> {
     /// `y` is nilpotent of index `d <= 16`; this is the exact polynomial
     /// `exp(y) = sum_{j<d} y^j / j!` rounded to `f64`.
@@ -2247,6 +3018,53 @@ mod tests {
         let vector = apply_symbolic_scale_over_2a(a, a, m, e);
         assert_eq!(scalar.to_bits(), vector.to_bits());
         assert_eq!(scalar.to_bits(), 96263207714727);
+    }
+
+    // ------------------------------------------------------------------
+    // CORE-W04 R1 remediation unit batteries.
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn exact_ratio_division_is_correctly_rounded() {
+        // R1-F3 fixture: w = 1, beta = 0.07081442692123036 in Cl(1,1,0).
+        // The old "normalize each significand, then divide" route rounded the
+        // exact rational delta = delta_num / N to 0.15242257084684033; the
+        // single-division route gives the correctly rounded 0.15242257084684036.
+        let beta = ExactPositive::from_f64(0.07081442692123036).expect("positive finite");
+        let one = ExactPositive::from_f64(1.0).expect("one");
+        let beta_sq = beta.mul(&beta).expect("beta^2");
+        let norm_signed = one.sub(&beta_sq).expect("1 - beta^2");
+        assert!(!norm_signed.negative);
+        let norm = ExactPositive {
+            magnitude: norm_signed.magnitude,
+            exponent: norm_signed.exponent,
+        };
+        let wb = one.add(&beta).expect("1 + beta");
+        let wb_sq = wb.mul(&wb).expect("(1 + beta)^2");
+        let delta_num = wb_sq.sub(&norm).expect("(1 + beta)^2 - N");
+        assert!(!delta_num.negative);
+
+        assert_eq!(delta_num.ratio_to_f64(&norm), 0.15242257084684036);
+    }
+
+    #[test]
+    fn exact_reverse_norm_rejects_signatures_above_max_basis() {
+        // R1-F1: the fixed 64-slot table supports n <= 6; larger signatures are
+        // reported uncertified rather than constructing an over-wide power that
+        // panics in the certificate slice.
+        assert_eq!(Mv::<7, 0, 0>::BASIS_COUNT, 128);
+        let identity = Mv::<7, 0, 0>::scalar(1.0);
+        assert!(matches!(
+            exact_reverse_norm(&identity),
+            ReverseNorm::Uncertified
+        ));
+        assert!(exact_reverse_norm_positive(&identity).is_none());
+        assert!(exact_reverse_norm_unit(&identity).is_none());
+        assert!(matches!(
+            exact_reverse_norm_state(&identity),
+            ReverseNormState::Uncertified
+        ));
+        assert!(exact_x2(&identity).is_unsupported());
     }
 
     /// The test-local copy of the private `symbolic_exp_scale` decomposition

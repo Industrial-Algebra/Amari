@@ -1,0 +1,3 @@
+# CORE-W04 R3 remediation green evidence
+# command: timeout 590 cargo +stable check --workspace --all-targets --locked
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s

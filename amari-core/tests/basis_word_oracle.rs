@@ -112,7 +112,13 @@ fn check_signature<const P: usize, const Q: usize, const R: usize>() {
             } else {
                 -1.0
             };
-            coefficients(&x.hodge_dual().hodge_dual(), &(x * double_star_sign));
+            coefficients(
+                &x.hodge_dual()
+                    .expect("non-degenerate signature (R == 0)")
+                    .hodge_dual()
+                    .expect("non-degenerate signature (R == 0)"),
+                &(x * double_star_sign),
+            );
         }
     }
 }

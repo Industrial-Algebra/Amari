@@ -39,11 +39,11 @@ fn approx_eq_accepts_relative_scales() {
 
 #[test]
 fn vector_normalize_requires_strictly_positive_square() {
-    let timelike = Vector::<1, 1, 0>::from_multivector(&Mink::basis_vector(1));
+    let timelike = Vector::<1, 1, 0>::try_from(Mink::basis_vector(1)).expect("pure vector");
     assert_eq!(timelike.normalize(), None);
-    let null = Vector::<1, 0, 1>::from_multivector(&Deg::basis_vector(1));
+    let null = Vector::<1, 0, 1>::try_from(Deg::basis_vector(1)).expect("pure vector");
     assert_eq!(null.normalize(), None);
-    let tiny = Vector::<3, 0, 0>::from_multivector(&(E3::basis_vector(0) * 1e-15));
+    let tiny = Vector::<3, 0, 0>::try_from(E3::basis_vector(0) * 1e-15).expect("pure vector");
     let unit = tiny
         .normalize()
         .expect("tiny positive-square vector normalizes exactly");
@@ -126,7 +126,7 @@ fn vector_normalize_handles_subnormal_metric_square() {
     // positive q, 1/sqrt(q) is finite — both paths carry the ~5e-6
     // rounding error of the subnormal q itself. The scaling method is
     // pinned by the Div<f64> regression below and the macro regression.
-    let v = Vector::<3, 0, 0>::from_multivector(&(E3::basis_vector(0) * 1e-160));
+    let v = Vector::<3, 0, 0>::try_from(E3::basis_vector(0) * 1e-160).expect("pure vector");
     let unit = v
         .normalize()
         .expect("subnormal positive-square vector normalizes");

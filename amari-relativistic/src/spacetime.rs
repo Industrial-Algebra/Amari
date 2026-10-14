@@ -533,12 +533,13 @@ impl LorentzRotor {
         // For now, use a spatial bivector as approximation
         let mut boost_bivector = SpacetimeAlgebra::zero();
 
-        // Create bivector components for boost
-        // This is a simplified implementation - proper spacetime bivectors
-        // would involve mixed timelike-spacelike terms
-        boost_bivector.set_bivector_component(0, rapidity * direction.x); // Approximation
-        boost_bivector.set_bivector_component(1, rapidity * direction.y);
-        boost_bivector.set_bivector_component(2, rapidity * direction.z);
+        // Create bivector components for the boost. Under the
+        // dimension-general component map of the 4D spacetime algebra,
+        // components 0, 1, 2 are the mixed timelike-spacelike blades
+        // e12, e13, e14 (γ₀γ₁, γ₀γ₂, γ₀γ₃).
+        let _ = boost_bivector.set_bivector_component(0, rapidity * direction.x);
+        let _ = boost_bivector.set_bivector_component(1, rapidity * direction.y);
+        let _ = boost_bivector.set_bivector_component(2, rapidity * direction.z);
 
         // Create rotor: R = exp(-½φB)
         let half_angle_bivector = boost_bivector.clone() * (-0.5);
@@ -567,7 +568,10 @@ impl LorentzRotor {
     /// This preserves the Minkowski inner product (Lorentz invariance).
     pub fn transform(&self, vector: &SpacetimeVector) -> SpacetimeVector {
         let mv = vector.to_multivector();
-        let transformed = self.rotor.apply(&mv);
+        let transformed = self
+            .rotor
+            .apply(&mv)
+            .expect("boost rotor is within the certified positive-norm domain");
         SpacetimeVector {
             t: transformed.vector_component(0),
             x: transformed.vector_component(1),
@@ -586,10 +590,13 @@ impl LorentzRotor {
         }
     }
 
-    /// Get the inverse transformation: R⁻¹ = R†
+    /// Get the inverse transformation: R⁻¹ = R†/N (contract §1.4b).
     pub fn inverse(&self) -> Self {
         Self {
-            rotor: self.rotor.inverse(),
+            rotor: self
+                .rotor
+                .inverse()
+                .expect("boost rotor is within the certified positive-norm domain"),
         }
     }
 

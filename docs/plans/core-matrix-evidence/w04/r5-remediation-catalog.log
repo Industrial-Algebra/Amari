@@ -1,0 +1,7 @@
+# CORE-W04 R5 remediation catalog regeneration
+# recipe: RUSTC_WRAPPER='' RUSTC_WORKSPACE_WRAPPER='' RUSTC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc RUSTDOC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc RUSTFLAGS='-C target-cpu=x86-64 -C target-feature=-avx2' CARGO_TARGET_DIR=target/w04 --locked
+# command: timeout 590 cargo +stable run -p amari-discovery --example generate_catalog --locked -- .
+   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-discovery)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.99s
+     Running `target/w04/debug/examples/generate_catalog .`
+Generated split catalog: 28 crates, 11134 items, 107 dependency edges, hash 09c3ab7c289136cbcc2d151513ebf26a4b82f9c18190a888321e6dafb84fe6d0 (28 crate files + manifest.json + index.rs)

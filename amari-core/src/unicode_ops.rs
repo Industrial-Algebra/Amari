@@ -26,8 +26,8 @@
 //! use amari_core::{Multivector, Vector, Bivector};
 //! use amari_core::{geo, wedge, dot, rev, dual, norm};
 //!
-//! let a = Vector::<3, 0, 0>::e1();
-//! let b = Vector::<3, 0, 0>::e2();
+//! let a = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+//! let b = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
 //!
 //! // Traditional syntax
 //! let geometric = a.geometric_product(&b);
@@ -214,8 +214,8 @@ mod tests {
 
     #[test]
     fn test_unicode_geometric_product() {
-        let a = Vector::<3, 0, 0>::e1();
-        let b = Vector::<3, 0, 0>::e2();
+        let a = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let b = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
 
         // Unicode-inspired syntax
         let unicode_result = geo!(a, b);
@@ -231,8 +231,8 @@ mod tests {
 
     #[test]
     fn test_unicode_wedge_product() {
-        let e1 = Vector::<3, 0, 0>::e1();
-        let e2 = Vector::<3, 0, 0>::e2();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
 
         let wedge_result = wedge!(e1, e2);
         let traditional = e1.outer_product(&e2);
@@ -314,8 +314,8 @@ mod tests {
 
     #[test]
     fn test_extended_unicode_operations() {
-        let a = Vector::<3, 0, 0>::e1();
-        let b = Vector::<3, 0, 0>::e2();
+        let a = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let b = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
 
         // Test commutator [a,b]
         let commutator_result = commutator!(a, b);

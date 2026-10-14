@@ -20,27 +20,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Add nodes at specific geometric positions with metadata
     let origin = network.add_node_with_metadata(
-        Vector::from_components(0.0, 0.0, 0.0).mv,
+        Vector::from_components(0.0, 0.0, 0.0).into_multivector(),
         NodeMetadata::with_label("Origin").with_property("importance", 1.0),
     );
 
     let node_x = network.add_node_with_metadata(
-        Vector::from_components(3.0, 0.0, 0.0).mv,
+        Vector::from_components(3.0, 0.0, 0.0).into_multivector(),
         NodeMetadata::with_label("X-Axis").with_property("importance", 0.8),
     );
 
     let node_y = network.add_node_with_metadata(
-        Vector::from_components(0.0, 4.0, 0.0).mv,
+        Vector::from_components(0.0, 4.0, 0.0).into_multivector(),
         NodeMetadata::with_label("Y-Axis").with_property("importance", 0.8),
     );
 
     let node_z = network.add_node_with_metadata(
-        Vector::from_components(0.0, 0.0, 5.0).mv,
+        Vector::from_components(0.0, 0.0, 5.0).into_multivector(),
         NodeMetadata::with_label("Z-Axis").with_property("importance", 0.7),
     );
 
     let center = network.add_node_with_metadata(
-        Vector::from_components(1.0, 1.0, 1.0).mv,
+        Vector::from_components(1.0, 1.0, 1.0).into_multivector(),
         NodeMetadata::with_label("Center").with_property("importance", 0.9),
     );
 
