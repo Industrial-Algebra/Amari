@@ -248,7 +248,11 @@ constructors incl. same-class Vector/Basis, §5 records amendment) ->
 bf38e58. R6 0P1/2P2/1P3 — ALL documentation accuracy (F20 compile-enabling
 disclosure, §5 Basis return type, this record's superseded label); applied
 directly by the orchestrator per the W03 cap-residue precedent, disclosed in
-the PR. Final state: 241 lib / 489 total stable AND nightly identical
-(final-*.log below), catalog 09c3ab7c… (11,134 items; amari-core.json +
-manifest.json only). Convergence: mathematical defects zero from R5 on;
-remaining residue documentation-only, cleared at commit (R6 fixes).
+the PR. R7 (12-round protocol): 0 P1 / 2 P2 / 0 P3 — both defects in the R6
+residue text (wrong diagnostic-code mapping; stale final-*.log citation —
+those logs predate the loop at 466/dfd35092); fixed and re-verified, current
+evidence archived as r7-final-{stable,nightly}-core-test.log +
+r7-final-catalog.log (241 lib / 489 total both compilers, catalog 09c3ab7c).
+The pre-loop S5 matrix remains in final-*.log (historical, SUPERSEDED).
+Convergence: mathematical defects zero from R5 on; formal 0-P1/0-P2
+convergence pending the R8 confirmation round.
