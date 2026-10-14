@@ -222,3 +222,33 @@ fn allocated_counts_successful_allocations_not_cursor_advances() {
     assert_eq!(first.to_string(), "?0.1");
     assert_eq!(namespace.allocated(), 1);
 }
+
+/// PR #302 round 6 P1: the allocation counter must not overflow on
+/// a hostile boundary state — saturating u64 accounting, no debug
+/// panic, no wraparound.
+#[cfg(feature = "serialize")]
+#[test]
+fn allocation_counter_saturates_without_panicking() {
+    let mut namespace: LogicVarNamespace = serde_json::from_str(
+        r#"{"scope":0,"next":4294967295,"allocated":18446744073709551615,"exhausted":false}"#,
+    )
+    .expect("boundary state deserializes");
+    let terminal = namespace.fresh().expect("terminal variable available");
+    assert_eq!(terminal.to_string(), "?0.4294967295");
+    assert_eq!(namespace.allocated(), u64::MAX, "saturated, not wrapped");
+    assert!(namespace.fresh().is_none(), "namespace now exhausted");
+}
+
+/// PR #302 round 6 P3 (pinned documentation): legacy payloads lack
+/// the accounting fields; counts reset to zero on deserialization
+/// while the cursor is preserved.
+#[cfg(feature = "serialize")]
+#[test]
+fn legacy_payloads_reset_counts_and_preserve_cursor() {
+    let mut namespace: LogicVarNamespace =
+        serde_json::from_str(r#"{"scope":9,"next":7}"#).expect("legacy payload deserializes");
+    assert_eq!(namespace.allocated(), 0);
+    let var = namespace.fresh().expect("cursor preserved");
+    assert_eq!(var.to_string(), "?9.7");
+    assert_eq!(namespace.allocated(), 1);
+}

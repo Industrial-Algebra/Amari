@@ -62,9 +62,13 @@ pub struct LogicVarNamespace {
     #[cfg_attr(feature = "serialize", serde(default))]
     reserved: alloc::collections::BTreeSet<alloc::string::String>,
     /// Successful allocations (cursor advances past reserved names do
-    /// not count — PR #302 round 5).
+    /// not count — PR #302 round 5). u64 with saturating increment:
+    /// hostile boundary states cannot overflow or wrap the counter
+    /// (PR #302 round 6). Legacy payloads lack this field and
+    /// deserialize with the count reset to zero — counts describe the
+    /// current lifetime only.
     #[cfg_attr(feature = "serialize", serde(default))]
-    allocated: u32,
+    allocated: u64,
     /// Set once the cursor can no longer advance (index `u32::MAX`
     /// consumed or reserved); `fresh` then returns `None` instead of
     /// spinning or duplicating the boundary name.
@@ -115,13 +119,15 @@ impl LogicVarNamespace {
                 }
                 continue;
             }
-            self.allocated += 1;
+            self.allocated = self.allocated.saturating_add(1);
             return Some(var);
         }
     }
 
-    /// Number of successful allocations (reserved skips excluded).
-    pub fn allocated(&self) -> u32 {
+    /// Number of successful allocations in this namespace's current
+    /// lifetime (reserved skips excluded). Legacy deserialized
+    /// payloads start at zero regardless of cursor position.
+    pub fn allocated(&self) -> u64 {
         self.allocated
     }
 

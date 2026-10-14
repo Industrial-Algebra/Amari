@@ -11019,14 +11019,14 @@
     {
       "path": "amari_rewrite::relation::LogicVarNamespace::allocated",
       "kind": "method",
-      "signature": "pub fn allocated (& self) -> u32",
+      "signature": "pub fn allocated (& self) -> u64",
       "source_path": "amari-rewrite/src/relation/variable.rs",
       "is_reexport": true,
       "source_module": "amari_rewrite::relation::variable",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn allocated (& self) -> u32",
+          "signature": "pub fn allocated (& self) -> u64",
           "source_path": "amari-rewrite/src/relation/variable.rs",
           "source_module": "amari_rewrite::relation::variable",
           "is_reexport": true,
