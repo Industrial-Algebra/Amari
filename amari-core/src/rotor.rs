@@ -2,9 +2,10 @@
 
 use crate::error::RotorError;
 use crate::exact_square::{
-    divide_f64_by_positive, exact_product_eq, exact_reverse_norm, exact_reverse_norm_positive,
-    exact_reverse_norm_state, exact_reverse_norm_unit, exact_sandwich_divide, exact_x2,
-    scale_by_pow2_rne, ExactPositive, ReverseNorm, ReverseNormState,
+    divide_f64_by_positive, exact_dot_sign, exact_product_eq, exact_reverse_norm,
+    exact_reverse_norm_positive, exact_reverse_norm_state, exact_reverse_norm_unit,
+    exact_sandwich_divide, exact_x2, scale_by_pow2_rne, ExactPositive, ReverseNorm,
+    ReverseNormState,
 };
 use crate::has_foreign_grade;
 use crate::{Bivector, Multivector, Vector};
@@ -132,24 +133,14 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     /// are legitimate images).
     pub fn apply(&self, v: &Multivector<P, Q, R>) -> Result<Multivector<P, Q, R>, RotorError> {
         let n = exact_reverse_norm_positive(&self.multivector).ok_or(RotorError::Degenerate)?;
-        // R3-F14: per-coefficient exact quotients. Only an input whose exact
-        // expansion leaves the certified dyadic window falls back to the
-        // floating sandwich (then still dividing by the exact `N`).
-        let result = match exact_sandwich_divide(&self.multivector, v, &n) {
-            Some(exact) => exact,
-            None => {
-                let r_dagger = self.multivector.reverse();
-                let product = self
-                    .multivector
-                    .geometric_product(v)
-                    .geometric_product(&r_dagger);
-                let mut fallback = Multivector::zero();
-                for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
-                    fallback.set(index, divide_f64_by_positive(product.get(index), &n));
-                }
-                fallback
-            }
-        };
+        // R3-F14: per-coefficient exact quotients. F17: `None` is no longer a
+        // licence to substitute the floating sandwich — it means a non-finite
+        // input coefficient (or an over-wide signature, already rejected by
+        // the `N` certificate above), and the action is `Err(Degenerate)`.
+        // The exact triple accumulator covers every finite stored input, so
+        // the rounded substitution is gone.
+        let result =
+            exact_sandwich_divide(&self.multivector, v, &n).ok_or(RotorError::Degenerate)?;
         // R2-F9: the quotient is a checked producer. Any non-finite coefficient
         // is an unrepresentable output (`Err(Degenerate)`). A general output is
         // *not* required to have positive reverse norm (indefinite signatures
@@ -454,20 +445,35 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         }
 
         // Sign rule: scalar coefficient dot over ALL coefficients (the
-        // quaternion convention, not `Multivector::inner_product`).
-        let dot: f64 = self
-            .as_slice()
-            .iter()
-            .zip(other.as_slice().iter())
-            .map(|(&a, &b)| a * b)
-            .sum();
-        let b_star = if dot < 0.0 {
-            Self {
+        // quaternion convention, not `Multivector::inner_product`). F19: the
+        // sign is certified exactly from the f64×f64 dyadic products, because
+        // a floating dot can overflow to `NaN` and silently select the wrong
+        // representative. The `None` arm (a non-finite input coefficient)
+        // keeps the historical floating comparison; such inputs are rejected
+        // downstream by the certified log/power route.
+        let b_star = match exact_dot_sign(&self.multivector, &other.multivector) {
+            Some(-1) => Self {
                 multivector: -other.multivector.clone(),
-            }
-        } else {
-            Self {
+            },
+            Some(_) => Self {
                 multivector: other.multivector.clone(),
+            },
+            None => {
+                let dot: f64 = self
+                    .as_slice()
+                    .iter()
+                    .zip(other.as_slice().iter())
+                    .map(|(&a, &b)| a * b)
+                    .sum();
+                if dot < 0.0 {
+                    Self {
+                        multivector: -other.multivector.clone(),
+                    }
+                } else {
+                    Self {
+                        multivector: other.multivector.clone(),
+                    }
+                }
             }
         };
 
@@ -840,15 +846,20 @@ impl Rotor<3, 0, 0> {
     ///
     /// Computes the matrix `M` such that `M·v = R·v·R†` for column vectors.
     /// Each column `j` is the image of basis vector `e_j` under the rotation.
-    pub fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        // Compute rotated basis vectors.
+    ///
+    /// The action is the certified-`N` sandwich ([`Self::apply`]); a stored
+    /// element whose `N = R·R†` is not a positive scalar (reachable through an
+    /// unnormalized [`Self::compose`] domain exit) has no certified action, so
+    /// the matrix conversion is fallible and propagates
+    /// [`RotorError::Degenerate`] instead of panicking (CORE-W04 F18).
+    pub fn to_rotation_matrix(&self) -> Result<[[f64; 3]; 3], RotorError> {
+        // Compute rotated basis vectors; any non-certified action propagates.
         let cols: Vec<_> = (0..3)
             .map(|j| {
                 let basis = Multivector::<3, 0, 0>::basis_vector(j);
-                // In-domain 3D rotation: the certified rotor acts.
-                self.apply(&basis).expect("certified rotor acts")
+                self.apply(&basis)
             })
-            .collect();
+            .collect::<Result<Vec<_>, _>>()?;
 
         // Build matrix: M[i][j] = (rotated e_j).component(i)
         let mut matrix = [[0.0; 3]; 3];
@@ -858,7 +869,7 @@ impl Rotor<3, 0, 0> {
             }
         }
 
-        matrix
+        Ok(matrix)
     }
 }
 
@@ -1353,5 +1364,51 @@ mod tests {
         let p7 = rotor.power_integer(7).expect("p7");
         let lhs = p3.multivector.geometric_product(&p4.multivector);
         assert_eq!(lhs.as_slice(), p7.as_slice());
+    }
+
+    // ==================================================================
+    // CORE-W04 R4 remediation: F19 exact `slerp` coefficient-dot sign.
+    // ==================================================================
+
+    #[test]
+    fn slerp_extreme_coefficient_dot_overflow_selects_the_negated_representative() {
+        // F19: A and B are near-antipodal stored elements at ~1e307. The
+        // floating coefficient dot overflows to `NaN` (`-inf + inf`), which the
+        // old `dot < 0.0` test read as non-negative and therefore selected B.
+        // The products are exact f64×f64 dyadics, so the exact sign of the dot
+        // is negative and the selected representative is `B* = -B`.
+        let mut a_mv = Multivector::<1, 1, 0>::zero();
+        a_mv.set(0, 1.1109418617224874e307);
+        a_mv.set(3, -1.6790244052151643e306);
+        let mut b_mv = Multivector::<1, 1, 0>::zero();
+        b_mv.set(0, -1.1109418617224874e307);
+        b_mv.set(3, -1.6790244052151647e306);
+        let a = Rotor { multivector: a_mv };
+        let b = Rotor { multivector: b_mv };
+
+        let floating_dot: f64 = a
+            .as_slice()
+            .iter()
+            .zip(b.as_slice().iter())
+            .map(|(&x, &y)| x * y)
+            .sum();
+        assert!(floating_dot.is_nan(), "floating dot {floating_dot}");
+        assert_eq!(exact_dot_sign(&a.multivector, &b.multivector), Some(-1));
+
+        // `t = 1` returns the selected representative `-B` bit-exact, including
+        // the signed zeros produced by coefficient negation.
+        let endpoint = a.slerp(&b, 1.0).expect("t = 1 endpoint");
+        assert_eq!(endpoint.as_slice().len(), b.as_slice().len());
+        for (got, want) in endpoint.as_slice().iter().zip(b.as_slice().iter()) {
+            assert_eq!(got.to_bits(), (-*want).to_bits(), "-B bit-exact");
+        }
+
+        // The interior route follows the correct branch (the wrong
+        // representative's relative element has a negative scalar and the
+        // certified logarithm rejects it). The pinned value is the correctly
+        // selected-branch result.
+        let mid = a.slerp(&b, 0.5).expect("interior on the selected branch");
+        assert_eq!(mid.as_slice()[0].to_bits(), 9200650594566945469);
+        assert_eq!(mid.as_slice()[3].to_bits(), 8957659658839916544);
     }
 }

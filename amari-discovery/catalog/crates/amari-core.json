@@ -3276,14 +3276,14 @@
     {
       "path": "amari_core::Rotor::to_rotation_matrix",
       "kind": "method",
-      "signature": "pub fn to_rotation_matrix (& self) -> [[f64 ; 3] ; 3]",
+      "signature": "pub fn to_rotation_matrix (& self) -> Result < [[f64 ; 3] ; 3] , RotorError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": true,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn to_rotation_matrix (& self) -> [[f64 ; 3] ; 3]",
+          "signature": "pub fn to_rotation_matrix (& self) -> Result < [[f64 ; 3] ; 3] , RotorError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": true,
@@ -8083,14 +8083,14 @@
     {
       "path": "amari_core::rotor::Rotor::to_rotation_matrix",
       "kind": "method",
-      "signature": "pub fn to_rotation_matrix (& self) -> [[f64 ; 3] ; 3]",
+      "signature": "pub fn to_rotation_matrix (& self) -> Result < [[f64 ; 3] ; 3] , RotorError >",
       "source_path": "amari-core/src/rotor.rs",
       "is_reexport": false,
       "source_module": "amari_core::rotor",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn to_rotation_matrix (& self) -> [[f64 ; 3] ; 3]",
+          "signature": "pub fn to_rotation_matrix (& self) -> Result < [[f64 ; 3] ; 3] , RotorError >",
           "source_path": "amari-core/src/rotor.rs",
           "source_module": "amari_core::rotor",
           "is_reexport": false,
@@ -14461,7 +14461,7 @@
     {
       "path": "amari_core::Rotor::apply",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14469,7 +14469,7 @@
     {
       "path": "amari_core::Rotor::apply_to_vector",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14477,7 +14477,7 @@
     {
       "path": "amari_core::Rotor::as_multivector",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14485,7 +14485,7 @@
     {
       "path": "amari_core::Rotor::as_slice",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14493,7 +14493,7 @@
     {
       "path": "amari_core::Rotor::bivector_part",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14501,7 +14501,7 @@
     {
       "path": "amari_core::Rotor::compose",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14525,7 +14525,7 @@
     {
       "path": "amari_core::Rotor::from_multivector_bivector",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14533,7 +14533,7 @@
     {
       "path": "amari_core::Rotor::from_vectors",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14541,7 +14541,7 @@
     {
       "path": "amari_core::Rotor::from_vectors_mv",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 16,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14549,7 +14549,7 @@
     {
       "path": "amari_core::Rotor::geometric_product",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14557,7 +14557,7 @@
     {
       "path": "amari_core::Rotor::identity",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14565,7 +14565,7 @@
     {
       "path": "amari_core::Rotor::inverse",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14573,7 +14573,7 @@
     {
       "path": "amari_core::Rotor::logarithm",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 23,
+      "source_ordinal": 24,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14581,7 +14581,7 @@
     {
       "path": "amari_core::Rotor::magnitude",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14589,7 +14589,7 @@
     {
       "path": "amari_core::Rotor::power",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 31,
+      "source_ordinal": 32,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14597,7 +14597,7 @@
     {
       "path": "amari_core::Rotor::power_integer",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 28,
+      "source_ordinal": 29,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14605,7 +14605,7 @@
     {
       "path": "amari_core::Rotor::scalar_part",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -14613,7 +14613,7 @@
     {
       "path": "amari_core::Rotor::slerp",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 23,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16229,7 +16229,7 @@
     {
       "path": "amari_core::rotor::Rotor::apply",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16237,7 +16237,7 @@
     {
       "path": "amari_core::rotor::Rotor::apply_to_vector",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16245,7 +16245,7 @@
     {
       "path": "amari_core::rotor::Rotor::as_multivector",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16253,7 +16253,7 @@
     {
       "path": "amari_core::rotor::Rotor::as_slice",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16261,7 +16261,7 @@
     {
       "path": "amari_core::rotor::Rotor::bivector_part",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16269,7 +16269,7 @@
     {
       "path": "amari_core::rotor::Rotor::compose",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16293,7 +16293,7 @@
     {
       "path": "amari_core::rotor::Rotor::from_multivector_bivector",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16301,7 +16301,7 @@
     {
       "path": "amari_core::rotor::Rotor::from_vectors",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16309,7 +16309,7 @@
     {
       "path": "amari_core::rotor::Rotor::from_vectors_mv",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 16,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16317,7 +16317,7 @@
     {
       "path": "amari_core::rotor::Rotor::geometric_product",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16325,7 +16325,7 @@
     {
       "path": "amari_core::rotor::Rotor::identity",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16333,7 +16333,7 @@
     {
       "path": "amari_core::rotor::Rotor::inverse",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16341,7 +16341,7 @@
     {
       "path": "amari_core::rotor::Rotor::logarithm",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 23,
+      "source_ordinal": 24,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16349,7 +16349,7 @@
     {
       "path": "amari_core::rotor::Rotor::magnitude",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16357,7 +16357,7 @@
     {
       "path": "amari_core::rotor::Rotor::power",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 31,
+      "source_ordinal": 32,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16365,7 +16365,7 @@
     {
       "path": "amari_core::rotor::Rotor::power_integer",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 28,
+      "source_ordinal": 29,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16373,7 +16373,7 @@
     {
       "path": "amari_core::rotor::Rotor::scalar_part",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16381,7 +16381,7 @@
     {
       "path": "amari_core::rotor::Rotor::slerp",
       "source_path": "amari-core/src/rotor.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 23,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"

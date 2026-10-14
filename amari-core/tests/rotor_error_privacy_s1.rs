@@ -359,3 +359,193 @@ fn exact_certification_helpers_return_errors_above_six_dimensions() {
     let vector = Vector::<7, 0, 0>::try_from(mv).expect("pure grade-1 vector");
     assert_eq!(vector.as_multivector().get(1), 1.0);
 }
+
+// ==================================================================
+// CORE-W04 R4 remediation: F17 exact sandwich, extreme dynamic range.
+// ==================================================================
+
+/// The F17 fixture rotor `from_bivector(e12 + 2^-1070·e13, 0.3)` in
+/// Cl(3,0,0): its stored coefficients span from ~1 down to `2^-1070`.
+fn f17_rotor() -> Rotor<3, 0, 0> {
+    let mut b = Multivector::<3, 0, 0>::zero();
+    b.set(3, 1.0); // e12
+    b.set(5, f64::from_bits(16)); // e13 = 2^-1070
+    let bivector = Bivector::<3, 0, 0>::try_from(b).expect("pure grade-2 bivector");
+    Rotor::from_bivector(&bivector, 0.3).expect("certified bounded rotor")
+}
+
+/// Apply `rotor` to the coefficient vector and return the image coefficient
+/// bits (blade-mask order).
+fn apply_bits(rotor: &Rotor<3, 0, 0>, coefficients: &[f64; 8]) -> [u64; 8] {
+    let a = Multivector::<3, 0, 0>::from_slice(coefficients);
+    let image = rotor
+        .apply(&a)
+        .expect("exact sandwich over finite stored inputs");
+    let mut bits = [0u64; 8];
+    for (slot, coefficient) in bits.iter_mut().zip(image.as_slice().iter()) {
+        *slot = coefficient.to_bits();
+    }
+    bits
+}
+
+#[test]
+fn exact_sandwich_extreme_dynamic_range_matches_fraction_oracles() {
+    // F17: `R = from_bivector(e12 + 2^-1070·e13, 0.3)` spans a stored
+    // magnitude range from ~1 to `2^-1070`. The exact numerator `R·A·R†` of a
+    // mixed-magnitude operand (1e308 / 5e-324 / 1.3 patterns) legitimately
+    // exceeds the 66-word single-product window, so the old two-product route
+    // overflowed and silently substituted the floating sandwich, returning
+    // wrong coefficients (e1 off by one ulp, e3 off by one ulp, and a spurious
+    // e123). The direct triple accumulation certifies the exact quotient; the
+    // expected bit patterns below are generated independently by a Python
+    // `Fraction` oracle over the same stored rotor coefficients (provenance:
+    // `f17_oracle.py`, Euclidean Cl(3,0,0), exact integer blade products,
+    // correctly-rounded `float(Fraction)`).
+    let rotor = f17_rotor();
+
+    // The pinned F17 fixture: e1/e3 corrected and the spurious e123 removed.
+    let fixture = [0.0, 1e308, f64::from_bits(1), 0.0, 1.3, 0.0, 0.0, 0.0];
+    assert_eq!(
+        apply_bits(&rotor, &fixture),
+        [
+            0,
+            9214647875884333309,
+            9206776761197263025,
+            0,
+            4608533498688228566,
+            0,
+            0,
+            0,
+        ]
+    );
+
+    // Mixed-magnitude sweep (the patterns' oracles from the same generator).
+    let sweep: [([f64; 8], [u64; 8]); 6] = [
+        (
+            [0.0, 1.3, f64::from_bits(1), 0.0, 1e308, 0.0, 0.0, 0.0],
+            [
+                0,
+                4608272008146018276,
+                4600592324319428312,
+                0,
+                9214871658872686752,
+                0,
+                0,
+                0,
+            ],
+        ),
+        (
+            [0.0, f64::from_bits(1), 1e308, 0.0, 1.3, 0.0, 0.0, 0.0],
+            [
+                0,
+                18430148798052038833,
+                9214647875884333309,
+                0,
+                4608533498688228556,
+                0,
+                0,
+                0,
+            ],
+        ),
+        (
+            [0.0, -1e308, 1.3, 0.0, -f64::from_bits(1), 0.0, 0.0, 0.0],
+            [
+                0,
+                18438019912739109117,
+                18430148798052038833,
+                0,
+                13610328633560496871,
+                0,
+                0,
+                0,
+            ],
+        ),
+        (
+            [0.0, 1e308, -1e308, 0.0, 1e308, 0.0, 0.0, 0.0],
+            [
+                0,
+                9216128556504168233,
+                18435341589783737762,
+                0,
+                9214871658872686752,
+                0,
+                0,
+                0,
+            ],
+        ),
+        (
+            [0.0, 1e308, f64::from_bits(1), 0.0, -1e308, 0.0, 0.0, 0.0],
+            [
+                0,
+                9214647875884333309,
+                9206776761197263025,
+                0,
+                18438243695727462560,
+                0,
+                0,
+                0,
+            ],
+        ),
+        (
+            [1e308, f64::from_bits(1), 0.0, 1.3, 0.0, 0.0, 1e308, 0.0],
+            [
+                9214871658872686752,
+                1,
+                0,
+                4608533498688228566,
+                0,
+                18430148798052038833,
+                9214647875884333309,
+                0,
+            ],
+        ),
+    ];
+    for (operand, expected) in sweep {
+        assert_eq!(
+            apply_bits(&rotor, &operand),
+            expected,
+            "operand {operand:?}"
+        );
+    }
+}
+
+// ==================================================================
+// CORE-W04 R4 remediation: F18 fallible `to_rotation_matrix`.
+// ==================================================================
+
+#[test]
+fn to_rotation_matrix_propagates_a_compose_domain_exit_instead_of_panicking() {
+    // F18: the stored-scale scalar-4 rotor (the F4 twenty-squared construction)
+    // in Cl(3,0,0); `4^-535 = 2^-1070` is a finite stored element whose
+    // self-compose underflows to the exact zero rotor. The zero rotor has
+    // `N = 0`, so `apply` is `Err(Degenerate)`; the matrix conversion must
+    // propagate that error rather than unwrapping the action.
+    let bivector = Bivector::<3, 0, 0>::e12();
+    let mut forward = Rotor::<3, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        forward = forward.compose(&forward);
+    }
+    let mut backward = Rotor::<3, 0, 0>::from_bivector(&bivector, -1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        backward = backward.compose(&backward);
+    }
+    let scalar_four = forward.compose(&backward);
+    let scalar_four = scalar_four
+        .power(4f64.ln() / scalar_four.scalar_part().ln())
+        .expect("certified exp-route power");
+    assert_eq!(scalar_four.as_slice()[0], 4.0);
+
+    let tiny = scalar_four
+        .power_integer(-535)
+        .expect("certified exp-route power");
+    assert_eq!(tiny.as_slice()[0].to_bits(), 0x10);
+    let zero = tiny.compose(&tiny);
+    assert!(zero.as_slice().iter().all(|&c| c == 0.0));
+
+    let e1 = Multivector::<3, 0, 0>::basis_vector(0);
+    assert!(matches!(zero.apply(&e1), Err(RotorError::Degenerate)));
+    assert!(matches!(
+        zero.to_rotation_matrix(),
+        Err(RotorError::Degenerate)
+    ));
+}

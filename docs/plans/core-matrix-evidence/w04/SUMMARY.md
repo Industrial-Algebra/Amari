@@ -143,8 +143,51 @@ on the same branch (see `r3-remediation-*.log`):
   `r12(0.3)∘r34(0.7)`; the compose-chain migration is qualified to supported
   integer-power workflows. A battery pins all five behaviors.
 
+## R4 remediation (2026-10-14)
+
+Review round 4 on `286a001` produced 3 P1 findings, all independently
+reproduced by the orchestrator (Fraction-oracle mismatches, the matrix
+conversion panic, and the NaN-dot mis-selection); all were remediated on the
+same branch (see `r4-remediation-*.log`):
+
+- **F17** `apply`'s exact sandwich now accumulates the triple product
+  `R_i·A_j·R†_l` **directly** in the wide (`2*WORDS+1` = 133-word)
+  accumulator and divides from the wide coefficient, instead of collapsing an
+  intermediate `R·A` to the 66-word single-product dyadic form. **Root cause:**
+  the F17 fixture rotor spans ~1 down to `2^-1070`, so the exact triple
+  numerator spans ~6300 bits — beyond the 66-word (4224-bit) window — and the
+  old fallback silently substituted floating arithmetic (wrong e1/e3 by one
+  ulp plus a spurious e123). The floating fallback is deleted: a non-finite
+  input coefficient now returns `Err(Degenerate)`. A mixed-magnitude sweep is
+  pinned bit-exactly against a Python-`Fraction` oracle (provenance in the
+  test comment); the fixture pins `e1 9.55336489125606e307`, `e3
+  1.300000000000002`, `e123 0.0`.
+- **F18** `to_rotation_matrix -> Result<[[f64; 3]; 3], RotorError>`
+  propagates the certified-`N` action gate; the unconditional `.expect` on the
+  3D basis action is gone. The compose-to-zero fixture (`4^-535`
+  self-composed to the exact zero rotor) returns `Err(Degenerate)` instead of
+  panicking. Workspace grep found only the two `amari-core/tests/rotors.rs`
+  call sites (both migrated with justification-`.expect`); there are no
+  relativistic/gpu/automata/network/discovery callers. The discovery catalog
+  signature entry was regenerated.
+- **F19** `slerp`'s representative sign is computed by exact dyadic
+  accumulation (`exact_dot_sign`), so the overflowing `NaN` dot selects the
+  correct `B* = -B`: the fixture's `slerp(1)` returns `-B` bit-exact (the
+  interior path stays on the selected branch and is pinned); the normal-scale
+  differing-sign battery is unchanged. Non-finite coefficients keep the
+  floating comparison.
+- **Trivial** `amari-core/src/property_tests.rs` dropped the unused
+  `#[cfg(not(feature = "std"))] use alloc::format;`, keeping the no-default
+  all-targets clippy clean without touching default-feature behavior.
+
+Post-remediation matrix: **240 lib / 486 total** amari-core
+(17 binaries), clippy 0 (default and no-default all-targets), fmt clean,
+rustdoc 0, no-default 0, workspace all-targets 0, consumer suites
+(relativistic/enumerative/gpu/automata) 596 passed, catalog regenerated
+(`428fbd18…`).
+
 ## Status
 IMPLEMENTATION COMPLETE AND STAGED. R1 returned 7 P1, R2 returned 3 P1 / 1 P2 /
-2 P3, and R3 returned 2 P1 / 1 P2; all were remediated in the same worktree
-(2026-10-14) and the full pinned matrix re-ran green. Awaiting re-review /
-operator go-no-go.
+2 P3, R3 returned 2 P1 / 1 P2, and R4 returned 3 P1; all were remediated in the
+same worktree (2026-10-14) and the full pinned matrix re-ran green. Awaiting
+re-review / operator go-no-go.

@@ -1,0 +1,6 @@
+# CORE-W04 R4 remediation catalog regeneration
+# command: timeout 590 cargo +stable run -p amari-discovery --example generate_catalog --locked -- .
+   Compiling amari-discovery v0.24.1 ($AMARI/.worktrees/core-w04/amari-discovery)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.08s
+     Running `target/w04/debug/examples/generate_catalog .`
+Generated split catalog: 28 crates, 11134 items, 107 dependency edges, hash 428fbd186c6f475cc4f2ff0b68d9106875d95c2710f2a5685235a3de03e022d5 (28 crate files + manifest.json + index.rs)

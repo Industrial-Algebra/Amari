@@ -1,0 +1,10 @@
+# CORE-W04 R4 remediation green evidence
+# command: timeout 400 cargo +stable check -p amari-core --lib --no-default-features --locked
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s
+# command: timeout 400 cargo +stable check -p amari-core --lib --no-default-features --features std --locked
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.22s
+# command: timeout 500 cargo +stable clippy -p amari-core --all-targets --no-default-features --locked -- -D warnings
+    Checking amari-core v0.24.1 ($AMARI/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.52s

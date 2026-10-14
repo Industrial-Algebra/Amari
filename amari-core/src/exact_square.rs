@@ -1551,15 +1551,23 @@ fn mul_exact<const P: usize, const Q: usize, const R: usize>(
 
 /// Exact per-coefficient quotient of the versor sandwich `R·A·R† / N`.
 ///
-/// Every numerator coefficient is the exact dyadic expansion of the stored
-/// `R·A·R†` (two exact multivector products), divided by the certified exact
-/// positive `N` through the sticky-bit divider and rounded **once** at the
-/// destination precision. No `f64` numerator is ever materialized, so a
-/// nonzero image whose coefficients underflow is still rounded correctly
-/// instead of collapsing to zero (CORE-W04 R3-F14).
+/// The numerator coefficients are accumulated **directly** from the exact
+/// dyadic triple products `R_i·A_j·R†_l` in the wide (133-word) accumulator,
+/// never by collapsing an intermediate product to the 66-word dyadic form.
+/// That intermediate collapse is what overflowed the window for a rotor whose
+/// coefficients span a wide magnitude range (e.g. a stored `e13` coefficient
+/// at `2^-1070`) composited with a mixed-magnitude operand: the exact value
+/// `R·A·R†` legitimately spans more than the 66-word single-product window
+/// (up to `~6300` bits for three full-range `f64` factors), so the direct
+/// triple accumulation is the widening that certifies **every finite stored
+/// input** (CORE-W04 F17). The certified exact positive `N` is then divided
+/// through the sticky-bit divider with a single destination-precision
+/// rounding. No `f64` numerator is ever materialized, so a nonzero image
+/// whose coefficients underflow is still rounded correctly (CORE-W04 R3-F14).
 ///
-/// `None` when the exact expansion leaves the representable dyadic window (the
-/// caller then falls back to the floating sandwich).
+/// `None` only when an input coefficient is non-finite, or the signature
+/// exceeds the fixed table; the caller reports those as `Err(Degenerate)`
+/// rather than substituting floating arithmetic.
 pub(crate) fn exact_sandwich_divide<const P: usize, const Q: usize, const R: usize>(
     rotor: &Multivector<P, Q, R>,
     v: &Multivector<P, Q, R>,
@@ -1572,28 +1580,128 @@ pub(crate) fn exact_sandwich_divide<const P: usize, const Q: usize, const R: usi
     let middle = ExactPower::from_multivector(v)?;
     let reversed = rotor.reverse();
     let right = ExactPower::from_multivector(&reversed)?;
-    let first = mul_exact::<P, Q, R>(&left, &middle)?;
-    let sandwich = mul_exact::<P, Q, R>(&first, &right)?;
+    let dim = P + Q + R;
+    // The triple product is accumulated in the wide (`2*WORDS+1`) form: the
+    // 66-word `ExactDyadic` is only the *single-product* capacity, while the
+    // sandwich numerator of three full-range `f64` factors spans up to about
+    // `3*2045 + 159 + 9 < 2^(WIDE_WORDS*64)` bits, so no `add_term` alignment
+    // can fail for finite inputs.
+    let mut accumulators = [WideAccumulator::zero(); MAX_BASIS];
+    for (i, a_coeff) in left.coeffs.iter().enumerate().take(left.basis_count) {
+        if a_coeff.is_zero() {
+            continue;
+        }
+        for (j, b_coeff) in middle.coeffs.iter().enumerate().take(middle.basis_count) {
+            if b_coeff.is_zero() {
+                continue;
+            }
+            let (sign1, m) = product_sign_and_index(i, j, P, Q, dim);
+            if sign1 == 0 {
+                continue;
+            }
+            for (l, c_coeff) in right.coeffs.iter().enumerate().take(right.basis_count) {
+                if c_coeff.is_zero() {
+                    continue;
+                }
+                let (sign2, k) = product_sign_and_index(m, l, P, Q, dim);
+                if sign2 == 0 {
+                    continue;
+                }
+                let exponent = a_coeff
+                    .exponent
+                    .checked_add(b_coeff.exponent)?
+                    .checked_add(c_coeff.exponent)?;
+                let magnitude =
+                    triple_magnitude(&a_coeff.magnitude, &b_coeff.magnitude, &c_coeff.magnitude);
+                let negative = a_coeff.negative
+                    ^ b_coeff.negative
+                    ^ c_coeff.negative
+                    ^ (sign1 < 0)
+                    ^ (sign2 < 0);
+                if !accumulators[k].add_term(&magnitude, exponent, negative) {
+                    return None;
+                }
+            }
+        }
+    }
     let mut out = Multivector::<P, Q, R>::zero();
-    for (index, coefficient) in sandwich
-        .coeffs
-        .iter()
-        .enumerate()
-        .take(sandwich.basis_count)
-    {
-        if coefficient.is_zero() {
+    for (index, accumulator) in accumulators.iter().enumerate().take(left.basis_count) {
+        if !accumulator.initialized || accumulator.magnitude.iter().all(|&word| word == 0) {
             continue;
         }
         // `N` is strictly positive, so no sign or zero gate is needed here:
         // the single sticky-bit division rounds at the destination.
-        let signed = ExactSigned {
-            magnitude: coefficient.magnitude,
-            exponent: coefficient.exponent,
-            negative: coefficient.negative,
-        };
-        out.set(index, signed.ratio_to_f64(n));
+        let (magnitude, negative, exponent) = accumulator.parts();
+        out.set(
+            index,
+            exact_division_to_f64(&magnitude, exponent, &n.magnitude, n.exponent, negative),
+        );
     }
     Some(out)
+}
+
+/// Sign `(-1/0/+1)` of the exact coefficient dot `Σ aᵢbᵢ`, or `None` when any
+/// coefficient is non-finite (the caller then retains the floating path).
+///
+/// The products `aᵢbᵢ` are exact `f64`×`f64` dyadics, so the sum is certified
+/// by the same wide signed accumulator used for the exact dyadic products. It
+/// is the exact sign (not a rounded `f64` dot) that selects the `slerp`
+/// representative; a floating dot can overflow to `NaN` and silently select
+/// the wrong hemisphere (CORE-W04 F19).
+///
+/// # Panics
+///
+/// Never: the accumulator alignment bound (`~4300` bits) is far inside the
+/// wide window for the at-most-`MAX_BASIS` coefficient dot.
+pub(crate) fn exact_dot_sign<const P: usize, const Q: usize, const R: usize>(
+    a: &Multivector<P, Q, R>,
+    b: &Multivector<P, Q, R>,
+) -> Option<i32> {
+    let mut accumulator = WideAccumulator::zero();
+    let mut any_nonzero = false;
+    for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
+        let x = a.get(index);
+        let y = b.get(index);
+        let (Some((mx, ex, nx)), Some((my, ey, ny))) = (decompose(x), decompose(y)) else {
+            return None;
+        };
+        if mx == 0 || my == 0 {
+            continue;
+        }
+        let product = (mx as u128) * (my as u128);
+        let mut magnitude = [0u64; WIDE_WORDS];
+        magnitude[0] = product as u64;
+        magnitude[1] = (product >> 64) as u64;
+        if !accumulator.add_term(&magnitude, ex.checked_add(ey)?, nx ^ ny) {
+            return None;
+        }
+        any_nonzero = true;
+    }
+    if !any_nonzero || accumulator.magnitude.iter().all(|&word| word == 0) {
+        return Some(0);
+    }
+    Some(if accumulator.negative { -1 } else { 1 })
+}
+
+/// Exact product of the three single-limb `f64` mantissa magnitudes of one
+/// `R_i·A_j·R†_l` sandwich term, in the wide accumulator form.
+///
+/// [`ExactPower::from_multivector`] builds every coefficient from a single
+/// `f64`, so each magnitude is one limb (`<= 2^53`); the exact triple product
+/// is at most `159` bits and always fits the wide form.
+fn triple_magnitude(
+    first: &[u64; WORDS],
+    second: &[u64; WORDS],
+    third: &[u64; WORDS],
+) -> [u64; WIDE_WORDS] {
+    debug_assert!(first[1..].iter().all(|&word| word == 0));
+    debug_assert!(second[1..].iter().all(|&word| word == 0));
+    debug_assert!(third[1..].iter().all(|&word| word == 0));
+    let pair = (first[0] as u128) * (second[0] as u128);
+    let mut pair_words = [0u64; WORDS];
+    pair_words[0] = pair as u64;
+    pair_words[1] = (pair >> 64) as u64;
+    mul_magnitude_by_u64(&pair_words, third[0])
 }
 
 /// Outcome of the exact reverse-norm certificate `N = R·R†` (CORE-W04 §1.4b).

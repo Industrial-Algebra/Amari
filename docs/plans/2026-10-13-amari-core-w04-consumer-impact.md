@@ -227,8 +227,12 @@ touch):
 - **Migration:** `set_bivector_component(k, v)` → same name, `-> bool`;
   blade-index `Index`/`get` unchanged; `to_rotation_matrix`/axis-angle
   helpers move to concrete 3D impls — **generic callers compile-error**;
-  3D consumers unchanged. Workflows needing matrices outside 3D have no
-  replacement (honest limit, disclosed).
+  3D consumers unchanged. `to_rotation_matrix` is now fallible,
+  `Result<[[f64; 3]; 3], RotorError>`, propagating the certified-`N` action
+  gate so a stored element with no certified action returns
+  `Err(Degenerate)` instead of panicking (CORE-W04 R4-F18). Workflows
+  needing matrices outside 3D have no replacement (honest limit,
+  disclosed).
 - **`e_ij`, `Bivector::zero()`**: pure additions.
 
 ### C7. `from_bivector`/`from_axis_angle` error-type migration — **forced failure-representation; new type is a design choice**

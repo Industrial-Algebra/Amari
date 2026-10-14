@@ -1,0 +1,4 @@
+# CORE-W04 R4 remediation green evidence
+# command: timeout 590 cargo +stable check --workspace --all-targets --locked
+   Compiling amari-discovery v0.24.1 ($AMARI/.worktrees/core-w04/amari-discovery)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.51s

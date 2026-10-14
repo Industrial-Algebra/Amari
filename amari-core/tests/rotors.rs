@@ -147,7 +147,9 @@ mod rotor_tests {
         let bivector = Bivector::<3, 0, 0>::e12();
         let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
             .expect("bounded Euclidean bivector exponential");
-        let matrix = rotor.to_rotation_matrix();
+        let matrix = rotor
+            .to_rotation_matrix()
+            .expect("in-domain bounded e12 rotor acts");
 
         // Verify against apply_to_vector
         let e1 = Vector::<3, 0, 0>::e1();
@@ -499,7 +501,9 @@ mod rotor_tests {
         let bivector = Bivector::<3, 0, 0>::e13();
         let rotor = Rotor::from_bivector(&bivector, PI / 2.0)
             .expect("bounded Euclidean bivector exponential");
-        let matrix = rotor.to_rotation_matrix();
+        let matrix = rotor
+            .to_rotation_matrix()
+            .expect("in-domain bounded e13 rotor acts");
 
         // Compute expected via apply
         let e1 = Vector::<3, 0, 0>::e1();
