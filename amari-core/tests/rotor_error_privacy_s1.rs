@@ -183,3 +183,49 @@ fn exp_error_carrier_is_lossless() {
     };
     assert_eq!(RotorError::from(exp), RotorError::Exp(exp));
 }
+
+#[test]
+fn inverse_uses_exact_reverse_norm_not_a_rounded_denominator() {
+    // R1-F2: `from_bivector(e12, 0.3)` in Cl(1,1,0) stores the exact reverse
+    // norm N = 0.9999999999999999. Dividing the reverse by the rounded N gives
+    // [1.0112711095766707, 0.15056313315161268]; the exact `R†/N` (one rounding
+    // per coefficient) gives the correctly rounded values below.
+    let bivector = Bivector::<1, 1, 0>::e12();
+    let rotor = Boost::from_bivector(&bivector, 0.3).expect("bounded boost");
+    assert_eq!(rotor.as_slice()[0], 1.0112711095766704);
+    assert_eq!(rotor.as_slice()[3], -0.15056313315161265);
+
+    let inverse = rotor.inverse().expect("stored N > 0");
+    assert_eq!(inverse.as_slice()[0], 1.0112711095766704);
+    assert_eq!(inverse.as_slice()[3], 0.15056313315161265);
+}
+
+#[test]
+fn exact_certification_helpers_return_errors_above_six_dimensions() {
+    // R1-F1: the exact machinery's fixed 64-slot table supports n <= 6. Above
+    // that the checked routes return errors instead of panicking in the
+    // certificate slice. The identity rotor is the minimal witness.
+    let identity = Rotor::<7, 0, 0>::identity();
+    assert!(matches!(identity.inverse(), Err(RotorError::Degenerate)));
+    let scalar = Multivector::<7, 0, 0>::scalar(1.0);
+    assert!(matches!(
+        identity.apply(&scalar),
+        Err(RotorError::Degenerate)
+    ));
+    assert!(matches!(identity.power(2.0), Err(RotorError::Degenerate)));
+
+    // The scalar-only logarithm does not touch the exact certification
+    // machinery, so it keeps the contract's dimension-independent scalar route
+    // (`w = 1 -> zero`).
+    assert!(identity
+        .logarithm()
+        .expect("scalar-only log is dimension independent")
+        .as_slice()
+        .iter()
+        .all(|&c| c == 0.0));
+
+    // The privacy/TryFrom path is not exact-machinery dependent.
+    let mv = Multivector::<7, 0, 0>::basis_vector(0);
+    let vector = Vector::<7, 0, 0>::try_from(mv).expect("pure grade-1 vector");
+    assert_eq!(vector.as_multivector().get(1), 1.0);
+}

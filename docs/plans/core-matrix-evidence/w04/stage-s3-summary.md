@@ -92,13 +92,16 @@ Private stored-field (`src/rotor.rs` unit batteries):
 
 ## Deviations / ambiguities resolved
 
-1. **Antipodal resolution condition.** The contract/dispatch parenthetical
-   `(P+Q = 2, R = 0)` also admits the mixed 2D signature Cl(1,1,0), but there
-   `±e12` are the *identity* action on the plane (both signs), so they cannot
-   map `â → −â`. The implementation keeps the `DIM = 2, R = 0` guard and then
-   **verifies** the `e12` action against `b̂` before accepting, returning
-   `Err(Antipodal)` otherwise. This is the mathematically correct outcome; the
-   verified cases are the definite 2D signatures (Cl(2,0,0) / Cl(0,2,0)).
+1. **Antipodal resolution condition (corrected by R1-F6).** The contract/
+   dispatch parenthetical `(P+Q = 2, R = 0)` also admits the mixed 2D
+   signature Cl(1,1,0). There the plane element `e12` has `e12² = +1`, so its
+   reverse norm is `e12·e12† = −1 < 0` (negative), and no checked rotor maps
+   `â → −â`; note `e12·e1·e12 = −e1`, so `e12` is **not** the identity action
+   (the earlier "both signs identity" derivation was false). The
+   implementation now decides by signature **before** normalization: definite
+   2D only — `(2,0,0)` or `(0,2,0)` — resolves via `±e12`; every
+   indefinite/other signature returns `Err(Antipodal)` directly. The accepted
+   cases remain Cl(2,0,0) / Cl(0,2,0).
 2. **Uncertifiable `σ`/normalization.** Non-finite coefficients in a
    grade-1 input, an unsupported signature (`BASIS_COUNT > 64`), or a
    non-scalar certified square route to `Err(NotNormalizable)` (the contract

@@ -1,0 +1,3 @@
+# CORE-W04 R1 remediation green evidence
+# command: cargo clippy -p amari-core --all-targets --locked -- -D warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.12s

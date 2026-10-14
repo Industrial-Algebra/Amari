@@ -198,14 +198,13 @@ fn hyperbolic_round_trip_is_fixture_bounded() {
 fn multiphane_rotor() -> Rotor<4, 0, 0> {
     // Cl(4,0,0): the product of the two orthogonal simple rotors in e12 and e34
     // has grade-4 content, so the logarithm is uncertified and powers use the
-    // compose chain. The product's reverse norm is exactly scalar because each
-    // factor's is.
+    // compose chain. R1-F5 fixture: r12(0.3) · r34(0.7).
     let mut b12 = Multivector::<4, 0, 0>::zero();
     b12.set(3, 1.0); // e12
     let mut b34 = Multivector::<4, 0, 0>::zero();
     b34.set(12, 1.0); // e34
-    let r12 = Rotor::<4, 0, 0>::from_multivector_bivector(&b12, 0.7).expect("simple rotor e12");
-    let r34 = Rotor::<4, 0, 0>::from_multivector_bivector(&b34, 0.9).expect("simple rotor e34");
+    let r12 = Rotor::<4, 0, 0>::from_multivector_bivector(&b12, 0.3).expect("simple rotor e12");
+    let r34 = Rotor::<4, 0, 0>::from_multivector_bivector(&b34, 0.7).expect("simple rotor e34");
     r12.compose(&r34)
 }
 
@@ -218,53 +217,31 @@ fn uncertified_multiphane_log_is_rejected() {
 }
 
 #[test]
-fn binary_exponentiation_chain_is_bit_exact_for_small_exponents() {
+fn binary_power_of_a_rounded_multiphane_rotor_is_degenerate() {
+    // R1-F5: the composite has grade-4 content, so its exact `R·R†` is
+    // non-scalar; the full positive-scalar certificate rejects every checked
+    // binary-power boundary. Previously the scalar-part-sign gate returned
+    // `Ok`, while the output's own `inverse()` was `Err(Degenerate)`.
     let rotor = multiphane_rotor();
+    assert!(matches!(
+        rotor.power_integer(2),
+        Err(RotorError::Degenerate)
+    ));
+    assert!(matches!(
+        rotor.power_integer(3),
+        Err(RotorError::Degenerate)
+    ));
 
-    // n = 2 is exactly one squaring; n = 3 is (R²)·R.
-    let squared = rotor.compose(&rotor);
-    assert_eq!(
-        rotor.power_integer(2).expect("binary power").as_slice(),
-        squared.as_slice()
-    );
-    let cubed = squared.compose(&rotor);
-    assert_eq!(
-        rotor.power_integer(3).expect("binary power").as_slice(),
-        cubed.as_slice()
-    );
-}
-
-#[test]
-fn binary_exponentiation_composition_law_within_budget() {
-    let rotor = multiphane_rotor();
-
-    let cubed = rotor.power_integer(3).expect("binary power 3");
-    let fourth = rotor.power_integer(4).expect("binary power 4");
-    let lhs = cubed.compose(&fourth);
-    let rhs = rotor.power_integer(7).expect("binary power 7");
-
-    // The left chain is 2 compositions for 3, 2 for 4, plus the final compose
-    // = 5; the exponent-7 chain is 4. With m = 5 the fixture-scoped budget is
-    // m + 1 = 6 ulp on the max-abs coefficient norm.
-    let max_abs = lhs
-        .as_slice()
-        .iter()
-        .chain(rhs.as_slice())
-        .map(|c| c.abs())
-        .fold(0.0f64, f64::max);
-    let ulp = f64::from_bits(max_abs.to_bits() + 1) - max_abs;
-    let max_diff = lhs
-        .as_slice()
-        .iter()
-        .zip(rhs.as_slice())
-        .map(|(&a, &b)| (a - b).abs())
-        .fold(0.0f64, f64::max);
-    assert!(
-        max_diff <= 6.0 * ulp,
-        "composition law {max_diff} > {} ({} ulp)",
-        6.0 * ulp,
-        max_diff / ulp
-    );
+    // Each simple factor stays a certified single-plane rotor and powers
+    // through the exact log route.
+    let mut b12 = Multivector::<4, 0, 0>::zero();
+    b12.set(3, 1.0); // e12
+    let mut b34 = Multivector::<4, 0, 0>::zero();
+    b34.set(12, 1.0); // e34
+    let r12 = Rotor::<4, 0, 0>::from_multivector_bivector(&b12, 0.3).expect("simple rotor e12");
+    let r34 = Rotor::<4, 0, 0>::from_multivector_bivector(&b34, 0.7).expect("simple rotor e34");
+    assert!(r12.power_integer(2).is_ok());
+    assert!(r34.power_integer(2).is_ok());
 }
 
 // ======================================================================
@@ -291,4 +268,30 @@ fn non_integral_power_propagates_log_domain_errors() {
     // The multi-plane log is uncertified, so a non-integral power propagates it
     // directly (not through the integer fallback).
     assert!(matches!(rotor.power(0.5), Err(RotorError::Uncertified)));
+}
+
+#[test]
+fn power_preserves_the_logarithm_scale_of_the_twenty_squared_rotor() {
+    // R1-F4: the exp-route power must preserve the element scale the logarithm
+    // carries, not renormalize. R^0 = from_bivector(e12, 1e-8) in Cl(2,0,0),
+    // squared 20 times, stores [0.9999862561551659, -0.005242855980934775];
+    // the true exp(2·log R) is [0.9999450249603883, -0.010485567847871372],
+    // while the former normalization returned a renormalized value near
+    // [0.9999450249223286, -0.010485567472272].
+    let bivector = Bivector::<2, 0, 0>::e12();
+    let mut rotor = Rotor::<2, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        rotor = rotor.compose(&rotor);
+    }
+    assert_eq!(rotor.as_slice()[0], 0.9999862561551659);
+    assert_eq!(rotor.as_slice()[3], -0.005242855980934775);
+
+    let squared = rotor.power_integer(2).expect("exp-route power");
+    assert_eq!(squared.as_slice()[0], 0.9999450249603883);
+    assert_eq!(squared.as_slice()[3], -0.010485567847871372);
+
+    // The real power routes an integral exponent through the same
+    // preserve-scale path.
+    let squared_real = rotor.power(2.0).expect("exp-route real power");
+    assert_eq!(squared_real.as_slice(), squared.as_slice());
 }

@@ -94,11 +94,14 @@ environmental and independent of W04.
    deletes its normalization fallback and `ExpError` has no normalization
    carrier; its existing math is unchanged. `from_vectors` was migrated per
    S1 item 5 with the placeholder `TODO(S3)` route.
-3. **Exact-`N` division precision.** The gate uses the exact `N = R·R†`
-   certificate; the division uses `N` correctly rounded once to `f64`
-   (`R†/N_f64`). This reproduces both pinned fixtures bit-exactly; the
-   contract's "≤ 1 rounding per coefficient" is met only up to the single
-   `N` pre-rounding for general rotors.
+3. **Exact-`N` division precision (superseded by R1-F2).** This stage
+   originally divided by `N` pre-rounded once to `f64` (`R†/N_f64`). R1-F2
+   replaced that with exact rational `R†ᵢ/N` division rounded once per
+   coefficient, so the contract's "≤ 1 rounding per coefficient" now holds
+   unconditionally: the `from_bivector(e12, 0.3)` Cl(1,1,0) fixture with
+   stored `N = 0.9999999999999999` now returns the correctly rounded inverse
+   `[1.0112711095766704, 0.15056313315161265]`. The angle-1 boost pin
+   `[1.1276259652063807, 0.5210953054937474]` is unchanged.
 4. **`apply_to_vector` projection.** The result is projected to grade 1 via
    the crate-private `from_grade_projection` (the removed public projecting
    constructor's behavior), documented as the §1.4 defense-in-depth.

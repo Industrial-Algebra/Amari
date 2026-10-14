@@ -168,6 +168,20 @@ fn from_vectors_cl1_1_0_sheet_change_is_rejected() {
 }
 
 #[test]
+fn from_vectors_indefinite_2d_antipodal_is_rejected_as_antipodal() {
+    // R1-F6: in Cl(1,1,0) the plane e12 has `e12² = +1`, hence a negative
+    // reverse norm (`e12·e12† = −1`), so no checked rotor maps `e1 -> −e1`;
+    // note `e12·e1·e12 = −e1`, so e12 is not the identity action. The excluded
+    // case is `Err(Antipodal)`, not the old normalization-failure `Degenerate`.
+    let a = Vector::<1, 1, 0>::e1();
+    let b = Vector::<1, 1, 0>::from_components(-1.0, 0.0, 0.0);
+    assert!(matches!(
+        Rotor::from_vectors(&a, &b),
+        Err(RotorError::Antipodal)
+    ));
+}
+
+#[test]
 fn from_vectors_mv_scalar_input_is_not_a_vector() {
     let scalar = Multivector::<3, 0, 0>::scalar(1.0);
     let e1 = Vector::<3, 0, 0>::e1();

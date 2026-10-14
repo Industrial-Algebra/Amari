@@ -43,14 +43,44 @@ exact scalar-part sign (multi-plane rounding); from_bivector non-simple ->
 Degenerate (series N non-scalar under rounding); mixed-component fixture in
 unit test (1-ulp conditioning); m+1=6 ulp budget; odd grades -> Uncertified
 superset; integral-power fallback only on Uncertified; N-certified-before-
-normalize ordering. S3: indefinite-2D antipodal excluded (e12 identity);
-uncertifiable square -> NotNormalizable; C=0 path retained (proven implied).
+normalize ordering. S3: indefinite-2D antipodal excluded (e12 negative reverse
+norm, `e12·e1·e12 = −e1`; not the identity action); uncertifiable square ->
+NotNormalizable; C=0 path retained (proven implied).
 S4: Bivector get/Index generic via general map ([3,5,6] literal removed);
 from_components generic-delegating (4D third arg e14, documented; relativistic
 boost map corrected); compile_fail doctest + grep (no trybuild); enumerative
 .expect (all non-degenerate); audit-repro stand-alone crate untouched.
 
+## R1 remediation (2026-10-14)
+
+Review round 1 on `6b3c933` produced 7 P1 findings; all were remediated on the
+same branch (see `r1-remediation-*.log`; recipe pinned with
+`RUSTC=$(rustup which --toolchain stable rustc)` and the matching stable
+`RUSTDOC`):
+
+- **F1** exact helpers now guard `BASIS_COUNT > 64` and return the checked
+error (`Degenerate`/`Uncertified`) instead of slicing past the 64-slot table
+(7D `inverse`/`apply`/`power` no longer panic; scalar-only 7D `logarithm` keeps
+the dimension-independent `w = 1 -> 0` route).
+- **F2** `inverse`/`apply` divide each coefficient by the exact `N` dyadic
+with one rounding, never by a pre-rounded `f64`.
+- **F3** `ExactSigned::ratio_to_f64` is exact rational division with a sticky
+remainder bit (correctly rounded `delta`/rapidity).
+- **F4** exp-route powers certify the un-normalized exponential output and
+preserve the element scale; constructors/slerp/from_vectors keep their
+normalization.
+- **F5** checked binary-power boundaries use the full positive-**scalar**
+reverse-norm certificate (non-scalar exact `N` -> `Degenerate`).
+- **F6** antipodal routing is decided by signature before normalization:
+definite 2D only; Cl(1,1,0) -> `Err(Antipodal)` (derivation corrected in
+`stage-s3-summary.md`).
+- **F7** `from_axis_angle` normalizes from the exact scalar square, so
+`1e200`/`1e-200` axes no longer overflow/underflow.
+
+Post-remediation matrix: **239 lib / 475 total** (was 234 / 466), clippy 0,
+fmt clean, rustdoc 0, no-default 0, workspace all-targets 0.
+
 ## Status
-IMPLEMENTATION COMPLETE AND STAGED. PAUSED BEFORE THE IMPLEMENTATION REVIEW
-LOOP per operator instruction 2026-10-13 ("do not run a review loop until
-further notice"). Not committed; awaiting go/no-go.
+IMPLEMENTATION COMPLETE AND STAGED. R1 review returned 7 P1 findings; all seven
+were remediated in the same worktree (2026-10-14) and the full pinned matrix
+re-ran green. Awaiting re-review / operator go-no-go.

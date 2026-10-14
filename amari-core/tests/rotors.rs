@@ -1,4 +1,4 @@
-use amari_core::{Bivector, Rotor, Vector};
+use amari_core::{Bivector, Rotor, RotorError, Vector};
 use approx::assert_relative_eq;
 use std::f64::consts::PI;
 
@@ -569,6 +569,32 @@ mod rotor_tests {
             epsilon = 1e-10
         );
         // e3
+    }
+
+    #[test]
+    fn test_rotor_from_axis_angle_is_range_safe() {
+        // R1-F7: `|axis| ~ 1e200` overflows the old `norm_squared()` (spurious
+        // identity) and `|axis| ~ 1e-200` underflows it to 0 (spurious
+        // NullVector). The exact scalar square normalizes before any
+        // null/finite decision, so both reduce to the e1 rotation.
+        let e1 = Vector::<3, 0, 0>::e1();
+        let base = Rotor::from_axis_angle(&e1, 1.0).expect("baseline e1 rotation");
+        assert_eq!(base.as_slice()[0], 0.8775825618903728);
+        assert_eq!(base.as_slice()[6], -0.479425538604203);
+
+        let huge = Vector::<3, 0, 0>::from_components(1e200, 0.0, 0.0);
+        let huge_rotor = Rotor::from_axis_angle(&huge, 1.0).expect("range-safe huge axis");
+        assert_eq!(huge_rotor.as_slice(), base.as_slice());
+
+        let tiny = Vector::<3, 0, 0>::from_components(1e-200, 0.0, 0.0);
+        let tiny_rotor = Rotor::from_axis_angle(&tiny, 1.0).expect("range-safe tiny axis");
+        assert_eq!(tiny_rotor.as_slice(), base.as_slice());
+
+        let nan = Vector::<3, 0, 0>::from_components(f64::NAN, 0.0, 0.0);
+        assert!(matches!(
+            Rotor::from_axis_angle(&nan, 1.0),
+            Err(RotorError::NotNormalizable)
+        ));
     }
 
     #[test]

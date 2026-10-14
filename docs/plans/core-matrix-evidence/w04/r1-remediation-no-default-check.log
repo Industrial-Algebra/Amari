@@ -1,0 +1,6 @@
+# CORE-W04 R1 remediation green evidence
+# command: cargo check -p amari-core --lib --no-default-features --locked ; cargo check -p amari-core --lib --no-default-features --features std --locked
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.36s
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.60s
