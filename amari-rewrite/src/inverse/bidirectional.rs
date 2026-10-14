@@ -515,7 +515,7 @@ impl<'a> BidirectionalExplorer<'a> {
             let bindings = match_pattern(rule.lhs(), position)
                 .ok_or_else(|| mismatch("replay failed the forward lhs"))?;
             current = current
-                .replace_at(&step.position, bindings.apply(rule.rhs()))
+                .replace_at(&step.position, bindings.apply_matcher(rule.rhs()))
                 .map_err(|_| mismatch("replay failed a forward rebuild"))?;
         }
         if canonical(&current) != canonical(&derivation.meeting_forward) {
@@ -537,7 +537,10 @@ impl<'a> BidirectionalExplorer<'a> {
             let bindings = match_pattern(rule.lhs(), position)
                 .ok_or_else(|| mismatch("replay failed the backward lhs"))?;
             current = current
-                .replace_at(&step.provenance.position, bindings.apply(rule.rhs()))
+                .replace_at(
+                    &step.provenance.position,
+                    bindings.apply_matcher(rule.rhs()),
+                )
                 .map_err(|_| mismatch("replay failed a backward rebuild"))?;
         }
         // The backward half starts from the meeting substitution's
@@ -607,7 +610,7 @@ fn forward_successors(system: &TermSystem, term: &Term) -> Vec<(ForwardStep, Ter
             let Some(bindings) = match_pattern(rule.lhs(), subterm) else {
                 continue;
             };
-            let Ok(result) = term.replace_at(&position, bindings.apply(rule.rhs())) else {
+            let Ok(result) = term.replace_at(&position, bindings.apply_matcher(rule.rhs())) else {
                 continue;
             };
             let step = ForwardStep {

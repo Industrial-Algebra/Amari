@@ -2,8 +2,9 @@
 //! (0.25 Cohort 3, Task 16).
 
 use amari_rewrite::inverse::{
-    BackwardExplorer, BackwardSearchOutcome, GuidanceMode, InverseSearchConfig, ReplayCertificate,
-    ReplayDerivation, ReplayQuery, ResourceObservation, SearchMode,
+    BackwardExplorer, BackwardSearchOutcome, BidirectionalExplorer, BidirectionalSearchOutcome,
+    GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayDerivation, ReplayQuery,
+    ResourceObservation, SearchMode,
 };
 use amari_rewrite::trs::{Rule, Term, TermSystem};
 
@@ -199,4 +200,45 @@ fn bidirectional_certificates_verify() {
         goal,
     };
     assert!(tampered.verify(&rules).is_err());
+}
+
+/// PR #302 round 3 P1 (reviewer repro): the bidirectional search's
+/// forward half used deep application on matcher bindings, recording
+/// `a` as the forward reduct of `f(Y, a)` under `f(X, Y) -> X`
+/// (correct: the source variable `Y`). Certificates issued from such
+/// witnesses failed verification ("forward half does not reach the
+/// meeting term"). The witness must record `Y`; verification passes.
+#[test]
+fn bidirectional_witness_is_capture_free_and_verifies() {
+    let rules = system(vec![Rule::new(parse("f(X, Y)"), parse("X")).unwrap()]);
+    let source = parse("f(Y, a)");
+    let goal = parse("a");
+    let outcome = BidirectionalExplorer::new(&rules, small_config())
+        .search(&source, &goal)
+        .unwrap();
+    let BidirectionalSearchOutcome::Witness(derivation) = outcome else {
+        panic!("expected witness, got {outcome:?}");
+    };
+    assert_eq!(
+        derivation.meeting_forward,
+        parse("Y"),
+        "forward reduct must be the source variable, not its capture"
+    );
+    let certificate = ReplayCertificate::issue(
+        &rules,
+        ReplayQuery::Bidirectional {
+            source: source.clone(),
+            goal: goal.clone(),
+        },
+        ReplayDerivation::Bidirectional(derivation),
+        small_config(),
+        GuidanceMode::CompleteWithinLimits,
+        ResourceObservation {
+            states: 2,
+            transitions: 1,
+            retained_bytes: 256,
+            operations: 2,
+        },
+    );
+    certificate.verify(&rules).unwrap();
 }

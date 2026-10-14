@@ -61,7 +61,7 @@ impl ReversibleStep {
         let substitution = match_pattern(rule.lhs(), subterm).ok_or(RewriteError::NoRule {
             rule_name: rule_id.to_string(),
         })?;
-        let target_subterm = substitution.apply(rule.rhs());
+        let target_subterm = substitution.apply_matcher(rule.rhs());
         let target = source.replace_at(position, target_subterm.clone())?;
 
         // Erased bindings: LHS variables absent from the RHS, in

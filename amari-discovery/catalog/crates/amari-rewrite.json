@@ -982,6 +982,59 @@
       ]
     },
     {
+      "path": "amari_rewrite::analysis::ConfluenceReport",
+      "kind": "struct",
+      "signature": "pub struct ConfluenceReport",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "pairs",
+            "ty": "Vec < (CriticalPair , PairJoinability) >"
+          },
+          {
+            "label": "locally_confluent",
+            "ty": "bool"
+          },
+          {
+            "label": "certification_blocked",
+            "ty": "Vec < usize >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::confluence",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct ConfluenceReport",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "pairs",
+                "ty": "Vec < (CriticalPair , PairJoinability) >"
+              },
+              {
+                "label": "locally_confluent",
+                "ty": "bool"
+              },
+              {
+                "label": "certification_blocked",
+                "ty": "Vec < usize >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/analysis/confluence.rs",
+          "source_module": "amari_rewrite::analysis::confluence",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::confluence",
+          "declaration_ident": "ConfluenceReport"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::analysis::CriticalPair",
       "kind": "struct",
       "signature": "pub struct CriticalPair",
@@ -1195,6 +1248,118 @@
       ]
     },
     {
+      "path": "amari_rewrite::analysis::JoinabilityWitness",
+      "kind": "struct",
+      "signature": "pub struct JoinabilityWitness",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "join_term",
+            "ty": "Term"
+          },
+          {
+            "label": "left_steps",
+            "ty": "Vec < Term >"
+          },
+          {
+            "label": "right_steps",
+            "ty": "Vec < Term >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::confluence",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct JoinabilityWitness",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "join_term",
+                "ty": "Term"
+              },
+              {
+                "label": "left_steps",
+                "ty": "Vec < Term >"
+              },
+              {
+                "label": "right_steps",
+                "ty": "Vec < Term >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/analysis/confluence.rs",
+          "source_module": "amari_rewrite::analysis::confluence",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::confluence",
+          "declaration_ident": "JoinabilityWitness"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::PairJoinability",
+      "kind": "enum",
+      "signature": "pub enum PairJoinability",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Joinable",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "JoinabilityWitness"
+              ]
+            }
+          },
+          {
+            "name": "NotJoinable",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::confluence",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum PairJoinability",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Joinable",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "JoinabilityWitness"
+                  ]
+                }
+              },
+              {
+                "name": "NotJoinable",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/analysis/confluence.rs",
+          "source_module": "amari_rewrite::analysis::confluence",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::confluence",
+          "declaration_ident": "PairJoinability"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::analysis::ReversibilityClass",
       "kind": "enum",
       "signature": "pub enum ReversibilityClass",
@@ -1360,6 +1525,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::analysis::critical_pairs",
           "declaration_ident": "critical_pairs"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::local_confluence",
+      "kind": "fn",
+      "signature": "pub fn local_confluence (system : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < ConfluenceReport >",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::confluence",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn local_confluence (system : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < ConfluenceReport >",
+          "source_path": "amari-rewrite/src/analysis/confluence.rs",
+          "source_module": "amari_rewrite::analysis::confluence",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::confluence",
+          "declaration_ident": "local_confluence"
         }
       ]
     },
@@ -8967,6 +9151,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::prelude::Substitution::apply_matcher",
+      "kind": "method",
+      "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::substitution",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+          "source_path": "amari-rewrite/src/trs/substitution.rs",
+          "source_module": "amari_rewrite::trs::substitution",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::substitution",
+          "declaration_ident": "Substitution::apply_matcher"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::prelude::Substitution::compose",
       "kind": "method",
       "signature": "pub fn compose (& self , inner : & Self) -> crate :: error :: RewriteResult < Self >",
@@ -10795,16 +10998,35 @@
       ]
     },
     {
-      "path": "amari_rewrite::relation::LogicVarNamespace::allocated",
+      "path": "amari_rewrite::relation::LogicVarNamespace::advance_to",
       "kind": "method",
-      "signature": "pub fn allocated (& self) -> u32",
+      "signature": "pub fn advance_to (& mut self , next : u32)",
       "source_path": "amari-rewrite/src/relation/variable.rs",
       "is_reexport": true,
       "source_module": "amari_rewrite::relation::variable",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn allocated (& self) -> u32",
+          "signature": "pub fn advance_to (& mut self , next : u32)",
+          "source_path": "amari-rewrite/src/relation/variable.rs",
+          "source_module": "amari_rewrite::relation::variable",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::relation::variable",
+          "declaration_ident": "LogicVarNamespace::advance_to"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::relation::LogicVarNamespace::allocated",
+      "kind": "method",
+      "signature": "pub fn allocated (& self) -> u64",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::relation::variable",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn allocated (& self) -> u64",
           "source_path": "amari-rewrite/src/relation/variable.rs",
           "source_module": "amari_rewrite::relation::variable",
           "is_reexport": true,
@@ -10816,14 +11038,14 @@
     {
       "path": "amari_rewrite::relation::LogicVarNamespace::fresh",
       "kind": "method",
-      "signature": "pub fn fresh (& mut self) -> LogicVar",
+      "signature": "pub fn fresh (& mut self) -> Option < LogicVar >",
       "source_path": "amari-rewrite/src/relation/variable.rs",
       "is_reexport": true,
       "source_module": "amari_rewrite::relation::variable",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn fresh (& mut self) -> LogicVar",
+          "signature": "pub fn fresh (& mut self) -> Option < LogicVar >",
           "source_path": "amari-rewrite/src/relation/variable.rs",
           "source_module": "amari_rewrite::relation::variable",
           "is_reexport": true,
@@ -10848,6 +11070,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::relation::variable",
           "declaration_ident": "LogicVarNamespace::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::relation::LogicVarNamespace::with_reserved",
+      "kind": "method",
+      "signature": "pub fn with_reserved (scope : u32 , reserved : impl IntoIterator < Item = alloc :: string :: String > ,) -> Self",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::relation::variable",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_reserved (scope : u32 , reserved : impl IntoIterator < Item = alloc :: string :: String > ,) -> Self",
+          "source_path": "amari-rewrite/src/relation/variable.rs",
+          "source_module": "amari_rewrite::relation::variable",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::relation::variable",
+          "declaration_ident": "LogicVarNamespace::with_reserved"
         }
       ]
     },
@@ -12879,6 +13120,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::trs::Substitution::apply_matcher",
+      "kind": "method",
+      "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::trs::substitution",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn apply_matcher (& self , term : & Term) -> Term",
+          "source_path": "amari-rewrite/src/trs/substitution.rs",
+          "source_module": "amari_rewrite::trs::substitution",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::trs::substitution",
+          "declaration_ident": "Substitution::apply_matcher"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::trs::Substitution::compose",
       "kind": "method",
       "signature": "pub fn compose (& self , inner : & Self) -> crate :: error :: RewriteResult < Self >",
@@ -13942,6 +14202,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::ConfluenceReport",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "ConfluenceReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::analysis::CriticalPair",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 0,
@@ -13989,6 +14267,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "InverseReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::JoinabilityWitness",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "JoinabilityWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::PairJoinability",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "PairJoinability"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -15997,6 +16311,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::ConfluenceReport",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "ConfluenceReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::analysis::CriticalPair",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 0,
@@ -16044,6 +16376,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "InverseReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::JoinabilityWitness",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "JoinabilityWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::PairJoinability",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "PairJoinability"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -17620,6 +17988,24 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::analysis::ConfluenceReport",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "ConfluenceReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::analysis::CriticalPairReport",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 1,
@@ -17962,6 +18348,24 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::ConfluenceReport",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "ConfluenceReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::analysis::CriticalPair",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 0,
@@ -18009,6 +18413,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "InverseReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::JoinabilityWitness",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "JoinabilityWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::PairJoinability",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "PairJoinability"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -20342,6 +20782,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::ConfluenceReport",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "ConfluenceReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::analysis::CriticalPair",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 0,
@@ -20389,6 +20847,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "InverseReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::JoinabilityWitness",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "JoinabilityWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::PairJoinability",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::confluence",
+        "ident": "PairJoinability"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -22654,6 +23148,14 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::analysis::ConfluenceReport",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::analysis::CriticalPair",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 0,
@@ -22694,6 +23196,22 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::analysis::JoinabilityWitness",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::PairJoinability",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::analysis::ReversibilityClass",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 1,
@@ -22713,6 +23231,14 @@
       "path": "amari_rewrite::analysis::critical_pairs",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::local_confluence",
+      "source_path": "amari-rewrite/src/analysis/confluence.rs",
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -24878,9 +25404,17 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::prelude::Substitution::apply_matcher",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::prelude::Substitution::compose",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -24912,7 +25446,7 @@
     {
       "path": "amari_rewrite::prelude::Substitution::is_empty",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -24928,7 +25462,7 @@
     {
       "path": "amari_rewrite::prelude::Substitution::len",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -25550,9 +26084,17 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::relation::LogicVarNamespace::advance_to",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::relation::LogicVarNamespace::allocated",
       "source_path": "amari-rewrite/src/relation/variable.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -25560,7 +26102,7 @@
     {
       "path": "amari_rewrite::relation::LogicVarNamespace::fresh",
       "source_path": "amari-rewrite/src/relation/variable.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -25569,6 +26111,14 @@
       "path": "amari_rewrite::relation::LogicVarNamespace::new",
       "source_path": "amari-rewrite/src/relation/variable.rs",
       "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::relation::LogicVarNamespace::with_reserved",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26342,9 +26892,17 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::trs::Substitution::apply_matcher",
+      "source_path": "amari-rewrite/src/trs/substitution.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::trs::Substitution::compose",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26376,7 +26934,7 @@
     {
       "path": "amari_rewrite::trs::Substitution::is_empty",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -26392,7 +26950,7 @@
     {
       "path": "amari_rewrite::trs::Substitution::len",
       "source_path": "amari-rewrite/src/trs/substitution.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"

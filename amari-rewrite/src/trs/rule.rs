@@ -58,9 +58,14 @@ impl Rule {
     }
 
     /// Apply this rule at the root of `term`.
+    ///
+    /// Uses one-level matcher application ([`Substitution::apply_matcher`]):
+    /// the match's bindings are verbatim term fragments and are never
+    /// chain-resolved, so term variables sharing a name with a rule
+    /// variable are not captured.
     pub fn apply_root(&self, term: &Term) -> Option<Term> {
         let subst = self.matches(term)?;
-        Some(subst.apply(&self.rhs))
+        Some(subst.apply_matcher(&self.rhs))
     }
 }
 

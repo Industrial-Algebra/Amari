@@ -4,13 +4,15 @@
 //!
 //! Currently holds the deterministic first-order unifier shared by
 //! critical pairs, inverse frontier meeting, constraint solving, and
-//! synthesis, plus the critical-pair generator itself. LPO, confluence,
-//! and completion land in later cohorts.
+//! synthesis, plus the critical-pair generator itself. LPO and
+//! completion land in later cohorts.
 
+mod confluence;
 mod critical_pairs;
 mod inverse;
 mod unify;
 
+pub use confluence::{local_confluence, ConfluenceReport, JoinabilityWitness, PairJoinability};
 pub use critical_pairs::{critical_pairs, CriticalPair, CriticalPairReport};
 pub use inverse::{
     BackwardKind, BranchingEstimate, InverseAnalyzer, InverseReport, ReversibilityClass,

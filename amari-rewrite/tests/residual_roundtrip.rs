@@ -335,3 +335,28 @@ fn residual_serde_roundtrip() {
     let back: ReversibleStep = serde_json::from_str(&json).unwrap();
     assert_eq!(back, step);
 }
+
+/// PR #302 round 2 P2 (reviewer repro): matcher capture in the
+/// reversible forward path. Applying `f(X, Y) -> X` to `f(y, a)` —
+/// where the SOURCE's variable `y` shares a name with the rule's `Y`
+/// — must yield the source variable `y`, and the residual must
+/// replay to the source. Deep application returned `a` and broke
+/// replay ("reconstructed source hash mismatch").
+#[test]
+fn forward_step_does_not_capture_same_named_source_variables() {
+    let rule = Rule::new(parse("f(X, Y)"), parse("X")).unwrap();
+    let sys = TermSystem::new(vec![rule.clone()]);
+    // The source's variable `Y` collides with the rule's `Y`.
+    let source = parse("f(Y, a)");
+    let step = ReversibleStep::apply(
+        &sys,
+        &source,
+        &rule,
+        &amari_rewrite::rewritable::Path::root(),
+        &limits(),
+    )
+    .unwrap();
+    assert_eq!(step.target, parse("Y"));
+    let reconstructed = step.residual.replay(&sys, &step.target, &limits()).unwrap();
+    assert_eq!(reconstructed, source);
+}
