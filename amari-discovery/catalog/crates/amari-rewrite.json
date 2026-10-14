@@ -1360,6 +1360,52 @@
       ]
     },
     {
+      "path": "amari_rewrite::analysis::Precedence",
+      "kind": "struct",
+      "signature": "pub struct Precedence",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::lpo",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct Precedence",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/analysis/lpo.rs",
+          "source_module": "amari_rewrite::analysis::lpo",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::lpo",
+          "declaration_ident": "Precedence"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::Precedence::new",
+      "kind": "method",
+      "signature": "pub fn new (ordering : Vec < (Symbol , usize) >) -> RewriteResult < Self >",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::lpo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (ordering : Vec < (Symbol , usize) >) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/analysis/lpo.rs",
+          "source_module": "amari_rewrite::analysis::lpo",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::lpo",
+          "declaration_ident": "Precedence::new"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::analysis::ReversibilityClass",
       "kind": "enum",
       "signature": "pub enum ReversibilityClass",
@@ -1510,6 +1556,128 @@
       ]
     },
     {
+      "path": "amari_rewrite::analysis::TerminationProof",
+      "kind": "enum",
+      "signature": "pub enum TerminationProof",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ProvedTerminating",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "report",
+                  "ty": "TerminationReport"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NotDecreasing",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "rule_index",
+                  "ty": "usize"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::lpo",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum TerminationProof",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "ProvedTerminating",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "report",
+                      "ty": "TerminationReport"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NotDecreasing",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "rule_index",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/analysis/lpo.rs",
+          "source_module": "amari_rewrite::analysis::lpo",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::lpo",
+          "declaration_ident": "TerminationProof"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::TerminationReport",
+      "kind": "struct",
+      "signature": "pub struct TerminationReport",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "rules_checked",
+            "ty": "usize"
+          },
+          {
+            "label": "decreasing_rules",
+            "ty": "usize"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::lpo",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TerminationReport",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "rules_checked",
+                "ty": "usize"
+              },
+              {
+                "label": "decreasing_rules",
+                "ty": "usize"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/analysis/lpo.rs",
+          "source_module": "amari_rewrite::analysis::lpo",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::lpo",
+          "declaration_ident": "TerminationReport"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::analysis::critical_pairs",
       "kind": "fn",
       "signature": "pub fn critical_pairs (system : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < CriticalPairReport >",
@@ -1544,6 +1712,44 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::analysis::confluence",
           "declaration_ident": "local_confluence"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::lpo_greater",
+      "kind": "fn",
+      "signature": "pub fn lpo_greater (left : & Term , right : & Term , precedence : & Precedence , resources : & mut RelationResources ,) -> RewriteResult < bool >",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::lpo",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn lpo_greater (left : & Term , right : & Term , precedence : & Precedence , resources : & mut RelationResources ,) -> RewriteResult < bool >",
+          "source_path": "amari-rewrite/src/analysis/lpo.rs",
+          "source_module": "amari_rewrite::analysis::lpo",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::lpo",
+          "declaration_ident": "lpo_greater"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::analysis::prove_terminating",
+      "kind": "fn",
+      "signature": "pub fn prove_terminating (system : & TermSystem , precedence : & Precedence , resources : & mut RelationResources ,) -> RewriteResult < TerminationProof >",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::analysis::lpo",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn prove_terminating (system : & TermSystem , precedence : & Precedence , resources : & mut RelationResources ,) -> RewriteResult < TerminationProof >",
+          "source_path": "amari-rewrite/src/analysis/lpo.rs",
+          "source_module": "amari_rewrite::analysis::lpo",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::analysis::lpo",
+          "declaration_ident": "prove_terminating"
         }
       ]
     },
@@ -14310,6 +14516,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::Precedence",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "Precedence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::analysis::ReversibilityClass",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 1,
@@ -14339,6 +14563,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "RuleAnalysis"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::TerminationProof",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationProof"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::analysis::TerminationReport",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationReport"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -16419,6 +16679,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::Precedence",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "Precedence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::analysis::ReversibilityClass",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 1,
@@ -16448,6 +16726,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "RuleAnalysis"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::TerminationProof",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationProof"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::analysis::TerminationReport",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationReport"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -18024,6 +18338,24 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::analysis::TerminationReport",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::ars::Strategy",
       "source_path": "amari-rewrite/src/ars/mod.rs",
       "source_ordinal": 3,
@@ -18456,6 +18788,24 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::Precedence",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "Precedence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::analysis::ReversibilityClass",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 1,
@@ -18485,6 +18835,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "RuleAnalysis"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::TerminationProof",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationProof"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::analysis::TerminationReport",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationReport"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -20890,6 +21276,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::Precedence",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "Precedence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::analysis::ReversibilityClass",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 1,
@@ -20919,6 +21323,42 @@
         "kind": "local",
         "module": "amari_rewrite::analysis::inverse",
         "ident": "RuleAnalysis"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::TerminationProof",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationProof"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::analysis::TerminationReport",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "TerminationReport"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -23212,6 +23652,22 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::analysis::Precedence",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::Precedence::new",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::analysis::ReversibilityClass",
       "source_path": "amari-rewrite/src/analysis/inverse.rs",
       "source_ordinal": 1,
@@ -23228,6 +23684,22 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::analysis::TerminationProof",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::TerminationReport",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::analysis::critical_pairs",
       "source_path": "amari-rewrite/src/analysis/critical_pairs.rs",
       "source_ordinal": 2,
@@ -23239,6 +23711,22 @@
       "path": "amari_rewrite::analysis::local_confluence",
       "source_path": "amari-rewrite/src/analysis/confluence.rs",
       "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::lpo_greater",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::analysis::prove_terminating",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
