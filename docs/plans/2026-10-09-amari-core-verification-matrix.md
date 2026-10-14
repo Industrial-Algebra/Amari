@@ -27,7 +27,11 @@ The maintainer selected through `ask_user` in this session:
 2. **Retain existing portability promises.** Require Linux x86_64 baseline/AVX2 execution, WASM compilation plus Node integration, and a genuine `thumbv7em-none-eabihf` library check for the supported alloc-based core. Restore dependency/no_std portability as a separate prerequisite before 1.0; host import repairs alone do not close it.
 3. **Stage actual proofs before 1.0 readiness.** Require honest formal-compatibility tests now; track proof-tooling/specification repair and the full phantom/formal audit as explicit pre-1.0 gates. No proof claim until nonempty obligations are discharged. W00/W01 may proceed once their complete applicable executable matrix is approved and green.
 
-**Pending:** approval of the concrete rows, compiler versions, gate scheduling and ownership below. No exception or production implementation has been approved. D01–D06 remain unresolved. This record supplements, rather than rewrites, the historical decision register from PR #276.
+**Pending:** approval of the concrete rows, compiler versions, gate
+scheduling and ownership below — now enumerated as the linked decision
+set: D-A (per-target support envelope, four forms) + D-A-bis (WASM
+runtime extension, addition decision) + D-B (proof track) + the F5 M-H
+scoping option (§4), together with the row/compiler/ownership tables. No exception or production implementation has been approved. D01–D06 remain unresolved. This record supplements, rather than rewrites, the historical decision register from PR #276.
 
 ## 2. Baseline and reproducibility
 
@@ -350,7 +354,13 @@ Do not renumber these into closed CORE findings or claim the original report alr
 
 ### 8.1 Open decision records (2026-10-14, loop-2 F6) — alternatives, not footnotes
 
-**D-A. Support envelope, per target (P-EMBED, P-AVX2, extended P-WASM runtime).**
+**D-A. Support envelope, per target (P-EMBED, P-AVX2, P-WASM).** The
+WASM entry concerns the EXISTING recorded envelope only (§1: WASM
+compilation + Node-integration binding runtime; P-WASM's compile/runtime
+split). EXTENDED WASM runtime coverage beyond the binding configuration is
+NOT a recorded promise — it is a separate optional extension decision
+below, proposed-default-pending-approval, and may not be presented as
+retained support.**
 *Retain-and-execute (recorded maintainer default):* prove the advertised promises — P-EMBED dependency/API portability design + real target library checks; P-AVX2 after the unsafe audit; cost as §5. *Revise (alternative):* a per-target decision in four explicit forms —
 **RETAIN** (unchanged promise, unchanged gates), **NARROW** (e.g. embedded
 = alloc-based minimal core + GF(2) + phantom only, documented as
@@ -362,6 +372,13 @@ removal), or **WITHDRAW** (promise dropped entirely; the corresponding
 M-TGT row and cost are removed). Any non-RETAIN form requires a public
 support-matrix change and CHANGELOG disclosure. ONLY explicit WITHDRAWAL
 removes gates. Each target is independently decidable.
+
+*D-A-bis (separate decision, proposed default pending approval):* extend
+P-WASM runtime coverage beyond the binding configuration via
+closure-to-behavior fixtures (per §5's split). Default proposal: NOT now —
+compile closure + binding runtime as the verified surface; extension
+revisited if a consumer requires it. This is an ADDITION decision the
+four-form vocabulary cannot express (it covers existing promises only).
 **D-B. Proof track (MATRIX-02 et al.).**
 *Immediate contract repair (recommended first step either way):* fix or remove the unsound `ensures(result >= T::zero())` dot contract and stop proof-implying wording NOW (M-REP-A) — this does not require Creusot. *Then, retained proof scope (default):* C3 toolchain conformance + C4 discharged obligations per §7 before 1.0. *Alternative:* descope — remove formal-verification claims from the advertised surface (feature documented as annotation-compatibility only) and drop C3/C4 to post-1.0 research; requires the same public disclosure discipline. MATRIX-02's contract repair is NOT optional under any branch; only the proof obligation is.
 
