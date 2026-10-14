@@ -207,8 +207,8 @@ For W01 add debug/release exact dyadic arithmetic regressions, the full independ
 > W00/W01 wording. Rows are otherwise unchanged.
 >
 > **M-H cost and scoping (2026-10-14, loop-2 F5).** Full-H as literally
-> specified is ≥2,880 cargo invocations (320×4×2) + 320 MSRV library
-> checks + cfg probes/alias rows/workspace checks. Distinct-failure
+> specified is 2,560 ordinary host invocations (320×4×2) + 320 MSRV
+> library checks = 2,880, plus cfg probes/alias rows/workspace checks. Distinct-failure
 > justification: test execution differs per compiler (nightly-only lints,
 > feature-gated diagnostics); Clippy differs (lint sets); doc differs
 > (intra-doc/invariant rendering); check is subsumed by test/clippy for
@@ -218,9 +218,12 @@ For W01 add debug/release exact dyadic arithmetic regressions, the full independ
 > stable full-H first, nightly + MSRV quadrants on the stable-green
 > revision, re-running only invalidated quadrants per F1 ledger rules;
 > (C) predicate-pruned — the 320-row capability partition collapsed to
-> source-predicate equivalence classes WITH the generator emitting the
-> justification map per pruned row (never silent; any predicate change
-> re-expands). Default proposal: (B) with per-quadrant evidence. A
+> equivalence classes over BOTH source predicates AND pinned dependency
+> activation (per §3.1's deduplication standard; source predicates alone
+> are INSUFFICIENT — serde/rayon have no source predicates today yet are
+> dependency-distinct configurations) WITH the generator emitting the
+> justification map per pruned row (never silent; any change to either
+> relation's inputs re-expands). Default proposal: (B) with per-quadrant evidence. A
 > pilot-derived wall-clock/storage estimate must be recorded before the
 > chosen option executes; no option may skip the per-row inventory and F2
 > rules.
@@ -348,7 +351,17 @@ Do not renumber these into closed CORE findings or claim the original report alr
 ### 8.1 Open decision records (2026-10-14, loop-2 F6) — alternatives, not footnotes
 
 **D-A. Support envelope, per target (P-EMBED, P-AVX2, extended P-WASM runtime).**
-*Retain-and-execute (recorded maintainer default):* prove the advertised promises — P-EMBED dependency/API portability design + real target library checks; P-AVX2 after the unsafe audit; cost as §5. *Revise (alternative):* precisely restate the supported envelope per target (e.g. embedded = alloc-based minimal core + GF(2) + phantom only, documented as compilation support; AVX2 = not advertised until audit completes) with a public support-matrix change and CHANGELOG disclosure. Revision removes the corresponding M-TGT rows and their costs. Each target is independently decidable.
+*Retain-and-execute (recorded maintainer default):* prove the advertised promises — P-EMBED dependency/API portability design + real target library checks; P-AVX2 after the unsafe audit; cost as §5. *Revise (alternative):* a per-target decision in four explicit forms —
+**RETAIN** (unchanged promise, unchanged gates), **NARROW** (e.g. embedded
+= alloc-based minimal core + GF(2) + phantom only, documented as
+compilation support — the RETAINED compilation promises keep their target
+library-check gates; only the withdrawn sub-promises lose theirs),
+**DEFER** (e.g. AVX2 not advertised until the unsafe audit completes — the
+gate remains with a stated reactivation prerequisite; deferral is not
+removal), or **WITHDRAW** (promise dropped entirely; the corresponding
+M-TGT row and cost are removed). Any non-RETAIN form requires a public
+support-matrix change and CHANGELOG disclosure. ONLY explicit WITHDRAWAL
+removes gates. Each target is independently decidable.
 **D-B. Proof track (MATRIX-02 et al.).**
 *Immediate contract repair (recommended first step either way):* fix or remove the unsound `ensures(result >= T::zero())` dot contract and stop proof-implying wording NOW (M-REP-A) — this does not require Creusot. *Then, retained proof scope (default):* C3 toolchain conformance + C4 discharged obligations per §7 before 1.0. *Alternative:* descope — remove formal-verification claims from the advertised surface (feature documented as annotation-compatibility only) and drop C3/C4 to post-1.0 research; requires the same public disclosure discipline. MATRIX-02's contract repair is NOT optional under any branch; only the proof obligation is.
 
