@@ -1,5 +1,14 @@
 # CORE-D07 — Complete Extended Verification Matrix — Decision Draft
 
+> **2026-10-14 refresh (post-W04):** baseline advanced to develop `354945a`
+> (PR #304 merge). W00/W01/W02/CAT1/W03/W04 executed and merged under the
+> validated baseline recipe (§2); per-package gates ran *representative* H
+> rows, not full H. Blocker table (§8) reconciled against merged outcomes:
+> MATRIX-06 resolved; MATRIX-05 partially resolved (bare no-default green;
+> gf2/phantom/formal no-default rows remain red). Sections 2/8/9 carry dated
+> refresh annotations; the 320-row H enumeration and compiler table are
+> unchanged pending execution-time revalidation of the manifest closure.
+
 > **REQUIRED SUB-SKILL:** Use executing-plans and ia-moment only after the applicable matrix and bounded implementation contract are approved. This document defines gates; it is not authority to change algorithms, dependency contracts, workflows or release policy.
 
 **Goal:** Make every feature, compiler, target, consumer and proof claim in the core remediation programme accountable to executable evidence.
@@ -21,6 +30,16 @@ The maintainer selected through `ask_user` in this session:
 **Pending:** approval of the concrete rows, compiler versions, gate scheduling and ownership below. No exception or production implementation has been approved. D01–D06 remain unresolved. This record supplements, rather than rewrites, the historical decision register from PR #276.
 
 ## 2. Baseline and reproducibility
+
+> **2026-10-14:** the rows below record the ORIGINAL 2026-10-09 research
+> baseline (`ba1b771`). Current state: develop `354945a`; worktree lock
+> regenerated with stable 1.98.0 → SHA-256 `eb2442dc…` (identical to the
+> W04 implementation lock); amari-core 489 tests / 17 suites (stable and
+> nightly, identical inventories; lineage 284 → 385 (W03) → 489 (W04));
+> catalog `d20929e0…` (11,142 items). Merged packages: W00 (#280), W01
+> (#282), W02 (#285), CAT1 (#287), W03 (#300), W04 (#304). The recipe
+> itself was validated 2026-10-09 (revalidation-1) and exercised unchanged
+> through all six packages.
 
 - Source: `ba1b7719f609e8f0f127d620ba6936cfffb61413`, `origin/develop`, merge of PR #276.
 - Research branch/worktree: `chore/core-verification-matrix`, `.worktrees/core-matrix`.
@@ -247,14 +266,27 @@ These are bounded matrix-research observations, not completion of the remaining 
 | MATRIX-02 | `verified.rs:568` claims arbitrary dot product nonnegative; valid vectors `[1]`, `[-1]` give `-1` | Phantom/formal specification audit before any core proof claim; not an arithmetic-product defect to bundle into W01 |
 | MATRIX-03 | `verified_laws.rs` unreachable; its internal test/function names do not establish the asserted laws | Phantom/formal audit + explicitly approved integration/replacement; before proof closure |
 | MATRIX-04 | `geometric_axioms` filter executes zero tests; core verified-contract filter without feature cannot exercise its absent module; badges fall back to source counts | Separate W09/CI evidence-integrity repair before relying on these named suites; no passing/verified labels from source counts |
-| MATRIX-05 | True no_std target support blocked by dependency std activation, not just imports; feature-off host tests reveal further missing imports in GF(2)/verified/test modules | W00 bounded host repairs plus separate P-EMBED portability contract/implementation; pre-1.0 |
-| MATRIX-06 | Core manifest does not inherit workspace rust-version; local MSRV and target/proof tools not installed | Metadata/MSRV evidence package; MSRV checks at W00/W01, target/proof prerequisites as scheduled |
+| MATRIX-05 | True no_std target support blocked by dependency std activation, not just imports; feature-off host tests reveal further missing imports in GF(2)/verified/test modules
+    **[2026-10-14: PARTIALLY RESOLVED.]** Bare `--no-default-features` lib check green on `354945a` (W04 repaired `exact_square.rs` no-default imports). Still RED: `+gf2` (1 error), `+phantom-types` (27 errors), `+formal-verification` (32 errors) — the GF(2)/verified-module import repairs remain owed to W00-scope host repair + P-EMBED. | W00 bounded host repairs plus separate P-EMBED portability contract/implementation; pre-1.0 |
+| MATRIX-06 | Core manifest does not inherit workspace rust-version; local MSRV and target/proof tools not installed
+    **[2026-10-14: RESOLVED (metadata half).]** `amari-core/Cargo.toml` now carries `rust-version.workspace = true` (workspace 1.89). Local MSRV/target/proof tool installation remains an execution-time prerequisite, not a blocker. | Metadata/MSRV evidence package; MSRV checks at W00/W01, target/proof prerequisites as scheduled |
 | MATRIX-07 | Serialized/parallel advertised capabilities lack a corresponding gated core operation surface in this source inventory | API/capability inventory under remaining core audit/W09; no new feature implementation authorized; before claiming capability coverage |
 | MATRIX-08 | Visible GitHub configuration does not enforce status checks | Maintainer CI administration; workflow green evidence still required, never substitute absent enforcement for permission |
 
 Do not renumber these into closed CORE findings or claim the original report already audited them. Preserve the historical report and fixture unchanged. Fix suggestions require their own bounded contract and applicable approval.
 
 ## 9. Fresh observed results and limits
+
+> **2026-10-14 refresh on `354945a`:** the counts below are the ORIGINAL
+> 2026-10-09 research observations. Current spot state: default tests
+> 489/17 both compilers; no-default bare green (see §8 MATRIX-05);
+> `geometric_axioms` filter STILL executes 0 tests (M04 open); the
+> `ensures(result >= T::zero())` dot annotation still present at
+> `verified.rs:564` (M02 open); `verified_laws.rs` still dormant (M03);
+> no serialize/parallel gated operation surface in `amari-core/src` (M07
+> open). Feature inventory: 12 declared names + 3 implicit dep features
+> (serde, rayon, creusot-contracts) — same 13 selectable names as the
+> draft; the 8192→1440→320 closure math must be revalidated at execution.
 
 After resolving missing downloaded artifacts under the unchanged lock:
 
@@ -291,4 +323,4 @@ The maintainer explicitly lifted the stop for **matrix planning only**: document
 
 Incident record: [ia-toolkit #21](https://github.com/Industrial-Algebra/ia-toolkit/issues/21). The monitor's `plan_tracker init` handler advances to `execute`; do not initialize a task tracker as a planning convenience. Ordinary task-status updates are not workflow-phase transitions. Reloading an already active mapped skill also resets workflow tracking in the installed version; check the actual state and do not use skill reloads to erase history or restrictions.
 
-Next: approve and execute only the [CORE-D07 validation/review checkpoint](2026-10-09-amari-core-matrix-validation-checkpoint.md), explicitly reconcile its verification/review phase(s), validate the corrected recipe, then complete report-only review round 2 against the cumulative draft. Round 1 found 0 P1 / 2 P2 / 0 P3; both documentation corrections are applied but not yet revalidated/reviewed. No convergence or complete-matrix-green claim is made.
+**2026-10-14 state:** the corrected recipe is validated and battle-tested through six merged packages (§2 annotation); the validation checkpoint is complete. Next: report-only review round 2 against THIS refreshed draft (round 1 found 0 P1 / 2 P2 / 0 P3, corrections applied), then operator approval of the concrete matrix (rows, compilers, scheduling, ownership) — after which the matrix lands on develop via a reviewed chore PR and the remaining gates (full H execution, P-AVX2, P-EMBED, P-WASM closure, C2/C3/C4 proofs) schedule per §5/§7. No convergence or complete-matrix-green claim is made.
