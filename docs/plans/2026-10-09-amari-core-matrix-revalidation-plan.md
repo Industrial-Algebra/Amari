@@ -1,5 +1,11 @@
 # CORE-D07 Recipe Correction and Revalidation Implementation Plan
 
+> **[2026-10-14: COMPLETED / SUPERSEDED HISTORICAL RECORD.]** The recipe
+> correction was validated 2026-10-09 (revalidation-1) and exercised
+> unchanged through W00–W04 (#280–#304). Later references to D07 approval
+> followed by W00 are historical; pending execution is milestone M-H
+> (verification matrix §10).
+
 > **REQUIRED SUB-SKILL:** Use the executing-plans skill to implement this plan task-by-task after explicit approval. This is a documentation/recipe-conformance contract, not permission to implement W00/W01.
 
 **Goal:** Resolve the two verified round-2 P2 findings with a narrowly corrected command recipe, actionable diagnostic gates and fresh bounded evidence.
@@ -26,7 +32,7 @@ If the operator chooses to keep all dependency warnings blocking, stop this chec
 
 **Unit:** CORE-D07-R2 remediation, documentation and bounded recipe verification only.
 **Depends on:** [R2 report](core-matrix-evidence/recipe-validation/review-round-2-report.md), [verified triage](core-matrix-evidence/recipe-validation/review-round-2-triage.md), explicit approvals above.
-**Followed by:** cumulative review round 3, concrete D07 approval, then separately bounded W00.
+**Followed by:** ~~cumulative review round 3, concrete D07 approval, then separately bounded W00.~~ **[SUPERSEDED 2026-10-14: W00 merged (#280); live successor milestones M-H/M-TGT/M-C2-C3-C4/M-REP per verification matrix §10.]**
 
 After contract approval, permitted changes:
 

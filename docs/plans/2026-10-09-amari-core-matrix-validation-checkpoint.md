@@ -1,5 +1,12 @@
 # CORE-D07 Validation and Review Checkpoint Implementation Plan
 
+> **[2026-10-14: COMPLETED / SUPERSEDED HISTORICAL RECORD.]** This
+> checkpoint was executed 2026-10-09 (recipe validated; rounds completed;
+> see core-matrix-evidence/recipe-validation/). The programme advanced
+> through W00–W04 (merged #280–#304, representative rows). Pending full-H
+> and companion execution now belongs to milestone M-H and the live M-*
+> set in the verification matrix §10 — not to a restart of W00/W01.
+
 > **REQUIRED SUB-SKILL:** Use the executing-plans skill to implement this plan task-by-task, only after explicit checkpoint authorization and workflow reconciliation. This is a verification/document-review checkpoint, not a library implementation contract.
 
 **Goal:** Validate the corrected baseline-ISA command recipe and complete independent review of the cumulative CORE-D07 draft before requesting concrete matrix approval.
@@ -269,7 +276,7 @@ Output: P1/P2/P3 findings with file:line, exact reproduction, observed/expected,
 
 **Step 3:** Present exact proposed compiler/configuration/target rows, scheduling, owners, known failures, unexecuted gates and review verdict. Ask for explicit CORE-D07 approval. Neither checkpoint approval nor convergence implies it.
 
-**Step 4:** Only after D07 approval, author and obtain separate approval for bounded W00 against fresh develop. W01 needs rebaseline after W00 and its own refreshed contract approval. This checkpoint ends before generation dispatch or production implementation.
+**Step 4:** ~~Only after D07 approval, author and obtain separate approval for bounded W00 against fresh develop. W01 needs rebaseline after W00 and its own refreshed contract approval.~~ **[SUPERSEDED 2026-10-14: W00 (#280) and W01 (#282) are merged; post-approval execution is milestone M-H per verification matrix §10.]** This checkpoint ends before generation dispatch or production implementation.
 
 ## Planning handoff
 

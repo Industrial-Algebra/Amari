@@ -234,7 +234,7 @@ No workflow dispatch, backend omission, blanket lint allow, reduced test asserti
 
 ## 7. Formal compatibility, static rejection and actual proofs
 
-### C1 — Ordinary annotation compatibility (W00/W01)
+### C1 — Ordinary annotation compatibility (**full-H execution: milestone M-H**; historical coverage W00–W04 ran representative rows)
 
 Run full H and named formal rows on ordinary stable/nightly. Reachable core modules are `verified.rs` under phantom types and `verified_contracts.rs` under formal. `verified_laws.rs` has no module declaration/inclusion and is dormant. Do not attach it merely to increase counts.
 
