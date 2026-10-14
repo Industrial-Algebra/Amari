@@ -1,0 +1,5 @@
+# CORE-W04 R2 remediation green evidence
+# command: env RUSTDOCFLAGS=-D warnings cargo +stable doc -p amari-core --no-deps --locked
+ Documenting amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.41s
+   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/target/w04/doc/amari_core/index.html

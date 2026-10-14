@@ -1,0 +1,6 @@
+# CORE-W04 R2 remediation green evidence
+# command: timeout 400 cargo +stable check -p amari-core --lib --no-default-features --locked
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.21s
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s

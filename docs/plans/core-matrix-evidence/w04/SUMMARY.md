@@ -20,7 +20,8 @@ Red: 11 findings reproduced (findings.log); baseline 222 lib tests.
 - S3 slerp/from_vectors/reflect: coefficient-dot sign rule + exact endpoints;
   exact 2×2-minor proportionality direction test; candidate trichotomy
   (NullCandidate/SheetChange); definite-2D-only antipodal resolution (indefinite
-  2D ±e12 acts as identity — derived by implementer, Err(Antipodal)); grade-
+  2D ±e12 has negative reverse norm, `e12·e1·e12 = −e1`, not the identity
+  action — R1-F6; Err(Antipodal)); grade-
   involution hyperplane reflect + reflect_line. 234 lib / 444.
 - S4 duals/components: formal_complement (all signatures); metric hodge_dual
   with DegeneratePseudoscalar; generic typed dual deleted (compile_fail doctest
@@ -39,7 +40,10 @@ Red: 11 findings reproduced (findings.log); baseline 222 lib tests.
 
 ## Disclosed deviations (all in stage summaries)
 S2: ln_ratio combined form (witness rapidity correctly rounded); binary gate via
-exact scalar-part sign (multi-plane rounding); from_bivector non-simple ->
+exact scalar-part sign (multi-plane rounding) [SUPERSEDED by R1-F5: the checked
+binary-power boundary now requires the full positive-scalar exact `R·R†`
+certificate, so rounded multi-plane composites are `Err(Degenerate)`];
+from_bivector non-simple ->
 Degenerate (series N non-scalar under rounding); mixed-component fixture in
 unit test (1-ulp conditioning); m+1=6 ulp budget; odd grades -> Uncertified
 superset; integral-power fallback only on Uncertified; N-certified-before-
@@ -67,8 +71,8 @@ with one rounding, never by a pre-rounded `f64`.
 - **F3** `ExactSigned::ratio_to_f64` is exact rational division with a sticky
 remainder bit (correctly rounded `delta`/rapidity).
 - **F4** exp-route powers certify the un-normalized exponential output and
-preserve the element scale; constructors/slerp/from_vectors keep their
-normalization.
+preserve the element scale [F8 extends the same certify-without-normalization
+rule to the `slerp` interior].
 - **F5** checked binary-power boundaries use the full positive-**scalar**
 reverse-norm certificate (non-scalar exact `N` -> `Degenerate`).
 - **F6** antipodal routing is decided by signature before normalization:
@@ -80,7 +84,35 @@ definite 2D only; Cl(1,1,0) -> `Err(Antipodal)` (derivation corrected in
 Post-remediation matrix: **239 lib / 475 total** (was 234 / 466), clippy 0,
 fmt clean, rustdoc 0, no-default 0, workspace all-targets 0.
 
+## R2 remediation (2026-10-14)
+
+Review round 2 on `d173ab8` produced 3 P1 / 1 P2 / 2 P3 findings; all were
+remediated on the same branch (see `r2-remediation-*.log`):
+
+- **F8** the `slerp` interior `A·(A⁻¹B*)^t` certifies without normalizing (the
+same scale-preserving rule as `power`), so `identity.slerp([4,0], 0.5)` returns
+`[2, 0]`; literal endpoints and `A = B` are unchanged.
+- **F9** checked rotor-producing outputs (`inverse`, `power`/`power_integer` exp
+outputs) and the `apply` quotient reject non-finite coefficients and zero-loss
+collapse: a stored scalar `2⁻¹⁰⁷⁰` (exact `N = 2⁻²¹⁴⁰`) now returns
+`Err(Degenerate)` for `inverse`/`power_integer(−1)`/`apply` instead of `Ok`
+holding `+inf` or zero.
+- **F10** `from_axis_angle` normalizes from the symbolic exact scalar square
+(`sqrt(|σ|) = γ·2^q`, `q` never materialized), so an overflowing intermediate
+root no longer collapses `[MAX, MAX, 0]` to the identity; it matches `[1,1,0]`
+bit-exact.
+- **F11** the consumer companion discloses the rounded multi-plane power
+rejection by exact certification and the compose-chain migration.
+- **F12** these records are annotated: the false indefinite-`±e12` identity
+line and the superseded scalar-part binary gate are corrected here, and the S2
+summary's superseded claims carry `[SUPERSEDED by R1-F5: …]` pointers.
+- **F13** the Cl(2,2,0) dyadic battery comment is corrected and pins its true
+exact reverse norm `289/64` (both planes elliptic, each factor `N = 17/8`).
+
+Post-remediation matrix: **239 lib / 478 total** (was 239 / 475), clippy 0,
+fmt clean, rustdoc 0, no-default 0, workspace all-targets 0.
+
 ## Status
-IMPLEMENTATION COMPLETE AND STAGED. R1 review returned 7 P1 findings; all seven
-were remediated in the same worktree (2026-10-14) and the full pinned matrix
-re-ran green. Awaiting re-review / operator go-no-go.
+IMPLEMENTATION COMPLETE AND STAGED. R1 returned 7 P1 and R2 returned
+3 P1 / 1 P2 / 2 P3; all were remediated in the same worktree (2026-10-14) and
+the full pinned matrix re-ran green. Awaiting re-review / operator go-no-go.

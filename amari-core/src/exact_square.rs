@@ -494,6 +494,34 @@ impl ExactSquare {
         (sign, angle)
     }
 
+    /// Symbolic `(sign, gamma, q)` of the exact scalar part, with
+    /// `sqrt(|x^2|) = gamma * 2^q` and `gamma in [1, 2*sqrt(2))`.
+    ///
+    /// Unlike [`Self::scalar_sign_and_angle`], no power-of-two range is
+    /// materialized: a scalar square whose root overflows `f64` still yields a
+    /// finite `gamma` and an out-of-range `q`. Single-blade inputs keep the
+    /// bit-for-bit `|c|` with `q = 0` (CORE-W04 R2-F10).
+    pub(crate) fn scalar_sign_and_symbolic_angle(&self) -> (i32, f64, i64) {
+        if self.scalar_is_zero {
+            return (0, 0.0, 0);
+        }
+        let sign = self.coeffs[0].sign();
+        if let Some(angle) = self.single_blade_angle {
+            return (sign, angle, 0);
+        }
+        match self.coeffs[0].extracted() {
+            Some((top, b, sticky)) => {
+                let (mantissa, carry) = round_mantissa_to_f64(top, sticky);
+                let e = b as i64 + i64::from(carry) + BASE_EXP as i64;
+                let r = e.rem_euclid(2);
+                let q = (e - r) / 2;
+                let radicand = if r == 1 { mantissa * 2.0 } else { mantissa };
+                (sign, radicand.sqrt(), q)
+            }
+            None => (0, 0.0, 0),
+        }
+    }
+
     /// Whether a source coefficient was non-finite. The exact route requires
     /// finite coefficients; callers must handle this before routing.
     pub(crate) fn has_non_finite_source(&self) -> bool {

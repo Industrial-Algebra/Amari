@@ -598,6 +598,37 @@ mod rotor_tests {
     }
 
     #[test]
+    fn test_rotor_from_axis_angle_normalizes_overflowing_axes_symbolically() {
+        // R2-F10: `[MAX, MAX, 0]` certifies an exact sigma whose square root
+        // overflows f64; the symbolic normalization must produce the same
+        // rotation as `[1, 1, 0]` instead of silently returning identity.
+        let base = Rotor::from_axis_angle(&Vector::<3, 0, 0>::from_components(1.0, 1.0, 0.0), 1.0)
+            .expect("baseline [1,1,0] rotation");
+        assert_eq!(base.as_slice()[0], 0.8775825618903728);
+        assert_eq!(base.as_slice()[5], 0.3390050494210448);
+        assert_eq!(base.as_slice()[6], -0.3390050494210448);
+
+        let huge = Vector::<3, 0, 0>::from_components(f64::MAX, f64::MAX, 0.0);
+        let huge_rotor = Rotor::from_axis_angle(&huge, 1.0).expect("range-safe overflowing axis");
+        assert_eq!(huge_rotor.as_slice(), base.as_slice());
+
+        // The single-blade extreme stays bit-exact against the e1 rotation.
+        let e1 = Vector::<3, 0, 0>::e1();
+        let e1_base = Rotor::from_axis_angle(&e1, 1.0).expect("baseline e1 rotation");
+        let huge_e1 = Vector::<3, 0, 0>::from_components(f64::MAX, 0.0, 0.0);
+        let huge_e1_rotor =
+            Rotor::from_axis_angle(&huge_e1, 1.0).expect("range-safe single-blade axis");
+        assert_eq!(huge_e1_rotor.as_slice(), e1_base.as_slice());
+
+        // Mixed-magnitude axes stay green.
+        let mixed = Vector::<3, 0, 0>::from_components(1e200, 1e-200, 1.0);
+        let mixed_rotor = Rotor::from_axis_angle(&mixed, 1.0).expect("mixed-magnitude axis");
+        assert!(mixed_rotor.as_slice().iter().all(|c| c.is_finite()));
+        assert_eq!(mixed_rotor.as_slice()[0], 0.8775825618903728);
+        assert_eq!(mixed_rotor.as_slice()[6], -0.479425538604203);
+    }
+
+    #[test]
     fn test_slerp_endpoints() {
         let bivector = Bivector::<3, 0, 0>::e12();
         let r1 = Rotor::from_bivector(&bivector, PI / 6.0)

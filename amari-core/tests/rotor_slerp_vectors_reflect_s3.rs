@@ -23,6 +23,25 @@ fn planar_rotor(bivector_coefficient: f64) -> Rotor<2, 0, 0> {
     Rotor::from_bivector(&e12, angle).expect("bounded planar rotor")
 }
 
+/// The F4 twenty-squared rotor composed with its opposite-angle counterpart: a
+/// positive scalar `1.0000000000380618`, whose certified `ln4/ln(scale)` power
+/// is exactly `[4, 0]` (CORE-W04 R2-F8/F9 fixture).
+fn stored_scale_scalar_four() -> Rotor<2, 0, 0> {
+    let bivector = Bivector::<2, 0, 0>::e12();
+    let mut forward = Rotor::<2, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        forward = forward.compose(&forward);
+    }
+    let mut backward = Rotor::<2, 0, 0>::from_bivector(&bivector, -1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        backward = backward.compose(&backward);
+    }
+    let scale = forward.compose(&backward);
+    scale
+        .power(4f64.ln() / scale.scalar_part().ln())
+        .expect("certified exp-route power")
+}
+
 // ==================================================================
 // §2e slerp — endpoints, identity, sign selection.
 // ==================================================================
@@ -60,6 +79,35 @@ fn slerp_endpoints_are_exact_direct_returns() {
 
     assert_eq!(r1.slerp(&r2, 0.0).expect("t = 0").as_slice(), r1.as_slice());
     assert_eq!(r1.slerp(&r2, 1.0).expect("t = 1").as_slice(), r2.as_slice());
+}
+
+#[test]
+fn slerp_interior_preserves_the_stored_element_scale() {
+    // R2-F8: the interior `A·(A⁻¹B*)^t` must certify without normalizing, so a
+    // stored-scale scalar rotor keeps its magnitude (the former normalization
+    // returned `[1, 0]` for every power of the same scalar).
+    let identity = Rotor::<2, 0, 0>::identity();
+    let scalar_four = stored_scale_scalar_four();
+    assert_eq!(scalar_four.as_slice()[0], 4.0);
+    assert_eq!(scalar_four.as_slice()[3], 0.0);
+
+    let half = scalar_four.power(0.5).expect("certified half power");
+    assert_eq!(half.as_slice()[0], 2.0);
+    assert_eq!(half.as_slice()[3], 0.0);
+
+    let midpoint = identity.slerp(&scalar_four, 0.5).expect("interior");
+    assert_eq!(midpoint.as_slice()[0], 2.0);
+    assert_eq!(midpoint.as_slice()[3], 0.0);
+
+    // Endpoints stay literal direct returns (bit-exact).
+    assert_eq!(
+        identity.slerp(&scalar_four, 0.0).expect("t = 0").as_slice(),
+        identity.as_slice()
+    );
+    assert_eq!(
+        identity.slerp(&scalar_four, 1.0).expect("t = 1").as_slice(),
+        scalar_four.as_slice()
+    );
 }
 
 #[test]

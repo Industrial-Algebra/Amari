@@ -1,0 +1,4 @@
+# CORE-W04 R2 remediation green evidence
+# command: timeout 500 cargo +stable clippy -p amari-core --all-targets --locked -- -D warnings
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-w04/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s

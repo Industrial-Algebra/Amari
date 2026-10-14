@@ -28,6 +28,25 @@ fn square_chain(mut rotor: Boost) -> Boost {
     rotor
 }
 
+/// The stored-scale scalar-4 rotor from the F4 twenty-squared construction:
+/// `r20(+1e-8) ∘ r20(−1e-8)` is a positive scalar, and its certified
+/// `ln4/ln(scale)` power is exactly `[4, 0]` (CORE-W04 R2-F8/F9 fixture).
+fn stored_scale_scalar_four() -> Rotor<2, 0, 0> {
+    let bivector = Bivector::<2, 0, 0>::e12();
+    let mut forward = Rotor::<2, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        forward = forward.compose(&forward);
+    }
+    let mut backward = Rotor::<2, 0, 0>::from_bivector(&bivector, -1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        backward = backward.compose(&backward);
+    }
+    let scale = forward.compose(&backward);
+    scale
+        .power(4f64.ln() / scale.scalar_part().ln())
+        .expect("certified exp-route power")
+}
+
 #[test]
 fn dyadic_boost_base_is_exactly_representable() {
     let rotor = dyadic_boost(1.0);
@@ -72,6 +91,43 @@ fn angle_one_boost_stored_inverse_matches_exact_stored_element_inverse() {
     // Exact stored-element inverse R†/N (not the bare reverse).
     assert_eq!(inverse.as_slice()[0], 1.1276259652063807);
     assert_eq!(inverse.as_slice()[3], 0.5210953054937474);
+}
+
+#[test]
+fn exact_n_inverse_rejects_an_unrepresentable_output() {
+    // R2-F9: the exact stored `N` can certify positively while the quotient
+    // overflows f64. `4^-535 = 2^-1070` has exact `N = 2^-2140`, so the exact
+    // inverse `2^1070` is non-finite and must be a checked `Err`, not an `Ok`
+    // holding infinity.
+    let scalar_four = stored_scale_scalar_four();
+    assert_eq!(scalar_four.as_slice()[0], 4.0);
+    assert_eq!(scalar_four.as_slice()[3], 0.0);
+
+    let tiny = scalar_four
+        .power(-535.0)
+        .expect("certified exp-route power");
+    assert_eq!(tiny.as_slice()[0].to_bits(), 0x10);
+    assert_eq!(tiny.as_slice()[0], 8e-323);
+
+    assert!(matches!(tiny.inverse(), Err(RotorError::Degenerate)));
+    assert!(matches!(
+        tiny.power_integer(-1),
+        Err(RotorError::Degenerate)
+    ));
+
+    // The in-range scalar still inverts bit-exactly.
+    let inverse = scalar_four.inverse().expect("stored N > 0");
+    assert_eq!(inverse.as_slice()[0], 0.25);
+    assert_eq!(inverse.as_slice()[3], 0.0);
+
+    // The sandwich quotient shares the representability limit: the tiny-`N`
+    // product underflows and every output coefficient collapses to zero, which
+    // the checked producer rejects (a nonzero input cannot map to the exact
+    // zero element under an invertible versor action).
+    assert!(matches!(
+        tiny.apply(&Multivector::scalar(1.0)),
+        Err(RotorError::Degenerate)
+    ));
 }
 
 #[test]

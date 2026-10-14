@@ -100,33 +100,41 @@ Private stored field (`src/rotor.rs` unit batteries):
    witness rapidity correctly rounded (`0x4032b708872320e2`), reproducing the
    stated `[1.000000000000002, 1.0000000000000018]` result. The small-`δ`
    branch is unchanged (`½·ln1p(δ)`).
-2. **Binary-exponentiation `N ≤ 0` gate.** `checked_compose` uses
-   `exact_reverse_norm_scalar_sign` — the sign of the exact scalar part of
-   `R·R†`, ignoring non-scalar rounding residue — for the contract §2d "`N ≤ 0`
-   detection at each checked boundary". The product of two uncertified
-   multi-plane versors has a near-1 metric norm but a non-scalar exact `R·R†`
-   from coefficient rounding, so the scalar-only certificate of
+2. **[SUPERSEDED by R1-remediation F5: `checked_compose` now requires the
+   full positive-scalar exact `R·R†` certificate; rounded multi-plane
+   composites return `Err(Degenerate)`.] Binary-exponentiation `N ≤ 0` gate.**
+   `checked_compose` used `exact_reverse_norm_scalar_sign` — the sign of the
+   exact scalar part of `R·R†`, ignoring non-scalar rounding residue — for the
+   contract §2d "`N ≤ 0` detection at each checked boundary". The product of two
+   uncertified multi-plane versors has a near-1 metric norm but a non-scalar
+   exact `R·R†` from coefficient rounding, so the scalar-only certificate of
    `exact_reverse_norm` does not apply. The certified closed-form routes
-   (`power`/`power_integer`/constructors) still use the exact scalar-`N` gate
-   and return `Err(Degenerate)`, which is what detects the `R^32` collapse.
-3. **Non-simple multi-plane construction.** `from_bivector` on a *non-simple*
+   (`power`/`power_integer`/constructors) already used the exact scalar-`N` gate
+   and returned `Err(Degenerate)`, which is what detects the `R^32` collapse.
+3. **[SUPERSEDED by R1-remediation F5: the *rounded* multi-plane fixture
+   `r12(0.3)∘r34(0.7)` has a non-scalar exact `R·R†` and is rejected; the
+   surviving binary-fallback fixture is the exactly-representable
+   `(5/4+3/4e12)(5/4+3/4e34)` with exact scalar `N = 289/64` (R2-F13).]**
+   Non-simple multi-plane construction. `from_bivector` on a *non-simple*
    bivector (e.g. Cl(4,0,0) `e12+e34`, `B² = −2 + 2e1234`) returns
    `Err(Degenerate)` because the series-route output's exact reverse norm is
-   non-scalar. The multi-plane binary-exponentiation fixture is therefore the
+   non-scalar. The multi-plane binary-exponentiation fixture was therefore the
    product of two orthogonal simple rotors (`r12.compose(&r34)`), which has the
-   required grade-4 content (`log → Uncertified`) and exactly scalar reverse
-   norm.
+   required grade-4 content (`log → Uncertified`).
 4. **Mixed-component fixture placement.** The exact `2²⁷ + 2²⁷e13 + e12`
    fixture is a unit test with direct stored-field construction. The
    exp-then-normalize route does not produce it: a 1-ulp difference between the
    printed `w` and `B₁₃` makes the metric `N` ≈ 4 instead of 1, so
    `normalize_versor` divides by ~2 and changes the rapidity.
-5. **Binary exponentiation chain / composition budget.** The exponent-`n`
-   chain is left-to-right square-and-multiply (`R², R³, R⁶, R⁷` for 7; 4
-   compositions). The composition-law battery's left side performs 5
+5. **[SUPERSEDED by R1-remediation F5: the rounded six-ulp composition
+   battery was deleted; the surviving law battery is the exact-dyadic
+   `power_integer(3)∘power_integer(4) == power_integer(7)` identity
+   (R2-F13).]** Binary exponentiation chain / composition budget. The
+   exponent-`n` chain is left-to-right square-and-multiply (`R², R³, R⁶, R⁷`
+   for 7; 4 compositions). The composition-law battery's left side performs 5
    compositions (2 for 3, 2 for 4, 1 for the final compose), so `m = 5` and the
-   contract's `m + 1 = 6` ulp budget on the max-abs coefficient norm is used;
-   the assertion is expressed in absolute terms scaled by `ulp(max_abs)`
+   contract's `m + 1 = 6` ulp budget on the max-abs coefficient norm was used;
+   the assertion was expressed in absolute terms scaled by `ulp(max_abs)`
    because coefficient-wise ulp on near-zero coefficients is not the contract's
    stated metric.
 6. **Odd-grade content.** Any nonzero non-grade-0/2 coefficient (including odd

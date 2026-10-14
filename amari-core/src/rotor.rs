@@ -3,8 +3,8 @@
 use crate::error::RotorError;
 use crate::exact_square::{
     divide_f64_by_positive, exact_product_eq, exact_reverse_norm, exact_reverse_norm_positive,
-    exact_reverse_norm_state, exact_reverse_norm_unit, exact_x2, ExactPositive, ReverseNorm,
-    ReverseNormState,
+    exact_reverse_norm_state, exact_reverse_norm_unit, exact_x2, scale_by_pow2_rne, ExactPositive,
+    ReverseNorm, ReverseNormState,
 };
 use crate::has_foreign_grade;
 use crate::{Bivector, Multivector, Vector};
@@ -45,7 +45,21 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     /// Contract §1.4b output gate. The exponential-route powers preserve the
     /// element scale the logarithm carries, so they certify the un-normalized
     /// exponential output rather than rescaling it to unit (CORE-W04 R1-F4).
+    /// Any non-finite coefficient is rejected first as a representability
+    /// limit — the exact `N` can certify while the quotient overflows (R2-F9).
     fn certify_exact_scalar_n(multivector: Multivector<P, Q, R>) -> Result<Self, RotorError> {
+        // R2-F9: the exact reverse-norm certificate is necessary but not
+        // sufficient for representability. A quotient can overflow to a
+        // non-finite coefficient while its exact `N` is still scalar positive
+        // (stored scalar `2^-1070` has `N = 2^-2140` and exact inverse
+        // `2^1070 = +inf`), so the output finiteness check precedes the gate.
+        if multivector
+            .as_slice()
+            .iter()
+            .any(|coefficient| !coefficient.is_finite())
+        {
+            return Err(RotorError::Degenerate);
+        }
         match exact_reverse_norm(&multivector) {
             ReverseNorm::Positive => Ok(Self { multivector }),
             _ => Err(RotorError::Degenerate),
@@ -107,7 +121,13 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     /// otherwise [`RotorError::Degenerate`]. Exactly-normalized rotors behave
     /// as the bare sandwich within rounding. The division is performed per
     /// coefficient against the **exact** `N` dyadic, so each output rounds
-    /// once (CORE-W04 R1-F2); no pre-rounded `f64` denominator is used.
+    /// once (CORE-W04 R1-F2); no pre-rounded `f64` denominator is used. The
+    /// quotient is a checked output (R2-F9): a non-finite coefficient is
+    /// [`RotorError::Degenerate`], and because a versor action is invertible a
+    /// nonzero input mapping to the exact zero element is the tiny-`N`
+    /// underflow collapse, also [`RotorError::Degenerate`]. The general
+    /// multivector output is not required to have positive reverse norm
+    /// (indefinite signatures and null vectors are legitimate images).
     pub fn apply(&self, v: &Multivector<P, Q, R>) -> Result<Multivector<P, Q, R>, RotorError> {
         let n = exact_reverse_norm_positive(&self.multivector).ok_or(RotorError::Degenerate)?;
         let r_dagger = self.multivector.reverse();
@@ -118,6 +138,24 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         let mut result = Multivector::zero();
         for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
             result.set(index, divide_f64_by_positive(product.get(index), &n));
+        }
+        // R2-F9: the quotient is a checked producer. Any non-finite coefficient
+        // is an unrepresentable output (`Err(Degenerate)`); and because a versor
+        // action is invertible over the exact algebra, a nonzero input cannot
+        // map to the exact zero element, so an all-zero floating quotient is the
+        // tiny-`N` underflow collapse, not a valid result. A general output is
+        // *not* required to have positive reverse norm (indefinite signatures
+        // and null vectors are legitimate images), only to be finite and, for a
+        // nonzero input, nonzero.
+        if result
+            .as_slice()
+            .iter()
+            .any(|coefficient| !coefficient.is_finite())
+        {
+            return Err(RotorError::Degenerate);
+        }
+        if !v.is_zero() && result.is_zero() {
+            return Err(RotorError::Degenerate);
         }
         Ok(result)
     }
@@ -149,7 +187,10 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     ///
     /// Each reversed coefficient is divided by the **exact** `N` dyadic with a
     /// single rounding at the destination precision (CORE-W04 R1-F2); the
-    /// denominator is never pre-rounded to `f64`.
+    /// denominator is never pre-rounded to `f64`. The quotient is certified as
+    /// an output (R2-F9): a non-finite coefficient (an exact inverse outside
+    /// the `f64` range) or an output whose own exact reverse norm is not a
+    /// positive scalar is [`RotorError::Degenerate`].
     pub fn inverse(&self) -> Result<Self, RotorError> {
         let n = exact_reverse_norm_positive(&self.multivector).ok_or(RotorError::Degenerate)?;
         let reversed = self.multivector.reverse();
@@ -157,9 +198,11 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
             result.set(index, divide_f64_by_positive(reversed.get(index), &n));
         }
-        Ok(Self {
-            multivector: result,
-        })
+        // R2-F9: certify the quotient output (finiteness + full positive-scalar
+        // exact `N`), not merely the input. A stored scalar `2^-1070` has exact
+        // `N = 2^-2140`, so the exact `R†/N` overflows to `+inf`; the checked
+        // route must report `Degenerate`, never `Ok` containing infinity.
+        Self::certify_exact_scalar_n(result)
     }
 
     /// Create identity rotor
@@ -280,6 +323,23 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
             return Err(RotorError::NotNormalizable);
         }
         Ok(square.scalar_sign_and_angle())
+    }
+
+    /// Symbolic certified exact scalar `sigma(x) = x·x` of a pure grade-1
+    /// input: `(sign, gamma, q)` with `sqrt(|sigma|) = gamma * 2^q`.
+    ///
+    /// The power-of-two part is never materialized, so an exact square whose
+    /// root overflows `f64` still normalizes (CORE-W04 R2-F10). Same rejection
+    /// policy as [`Self::certified_vector_square`].
+    fn certified_vector_square_symbolic(
+        v: &Multivector<P, Q, R>,
+    ) -> Result<(i32, f64, i64), RotorError> {
+        let square = exact_x2(v);
+        if square.is_unsupported() || square.has_non_finite_source() || !square.is_exactly_scalar()
+        {
+            return Err(RotorError::NotNormalizable);
+        }
+        Ok(square.scalar_sign_and_symbolic_angle())
     }
 
     /// Sign-aware direction normalization `v / sqrt(|σ(v)|)`, finite-guarded.
@@ -425,7 +485,11 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         let relative = a_inverse.compose(&b_star);
         let powered = relative.power(t)?;
         let result = self.multivector.geometric_product(&powered.multivector);
-        Self::normalize_and_certify(result)
+        // R2-F8: the interior route `A·(A⁻¹B*)^t` preserves the stored element
+        // scale exactly as `power` does, so the concatenated product is
+        // certified without normalization. The literal endpoints and `A = B`
+        // returns above are unchanged.
+        Self::certify_exact_scalar_n(result)
     }
 
     /// Domain-aware element logarithm of the stored rotor (contract §2).
@@ -733,16 +797,28 @@ impl Rotor<3, 0, 0> {
         // `|axis| ~ 1e-200` (spurious `Err(NullVector)`). `exact_x2` computes
         // `sigma(x) = x·x` on the exact dyadics, so normalization happens
         // before any null/finite decision (CORE-W04 R1-F7).
-        let (sign, beta) = Self::certified_vector_square(axis_mv)?;
+        let (sign, gamma, q) = Self::certified_vector_square_symbolic(axis_mv)?;
         if sign == 0 {
             return Err(RotorError::NullVector);
         }
         if sign < 0 {
             return Err(RotorError::NotNormalizable);
         }
-        // `sign != 0` means the exact magnitude is positive, so `beta > 0`
-        // (possibly subnormal); no pre-normalization null check can trip.
-        let normalized_axis = axis_mv / beta;
+        // R2-F10: `sqrt(|sigma|) = gamma * 2^q` with `gamma in [1, 2*sqrt(2))`,
+        // so the overflowing square root is never materialized. Scaling each
+        // coefficient by `2^-q` is a single correctly-rounded step, and
+        // `gamma` is always finite (`sqrt` of a mantissa in `[1, 4)`).
+        let mut normalized_axis = Multivector::<3, 0, 0>::zero();
+        for index in 0..Multivector::<3, 0, 0>::BASIS_COUNT {
+            normalized_axis.set(index, scale_by_pow2_rne(axis_mv.get(index), -q) / gamma);
+        }
+        if normalized_axis
+            .as_slice()
+            .iter()
+            .any(|coefficient| !coefficient.is_finite())
+        {
+            return Err(RotorError::NotNormalizable);
+        }
 
         // For a 3D axis (a1, a2, a3), the corresponding bivector is
         // (a3·e12 − a2·e13 + a1·e23).
@@ -1242,10 +1318,12 @@ mod tests {
     #[test]
     fn test_dyadic_multiphane_binary_power_chain_is_exact() {
         // Cl(2,2,0): R = (5/4 + 3/4 e12)(5/4 + 3/4 e34) is a grade-4 multi-plane
-        // element with exactly scalar N = 1 (all coefficients are exact
-        // dyadics, so the versor identity holds exactly). powers route through
-        // the binary-composition fallback and the full certificate accepts
-        // every boundary (R1-F5's contrast case to the rounded fixture).
+        // element whose exact reverse norm is the exactly-representable scalar
+        // 289/64: both e12 and e34 are elliptic in this signature, each factor
+        // has N = 25/16 + 9/16 = 17/8, and their product is 289/64 (R2-F13
+        // corrects the earlier "N = 1" claim). Powers route through the
+        // binary-composition fallback and the full certificate accepts every
+        // boundary (R1-F5's contrast case to the rounded fixture).
         let mut r12 = Multivector::<2, 2, 0>::zero();
         r12.set(0, 1.25);
         r12.set(3, 0.75); // e12
@@ -1253,6 +1331,10 @@ mod tests {
         r34.set(0, 1.25);
         r34.set(12, 0.75); // e34
         let product = r12.geometric_product(&r34);
+        // R2-F13: pin the true exact reverse norm, not the superseded N = 1.
+        let reverse_norm = product.geometric_product(&product.reverse());
+        assert_eq!(reverse_norm.get(0), 289.0 / 64.0);
+        assert!(reverse_norm.as_slice().iter().skip(1).all(|&c| c == 0.0));
         let rotor = Rotor {
             multivector: product.clone(),
         };
