@@ -251,13 +251,23 @@ Large-rapidity boosts (`Degenerate` = representability; parameterize by
 generator+angle below threshold); `log(−1)`/multi-plane/non-Euclidean-2D
 antipodal rejected with named errors (construct the plane explicitly).
 
-**Integer/real powers of multi-plane composites (R2).** `power`/
-`power_integer` on an element whose exact reverse norm `R·R†` is non-scalar
-now returns `Err(Degenerate)`. Every rounded multi-plane composite — e.g.
-`r12(0.3)∘r34(0.7)`, built from simple rotors in orthogonal planes —
-rounds its exact `R·R†` away from a scalar, so every integer and real power
-of such a stored element is rejected instead of silently compounding the
-error. The surviving binary-composition fallback is defined by **exact
+**Integer/real powers of multi-plane composites (R2, restated per error
+kind by R3-F16).** For an element whose exact reverse norm `R·R†` is
+non-scalar — every rounded multi-plane composite, e.g.
+`r12(0.3)∘r34(0.7)` built from simple rotors in orthogonal planes — the
+power surface splits by exponent, not by a single rejection:
+
+- `power(0)`/`power_integer(0)` return `Ok(identity)`;
+- `power(1)`/`power_integer(1)` return `Ok` of a **bit-exact clone**;
+- `power(−1)`/`power_integer(−1)` return `Err(Degenerate)` — the
+  stored-element inverse's exact-`N` certificate fails;
+- other integral exponents (e.g. `power(2)`) return `Err(Degenerate)` —
+  the certified logarithm rejects with `Uncertified`, then the
+  binary-composition fallback's per-boundary exact-`N` certificate fails;
+- non-integral exponents (e.g. `power(0.5)`) return `Err(Uncertified)` —
+  the logarithm rejection, a **different** error.
+
+The surviving binary-composition fallback is defined by **exact
 certification, not coefficient shape**: every finite `f64` coefficient is
 itself dyadic, so "dyadic coefficients" is not the criterion — the
 criterion is an exact `R·R†` that certifies **scalar and positive**, which
@@ -265,7 +275,9 @@ holds for simple rotors and exactly-certified multi-plane products (e.g.
 disjoint-plane products whose dyadic arithmetic is exact), not for general
 rounded composites. **Migration:** for multi-plane elements, compose the
 simple factors/chain directly instead of calling `power_integer` on the
-stored composite.
+stored composite — this applies to the supported integer-power workflows;
+the `{0, 1}` literal returns above remain available on the stored
+composite itself.
 
 ## 4. Communication plan (unchanged; scope widened)
 

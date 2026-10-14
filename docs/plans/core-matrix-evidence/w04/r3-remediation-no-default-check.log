@@ -1,0 +1,5 @@
+# CORE-W04 R3 remediation green evidence
+# command: timeout 400 cargo +stable check -p amari-core --lib --no-default-features --locked
+# command: timeout 400 cargo +stable check -p amari-core --lib --no-default-features --features std --locked
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s

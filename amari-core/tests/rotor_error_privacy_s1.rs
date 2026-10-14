@@ -47,6 +47,25 @@ fn stored_scale_scalar_four() -> Rotor<2, 0, 0> {
         .expect("certified exp-route power")
 }
 
+/// The same stored-scale scalar-4 construction in Cl(2,1,0) — the R3-F14
+/// sandwich fixture: composed with an `e13` boost it stores
+/// `4·(cosh 1 + sinh 1·e13)` with certified `N = 16`.
+fn stored_scale_scalar_four_cl2_1_0() -> Rotor<2, 1, 0> {
+    let bivector = Bivector::<2, 1, 0>::e12();
+    let mut forward = Rotor::<2, 1, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        forward = forward.compose(&forward);
+    }
+    let mut backward = Rotor::<2, 1, 0>::from_bivector(&bivector, -1e-8).expect("bounded rotor");
+    for _ in 0..20 {
+        backward = backward.compose(&backward);
+    }
+    let scale = forward.compose(&backward);
+    scale
+        .power(4f64.ln() / scale.scalar_part().ln())
+        .expect("certified exp-route power")
+}
+
 #[test]
 fn dyadic_boost_base_is_exactly_representable() {
     let rotor = dyadic_boost(1.0);
@@ -120,14 +139,69 @@ fn exact_n_inverse_rejects_an_unrepresentable_output() {
     assert_eq!(inverse.as_slice()[0], 0.25);
     assert_eq!(inverse.as_slice()[3], 0.0);
 
-    // The sandwich quotient shares the representability limit: the tiny-`N`
-    // product underflows and every output coefficient collapses to zero, which
-    // the checked producer rejects (a nonzero input cannot map to the exact
-    // zero element under an invertible versor action).
-    assert!(matches!(
-        tiny.apply(&Multivector::scalar(1.0)),
-        Err(RotorError::Degenerate)
-    ));
+    // R3-F14 pin revision: a tiny SCALAR rotor's action is the identity map
+    // (`R·A·R†/N = λ²A/λ²`), so `apply` returns `Ok(A)` exactly instead of the
+    // former nonzero->zero-loss `Err(Degenerate)`. The exact per-coefficient
+    // quotient recovers the image even though the floating numerator underflows.
+    let scalar = Multivector::<2, 0, 0>::scalar(1.0);
+    let acted_scalar = tiny.apply(&scalar).expect("identity action on a scalar");
+    assert_eq!(acted_scalar.as_slice(), scalar.as_slice());
+    let e1 = Multivector::<2, 0, 0>::basis_vector(0);
+    let acted_e1 = tiny.apply(&e1).expect("identity action on a vector");
+    assert_eq!(acted_e1.as_slice(), e1.as_slice());
+}
+
+#[test]
+fn apply_zero_loss_gate_is_post_exact_quotient() {
+    // R3-F14: the post-rounding zero-loss gate is deleted. The angle-2
+    // Cl(2,1,0) boost `[6.172322539260975, −4.7008047745752055 e13]` maps
+    // `2^-1074(e1−e3)` to the exact quotient ≈ 2^-1074/16, which correctly
+    // rounds to the exact zero image — `Ok(zero)`, not `Err(Degenerate)`.
+    let tiny = f64::from_bits(1);
+    let e13 = Bivector::<2, 1, 0>::e13();
+    let scalar_four = stored_scale_scalar_four_cl2_1_0();
+    assert_eq!(scalar_four.as_slice()[0], 4.0);
+    assert_eq!(scalar_four.as_slice()[3], 0.0);
+
+    let boost_two = Rotor::<2, 1, 0>::from_bivector(&e13, 2.0).expect("bounded angle-2 boost");
+    let angle_two = scalar_four.compose(&boost_two);
+    assert_eq!(angle_two.as_slice()[0], 6.172322539260975);
+    assert_eq!(angle_two.as_slice()[5], -4.7008047745752055);
+
+    let mut a = Multivector::<2, 1, 0>::zero();
+    a.set(1, tiny);
+    a.set(4, -tiny);
+    let zero_image = angle_two.apply(&a).expect("correctly-rounded zero image");
+    assert!(zero_image
+        .as_slice()
+        .iter()
+        .all(|&coefficient| coefficient == 0.0));
+
+    // The angle-0.5 variant is unchanged: the quotient is representable as
+    // minimum-subnormal coefficients (bit 0x1), not rounded to zero.
+    let boost_half = Rotor::<2, 1, 0>::from_bivector(&e13, 0.5).expect("bounded angle-0.5 boost");
+    let angle_half = scalar_four.compose(&boost_half);
+    let subnormal_image = angle_half.apply(&a).expect("min-subnormal image");
+    assert_eq!(subnormal_image.get(1).to_bits(), 1);
+    assert_eq!(subnormal_image.get(4).to_bits(), 0x8000_0000_0000_0001);
+    assert!(subnormal_image
+        .as_slice()
+        .iter()
+        .enumerate()
+        .all(|(index, &coefficient)| index == 1 || index == 4 || coefficient == 0.0));
+}
+
+#[test]
+fn apply_overflowing_quotient_is_degenerate() {
+    // The F14 representability gate is constructible: a certified `N > 0`
+    // angle-30 Cl(2,1,0) boost (its exact-`N` inverse succeeds) applied to a
+    // near-max input produces a non-finite exact quotient -> `Err(Degenerate)`.
+    let e13 = Bivector::<2, 1, 0>::e13();
+    let boost = Rotor::<2, 1, 0>::from_bivector(&e13, 30.0).expect("angle-30 boost");
+    assert!(boost.inverse().is_ok(), "certified N > 0 input rotor");
+    let mut a = Multivector::<2, 1, 0>::zero();
+    a.set(1, 1e300);
+    assert!(matches!(boost.apply(&a), Err(RotorError::Degenerate)));
 }
 
 #[test]

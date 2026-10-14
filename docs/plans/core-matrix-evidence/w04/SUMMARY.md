@@ -112,7 +112,39 @@ exact reverse norm `289/64` (both planes elliptic, each factor `N = 17/8`).
 Post-remediation matrix: **239 lib / 478 total** (was 239 / 475), clippy 0,
 fmt clean, rustdoc 0, no-default 0, workspace all-targets 0.
 
+## R3 remediation (2026-10-14)
+
+Review round 3 on `c495ab5` produced 2 P1 / 1 P2 findings; all were remediated
+on the same branch (see `r3-remediation-*.log`):
+
+- **F14** `apply` computes each image coefficient as the exact dyadic quotient
+  `(R·A·R†)/N` (two exact multivector products then the sticky-bit divider,
+  rounded once at the destination); the post-rounding zero-loss check is
+  deleted. The former `Err(Degenerate)` for the angle-2 Cl(2,1,0) boost on
+  `2^-1074(e1−e3)` is now `Ok(exact zero image)` (correctly rounded), and the
+  angle-0.5 variant stays the min-subnormal image. **Pin revision (R3-F14):** a
+  tiny *scalar* rotor's action is the identity map, so `tiny(2^-1070).apply(A)
+  = Ok(A)` exactly — the R2 expectation (already `Err`) was the orchestrator's
+  error; `inverse`/`power_integer(−1)` stay `Err(Degenerate)` (their outputs
+  genuinely overflow). The non-finite-quotient gate is retained and an
+  overflowing-quotient battery is pinned (angle-30 boost, `N>0`, near-max
+  input).
+- **F15** `from_vectors` normalizes through the symbolic exact scalar square
+  (`sqrt(|σ|) = γ·2^q`), the same machinery as `from_axis_angle`; the earlier
+  materialized-`β` asymmetry is closed. The Cl(0,2,0) subnormal fixture
+  `e1 → 2^-1074(e1+e2)` now acts as the unit direction `[1/√2, 1/√2]`, and the
+  direction normalization is bit-exactly scale-invariant over
+  `{1, 2^-100, 2^-600, 2^-1074, 2^500, 2^1020}` in both `Cl(3,0,0)` and
+  `Cl(0,3,0)` (the overflow-scale case succeeds symbolically). The `stage-s3`
+  normalization deviation is annotated `[SUPERSEDED … F15]`.
+- **F16** the consumer companion restates the multi-plane power rejection per
+  error kind: `power(0) = Ok(identity)`, `power(1) = Ok(clone)`,
+  `power(−1)`/`power(2) = Err(Degenerate)`, `power(0.5) = Err(Uncertified)` for
+  `r12(0.3)∘r34(0.7)`; the compose-chain migration is qualified to supported
+  integer-power workflows. A battery pins all five behaviors.
+
 ## Status
-IMPLEMENTATION COMPLETE AND STAGED. R1 returned 7 P1 and R2 returned
-3 P1 / 1 P2 / 2 P3; all were remediated in the same worktree (2026-10-14) and
-the full pinned matrix re-ran green. Awaiting re-review / operator go-no-go.
+IMPLEMENTATION COMPLETE AND STAGED. R1 returned 7 P1, R2 returned 3 P1 / 1 P2 /
+2 P3, and R3 returned 2 P1 / 1 P2; all were remediated in the same worktree
+(2026-10-14) and the full pinned matrix re-ran green. Awaiting re-review /
+operator go-no-go.

@@ -107,6 +107,12 @@ Private stored-field (`src/rotor.rs` unit batteries):
    non-scalar certified square route to `Err(NotNormalizable)` (the contract
    names only the finite fixtures). The `NotAVector → NullVector →
    CausalTypeMismatch → antipodal/trichotomy` order is unchanged.
+   [SUPERSEDED for the normalization route by R3-remediation F15: `from_vectors`
+   now normalizes through the same symbolic root machinery as
+   `from_axis_angle` (`sqrt(|σ|) = γ·2^q`, the power-of-two part never
+   materialized), closing the earlier asymmetry that materialized `β` and could
+   return a non-unit direction for subnormal inputs. See `SUMMARY.md` R3
+   remediation.]
 3. **`CC†` non-scalar / uncertified.** A candidate whose exact `CC†` is
    non-scalar or leaves the dyadic window routes to `Err(NotNormalizable)`
    (the three named outcomes — positive, zero, negative — are exact and

@@ -3,8 +3,8 @@
 use crate::error::RotorError;
 use crate::exact_square::{
     divide_f64_by_positive, exact_product_eq, exact_reverse_norm, exact_reverse_norm_positive,
-    exact_reverse_norm_state, exact_reverse_norm_unit, exact_x2, scale_by_pow2_rne, ExactPositive,
-    ReverseNorm, ReverseNormState,
+    exact_reverse_norm_state, exact_reverse_norm_unit, exact_sandwich_divide, exact_x2,
+    scale_by_pow2_rne, ExactPositive, ReverseNorm, ReverseNormState,
 };
 use crate::has_foreign_grade;
 use crate::{Bivector, Multivector, Vector};
@@ -119,42 +119,46 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
     ///
     /// The stored reverse norm `N = R·R†` must certify scalar and positive;
     /// otherwise [`RotorError::Degenerate`]. Exactly-normalized rotors behave
-    /// as the bare sandwich within rounding. The division is performed per
-    /// coefficient against the **exact** `N` dyadic, so each output rounds
-    /// once (CORE-W04 R1-F2); no pre-rounded `f64` denominator is used. The
+    /// as the bare sandwich within rounding. Each output coefficient is the
+    /// exact dyadic quotient of the stored `R·v·R†` expansion divided by the
+    /// **exact** `N` dyadic, rounded once at the destination (CORE-W04 R1-F2,
+    /// R3-F14); the numerator is never materialized in `f64`, so a nonzero
+    /// image that legitimately underflows rounds to zero correctly. The
     /// quotient is a checked output (R2-F9): a non-finite coefficient is
-    /// [`RotorError::Degenerate`], and because a versor action is invertible a
-    /// nonzero input mapping to the exact zero element is the tiny-`N`
-    /// underflow collapse, also [`RotorError::Degenerate`]. The general
-    /// multivector output is not required to have positive reverse norm
-    /// (indefinite signatures and null vectors are legitimate images).
+    /// [`RotorError::Degenerate`]. There is no post-rounding zero-loss check —
+    /// an exact-zero numerator and a correctly-rounded-to-zero image are both
+    /// legitimate zero images. The general multivector output is not required
+    /// to have positive reverse norm (indefinite signatures and null vectors
+    /// are legitimate images).
     pub fn apply(&self, v: &Multivector<P, Q, R>) -> Result<Multivector<P, Q, R>, RotorError> {
         let n = exact_reverse_norm_positive(&self.multivector).ok_or(RotorError::Degenerate)?;
-        let r_dagger = self.multivector.reverse();
-        let product = self
-            .multivector
-            .geometric_product(v)
-            .geometric_product(&r_dagger);
-        let mut result = Multivector::zero();
-        for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
-            result.set(index, divide_f64_by_positive(product.get(index), &n));
-        }
+        // R3-F14: per-coefficient exact quotients. Only an input whose exact
+        // expansion leaves the certified dyadic window falls back to the
+        // floating sandwich (then still dividing by the exact `N`).
+        let result = match exact_sandwich_divide(&self.multivector, v, &n) {
+            Some(exact) => exact,
+            None => {
+                let r_dagger = self.multivector.reverse();
+                let product = self
+                    .multivector
+                    .geometric_product(v)
+                    .geometric_product(&r_dagger);
+                let mut fallback = Multivector::zero();
+                for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
+                    fallback.set(index, divide_f64_by_positive(product.get(index), &n));
+                }
+                fallback
+            }
+        };
         // R2-F9: the quotient is a checked producer. Any non-finite coefficient
-        // is an unrepresentable output (`Err(Degenerate)`); and because a versor
-        // action is invertible over the exact algebra, a nonzero input cannot
-        // map to the exact zero element, so an all-zero floating quotient is the
-        // tiny-`N` underflow collapse, not a valid result. A general output is
+        // is an unrepresentable output (`Err(Degenerate)`). A general output is
         // *not* required to have positive reverse norm (indefinite signatures
-        // and null vectors are legitimate images), only to be finite and, for a
-        // nonzero input, nonzero.
+        // and null vectors are legitimate images).
         if result
             .as_slice()
             .iter()
             .any(|coefficient| !coefficient.is_finite())
         {
-            return Err(RotorError::Degenerate);
-        }
-        if !v.is_zero() && result.is_zero() {
             return Err(RotorError::Degenerate);
         }
         Ok(result)
@@ -275,9 +279,10 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
             return Err(RotorError::NotAVector);
         }
 
-        // Certified `σ(x) = x·x` on the original inputs (exact dyadic square).
-        let (sign_a, beta_a) = Self::certified_vector_square(a)?;
-        let (sign_b, beta_b) = Self::certified_vector_square(b)?;
+        // Certified `σ(x) = x·x` on the original inputs (exact dyadic square),
+        // kept symbolic so the direction root is never materialized (R3-F15).
+        let (sign_a, gamma_a, q_a) = Self::certified_vector_square_symbolic(a)?;
+        let (sign_b, gamma_b, q_b) = Self::certified_vector_square_symbolic(b)?;
         if sign_a == 0 || sign_b == 0 {
             return Err(RotorError::NullVector);
         }
@@ -286,8 +291,8 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         }
         let s = sign_a;
 
-        let a_hat = Self::normalize_direction(a, beta_a)?;
-        let b_hat = Self::normalize_direction(b, beta_b)?;
+        let a_hat = Self::normalize_direction(a, gamma_a, q_a)?;
+        let b_hat = Self::normalize_direction(b, gamma_b, q_b)?;
 
         // §3a.4 direction pre-test on the certified ORIGINAL coefficients:
         // exact proportionality is signature-free, so it is decided before the
@@ -311,26 +316,13 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         }
     }
 
-    /// Certified exact scalar `σ(x) = x·x` of a pure grade-1 input.
-    ///
-    /// Returns `(sign, sqrt(|σ|))`; any uncertifiable square (unsupported
-    /// signature, non-finite coefficient, or non-scalar result) is
-    /// [`RotorError::NotNormalizable`].
-    fn certified_vector_square(v: &Multivector<P, Q, R>) -> Result<(i32, f64), RotorError> {
-        let square = exact_x2(v);
-        if square.is_unsupported() || square.has_non_finite_source() || !square.is_exactly_scalar()
-        {
-            return Err(RotorError::NotNormalizable);
-        }
-        Ok(square.scalar_sign_and_angle())
-    }
-
     /// Symbolic certified exact scalar `sigma(x) = x·x` of a pure grade-1
     /// input: `(sign, gamma, q)` with `sqrt(|sigma|) = gamma * 2^q`.
     ///
     /// The power-of-two part is never materialized, so an exact square whose
-    /// root overflows `f64` still normalizes (CORE-W04 R2-F10). Same rejection
-    /// policy as [`Self::certified_vector_square`].
+    /// root overflows or underflows `f64` still normalizes (CORE-W04 R2-F10,
+    /// R3-F15). Any uncertifiable square (unsupported signature, non-finite
+    /// coefficient, or non-scalar result) is [`RotorError::NotNormalizable`].
     fn certified_vector_square_symbolic(
         v: &Multivector<P, Q, R>,
     ) -> Result<(i32, f64, i64), RotorError> {
@@ -342,15 +334,25 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         Ok(square.scalar_sign_and_symbolic_angle())
     }
 
-    /// Sign-aware direction normalization `v / sqrt(|σ(v)|)`, finite-guarded.
+    /// Sign-aware direction normalization `v / sqrt(|σ(v)|)` from the symbolic
+    /// root `sqrt(|σ|) = gamma * 2^q`, finite-guarded.
+    ///
+    /// Each coefficient is scaled by `2^-q` first (one correctly-rounded
+    /// power-of-two multiply), then divided by the always-finite `gamma`; the
+    /// overflowing or underflowing root is never materialized (R3-F15, the
+    /// same range-safe pattern as [`Rotor::from_axis_angle`]).
     fn normalize_direction(
         v: &Multivector<P, Q, R>,
-        beta: f64,
+        gamma: f64,
+        q: i64,
     ) -> Result<Multivector<P, Q, R>, RotorError> {
-        if !beta.is_finite() || beta <= 0.0 {
+        if !gamma.is_finite() || gamma <= 0.0 {
             return Err(RotorError::NotNormalizable);
         }
-        let normalized = v / beta;
+        let mut normalized = Multivector::zero();
+        for index in 0..Multivector::<P, Q, R>::BASIS_COUNT {
+            normalized.set(index, scale_by_pow2_rne(v.get(index), -q) / gamma);
+        }
         if normalized
             .as_slice()
             .iter()

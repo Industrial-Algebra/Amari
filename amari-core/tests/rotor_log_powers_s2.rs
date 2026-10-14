@@ -260,6 +260,26 @@ fn non_integral_power_matches_a_half_angle_construction() {
 }
 
 #[test]
+fn multiphane_power_error_kinds_are_per_operation() {
+    // R3-F16: the companion disclosure is restated per error kind. The rounded
+    // multi-plane composite `r12(0.3)∘r34(0.7)` has non-scalar exact `R·R†`,
+    // yet the literal powers still succeed; only the certification paths fail,
+    // with distinct errors.
+    let rotor = multiphane_rotor();
+    assert_eq!(
+        rotor.power(0.0).expect("zero power is identity").as_slice(),
+        Rotor::<4, 0, 0>::identity().as_slice()
+    );
+    assert_eq!(
+        rotor.power(1.0).expect("first power is a clone").as_slice(),
+        rotor.as_slice()
+    );
+    assert!(matches!(rotor.power(-1.0), Err(RotorError::Degenerate)));
+    assert!(matches!(rotor.power(2.0), Err(RotorError::Degenerate)));
+    assert!(matches!(rotor.power(0.5), Err(RotorError::Uncertified)));
+}
+
+#[test]
 fn non_integral_power_propagates_log_domain_errors() {
     // A scalar-only negative rotor is not reachable through the public
     // constructors; the multi-plane path is used here to confirm that an

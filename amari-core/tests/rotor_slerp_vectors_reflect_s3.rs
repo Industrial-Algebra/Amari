@@ -15,6 +15,11 @@ fn slice_dot(a: &[f64], b: &[f64]) -> f64 {
     a.iter().zip(b.iter()).map(|(&x, &y)| x * y).sum()
 }
 
+/// Whether two positive `f64` values are within one ulp (bit-distance).
+fn within_one_ulp(a: f64, b: f64) -> bool {
+    a == b || ((a.to_bits() as i64) - (b.to_bits() as i64)).unsigned_abs() <= 1
+}
+
 /// A `Cl(2,0,0)` rotor `√(1 − b²) + b·e12` via `from_bivector`
 /// (`exp(−angle/2·e12) = cos(angle/2) − sin(angle/2)e12`).
 fn planar_rotor(bivector_coefficient: f64) -> Rotor<2, 0, 0> {
@@ -193,6 +198,75 @@ fn from_vectors_euclidean_2d_non_axis_antipodal_maps_direction() {
     let rotor = Rotor::from_vectors(&a, &b).expect("resolved antipodal pair");
     let acted = rotor.apply_to_vector(&a).expect("certified rotor acts");
     assert!(acted.as_multivector().approx_eq(b.as_multivector(), 1e-12));
+}
+
+#[test]
+fn from_vectors_subnormal_direction_is_normalized_symbolically() {
+    // R3-F15: `b = 2^-1074(e1+e2)` in Cl(0,2,0) has `σ = -2^-2147`, whose root
+    // `√2·2^-1074` rounds to the non-unit `2^-1074` if materialized (producing
+    // the spurious `[0.6, 0.8]` action). The symbolic root keeps the direction
+    // unit and the action at `[1/√2, 1/√2]`. The implementation returns
+    // `[0.0, 0.7071067811865476, 0.7071067811865475, 0.0]`; the reference is
+    // `[0.0, 0.7071067811865475, 0.7071067811865475, 0.0]`.
+    let tiny = f64::from_bits(1);
+    let a = Vector::<0, 2, 0>::e1();
+    let b = Vector::<0, 2, 0>::from_components(tiny, tiny, 0.0);
+    let rotor = Rotor::from_vectors(&a, &b).expect("same negative causal type");
+    let acted = rotor.apply_to_vector(&a).expect("certified rotor acts");
+    let one_over_sqrt_two = core::f64::consts::FRAC_1_SQRT_2;
+    let expected = [0.0, one_over_sqrt_two, one_over_sqrt_two, 0.0];
+    for (got, want) in acted
+        .as_multivector()
+        .as_slice()
+        .iter()
+        .zip(expected.iter())
+    {
+        assert!(within_one_ulp(*got, *want), "got {got}, want {want}");
+    }
+}
+
+#[test]
+fn from_vectors_direction_normalization_is_scale_invariant() {
+    // R3-F15: the symbolic-root normalization is scale-independent across the
+    // whole finite `f64` range, in both definite signatures. The implementation
+    // returns bit-identical rotors for every scale, pinned here.
+    let scales = [
+        1.0f64,
+        2f64.powi(-100),
+        2f64.powi(-600),
+        f64::from_bits(1), // 2^-1074, the minimum subnormal
+        2f64.powi(500),
+        2f64.powi(1020),
+    ];
+    for &scale in &scales {
+        let a3 = Vector::<3, 0, 0>::e1();
+        let b3 = Vector::<3, 0, 0>::from_components(scale, scale, 0.0);
+        let r3 = Rotor::from_vectors(&a3, &b3).expect("Cl(3,0,0) scaled direction");
+        let a0 = Vector::<0, 3, 0>::e1();
+        let b0 = Vector::<0, 3, 0>::from_components(scale, scale, 0.0);
+        let r0 = Rotor::from_vectors(&a0, &b0).expect("Cl(0,3,0) scaled direction");
+
+        assert_eq!(r3.as_slice()[0], 0.9238795325112867, "cl3 scale {scale:e}");
+        assert_eq!(r3.as_slice()[3], -0.3826834323650897, "cl3 scale {scale:e}");
+        assert_eq!(r0.as_slice()[0], 0.9238795325112867, "cl0 scale {scale:e}");
+        assert_eq!(r0.as_slice()[3], 0.3826834323650897, "cl0 scale {scale:e}");
+
+        let acted3 = r3.apply_to_vector(&a3).expect("cl3 acts");
+        let acted0 = r0.apply_to_vector(&a0).expect("cl0 acts");
+        assert_eq!(
+            acted3.as_multivector().as_slice(),
+            acted0.as_multivector().as_slice()
+        );
+        let one_over_sqrt_two = core::f64::consts::FRAC_1_SQRT_2;
+        assert!(
+            within_one_ulp(acted3.as_multivector().get(1), one_over_sqrt_two),
+            "cl3 action e1"
+        );
+        assert!(
+            within_one_ulp(acted3.as_multivector().get(2), one_over_sqrt_two),
+            "cl3 action e2"
+        );
+    }
 }
 
 #[test]

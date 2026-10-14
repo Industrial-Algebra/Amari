@@ -1549,6 +1549,53 @@ fn mul_exact<const P: usize, const Q: usize, const R: usize>(
     })
 }
 
+/// Exact per-coefficient quotient of the versor sandwich `R·A·R† / N`.
+///
+/// Every numerator coefficient is the exact dyadic expansion of the stored
+/// `R·A·R†` (two exact multivector products), divided by the certified exact
+/// positive `N` through the sticky-bit divider and rounded **once** at the
+/// destination precision. No `f64` numerator is ever materialized, so a
+/// nonzero image whose coefficients underflow is still rounded correctly
+/// instead of collapsing to zero (CORE-W04 R3-F14).
+///
+/// `None` when the exact expansion leaves the representable dyadic window (the
+/// caller then falls back to the floating sandwich).
+pub(crate) fn exact_sandwich_divide<const P: usize, const Q: usize, const R: usize>(
+    rotor: &Multivector<P, Q, R>,
+    v: &Multivector<P, Q, R>,
+    n: &ExactPositive,
+) -> Option<Multivector<P, Q, R>> {
+    if Multivector::<P, Q, R>::BASIS_COUNT > MAX_BASIS {
+        return None;
+    }
+    let left = ExactPower::from_multivector(rotor)?;
+    let middle = ExactPower::from_multivector(v)?;
+    let reversed = rotor.reverse();
+    let right = ExactPower::from_multivector(&reversed)?;
+    let first = mul_exact::<P, Q, R>(&left, &middle)?;
+    let sandwich = mul_exact::<P, Q, R>(&first, &right)?;
+    let mut out = Multivector::<P, Q, R>::zero();
+    for (index, coefficient) in sandwich
+        .coeffs
+        .iter()
+        .enumerate()
+        .take(sandwich.basis_count)
+    {
+        if coefficient.is_zero() {
+            continue;
+        }
+        // `N` is strictly positive, so no sign or zero gate is needed here:
+        // the single sticky-bit division rounds at the destination.
+        let signed = ExactSigned {
+            magnitude: coefficient.magnitude,
+            exponent: coefficient.exponent,
+            negative: coefficient.negative,
+        };
+        out.set(index, signed.ratio_to_f64(n));
+    }
+    Some(out)
+}
+
 /// Outcome of the exact reverse-norm certificate `N = R·R†` (CORE-W04 §1.4b).
 ///
 /// `Positive` carries the certified scalar `N` rounded once to `f64`
