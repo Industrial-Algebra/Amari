@@ -15,7 +15,7 @@ type Boost = Rotor<1, 1, 0>;
 fn dyadic_boost(sign: f64) -> Boost {
     // from_bivector stores exp(-e12·angle/2); angle = ∓2·ln2 gives
     // exp(±ln2·e12) = 5/4 ± 3/4 e12 (both representable exactly).
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     Boost::from_bivector(&bivector, -sign * 2.0 * 2.0f64.ln())
         .expect("exact dyadic boost has positive reverse norm")
 }
@@ -32,7 +32,7 @@ fn square_chain(mut rotor: Boost) -> Boost {
 /// `r20(+1e-8) ∘ r20(−1e-8)` is a positive scalar, and its certified
 /// `ln4/ln(scale)` power is exactly `[4, 0]` (CORE-W04 R2-F8/F9 fixture).
 fn stored_scale_scalar_four() -> Rotor<2, 0, 0> {
-    let bivector = Bivector::<2, 0, 0>::e12();
+    let bivector = Bivector::<2, 0, 0>::e12().expect("Cl(2,0,0) has blade e12");
     let mut forward = Rotor::<2, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
     for _ in 0..20 {
         forward = forward.compose(&forward);
@@ -51,7 +51,7 @@ fn stored_scale_scalar_four() -> Rotor<2, 0, 0> {
 /// sandwich fixture: composed with an `e13` boost it stores
 /// `4·(cosh 1 + sinh 1·e13)` with certified `N = 16`.
 fn stored_scale_scalar_four_cl2_1_0() -> Rotor<2, 1, 0> {
-    let bivector = Bivector::<2, 1, 0>::e12();
+    let bivector = Bivector::<2, 1, 0>::e12().expect("Cl(2,1,0) has blade e12");
     let mut forward = Rotor::<2, 1, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
     for _ in 0..20 {
         forward = forward.compose(&forward);
@@ -100,7 +100,7 @@ fn q_plus_times_q_minus_is_exact_zero_rotor() {
 
 #[test]
 fn angle_one_boost_stored_inverse_matches_exact_stored_element_inverse() {
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     let rotor = Boost::from_bivector(&bivector, 1.0).expect("bounded boost exponential");
     // Baseline-observed stored coefficients (the constructor normalizes).
     assert_eq!(rotor.as_slice()[0], 1.127625965206381);
@@ -158,7 +158,7 @@ fn apply_zero_loss_gate_is_post_exact_quotient() {
     // `2^-1074(e1−e3)` to the exact quotient ≈ 2^-1074/16, which correctly
     // rounds to the exact zero image — `Ok(zero)`, not `Err(Degenerate)`.
     let tiny = f64::from_bits(1);
-    let e13 = Bivector::<2, 1, 0>::e13();
+    let e13 = Bivector::<2, 1, 0>::e13().expect("Cl(2,1,0) has blade e13");
     let scalar_four = stored_scale_scalar_four_cl2_1_0();
     assert_eq!(scalar_four.as_slice()[0], 4.0);
     assert_eq!(scalar_four.as_slice()[3], 0.0);
@@ -196,7 +196,7 @@ fn apply_overflowing_quotient_is_degenerate() {
     // The F14 representability gate is constructible: a certified `N > 0`
     // angle-30 Cl(2,1,0) boost (its exact-`N` inverse succeeds) applied to a
     // near-max input produces a non-finite exact quotient -> `Err(Degenerate)`.
-    let e13 = Bivector::<2, 1, 0>::e13();
+    let e13 = Bivector::<2, 1, 0>::e13().expect("Cl(2,1,0) has blade e13");
     let boost = Rotor::<2, 1, 0>::from_bivector(&e13, 30.0).expect("angle-30 boost");
     assert!(boost.inverse().is_ok(), "certified N > 0 input rotor");
     let mut a = Multivector::<2, 1, 0>::zero();
@@ -291,7 +291,7 @@ fn escape_round_trips_preserve_coefficients() {
 
 #[test]
 fn from_vectors_s1_precedence_is_not_a_vector_then_null() {
-    let unit = Vector::<3, 0, 0>::e1();
+    let unit = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
     let scalar = Multivector::<3, 0, 0>::scalar(1.0);
     assert!(matches!(
         Rotor::<3, 0, 0>::from_vectors_mv(&scalar, unit.as_multivector()),
@@ -320,7 +320,7 @@ fn inverse_uses_exact_reverse_norm_not_a_rounded_denominator() {
     // norm N = 0.9999999999999999. Dividing the reverse by the rounded N gives
     // [1.0112711095766707, 0.15056313315161268]; the exact `R†/N` (one rounding
     // per coefficient) gives the correctly rounded values below.
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     let rotor = Boost::from_bivector(&bivector, 0.3).expect("bounded boost");
     assert_eq!(rotor.as_slice()[0], 1.0112711095766704);
     assert_eq!(rotor.as_slice()[3], -0.15056313315161265);
@@ -520,7 +520,7 @@ fn to_rotation_matrix_propagates_a_compose_domain_exit_instead_of_panicking() {
     // self-compose underflows to the exact zero rotor. The zero rotor has
     // `N = 0`, so `apply` is `Err(Degenerate)`; the matrix conversion must
     // propagate that error rather than unwrapping the action.
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let mut forward = Rotor::<3, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
     for _ in 0..20 {
         forward = forward.compose(&forward);

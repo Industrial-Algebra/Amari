@@ -21,9 +21,9 @@ fn main() {
     type Cl3 = Multivector<3, 0, 0>;
 
     // 2. Create basis vectors e1, e2, e3
-    let e1: Cl3 = Basis::e1();
-    let e2: Cl3 = Basis::e2();
-    let e3: Cl3 = Basis::e3();
+    let e1: Cl3 = Basis::e1().expect("Cl(3,0,0) has basis vector e1");
+    let e2: Cl3 = Basis::e2().expect("Cl(3,0,0) has basis vector e2");
+    let e3: Cl3 = Basis::e3().expect("Cl(3,0,0) has basis vector e3");
 
     println!("Basis vectors:");
     println!(

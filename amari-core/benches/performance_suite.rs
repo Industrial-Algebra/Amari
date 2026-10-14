@@ -113,9 +113,9 @@ fn bench_batch_operations(c: &mut Criterion) {
 fn bench_rotor_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("rotor_operations");
 
-    let e1 = Vector::<3, 0, 0>::e1();
-    let e2 = Vector::<3, 0, 0>::e2();
-    let e3 = Vector::<3, 0, 0>::e3();
+    let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+    let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
+    let e3 = Vector::<3, 0, 0>::e3().expect("Cl(3,0,0) has basis vector e3");
 
     let bivector = Bivector::from_components(1.0, 0.5, 0.3);
     let angle = std::f64::consts::PI / 4.0;

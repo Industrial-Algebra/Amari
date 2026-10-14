@@ -9,7 +9,7 @@ mod geometric_product_tests {
     #[test]
     fn test_basis_vector_squared_positive_signature() {
         // In Cl(3,0,0), e1² = 1
-        let e1 = Vector::<3, 0, 0>::e1();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
         let result = e1.geometric_product(&e1);
 
         assert_relative_eq!(result.scalar_part(), 1.0);
@@ -19,7 +19,7 @@ mod geometric_product_tests {
     #[test]
     fn test_basis_vector_squared_negative_signature() {
         // In Cl(0,1,0), e1² = -1
-        let e1 = Vector::<0, 1, 0>::e1();
+        let e1 = Vector::<0, 1, 0>::e1().expect("Cl(0,1,0) has basis vector e1");
         let result = e1.geometric_product(&e1);
 
         assert_relative_eq!(result.scalar_part(), -1.0);
@@ -28,7 +28,7 @@ mod geometric_product_tests {
     #[test]
     fn test_basis_vector_squared_null_signature() {
         // In Cl(0,0,1), e1² = 0
-        let e1 = Vector::<0, 0, 1>::e1();
+        let e1 = Vector::<0, 0, 1>::e1().expect("Cl(0,0,1) has basis vector e1");
         let result = e1.geometric_product(&e1);
 
         assert_relative_eq!(result.scalar_part(), 0.0);
@@ -37,8 +37,8 @@ mod geometric_product_tests {
     #[test]
     fn test_orthogonal_basis_vectors_anticommute() {
         // e1 * e2 = -e2 * e1 = e12
-        let e1 = Vector::<3, 0, 0>::e1();
-        let e2 = Vector::<3, 0, 0>::e2();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
 
         let e1_e2 = e1.geometric_product(&e2);
         let e2_e1 = e2.geometric_product(&e1);
@@ -118,8 +118,8 @@ mod geometric_product_tests {
     #[test]
     fn test_vector_bivector_product() {
         // Test e1 * e23 = e123 (in 3D)
-        let e1 = Vector::<3, 0, 0>::e1();
-        let e23 = Bivector::<3, 0, 0>::e23();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e23 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
 
         let result = e1.geometric_product_with_bivector(&e23);
 
@@ -133,8 +133,8 @@ mod geometric_product_tests {
     #[test]
     fn test_bivector_vector_product() {
         // Test e23 * e1 = -e123 (anticommutation)
-        let e1 = Vector::<3, 0, 0>::e1();
-        let e23 = Bivector::<3, 0, 0>::e23();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e23 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
 
         let e1_e23 = e1.geometric_product_with_bivector(&e23);
         let e23_e1 = e23.geometric_product(&e1);

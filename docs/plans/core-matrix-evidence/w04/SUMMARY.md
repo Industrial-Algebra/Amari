@@ -186,8 +186,52 @@ rustdoc 0, no-default 0, workspace all-targets 0, consumer suites
 (relativistic/enumerative/gpu/automata) 596 passed, catalog regenerated
 (`428fbd18…`).
 
+## R5 remediation (2026-10-14)
+
+Review round 5 on `1db80bc` produced 1 P1 / 1 P2 findings; both were remediated
+on the same branch (see `r5-remediation-*.log`):
+
+- **F20** the named basis-blade constructors were fallible only by *panicking*
+  on out-of-range dimensions (`Bivector::<1,0,0>::e12()` compiled and panicked
+  inside `e_ij(..).expect(..)`). The three named bivector constructors are now
+  `Result<Self, ComponentError>` delegating to `e_ij`, with an explicit
+  `# Dimensional requirement` (`e12` needs `n >= 2`; `e13`/`e23` need `n >= 3`)
+  pointing at `e_ij`. **Audit of the same class:** the identical treatment was
+  applied to `Vector::e1`/`e2`/`e3` and the `Basis::e1`/`e2`/`e3`/`e12`/`e23`/
+  `e31`/`e123` helpers (all previously panicked on low dimensions and were
+  undocumented); `Multivector::basis_vector` stays the raw indexed primitive
+  but now carries `# Panics`. Workspace consumer call sites migrated with a
+  justification `.expect("Cl(P,Q,R) has blade e…")`: **81** bivector sites
+  (`e12` 59 / `e13` 10 / `e23` 12) and **83** vector sites (`e1` 51 / `e2` 23 /
+  `e3` 9) plus 8 `Basis` sites (and `SelfAssembler::new`, whose `# Panics` is
+  documented). The named constructors never appear in the
+  relativistic/enumerative/gpu/network/discovery sources; the only
+  non-amari-core workspace consumer is `amari-automata` (`Vector::e1`).
+- **F21** the contract §5 normative table now records
+  `Rotor<3,0,0>::to_rotation_matrix(&self) -> Result<[[f64; 3]; 3], RotorError>`
+  (concrete receiver; fallible per R4-F18; `Err` propagates the certified-`N`
+  action gate; `compose` stays the domain-exit point). The §5 amendment also
+  records the F20 constructor signatures; both rows are annotated as added
+  during implementation review. The consumer companion C6 discloses the named
+  constructor migration. This is the §5 records-accuracy amendment to flag in
+  the PR description; the operator-approved contract prose is otherwise
+  untouched.
+- **Batteries** `rotor_duals_components_s4.rs`
+  (`named_bivector_constructors_enforce_the_dimensional_domain`,
+  `named_vector_constructors_enforce_the_dimensional_domain`) pin Cl(1,0,0)
+  all-`Err`, Cl(2,0,0) `e12` `Ok` / `e13`/`e23` `Err`, and Cl(3,0,0) all `Ok`
+  with the lexicographic component cross-check; `basis.rs`
+  (`basis_helpers_enforce_the_dimensional_domain`) pins the `Basis` domain.
+
+Post-remediation matrix: **241 lib / 489 total** amari-core (17 binaries),
+clippy 0 (default and no-default all-targets), fmt clean, rustdoc 0,
+no-default 0 (both), workspace all-targets 0, consumer suites
+(relativistic/enumerative/gpu/automata) 596 passed, catalog regenerated
+(`09c3ab7c…`, 28 crates / 11134 items; only `amari-core.json` +
+`manifest.json` changed).
+
 ## Status
 IMPLEMENTATION COMPLETE AND STAGED. R1 returned 7 P1, R2 returned 3 P1 / 1 P2 /
-2 P3, R3 returned 2 P1 / 1 P2, and R4 returned 3 P1; all were remediated in the
-same worktree (2026-10-14) and the full pinned matrix re-ran green. Awaiting
-re-review / operator go-no-go.
+2 P3, R3 returned 2 P1 / 1 P2, R4 returned 3 P1, and R5 returned 1 P1 / 1 P2;
+all were remediated in the same worktree (2026-10-14) and the full pinned matrix
+re-ran green. Awaiting re-review / operator go-no-go.

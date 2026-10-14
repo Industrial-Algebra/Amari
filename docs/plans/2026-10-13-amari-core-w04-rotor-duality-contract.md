@@ -387,12 +387,18 @@ fn apply_to_vector(&self, v: &Vector)    -> Result<Vector, RotorError>
 fn reflect(n: &Multivector, A: &Multivector) -> Result<Multivector, RotorError>
 fn reflect_line(n: &Multivector, A: &Multivector) -> Result<Multivector, RotorError>
 fn compose(&self, o: &Self)              -> Self                        // §1.5 raw; domain-exit point
+fn to_rotation_matrix(&self)             -> Result<[[f64; 3]; 3], RotorError> // Rotor<3,0,0>; added R4-F18/R5-F21
 fn hodge_dual(&self)                     -> Result<Self, DualError>      // Multivector
 fn formal_complement(&self)              -> Self                          // Multivector
 fn e_ij(i: usize, j: usize)              -> Result<Self, ComponentError> // Bivector
 fn component(&self, k: usize)            -> Option<f64>                   // Bivector
 fn set_component(&mut self, k: usize, v: f64) -> bool                    // Bivector
 fn set_bivector_component(&mut self, k: usize, v: f64) -> bool           // Multivector
+// Named basis-blade constructors made fallible by R5-F20 (dimensional domain):
+fn e12()                                 -> Result<Self, ComponentError>  // Bivector; n >= 2; added R5-F20
+fn e13()                                 -> Result<Self, ComponentError>  // Bivector; n >= 3; added R5-F20
+fn e23()                                 -> Result<Self, ComponentError>  // Bivector; n >= 3; added R5-F20
+fn e1()/e2()/e3()                        -> Result<Self, ComponentError>  // Vector/Basis; added R5-F20
 // §1.1 escape/conversion surface (listed here for migration completeness):
 fn as_multivector(&self)                 -> &Multivector                  // Scalar/Vector/Bivector
 fn into_multivector(self)                -> Multivector                   // Scalar/Vector/Bivector

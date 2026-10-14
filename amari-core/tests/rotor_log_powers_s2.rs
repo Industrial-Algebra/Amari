@@ -34,7 +34,7 @@ fn ulp_distance(a: &[f64], b: &[f64]) -> u64 {
 
 #[test]
 fn boost_fixture_power_integer_one_is_bit_exact_clone() {
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     let stored = Rotor::from_bivector(&bivector, 1.0).expect("bounded boost exponential");
     assert_eq!(stored.as_slice()[0], 1.127625965206381);
     assert_eq!(stored.as_slice()[3], -0.5210953054937475);
@@ -52,7 +52,7 @@ fn boost_fixture_power_integer_one_is_bit_exact_clone() {
 
 #[test]
 fn two_pi_rotor_power_integer_one_clones_residual_bivector() {
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let rotor =
         Rotor::from_bivector(&bivector, 2.0 * std::f64::consts::PI).expect("bounded 2π rotor");
     // The stored scalar is the −1 double-cover representative with a nonzero
@@ -65,7 +65,7 @@ fn two_pi_rotor_power_integer_one_clones_residual_bivector() {
 
 #[test]
 fn power_integer_zero_one_negative_one_laws() {
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     let rotor = Rotor::from_bivector(&bivector, 1.0).expect("bounded boost");
     let identity = Rotor::<1, 1, 0>::identity();
 
@@ -87,7 +87,7 @@ fn power_integer_zero_one_negative_one_laws() {
 #[test]
 fn power_integer_minus_two_boost_matches_exact_oracle() {
     // log R = -½e12 for the angle-1 boost, so R^(-2) = exp(e12) = cosh(1) + sinh(1)e12.
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     let rotor = Rotor::from_bivector(&bivector, 1.0).expect("bounded boost");
     let squared = rotor.power_integer(-2).expect("certified log route");
     let expected = 1.5430806348152437_f64; // cosh(1), correctly rounded exact oracle
@@ -100,7 +100,7 @@ fn power_integer_minus_two_boost_matches_exact_oracle() {
 
 #[test]
 fn integral_power_delegates_to_power_integer() {
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     let rotor = Rotor::from_bivector(&bivector, 1.0).expect("bounded boost");
     let identity = Rotor::<1, 1, 0>::identity();
 
@@ -124,7 +124,7 @@ fn integral_power_delegates_to_power_integer() {
 
 #[test]
 fn small_angle_bivector_is_preserved_by_the_atan2_route() {
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let rotor = Rotor::from_bivector(&bivector, 1e-8).expect("bounded small-angle rotor");
     let log = rotor.logarithm().expect("elliptic certified");
     // `from_bivector` stores `exp(-angle/2 · e12)`, so the log's e12 coefficient
@@ -141,7 +141,7 @@ fn small_angle_bivector_is_preserved_by_the_atan2_route() {
 
 #[test]
 fn elliptic_round_trip_is_fixture_bounded() {
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     for angle in [0.3, 1.0, 2.5, -1.7, std::f64::consts::PI] {
         let rotor = Rotor::from_bivector(&bivector, angle).expect("bounded rotor");
         let log = rotor.logarithm().expect("elliptic certified");
@@ -156,7 +156,7 @@ fn log_exp_selects_the_principal_branch_for_two_pi_plane() {
     // exp(2π·e12) = 1 exactly in exact arithmetic; `from_bivector` reaches it
     // as `exp(-angle/2 · e12)` with `angle = -4π`, and its log is the principal
     // branch result (approximately zero, not 2π).
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let rotor =
         Rotor::from_bivector(&bivector, -4.0 * std::f64::consts::PI).expect("bounded 2π rotor");
     let log = rotor.logarithm().expect("elliptic certified");
@@ -171,7 +171,7 @@ fn log_exp_selects_the_principal_branch_for_two_pi_plane() {
 #[test]
 fn hyperbolic_small_boost_rapidity_is_two_pow_minus_54() {
     // R = exp(2⁻⁵⁴e12) = 1 + 2⁻⁵⁴e12 (w = 1, β = 2⁻⁵⁴; gate w>0 ∧ N>0 alone).
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     let rotor = Rotor::from_bivector(&bivector, -2f64.powi(-53)).expect("certified small boost");
     let log = rotor.logarithm().expect("hyperbolic certified");
 
@@ -181,7 +181,7 @@ fn hyperbolic_small_boost_rapidity_is_two_pow_minus_54() {
 
 #[test]
 fn hyperbolic_round_trip_is_fixture_bounded() {
-    let bivector = Bivector::<1, 1, 0>::e12();
+    let bivector = Bivector::<1, 1, 0>::e12().expect("Cl(1,1,0) has blade e12");
     for angle in [0.5, 1.0, 2.0, -1.5] {
         let rotor = Rotor::from_bivector(&bivector, angle).expect("bounded boost");
         let log = rotor.logarithm().expect("hyperbolic certified");
@@ -250,7 +250,7 @@ fn binary_power_of_a_rounded_multiphane_rotor_is_degenerate() {
 
 #[test]
 fn non_integral_power_matches_a_half_angle_construction() {
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let rotor = Rotor::from_bivector(&bivector, std::f64::consts::PI / 2.0).expect("bounded rotor");
     let half = rotor.power(0.5).expect("certified power");
     let quarter =
@@ -298,7 +298,7 @@ fn power_preserves_the_logarithm_scale_of_the_twenty_squared_rotor() {
     // the true exp(2·log R) is [0.9999450249603883, -0.010485567847871372],
     // while the former normalization returned a renormalized value near
     // [0.9999450249223286, -0.010485567472272].
-    let bivector = Bivector::<2, 0, 0>::e12();
+    let bivector = Bivector::<2, 0, 0>::e12().expect("Cl(2,0,0) has blade e12");
     let mut rotor = Rotor::<2, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
     for _ in 0..20 {
         rotor = rotor.compose(&rotor);

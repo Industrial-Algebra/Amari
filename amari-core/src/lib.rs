@@ -215,6 +215,16 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
     }
 
     /// Create a basis vector e_i (i starts from 0)
+    ///
+    /// This is the raw, zero-based primitive. Prefer the checked named
+    /// constructors ([`Vector::e1`], [`Vector::e2`], [`Vector::e3`], the
+    /// [`crate::basis::Basis`] helpers, or [`Bivector::e_ij`]) when the blade may not exist in
+    /// the ambient dimension.
+    ///
+    /// # Panics
+    ///
+    /// Panics when `i >= Self::DIM`. Use a checked constructor, or build from
+    /// coefficients, for a fallible path.
     #[inline(always)]
     pub fn basis_vector(i: usize) -> Self {
         assert!(i < Self::DIM, "Basis vector index out of range");
@@ -1761,7 +1771,7 @@ impl<const P: usize, const Q: usize, const R: usize> From<f64> for Scalar<P, Q, 
 /// ```compile_fail
 /// use amari_core::Vector;
 /// // `Vector::<4,0,0>` has no `hodge_dual`; use `Multivector::hodge_dual`.
-/// let _ = Vector::<4, 0, 0>::e1().hodge_dual();
+/// let _ = Vector::<4, 0, 0>::e1().expect("Cl(4,0,0) has basis vector e1").hodge_dual();
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vector<const P: usize, const Q: usize, const R: usize> {
@@ -1796,22 +1806,55 @@ impl<const P: usize, const Q: usize, const R: usize> Vector<P, Q, R> {
         Self { mv }
     }
 
-    pub fn e1() -> Self {
-        Self {
+    /// The first basis vector `e1`.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires ambient dimension `n = P + Q + R >= 1`; in a zero-dimensional
+    /// algebra the blade does not exist and [`ComponentError::OutOfRange`] is
+    /// returned. For arbitrary dimensions construct a [`Multivector`] and use
+    /// [`Vector::try_from_multivector`] / `TryFrom<Multivector>`.
+    pub fn e1() -> Result<Self, ComponentError> {
+        if P + Q + R < 1 {
+            return Err(ComponentError::OutOfRange);
+        }
+        Ok(Self {
             mv: Multivector::basis_vector(0),
-        }
+        })
     }
 
-    pub fn e2() -> Self {
-        Self {
+    /// The second basis vector `e2`.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires ambient dimension `n = P + Q + R >= 2`; in lower dimensions
+    /// the blade does not exist and [`ComponentError::OutOfRange`] is
+    /// returned. For arbitrary dimensions construct a [`Multivector`] and use
+    /// [`Vector::try_from_multivector`] / `TryFrom<Multivector>`.
+    pub fn e2() -> Result<Self, ComponentError> {
+        if P + Q + R < 2 {
+            return Err(ComponentError::OutOfRange);
+        }
+        Ok(Self {
             mv: Multivector::basis_vector(1),
-        }
+        })
     }
 
-    pub fn e3() -> Self {
-        Self {
-            mv: Multivector::basis_vector(2),
+    /// The third basis vector `e3`.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires ambient dimension `n = P + Q + R >= 3`; in lower dimensions
+    /// the blade does not exist and [`ComponentError::OutOfRange`] is
+    /// returned. For arbitrary dimensions construct a [`Multivector`] and use
+    /// [`Vector::try_from_multivector`] / `TryFrom<Multivector>`.
+    pub fn e3() -> Result<Self, ComponentError> {
+        if P + Q + R < 3 {
+            return Err(ComponentError::OutOfRange);
         }
+        Ok(Self {
+            mv: Multivector::basis_vector(2),
+        })
     }
 
     /// Crate-internal grade-1 projection.
@@ -2074,18 +2117,36 @@ impl<const P: usize, const Q: usize, const R: usize> Bivector<P, Q, R> {
     }
 
     /// The `e12` basis bivector.
-    pub fn e12() -> Self {
-        Self::e_ij(1, 2).expect("e12 requires DIM >= 2")
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires ambient dimension `n = P + Q + R >= 2`; in lower dimensions
+    /// the pair `(1, 2)` is out of range and [`ComponentError::OutOfRange`] is
+    /// returned. For the general constructor use [`Self::e_ij`].
+    pub fn e12() -> Result<Self, ComponentError> {
+        Self::e_ij(1, 2)
     }
 
     /// The `e13` basis bivector.
-    pub fn e13() -> Self {
-        Self::e_ij(1, 3).expect("e13 requires DIM >= 3")
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires ambient dimension `n = P + Q + R >= 3`; in lower dimensions
+    /// the pair `(1, 3)` is out of range and [`ComponentError::OutOfRange`] is
+    /// returned. For the general constructor use [`Self::e_ij`].
+    pub fn e13() -> Result<Self, ComponentError> {
+        Self::e_ij(1, 3)
     }
 
     /// The `e23` basis bivector.
-    pub fn e23() -> Self {
-        Self::e_ij(2, 3).expect("e23 requires DIM >= 3")
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires ambient dimension `n = P + Q + R >= 3`; in lower dimensions
+    /// the pair `(2, 3)` is out of range and [`ComponentError::OutOfRange`] is
+    /// returned. For the general constructor use [`Self::e_ij`].
+    pub fn e23() -> Result<Self, ComponentError> {
+        Self::e_ij(2, 3)
     }
 
     /// Coefficient of the `k`-th dimension-general bivector component.

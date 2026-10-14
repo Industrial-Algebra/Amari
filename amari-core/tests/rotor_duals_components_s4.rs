@@ -263,7 +263,7 @@ fn hodge_dual_double_dual_is_identity_in_3d() {
 
 #[test]
 fn typed_vector_dual_cl_3_0_0() {
-    let e1 = Vector::<3, 0, 0>::e1();
+    let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
     let dual = e1.hodge_dual().expect("non-degenerate 3D");
     // ⋆e1 = e23, which is component 2 in the lexicographic map.
     assert_eq!(dual.component(2), Some(1.0));
@@ -273,20 +273,20 @@ fn typed_vector_dual_cl_3_0_0() {
     // The formal complement of a vector in Cl(3,0,0) is the same map.
     assert_eq!(e1.formal_complement().component(2), Some(1.0));
 
-    let e2 = Vector::<3, 0, 0>::e2();
+    let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
     assert_eq!(e2.hodge_dual().expect("ok").component(1), Some(-1.0)); // −e13
-    let e3 = Vector::<3, 0, 0>::e3();
+    let e3 = Vector::<3, 0, 0>::e3().expect("Cl(3,0,0) has basis vector e3");
     assert_eq!(e3.hodge_dual().expect("ok").component(0), Some(1.0)); // e12
 }
 
 #[test]
 fn typed_bivector_dual_cl_3_0_0() {
-    let e12 = Bivector::<3, 0, 0>::e12();
+    let e12 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let dual = e12.hodge_dual().expect("non-degenerate 3D");
     // ⋆e12 = e3 → vector component 2.
     assert_eq!(dual.as_multivector().vector_component(2), 1.0);
 
-    let e13 = Bivector::<3, 0, 0>::e13();
+    let e13 = Bivector::<3, 0, 0>::e13().expect("Cl(3,0,0) has blade e13");
     assert_eq!(
         e13.hodge_dual()
             .expect("ok")
@@ -295,7 +295,7 @@ fn typed_bivector_dual_cl_3_0_0() {
         -1.0
     );
 
-    let e23 = Bivector::<3, 0, 0>::e23();
+    let e23 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
     assert_eq!(
         e23.hodge_dual()
             .expect("ok")
@@ -313,18 +313,18 @@ fn typed_bivector_dual_cl_3_0_0() {
 
 #[test]
 fn typed_duals_cl_0_3_0_exist() {
-    let e1 = Vector::<0, 3, 0>::e1();
+    let e1 = Vector::<0, 3, 0>::e1().expect("Cl(0,3,0) has basis vector e1");
     // The formal complement is the permutation-only map in every signature.
     assert_eq!(e1.formal_complement().component(2), Some(1.0)); // e23
-    let e2 = Vector::<0, 3, 0>::e2();
+    let e2 = Vector::<0, 3, 0>::e2().expect("Cl(0,3,0) has basis vector e2");
     assert_eq!(e2.formal_complement().component(1), Some(-1.0)); // −e13
-    let e3 = Vector::<0, 3, 0>::e3();
+    let e3 = Vector::<0, 3, 0>::e3().expect("Cl(0,3,0) has basis vector e3");
     assert_eq!(e3.formal_complement().component(0), Some(1.0)); // e12
 
     // The metric dual is defined (the signature is non-degenerate).
     assert!(e1.hodge_dual().is_ok());
 
-    let e12 = Bivector::<0, 3, 0>::e12();
+    let e12 = Bivector::<0, 3, 0>::e12().expect("Cl(0,3,0) has blade e12");
     assert_eq!(
         e12.formal_complement().as_multivector().vector_component(2),
         1.0
@@ -418,9 +418,24 @@ fn e_ij_constructs_the_named_blades() {
     assert_eq!(e34.as_multivector().get(0b1100), 1.0);
 
     // The named shorthand constructors agree with e_ij.
-    assert_eq!(Bivector::<4, 0, 0>::e12().component(0), Some(1.0));
-    assert_eq!(Bivector::<4, 0, 0>::e13().component(1), Some(1.0));
-    assert_eq!(Bivector::<4, 0, 0>::e23().component(3), Some(1.0));
+    assert_eq!(
+        Bivector::<4, 0, 0>::e12()
+            .expect("Cl(4,0,0) has blade e12")
+            .component(0),
+        Some(1.0)
+    );
+    assert_eq!(
+        Bivector::<4, 0, 0>::e13()
+            .expect("Cl(4,0,0) has blade e13")
+            .component(1),
+        Some(1.0)
+    );
+    assert_eq!(
+        Bivector::<4, 0, 0>::e23()
+            .expect("Cl(4,0,0) has blade e23")
+            .component(3),
+        Some(1.0)
+    );
 }
 
 #[test]
@@ -470,4 +485,62 @@ fn from_components_delegates_to_the_general_map() {
     assert_eq!(planar.component(1), Some(2.0));
     assert_eq!(planar.component(2), Some(3.0));
     assert_eq!(planar.as_multivector().get(0b0110), 3.0); // e23 mask
+}
+
+// ==================================================================
+// R5-F20: named basis-constructor dimensional domain.
+// ==================================================================
+
+#[test]
+fn named_bivector_constructors_enforce_the_dimensional_domain() {
+    // Cl(1,0,0): no bivector blade exists at all.
+    assert_eq!(Bivector::<1, 0, 0>::e12(), Err(ComponentError::OutOfRange));
+    assert_eq!(Bivector::<1, 0, 0>::e13(), Err(ComponentError::OutOfRange));
+    assert_eq!(Bivector::<1, 0, 0>::e23(), Err(ComponentError::OutOfRange));
+
+    // Cl(2,0,0): only e12 exists (n >= 2); e13/e23 require n >= 3.
+    assert!(Bivector::<2, 0, 0>::e12().is_ok());
+    assert_eq!(Bivector::<2, 0, 0>::e13(), Err(ComponentError::OutOfRange));
+    assert_eq!(Bivector::<2, 0, 0>::e23(), Err(ComponentError::OutOfRange));
+
+    // Cl(3,0,0): all three exist; cross-check the blade coefficients through
+    // the lexicographic component map 0 ↦ e12, 1 ↦ e13, 2 ↦ e23.
+    let e12 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
+    assert_eq!(e12.component(0), Some(1.0));
+    assert_eq!(e12.component(1), Some(0.0));
+    assert_eq!(e12.component(2), Some(0.0));
+    let e13 = Bivector::<3, 0, 0>::e13().expect("Cl(3,0,0) has blade e13");
+    assert_eq!(e13.component(0), Some(0.0));
+    assert_eq!(e13.component(1), Some(1.0));
+    assert_eq!(e13.component(2), Some(0.0));
+    let e23 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
+    assert_eq!(e23.component(0), Some(0.0));
+    assert_eq!(e23.component(1), Some(0.0));
+    assert_eq!(e23.component(2), Some(1.0));
+}
+
+#[test]
+fn named_vector_constructors_enforce_the_dimensional_domain() {
+    // Zero-dimensional: no basis vector exists.
+    assert_eq!(Vector::<0, 0, 0>::e1(), Err(ComponentError::OutOfRange));
+    assert_eq!(Vector::<0, 0, 0>::e2(), Err(ComponentError::OutOfRange));
+    assert_eq!(Vector::<0, 0, 0>::e3(), Err(ComponentError::OutOfRange));
+
+    // n = 1: only e1.
+    assert!(Vector::<1, 0, 0>::e1().is_ok());
+    assert_eq!(Vector::<1, 0, 0>::e2(), Err(ComponentError::OutOfRange));
+    assert_eq!(Vector::<1, 0, 0>::e3(), Err(ComponentError::OutOfRange));
+
+    // n = 2: e1 and e2 exist; e3 requires n >= 3.
+    assert!(Vector::<2, 0, 0>::e1().is_ok());
+    assert!(Vector::<2, 0, 0>::e2().is_ok());
+    assert_eq!(Vector::<2, 0, 0>::e3(), Err(ComponentError::OutOfRange));
+
+    // n = 3: all three, each the corresponding vector component.
+    let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+    assert_eq!(e1.as_multivector().vector_component(0), 1.0);
+    let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
+    assert_eq!(e2.as_multivector().vector_component(1), 1.0);
+    let e3 = Vector::<3, 0, 0>::e3().expect("Cl(3,0,0) has basis vector e3");
+    assert_eq!(e3.as_multivector().vector_component(2), 1.0);
 }

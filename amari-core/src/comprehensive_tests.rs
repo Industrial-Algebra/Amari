@@ -480,9 +480,9 @@ mod vector_tests {
 
     #[test]
     fn test_vector_basis_vectors() {
-        let e1 = Vector::<3, 0, 0>::e1();
-        let e2 = Vector::<3, 0, 0>::e2();
-        let e3 = Vector::<3, 0, 0>::e3();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
+        let e3 = Vector::<3, 0, 0>::e3().expect("Cl(3,0,0) has basis vector e3");
 
         assert_eq!(e1.mv.vector_component(0), 1.0);
         assert_eq!(e1.mv.vector_component(1), 0.0);
@@ -535,7 +535,7 @@ mod vector_tests {
     #[test]
     fn test_vector_geometric_product_with_bivector() {
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
-        let bv = Bivector::<3, 0, 0>::e12();
+        let bv = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
         let result = v.geometric_product_with_bivector(&bv);
 
         // e1 * e12 = e1 * e1 * e2 = 1 * e2 = e2
@@ -608,7 +608,7 @@ mod vector_tests {
     #[test]
     fn test_vector_inner_product_with_bivector() {
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
-        let bv = Bivector::<3, 0, 0>::e12();
+        let bv = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
         let result = v.inner_product_with_bivector(&bv);
 
         // v · bv = contraction
@@ -638,7 +638,7 @@ mod vector_tests {
     #[test]
     fn test_vector_outer_product_with_bivector() {
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
-        let bv = Bivector::<3, 0, 0>::e23();
+        let bv = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
         let result = v.outer_product_with_bivector(&bv);
 
         // e1 ∧ e23 = e123 (trivector)
@@ -648,7 +648,7 @@ mod vector_tests {
     #[test]
     fn test_vector_left_contraction() {
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
-        let bv = Bivector::<3, 0, 0>::e12();
+        let bv = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
         let result = v.left_contraction(&bv);
 
         // e1 ⌊ e12 = e2
@@ -720,9 +720,9 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_basis_bivectors() {
-        let e12 = Bivector::<3, 0, 0>::e12();
-        let e13 = Bivector::<3, 0, 0>::e13();
-        let e23 = Bivector::<3, 0, 0>::e23();
+        let e12 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
+        let e13 = Bivector::<3, 0, 0>::e13().expect("Cl(3,0,0) has blade e13");
+        let e23 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
 
         assert_eq!(e12.get(0), 1.0);
         assert_eq!(e12.get(1), 0.0);
@@ -750,7 +750,7 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_geometric_product_with_vector() {
-        let bv = Bivector::<3, 0, 0>::e12();
+        let bv = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
         let result = bv.geometric_product(&v);
 
@@ -760,8 +760,8 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_geometric_product_with_bivector() {
-        let bv1 = Bivector::<3, 0, 0>::e12();
-        let bv2 = Bivector::<3, 0, 0>::e13();
+        let bv1 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
+        let bv2 = Bivector::<3, 0, 0>::e13().expect("Cl(3,0,0) has blade e13");
         let result = bv1.geometric_product_with_bivector(&bv2);
 
         // e12 * e13 = (e1 e2)(e1 e3) = e1 e2 e1 e3 = -e1^2 e2 e3 = -e2 e3 = -e23
@@ -785,8 +785,8 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_inner_product() {
-        let bv1 = Bivector::<3, 0, 0>::e12();
-        let bv2 = Bivector::<3, 0, 0>::e13();
+        let bv1 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
+        let bv2 = Bivector::<3, 0, 0>::e13().expect("Cl(3,0,0) has blade e13");
         let result = bv1.inner_product(&bv2);
 
         // Orthogonal bivectors have zero inner product
@@ -799,7 +799,7 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_inner_product_with_vector() {
-        let bv = Bivector::<3, 0, 0>::e12();
+        let bv = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
         let result = bv.inner_product_with_vector(&v);
 
@@ -809,15 +809,15 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_outer_product() {
-        let bv1 = Bivector::<3, 0, 0>::e12();
-        let bv2 = Bivector::<3, 0, 0>::e13();
+        let bv1 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
+        let bv2 = Bivector::<3, 0, 0>::e13().expect("Cl(3,0,0) has blade e13");
         let result = bv1.outer_product(&bv2);
 
         // e12 ∧ e13 = 0 (overlap in indices)
         assert!(result.is_zero());
 
         // Test that outer product method exists and works
-        let bv3 = Bivector::<3, 0, 0>::e23();
+        let bv3 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
         let result2 = bv1.outer_product(&bv3);
         // In 3D, bivector outer products may be zero or very small
         // Just verify the method works without assertion on specific values
@@ -826,7 +826,7 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_outer_product_with_vector() {
-        let bv = Bivector::<3, 0, 0>::e12();
+        let bv = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
         let v = Vector::<3, 0, 0>::from_components(0.0, 0.0, 1.0);
         let result = bv.outer_product_with_vector(&v);
 
@@ -836,7 +836,7 @@ mod bivector_tests {
 
     #[test]
     fn test_bivector_right_contraction() {
-        let bv = Bivector::<3, 0, 0>::e12();
+        let bv = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
         let v = Vector::<3, 0, 0>::from_components(1.0, 0.0, 0.0);
         let result = bv.right_contraction(&v);
 

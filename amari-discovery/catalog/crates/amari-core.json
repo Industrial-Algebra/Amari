@@ -311,14 +311,14 @@
     {
       "path": "amari_core::Bivector::e12",
       "kind": "method",
-      "signature": "pub fn e12 () -> Self",
+      "signature": "pub fn e12 () -> Result < Self , ComponentError >",
       "source_path": "amari-core/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_core",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e12 () -> Self",
+          "signature": "pub fn e12 () -> Result < Self , ComponentError >",
           "source_path": "amari-core/src/lib.rs",
           "source_module": "amari_core",
           "is_reexport": false,
@@ -330,14 +330,14 @@
     {
       "path": "amari_core::Bivector::e13",
       "kind": "method",
-      "signature": "pub fn e13 () -> Self",
+      "signature": "pub fn e13 () -> Result < Self , ComponentError >",
       "source_path": "amari-core/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_core",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e13 () -> Self",
+          "signature": "pub fn e13 () -> Result < Self , ComponentError >",
           "source_path": "amari-core/src/lib.rs",
           "source_module": "amari_core",
           "is_reexport": false,
@@ -349,14 +349,14 @@
     {
       "path": "amari_core::Bivector::e23",
       "kind": "method",
-      "signature": "pub fn e23 () -> Self",
+      "signature": "pub fn e23 () -> Result < Self , ComponentError >",
       "source_path": "amari-core/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_core",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e23 () -> Self",
+          "signature": "pub fn e23 () -> Result < Self , ComponentError >",
           "source_path": "amari-core/src/lib.rs",
           "source_module": "amari_core",
           "is_reexport": false,
@@ -3804,14 +3804,14 @@
     {
       "path": "amari_core::Vector::e1",
       "kind": "method",
-      "signature": "pub fn e1 () -> Self",
+      "signature": "pub fn e1 () -> Result < Self , ComponentError >",
       "source_path": "amari-core/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_core",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e1 () -> Self",
+          "signature": "pub fn e1 () -> Result < Self , ComponentError >",
           "source_path": "amari-core/src/lib.rs",
           "source_module": "amari_core",
           "is_reexport": false,
@@ -3823,14 +3823,14 @@
     {
       "path": "amari_core::Vector::e2",
       "kind": "method",
-      "signature": "pub fn e2 () -> Self",
+      "signature": "pub fn e2 () -> Result < Self , ComponentError >",
       "source_path": "amari-core/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_core",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e2 () -> Self",
+          "signature": "pub fn e2 () -> Result < Self , ComponentError >",
           "source_path": "amari-core/src/lib.rs",
           "source_module": "amari_core",
           "is_reexport": false,
@@ -3842,14 +3842,14 @@
     {
       "path": "amari_core::Vector::e3",
       "kind": "method",
-      "signature": "pub fn e3 () -> Self",
+      "signature": "pub fn e3 () -> Result < Self , ComponentError >",
       "source_path": "amari-core/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_core",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e3 () -> Self",
+          "signature": "pub fn e3 () -> Result < Self , ComponentError >",
           "source_path": "amari-core/src/lib.rs",
           "source_module": "amari_core",
           "is_reexport": false,
@@ -4278,14 +4278,14 @@
     {
       "path": "amari_core::basis::Basis::e1",
       "kind": "method",
-      "signature": "pub fn e1 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+      "signature": "pub fn e1 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
       "source_path": "amari-core/src/basis.rs",
       "is_reexport": false,
       "source_module": "amari_core::basis",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e1 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+          "signature": "pub fn e1 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
           "source_path": "amari-core/src/basis.rs",
           "source_module": "amari_core::basis",
           "is_reexport": false,
@@ -4297,14 +4297,14 @@
     {
       "path": "amari_core::basis::Basis::e12",
       "kind": "method",
-      "signature": "pub fn e12 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+      "signature": "pub fn e12 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
       "source_path": "amari-core/src/basis.rs",
       "is_reexport": false,
       "source_module": "amari_core::basis",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e12 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+          "signature": "pub fn e12 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
           "source_path": "amari-core/src/basis.rs",
           "source_module": "amari_core::basis",
           "is_reexport": false,
@@ -4316,14 +4316,14 @@
     {
       "path": "amari_core::basis::Basis::e123",
       "kind": "method",
-      "signature": "pub fn e123 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+      "signature": "pub fn e123 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
       "source_path": "amari-core/src/basis.rs",
       "is_reexport": false,
       "source_module": "amari_core::basis",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e123 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+          "signature": "pub fn e123 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
           "source_path": "amari-core/src/basis.rs",
           "source_module": "amari_core::basis",
           "is_reexport": false,
@@ -4335,14 +4335,14 @@
     {
       "path": "amari_core::basis::Basis::e2",
       "kind": "method",
-      "signature": "pub fn e2 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+      "signature": "pub fn e2 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
       "source_path": "amari-core/src/basis.rs",
       "is_reexport": false,
       "source_module": "amari_core::basis",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e2 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+          "signature": "pub fn e2 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
           "source_path": "amari-core/src/basis.rs",
           "source_module": "amari_core::basis",
           "is_reexport": false,
@@ -4354,14 +4354,14 @@
     {
       "path": "amari_core::basis::Basis::e23",
       "kind": "method",
-      "signature": "pub fn e23 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+      "signature": "pub fn e23 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
       "source_path": "amari-core/src/basis.rs",
       "is_reexport": false,
       "source_module": "amari_core::basis",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e23 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+          "signature": "pub fn e23 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
           "source_path": "amari-core/src/basis.rs",
           "source_module": "amari_core::basis",
           "is_reexport": false,
@@ -4373,14 +4373,14 @@
     {
       "path": "amari_core::basis::Basis::e3",
       "kind": "method",
-      "signature": "pub fn e3 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+      "signature": "pub fn e3 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
       "source_path": "amari-core/src/basis.rs",
       "is_reexport": false,
       "source_module": "amari_core::basis",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e3 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+          "signature": "pub fn e3 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
           "source_path": "amari-core/src/basis.rs",
           "source_module": "amari_core::basis",
           "is_reexport": false,
@@ -4392,14 +4392,14 @@
     {
       "path": "amari_core::basis::Basis::e31",
       "kind": "method",
-      "signature": "pub fn e31 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+      "signature": "pub fn e31 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
       "source_path": "amari-core/src/basis.rs",
       "is_reexport": false,
       "source_module": "amari_core::basis",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn e31 < const P : usize , const Q : usize , const R : usize > () -> Multivector < P , Q , R >",
+          "signature": "pub fn e31 < const P : usize , const Q : usize , const R : usize > () -> Result < Multivector < P , Q , R > , ComponentError >",
           "source_path": "amari-core/src/basis.rs",
           "source_module": "amari_core::basis",
           "is_reexport": false,

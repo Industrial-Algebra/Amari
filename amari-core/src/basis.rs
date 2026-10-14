@@ -1,5 +1,6 @@
 //! Basis blade utilities and naming conventions
 
+use crate::error::ComponentError;
 use crate::Multivector;
 use alloc::string::{String, ToString};
 use alloc::vec;
@@ -85,48 +86,92 @@ impl<const P: usize, const Q: usize, const R: usize> MultivectorBuilder<P, Q, R>
 pub struct Basis;
 
 impl Basis {
-    /// Create basis vector e1
-    pub fn e1<const P: usize, const Q: usize, const R: usize>() -> Multivector<P, Q, R> {
-        Multivector::basis_vector(0)
+    /// Create basis vector e1.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires `P + Q + R >= 1`, otherwise [`ComponentError::OutOfRange`].
+    pub fn e1<const P: usize, const Q: usize, const R: usize>(
+    ) -> Result<Multivector<P, Q, R>, ComponentError> {
+        if P + Q + R < 1 {
+            return Err(ComponentError::OutOfRange);
+        }
+        Ok(Multivector::basis_vector(0))
     }
 
-    /// Create basis vector e2
-    pub fn e2<const P: usize, const Q: usize, const R: usize>() -> Multivector<P, Q, R> {
-        Multivector::basis_vector(1)
+    /// Create basis vector e2.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires `P + Q + R >= 2`, otherwise [`ComponentError::OutOfRange`].
+    pub fn e2<const P: usize, const Q: usize, const R: usize>(
+    ) -> Result<Multivector<P, Q, R>, ComponentError> {
+        if P + Q + R < 2 {
+            return Err(ComponentError::OutOfRange);
+        }
+        Ok(Multivector::basis_vector(1))
     }
 
-    /// Create basis vector e3
-    pub fn e3<const P: usize, const Q: usize, const R: usize>() -> Multivector<P, Q, R> {
-        Multivector::basis_vector(2)
+    /// Create basis vector e3.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires `P + Q + R >= 3`, otherwise [`ComponentError::OutOfRange`].
+    pub fn e3<const P: usize, const Q: usize, const R: usize>(
+    ) -> Result<Multivector<P, Q, R>, ComponentError> {
+        if P + Q + R < 3 {
+            return Err(ComponentError::OutOfRange);
+        }
+        Ok(Multivector::basis_vector(2))
     }
 
-    /// Create basis bivector e12
-    pub fn e12<const P: usize, const Q: usize, const R: usize>() -> Multivector<P, Q, R> {
-        let e1 = Self::e1();
-        let e2 = Self::e2();
-        e1.outer_product(&e2)
+    /// Create basis bivector e12.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires `P + Q + R >= 2`, otherwise [`ComponentError::OutOfRange`].
+    pub fn e12<const P: usize, const Q: usize, const R: usize>(
+    ) -> Result<Multivector<P, Q, R>, ComponentError> {
+        let e1 = Self::e1()?;
+        let e2 = Self::e2()?;
+        Ok(e1.outer_product(&e2))
     }
 
-    /// Create basis bivector e23
-    pub fn e23<const P: usize, const Q: usize, const R: usize>() -> Multivector<P, Q, R> {
-        let e2 = Self::e2();
-        let e3 = Self::e3();
-        e2.outer_product(&e3)
+    /// Create basis bivector e23.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires `P + Q + R >= 3`, otherwise [`ComponentError::OutOfRange`].
+    pub fn e23<const P: usize, const Q: usize, const R: usize>(
+    ) -> Result<Multivector<P, Q, R>, ComponentError> {
+        let e2 = Self::e2()?;
+        let e3 = Self::e3()?;
+        Ok(e2.outer_product(&e3))
     }
 
-    /// Create basis bivector e31
-    pub fn e31<const P: usize, const Q: usize, const R: usize>() -> Multivector<P, Q, R> {
-        let e3 = Self::e3();
-        let e1 = Self::e1();
-        e3.outer_product(&e1)
+    /// Create basis bivector e31.
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires `P + Q + R >= 3`, otherwise [`ComponentError::OutOfRange`].
+    pub fn e31<const P: usize, const Q: usize, const R: usize>(
+    ) -> Result<Multivector<P, Q, R>, ComponentError> {
+        let e3 = Self::e3()?;
+        let e1 = Self::e1()?;
+        Ok(e3.outer_product(&e1))
     }
 
-    /// Create pseudoscalar for 3D (e123)
-    pub fn e123<const P: usize, const Q: usize, const R: usize>() -> Multivector<P, Q, R> {
-        let e1 = Self::e1();
-        let e2 = Self::e2();
-        let e3 = Self::e3();
-        e1.outer_product(&e2).outer_product(&e3)
+    /// Create pseudoscalar for 3D (e123).
+    ///
+    /// # Dimensional requirement
+    ///
+    /// Requires `P + Q + R >= 3`, otherwise [`ComponentError::OutOfRange`].
+    pub fn e123<const P: usize, const Q: usize, const R: usize>(
+    ) -> Result<Multivector<P, Q, R>, ComponentError> {
+        let e1 = Self::e1()?;
+        let e2 = Self::e2()?;
+        let e3 = Self::e3()?;
+        Ok(e1.outer_product(&e2).outer_product(&e3))
     }
 }
 
@@ -162,9 +207,9 @@ mod tests {
 
     #[test]
     fn test_basis_helpers() {
-        let e1: Cl3 = Basis::e1();
-        let e2: Cl3 = Basis::e2();
-        let e12: Cl3 = Basis::e12();
+        let e1: Cl3 = Basis::e1().expect("Cl(3,0,0) has basis vector e1");
+        let e2: Cl3 = Basis::e2().expect("Cl(3,0,0) has basis vector e2");
+        let e12: Cl3 = Basis::e12().expect("Cl(3,0,0) has blade e12");
 
         assert_eq!(e1.get(1), 1.0);
         assert_eq!(e2.get(2), 1.0);
@@ -173,5 +218,24 @@ mod tests {
         // Verify e1 ∧ e2 = e12
         let computed_e12 = e1.outer_product(&e2);
         assert_eq!(computed_e12.get(3), e12.get(3));
+    }
+
+    #[test]
+    fn basis_helpers_enforce_the_dimensional_domain() {
+        // Zero-dimensional: no basis vector exists.
+        assert_eq!(Basis::e1::<0, 0, 0>(), Err(ComponentError::OutOfRange));
+        assert_eq!(Basis::e2::<0, 0, 0>(), Err(ComponentError::OutOfRange));
+        assert_eq!(Basis::e3::<0, 0, 0>(), Err(ComponentError::OutOfRange));
+
+        // n = 1: e1 exists but e2/e3 do not.
+        assert!(Basis::e1::<1, 0, 0>().is_ok());
+        assert_eq!(Basis::e2::<1, 0, 0>(), Err(ComponentError::OutOfRange));
+        assert_eq!(Basis::e12::<1, 0, 0>(), Err(ComponentError::OutOfRange));
+
+        // n = 3: the 3D helpers succeed and agree with the general map.
+        let e12: Cl3 = Basis::e12().expect("Cl(3,0,0) has blade e12");
+        assert_eq!(e12.get(3), 1.0);
+        let e23: Cl3 = Basis::e23().expect("Cl(3,0,0) has blade e23");
+        assert_eq!(e23.get(6), 1.0);
     }
 }

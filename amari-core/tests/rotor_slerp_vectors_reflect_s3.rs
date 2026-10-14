@@ -24,7 +24,7 @@ fn within_one_ulp(a: f64, b: f64) -> bool {
 /// (`exp(−angle/2·e12) = cos(angle/2) − sin(angle/2)e12`).
 fn planar_rotor(bivector_coefficient: f64) -> Rotor<2, 0, 0> {
     let angle = -2.0 * bivector_coefficient.asin();
-    let e12 = Bivector::<2, 0, 0>::e12();
+    let e12 = Bivector::<2, 0, 0>::e12().expect("Cl(2,0,0) has blade e12");
     Rotor::from_bivector(&e12, angle).expect("bounded planar rotor")
 }
 
@@ -32,7 +32,7 @@ fn planar_rotor(bivector_coefficient: f64) -> Rotor<2, 0, 0> {
 /// positive scalar `1.0000000000380618`, whose certified `ln4/ln(scale)` power
 /// is exactly `[4, 0]` (CORE-W04 R2-F8/F9 fixture).
 fn stored_scale_scalar_four() -> Rotor<2, 0, 0> {
-    let bivector = Bivector::<2, 0, 0>::e12();
+    let bivector = Bivector::<2, 0, 0>::e12().expect("Cl(2,0,0) has blade e12");
     let mut forward = Rotor::<2, 0, 0>::from_bivector(&bivector, 1e-8).expect("bounded rotor");
     for _ in 0..20 {
         forward = forward.compose(&forward);
@@ -78,7 +78,7 @@ fn slerp_identity_endpoint_returns_single_plane_4d_rotor_exactly() {
 
 #[test]
 fn slerp_endpoints_are_exact_direct_returns() {
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let r1 = Rotor::from_bivector(&bivector, core::f64::consts::PI / 6.0).expect("bounded rotor");
     let r2 = Rotor::from_bivector(&bivector, core::f64::consts::PI / 2.0).expect("bounded rotor");
 
@@ -142,7 +142,7 @@ fn slerp_negative_coefficient_dot_selects_the_negated_representative() {
     // A = identity, B ≈ −1: the coefficient dot is negative, so B* = −B ≈ +1
     // and the interior path stays near the identity.
     let identity = Rotor::<3, 0, 0>::identity();
-    let bivector = Bivector::<3, 0, 0>::e12();
+    let bivector = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
     let b = Rotor::from_bivector(&bivector, 2.0 * core::f64::consts::PI).expect("2π rotor");
 
     let dot = slice_dot(identity.as_slice(), b.as_slice());
@@ -164,8 +164,8 @@ fn slerp_negative_coefficient_dot_selects_the_negated_representative() {
 
 #[test]
 fn from_vectors_cl0_2_0_maps_e1_to_e2() {
-    let a = Vector::<0, 2, 0>::e1();
-    let b = Vector::<0, 2, 0>::e2();
+    let a = Vector::<0, 2, 0>::e1().expect("Cl(0,2,0) has basis vector e1");
+    let b = Vector::<0, 2, 0>::e2().expect("Cl(0,2,0) has basis vector e2");
     let rotor = Rotor::from_vectors(&a, &b).expect("same negative causal type");
     let acted = rotor.apply_to_vector(&a).expect("certified rotor acts");
     assert!(acted.as_multivector().approx_eq(b.as_multivector(), 1e-12));
@@ -173,7 +173,7 @@ fn from_vectors_cl0_2_0_maps_e1_to_e2() {
 
 #[test]
 fn from_vectors_cl0_2_0_same_vector_is_identity_not_antipodal() {
-    let a = Vector::<0, 2, 0>::e1();
+    let a = Vector::<0, 2, 0>::e1().expect("Cl(0,2,0) has basis vector e1");
     let rotor = Rotor::from_vectors(&a, &a).expect("identity maps any vector to itself");
     assert!(rotor
         .as_multivector()
@@ -182,7 +182,7 @@ fn from_vectors_cl0_2_0_same_vector_is_identity_not_antipodal() {
 
 #[test]
 fn from_vectors_cl0_2_0_antipodal_resolves_in_two_dimensions() {
-    let a = Vector::<0, 2, 0>::e1();
+    let a = Vector::<0, 2, 0>::e1().expect("Cl(0,2,0) has basis vector e1");
     let b = Vector::<0, 2, 0>::from_components(-1.0, 0.0, 0.0); // −e1
     let rotor = Rotor::from_vectors(&a, &b).expect("Euclidean 2D antipodal resolution");
     let acted = rotor.apply_to_vector(&a).expect("certified rotor acts");
@@ -209,7 +209,7 @@ fn from_vectors_subnormal_direction_is_normalized_symbolically() {
     // `[0.0, 0.7071067811865476, 0.7071067811865475, 0.0]`; the reference is
     // `[0.0, 0.7071067811865475, 0.7071067811865475, 0.0]`.
     let tiny = f64::from_bits(1);
-    let a = Vector::<0, 2, 0>::e1();
+    let a = Vector::<0, 2, 0>::e1().expect("Cl(0,2,0) has basis vector e1");
     let b = Vector::<0, 2, 0>::from_components(tiny, tiny, 0.0);
     let rotor = Rotor::from_vectors(&a, &b).expect("same negative causal type");
     let acted = rotor.apply_to_vector(&a).expect("certified rotor acts");
@@ -239,10 +239,10 @@ fn from_vectors_direction_normalization_is_scale_invariant() {
         2f64.powi(1020),
     ];
     for &scale in &scales {
-        let a3 = Vector::<3, 0, 0>::e1();
+        let a3 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
         let b3 = Vector::<3, 0, 0>::from_components(scale, scale, 0.0);
         let r3 = Rotor::from_vectors(&a3, &b3).expect("Cl(3,0,0) scaled direction");
-        let a0 = Vector::<0, 3, 0>::e1();
+        let a0 = Vector::<0, 3, 0>::e1().expect("Cl(0,3,0) has basis vector e1");
         let b0 = Vector::<0, 3, 0>::from_components(scale, scale, 0.0);
         let r0 = Rotor::from_vectors(&a0, &b0).expect("Cl(0,3,0) scaled direction");
 
@@ -271,7 +271,7 @@ fn from_vectors_direction_normalization_is_scale_invariant() {
 
 #[test]
 fn from_vectors_cl2_1_0_null_candidate_is_rejected() {
-    let a = Vector::<2, 1, 0>::e1();
+    let a = Vector::<2, 1, 0>::e1().expect("Cl(2,1,0) has basis vector e1");
     let b = Vector::<2, 1, 0>::from_components(-1.0, 1.0, 1.0); // −e1 + e2 + e3
     assert!(matches!(
         Rotor::from_vectors(&a, &b),
@@ -281,7 +281,7 @@ fn from_vectors_cl2_1_0_null_candidate_is_rejected() {
 
 #[test]
 fn from_vectors_cl1_1_0_sheet_change_is_rejected() {
-    let a = Vector::<1, 1, 0>::e1();
+    let a = Vector::<1, 1, 0>::e1().expect("Cl(1,1,0) has basis vector e1");
     let b = Vector::<1, 1, 0>::from_components(-1.25, 0.75, 0.0); // −5/4 e1 + 3/4 e2
     assert!(matches!(
         Rotor::from_vectors(&a, &b),
@@ -295,7 +295,7 @@ fn from_vectors_indefinite_2d_antipodal_is_rejected_as_antipodal() {
     // reverse norm (`e12·e12† = −1`), so no checked rotor maps `e1 -> −e1`;
     // note `e12·e1·e12 = −e1`, so e12 is not the identity action. The excluded
     // case is `Err(Antipodal)`, not the old normalization-failure `Degenerate`.
-    let a = Vector::<1, 1, 0>::e1();
+    let a = Vector::<1, 1, 0>::e1().expect("Cl(1,1,0) has basis vector e1");
     let b = Vector::<1, 1, 0>::from_components(-1.0, 0.0, 0.0);
     assert!(matches!(
         Rotor::from_vectors(&a, &b),
@@ -306,7 +306,7 @@ fn from_vectors_indefinite_2d_antipodal_is_rejected_as_antipodal() {
 #[test]
 fn from_vectors_mv_scalar_input_is_not_a_vector() {
     let scalar = Multivector::<3, 0, 0>::scalar(1.0);
-    let e1 = Vector::<3, 0, 0>::e1();
+    let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
     assert!(matches!(
         Rotor::<3, 0, 0>::from_vectors_mv(&scalar, e1.as_multivector()),
         Err(RotorError::NotAVector)
@@ -315,7 +315,7 @@ fn from_vectors_mv_scalar_input_is_not_a_vector() {
 
 #[test]
 fn from_vectors_null_vector_is_rejected() {
-    let null = Vector::<1, 0, 1>::e2(); // nonzero, zero square
+    let null = Vector::<1, 0, 1>::e2().expect("Cl(1,0,1) has basis vector e2"); // nonzero, zero square
     assert!(matches!(
         Rotor::from_vectors(&null, &null),
         Err(RotorError::NullVector)
@@ -324,8 +324,8 @@ fn from_vectors_null_vector_is_rejected() {
 
 #[test]
 fn from_vectors_mixed_causal_types_are_rejected() {
-    let a = Vector::<1, 1, 0>::e1(); // σ = +1
-    let b = Vector::<1, 1, 0>::e2(); // σ = −1
+    let a = Vector::<1, 1, 0>::e1().expect("Cl(1,1,0) has basis vector e1"); // σ = +1
+    let b = Vector::<1, 1, 0>::e2().expect("Cl(1,1,0) has basis vector e2"); // σ = −1
     assert!(matches!(
         Rotor::from_vectors(&a, &b),
         Err(RotorError::CausalTypeMismatch)
@@ -391,7 +391,7 @@ fn reflect_fixes_scalars() {
 #[test]
 fn reflect_preserves_perpendicular_blades() {
     let e1 = Multivector::<3, 0, 0>::basis_vector(0);
-    let e23 = Bivector::<3, 0, 0>::e23();
+    let e23 = Bivector::<3, 0, 0>::e23().expect("Cl(3,0,0) has blade e23");
     let reflected = reflect(&e1, e23.as_multivector()).expect("e1 is a certified unit normal");
     assert_eq!(reflected.as_slice(), e23.as_multivector().as_slice());
 }
@@ -410,8 +410,12 @@ fn reflect_is_an_involution() {
         Multivector::<3, 0, 0>::scalar(1.0),
         Multivector::<3, 0, 0>::basis_vector(0),
         Multivector::<3, 0, 0>::basis_vector(1),
-        Bivector::<3, 0, 0>::e12().into_multivector(),
-        Bivector::<3, 0, 0>::e23().into_multivector(),
+        Bivector::<3, 0, 0>::e12()
+            .expect("Cl(3,0,0) has blade e12")
+            .into_multivector(),
+        Bivector::<3, 0, 0>::e23()
+            .expect("Cl(3,0,0) has blade e23")
+            .into_multivector(),
         Multivector::<3, 0, 0>::from_slice(&[0.5, 1.0, -2.0, 0.25, 0.0, 0.0, 0.0, 0.0]),
     ];
     for a in &blades {

@@ -233,7 +233,15 @@ touch):
   `Err(Degenerate)` instead of panicking (CORE-W04 R4-F18). Workflows
   needing matrices outside 3D have no replacement (honest limit,
   disclosed).
-- **`e_ij`, `Bivector::zero()`**: pure additions.
+- **`e_ij`**: pure addition. **`Bivector::zero()`**: pure addition.
+- **`e12`/`e13`/`e23`, `Vector::e1`/`e2`/`e3`, and the
+  `Basis::e1`/`e2`/`e3`/`e12`/`e23`/`e31`/`e123` helpers (added R5-F20):** the
+  named basis-blade constructors are now fallible
+  (`Result<_, ComponentError>`) — they previously panicked on blades outside
+  the ambient signature (`e12` needs `n >= 2`; `e13`/`e23`/`e3` need `n >= 3`;
+  `e1`/`e2` need `n >= 1`/`n >= 2`). Valid-signature callers migrate with a
+  justification `.expect("Cl(P,Q,R) has blade e…")`; generic callers handle
+  `ComponentError::OutOfRange`.
 
 ### C7. `from_bivector`/`from_axis_angle` error-type migration — **forced failure-representation; new type is a design choice**
 

@@ -416,9 +416,18 @@ impl<const P: usize, const Q: usize, const R: usize> Assembly<P, Q, R> {
 
 impl<const P: usize, const Q: usize, const R: usize> SelfAssembler<P, Q, R> {
     /// Create a new self-assembler
+    ///
+    /// # Panics
+    ///
+    /// Panics in the zero-dimensional algebra `Cl(0,0,0)`, which has no basis
+    /// vector for the default assembly bound. The named basis constructor is
+    /// fallible since R5-F20; every physical assembly space has `P+Q+R >= 1`.
     pub fn new(config: AssemblyConfig) -> Self {
         let zero_vec = Vector::zero();
-        let unit_vec = Vector::e1();
+        // `SelfAssembler<P, Q, R>` requires a non-empty assembly space; the
+        // named constructor is fallible since R5-F20, so the precondition is
+        // carried by this justification.
+        let unit_vec = Vector::e1().expect("assembly space has basis vector e1");
 
         Self {
             config,

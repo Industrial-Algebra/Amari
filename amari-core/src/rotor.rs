@@ -938,9 +938,9 @@ mod tests {
 
     #[test]
     fn test_rotor_90_degrees() {
-        let e1 = Vector::<3, 0, 0>::e1();
-        let _e2 = Vector::<3, 0, 0>::e2();
-        let e12 = Bivector::<3, 0, 0>::e12();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
+        let _e2 = Vector::<3, 0, 0>::e2().expect("Cl(3,0,0) has basis vector e2");
+        let e12 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
 
         // Create 90-degree rotation in e1-e2 plane
         // Bounded Euclidean bivector with a small finite angle: the exact
@@ -958,7 +958,7 @@ mod tests {
 
     #[test]
     fn test_rotor_composition() {
-        let e12 = Bivector::<3, 0, 0>::e12();
+        let e12 = Bivector::<3, 0, 0>::e12().expect("Cl(3,0,0) has blade e12");
 
         // Two 45-degree rotations
         let rotor1 = Rotor::from_bivector(&e12, core::f64::consts::PI / 4.0)
@@ -979,7 +979,7 @@ mod tests {
 
     #[test]
     fn test_reflection() {
-        let e1 = Vector::<3, 0, 0>::e1();
+        let e1 = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
         let mut v = Multivector::<3, 0, 0>::zero();
         v.set_vector_component(0, 1.0); // e1
         v.set_vector_component(1, 1.0); // e2
