@@ -50,9 +50,27 @@ The maintainer selected through `ask_user` in this session:
 - Installed stable: `rustc 1.98.0 (88d9e12ae 2026-08-18)`; manifest date `2026-08-20`; Cargo `1.98.0 (797e8a9bc 2026-08-05)`.
 - Host: `x86_64-unknown-linux-gnu`, AMD Ryzen AI 9 HX 370; AVX2 available. Availability is not SIMD safety certification.
 - Only the host target is installed; the MSRV, CI-pinned nightly and actual proof toolchain were not installed or executed in this research pass.
-- Logs: `/tmp/amari-core-d07/` (27 baseline rows: 8 pass / 19 fail; 19 extended rows: 14 pass / 5 fail; dependency tree, formal counterexample and zero-test filter evidence); independent scrutiny: `/tmp/core-d07-scrutiny/`. Selected logs, the two probe inventories and the root lock snapshot are additionally preserved in [core-matrix-evidence/](core-matrix-evidence/). The absolute `/tmp` paths in the inventories identify original research logs; they are not portable links. Uncopied logs remain temporary. These are research evidence, not archived release artifacts.
+- **Evidence retention (2026-10-14, loop-2 F8).** Authoritative storage: the repository's `docs/plans/core-matrix-evidence/` tree (path-scrubbed) — `/tmp` copies are scratch, never authoritative. Retention: through the applicable release + one support cycle; deletion only by operator decision recorded in the ledger. A machine-readable artifact index (name, gate, source SHA, lock, toolchain, hash) is maintained alongside; the core-audit session owns replay instructions and periodic availability checks. Hashes alone recover nothing — the artifacts are the evidence.
+
+Logs: `/tmp/amari-core-d07/` (27 baseline rows: 8 pass / 19 fail; 19 extended rows: 14 pass / 5 fail; dependency tree, formal counterexample and zero-test filter evidence); independent scrutiny: `/tmp/core-d07-scrutiny/`. Selected logs, the two probe inventories and the root lock snapshot are additionally preserved in [core-matrix-evidence/](core-matrix-evidence/). The absolute `/tmp` paths in the inventories identify original research logs; they are not portable links. Uncopied logs remain temporary. These are research evidence, not archived release artifacts.
 
 For every candidate, record source SHA, full command, feature closure, target, compiler/Cargo/Clippy versions, environment flags, lock hash, raw log, exit status, executed counts and skipped/ignored inventories. Archive the exact ignored lock as a named evidence artifact. Use `--locked` thereafter; offline is optional. Never silently resolve again after a missing cache item or an MSRV failure.
+
+**Evidence-freshness ledger (2026-10-14, loop-2 F1).** Milestones organize
+work; they do not substitute for current evidence. A gate's result is
+admissible toward 1.0 readiness ONLY against the readiness-candidate
+revision + lock at reconciliation time. Invalidation classes, per gate
+family: any `amari-core/src` change invalidates H/proof rows touching the
+changed modules' feature predicates (full H refresh); dependency-graph or
+feature-predicate changes invalidate ALL H rows; toolchain-version changes
+invalidate the affected compiler's rows; target-relevant toolchain or
+binding changes invalidate the affected P-* row; workflow changes
+invalidate §6 rows. A completed gate may be REUSED after an invalidating
+change only via a reviewed unaffectedness determination recorded in the
+ledger (what changed, why the gate's exercised surface is provably
+untouched, reviewer identity). Final-candidate reconciliation: before any
+1.0 readiness claim, the ledger must show every required gate green against
+the candidate revision + lock, or an explicit reviewed-reuse entry.
 
 Run core gates with `-p amari-core` alone in a workspace invocation (or a deliberately isolated consumer fixture), not alongside another package that re-enables defaults. Keep dependency-only host checks distinct from executable tests and target-only checks.
 
@@ -163,6 +181,18 @@ Here `T` and `F` are placeholders substituted as argument lists, not literal com
 
 Counts vary by configuration: GF(2), phantom, formal compatibility and precision tests appear only when their modules are enabled. Require a reviewed, nonempty baseline manifest of executed test names per row. Disabled suites must be accounted for; ignored tests require named dispositions. Check the basic example in representative default and minimal std rows.
 
+**Named-suite filter integrity (2026-10-14, loop-2 F2 — the permanent
+M04-class prevention).** Aggregate row nonemptiness does NOT cover filtered
+invocations. Every ADVERTISED named suite/filter (CI commands such as
+`cargo test -p amari-core geometric_axioms`, `verified_contracts`, and any
+successor) must carry: (a) an approved expected test-name inventory;
+(b) an executable post-condition asserting the filter selected ≥1 test AND
+every expected name appeared (parse the run output; exit nonzero on
+vacuous selection); (c) ignored/skipped dispositions compared against the
+inventory. Filtered CI commands without an approved inventory and
+assertion are evidence-integrity defects (M-REP-B), not green rows. Doctest
+counts are covered by the same rule where separately invoked.
+
 For W01 add debug/release exact dyadic arithmetic regressions, the full independent blade-word oracle, and both original CORE-02 probes. Unrelated historical red probes remain red and are reported by finding; they are not a failing production suite to waive.
 
 ## 4. Compiler matrix and package scheduling
@@ -175,6 +205,25 @@ For W01 add debug/release exact dyadic arithmetic regressions, the full independ
 > session under this matrix's owner accountability (§10). No completed
 > package owes further gates; no future package inherits this table's
 > W00/W01 wording. Rows are otherwise unchanged.
+>
+> **M-H cost and scoping (2026-10-14, loop-2 F5).** Full-H as literally
+> specified is ≥2,880 cargo invocations (320×4×2) + 320 MSRV library
+> checks + cfg probes/alias rows/workspace checks. Distinct-failure
+> justification: test execution differs per compiler (nightly-only lints,
+> feature-gated diagnostics); Clippy differs (lint sets); doc differs
+> (intra-doc/invariant rendering); check is subsumed by test/clippy for
+> FAILURE detection but retained as the MSRV-floor row and the cheapest
+> red-signal for triage. Decision required BEFORE execution (operator):
+> (A) monolithic — maximum accountability, highest cost; (B) staged —
+> stable full-H first, nightly + MSRV quadrants on the stable-green
+> revision, re-running only invalidated quadrants per F1 ledger rules;
+> (C) predicate-pruned — the 320-row capability partition collapsed to
+> source-predicate equivalence classes WITH the generator emitting the
+> justification map per pruned row (never silent; any predicate change
+> re-expands). Default proposal: (B) with per-quadrant evidence. A
+> pilot-derived wall-clock/storage estimate must be recorded before the
+> chosen option executes; no option may skip the per-row inventory and F2
+> rules.
 
 | Compiler | Scope | Gate / owner |
 |---|---|---|
@@ -195,7 +244,7 @@ The MSRV promise covers library configurations; supporting dev dependencies on M
 |---|---|---|---|
 | P-HOST | `x86_64-unknown-linux-gnu`, baseline instruction set, full H | Compilation + runtime + docs + Clippy | W00/W01; core maintainer, executed by session |
 | P-AVX2 | Same host, explicit `RUSTFLAGS='-C target-feature=+avx2'`, representative default/minimal/native/all-feature configurations | Compile, runtime SIMD inventory, independent arithmetic checks; compare scalar expectations | Pre-1.0, before accepting SIMD/performance claims; core maintainer / W08 unsafe-audit owner |
-| P-WASM | `wasm32-unknown-unknown`, portable configurations (native precision absent), including default, minimal std, pure high precision, wasm alias, phantom, GF(2), serialization and formal-compatibility selections | Core target library checks; existing binding build + Node tests; inventory portable feature combinations and runner-reachable behavior | Existing CI rows every PR; complete portable configuration closure before 1.0; portability/CI maintainer |
+| P-WASM | `wasm32-unknown-unknown`, portable configurations (native precision absent), including default, minimal std, pure high precision, wasm alias, phantom, GF(2), serialization and formal-compatibility selections | **Split claims (2026-10-14, loop-2 F3):** (i) COMPILE SUPPORT for the full portable closure — library checks only; (ii) RUNTIME COVERAGE — default: the existing `amari-wasm` binding configuration (`wasm-pack test --node`, core defaults + phantom). Runtime validation of OTHER portable closures is explicitly UNVERIFIED unless a closure-to-behavior fixture set is later approved (representative target-executed core tests per closure class). Neither claim may be worded as the other. | Existing CI rows every PR; complete portable configuration closure before 1.0; portability/CI maintainer |
 | P-EMBED | `thumbv7em-none-eabihf`, no std, supported alloc-based minimal core, then independent GF(2) and phantom combinations | Actual target library compile + target dependency tree with no target-side std; allocator/link/board requirements documented | Pre-1.0 portability prerequisite; portability maintainer |
 | P-GPU | Existing GPU consumer/integration rows | Compile + current hardware tests with explicitly identified device and fallback behavior | Existing PR/release checks retained; GPU owner; no implementation audit inferred |
 | P-BINDINGS | Existing WASM binding/public-surface rows | wasm-pack build, Node tests, discovery surface drift checks | Existing PR/release checks retained; binding/CI owner |
@@ -227,6 +276,18 @@ Package-level isolated results do not replace repository CI. Retain the exact cu
 - Reporting/badge workflows: source counts are not test or proof passes. Their success is not a mathematical gate.
 
 Direct core consumers discovered via `cargo metadata`: root amari; amari-wasm, automata, dual, tropical, calculus, measure, info-geom, enumerative, functional, fusion, holographic, network, optimization, gpu, probabilistic, relativistic, topology, dynamics, discovery. Record feature unification and transitive consumers, not just search hits. W01 requires resolved affected-caller inspection plus applicable consumer tests; genuine design-changing failures stop the bounded package.
+
+**Consumer integration-graph acceptance (2026-10-14, loop-2 F4).**
+Observational unification records are not acceptance gates. Maintain a
+SUPPORTED-GRAPHS ledger: each entry names a consumer (or consumer set), its
+resolved core feature/dependency activation, and the fixture/command that
+builds and tests it under that graph. Required graphs: (a) each consumer's
+declared default graph; (b) minimal/default-disabled core where the
+consumer supports it; (c) each backend-specific graph a consumer documents
+(native/high precision). Arbitrary cross-products are NOT implied — the
+ledger IS the supported surface; graphs outside it are unsupported until
+added by decision. Archive resolved activation with each run (loop-2 F1
+ledger rules apply).
 
 **Remote enforcement observation:** read-only API on 2026-10-09 returned branch-protection 404 for develop/master. The visible active ruleset `8224832` applies deletion/non-fast-forward protection to the default branch; it does not list required status checks. PR #276 nevertheless displayed passing workflow jobs. Do not describe those jobs as server-enforced required checks from this evidence. Repository rules still prohibit direct protected-branch pushes and require reviewed green PRs. Configuring enforcement is a separate maintainer administration task, not permission to bypass CI.
 
@@ -284,6 +345,13 @@ These are bounded matrix-research observations, not completion of the remaining 
 
 Do not renumber these into closed CORE findings or claim the original report already audited them. Preserve the historical report and fixture unchanged. Fix suggestions require their own bounded contract and applicable approval.
 
+### 8.1 Open decision records (2026-10-14, loop-2 F6) — alternatives, not footnotes
+
+**D-A. Support envelope, per target (P-EMBED, P-AVX2, extended P-WASM runtime).**
+*Retain-and-execute (recorded maintainer default):* prove the advertised promises — P-EMBED dependency/API portability design + real target library checks; P-AVX2 after the unsafe audit; cost as §5. *Revise (alternative):* precisely restate the supported envelope per target (e.g. embedded = alloc-based minimal core + GF(2) + phantom only, documented as compilation support; AVX2 = not advertised until audit completes) with a public support-matrix change and CHANGELOG disclosure. Revision removes the corresponding M-TGT rows and their costs. Each target is independently decidable.
+**D-B. Proof track (MATRIX-02 et al.).**
+*Immediate contract repair (recommended first step either way):* fix or remove the unsound `ensures(result >= T::zero())` dot contract and stop proof-implying wording NOW (M-REP-A) — this does not require Creusot. *Then, retained proof scope (default):* C3 toolchain conformance + C4 discharged obligations per §7 before 1.0. *Alternative:* descope — remove formal-verification claims from the advertised surface (feature documented as annotation-compatibility only) and drop C3/C4 to post-1.0 research; requires the same public disclosure discipline. MATRIX-02's contract repair is NOT optional under any branch; only the proof obligation is.
+
 ## 9. Fresh observed results and limits
 
 > **2026-10-14 refresh on `354945a`:** the counts below are the ORIGINAL
@@ -321,6 +389,18 @@ Not executed: full H, every alias equivalence gate, MSRV/pinned-CI-nightly local
 > negative-compile tooling, proof-toolchain conformance, discharged
 > obligations (§7); **M-REP** the phantom/formal + unsafe audits and
 > W09-class evidence-integrity repairs (§8); all pre-1.0 per §5/§7 timing.
+>
+> **M-REP split (2026-10-14, loop-2 F7) — independent acceptance objects,
+> not one deadline:** **M-REP-A** claim repair (stop proof-implying CI/doc
+> wording; MATRIX-01; the D-B immediate dot-contract repair) — IMMEDIATE,
+> owned by the core-audit session, no prerequisites; **M-REP-B** suite
+> integrity (per-filter inventories + vacuity assertions per the §3 F2
+> rule; MATRIX-04; geometric_axioms repair) — BEFORE relying on any
+> affected named suite as evidence; **M-REP-C** specification audit
+> (phantom/formal; MATRIX-02/03 dispositions beyond the immediate repair)
+> — before C3/C4 proof execution; **M-REP-D** unsafe/SIMD audit —
+> completion is the ELIGIBILITY PREREQUISITE for P-AVX2 execution (§5),
+> independent of M-REP-A/B/C timing.
 
 The **operator/core maintainer** is accountable for the matrix/support decisions and all unassigned specialist roles until explicitly delegated. The current session owns W00/W01 contract authoring, generation dispatch, local verification and triage; ordinary CI executes repository integration rows. Portability, unsafe/SIMD and formal-methods work need explicit subplans and operator delegation before execution. Role ownership here is a proposal requiring approval, not an assertion that another person accepted work.
 
