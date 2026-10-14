@@ -138,7 +138,7 @@ fn digest_hex_roundtrips_and_validates() {
 #[test]
 fn authority_types_serde_roundtrip() {
     let mut namespace = LogicVarNamespace::new(3);
-    let var = namespace.fresh();
+    let var = namespace.fresh().expect("allocation succeeds");
     let limits = RelationLimits::new(16, 4, 8, 100).unwrap();
     let mut resources = RelationResources::new(&limits);
     resources.record_operations(2).unwrap();
@@ -196,4 +196,59 @@ fn resources_account_terms_constraints_and_operations() {
     ));
     resources.record_operations(1).unwrap();
     assert_eq!(resources.operations(), 5);
+}
+
+/// PR #302 round 5 P2: a namespace whose cursor is saturated with
+/// the candidate name reserved must fail with a typed error, never
+/// spin (the saturating counter re-tested the same reserved name
+/// forever on a hostile deserialized boundary state).
+#[test]
+fn exhausted_reserved_namespace_is_a_typed_error() {
+    // Reserve every name the cursor can still produce: at the u32
+    // boundary the only remaining candidate is `?0.u32::MAX`.
+    let mut namespace = LogicVarNamespace::with_reserved(0, [String::from("?0.4294967295")]);
+    // Drive the cursor to the boundary deterministically via the
+    // crate-visible test hook rather than 2^32 allocations.
+    namespace.advance_to(u32::MAX);
+    assert!(namespace.fresh().is_none(), "exhaustion must be typed");
+}
+
+/// PR #302 round 5 P3: `allocated()` counts SUCCESSFUL allocations,
+/// not cursor advances — reserved skips must not inflate the count.
+#[test]
+fn allocated_counts_successful_allocations_not_cursor_advances() {
+    let mut namespace = LogicVarNamespace::with_reserved(0, [String::from("?0.0")]);
+    let first = namespace.fresh().expect("allocation succeeds");
+    assert_eq!(first.to_string(), "?0.1");
+    assert_eq!(namespace.allocated(), 1);
+}
+
+/// PR #302 round 6 P1: the allocation counter must not overflow on
+/// a hostile boundary state — saturating u64 accounting, no debug
+/// panic, no wraparound.
+#[cfg(feature = "serialize")]
+#[test]
+fn allocation_counter_saturates_without_panicking() {
+    let mut namespace: LogicVarNamespace = serde_json::from_str(
+        r#"{"scope":0,"next":4294967295,"allocated":18446744073709551615,"exhausted":false}"#,
+    )
+    .expect("boundary state deserializes");
+    let terminal = namespace.fresh().expect("terminal variable available");
+    assert_eq!(terminal.to_string(), "?0.4294967295");
+    assert_eq!(namespace.allocated(), u64::MAX, "saturated, not wrapped");
+    assert!(namespace.fresh().is_none(), "namespace now exhausted");
+}
+
+/// PR #302 round 6 P3 (pinned documentation): legacy payloads lack
+/// the accounting fields; counts reset to zero on deserialization
+/// while the cursor is preserved.
+#[cfg(feature = "serialize")]
+#[test]
+fn legacy_payloads_reset_counts_and_preserve_cursor() {
+    let mut namespace: LogicVarNamespace =
+        serde_json::from_str(r#"{"scope":9,"next":7}"#).expect("legacy payload deserializes");
+    assert_eq!(namespace.allocated(), 0);
+    let var = namespace.fresh().expect("cursor preserved");
+    assert_eq!(var.to_string(), "?9.7");
+    assert_eq!(namespace.allocated(), 1);
 }

@@ -42,3 +42,20 @@ fn rule_applies_at_root() {
     let term = Term::sym("add", [Term::constant("0"), Term::constant("a")]);
     assert_eq!(rule.apply_root(&term).unwrap(), Term::constant("a"));
 }
+
+/// A term variable whose NAME collides with a rule variable must not
+/// be captured by the matcher's bindings: applying `f(x, cpRy) -> x`
+/// to `f(cpRy, a)` yields the term's variable `cpRy`, never `a`
+/// (PR #302 round 1 P1 — capture fabricated false certificates).
+#[test]
+fn rule_application_does_not_capture_same_named_term_variables() {
+    let rule = Rule::new(
+        Term::sym("f", [Term::var("x"), Term::var("cpRy")]),
+        Term::var("x"),
+    )
+    .unwrap();
+    let term = Term::sym("f", [Term::var("cpRy"), Term::constant("a")]);
+    assert_eq!(rule.apply_root(&term), Some(Term::var("cpRy")));
+    // Deep resolution must remain available on the unification path;
+    // matcher application must not resolve through the collision.
+}

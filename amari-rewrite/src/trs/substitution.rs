@@ -87,6 +87,27 @@ impl Substitution {
         }
     }
 
+    /// Apply a MATCHER substitution: one level, no chain resolution.
+    ///
+    /// Match bindings map pattern variables to verbatim term
+    /// fragments; those fragments are DATA and must never be
+    /// re-resolved, even when a fragment variable shares a name with
+    /// a pattern variable (PR #302 round 1: deep resolution captured
+    /// same-named term variables and fabricated rewrite steps).
+    /// Capture-free by construction, equivalent to alpha-renaming the
+    /// rule before matching but without the extra allocation. Use
+    /// [`Self::apply`] for substitutions produced by unification,
+    /// where chained bindings are meaningful.
+    pub fn apply_matcher(&self, term: &Term) -> Term {
+        match term {
+            Term::Var(var) => self.map.get(var).cloned().unwrap_or_else(|| term.clone()),
+            Term::Sym(symbol, args) => Term::Sym(
+                symbol.clone(),
+                args.iter().map(|arg| self.apply_matcher(arg)).collect(),
+            ),
+        }
+    }
+
     /// Number of bindings.
     pub fn len(&self) -> usize {
         self.map.len()

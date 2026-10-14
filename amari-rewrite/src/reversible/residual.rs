@@ -122,7 +122,7 @@ impl RewriteResidual {
         for ((_, bound), name) in self.erased_bindings.iter().zip(erased.iter()) {
             full.insert(Variable::new(name.clone()), bound.clone());
         }
-        let source_subterm = full.apply(rule.lhs());
+        let source_subterm = full.apply_matcher(rule.lhs());
         let reconstructed = target
             .replace_at(&self.position, source_subterm)
             .map_err(|_| mismatch("position replacement failed"))?;
