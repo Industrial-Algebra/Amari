@@ -10998,6 +10998,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::relation::LogicVarNamespace::advance_to",
+      "kind": "method",
+      "signature": "pub fn advance_to (& mut self , next : u32)",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::relation::variable",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn advance_to (& mut self , next : u32)",
+          "source_path": "amari-rewrite/src/relation/variable.rs",
+          "source_module": "amari_rewrite::relation::variable",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::relation::variable",
+          "declaration_ident": "LogicVarNamespace::advance_to"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::relation::LogicVarNamespace::allocated",
       "kind": "method",
       "signature": "pub fn allocated (& self) -> u32",
@@ -11019,14 +11038,14 @@
     {
       "path": "amari_rewrite::relation::LogicVarNamespace::fresh",
       "kind": "method",
-      "signature": "pub fn fresh (& mut self) -> LogicVar",
+      "signature": "pub fn fresh (& mut self) -> Option < LogicVar >",
       "source_path": "amari-rewrite/src/relation/variable.rs",
       "is_reexport": true,
       "source_module": "amari_rewrite::relation::variable",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn fresh (& mut self) -> LogicVar",
+          "signature": "pub fn fresh (& mut self) -> Option < LogicVar >",
           "source_path": "amari-rewrite/src/relation/variable.rs",
           "source_module": "amari_rewrite::relation::variable",
           "is_reexport": true,
@@ -26063,6 +26082,14 @@
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::relation::LogicVarNamespace::advance_to",
+      "source_path": "amari-rewrite/src/relation/variable.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_rewrite::relation::LogicVarNamespace::allocated",

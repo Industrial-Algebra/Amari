@@ -205,7 +205,7 @@ pub fn symbolic_predecessors(
         };
         for rule in system.rules() {
             let clause = BackwardClause::compile(rule)?;
-            let fresh = clause.freshen(&mut namespace);
+            let fresh = clause.freshen(&mut namespace)?;
             let substitution = match unify(&fresh.rhs, subterm, &mut resources) {
                 Ok(substitution) => substitution,
                 Err(crate::error::RewriteError::UnificationFailure { .. }) => continue,

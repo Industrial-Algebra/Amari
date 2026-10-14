@@ -123,7 +123,10 @@ impl BackwardClause {
 
     /// Freshen the clause under the namespace: rule variables become
     /// logic variables named by their `LogicVar` display form.
-    pub(crate) fn freshen(&self, namespace: &mut LogicVarNamespace) -> FreshenedClause {
+    pub(crate) fn freshen(
+        &self,
+        namespace: &mut LogicVarNamespace,
+    ) -> RewriteResult<FreshenedClause> {
         let mut renaming = Substitution::new();
         let mut erased_vars = Vec::new();
         let mut variables: Vec<String> = self
@@ -135,17 +138,22 @@ impl BackwardClause {
         variables.sort();
         variables.dedup();
         for name in &variables {
-            let logic = namespace.fresh();
+            let logic = namespace
+                .fresh()
+                .ok_or(RewriteError::RelationLimitExceeded {
+                    resource: "logic variable namespace",
+                    limit: u32::MAX as usize,
+                })?;
             renaming.insert(name.clone(), Term::var(logic.to_string()));
             if self.erased.contains(name) {
                 erased_vars.push(logic);
             }
         }
-        FreshenedClause {
+        Ok(FreshenedClause {
             lhs: renaming.apply_matcher(&self.lhs),
             rhs: renaming.apply_matcher(&self.rhs),
             erased: erased_vars,
-        }
+        })
     }
 }
 

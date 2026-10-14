@@ -61,16 +61,21 @@ pub struct LogicVarNamespace {
     /// dropped predecessors).
     #[cfg_attr(feature = "serialize", serde(default))]
     reserved: alloc::collections::BTreeSet<alloc::string::String>,
+    /// Successful allocations (cursor advances past reserved names do
+    /// not count — PR #302 round 5).
+    #[cfg_attr(feature = "serialize", serde(default))]
+    allocated: u32,
+    /// Set once the cursor can no longer advance (index `u32::MAX`
+    /// consumed or reserved); `fresh` then returns `None` instead of
+    /// spinning or duplicating the boundary name.
+    #[cfg_attr(feature = "serialize", serde(default))]
+    exhausted: bool,
 }
 
 impl LogicVarNamespace {
     /// Open a namespace for one query scope.
     pub fn new(scope: u32) -> Self {
-        Self {
-            scope,
-            next: 0,
-            reserved: alloc::collections::BTreeSet::new(),
-        }
+        Self::with_reserved(scope, [])
     }
 
     /// Open a namespace that never allocates `reserved` names.
@@ -82,23 +87,47 @@ impl LogicVarNamespace {
             scope,
             next: 0,
             reserved: reserved.into_iter().collect(),
+            allocated: 0,
+            exhausted: false,
         }
     }
 
-    /// Allocate the next logic variable in this scope, skipping any
-    /// reserved name. Deterministic per `(scope, reserved)`.
-    pub fn fresh(&mut self) -> LogicVar {
+    /// Allocate the next non-reserved logic variable in this scope.
+    /// `None` when the namespace is exhausted (the boundary index
+    /// consumed or reserved): exhaustion is TYPED, never a spin and
+    /// never a duplicate (PR #302 round 5). Deterministic per
+    /// `(scope, reserved)`.
+    pub fn fresh(&mut self) -> Option<LogicVar> {
         loop {
-            let var = LogicVar::new(self.scope, self.next);
-            self.next = self.next.saturating_add(1);
-            if !self.reserved.contains(&var.to_string()) {
-                return var;
+            if self.exhausted {
+                return None;
             }
+            let var = LogicVar::new(self.scope, self.next);
+            let boundary = self.next == u32::MAX;
+            if boundary {
+                self.exhausted = true;
+            } else {
+                self.next += 1;
+            }
+            if self.reserved.contains(&var.to_string()) {
+                if boundary {
+                    return None;
+                }
+                continue;
+            }
+            self.allocated += 1;
+            return Some(var);
         }
     }
 
-    /// Number of variables allocated so far.
+    /// Number of successful allocations (reserved skips excluded).
     pub fn allocated(&self) -> u32 {
-        self.next
+        self.allocated
+    }
+
+    /// Move the cursor directly (boundary-state tests only).
+    #[doc(hidden)]
+    pub fn advance_to(&mut self, next: u32) {
+        self.next = next;
     }
 }
