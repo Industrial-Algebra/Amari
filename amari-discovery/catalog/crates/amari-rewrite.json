@@ -14572,7 +14572,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::analysis::TerminationProof",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -14590,7 +14590,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::analysis::TerminationReport",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -16735,7 +16735,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::analysis::TerminationProof",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -16753,7 +16753,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::analysis::TerminationReport",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -18340,7 +18340,7 @@
       "trait_path": "Default",
       "impl_type_path": "amari_rewrite::analysis::TerminationReport",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Default"
@@ -18844,7 +18844,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::analysis::TerminationProof",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -18862,7 +18862,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::analysis::TerminationReport",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -21332,7 +21332,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::analysis::TerminationProof",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -21350,7 +21350,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::analysis::TerminationReport",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -23405,6 +23405,25 @@
     },
     {
       "trait_path": "serde::Deserialize",
+      "impl_type_path": "amari_rewrite::analysis::Precedence",
+      "source_path": "amari-rewrite/src/analysis/lpo.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "serde::Deserialize"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::analysis::lpo",
+        "ident": "Precedence"
+      },
+      "generics": "< 'de >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "serde::Deserialize",
       "impl_type_path": "amari_rewrite::inverse::CertifiedExhaustion",
       "source_path": "amari-rewrite/src/inverse/outcome.rs",
       "source_ordinal": 9,
@@ -23686,7 +23705,7 @@
     {
       "path": "amari_rewrite::analysis::TerminationProof",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -23694,7 +23713,7 @@
     {
       "path": "amari_rewrite::analysis::TerminationReport",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -23718,7 +23737,7 @@
     {
       "path": "amari_rewrite::analysis::lpo_greater",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -23726,7 +23745,7 @@
     {
       "path": "amari_rewrite::analysis::prove_terminating",
       "source_path": "amari-rewrite/src/analysis/lpo.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"

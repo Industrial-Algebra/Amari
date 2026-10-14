@@ -48,7 +48,7 @@
 //! [`crate::error::RewriteError::RelationLimitExceeded`] with no
 //! partial proof.
 
-use alloc::collections::BTreeMap;
+use alloc::collections::{BTreeMap, BTreeSet};
 use alloc::vec::Vec;
 
 use crate::analysis::unify::{term_depth, term_nodes};
@@ -63,10 +63,43 @@ use crate::trs::{Symbol, Term, TermSystem};
 /// rank map is injective by construction, which makes the order a
 /// strict total order on the listed symbols.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 pub struct Precedence {
     rank: BTreeMap<Symbol, usize>,
     arity: BTreeMap<Symbol, usize>,
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> serde::Deserialize<'de> for Precedence {
+    /// Deserialization routes through the same invariants as
+    /// [`Precedence::new`]: rank and arity domains must match
+    /// exactly and ranks must be injective — a malformed map never
+    /// becomes a "total" order (PR #305 round 1).
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(serde::Deserialize)]
+        struct Raw {
+            rank: BTreeMap<Symbol, usize>,
+            arity: BTreeMap<Symbol, usize>,
+        }
+        let raw = Raw::deserialize(deserializer)?;
+        if raw.rank.len() != raw.arity.len()
+            || !raw.rank.keys().zip(raw.arity.keys()).all(|(l, r)| l == r)
+        {
+            return Err(serde::de::Error::custom(
+                "precedence rank and arity domains differ",
+            ));
+        }
+        let mut seen = BTreeSet::new();
+        for rank in raw.rank.values() {
+            if !seen.insert(rank) {
+                return Err(serde::de::Error::custom("duplicate precedence rank"));
+            }
+        }
+        Ok(Self {
+            rank: raw.rank,
+            arity: raw.arity,
+        })
+    }
 }
 
 impl Precedence {
@@ -146,6 +179,17 @@ pub fn prove_terminating(
     precedence: &Precedence,
     resources: &mut RelationResources,
 ) -> RewriteResult<TerminationProof> {
+    let mut validated: BTreeSet<Term> = BTreeSet::new();
+    for rule in system.rules() {
+        for side in [rule.lhs(), rule.rhs()] {
+            if !validated.contains(side) {
+                validate_input(side, precedence, resources)?;
+                // Key materialization for the validation memo.
+                resources.record_term(term_nodes(side), term_depth(side))?;
+                validated.insert(side.clone());
+            }
+        }
+    }
     validate_precedence(system, precedence, resources)?;
 
     let mut cache = LpoCache::new();
@@ -184,6 +228,10 @@ pub fn lpo_greater(
     precedence: &Precedence,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
+    validate_input(left, precedence, resources)?;
+    if right != left {
+        validate_input(right, precedence, resources)?;
+    }
     let mut cache = LpoCache::new();
     compare_pair(left, right, precedence, resources, &mut cache)
 }
@@ -300,6 +348,53 @@ fn compare_uncached(
     Ok(false)
 }
 
+/// Iteratively validate one input term BEFORE any recursive helper
+/// touches it: enforce node/depth bounds and precedence coverage
+/// (every symbol ranked, used at its declared arity). The recursive
+/// comparison and shape helpers are only sound on terms that have
+/// passed this check — a deeply nested input must fail here with a
+/// typed limit, never overflow the stack (PR #305 round 1).
+fn validate_input(
+    term: &Term,
+    precedence: &Precedence,
+    resources: &mut RelationResources,
+) -> RewriteResult<()> {
+    let mut stack = alloc::vec::Vec::from([(term, 1usize)]);
+    let mut nodes = 0usize;
+    let mut max_depth = 0usize;
+    while let Some((current, depth)) = stack.pop() {
+        resources.record_operations(1)?;
+        nodes = nodes.saturating_add(1);
+        max_depth = max_depth.max(depth);
+        if let Term::Sym(symbol, args) = current {
+            let declared =
+                precedence
+                    .arity_of(symbol)
+                    .ok_or_else(|| RewriteError::InvalidRule {
+                        message: alloc::format!(
+                            "precedence does not cover symbol `{}`",
+                            symbol.as_str()
+                        ),
+                    })?;
+            if declared != args.len() {
+                return Err(RewriteError::InvalidRule {
+                    message: alloc::format!(
+                        "precedence ranks symbol `{}` at arity {} but the term uses arity {}",
+                        symbol.as_str(),
+                        declared,
+                        args.len()
+                    ),
+                });
+            }
+            for arg in args {
+                stack.push((arg, depth.saturating_add(1)));
+            }
+        }
+    }
+    resources.record_term(nodes, max_depth)?;
+    Ok(())
+}
+
 /// Rank of a symbol, or a typed error when the precedence omits it.
 fn rank_of(precedence: &Precedence, symbol: &Symbol) -> RewriteResult<usize> {
     precedence
@@ -392,30 +487,39 @@ mod tests {
 
     #[test]
     fn nested_dominance_descends_arguments() {
-        let order = Precedence::new(vec![
-            (Symbol::new("f"), 1),
-            (Symbol::new("g"), 1),
-            (Symbol::new("b"), 0),
-            (Symbol::new("a"), 0),
-        ])
-        .expect("precedence");
+        // Ranked signatures fix one arity per symbol, so the two
+        // comparisons live in separate fixtures (PR #305 round 1:
+        // the original fixture used f and g at two arities and the
+        // input validator correctly rejects it).
+        let unary = Precedence::new(vec![(Symbol::new("f"), 1), (Symbol::new("g"), 1)])
+            .expect("precedence");
         let mut resources = RelationResources::new(&RelationLimits::default());
         // f(g(x)) > g(f(x)): the head outranks and dominates the
         // single argument of the right-hand side.
         assert!(lpo_greater(
             &Term::sym("f", vec![Term::sym("g", vec![x()])]),
             &Term::sym("g", vec![Term::sym("f", vec![x()])]),
-            &order,
+            &unary,
             &mut resources,
         )
         .expect("comparison"));
         // A term dominates a deeply nested argument through the path
-        // descent: f(a, g(x)) > g(b, a) because f outranks g and
-        // dominates both of g's arguments.
+        // descent: f(a, h(x)) > g(b, a) because f outranks g and
+        // dominates both of g's arguments (b by precedence with no
+        // arguments to check; a by descent to the equal argument).
+        let binary = Precedence::new(vec![
+            (Symbol::new("f"), 2),
+            (Symbol::new("g"), 2),
+            (Symbol::new("h"), 1),
+            (Symbol::new("b"), 0),
+            (Symbol::new("a"), 0),
+        ])
+        .expect("precedence");
+        let mut resources = RelationResources::new(&RelationLimits::default());
         assert!(lpo_greater(
-            &Term::sym("f", vec![Term::sym("a", vec![]), Term::sym("g", vec![x()])],),
+            &Term::sym("f", vec![Term::sym("a", vec![]), Term::sym("h", vec![x()])],),
             &Term::sym("g", vec![Term::sym("b", vec![]), Term::sym("a", vec![])]),
-            &order,
+            &binary,
             &mut resources,
         )
         .expect("comparison"));

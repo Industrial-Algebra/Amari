@@ -300,3 +300,62 @@ fn operation_limit_is_typed() {
         Err(RewriteError::RelationLimitExceeded { .. })
     ));
 }
+
+/// PR #305 round 1 P1: bounds validation must be iterative and
+/// EARLY — a term built iteratively far beyond the depth ceiling
+/// must fail with typed RelationLimitExceeded, never overflow the
+/// stack through recursive helpers.
+#[test]
+fn deeply_nested_term_fails_with_typed_limit_not_crash() {
+    let mut deep = Term::var("x");
+    for _ in 0..20_000 {
+        deep = Term::sym("f", [deep]);
+    }
+    let precedence = precedence(&[("f", 1)]);
+    let mut resources = RelationResources::new(&RelationLimits::new(1, 1, 1, 1).unwrap());
+    let outcome = lpo_greater(&deep, &Term::var("x"), &precedence, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "expected typed limit, got {outcome:?}"
+    );
+    // A term built adversarially OUTSIDE the library exceeds the
+    // depth ceiling; its recursive `Drop` would itself overflow the
+    // stack. Leak it instead — recursive drop of unvalidated terms is
+    // a pre-existing Term hazard tracked separately.
+    core::mem::forget(deep);
+}
+
+/// PR #305 round 1 P2: deserialization must route through validated
+/// construction — mismatched domains and duplicate ranks reject.
+#[cfg(feature = "serialize")]
+#[test]
+fn precedence_deserialization_validates_invariants() {
+    let mismatched: Result<Precedence, _> =
+        serde_json::from_str(r#"{"rank":{},"arity":{"f":1,"a":0}}"#);
+    assert!(mismatched.is_err(), "domain mismatch must reject");
+    let duplicate: Result<Precedence, _> =
+        serde_json::from_str(r#"{"rank":{"f":0,"a":0},"arity":{"f":1,"a":0}}"#);
+    assert!(duplicate.is_err(), "duplicate ranks must reject");
+    let valid: Precedence =
+        serde_json::from_str(r#"{"rank":{"f":0,"a":1},"arity":{"f":1,"a":0}}"#).unwrap();
+    assert_eq!(valid, precedence(&[("f", 1), ("a", 0)]));
+}
+
+/// PR #305 round 1 P2: bare comparisons must reject missing symbols
+/// BEFORE equality or subterm short-circuits.
+#[test]
+fn bare_comparison_rejects_missing_symbols_before_short_circuits() {
+    let empty = precedence(&[]);
+    let f_of_a = Term::sym("f", [Term::constant("a")]);
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let first = lpo_greater(&f_of_a, &Term::constant("a"), &empty, &mut resources);
+    assert!(
+        matches!(first, Err(RewriteError::InvalidRule { .. })),
+        "got {first:?}"
+    );
+    let equal = lpo_greater(&f_of_a, &f_of_a, &empty, &mut resources);
+    assert!(
+        matches!(equal, Err(RewriteError::InvalidRule { .. })),
+        "got {equal:?}"
+    );
+}
