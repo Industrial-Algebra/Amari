@@ -1,16 +1,30 @@
-# Test Enforcement for Mathematical Correctness
+# Test Enforcement
+
+> **Status (M-REP-A, 2026-10-15): honest rewrite.** This page previously
+> described test enforcement as validating mathematical properties and formal
+> guarantees. Test enforcement *runs and gates tests*; it does not prove
+> theorems. This page now describes the enforcement mechanics and what they do
+> and do not establish. See `docs/technical/MATHEMATICAL_RIGOR.md` for the
+> epistemic framing and the approved C3/C4 proof gates.
 
 ## Overview
 
-The Amari mathematical library implements strict test enforcement to ensure mathematical correctness across all commits. This is critical for a library that forms the foundation of mathematical computations.
+The Amari workspace enforces a strict pre-commit and CI pipeline so that a
+change cannot land while the formatting, lint, test, or documentation checks
+fail. This is important for a library that other crates build on top of, but it
+is a *regression guard*, not a source of mathematical proof.
 
-## 🎯 Why Test Enforcement?
+## 🎯 Why test enforcement?
 
-Mathematical libraries require absolute correctness because:
-- **Cascading Errors**: A single mathematical bug can invalidate entire research results
-- **Trust**: Users depend on mathematical libraries to be mathematically sound
-- **Regression Prevention**: Changes to one mathematical domain shouldn't break others
-- **Formal Verification**: Our phantom types and contracts must always be validated
+Mathematical libraries need strong regression protection because:
+- **Cascading errors**: a single wrong result can invalidate downstream work.
+- **Trust**: users depend on the library's documented behavior.
+- **Regression prevention**: changes in one domain should not break another.
+- **Annotation compatibility**: the `formal-verification` feature suites must
+  keep compiling and executing.
+
+Universal algebraic laws are proof obligations (C3/C4, not done here), not
+something test enforcement establishes. See `MATHEMATICAL_RIGOR.md`.
 
 ## 🔧 Setup
 
@@ -20,133 +34,148 @@ Run once after cloning:
 ./setup-githooks.sh
 ```
 
-This configures git to use our custom pre-commit hooks that enforce:
+This configures git to use the custom pre-commit hooks that enforce:
 
-### ✅ Pre-Commit Checks
+### ✅ Pre-commit checks
 
-1. **Code Formatting** (`cargo fmt --check`)
-   - Ensures consistent code style across the ecosystem
+1. **Code formatting** (`cargo fmt --check`)
+   - Consistent code style across the workspace
 
-2. **Clippy Lints** (`cargo clippy --workspace --all-targets --all-features`)
-   - Catches common bugs and enforces Rust best practices
+2. **Clippy lints** (`cargo clippy --workspace --all-targets --all-features`)
+   - Common bugs and Rust best practices
    - All warnings must be resolved (treated as errors)
 
-3. **Core Mathematical Tests** (`cargo test --workspace`)
-   - All mathematical operations must pass their tests
-   - Includes comprehensive test suites with 300%+ coverage
-   - Validates mathematical properties and edge cases
+3. **Core test suites** (`cargo test --workspace`)
+   - All exercised operations must pass their assertions
+   - Includes large edge-case suites
+   - Validates exercised properties and edge cases
 
-4. **Formal Verification Tests** (`cargo test --workspace --features formal-verification`)
-   - Phantom type safety validations
-   - Mathematical contract verifications
-   - Semiring axiom validations
+4. **`formal-verification` feature suites**
+   (`cargo test --workspace --features formal-verification`)
+   - Annotation-compatibility tests compile and execute
+   - Contract annotations and phantom type constraints compile
+   - (This is annotation compatibility, not discharged proof.)
 
-5. **Documentation Build** (`cargo doc --workspace --no-deps`)
-   - Ensures all documentation compiles correctly
-   - Validates doctests and examples
+5. **Documentation build** (`cargo doc --workspace --no-deps`)
+   - All documentation compiles
+   - Doc examples are tested
 
-## 🚦 Test Enforcement Workflow
+## 🚦 Test enforcement workflow
 
-### Normal Commit Flow
+### Normal commit flow
 ```bash
 git add .
 git commit -m "feat: implement new mathematical operation"
 # Pre-commit hooks automatically run:
 # ✅ Code formatting check
 # ✅ Clippy lints
-# ✅ Core tests (all crates)
-# ✅ Formal verification tests
+# ✅ Core test suites (all crates)
+# ✅ formal-verification feature suites
 # ✅ Documentation build
 # Commit proceeds if all checks pass
 ```
 
-### Failed Check Workflow
+### Failed check workflow
 ```bash
 git commit -m "feat: buggy implementation"
-# ❌ Tests failed!
+# ❌ Checks failed!
 # Fix the issues, then retry
 git add .
 git commit -m "feat: correct implementation"
 # ✅ All checks pass, commit proceeds
 ```
 
-### Emergency Bypass (Use Sparingly)
+### Emergency bypass (use sparingly)
 ```bash
-# Only for urgent fixes when tests are temporarily broken
+# Only for urgent fixes when checks are temporarily broken
 git commit --no-verify -m "emergency: critical security fix"
 ```
 
-## 📊 Test Coverage Standards
+## 📊 Test coverage standards
 
-The enforcement system validates our comprehensive test coverage:
+The enforcement system gates on the test suites and reports coverage counts:
 
-### Test Count Targets
-- **amari-core**: 140+ tests covering all geometric algebra operations
-- **amari-tropical**: 53+ tests covering tropical algebra and formal verification
-- **Each crate**: Minimum 300% increase from baseline
+### Test count targets
+- **amari-core**: 140+ tests covering geometric algebra operations
+- **amari-tropical**: 53+ tests covering tropical algebra
+- **Each crate**: minimum 300% increase from baseline
 
-### Test Categories Required
-- **Constructor Tests**: All creation methods validated
-- **Property Tests**: Mathematical axioms verified
-- **Edge Case Tests**: Infinity, zero, boundary conditions
-- **Operation Tests**: All arithmetic and algebraic operations
-- **Integration Tests**: Cross-crate compatibility
-- **Formal Verification Tests**: Phantom type and contract validation
+Counts are inventory/coverage numbers: how many test functions exist and how
+much code they exercise. They are not a measure of proved mathematics.
 
-## 🔬 Formal Verification Enforcement
+### Test categories required
+- **Constructor tests**: creation methods exercised
+- **Property tests**: algebraic properties exercised on sampled/edge inputs
+- **Edge-case tests**: infinity, zero, boundary conditions
+- **Operation tests**: arithmetic and algebraic operations
+- **Integration tests**: cross-crate compatibility
+- **Annotation-compatibility tests**: phantom-type/contract code compiles and
+  runs
 
-The system specifically validates:
+## 🔬 Formal-annotation compatibility
 
-### Mathematical Properties
-- **Associativity**: (a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)
-- **Commutativity**: a ⊕ b = b ⊕ a
-- **Identity Elements**: a ⊕ 0 = a
-- **Distributivity**: a ⊗ (b ⊕ c) = (a ⊗ b) ⊕ (a ⊗ c)
+The `formal-verification` feature suites specifically check that:
 
-### Type Safety
-- **Phantom Type Constraints**: Compile-time safety enforced
-- **Dimensional Consistency**: Matrix/tensor operations validated
-- **Semiring Constraints**: Mathematical structure preserved
+### Mathematical properties are exercised
+- **Associativity**: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)` on the tested inputs
+- **Commutativity**: `a ⊕ b = b ⊕ a` on the tested inputs
+- **Identity elements**: `a ⊕ 0 = a` on the tested inputs
+- **Distributivity**: `a ⊗ (b ⊕ c) = (a ⊗ b) ⊕ (a ⊗ c)` on the tested inputs
 
-### Contract Verification
-- **Semiring Axioms**: Tropical algebra properties validated
-- **Geometric Algebra Laws**: Clifford algebra properties checked
-- **Information Geometry**: Manifold properties verified
+These are instance checks. In particular, IEEE-754 arithmetic is not
+associative at extremes: for scalar `f64` `a = b = 1e308`, `c = 0`,
+`(a*b)*c` is `NaN` while `a*(b*c)` is `0`.
+
+### Type safety
+- **Phantom type constraints**: compile-time type checks enforced by the
+  compiler
+- **Dimensional consistency**: matrix/tensor dimension types checked
+- **Semiring separation**: MaxPlus/MinPlus type separation maintained
+
+### Annotation compatibility
+- **Semiring annotations**: tropical contract annotations compile
+- **Geometric algebra annotations**: Clifford-algebra contract annotations
+  compile
+- **Information geometry annotations**: manifold contract annotations compile
+
+A green `formal-verification` run means the annotations compile and the
+compatibility suites pass; it does not mean any contract was translated to a
+prover or discharged.
 
 ## 📈 Benefits
 
-### Mathematical Correctness
-- **Zero Mathematical Regressions**: Changes cannot break existing mathematical properties
-- **Continuous Validation**: Every commit validates the entire mathematical framework
-- **Early Bug Detection**: Mathematical errors caught before they reach users
+### Regression protection
+- **Zero observed regressions**: blocked commits cannot break exercised paths
+- **Continuous execution**: the suites run on every commit
+- **Early detection**: errors are caught before they reach users
 
-### Development Quality
-- **Consistent Code Style**: Uniform formatting across all crates
-- **Best Practices**: Clippy enforces Rust best practices
-- **Documentation Quality**: All docs must build successfully
+### Development quality
+- **Consistent code style**: uniform formatting across all crates
+- **Best practices**: clippy enforces Rust best practices
+- **Documentation quality**: all docs must build
 
-### Research Reliability
-- **Reproducible Results**: Mathematical operations remain consistent
-- **Trustworthy Foundation**: Researchers can depend on mathematical correctness
-- **Formal Guarantees**: Phantom types provide compile-time mathematical safety
+### Research reliability
+- **Reproducible execution**: the same checks run locally and in CI
+- **Trustworthy foundation**: exercised behavior is protected
+- **Type-level safety**: phantom types give compile-time type constraints
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
+### Common issues
 
-#### Test Failures
+#### Test failures
 ```bash
 # See which specific tests failed
 cargo test --workspace
 
-# Run specific test for debugging
+# Run a specific test for debugging
 cargo test test_name -- --nocapture
 
-# Run formal verification tests
+# Run the formal-verification feature suites
 cargo test --workspace --features formal-verification
 ```
 
-#### Formatting Issues
+#### Formatting issues
 ```bash
 # Fix formatting automatically
 cargo fmt
@@ -155,7 +184,7 @@ cargo fmt
 cargo fmt --check
 ```
 
-#### Clippy Warnings
+#### Clippy warnings
 ```bash
 # See all warnings
 cargo clippy --workspace --all-targets --all-features
@@ -164,7 +193,7 @@ cargo clippy --workspace --all-targets --all-features
 cargo clippy --workspace --all-targets --all-features --fix
 ```
 
-#### Documentation Errors
+#### Documentation errors
 ```bash
 # Build docs to see errors
 cargo doc --workspace --no-deps
@@ -173,11 +202,11 @@ cargo doc --workspace --no-deps
 cargo doc --workspace --no-deps --document-private-items
 ```
 
-### Disable Temporarily
+### Disable temporarily
 If you need to temporarily disable enforcement (use sparingly):
 
 ```bash
-# Disable for single commit
+# Disable for a single commit
 git commit --no-verify -m "emergency fix"
 
 # Disable hooks entirely (not recommended)
@@ -189,16 +218,16 @@ git config core.hooksPath .githooks
 
 ## 📋 Maintenance
 
-### Adding New Tests
+### Adding new tests
 When adding new mathematical operations:
 
 1. **Implement comprehensive tests first**
 2. **Follow the proven test patterns** from existing crates
-3. **Include edge cases and mathematical properties**
-4. **Add formal verification if applicable**
-5. **Ensure all tests pass before committing**
+3. **Include edge cases and property instances**
+4. **Add annotation-compatibility tests if applicable**
+5. **Ensure all checks pass before committing**
 
-### Updating Enforcement
+### Updating enforcement
 To modify the pre-commit checks:
 
 1. **Edit `.githooks/pre-commit`**
@@ -206,17 +235,19 @@ To modify the pre-commit checks:
 3. **Update this documentation**
 4. **Communicate changes to the team**
 
-## 🎯 Success Metrics
+## 🎯 Success metrics
 
 The enforcement system ensures:
-- **100% test pass rate** on all commits
-- **Zero mathematical regressions** across releases
-- **Comprehensive coverage** of all mathematical operations
-- **Formal verification** of critical mathematical properties
-- **Consistent code quality** across all contributors
+- **100% check-pass rate** on commits that are allowed to land
+- **No observed regressions** across releases
+- **Broad coverage** of exercised operations
+- **Annotation compatibility** for `formal-verification` builds
+- **Consistent code quality** across contributors
 
-This creates a robust foundation for mathematical computing that researchers and developers can trust completely.
+This is a regression guard, not a proof. Universal mathematical statements are
+tracked as C3/C4 obligations in the approved verification matrix.
 
 ---
 
-*This enforcement system is critical for maintaining the mathematical integrity that makes Amari a reliable foundation for computational mathematics and research.*
+*This enforcement system keeps the exercised behavior of Amari stable; it does
+not by itself establish mathematical truth.*

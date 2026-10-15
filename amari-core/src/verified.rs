@@ -425,16 +425,22 @@ where
     }
 }
 
-/// A verified rotor with compile-time guarantees
+/// A rotor type carrying a runtime-checked even-grade/unit-norm invariant.
 ///
-/// Rotors are even-grade multivectors with unit norm that
-/// represent rotations in the geometric algebra
+/// Rotors are even-grade multivectors with unit norm that represent rotations
+/// in the geometric algebra. The `Verified` name refers to the runtime checks
+/// performed by [`VerifiedRotor::new`]; it is **not** a compile-time proof, and
+/// no proof obligation is discharged by this type.
 pub struct VerifiedRotor<T, const P: usize, const Q: usize, const R: usize>
 where
     T: Float + Zero + One,
 {
     multivector: VerifiedMultivector<T, P, Q, R>,
-    /// Phantom data ensuring this is a valid rotor
+    /// Marker for the runtime-checked rotor invariant.
+    ///
+    /// This is `PhantomData` and carries no compile-time proof; the intended
+    /// invariant is enforced (with the caveats documented on
+    /// [`VerifiedRotor::new`]) at runtime.
     _rotor_invariant: PhantomData<()>,
 }
 
@@ -442,11 +448,28 @@ impl<T, const P: usize, const Q: usize, const R: usize> VerifiedRotor<T, P, Q, R
 where
     T: Float + Zero + One,
 {
-    /// Create a rotor from a multivector
+    /// Create a rotor from a multivector.
     ///
-    /// # Invariants (verified at runtime, would be proven with Creusot)
-    /// - Must be even grade
-    /// - Must have unit norm
+    /// # Checks performed
+    /// - **Even grade**: every odd-grade coefficient must compare equal to
+    ///   zero (`coeff != 0`); otherwise this returns
+    ///   `Err("Rotor must have even grade")`.
+    /// - **Unit norm**: the Euclidean coefficient norm computed as
+    ///   `sqrt(sum(c_i^2))` must satisfy `(norm - 1).abs() <= 1e-4`; otherwise
+    ///   this returns `Err("Rotor must have unit norm")`.
+    ///
+    /// Both checks are ordinary runtime comparisons executed by this method.
+    /// The `formal-verification` attributes below are *intended
+    /// specifications* (contract annotations); they are compiled away in
+    /// normal builds and no proof of them is discharged here.
+    ///
+    /// # Non-finite coefficients (specification gap, M-REP-C)
+    /// The unit-norm rejection is written as `(norm - 1).abs() > 1e-4`, which
+    /// is `false` when `norm` is `NaN`. Consequently a multivector with a
+    /// `NaN` norm (for example a scalar `NaN`) is **accepted** by this
+    /// constructor today. Handling of non-finite coefficients and the exact
+    /// rotor specification/implementation are out of scope for M-REP-A
+    /// (wording repair) and deferred to M-REP-C.
     #[cfg_attr(feature = "formal-verification",
         requires(mv.is_even_grade()),
         requires((mv.coefficient_norm() - T::one()).abs() < T::from(0.0001).unwrap()),
@@ -487,17 +510,25 @@ where
             .sqrt()
     }
 
-    /// Compose two rotors (rotation composition)
+    /// Compose two rotors (rotation composition).
     ///
-    /// # Type Safety
-    /// - Result is guaranteed to be a valid rotor
-    /// - Unit norm is preserved
+    /// The geometric product of the two rotors is computed and then divided by
+    /// its computed norm. This method performs **no runtime check** that the
+    /// result is even grade or unit norm: the properties below are *intended
+    /// invariants* (to be established by a future proof), not runtime-enforced
+    /// guarantees. Normalization is a floating-point operation, so the result
+    /// is only approximately unit norm.
+    ///
+    /// # Intended invariants (not runtime-enforced)
+    /// - Result is intended to be a valid rotor
+    /// - Unit norm is intended to be preserved
     #[cfg_attr(feature = "formal-verification",
         ensures(Self::compute_norm(&result.multivector) == T::one()))]
     pub fn compose(&self, other: &Self) -> Self {
         let composed = self.multivector.geometric_product(&other.multivector);
 
-        // Normalize to ensure unit norm (should already be close due to properties)
+        // Normalize by the computed norm (expected to be close to one, but not
+        // checked here; non-finite handling is M-REP-C).
         let norm = Self::compute_norm(&composed);
         let normalized = VerifiedMultivector {
             coefficients: composed.coefficients.iter().map(|c| *c / norm).collect(),

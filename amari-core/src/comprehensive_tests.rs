@@ -1,7 +1,8 @@
 //! Comprehensive unit tests for all public functions in lib.rs
 //!
 //! This module systematically tests all 83 public functions identified in lib.rs
-//! to achieve high test coverage as part of formal verification.
+//! to achieve high test coverage. These are ordinary execution tests, not
+//! formal-proof evidence.
 
 use crate::*;
 use approx::assert_relative_eq;

@@ -1,0 +1,1289 @@
+diff --git a/.github/workflows/mathematical-correctness.yml b/.github/workflows/mathematical-correctness.yml
+index 029f2e7..56ce801 100644
+--- a/.github/workflows/mathematical-correctness.yml
++++ b/.github/workflows/mathematical-correctness.yml
+@@ -61,15 +61,15 @@ jobs:
+       run: |
+         echo "🧪 Running core mathematical tests..."
+         cargo test --workspace --lib --bins
+-        echo "✅ Core mathematical properties verified"
++        echo "✅ Core mathematical property tests passed"
+       env:
+         RUST_TEST_NOCAPTURE: 1
+ 
+-    - name: Run formal verification tests
++    - name: Run formal-verification feature tests
+       run: |
+-        echo "🔬 Running formal verification tests..."
++        echo "🔬 Running formal-verification feature tests..."
+         cargo test --workspace --lib --bins --features formal-verification
+-        echo "✅ Formal verification contracts validated"
++        echo "✅ Formal-annotation compatibility tests passed"
+       env:
+         RUST_TEST_NOCAPTURE: 1
+ 
+@@ -77,32 +77,32 @@ jobs:
+       run: |
+         echo "📖 Running documentation tests..."
+         cargo test --workspace --doc
+-        echo "✅ Documentation examples verified"
++        echo "✅ Documentation examples (doctests) passed"
+ 
+-    - name: Verify geometric algebra axioms
++    - name: Run geometric algebra axiom tests
+       run: |
+-        echo "📐 Verifying geometric algebra axioms..."
++        echo "📐 Running geometric algebra axiom tests..."
+         cargo test --package amari-core geometric_axioms
+         cargo test --package amari-tropical semiring_axioms
+-        echo "✅ All algebraic axioms satisfied"
++        echo "✅ Algebraic test suites passed"
+ 
+-    - name: Validate phantom type safety
++    - name: Run phantom type-safety tests
+       run: |
+-        echo "👻 Validating phantom type safety..."
++        echo "👻 Running phantom type-safety tests..."
+         cargo test --package amari-tropical verified_contracts
+         cargo test --package amari-core verified_contracts
+-        echo "✅ Type safety constraints verified"
++        echo "✅ Type-safety constraint tests passed"
+ 
+     - name: Mathematical property analysis
+       run: |
+         echo "🔍 Analyzing mathematical properties..."
+         TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+-        VERIFICATION_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
++        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+ 
+         echo "📊 Test Coverage Summary:"
+         echo "  Total tests: $TOTAL_TESTS"
+-        echo "  Verification tests: $VERIFICATION_TESTS"
+-        echo "  Mathematical rigor: 100%"
++        echo "  Formal-feature tests: $FORMAL_FEATURE_TESTS"
++        echo "  Mathematical test suites: executed"
+ 
+         if [ "$TOTAL_TESTS" -lt 300 ]; then
+           echo "❌ Insufficient test coverage for mathematical library"
+@@ -129,7 +129,7 @@ jobs:
+       run: |
+         echo "🔗 Running workspace integration tests..."
+         cargo test --workspace --exclude amari-discovery --tests
+-        echo "✅ Workspace integration correctness confirmed"
++        echo "✅ Workspace integration tests passed"
+ 
+   discovery-catalog:
+     name: Discovery Catalog Tests
+@@ -213,7 +213,7 @@ jobs:
+           echo "❌ Discovery integration checks failed"
+           exit 1
+         fi
+-        echo "✅ Discovery integration correctness confirmed"
++        echo "✅ Discovery integration tests passed"
+ 
+   documentation:
+     name: Mathematical Documentation
+@@ -267,11 +267,11 @@ jobs:
+            [ "$WORKSPACE_INTEGRATION" != "success" ] || \
+            [ "$DISCOVERY_INTEGRATION" != "success" ] || \
+            [ "$DOCUMENTATION" != "success" ]; then
+-          echo "❌ Mathematical integrity compromised!"
++          echo "❌ Mathematical-correctness test suites failed!"
+           exit 1
+         fi
+ 
+-        echo "✨ Mathematical correctness maintained ✨"
+-        echo "All geometric algebra properties verified"
+-        echo "All tropical semiring axioms confirmed"
+-        echo "All phantom type constraints validated"
++        echo "Mathematical-correctness test suites green"
++        echo "Geometric-algebra test suites passed"
++        echo "Tropical semiring test suites passed"
++        echo "Phantom type constraint test suites passed"
+diff --git a/.github/workflows/parallel-verification.yml b/.github/workflows/parallel-verification.yml
+index 5b2d889..3932fd6 100644
+--- a/.github/workflows/parallel-verification.yml
++++ b/.github/workflows/parallel-verification.yml
+@@ -115,10 +115,10 @@ jobs:
+     - name: Full integration test
+       run: cargo test --all --lib --bins
+ 
+-    - name: Mathematical correctness verified
++    - name: Mathematical correctness test report
+       run: |
+-        echo "✨ All mathematical properties verified ✨"
+-        echo "🔬 Geometric algebra: ✓"
+-        echo "🌴 Tropical semirings: ✓"
+-        echo "👻 Phantom types: ✓"
+-        echo "🧮 Formal verification: ✓"
+\ No newline at end of file
++        echo "✨ Mathematical-property test suites passed ✨"
++        echo "🔬 Geometric-algebra suites: ✓"
++        echo "🌴 Tropical-semiring suites: ✓"
++        echo "👻 Phantom-type suites: ✓"
++        echo "🧮 Formal-annotation compatibility: ✓"
+\ No newline at end of file
+diff --git a/.github/workflows/status-badges.yml b/.github/workflows/status-badges.yml
+index 80637f0..00cb47b 100644
+--- a/.github/workflows/status-badges.yml
++++ b/.github/workflows/status-badges.yml
+@@ -42,17 +42,17 @@ jobs:
+         echo "TOTAL_TESTS=$TOTAL_TESTS" >> $GITHUB_ENV
+         echo "Found $TOTAL_TESTS total tests"
+ 
+-        # Count verification tests
++        # Count test functions in annotation-marker files (formal-verification feature)
+         VERIFICATION_TESTS=$(cargo test --all --features formal-verification --no-run 2>/dev/null | grep -E "Running.*test" | sed 's/.*Running \([0-9]*\) test.*/\1/' | awk '{sum += $1} END {print sum}' 2>/dev/null || echo "0")
+ 
+-        # Alternative verification test count
++        # Alternative count: #[test] functions in files mentioning the formal_verification marker
+         if [ "$VERIFICATION_TESTS" = "0" ] || [ -z "$VERIFICATION_TESTS" ]; then
+           VERIFICATION_TESTS=$(find . -name "*.rs" -type f -exec grep -l "formal_verification" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
+         fi
+ 
+         VERIFICATION_TESTS=${VERIFICATION_TESTS:-0}
+         echo "VERIFICATION_TESTS=$VERIFICATION_TESTS" >> $GITHUB_ENV
+-        echo "Found $VERIFICATION_TESTS verification tests"
++        echo "Found $VERIFICATION_TESTS test functions in annotation-marker files"
+ 
+     # Note: The following badge creation steps are commented out because they require
+     # a valid GitHub Gist ID to store the badge data. To enable badge generation:
+@@ -72,15 +72,15 @@ jobs:
+     #     message: ${{ env.TOTAL_TESTS }} passing
+     #     color: brightgreen
+ 
+-    # - name: Create verification badge
++    # - name: Create annotation-count badge
+     #   if: env.VERIFICATION_TESTS != '0'
+     #   uses: schneegans/dynamic-badges-action@v1.7.0
+     #   with:
+     #     auth: ${{ secrets.GIST_SECRET }}
+     #     gistID: your-gist-id-here  # Replace with actual gist ID
+     #     filename: verification.json
+-    #     label: Formal Verification
+-    #     message: ${{ env.VERIFICATION_TESTS }} verified
++    #     label: Formal Annotations
++    #     message: ${{ env.VERIFICATION_TESTS }} test functions in annotation-marker files
+     #     color: blue
+ 
+     # - name: Create mathematical correctness badge
+@@ -90,14 +90,14 @@ jobs:
+     #     gistID: your-gist-id-here  # Replace with actual gist ID
+     #     filename: math-correctness.json
+     #     label: Mathematical Correctness
+-    #     message: 100% verified
++    #     message: test suites executed
+     #     color: gold
+ 
+     - name: Output badge information
+       run: |
+         echo "## Badge Generation Summary"
+         echo "- Total Tests: $TOTAL_TESTS"
+-        echo "- Verification Tests: $VERIFICATION_TESTS"
++        echo "- Test functions in annotation-marker files: $VERIFICATION_TESTS"
+         echo ""
+         echo "Note: Badge creation is currently disabled. To enable:"
+         echo "1. Create a GitHub Gist for badge storage"
+diff --git a/.github/workflows/test-status.yml b/.github/workflows/test-status.yml
+index 0555cf4..0a4000d 100644
+--- a/.github/workflows/test-status.yml
++++ b/.github/workflows/test-status.yml
+@@ -20,7 +20,7 @@ jobs:
+       RUSTUP_TOOLCHAIN: stable
+     outputs:
+       test-count: ${{ steps.count.outputs.count }}
+-      verification-count: ${{ steps.count.outputs.verification }}
++      annotation-count: ${{ steps.count.outputs.annotation }}
+ 
+     steps:
+     - uses: actions/checkout@v7
+@@ -56,21 +56,23 @@ jobs:
+           echo "Using source code count: $FINAL_COUNT"
+         fi
+ 
+-        # Count verification tests
+-        VERIFICATION_COUNT=$(find . -name "*.rs" -type f -not -path "./target/*" -exec grep -l "formal_verification\|verify_\|proof_" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
++        # Count #[test] functions inside files carrying formal-annotation markers
++        # (heuristic: files whose CONTENT matches formal_verification|verify_|proof_;
++        # the count is per #[test] match in those files, not per file)
++        ANNOTATION_COUNT=$(find . -name "*.rs" -type f -not -path "./target/*" -exec grep -l "formal_verification\|verify_\|proof_" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
+ 
+         echo "Total tests found: $FINAL_COUNT"
+-        echo "Verification tests found: $VERIFICATION_COUNT"
++        echo "Test functions in annotation-marker files: $ANNOTATION_COUNT"
+ 
+         # Set outputs
+         echo "count=$FINAL_COUNT" >> $GITHUB_OUTPUT
+-        echo "verification=$VERIFICATION_COUNT" >> $GITHUB_OUTPUT
++        echo "annotation=$ANNOTATION_COUNT" >> $GITHUB_OUTPUT
+ 
+         # Create summary
+         echo "## Test Count Summary 📊" >> $GITHUB_STEP_SUMMARY
+         echo "" >> $GITHUB_STEP_SUMMARY
+         echo "- **Total Tests**: $FINAL_COUNT" >> $GITHUB_STEP_SUMMARY
+-        echo "- **Verification Tests**: $VERIFICATION_COUNT" >> $GITHUB_STEP_SUMMARY
++        echo "- **Test Functions in Annotation-Marker Files**: $ANNOTATION_COUNT" >> $GITHUB_STEP_SUMMARY
+         echo "" >> $GITHUB_STEP_SUMMARY
+         echo "### Test Distribution" >> $GITHUB_STEP_SUMMARY
+         echo "" >> $GITHUB_STEP_SUMMARY
+@@ -95,16 +97,16 @@ jobs:
+         {
+           "schemaVersion": 1,
+           "label": "tests",
+-          "message": "${{ steps.count.outputs.count }} passing",
++          "message": "${{ steps.count.outputs.count }} test functions found",
+           "color": "brightgreen"
+         }
+         EOF
+ 
+-        cat > verification-report.json << EOF
++        cat > annotation-report.json << EOF
+         {
+           "schemaVersion": 1,
+-          "label": "verification",
+-          "message": "${{ steps.count.outputs.verification }} verified",
++          "label": "formal annotations",
++          "message": "${{ steps.count.outputs.annotation }} test functions in annotation-marker files",
+           "color": "blue"
+         }
+         EOF
+@@ -117,7 +119,7 @@ jobs:
+         name: badge-data
+         path: |
+           test-report.json
+-          verification-report.json
++          annotation-report.json
+         retention-days: 30
+ 
+     - name: Comment on PR (if applicable)
+@@ -128,16 +130,16 @@ jobs:
+         script: |
+           try {
+             const testCount = '${{ steps.count.outputs.count }}';
+-            const verificationCount = '${{ steps.count.outputs.verification }}';
++            const annotationCount = '${{ steps.count.outputs.annotation }}';
+ 
+             const body = `## 📊 Test Statistics
+ 
+             | Metric | Count |
+             |--------|-------|
+             | **Total Tests** | ${testCount} |
+-            | **Verification Tests** | ${verificationCount} |
++            | **Test Functions in Annotation-Marker Files** | ${annotationCount} |
+ 
+-            ✅ All test counts verified!`;
++            ✅ Test and annotation counts reported.`;
+ 
+             await github.rest.issues.createComment({
+               issue_number: context.issue.number,
+diff --git a/amari-core/README.md b/amari-core/README.md
+index 17313a3..f9c5a88 100644
+--- a/amari-core/README.md
++++ b/amari-core/README.md
+@@ -14,7 +14,7 @@ Core geometric algebra (Clifford algebra) implementation for the Amari mathemati
+ - **SIMD Optimization**: AVX2-accelerated operations on x86/x86_64 platforms
+ - **High-Precision Arithmetic**: Optional extended precision for scientific computing
+ - **no_std Support**: Can be used in embedded and WASM environments
+-- **Phantom Types**: Compile-time verification of algebraic invariants
++- **Phantom Types**: Compile-time enforcement of dimension and signature invariants (algebraic-law contracts are expressed via annotations; see the formal-verification caveats in the docs)
+ 
+ ## Installation
+ 
+diff --git a/amari-core/src/comprehensive_tests.rs b/amari-core/src/comprehensive_tests.rs
+index 48913b5..58b9b88 100644
+--- a/amari-core/src/comprehensive_tests.rs
++++ b/amari-core/src/comprehensive_tests.rs
+@@ -1,7 +1,8 @@
+ //! Comprehensive unit tests for all public functions in lib.rs
+ //!
+ //! This module systematically tests all 83 public functions identified in lib.rs
+-//! to achieve high test coverage as part of formal verification.
++//! to achieve high test coverage. These are ordinary execution tests, not
++//! formal-proof evidence.
+ 
+ use crate::*;
+ use approx::assert_relative_eq;
+diff --git a/amari-core/src/verified.rs b/amari-core/src/verified.rs
+index 454eea7..2fe2199 100644
+--- a/amari-core/src/verified.rs
++++ b/amari-core/src/verified.rs
+@@ -1,8 +1,11 @@
+-//! Formally verified geometric algebra with phantom types and Creusot annotations
++//! Phantom-typed geometric algebra with formal-annotation compatibility
+ //!
+-//! This module provides type-safe, mathematically verified implementations of
+-//! geometric algebra operations using phantom types for compile-time invariants
+-//! and Creusot annotations for formal verification.
++//! This module provides type-safe implementations of geometric algebra
++//! operations using phantom types for compile-time invariants (dimension,
++//! signature) and Creusot-compatible annotations. The annotations express
++//! intended contracts only; ordinary builds compile them to nothing (see
++//! the CORE-D07 matrix: C1 — annotation compatibility, not proof), and
++//! discharged proof obligations are a separate pre-1.0 gate (C3/C4).
+ 
+ use num_traits::{Float, One, Zero};
+ use std::marker::PhantomData;
+@@ -22,12 +25,14 @@ pub struct Grade<const G: usize>;
+ /// Type-level dimension marker for vectors
+ pub struct Dim<const D: usize>;
+ 
+-/// A verified multivector with compile-time signature guarantees
++/// A phantom-typed multivector with compile-time signature guarantees
+ ///
+ /// This structure ensures at the type level that:
+ /// 1. The signature is fixed and consistent
+-/// 2. Operations preserve algebraic laws
+-/// 3. Dimension bounds are respected
++/// 2. Dimension bounds are respected
++///
++/// (Algebraic-law preservation is NOT type-enforced; annotations elsewhere
++/// in this crate express intended contracts only — see the module docs.)
+ #[derive(Debug, Clone)]
+ pub struct VerifiedMultivector<T, const P: usize, const Q: usize, const R: usize>
+ where
+@@ -142,10 +147,15 @@ where
+ 
+     /// Geometric product with compile-time signature matching
+     ///
+-    /// # Mathematical Properties (verified by Creusot when enabled)
++    /// # Intended Mathematical Properties (annotations, not proofs)
+     /// - Associativity: (AB)C = A(BC)
+     /// - Distributivity: A(B+C) = AB + AC
+     /// - Identity: 1*A = A*1 = A
++    ///
++    /// These are the contracts the formal-verification annotations
++    /// EXPRESS. Ordinary builds compile them to nothing; IEEE arithmetic
++    /// means coefficient equality holds exactly only where the contracts
++    /// say so (M-REP-C owns the specification audit).
+     #[cfg_attr(feature = "formal-verification",
+         requires(self.coefficients.len() == Self::BASIS_SIZE),
+         requires(other.coefficients.len() == Self::BASIS_SIZE),
+@@ -415,16 +425,22 @@ where
+     }
+ }
+ 
+-/// A verified rotor with compile-time guarantees
++/// A rotor type carrying a runtime-checked even-grade/unit-norm invariant.
+ ///
+-/// Rotors are even-grade multivectors with unit norm that
+-/// represent rotations in the geometric algebra
++/// Rotors are even-grade multivectors with unit norm that represent rotations
++/// in the geometric algebra. The `Verified` name refers to the runtime checks
++/// performed by [`VerifiedRotor::new`]; it is **not** a compile-time proof, and
++/// no proof obligation is discharged by this type.
+ pub struct VerifiedRotor<T, const P: usize, const Q: usize, const R: usize>
+ where
+     T: Float + Zero + One,
+ {
+     multivector: VerifiedMultivector<T, P, Q, R>,
+-    /// Phantom data ensuring this is a valid rotor
++    /// Marker for the runtime-checked rotor invariant.
++    ///
++    /// This is `PhantomData` and carries no compile-time proof; the intended
++    /// invariant is enforced (with the caveats documented on
++    /// [`VerifiedRotor::new`]) at runtime.
+     _rotor_invariant: PhantomData<()>,
+ }
+ 
+@@ -432,11 +448,28 @@ impl<T, const P: usize, const Q: usize, const R: usize> VerifiedRotor<T, P, Q, R
+ where
+     T: Float + Zero + One,
+ {
+-    /// Create a rotor from a multivector
++    /// Create a rotor from a multivector.
++    ///
++    /// # Checks performed
++    /// - **Even grade**: every odd-grade coefficient must compare equal to
++    ///   zero (`coeff != 0`); otherwise this returns
++    ///   `Err("Rotor must have even grade")`.
++    /// - **Unit norm**: the Euclidean coefficient norm computed as
++    ///   `sqrt(sum(c_i^2))` must satisfy `(norm - 1).abs() <= 1e-4`; otherwise
++    ///   this returns `Err("Rotor must have unit norm")`.
++    ///
++    /// Both checks are ordinary runtime comparisons executed by this method.
++    /// The `formal-verification` attributes below are *intended
++    /// specifications* (contract annotations); they are compiled away in
++    /// normal builds and no proof of them is discharged here.
+     ///
+-    /// # Invariants (verified at runtime, would be proven with Creusot)
+-    /// - Must be even grade
+-    /// - Must have unit norm
++    /// # Non-finite coefficients (specification gap, M-REP-C)
++    /// The unit-norm rejection is written as `(norm - 1).abs() > 1e-4`, which
++    /// is `false` when `norm` is `NaN`. Consequently a multivector with a
++    /// `NaN` norm (for example a scalar `NaN`) is **accepted** by this
++    /// constructor today. Handling of non-finite coefficients and the exact
++    /// rotor specification/implementation are out of scope for M-REP-A
++    /// (wording repair) and deferred to M-REP-C.
+     #[cfg_attr(feature = "formal-verification",
+         requires(mv.is_even_grade()),
+         requires((mv.coefficient_norm() - T::one()).abs() < T::from(0.0001).unwrap()),
+@@ -477,17 +510,25 @@ where
+             .sqrt()
+     }
+ 
+-    /// Compose two rotors (rotation composition)
++    /// Compose two rotors (rotation composition).
+     ///
+-    /// # Type Safety
+-    /// - Result is guaranteed to be a valid rotor
+-    /// - Unit norm is preserved
++    /// The geometric product of the two rotors is computed and then divided by
++    /// its computed norm. This method performs **no runtime check** that the
++    /// result is even grade or unit norm: the properties below are *intended
++    /// invariants* (to be established by a future proof), not runtime-enforced
++    /// guarantees. Normalization is a floating-point operation, so the result
++    /// is only approximately unit norm.
++    ///
++    /// # Intended invariants (not runtime-enforced)
++    /// - Result is intended to be a valid rotor
++    /// - Unit norm is intended to be preserved
+     #[cfg_attr(feature = "formal-verification",
+         ensures(Self::compute_norm(&result.multivector) == T::one()))]
+     pub fn compose(&self, other: &Self) -> Self {
+         let composed = self.multivector.geometric_product(&other.multivector);
+ 
+-        // Normalize to ensure unit norm (should already be close due to properties)
++        // Normalize by the computed norm (expected to be close to one, but not
++        // checked here; non-finite handling is M-REP-C).
+         let norm = Self::compute_norm(&composed);
+         let normalized = VerifiedMultivector {
+             coefficients: composed.coefficients.iter().map(|c| *c / norm).collect(),
+@@ -560,8 +601,11 @@ where
+     }
+ 
+     /// Dot product (only defined for same dimension - enforced by types)
+-    #[cfg_attr(feature = "formal-verification",
+-        ensures(result >= T::zero()))] // For positive-definite metrics
++    ///
++    /// The former `ensures(result >= T::zero())` contract was removed on
++    /// 2026-10-15 (M-REP-A / MATRIX-02): it is unsound for mixed vectors
++    /// (e.g. `dot([1], [-1]) == -1`) and for indefinite signatures. A sound
++    /// self-dot-only contract for definite signatures is M-REP-C scope.
+     pub fn dot(&self, other: &Self) -> T {
+         self.data
+             .iter()
+diff --git a/amari-core/src/verified_contracts.rs b/amari-core/src/verified_contracts.rs
+index b262dc4..4769b9b 100644
+--- a/amari-core/src/verified_contracts.rs
++++ b/amari-core/src/verified_contracts.rs
+@@ -42,9 +42,15 @@ where
+     a.add(b)
+ }
+ 
+-/// Verified norm computation
++/// Norm computation (sum of squares, then square root).
++///
++/// The former `ensures(result >= T::zero())` contract was removed on
++/// 2026-10-15 (M-REP-A review round 1): it is falsified by NaN
++/// coefficients (`verified_norm([NaN, 0]) == NaN`, and `NaN >= 0` is
++/// false). For finite coefficients the claim holds (sum of squares is
++/// nonnegative, as is its sqrt). A finiteness-guarded contract is
++/// M-REP-C scope.
+ #[requires(!mv.coefficients.is_empty())]
+-#[ensures(result >= T::zero())]
+ pub fn verified_norm<T, const P: usize, const Q: usize, const R: usize>(
+     mv: &VerifiedMultivector<T, P, Q, R>,
+ ) -> T
+@@ -131,7 +137,7 @@ mod contract_tests {
+         let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0);
+         let result = verified_scalar_mult(3.0, &mv);
+ 
+-        // The Creusot contracts ensure these properties
++        // The annotations express these intended properties; the asserts check them for this instance
+         assert_eq!(result.coefficients[0], 6.0);
+         assert_eq!(result.coefficients.len(), mv.coefficients.len());
+     }
+@@ -142,7 +148,7 @@ mod contract_tests {
+         let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0);
+         let result = verified_addition(&mv1, &mv2);
+ 
+-        // Contracts guarantee coefficient-wise addition
++        // The annotations express intended coefficient-wise addition
+         assert_eq!(result.coefficients[0], 5.0);
+     }
+ 
+diff --git a/amari-core/src/verified_laws.rs b/amari-core/src/verified_laws.rs
+index 656e825..a2c29cc 100644
+--- a/amari-core/src/verified_laws.rs
++++ b/amari-core/src/verified_laws.rs
+@@ -285,7 +285,7 @@ mod verification_tests {
+     #[test]
+     #[cfg_attr(feature = "formal-verification", creusot::proof)]
+     fn verify_associativity() {
+-        // This test would be verified by Creusot at compile time
++        // Intended for future Creusot translation (M-REP-C scope); dormant today
+         // proving that the geometric product is associative
+         GeometricAlgebraLaws::<f64, 3, 0, 0>::multiplicative_identity();
+     }
+diff --git a/docs/development/CI_SETUP.md b/docs/development/CI_SETUP.md
+index 77e8850..e5d4b23 100644
+--- a/docs/development/CI_SETUP.md
++++ b/docs/development/CI_SETUP.md
+@@ -1,30 +1,40 @@
+-# GitHub Actions CI Setup for Mathematical Correctness
++# GitHub Actions CI Setup
+ 
+ ## Overview
+ 
+-This repository uses both **local pre-commit hooks** and **GitHub Actions** to ensure mathematical correctness. This dual approach provides:
++This repository uses both **local pre-commit hooks** and **GitHub Actions** to
++run its test, lint, and documentation suites. This dual approach provides:
+ 
+ - **Fast local feedback** via pre-commit hooks (~30 seconds)
+-- **Comprehensive cloud verification** via GitHub Actions (~5-8 minutes)
++- **Comprehensive cloud test execution** via GitHub Actions (~5-8 minutes)
+ - **Parallel test execution** to minimize CI time
+ - **Cost optimization** for private repositories
+ 
++> **Scope note (M-REP-A, 2026-10-15).** These workflows *execute tests*; they do
++> not discharge mathematical proofs. The `formal-verification` feature currently
++> enables contract annotations and additional test suites (annotation
++> compatibility), not a prover. Discharged obligations would require the C3
++> toolchain-conformance and C4 proof gates described in the approved matrix
++> (`docs/plans/2026-10-09-amari-core-verification-matrix.md`), which are not run
++> here. See `docs/technical/MATHEMATICAL_RIGOR.md` for what ordinary tests do
++> and do not establish.
++
+ ## Workflows
+ 
+ ### 1. `mathematical-correctness.yml`
+-**Purpose**: Comprehensive verification matching pre-commit hook
++**Purpose**: Comprehensive test/lint/doc run matching the pre-commit hook
+ **Runtime**: ~5-7 minutes
+ **Triggers**: Push to main/develop, all PRs
+ 
+ Runs the complete test suite sequentially:
+ - Code formatting (rustfmt)
+ - Linting (clippy)
+-- Core mathematical tests
+-- Formal verification tests
++- Core algebra test suites
++- `formal-verification` feature test suites (annotation compatibility)
+ - Documentation builds
+ 
+ ### 2. `parallel-verification.yml`
+-**Purpose**: Optimized parallel testing
++**Purpose**: Optimized parallel test execution
+ **Runtime**: ~3-5 minutes (parallel execution)
+ **Triggers**: Push to main/develop, all PRs
+ 
+@@ -33,7 +43,7 @@ Parallel jobs:
+ - **Core Algebra**: Tests core crates in parallel (8 min)
+ - **Advanced Features**: Tests complex crates in parallel (10 min)
+ - **GPU Acceleration**: GPU tests with CI fallbacks (8 min)
+-- **Formal Verification**: Verification tests (8 min)
++- **Formal Verification**: `formal-verification` feature tests (8 min)
+ - **Documentation**: Doc builds (5 min)
+ - **Integration**: Final integration check (10 min)
+ 
+@@ -44,8 +54,11 @@ Parallel jobs:
+ 
+ Creates badges showing:
+ - Total test count (e.g., "579 passing")
+-- Verification count (e.g., "140 verified")
+-- Mathematical correctness status
++- Test functions in annotation-marker files (e.g., "140 test functions in
++  annotation-marker files") — a *source-inventory* count of `#[test]`
++  functions in files that mention the `formal_verification` marker, not a count
++  of proved statements
++- Mathematical-correctness test-suite status
+ 
+ ## Cost Analysis
+ 
+@@ -85,7 +98,7 @@ Creates badges showing:
+ ### For Most Projects
+ Use **both workflows**:
+ - `parallel-verification.yml` for regular commits (faster feedback)
+-- `mathematical-correctness.yml` for release branches (comprehensive check)
++- `mathematical-correctness.yml` for release branches (comprehensive test run)
+ 
+ ### For High-Frequency Development
+ Use **parallel-verification.yml** only with path triggers:
+@@ -123,15 +136,23 @@ Add to your README.md:
+ ```markdown
+ ![Mathematical Correctness](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/math-correctness.json)
+ ![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/test-count.json)
+-![Formal Verification](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/verification.json)
++![Annotation count](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/verification.json)
+ ```
+ 
+-## Mathematical Integrity Guarantee
++## What this setup does (and does not) establish
+ 
+ The combination of pre-commit hooks + GitHub Actions ensures:
+ 
+-✅ **No regression commits**: Pre-commit hook blocks bad commits
+-✅ **Public verification**: GitHub Actions provides transparent testing
+-✅ **Parallel efficiency**: Matrix jobs minimize CI time
+-✅ **Cost effectiveness**: Optimized for free tier usage
+-✅ **Mathematical correctness**: 100% test coverage requirement
+\ No newline at end of file
++✅ **Regression guard**: the pre-commit hook blocks commits whose test, lint, or
++   documentation checks fail
++✅ **Transparent test execution**: GitHub Actions runs the suites in a clean
++   environment
++✅ **Parallel efficiency**: matrix jobs minimize CI time
++✅ **Cost effectiveness**: optimized for free tier usage
++
++It does **not** establish mathematical correctness as a theorem. A green run
++means the executed test instances matched their assertions on that machine,
++toolchain, and feature set — not that a universally quantified algebraic law
++holds. Floating-point extremes break even associativity: for scalar `f64`
++`a = b = 1e308`, `c = 0`, `(a*b)*c` is `NaN` while `a*(b*c)` is `0`. Universal
++statements are proof obligations (C3/C4) and are out of scope of this pipeline.
+diff --git a/docs/technical/MATHEMATICAL_RIGOR.md b/docs/technical/MATHEMATICAL_RIGOR.md
+index 265048c..cac2936 100644
+--- a/docs/technical/MATHEMATICAL_RIGOR.md
++++ b/docs/technical/MATHEMATICAL_RIGOR.md
+@@ -1,115 +1,159 @@
+-# Mathematical Rigor Enforcement
++# Mathematical Rigor: Test and Annotation Methodology
++
++> **Status (M-REP-A, 2026-10-15): honest rewrite.** This page previously
++> described the test/CI pipeline as establishing *verified mathematical
++> guarantees*. That was an overstatement. The pipeline executes tests and
++> compiles annotation attributes; it does **not** discharge proofs. This page
++> now distinguishes (a) what ordinary tests establish, (b) what annotations
++> express, and (c) what would constitute proof. See
++> `docs/plans/2026-10-09-amari-core-verification-matrix.md` for the approved
++> verification matrix and the C3/C4 proof gates.
+ 
+ ## Philosophy
+ 
+ > "A mathematical library lives and dies on its correctness."
+ 
+-This repository prioritizes **mathematical correctness above all else**. Every commit, every pull request, and every release must pass the most rigorous verification possible.
++This repository takes mathematical correctness seriously: the test suites
++exercise the algebra across many inputs and edge cases, and CI is configured to
++fail on regressions. Rigor here means *executed evidence plus explicit
++contracts* — not a claim of proof.
+ 
+-## Verification Layers
++## Test layers
+ 
+-### 1. 🛡️ Pre-commit Hook (Local)
+-**Purpose**: Immediate feedback to prevent bad commits
++### 1. 🛡️ Pre-commit hook (local)
++**Purpose**: Immediate feedback to prevent commits that fail checks
+ **Runtime**: ~30 seconds
+-**Coverage**: Complete verification identical to CI
++**Coverage**: The same test/lint/doc checks as CI
+ 
+ ```bash
+ # Automatically runs on every commit attempt
+ .githooks/pre-commit
+ ```
+ 
+-**Blocks commits that fail:**
++**Blocks commits whose checks fail:**
+ - Code formatting (rustfmt)
+ - Linting violations (clippy -D warnings)
+-- Any failing tests
++- Any failing test
+ - Documentation build failures
+ 
+-### 2. 🔬 GitHub Actions CI (Cloud)
+-**Purpose**: Comprehensive verification in clean environment
+-**Runtime**: ~10-15 minutes (rigor over speed)
++### 2. 🔬 GitHub Actions CI (cloud)
++**Purpose**: Run the test/lint/doc suites in a clean environment
++**Runtime**: ~10-15 minutes
+ **Triggers**: Every push, every PR
+ 
+-**Verification Steps:**
+-1. **Code Quality**: Format + Clippy with zero tolerance
+-2. **Core Mathematical Tests**: All library and binary tests
+-3. **Formal Verification**: Contracts and phantom type validation
+-4. **Integration Tests**: Cross-crate interaction verification
+-5. **Documentation Tests**: All doc examples must work
+-6. **Geometric Algebra Axioms**: Explicit algebraic property verification
+-7. **Phantom Type Safety**: Compile-time constraint validation
+-8. **Mathematical Property Analysis**: Test coverage requirements
+-
+-### 3. 📊 Continuous Monitoring
+-**Test Coverage Requirements:**
+-- Minimum 300+ tests (currently 579+)
+-- 100% verification test success rate
+-- All mathematical axioms explicitly tested
+-- All phantom type constraints validated
+-
+-## Mathematical Guarantees
+-
+-### ✅ Geometric Algebra Correctness
+-- **Associativity**: `(ab)c = a(bc)` verified
+-- **Distributivity**: `a(b+c) = ab + ac` verified
+-- **Basis vector properties**: `e₁² = ±1` per signature
+-- **Multivector grade consistency**: All operations preserve grade
+-
+-### ✅ Tropical Semiring Axioms
+-- **Idempotency**: `a ⊕ a = a` (max/min property)
+-- **Commutativity**: `a ⊕ b = b ⊕ a`
+-- **Associativity**: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)`
+-- **Distributivity**: `a ⊙ (b ⊕ c) = (a ⊙ b) ⊕ (a ⊙ c)`
+-- **Identity elements**: Tropical zero/one properties
+-
+-### ✅ Phantom Type Safety
+-- **Compile-time dimension checking**: Matrix operations verified at compile time
+-- **Signature preservation**: `Cl(p,q,r)` constraints enforced
+-- **Type-safe tropical operations**: MaxPlus/MinPlus separation maintained
+-- **Verification contracts**: Creusot-style formal verification
+-
+-### ✅ Information Geometry Properties
+-- **Fisher Information Matrix**: Positive definiteness verified
+-- **Amari-Chentsov tensor**: Correct geometric computation
+-- **Bregman divergences**: Non-negativity guaranteed
+-- **Dual connections**: ∇ and ∇* relationship verified
+-
+-## Failure Handling
+-
+-### Zero Tolerance Policy
+-- **Any test failure blocks the entire pipeline**
+-- **No exceptions for "minor" mathematical errors**
+-- **Documentation examples must be mathematically correct**
+-
+-### Failure Investigation Protocol
+-1. **Immediate**: Identify which mathematical property failed
+-2. **Analysis**: Determine if it's a regression or new edge case
+-3. **Fix**: Correct the mathematical implementation
+-4. **Verification**: Ensure fix doesn't break other properties
+-5. **Enhancement**: Add tests to prevent similar regressions
+-
+-## Performance vs. Correctness
+-
+-### Current Choice: **CORRECTNESS FIRST**
+-- **CI Runtime**: 10-15 minutes (comprehensive verification)
+-- **Parallel optimization available but disabled**: Prioritizing rigor
+-- **Cost**: ~15-20 commits fit in free tier per day
+-
+-### Future Optimization Path
+-When commit frequency increases:
+-1. Enable `parallel-verification.yml` for speed
+-2. Keep `mathematical-correctness.yml` for releases
+-3. Add matrix testing across Rust versions
+-4. Implement property-based testing
+-
+-## Repository Protection
+-
+-### Required Status Checks
+-- ✅ Mathematical Correctness workflow must pass
+-- ✅ All verification tests must pass
+-- ✅ Documentation must build successfully
++**Steps:**
++1. **Code quality**: format + clippy with zero warnings tolerated
++2. **Core algebra test suites**: library and binary tests
++3. **Formal-annotation compatibility**: `formal-verification` feature test suites
++4. **Integration test suites**: cross-crate interaction
++5. **Documentation tests**: doc examples must compile and pass
++6. **Geometric algebra axiom test suites**: explicit algebraic property tests
++7. **Phantom type type-safety tests**: compile-time constraint (type) tests
++8. **Test-count reporting**: coverage/inventory counts
++
++### 3. 📊 Continuous monitoring (counts)
++- Minimum 300+ `#[test]` functions (currently 579+)
++- Test-function counts in annotation-marker files are source-inventory counts
++- All phantom type constraints that the compiler can check are enforced at
++  compile time
++
++## What ordinary tests establish
++
++Ordinary tests are **executed instances**. Each test runs a concrete operation
++on concrete inputs and asserts a concrete result. A passing suite therefore
++establishes that:
++
++- those specific inputs produced the asserted outputs on that machine, Rust
++  toolchain, and feature set;
++- no regression was observed in the exercised code paths.
++
++It does **not** establish a universally quantified algebraic law. Universal
++statements require a proof (or exhaustive enumeration over a finite domain),
++not a finite sample of executions.
++
++## What annotations express
++
++- **Contract annotations** such as
++  `#[cfg_attr(feature = "formal-verification", requires(...), ensures(...))]`
++  express *intended specifications*. In ordinary builds the `cfg_attr`
++  predicate is false and the attribute expands to nothing. Even when the
++  `formal-verification` feature is enabled, the attribute is a specification
++  marker: a green build does not establish that the expression is meaningful
++  to a prover, nor that any obligation is translated or discharged.
++- **Phantom type parameters** (`PhantomData<Signature<P, Q, R>>`,
++  `PhantomData<Grade<K>>`, …) express and let the compiler *check* type-level
++  constraints such as signature and grade. That is type-level safety — the
++  compiler rejects mismatched types — but it is not a proof of runtime
++  mathematical results.
++- Annotation compatibility is what the `formal-verification` feature currently
++  tests. It is not a prover run.
++
++## What would constitute proof
++
++Machine-checked proof of the core obligations is **not done** in this
++repository. It would require, per the approved matrix:
++
++- **C3 — toolchain conformance**: a pinned, provenance-recorded proof toolchain
++  (for example Creusot 0.8.0 with matched contracts and Why3/SMT solvers).
++- **C4 — translation and discharged obligations**: translating the core
++  functions/contracts and discharging the resulting verification conditions.
++
++These tools are not installed here. The approved matrix retains C3/C4 as a
++pre-1.0 default (with an alternative to descope the `formal-verification`
++feature to annotation compatibility only). That decision belongs to the matrix,
++not to this page.
++
++## Honest caveats
++
++- **Floating-point non-associativity at extremes.** IEEE-754 arithmetic is not
++  associative. For scalar `f64` `a = b = 1e308`, `c = 0`: `(a*b)*c` evaluates
++  to `NaN` while `a*(b*c)` evaluates to `0`. Ordinary tests of associativity
++  are therefore instance checks, not a universal guarantee.
++- **Non-finite inputs are not universally rejected.** For example,
++  `VerifiedRotor::new` computes a unit-norm check written as
++  `(norm - 1).abs() > 1e-4`, which is `false` for `NaN`; a scalar `NaN` is
++  consequently accepted as a "verified" rotor. Retained coefficient-equality
++  annotations likewise fail on `NaN`/`inf`. Non-finite handling and the exact
++  specification are deferred to M-REP-C.
++- **Counts are not proofs.** Test-function and coverage counts measure how much
++  code is exercised, not how much mathematics is proved.
++
++## Failure handling
++
++### Zero tolerance for green-check failures
++- **Any failing check blocks the pipeline**
++- **No exception for "minor" errors**
++- **Documentation examples must compile and pass**
++
++### Failure investigation protocol
++1. **Identify** which test or check failed.
++2. **Analyze** whether it is a regression or a new edge case.
++3. **Fix** the implementation or the assertion.
++4. **Re-run** to ensure the fix does not break other properties.
++5. **Add** a regression test.
++
++## Performance vs. coverage
++
++### Current choice: **comprehensive over fast**
++- **CI runtime**: 10-15 minutes
++- **Parallel optimization available but disabled**: prioritizing completeness
++- **Cost**: ~15-20 commits fit in the free tier per day
++
++### Future optimization path
++1. Enable `parallel-verification.yml` for speed.
++2. Keep `mathematical-correctness.yml` for releases.
++3. Add matrix testing across Rust versions.
++4. Add property-based testing.
++
++## Repository protection
++
++### Required status checks
++- ✅ Mathematical-correctness test suites must pass
++- ✅ Test suites must pass
++- ✅ Documentation must build
+ - ✅ Zero clippy warnings tolerated
+ 
+-### Branch Protection Rules
++### Branch protection rules
+ ```yaml
+ required_status_checks:
+   strict: true
+@@ -120,38 +164,40 @@ require_code_owner_reviews: true
+ required_approving_review_count: 1
+ ```
+ 
+-## Mathematical Integrity Pledge
++## Contribution expectations
+ 
+ By contributing to this repository, you agree that:
+ 
+-1. **Mathematical correctness is non-negotiable**
+-2. **All algebraic properties must be explicitly tested**
+-3. **Type safety is a mathematical requirement, not optimization**
+-4. **Documentation examples are mathematical claims requiring verification**
+-5. **Performance optimizations cannot compromise correctness**
++1. **Mathematical correctness is non-negotiable.**
++2. **Algebraic properties are tested explicitly** (as executed instances).
++3. **Type-level safety is enforced where the type system can express it.**
++4. **Documentation examples are tested** and must compile and pass.
++5. **Performance optimizations cannot compromise the checks above.**
+ 
+-## Verification Commands
++## Commands
+ 
+-### Local Development
++### Local development
+ ```bash
+-# Full verification (matches CI exactly)
++# Full check (matches CI exactly)
+ ./.githooks/pre-commit
+ 
+-# Specific mathematical property checks
++# Specific property test suites
+ cargo test geometric_axioms
+ cargo test semiring_axioms
+ cargo test verified_contracts
+ ```
+ 
+-### Manual CI Trigger
++### Manual CI trigger
+ ```bash
+-# Trigger comprehensive verification
++# Trigger the comprehensive test run
+ gh workflow run mathematical-correctness.yml
+ 
+-# Trigger optimization verification (when enabled)
++# Trigger the parallel test run (when enabled)
+ gh workflow run parallel-verification.yml
+ ```
+ 
+ ---
+ 
+-**Remember**: In mathematics, there is no "close enough" - there is only correct or incorrect. This CI setup ensures we stay on the correct side of that line.
+\ No newline at end of file
++**Remember**: a green pipeline means the executed tests passed. Universal
++mathematical claims are proof obligations, and those are tracked by the
++verification matrix (C3/C4), not asserted by CI.
+diff --git a/docs/technical/TEST_ENFORCEMENT.md b/docs/technical/TEST_ENFORCEMENT.md
+index 85c0047..492ffe2 100644
+--- a/docs/technical/TEST_ENFORCEMENT.md
++++ b/docs/technical/TEST_ENFORCEMENT.md
+@@ -1,16 +1,30 @@
+-# Test Enforcement for Mathematical Correctness
++# Test Enforcement
++
++> **Status (M-REP-A, 2026-10-15): honest rewrite.** This page previously
++> described test enforcement as validating mathematical properties and formal
++> guarantees. Test enforcement *runs and gates tests*; it does not prove
++> theorems. This page now describes the enforcement mechanics and what they do
++> and do not establish. See `docs/technical/MATHEMATICAL_RIGOR.md` for the
++> epistemic framing and the approved C3/C4 proof gates.
+ 
+ ## Overview
+ 
+-The Amari mathematical library implements strict test enforcement to ensure mathematical correctness across all commits. This is critical for a library that forms the foundation of mathematical computations.
++The Amari workspace enforces a strict pre-commit and CI pipeline so that a
++change cannot land while the formatting, lint, test, or documentation checks
++fail. This is important for a library that other crates build on top of, but it
++is a *regression guard*, not a source of mathematical proof.
++
++## 🎯 Why test enforcement?
+ 
+-## 🎯 Why Test Enforcement?
++Mathematical libraries need strong regression protection because:
++- **Cascading errors**: a single wrong result can invalidate downstream work.
++- **Trust**: users depend on the library's documented behavior.
++- **Regression prevention**: changes in one domain should not break another.
++- **Annotation compatibility**: the `formal-verification` feature suites must
++  keep compiling and executing.
+ 
+-Mathematical libraries require absolute correctness because:
+-- **Cascading Errors**: A single mathematical bug can invalidate entire research results
+-- **Trust**: Users depend on mathematical libraries to be mathematically sound
+-- **Regression Prevention**: Changes to one mathematical domain shouldn't break others
+-- **Formal Verification**: Our phantom types and contracts must always be validated
++Universal algebraic laws are proof obligations (C3/C4, not done here), not
++something test enforcement establishes. See `MATHEMATICAL_RIGOR.md`.
+ 
+ ## 🔧 Setup
+ 
+@@ -20,133 +34,148 @@ Run once after cloning:
+ ./setup-githooks.sh
+ ```
+ 
+-This configures git to use our custom pre-commit hooks that enforce:
++This configures git to use the custom pre-commit hooks that enforce:
+ 
+-### ✅ Pre-Commit Checks
++### ✅ Pre-commit checks
+ 
+-1. **Code Formatting** (`cargo fmt --check`)
+-   - Ensures consistent code style across the ecosystem
++1. **Code formatting** (`cargo fmt --check`)
++   - Consistent code style across the workspace
+ 
+-2. **Clippy Lints** (`cargo clippy --workspace --all-targets --all-features`)
+-   - Catches common bugs and enforces Rust best practices
++2. **Clippy lints** (`cargo clippy --workspace --all-targets --all-features`)
++   - Common bugs and Rust best practices
+    - All warnings must be resolved (treated as errors)
+ 
+-3. **Core Mathematical Tests** (`cargo test --workspace`)
+-   - All mathematical operations must pass their tests
+-   - Includes comprehensive test suites with 300%+ coverage
+-   - Validates mathematical properties and edge cases
++3. **Core test suites** (`cargo test --workspace`)
++   - All exercised operations must pass their assertions
++   - Includes large edge-case suites
++   - Validates exercised properties and edge cases
+ 
+-4. **Formal Verification Tests** (`cargo test --workspace --features formal-verification`)
+-   - Phantom type safety validations
+-   - Mathematical contract verifications
+-   - Semiring axiom validations
++4. **`formal-verification` feature suites**
++   (`cargo test --workspace --features formal-verification`)
++   - Annotation-compatibility tests compile and execute
++   - Contract annotations and phantom type constraints compile
++   - (This is annotation compatibility, not discharged proof.)
+ 
+-5. **Documentation Build** (`cargo doc --workspace --no-deps`)
+-   - Ensures all documentation compiles correctly
+-   - Validates doctests and examples
++5. **Documentation build** (`cargo doc --workspace --no-deps`)
++   - All documentation compiles
++   - Doc examples are tested
+ 
+-## 🚦 Test Enforcement Workflow
++## 🚦 Test enforcement workflow
+ 
+-### Normal Commit Flow
++### Normal commit flow
+ ```bash
+ git add .
+ git commit -m "feat: implement new mathematical operation"
+ # Pre-commit hooks automatically run:
+ # ✅ Code formatting check
+ # ✅ Clippy lints
+-# ✅ Core tests (all crates)
+-# ✅ Formal verification tests
++# ✅ Core test suites (all crates)
++# ✅ formal-verification feature suites
+ # ✅ Documentation build
+ # Commit proceeds if all checks pass
+ ```
+ 
+-### Failed Check Workflow
++### Failed check workflow
+ ```bash
+ git commit -m "feat: buggy implementation"
+-# ❌ Tests failed!
++# ❌ Checks failed!
+ # Fix the issues, then retry
+ git add .
+ git commit -m "feat: correct implementation"
+ # ✅ All checks pass, commit proceeds
+ ```
+ 
+-### Emergency Bypass (Use Sparingly)
++### Emergency bypass (use sparingly)
+ ```bash
+-# Only for urgent fixes when tests are temporarily broken
++# Only for urgent fixes when checks are temporarily broken
+ git commit --no-verify -m "emergency: critical security fix"
+ ```
+ 
+-## 📊 Test Coverage Standards
++## 📊 Test coverage standards
++
++The enforcement system gates on the test suites and reports coverage counts:
++
++### Test count targets
++- **amari-core**: 140+ tests covering geometric algebra operations
++- **amari-tropical**: 53+ tests covering tropical algebra
++- **Each crate**: minimum 300% increase from baseline
++
++Counts are inventory/coverage numbers: how many test functions exist and how
++much code they exercise. They are not a measure of proved mathematics.
+ 
+-The enforcement system validates our comprehensive test coverage:
++### Test categories required
++- **Constructor tests**: creation methods exercised
++- **Property tests**: algebraic properties exercised on sampled/edge inputs
++- **Edge-case tests**: infinity, zero, boundary conditions
++- **Operation tests**: arithmetic and algebraic operations
++- **Integration tests**: cross-crate compatibility
++- **Annotation-compatibility tests**: phantom-type/contract code compiles and
++  runs
+ 
+-### Test Count Targets
+-- **amari-core**: 140+ tests covering all geometric algebra operations
+-- **amari-tropical**: 53+ tests covering tropical algebra and formal verification
+-- **Each crate**: Minimum 300% increase from baseline
++## 🔬 Formal-annotation compatibility
+ 
+-### Test Categories Required
+-- **Constructor Tests**: All creation methods validated
+-- **Property Tests**: Mathematical axioms verified
+-- **Edge Case Tests**: Infinity, zero, boundary conditions
+-- **Operation Tests**: All arithmetic and algebraic operations
+-- **Integration Tests**: Cross-crate compatibility
+-- **Formal Verification Tests**: Phantom type and contract validation
++The `formal-verification` feature suites specifically check that:
+ 
+-## 🔬 Formal Verification Enforcement
++### Mathematical properties are exercised
++- **Associativity**: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)` on the tested inputs
++- **Commutativity**: `a ⊕ b = b ⊕ a` on the tested inputs
++- **Identity elements**: `a ⊕ 0 = a` on the tested inputs
++- **Distributivity**: `a ⊗ (b ⊕ c) = (a ⊗ b) ⊕ (a ⊗ c)` on the tested inputs
+ 
+-The system specifically validates:
++These are instance checks. In particular, IEEE-754 arithmetic is not
++associative at extremes: for scalar `f64` `a = b = 1e308`, `c = 0`,
++`(a*b)*c` is `NaN` while `a*(b*c)` is `0`.
+ 
+-### Mathematical Properties
+-- **Associativity**: (a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)
+-- **Commutativity**: a ⊕ b = b ⊕ a
+-- **Identity Elements**: a ⊕ 0 = a
+-- **Distributivity**: a ⊗ (b ⊕ c) = (a ⊗ b) ⊕ (a ⊗ c)
++### Type safety
++- **Phantom type constraints**: compile-time type checks enforced by the
++  compiler
++- **Dimensional consistency**: matrix/tensor dimension types checked
++- **Semiring separation**: MaxPlus/MinPlus type separation maintained
+ 
+-### Type Safety
+-- **Phantom Type Constraints**: Compile-time safety enforced
+-- **Dimensional Consistency**: Matrix/tensor operations validated
+-- **Semiring Constraints**: Mathematical structure preserved
++### Annotation compatibility
++- **Semiring annotations**: tropical contract annotations compile
++- **Geometric algebra annotations**: Clifford-algebra contract annotations
++  compile
++- **Information geometry annotations**: manifold contract annotations compile
+ 
+-### Contract Verification
+-- **Semiring Axioms**: Tropical algebra properties validated
+-- **Geometric Algebra Laws**: Clifford algebra properties checked
+-- **Information Geometry**: Manifold properties verified
++A green `formal-verification` run means the annotations compile and the
++compatibility suites pass; it does not mean any contract was translated to a
++prover or discharged.
+ 
+ ## 📈 Benefits
+ 
+-### Mathematical Correctness
+-- **Zero Mathematical Regressions**: Changes cannot break existing mathematical properties
+-- **Continuous Validation**: Every commit validates the entire mathematical framework
+-- **Early Bug Detection**: Mathematical errors caught before they reach users
++### Regression protection
++- **Zero observed regressions**: blocked commits cannot break exercised paths
++- **Continuous execution**: the suites run on every commit
++- **Early detection**: errors are caught before they reach users
+ 
+-### Development Quality
+-- **Consistent Code Style**: Uniform formatting across all crates
+-- **Best Practices**: Clippy enforces Rust best practices
+-- **Documentation Quality**: All docs must build successfully
++### Development quality
++- **Consistent code style**: uniform formatting across all crates
++- **Best practices**: clippy enforces Rust best practices
++- **Documentation quality**: all docs must build
+ 
+-### Research Reliability
+-- **Reproducible Results**: Mathematical operations remain consistent
+-- **Trustworthy Foundation**: Researchers can depend on mathematical correctness
+-- **Formal Guarantees**: Phantom types provide compile-time mathematical safety
++### Research reliability
++- **Reproducible execution**: the same checks run locally and in CI
++- **Trustworthy foundation**: exercised behavior is protected
++- **Type-level safety**: phantom types give compile-time type constraints
+ 
+ ## 🛠️ Troubleshooting
+ 
+-### Common Issues
++### Common issues
+ 
+-#### Test Failures
++#### Test failures
+ ```bash
+ # See which specific tests failed
+ cargo test --workspace
+ 
+-# Run specific test for debugging
++# Run a specific test for debugging
+ cargo test test_name -- --nocapture
+ 
+-# Run formal verification tests
++# Run the formal-verification feature suites
+ cargo test --workspace --features formal-verification
+ ```
+ 
+-#### Formatting Issues
++#### Formatting issues
+ ```bash
+ # Fix formatting automatically
+ cargo fmt
+@@ -155,7 +184,7 @@ cargo fmt
+ cargo fmt --check
+ ```
+ 
+-#### Clippy Warnings
++#### Clippy warnings
+ ```bash
+ # See all warnings
+ cargo clippy --workspace --all-targets --all-features
+@@ -164,7 +193,7 @@ cargo clippy --workspace --all-targets --all-features
+ cargo clippy --workspace --all-targets --all-features --fix
+ ```
+ 
+-#### Documentation Errors
++#### Documentation errors
+ ```bash
+ # Build docs to see errors
+ cargo doc --workspace --no-deps
+@@ -173,11 +202,11 @@ cargo doc --workspace --no-deps
+ cargo doc --workspace --no-deps --document-private-items
+ ```
+ 
+-### Disable Temporarily
++### Disable temporarily
+ If you need to temporarily disable enforcement (use sparingly):
+ 
+ ```bash
+-# Disable for single commit
++# Disable for a single commit
+ git commit --no-verify -m "emergency fix"
+ 
+ # Disable hooks entirely (not recommended)
+@@ -189,16 +218,16 @@ git config core.hooksPath .githooks
+ 
+ ## 📋 Maintenance
+ 
+-### Adding New Tests
++### Adding new tests
+ When adding new mathematical operations:
+ 
+ 1. **Implement comprehensive tests first**
+ 2. **Follow the proven test patterns** from existing crates
+-3. **Include edge cases and mathematical properties**
+-4. **Add formal verification if applicable**
+-5. **Ensure all tests pass before committing**
++3. **Include edge cases and property instances**
++4. **Add annotation-compatibility tests if applicable**
++5. **Ensure all checks pass before committing**
+ 
+-### Updating Enforcement
++### Updating enforcement
+ To modify the pre-commit checks:
+ 
+ 1. **Edit `.githooks/pre-commit`**
+@@ -206,17 +235,19 @@ To modify the pre-commit checks:
+ 3. **Update this documentation**
+ 4. **Communicate changes to the team**
+ 
+-## 🎯 Success Metrics
++## 🎯 Success metrics
+ 
+ The enforcement system ensures:
+-- **100% test pass rate** on all commits
+-- **Zero mathematical regressions** across releases
+-- **Comprehensive coverage** of all mathematical operations
+-- **Formal verification** of critical mathematical properties
+-- **Consistent code quality** across all contributors
++- **100% check-pass rate** on commits that are allowed to land
++- **No observed regressions** across releases
++- **Broad coverage** of exercised operations
++- **Annotation compatibility** for `formal-verification` builds
++- **Consistent code quality** across contributors
+ 
+-This creates a robust foundation for mathematical computing that researchers and developers can trust completely.
++This is a regression guard, not a proof. Universal mathematical statements are
++tracked as C3/C4 obligations in the approved verification matrix.
+ 
+ ---
+ 
+-*This enforcement system is critical for maintaining the mathematical integrity that makes Amari a reliable foundation for computational mathematics and research.*
+\ No newline at end of file
++*This enforcement system keeps the exercised behavior of Amari stable; it does
++not by itself establish mathematical truth.*
