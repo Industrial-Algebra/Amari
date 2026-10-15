@@ -137,7 +137,7 @@ jobs:
             | Metric | Count |
             |--------|-------|
             | **Total Tests** | ${testCount} |
-            | **Files with Formal Annotations** | ${annotationCount} |
+            | **Test Functions in Annotation-Marker Files** | ${annotationCount} |
 
             ✅ Test and annotation counts reported.`;
 

@@ -25,12 +25,14 @@ pub struct Grade<const G: usize>;
 /// Type-level dimension marker for vectors
 pub struct Dim<const D: usize>;
 
-/// A verified multivector with compile-time signature guarantees
+/// A phantom-typed multivector with compile-time signature guarantees
 ///
 /// This structure ensures at the type level that:
 /// 1. The signature is fixed and consistent
-/// 2. Operations preserve algebraic laws
-/// 3. Dimension bounds are respected
+/// 2. Dimension bounds are respected
+///
+/// (Algebraic-law preservation is NOT type-enforced; annotations elsewhere
+/// in this crate express intended contracts only — see the module docs.)
 #[derive(Debug, Clone)]
 pub struct VerifiedMultivector<T, const P: usize, const Q: usize, const R: usize>
 where
@@ -145,10 +147,15 @@ where
 
     /// Geometric product with compile-time signature matching
     ///
-    /// # Mathematical Properties (verified by Creusot when enabled)
+    /// # Intended Mathematical Properties (annotations, not proofs)
     /// - Associativity: (AB)C = A(BC)
     /// - Distributivity: A(B+C) = AB + AC
     /// - Identity: 1*A = A*1 = A
+    ///
+    /// These are the contracts the formal-verification annotations
+    /// EXPRESS. Ordinary builds compile them to nothing; IEEE arithmetic
+    /// means coefficient equality holds exactly only where the contracts
+    /// say so (M-REP-C owns the specification audit).
     #[cfg_attr(feature = "formal-verification",
         requires(self.coefficients.len() == Self::BASIS_SIZE),
         requires(other.coefficients.len() == Self::BASIS_SIZE),

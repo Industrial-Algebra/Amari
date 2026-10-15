@@ -65,7 +65,9 @@ semantics are unchanged.
   and the `mathematical-correctness` workflow/job/cache identifiers (matrix
   MATRIX-08 required-check names; design choice, not a claim).
 - `amari-core/src/verified_contracts.rs:47` `ensures(result >= T::zero())` on
-  `verified_norm` — sound (sqrt of a sum of squares); not the MATRIX-02 dot
+  `verified_norm` — its `result >= T::zero()` contract was REMOVED in R1:
+  falsified by NaN (`verified_norm([NaN,0]) == NaN`; `NaN >= 0` false);
+  finiteness-guarded contract deferred to M-REP-C
   contract.
 - **Out of scope, noted for a separate sweep:** `.github/workflows/status-badges.yml`
   still carries active `VERIFICATION_TESTS` labels and a `"N verified"` badge

@@ -148,7 +148,7 @@ mod contract_tests {
         let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0);
         let result = verified_addition(&mv1, &mv2);
 
-        // Contracts guarantee coefficient-wise addition
+        // The annotations express intended coefficient-wise addition
         assert_eq!(result.coefficients[0], 5.0);
     }
 
