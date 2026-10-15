@@ -125,7 +125,13 @@ if [ "$RUN_FULL_TESTS" = true ]; then
     echo -e "${GREEN}✅ Documentation tests passed${NC}"
 
     echo -e "${YELLOW}📐 Verifying geometric algebra axioms...${NC}"
-    if ! cargo test --package amari-core geometric_axioms --quiet; then
+    if ! bash scripts/verify-named-suite.sh amari-core geometric_axioms \
+        geometric_axioms::additive_identity \
+        geometric_axioms::associativity \
+        geometric_axioms::basis_vector_signature \
+        geometric_axioms::distributivity \
+        geometric_axioms::multiplicative_identity \
+        geometric_axioms::scalar_commutes; then
         echo -e "${RED}❌ Geometric algebra axioms verification failed!${NC}"
         echo "Geometric algebra properties are fundamental to mathematical correctness"
         exit 1
@@ -133,7 +139,9 @@ if [ "$RUN_FULL_TESTS" = true ]; then
     echo -e "${GREEN}✅ Geometric algebra axioms verified${NC}"
 
     echo -e "${YELLOW}🏝️ Verifying tropical semiring axioms...${NC}"
-    if ! cargo test --package amari-tropical semiring_axioms --quiet; then
+    if ! bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts \
+        verified_contracts::contract_tests::test_maxplus_semiring_contracts \
+        verified_contracts::contract_tests::test_minplus_semiring_contracts; then
         echo -e "${RED}❌ Tropical semiring axioms verification failed!${NC}"
         echo "Tropical algebra properties are fundamental to mathematical correctness"
         exit 1
@@ -141,21 +149,36 @@ if [ "$RUN_FULL_TESTS" = true ]; then
     echo -e "${GREEN}✅ Tropical semiring axioms verified${NC}"
 
     echo -e "${YELLOW}👻 Validating phantom type safety...${NC}"
-    if ! cargo test --package amari-core verified_contracts --quiet; then
+    if ! bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts \
+        verified_contracts::contract_tests::test_signature_verification \
+        verified_contracts::contract_tests::test_verified_addition_properties \
+        verified_contracts::contract_tests::test_verified_identity_laws \
+        verified_contracts::contract_tests::test_verified_scalar_multiplication; then
         echo -e "${RED}❌ Core phantom type safety validation failed!${NC}"
         echo "Type safety constraints are critical for mathematical correctness"
         exit 1
     fi
-    if ! cargo test --package amari-tropical verified_contracts --quiet 2>/dev/null; then
-        echo -e "${YELLOW}⚠️ Tropical phantom type contracts not found (may be okay)${NC}"
+    if ! bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts \
+        verified_contracts::contract_tests::test_matrix_contracts \
+        verified_contracts::contract_tests::test_maxplus_semiring_contracts \
+        verified_contracts::contract_tests::test_minplus_semiring_contracts \
+        verified_contracts::contract_tests::test_multivector_contracts \
+        verified_contracts::contract_tests::test_tropical_identities; then
+        echo -e "${RED}❌ Tropical phantom type contracts failed!${NC}"
+        echo "Tropical contract tests must pass before committing"
+        exit 1
     fi
-    if ! cargo test --package amari-network verified_contracts --quiet 2>/dev/null; then
-        echo -e "${YELLOW}⚠️ Network phantom type contracts not found (may be okay)${NC}"
-    fi
+    # NOTE (M-REP-B): the former tolerated `amari-network verified_contracts`
+    # invocation was removed. That module has no #[test] functions even with
+    # --features formal-verification, so the command silently selected 0 tests
+    # (fake-green). See docs/plans/core-matrix-evidence/mrep-b/investigation.md.
     echo -e "${GREEN}✅ Phantom type safety validated${NC}"
 
     echo -e "${YELLOW}📊 Validating test coverage...${NC}"
-    TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c "test " || echo "0")
+    TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || true)
+    if [ -z "$TOTAL_TESTS" ]; then
+        TOTAL_TESTS=0
+    fi
     if [ "$TOTAL_TESTS" -lt 300 ]; then
         echo -e "${RED}❌ Insufficient test coverage: $TOTAL_TESTS tests (minimum 300 required)${NC}"
         echo "Mathematical libraries require comprehensive test coverage"

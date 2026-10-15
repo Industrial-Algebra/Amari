@@ -55,12 +55,18 @@ to CI.
 3. **Formal-annotation compatibility**: `formal-verification` feature test suites
 4. **Integration test suites**: cross-crate interaction
 5. **Documentation tests**: doc examples must compile and pass
-6. **Geometric algebra axiom test suites**: explicit algebraic property tests
-7. **Phantom type type-safety tests**: compile-time constraint (type) tests
+6. **Geometric algebra axiom test suites**: explicit algebraic property tests,
+   non-vacuity asserted against an approved inventory
+7. **Phantom type type-safety tests**: compile-time constraint (type) tests,
+   gated per crate (`formal-verification` for `amari-core`, `contracts` for
+   `amari-tropical`)
 8. **Test-count reporting**: coverage/inventory counts
 
 ### 3. 📊 Continuous monitoring (counts)
 - Minimum 300+ `#[test]` functions (currently 579+)
+- The coverage floor is a real gate: the gather yields a single well-formed
+  count and `[ "$TOTAL_TESTS" -lt 300 ]` blocks both a low count and a gather
+  failure (M-REP-B)
 - Test-function counts in annotation-marker files are source-inventory counts
 - All phantom type constraints that the compiler can check are enforced at
   compile time
@@ -191,10 +197,22 @@ By contributing to this repository, you agree that:
 # See the source-mapped table in TEST_ENFORCEMENT.md.
 ./.githooks/pre-commit
 
-# Specific property test suites
-cargo test geometric_axioms
-cargo test semiring_axioms
-cargo test verified_contracts
+# Specific named property suites. Each invocation is wrapped by the
+# approved-inventory + non-vacuity assertion (scripts/verify-named-suite.sh):
+# a filter that selects zero tests (or misses an approved name) fails.
+# See TEST_ENFORCEMENT.md for the per-suite inventories.
+bash scripts/verify-named-suite.sh amari-core geometric_axioms \
+  geometric_axioms::associativity geometric_axioms::distributivity \
+  geometric_axioms::multiplicative_identity geometric_axioms::additive_identity \
+  geometric_axioms::scalar_commutes geometric_axioms::basis_vector_signature
+bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts \
+  verified_contracts::contract_tests::test_maxplus_semiring_contracts \
+  verified_contracts::contract_tests::test_minplus_semiring_contracts
+bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts \
+  verified_contracts::contract_tests::test_signature_verification \
+  verified_contracts::contract_tests::test_verified_addition_properties \
+  verified_contracts::contract_tests::test_verified_identity_laws \
+  verified_contracts::contract_tests::test_verified_scalar_multiplication
 ```
 
 ### Manual CI trigger

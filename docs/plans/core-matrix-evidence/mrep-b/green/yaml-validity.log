@@ -1,0 +1,9 @@
+# M-REP-B YAML validity (all workflows)
+# 2026-10-15T04:26:43Z
+OK: .github/workflows/ci.yml
+OK: .github/workflows/mathematical-correctness.yml
+OK: .github/workflows/parallel-verification.yml
+OK: .github/workflows/project.yml
+OK: .github/workflows/publish.yml
+OK: .github/workflows/status-badges.yml
+OK: .github/workflows/test-status.yml

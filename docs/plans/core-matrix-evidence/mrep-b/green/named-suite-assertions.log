@@ -1,0 +1,20 @@
+# M-REP-B named-suite vacuity assertions (pinned recipe, --locked)
+# 2026-10-15T04:25:33Z
+# RUSTC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
+# RUSTFLAGS=-C target-cpu=x86-64 -C target-feature=-avx2
+
+## amari-core :: geometric_axioms
+verify-named-suite: OK — amari-core :: geometric_axioms: 6 passed, 0 ignored, inventory of 6 complete
+
+## amari-tropical :: semiring_contracts (--features contracts)
+verify-named-suite: OK — amari-tropical :: semiring_contracts (features: contracts): 2 passed, 0 ignored, inventory of 2 complete
+
+## amari-core :: verified_contracts (--features formal-verification)
+verify-named-suite: OK — amari-core :: verified_contracts (features: formal-verification): 4 passed, 0 ignored, inventory of 4 complete
+
+## amari-tropical :: verified_contracts (--features contracts)
+verify-named-suite: OK — amari-tropical :: verified_contracts (features: contracts): 5 passed, 0 ignored, inventory of 5 complete
+
+## negative controls (expected nonzero)
+exit=1 (expected 1)
+exit=1 (expected 1: network has no such tests)
