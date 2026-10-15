@@ -1,115 +1,168 @@
-# Mathematical Rigor Enforcement
+# Mathematical Rigor: Test and Annotation Methodology
+
+> **Status (M-REP-A, 2026-10-15): honest rewrite.** This page previously
+> described the test/CI pipeline as establishing *verified mathematical
+> guarantees*. That was an overstatement. The pipeline executes tests and
+> compiles annotation attributes; it does **not** discharge proofs. This page
+> now distinguishes (a) what ordinary tests establish, (b) what annotations
+> express, and (c) what would constitute proof. See
+> `docs/plans/2026-10-09-amari-core-verification-matrix.md` for the approved
+> verification matrix and the C3/C4 proof gates.
 
 ## Philosophy
 
 > "A mathematical library lives and dies on its correctness."
 
-This repository prioritizes **mathematical correctness above all else**. Every commit, every pull request, and every release must pass the most rigorous verification possible.
+This repository takes mathematical correctness seriously: the test suites
+exercise the algebra across many inputs and edge cases, and CI is configured to
+fail on regressions. Rigor here means *executed evidence plus explicit
+contracts* — not a claim of proof.
 
-## Verification Layers
+## Test layers
 
-### 1. 🛡️ Pre-commit Hook (Local)
-**Purpose**: Immediate feedback to prevent bad commits
+### 1. 🛡️ Pre-commit hook (local)
+**Purpose**: Immediate feedback to prevent commits that fail checks
 **Runtime**: ~30 seconds
-**Coverage**: Complete verification identical to CI
+**Coverage**: Branch-dependent — formatting + Clippy always (workspace);
+the full test/formal/doctest/doc battery ONLY on the full branch; the
+targeted branch (single changed crate) runs that crate's tests/docs with
+doctest failures tolerated and NO formal-feature suite. See the complete
+source-mapped table in `TEST_ENFORCEMENT.md`; coverage is NOT identical
+to CI.
 
 ```bash
-# Automatically runs on every commit attempt
+# Runs on each commit attempt (unless bypassed with `git commit --no-verify`);
+# the FULL-vs-TARGETED branch is chosen per the TEST_ENFORCEMENT.md table.
 .githooks/pre-commit
 ```
 
-**Blocks commits that fail:**
-- Code formatting (rustfmt)
-- Linting violations (clippy -D warnings)
-- Any failing tests
-- Documentation build failures
+**Blocks commits whose (in-scope) checks fail:**
+- Code formatting (rustfmt) — always, workspace-wide
+- Linting violations (clippy -D warnings) — always, workspace-wide
+- Failing tests — in the branch's scope only (targeted: one crate;
+  full: workspace; tolerances per the TEST_ENFORCEMENT.md table)
+- Documentation build failures — workspace (full branch) or the changed
+  crate (targeted branch)
 
-### 2. 🔬 GitHub Actions CI (Cloud)
-**Purpose**: Comprehensive verification in clean environment
-**Runtime**: ~10-15 minutes (rigor over speed)
+### 2. 🔬 GitHub Actions CI (cloud)
+**Purpose**: Run the test/lint/doc suites in a clean environment
+**Runtime**: ~10-15 minutes
 **Triggers**: Every push, every PR
 
-**Verification Steps:**
-1. **Code Quality**: Format + Clippy with zero tolerance
-2. **Core Mathematical Tests**: All library and binary tests
-3. **Formal Verification**: Contracts and phantom type validation
-4. **Integration Tests**: Cross-crate interaction verification
-5. **Documentation Tests**: All doc examples must work
-6. **Geometric Algebra Axioms**: Explicit algebraic property verification
-7. **Phantom Type Safety**: Compile-time constraint validation
-8. **Mathematical Property Analysis**: Test coverage requirements
+**Steps:**
+1. **Code quality**: format + clippy with zero warnings tolerated
+2. **Core algebra test suites**: library and binary tests
+3. **Formal-annotation compatibility**: `formal-verification` feature test suites
+4. **Integration test suites**: cross-crate interaction
+5. **Documentation tests**: doc examples must compile and pass
+6. **Geometric algebra axiom test suites**: explicit algebraic property tests
+7. **Phantom type type-safety tests**: compile-time constraint (type) tests
+8. **Test-count reporting**: coverage/inventory counts
 
-### 3. 📊 Continuous Monitoring
-**Test Coverage Requirements:**
-- Minimum 300+ tests (currently 579+)
-- 100% verification test success rate
-- All mathematical axioms explicitly tested
-- All phantom type constraints validated
+### 3. 📊 Continuous monitoring (counts)
+- Minimum 300+ `#[test]` functions (currently 579+)
+- Test-function counts in annotation-marker files are source-inventory counts
+- All phantom type constraints that the compiler can check are enforced at
+  compile time
 
-## Mathematical Guarantees
+## What ordinary tests establish
 
-### ✅ Geometric Algebra Correctness
-- **Associativity**: `(ab)c = a(bc)` verified
-- **Distributivity**: `a(b+c) = ab + ac` verified
-- **Basis vector properties**: `e₁² = ±1` per signature
-- **Multivector grade consistency**: All operations preserve grade
+Ordinary tests are **executed instances**. Each test runs a concrete operation
+on concrete inputs and asserts a concrete result. A passing suite therefore
+establishes that:
 
-### ✅ Tropical Semiring Axioms
-- **Idempotency**: `a ⊕ a = a` (max/min property)
-- **Commutativity**: `a ⊕ b = b ⊕ a`
-- **Associativity**: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)`
-- **Distributivity**: `a ⊙ (b ⊕ c) = (a ⊙ b) ⊕ (a ⊙ c)`
-- **Identity elements**: Tropical zero/one properties
+- those specific inputs produced the asserted outputs on that machine, Rust
+  toolchain, and feature set;
+- no regression was observed in the exercised code paths.
 
-### ✅ Phantom Type Safety
-- **Compile-time dimension checking**: Matrix operations verified at compile time
-- **Signature preservation**: `Cl(p,q,r)` constraints enforced
-- **Type-safe tropical operations**: MaxPlus/MinPlus separation maintained
-- **Verification contracts**: Creusot-style formal verification
+It does **not** establish a universally quantified algebraic law. Universal
+statements require a proof (or exhaustive enumeration over a finite domain),
+not a finite sample of executions.
 
-### ✅ Information Geometry Properties
-- **Fisher Information Matrix**: Positive definiteness verified
-- **Amari-Chentsov tensor**: Correct geometric computation
-- **Bregman divergences**: Non-negativity guaranteed
-- **Dual connections**: ∇ and ∇* relationship verified
+## What annotations express
 
-## Failure Handling
+- **Contract annotations** such as
+  `#[cfg_attr(feature = "formal-verification", requires(...), ensures(...))]`
+  express *intended specifications*. In ordinary builds the `cfg_attr`
+  predicate is false and the attribute expands to nothing. Even when the
+  `formal-verification` feature is enabled, the attribute is a specification
+  marker: a green build does not establish that the expression is meaningful
+  to a prover, nor that any obligation is translated or discharged.
+- **Phantom type parameters** (`PhantomData<Signature<P, Q, R>>`,
+  `PhantomData<Grade<K>>`, …) express and let the compiler *check* type-level
+  constraints such as signature and grade. That is type-level safety — the
+  compiler rejects mismatched types — but it is not a proof of runtime
+  mathematical results.
+- Annotation compatibility is what the `formal-verification` feature currently
+  tests. It is not a prover run.
 
-### Zero Tolerance Policy
-- **Any test failure blocks the entire pipeline**
-- **No exceptions for "minor" mathematical errors**
-- **Documentation examples must be mathematically correct**
+## What would constitute proof
 
-### Failure Investigation Protocol
-1. **Immediate**: Identify which mathematical property failed
-2. **Analysis**: Determine if it's a regression or new edge case
-3. **Fix**: Correct the mathematical implementation
-4. **Verification**: Ensure fix doesn't break other properties
-5. **Enhancement**: Add tests to prevent similar regressions
+Machine-checked proof of the core obligations is **not done** in this
+repository. It would require, per the approved matrix:
 
-## Performance vs. Correctness
+- **C3 — toolchain conformance**: a pinned, provenance-recorded proof toolchain
+  (for example Creusot 0.8.0 with matched contracts and Why3/SMT solvers).
+- **C4 — translation and discharged obligations**: translating the core
+  functions/contracts and discharging the resulting verification conditions.
 
-### Current Choice: **CORRECTNESS FIRST**
-- **CI Runtime**: 10-15 minutes (comprehensive verification)
-- **Parallel optimization available but disabled**: Prioritizing rigor
-- **Cost**: ~15-20 commits fit in free tier per day
+These tools are not installed here. The approved matrix retains C3/C4 as a
+pre-1.0 default (with an alternative to descope the `formal-verification`
+feature to annotation compatibility only). That decision belongs to the matrix,
+not to this page.
 
-### Future Optimization Path
-When commit frequency increases:
-1. Enable `parallel-verification.yml` for speed
-2. Keep `mathematical-correctness.yml` for releases
-3. Add matrix testing across Rust versions
-4. Implement property-based testing
+## Honest caveats
 
-## Repository Protection
+- **Floating-point non-associativity at extremes.** IEEE-754 arithmetic is not
+  associative. For scalar `f64` `a = b = 1e308`, `c = 0`: `(a*b)*c` evaluates
+  to `NaN` while `a*(b*c)` evaluates to `0`. Ordinary tests of associativity
+  are therefore instance checks, not a universal guarantee.
+- **Non-finite inputs are not universally rejected.** For example,
+  `VerifiedRotor::new` computes a unit-norm check written as
+  `(norm - 1).abs() > 1e-4`, which is `false` for `NaN`; a scalar `NaN` is
+  consequently accepted as a "verified" rotor. Retained coefficient-equality
+  annotations likewise fail on `NaN`/`inf`. Non-finite handling and the exact
+  specification are deferred to M-REP-C.
+- **Counts are not proofs.** Test-function and coverage counts measure how much
+  code is exercised, not how much mathematics is proved.
 
-### Required Status Checks
-- ✅ Mathematical Correctness workflow must pass
-- ✅ All verification tests must pass
-- ✅ Documentation must build successfully
+## Failure handling
+
+### Zero tolerance for green-check failures
+- **Any failing gating check in the CI pipeline blocks it** (the local hook's
+  TARGETED-branch tolerances are enumerated in `TEST_ENFORCEMENT.md`)
+- **No exception for "minor" errors**
+- **Documentation examples must compile and pass**
+
+### Failure investigation protocol
+1. **Identify** which test or check failed.
+2. **Analyze** whether it is a regression or a new edge case.
+3. **Fix** the implementation or the assertion.
+4. **Re-run** to ensure the fix does not break other properties.
+5. **Add** a regression test.
+
+## Performance vs. coverage
+
+### Current choice: **comprehensive over fast**
+- **CI runtime**: 10-15 minutes
+- **Parallel optimization available but disabled**: prioritizing completeness
+- **Cost**: ~15-20 commits fit in the free tier per day
+
+### Future optimization path
+1. Enable `parallel-verification.yml` for speed.
+2. Keep `mathematical-correctness.yml` for releases.
+3. Add matrix testing across Rust versions.
+4. Add property-based testing.
+
+## Repository protection
+
+### Required status checks
+- ✅ Mathematical-correctness test suites must pass
+- ✅ Test suites must pass
+- ✅ Documentation must build
 - ✅ Zero clippy warnings tolerated
 
-### Branch Protection Rules
+### Branch protection rules
 ```yaml
 required_status_checks:
   strict: true
@@ -120,38 +173,41 @@ require_code_owner_reviews: true
 required_approving_review_count: 1
 ```
 
-## Mathematical Integrity Pledge
+## Contribution expectations
 
 By contributing to this repository, you agree that:
 
-1. **Mathematical correctness is non-negotiable**
-2. **All algebraic properties must be explicitly tested**
-3. **Type safety is a mathematical requirement, not optimization**
-4. **Documentation examples are mathematical claims requiring verification**
-5. **Performance optimizations cannot compromise correctness**
+1. **Mathematical correctness is non-negotiable.**
+2. **Algebraic properties are tested explicitly** (as executed instances).
+3. **Type-level safety is enforced where the type system can express it.**
+4. **Documentation examples are tested** and must compile and pass.
+5. **Performance optimizations cannot compromise the checks above.**
 
-## Verification Commands
+## Commands
 
-### Local Development
+### Local development
 ```bash
-# Full verification (matches CI exactly)
+# Hook run; branch chosen by changed crates; coverage is NOT identical to CI.
+# See the source-mapped table in TEST_ENFORCEMENT.md.
 ./.githooks/pre-commit
 
-# Specific mathematical property checks
+# Specific property test suites
 cargo test geometric_axioms
 cargo test semiring_axioms
 cargo test verified_contracts
 ```
 
-### Manual CI Trigger
+### Manual CI trigger
 ```bash
-# Trigger comprehensive verification
+# Trigger the comprehensive test run
 gh workflow run mathematical-correctness.yml
 
-# Trigger optimization verification (when enabled)
+# Trigger the parallel test run (when enabled)
 gh workflow run parallel-verification.yml
 ```
 
 ---
 
-**Remember**: In mathematics, there is no "close enough" - there is only correct or incorrect. This CI setup ensures we stay on the correct side of that line.
+**Remember**: a green pipeline means the executed tests passed. Universal
+mathematical claims are proof obligations, and those are tracked by the
+verification matrix (C3/C4), not asserted by CI.

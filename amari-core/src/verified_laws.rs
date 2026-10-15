@@ -285,7 +285,7 @@ mod verification_tests {
     #[test]
     #[cfg_attr(feature = "formal-verification", creusot::proof)]
     fn verify_associativity() {
-        // This test would be verified by Creusot at compile time
+        // Intended for future Creusot translation (M-REP-C scope); dormant today
         // proving that the geometric product is associative
         GeometricAlgebraLaws::<f64, 3, 0, 0>::multiplicative_identity();
     }

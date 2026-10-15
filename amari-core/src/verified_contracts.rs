@@ -42,9 +42,15 @@ where
     a.add(b)
 }
 
-/// Verified norm computation
+/// Norm computation (sum of squares, then square root).
+///
+/// The former `ensures(result >= T::zero())` contract was removed on
+/// 2026-10-15 (M-REP-A review round 1): it is falsified by NaN
+/// coefficients (`verified_norm([NaN, 0]) == NaN`, and `NaN >= 0` is
+/// false). For finite coefficients the claim holds (sum of squares is
+/// nonnegative, as is its sqrt). A finiteness-guarded contract is
+/// M-REP-C scope.
 #[requires(!mv.coefficients.is_empty())]
-#[ensures(result >= T::zero())]
 pub fn verified_norm<T, const P: usize, const Q: usize, const R: usize>(
     mv: &VerifiedMultivector<T, P, Q, R>,
 ) -> T
@@ -131,7 +137,7 @@ mod contract_tests {
         let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0);
         let result = verified_scalar_mult(3.0, &mv);
 
-        // The Creusot contracts ensure these properties
+        // The annotations express these intended properties; the asserts check them for this instance
         assert_eq!(result.coefficients[0], 6.0);
         assert_eq!(result.coefficients.len(), mv.coefficients.len());
     }
@@ -142,7 +148,7 @@ mod contract_tests {
         let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0);
         let result = verified_addition(&mv1, &mv2);
 
-        // Contracts guarantee coefficient-wise addition
+        // The annotations express intended coefficient-wise addition
         assert_eq!(result.coefficients[0], 5.0);
     }
 

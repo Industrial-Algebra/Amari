@@ -1,30 +1,40 @@
-# GitHub Actions CI Setup for Mathematical Correctness
+# GitHub Actions CI Setup
 
 ## Overview
 
-This repository uses both **local pre-commit hooks** and **GitHub Actions** to ensure mathematical correctness. This dual approach provides:
+This repository uses both **local pre-commit hooks** and **GitHub Actions** to
+run its test, lint, and documentation suites. This dual approach provides:
 
 - **Fast local feedback** via pre-commit hooks (~30 seconds)
-- **Comprehensive cloud verification** via GitHub Actions (~5-8 minutes)
+- **Comprehensive cloud test execution** via GitHub Actions (~5-8 minutes)
 - **Parallel test execution** to minimize CI time
 - **Cost optimization** for private repositories
+
+> **Scope note (M-REP-A, 2026-10-15).** These workflows *execute tests*; they do
+> not discharge mathematical proofs. The `formal-verification` feature currently
+> enables contract annotations and additional test suites (annotation
+> compatibility), not a prover. Discharged obligations would require the C3
+> toolchain-conformance and C4 proof gates described in the approved matrix
+> (`docs/plans/2026-10-09-amari-core-verification-matrix.md`), which are not run
+> here. See `docs/technical/MATHEMATICAL_RIGOR.md` for what ordinary tests do
+> and do not establish.
 
 ## Workflows
 
 ### 1. `mathematical-correctness.yml`
-**Purpose**: Comprehensive verification matching pre-commit hook
+**Purpose**: Comprehensive test/lint/doc run (the authoritative gate; the pre-commit hook's targeted branch is narrower — see `TEST_ENFORCEMENT.md`)
 **Runtime**: ~5-7 minutes
 **Triggers**: Push to main/develop, all PRs
 
 Runs the complete test suite sequentially:
 - Code formatting (rustfmt)
 - Linting (clippy)
-- Core mathematical tests
-- Formal verification tests
+- Core algebra test suites
+- `formal-verification` feature test suites (annotation compatibility)
 - Documentation builds
 
 ### 2. `parallel-verification.yml`
-**Purpose**: Optimized parallel testing
+**Purpose**: Optimized parallel test execution
 **Runtime**: ~3-5 minutes (parallel execution)
 **Triggers**: Push to main/develop, all PRs
 
@@ -33,7 +43,7 @@ Parallel jobs:
 - **Core Algebra**: Tests core crates in parallel (8 min)
 - **Advanced Features**: Tests complex crates in parallel (10 min)
 - **GPU Acceleration**: GPU tests with CI fallbacks (8 min)
-- **Formal Verification**: Verification tests (8 min)
+- **Formal Verification**: `formal-verification` feature tests (8 min)
 - **Documentation**: Doc builds (5 min)
 - **Integration**: Final integration check (10 min)
 
@@ -44,8 +54,11 @@ Parallel jobs:
 
 Creates badges showing:
 - Total test count (e.g., "579 passing")
-- Verification count (e.g., "140 verified")
-- Mathematical correctness status
+- Test functions in annotation-marker files (e.g., "140 test functions in
+  annotation-marker files") — a *source-inventory* count of `#[test]`
+  functions in files that mention the `formal_verification` marker, not a count
+  of proved statements
+- Mathematical-correctness test-suite status
 
 ## Cost Analysis
 
@@ -85,7 +98,7 @@ Creates badges showing:
 ### For Most Projects
 Use **both workflows**:
 - `parallel-verification.yml` for regular commits (faster feedback)
-- `mathematical-correctness.yml` for release branches (comprehensive check)
+- `mathematical-correctness.yml` for release branches (comprehensive test run)
 
 ### For High-Frequency Development
 Use **parallel-verification.yml** only with path triggers:
@@ -111,7 +124,7 @@ on:
 | Aspect | Pre-commit Hook | GitHub Actions |
 |--------|----------------|----------------|
 | **Speed** | 30 seconds | 5-8 minutes |
-| **Coverage** | Full test suite | Full + parallel |
+| **Coverage** | Branch-dependent (FULL vs TARGETED; see `TEST_ENFORCEMENT.md`) | Full + parallel |
 | **Environment** | Developer machine | Clean Ubuntu |
 | **GPU Tests** | May work locally | Graceful fallback |
 | **Cost** | Free | Free/cheap |
@@ -123,15 +136,24 @@ Add to your README.md:
 ```markdown
 ![Mathematical Correctness](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/math-correctness.json)
 ![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/test-count.json)
-![Formal Verification](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/verification.json)
+![Annotation count](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/username/gist-id/raw/verification.json)
 ```
 
-## Mathematical Integrity Guarantee
+## What this setup does (and does not) establish
 
-The combination of pre-commit hooks + GitHub Actions ensures:
+The combination of pre-commit hooks + GitHub Actions provides:
 
-✅ **No regression commits**: Pre-commit hook blocks bad commits
-✅ **Public verification**: GitHub Actions provides transparent testing
-✅ **Parallel efficiency**: Matrix jobs minimize CI time
-✅ **Cost effectiveness**: Optimized for free tier usage
-✅ **Mathematical correctness**: 100% test coverage requirement
+✅ **Regression guard**: the pre-commit hook blocks commits whose in-scope
+   checks fail (branch-dependent; see `TEST_ENFORCEMENT.md` for the FULL
+   vs TARGETED split and the tolerated checks)
+✅ **Transparent test execution**: GitHub Actions runs the suites in a clean
+   environment
+✅ **Parallel efficiency**: matrix jobs minimize CI time
+✅ **Cost effectiveness**: optimized for free tier usage
+
+It does **not** establish mathematical correctness as a theorem. A green run
+means the executed test instances matched their assertions on that machine,
+toolchain, and feature set — not that a universally quantified algebraic law
+holds. Floating-point extremes break even associativity: for scalar `f64`
+`a = b = 1e308`, `c = 0`, `(a*b)*c` is `NaN` while `a*(b*c)` is `0`. Universal
+statements are proof obligations (C3/C4) and are out of scope of this pipeline.

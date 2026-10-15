@@ -115,10 +115,10 @@ jobs:
     - name: Full integration test
       run: cargo test --all --lib --bins
 
-    - name: Mathematical correctness verified
+    - name: Mathematical correctness test report
       run: |
-        echo "✨ All mathematical properties verified ✨"
-        echo "🔬 Geometric algebra: ✓"
-        echo "🌴 Tropical semirings: ✓"
-        echo "👻 Phantom types: ✓"
-        echo "🧮 Formal verification: ✓"
+        echo "✨ Mathematical-property test suites passed ✨"
+        echo "🔬 Geometric-algebra suites: ✓"
+        echo "🌴 Tropical-semiring suites: ✓"
+        echo "👻 Phantom-type suites: ✓"
+        echo "🧮 Formal-annotation compatibility: ✓"

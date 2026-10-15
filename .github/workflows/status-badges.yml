@@ -42,17 +42,17 @@ jobs:
         echo "TOTAL_TESTS=$TOTAL_TESTS" >> $GITHUB_ENV
         echo "Found $TOTAL_TESTS total tests"
 
-        # Count verification tests
+        # Count test functions in annotation-marker files (formal-verification feature)
         VERIFICATION_TESTS=$(cargo test --all --features formal-verification --no-run 2>/dev/null | grep -E "Running.*test" | sed 's/.*Running \([0-9]*\) test.*/\1/' | awk '{sum += $1} END {print sum}' 2>/dev/null || echo "0")
 
-        # Alternative verification test count
+        # Alternative count: #[test] functions in files mentioning the formal_verification marker
         if [ "$VERIFICATION_TESTS" = "0" ] || [ -z "$VERIFICATION_TESTS" ]; then
           VERIFICATION_TESTS=$(find . -name "*.rs" -type f -exec grep -l "formal_verification" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
         fi
 
         VERIFICATION_TESTS=${VERIFICATION_TESTS:-0}
         echo "VERIFICATION_TESTS=$VERIFICATION_TESTS" >> $GITHUB_ENV
-        echo "Found $VERIFICATION_TESTS verification tests"
+        echo "Found $VERIFICATION_TESTS test functions in annotation-marker files"
 
     # Note: The following badge creation steps are commented out because they require
     # a valid GitHub Gist ID to store the badge data. To enable badge generation:
@@ -72,15 +72,15 @@ jobs:
     #     message: ${{ env.TOTAL_TESTS }} passing
     #     color: brightgreen
 
-    # - name: Create verification badge
+    # - name: Create annotation-count badge
     #   if: env.VERIFICATION_TESTS != '0'
     #   uses: schneegans/dynamic-badges-action@v1.7.0
     #   with:
     #     auth: ${{ secrets.GIST_SECRET }}
     #     gistID: your-gist-id-here  # Replace with actual gist ID
     #     filename: verification.json
-    #     label: Formal Verification
-    #     message: ${{ env.VERIFICATION_TESTS }} verified
+    #     label: Formal Annotations
+    #     message: ${{ env.VERIFICATION_TESTS }} test functions in annotation-marker files
     #     color: blue
 
     # - name: Create mathematical correctness badge
@@ -90,14 +90,14 @@ jobs:
     #     gistID: your-gist-id-here  # Replace with actual gist ID
     #     filename: math-correctness.json
     #     label: Mathematical Correctness
-    #     message: 100% verified
+    #     message: test suites executed
     #     color: gold
 
     - name: Output badge information
       run: |
         echo "## Badge Generation Summary"
         echo "- Total Tests: $TOTAL_TESTS"
-        echo "- Verification Tests: $VERIFICATION_TESTS"
+        echo "- Test functions in annotation-marker files: $VERIFICATION_TESTS"
         echo ""
         echo "Note: Badge creation is currently disabled. To enable:"
         echo "1. Create a GitHub Gist for badge storage"

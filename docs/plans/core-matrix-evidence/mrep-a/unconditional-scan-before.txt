@@ -1,0 +1,25 @@
+# M-REP-A R9 scripted unconditional-claim detector — BEFORE (HEAD 430def1)
+# Detector: /tmp/mrepa-r9/detect_unconditional.py (sha256 0b9561c75c21a43b626d1e7d14d511c9fbc605621837300c3ff64cc984f4113a)
+# Patterns: every commit | all checks | cannot land | guarantee | ensures that |
+#   blocks commits | same ... as/in/to CI | matches CI | identical | 100% | all tests.
+# Verdict: NEGATED (an honest disclaimer, not a claim) | QUALIFIED (carries a scope
+#   token or cites the table) | UNQUALIFIED (needs repair).
+# Source text for the BEFORE pass is the HEAD revision (git show HEAD:<path>).
+
+DETECTOR HITS: 13
+------------------------------------------------------------------------------
+docs/technical/TEST_ENFORCEMENT.md:5	guarantee	NEGATED (honest disclaimer)	> guarantees. Test enforcement *runs and gates tests*; it does not prove
+docs/technical/TEST_ENFORCEMENT.md:105	all checks	UNQUALIFIED	# Commit proceeds if all checks pass
+docs/technical/TEST_ENFORCEMENT.md:115	all checks	UNQUALIFIED	# ✅ All checks pass, commit proceeds
+docs/technical/TEST_ENFORCEMENT.md:192	same ... as/in CI	UNQUALIFIED	- **Reproducible execution**: the same checks run locally and in CI
+docs/technical/TEST_ENFORCEMENT.md:262	all checks	UNQUALIFIED	5. **Ensure all checks pass before committing**
+docs/technical/TEST_ENFORCEMENT.md:275	100%	UNQUALIFIED	- **100% check-pass rate** on commits that are allowed to land
+docs/technical/MATHEMATICAL_RIGOR.md:5	guarantee	NEGATED (honest disclaimer)	> guarantees*. That was an overstatement. The pipeline executes tests and
+docs/technical/MATHEMATICAL_RIGOR.md:30	identical	NEGATED (honest disclaimer)	source-mapped table in `TEST_ENFORCEMENT.md`; coverage is NOT identical
+docs/technical/MATHEMATICAL_RIGOR.md:34	every commit	UNQUALIFIED	# Automatically runs on every commit attempt
+docs/technical/MATHEMATICAL_RIGOR.md:38	blocks commits	QUALIFIED	**Blocks commits whose (in-scope) checks fail:**
+docs/technical/MATHEMATICAL_RIGOR.md:118	guarantee	NEGATED (honest disclaimer)	are therefore instance checks, not a universal guarantee.
+docs/technical/MATHEMATICAL_RIGOR.md:188	matches CI	UNQUALIFIED	# Full check (matches CI exactly)
+docs/development/CI_SETUP.md:146	blocks commits	UNQUALIFIED	✅ **Regression guard**: the pre-commit hook blocks commits whose test, lint, or
+------------------------------------------------------------------------------
+UNQUALIFIED (need repair): 8

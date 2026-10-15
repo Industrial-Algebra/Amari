@@ -1,0 +1,7 @@
+64:        echo "✅ Core mathematical properties verified"
+80:        echo "✅ Documentation examples verified"
+92:        cargo test --package amari-tropical verified_contracts
+93:        cargo test --package amari-core verified_contracts
+94:        echo "✅ Type safety constraints verified"
+275:        echo "All geometric algebra properties verified"
+.github/workflows/mathematical-correctness.yml:85:        cargo test --package amari-core geometric_axioms

@@ -20,7 +20,7 @@ jobs:
       RUSTUP_TOOLCHAIN: stable
     outputs:
       test-count: ${{ steps.count.outputs.count }}
-      verification-count: ${{ steps.count.outputs.verification }}
+      annotation-count: ${{ steps.count.outputs.annotation }}
 
     steps:
     - uses: actions/checkout@v7
@@ -56,21 +56,23 @@ jobs:
           echo "Using source code count: $FINAL_COUNT"
         fi
 
-        # Count verification tests
-        VERIFICATION_COUNT=$(find . -name "*.rs" -type f -not -path "./target/*" -exec grep -l "formal_verification\|verify_\|proof_" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
+        # Count #[test] functions inside files carrying formal-annotation markers
+        # (heuristic: files whose CONTENT matches formal_verification|verify_|proof_;
+        # the count is per #[test] match in those files, not per file)
+        ANNOTATION_COUNT=$(find . -name "*.rs" -type f -not -path "./target/*" -exec grep -l "formal_verification\|verify_\|proof_" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
 
         echo "Total tests found: $FINAL_COUNT"
-        echo "Verification tests found: $VERIFICATION_COUNT"
+        echo "Test functions in annotation-marker files: $ANNOTATION_COUNT"
 
         # Set outputs
         echo "count=$FINAL_COUNT" >> $GITHUB_OUTPUT
-        echo "verification=$VERIFICATION_COUNT" >> $GITHUB_OUTPUT
+        echo "annotation=$ANNOTATION_COUNT" >> $GITHUB_OUTPUT
 
         # Create summary
         echo "## Test Count Summary 📊" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "- **Total Tests**: $FINAL_COUNT" >> $GITHUB_STEP_SUMMARY
-        echo "- **Verification Tests**: $VERIFICATION_COUNT" >> $GITHUB_STEP_SUMMARY
+        echo "- **Test Functions in Annotation-Marker Files**: $ANNOTATION_COUNT" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Test Distribution" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -95,16 +97,16 @@ jobs:
         {
           "schemaVersion": 1,
           "label": "tests",
-          "message": "${{ steps.count.outputs.count }} passing",
+          "message": "${{ steps.count.outputs.count }} test functions found",
           "color": "brightgreen"
         }
         EOF
 
-        cat > verification-report.json << EOF
+        cat > annotation-report.json << EOF
         {
           "schemaVersion": 1,
-          "label": "verification",
-          "message": "${{ steps.count.outputs.verification }} verified",
+          "label": "formal annotations",
+          "message": "${{ steps.count.outputs.annotation }} test functions in annotation-marker files",
           "color": "blue"
         }
         EOF
@@ -117,7 +119,7 @@ jobs:
         name: badge-data
         path: |
           test-report.json
-          verification-report.json
+          annotation-report.json
         retention-days: 30
 
     - name: Comment on PR (if applicable)
@@ -128,16 +130,16 @@ jobs:
         script: |
           try {
             const testCount = '${{ steps.count.outputs.count }}';
-            const verificationCount = '${{ steps.count.outputs.verification }}';
+            const annotationCount = '${{ steps.count.outputs.annotation }}';
 
             const body = `## 📊 Test Statistics
 
             | Metric | Count |
             |--------|-------|
             | **Total Tests** | ${testCount} |
-            | **Verification Tests** | ${verificationCount} |
+            | **Test Functions in Annotation-Marker Files** | ${annotationCount} |
 
-            ✅ All test counts verified!`;
+            ✅ Test and annotation counts reported.`;
 
             await github.rest.issues.createComment({
               issue_number: context.issue.number,

@@ -61,15 +61,15 @@ jobs:
       run: |
         echo "🧪 Running core mathematical tests..."
         cargo test --workspace --lib --bins
-        echo "✅ Core mathematical properties verified"
+        echo "✅ Core mathematical property tests passed"
       env:
         RUST_TEST_NOCAPTURE: 1
 
-    - name: Run formal verification tests
+    - name: Run formal-verification feature tests
       run: |
-        echo "🔬 Running formal verification tests..."
+        echo "🔬 Running formal-verification feature tests..."
         cargo test --workspace --lib --bins --features formal-verification
-        echo "✅ Formal verification contracts validated"
+        echo "✅ Formal-annotation compatibility tests passed"
       env:
         RUST_TEST_NOCAPTURE: 1
 
@@ -77,32 +77,32 @@ jobs:
       run: |
         echo "📖 Running documentation tests..."
         cargo test --workspace --doc
-        echo "✅ Documentation examples verified"
+        echo "✅ Documentation examples (doctests) passed"
 
-    - name: Verify geometric algebra axioms
+    - name: Run geometric algebra axiom tests
       run: |
-        echo "📐 Verifying geometric algebra axioms..."
+        echo "📐 Running geometric algebra axiom tests..."
         cargo test --package amari-core geometric_axioms
         cargo test --package amari-tropical semiring_axioms
-        echo "✅ All algebraic axioms satisfied"
+        echo "✅ Algebraic test suites passed"
 
-    - name: Validate phantom type safety
+    - name: Run phantom type-safety tests
       run: |
-        echo "👻 Validating phantom type safety..."
+        echo "👻 Running phantom type-safety tests..."
         cargo test --package amari-tropical verified_contracts
         cargo test --package amari-core verified_contracts
-        echo "✅ Type safety constraints verified"
+        echo "✅ Type-safety constraint tests passed"
 
     - name: Mathematical property analysis
       run: |
         echo "🔍 Analyzing mathematical properties..."
         TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || echo "0")
-        VERIFICATION_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
 
         echo "📊 Test Coverage Summary:"
         echo "  Total tests: $TOTAL_TESTS"
-        echo "  Verification tests: $VERIFICATION_TESTS"
-        echo "  Mathematical rigor: 100%"
+        echo "  Formal-feature tests: $FORMAL_FEATURE_TESTS"
+        echo "  Mathematical test suites: executed"
 
         if [ "$TOTAL_TESTS" -lt 300 ]; then
           echo "❌ Insufficient test coverage for mathematical library"
@@ -129,7 +129,7 @@ jobs:
       run: |
         echo "🔗 Running workspace integration tests..."
         cargo test --workspace --exclude amari-discovery --tests
-        echo "✅ Workspace integration correctness confirmed"
+        echo "✅ Workspace integration tests passed"
 
   discovery-catalog:
     name: Discovery Catalog Tests
@@ -213,7 +213,7 @@ jobs:
           echo "❌ Discovery integration checks failed"
           exit 1
         fi
-        echo "✅ Discovery integration correctness confirmed"
+        echo "✅ Discovery integration tests passed"
 
   documentation:
     name: Mathematical Documentation
@@ -267,11 +267,11 @@ jobs:
            [ "$WORKSPACE_INTEGRATION" != "success" ] || \
            [ "$DISCOVERY_INTEGRATION" != "success" ] || \
            [ "$DOCUMENTATION" != "success" ]; then
-          echo "❌ Mathematical integrity compromised!"
+          echo "❌ Mathematical-correctness test suites failed!"
           exit 1
         fi
 
-        echo "✨ Mathematical correctness maintained ✨"
-        echo "All geometric algebra properties verified"
-        echo "All tropical semiring axioms confirmed"
-        echo "All phantom type constraints validated"
+        echo "Mathematical-correctness test suites green"
+        echo "Geometric-algebra test suites passed"
+        echo "Tropical semiring test suites passed"
+        echo "Phantom type constraint test suites passed"
