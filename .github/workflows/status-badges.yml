@@ -80,7 +80,7 @@ jobs:
     #     gistID: your-gist-id-here  # Replace with actual gist ID
     #     filename: verification.json
     #     label: Formal Verification
-    #     message: ${{ env.VERIFICATION_TESTS }} verified
+    #     message: ${{ env.VERIFICATION_TESTS }} files with formal annotations
     #     color: blue
 
     # - name: Create mathematical correctness badge
@@ -90,7 +90,7 @@ jobs:
     #     gistID: your-gist-id-here  # Replace with actual gist ID
     #     filename: math-correctness.json
     #     label: Mathematical Correctness
-    #     message: 100% verified
+    #     message: test suites executed
     #     color: gold
 
     - name: Output badge information
