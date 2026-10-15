@@ -1,0 +1,16 @@
+# M-REP-A R9 scripted unconditional-claim detector — AFTER (working tree)
+# Detector: /tmp/mrepa-r9/detect_unconditional.py (sha256 0b9561c75c21a43b626d1e7d14d511c9fbc605621837300c3ff64cc984f4113a)
+# Same patterns/verdicts as unconditional-scan-before.txt; only the pages changed.
+
+DETECTOR HITS: 8
+------------------------------------------------------------------------------
+docs/technical/TEST_ENFORCEMENT.md:5	guarantee	NEGATED (honest disclaimer)	> guarantees. Test enforcement *runs and gates tests*; it does not prove
+docs/technical/TEST_ENFORCEMENT.md:224	identical	NEGATED (honest disclaimer)	coverage is NOT identical to CI (see the table above and `MATHEMATICAL_RIGOR.md`)
+docs/technical/MATHEMATICAL_RIGOR.md:5	guarantee	NEGATED (honest disclaimer)	> guarantees*. That was an overstatement. The pipeline executes tests and
+docs/technical/MATHEMATICAL_RIGOR.md:30	identical	NEGATED (honest disclaimer)	source-mapped table in `TEST_ENFORCEMENT.md`; coverage is NOT identical
+docs/technical/MATHEMATICAL_RIGOR.md:39	blocks commits	QUALIFIED	**Blocks commits whose (in-scope) checks fail:**
+docs/technical/MATHEMATICAL_RIGOR.md:119	guarantee	NEGATED (honest disclaimer)	are therefore instance checks, not a universal guarantee.
+docs/technical/MATHEMATICAL_RIGOR.md:190	identical	NEGATED (honest disclaimer)	# Hook run; branch chosen by changed crates; coverage is NOT identical to CI.
+docs/development/CI_SETUP.md:146	blocks commits	QUALIFIED	✅ **Regression guard**: the pre-commit hook blocks commits whose in-scope
+------------------------------------------------------------------------------
+UNQUALIFIED (need repair): 0

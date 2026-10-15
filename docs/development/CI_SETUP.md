@@ -124,7 +124,7 @@ on:
 | Aspect | Pre-commit Hook | GitHub Actions |
 |--------|----------------|----------------|
 | **Speed** | 30 seconds | 5-8 minutes |
-| **Coverage** | Full test suite | Full + parallel |
+| **Coverage** | Branch-dependent (FULL vs TARGETED; see `TEST_ENFORCEMENT.md`) | Full + parallel |
 | **Environment** | Developer machine | Clean Ubuntu |
 | **GPU Tests** | May work locally | Graceful fallback |
 | **Cost** | Free | Free/cheap |
@@ -141,10 +141,11 @@ Add to your README.md:
 
 ## What this setup does (and does not) establish
 
-The combination of pre-commit hooks + GitHub Actions ensures:
+The combination of pre-commit hooks + GitHub Actions provides:
 
-✅ **Regression guard**: the pre-commit hook blocks commits whose test, lint, or
-   documentation checks fail
+✅ **Regression guard**: the pre-commit hook blocks commits whose in-scope
+   checks fail (branch-dependent; see `TEST_ENFORCEMENT.md` for the FULL
+   vs TARGETED split and the tolerated checks)
 ✅ **Transparent test execution**: GitHub Actions runs the suites in a clean
    environment
 ✅ **Parallel efficiency**: matrix jobs minimize CI time

@@ -9,36 +9,60 @@
 
 ## Overview
 
-The Amari workspace runs a pre-commit hook plus CI checks. The complete
-source-mapped description of the hook (`.githooks/pre-commit`, both
-branches):
+The Amari workspace runs a pre-commit hook plus CI checks. The table below is
+**transcribed by script** from `.githooks/pre-commit` (292 lines) — mechanically
+extracted, not hand-summarised. The extractor and its complete output are
+archived in `docs/plans/core-matrix-evidence/mrep-a/hook-extraction.txt`; every
+row cites the exact script line range, and every command is verbatim.
 
-| # | Check | Scope / command | Branch | Failure handling |
-|---|---|---|---|---|
-| 1 | Formatting | `cargo fmt --check` (workspace) | BOTH | blocks |
-| 2 | Clippy | `--workspace --all-targets --all-features -D warnings` | BOTH | blocks |
-| 3 | Workspace tests | `cargo test --workspace` | full | blocks |
-| 4 | Formal-feature suite | `--workspace --features formal-verification` (annotation-compatibility tests) | full | blocks |
-| 5 | Integration tests | `--workspace --tests` | full | blocks |
-| 6 | Doctests | `--workspace --doc` | full | blocks |
-| 7 | `geometric_axioms` filter | `-p amari-core geometric_axioms` | full | blocks (selection size not asserted — M-REP-B) |
-| 8 | `semiring_axioms` filter | `-p amari-tropical semiring_axioms` | full | blocks |
-| 9 | Phantom contracts, core | `-p amari-core verified_contracts` | full | blocks |
-| 10 | Phantom contracts, tropical/network | `verified_contracts` filters | full | TOLERATED (warning only) |
-| 11 | Coverage floor | `--lib --bins --list` count ≥ 300 | full | blocks below 300 |
-| 12 | Workspace docs | `cargo doc --workspace --no-deps` | full | blocks |
-| 13 | Crate tests | `-p $CRATE` | targeted | blocks |
-| 14 | Crate doctests | `-p $CRATE --doc` (stderr suppressed) | targeted | TOLERATED (failure downgraded to "may be okay") |
-| 15 | Crate docs | `-p $CRATE --no-deps` | targeted | blocks |
-| 16 | WASM: amari-wasm | `check --target wasm32-unknown-unknown` | both (WASM-relevant crates) | blocks |
-| 17 | WASM: other crates | per-crate `check --target wasm…` | full: all WASM crates; targeted: the changed crate | TOLERATED ("may be expected") |
-| 18 | WASM target install | `rustup target add` if missing | both | auto-installs |
+| # | Check | Command (verbatim) | Branch condition | Failure handling | Script lines |
+|---|---|---|---|---|---|
+| 1 | Formatting | `cargo fmt --check` (workspace) | TOP-LEVEL (both branches) | BLOCKS (`exit 1`) | 69-73 |
+| 2 | Clippy | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | TOP-LEVEL (both branches) | BLOCKS (`exit 1`) | 77-81 |
+| 3 | Workspace tests | `cargo test --workspace --quiet` | FULL (`RUN_FULL_TESTS=true`) | BLOCKS (`exit 1`) | 96-100 |
+| 4 | Formal-feature suite | `cargo test --workspace --features formal-verification --quiet` | FULL | BLOCKS (`exit 1`) | 104-108 |
+| 5 | Integration tests | `cargo test --workspace --tests --quiet` | FULL | BLOCKS (`exit 1`) | 112-116 |
+| 6 | Doctests | `cargo test --workspace --doc --quiet` | FULL | BLOCKS (`exit 1`) | 120-124 |
+| 7 | `geometric_axioms` filter | `cargo test --package amari-core geometric_axioms --quiet` | FULL | BLOCKS (`exit 1`); selected-test count not asserted — M-REP-B | 128-132 |
+| 8 | `semiring_axioms` filter | `cargo test --package amari-tropical semiring_axioms --quiet` | FULL | BLOCKS (`exit 1`) | 136-140 |
+| 9 | Phantom contracts, core | `cargo test --package amari-core verified_contracts --quiet` | FULL | BLOCKS (`exit 1`) | 144-148 |
+| 10 | Phantom contracts, tropical | `cargo test --package amari-tropical verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 149-151 |
+| 11 | Phantom contracts, network | `cargo test --package amari-network verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 152-154 |
+| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c "test " \|\| echo "0")` | FULL | gather only; `2>/dev/null` + `\|\| echo "0"` yield count 0 on failure; the L159 gate decides | 157-158 |
+| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | BLOCKS below 300 (`exit 1`) | 159-163 |
+| 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 167-171 |
+| 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 183-187 |
+| 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 192-196 |
+| 17 | Crate docs | `cargo doc --package "$CHANGED_CRATE" --no-deps --quiet` | TARGETED | BLOCKS (`exit 1`) | 200-204 |
+| 18 | WASM gate determination | `WASM_CRATES=(...)`; `WASM_AFFECTED=true` if `RUN_FULL_TESTS=true`, else loop `CHANGED_CRATE` over `WASM_CRATES` | FULL: always; TARGETED: `CHANGED_CRATE` is one of `WASM_CRATES` | selection only (no command) | 215-228 |
+| 19 | WASM target lookup | `rustup target list --installed \| grep -q wasm32-unknown-unknown` | WASM-conditional (`WASM_AFFECTED=true`) | condition only; gates the install step | 234-237 |
+| 20 | WASM target install | `rustup target add wasm32-unknown-unknown` | WASM-conditional, only when the lookup fails | BLOCKS: unguarded, no failure branch; a non-zero exit aborts under `set -e` (L7), with no custom message | 236 (with 7) |
+| 21 | WASM `amari-wasm`, full | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + FULL | BLOCKS (`exit 1`) | 242-246 |
+| 22 | WASM per-crate loop, full | `cargo check --package "$crate" --target wasm32-unknown-unknown --quiet 2>/dev/null` for `$crate` in `WASM_CRATES` **excluding `amari-wasm` and `amari`** | WASM-conditional + FULL + loop | TOLERATED (warning echo only; no `exit 1`) | 248-255 |
+| 23 | WASM `amari-wasm`, targeted | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + TARGETED + `CHANGED_CRATE=amari-wasm` | BLOCKS (`exit 1`) | 258-263 |
+| 24 | WASM changed crate, targeted | `cargo check --package "$CHANGED_CRATE" --target wasm32-unknown-unknown --quiet 2>/dev/null` | WASM-conditional + TARGETED + `CHANGED_CRATE != amari-wasm` **and** `!= amari` | TOLERATED (warning echo only; no `exit 1`) | 264-269 |
+| 25 | `amari` (root) special case | **no WASM `cargo check` is issued** | WASM-conditional | full: excluded by the loop condition (L250); targeted: the `elif [ "$CHANGED_CRATE" != "amari" ]` guard (L264) skips the check. The WASM banner and target-install step still run | 250, 264 |
 
-Branch selection precedence: `[full-test]` in the commit message, OR
-workspace-level changed files (Cargo.toml/.githooks/.github/scripts), OR
-no crate changes at all, OR more than one changed crate → FULL branch;
-exactly one changed crate → TARGETED branch. The targeted branch prints a
-reminder that the full suite runs in CI/CD.
+Source semantics for the WASM rows: `amari-wasm` is the only crate whose WASM
+check **blocks** (rows 21, 23); every other checked crate is **TOLERATED**
+(rows 22, 24); the root `amari` crate is never checked (row 25).
+
+**Branch selection precedence** (script lines 34-62, in condition order):
+`[full-test]` in `.git/COMMIT_EDITMSG` (read via
+`grep -q '\[full-test\]' .git/COMMIT_EDITMSG 2>/dev/null`, L33-39), OR
+workspace-level changed files (`Cargo.toml`, `.githooks`, `.github`,
+`scripts`; L30), OR no crate changes (`CRATE_COUNT=0`), OR more than one
+changed crate (`CRATE_COUNT>1`) → **FULL**; otherwise exactly one changed
+crate → **TARGETED** with `CHANGED_CRATE` set (L55-61). The targeted branch
+prints a reminder that the full suite runs in CI/CD (L208).
+
+**WASM gate** (script lines 215-228): `WASM_AFFECTED=true` whenever the FULL
+branch runs; in the TARGETED branch it is true only when `CHANGED_CRATE` is
+one of `WASM_CRATES` = `amari amari-core amari-tropical amari-dual
+amari-network amari-relativistic amari-info-geom amari-enumerative
+amari-fusion amari-automata amari-wasm` (L216). The WASM validation block
+(target lookup/install and the checks in rows 19-25) runs only when
+`WASM_AFFECTED=true`.
 
 A green TARGETED hook therefore does not mean the full pipeline passed —
 the authoritative gate is CI (see `CI_SETUP.md`). Either branch is a
@@ -64,7 +88,11 @@ Run once after cloning:
 ./setup-githooks.sh
 ```
 
-This configures git to use the custom pre-commit hooks that enforce:
+This configures git to use the custom pre-commit hooks. The list below is the
+**FULL-branch** command set; the TARGETED branch runs only a subset
+(formatting + Clippy always; the changed crate's tests and docs, with crate
+doctest failures tolerated and no formal-feature suite). See the table above
+for the per-check branch and failure handling.
 
 ### ✅ Pre-commit checks
 
@@ -96,13 +124,15 @@ This configures git to use the custom pre-commit hooks that enforce:
 ```bash
 git add .
 git commit -m "feat: implement new mathematical operation"
-# Pre-commit hooks automatically run:
-# ✅ Code formatting check
-# ✅ Clippy lints
-# ✅ Core test suites (all crates)
-# ✅ formal-verification feature suites
-# ✅ Documentation build
-# Commit proceeds if all checks pass
+# Pre-commit hooks run (branch-dependent; see the table above):
+# ✅ Code formatting check             (both branches, workspace)
+# ✅ Clippy lints                      (both branches, workspace)
+# ✅ Core test suites                  (FULL: all crates; TARGETED: changed crate)
+# ✅ formal-verification feature suites (FULL branch only)
+# ✅ Documentation build               (FULL: workspace; TARGETED: changed crate)
+# Commit proceeds if the branch's in-scope checks pass.
+# The TARGETED branch tolerates crate doctest failures and skips the formal suite
+# and the workspace-wide checks (CI runs them; see below).
 ```
 
 ### Failed check workflow
@@ -112,7 +142,7 @@ git commit -m "feat: buggy implementation"
 # Fix the issues, then retry
 git add .
 git commit -m "feat: correct implementation"
-# ✅ All checks pass, commit proceeds
+# ✅ In-scope checks pass, commit proceeds
 ```
 
 ### Emergency bypass (use sparingly)
@@ -189,7 +219,9 @@ prover or discharged.
 - **Documentation quality**: all docs must build
 
 ### Research reliability
-- **Reproducible execution**: the same checks run locally and in CI
+- **Reproducible execution**: the hook's FULL-branch checks and CI share
+  overlapping definitions; the TARGETED branch is a strict subset, and local
+  coverage is NOT identical to CI (see the table above and `MATHEMATICAL_RIGOR.md`)
 - **Trustworthy foundation**: exercised behavior is protected
 - **Type-level safety**: phantom types give compile-time type constraints
 
@@ -259,7 +291,8 @@ When adding new mathematical operations:
 2. **Follow the proven test patterns** from existing crates
 3. **Include edge cases and property instances**
 4. **Add annotation-compatibility tests if applicable**
-5. **Ensure all checks pass before committing**
+5. **Ensure the applicable in-scope checks pass before committing** (see the
+   table above; the TARGETED branch is narrower than CI)
 
 ### Updating enforcement
 To modify the pre-commit checks:
@@ -271,8 +304,10 @@ To modify the pre-commit checks:
 
 ## 🎯 Success metrics
 
-The enforcement system ensures:
-- **100% check-pass rate** on commits that are allowed to land
+The enforcement system provides:
+- **In-scope check-pass on landable commits**: a commit only lands after the
+  branch's in-scope checks pass; tolerated checks (per the table above) may
+  fail with a warning, and the TARGETED branch defers the rest to CI
 - **No observed regressions** across releases
 - **Broad coverage** of exercised operations
 - **Annotation compatibility** for `formal-verification` builds

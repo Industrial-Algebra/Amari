@@ -31,7 +31,8 @@ source-mapped table in `TEST_ENFORCEMENT.md`; coverage is NOT identical
 to CI.
 
 ```bash
-# Automatically runs on every commit attempt
+# Runs on each commit attempt (unless bypassed with `git commit --no-verify`);
+# the FULL-vs-TARGETED branch is chosen per the TEST_ENFORCEMENT.md table.
 .githooks/pre-commit
 ```
 
@@ -128,7 +129,8 @@ not to this page.
 ## Failure handling
 
 ### Zero tolerance for green-check failures
-- **Any failing check blocks the pipeline**
+- **Any failing gating check in the CI pipeline blocks it** (the local hook's
+  TARGETED-branch tolerances are enumerated in `TEST_ENFORCEMENT.md`)
 - **No exception for "minor" errors**
 - **Documentation examples must compile and pass**
 
@@ -185,7 +187,8 @@ By contributing to this repository, you agree that:
 
 ### Local development
 ```bash
-# Full check (matches CI exactly)
+# Hook run; branch chosen by changed crates; coverage is NOT identical to CI.
+# See the source-mapped table in TEST_ENFORCEMENT.md.
 ./.githooks/pre-commit
 
 # Specific property test suites
