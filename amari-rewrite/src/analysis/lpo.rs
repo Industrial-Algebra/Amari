@@ -386,6 +386,11 @@ fn validate_input(
                     ),
                 });
             }
+            // Bound the frontier BEFORE enqueueing children: an
+            // adversarially wide term must fail typed, not allocate
+            // (PR #305 round 2).
+            let prospective = stack.len().saturating_add(args.len());
+            resources.record_term(prospective, depth.saturating_add(1))?;
             for arg in args {
                 stack.push((arg, depth.saturating_add(1)));
             }

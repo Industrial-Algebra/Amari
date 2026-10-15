@@ -359,3 +359,31 @@ fn bare_comparison_rejects_missing_symbols_before_short_circuits() {
         "got {equal:?}"
     );
 }
+
+/// PR #305 round 2 P2: validation must bound its frontier BEFORE
+/// enqueueing children — an adversarially WIDE term fails typed
+/// without materializing a 100k-entry work stack.
+#[test]
+fn wide_term_fails_typed_before_frontier_growth() {
+    let wide = Term::sym("f", vec![Term::constant("a"); 100_000]);
+    let order = precedence(&[("f", 100_000), ("a", 0)]);
+    // Node budget at the 4,096 ceiling admits the comparison itself
+    // but not the 100k-wide frontier; the op budget is generous so
+    // only the frontier bound can fire first.
+    let limits = RelationLimits::new(4_096, 64, 1, 1_000_000).unwrap();
+    let mut resources = RelationResources::new(&limits);
+    let outcome = lpo_greater(&wide, &Term::constant("a"), &order, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "expected typed limit, got {outcome:?}"
+    );
+    // The discriminating signal: a validator that enqueues before
+    // enforcing walks ~100k nodes (and allocates the frontier);
+    // early frontier rejection charges only the root.
+    assert!(
+        resources.operations() < 100,
+        "frontier must reject early, charged {} ops",
+        resources.operations()
+    );
+    core::mem::forget(wide);
+}
