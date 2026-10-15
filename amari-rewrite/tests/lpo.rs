@@ -387,3 +387,45 @@ fn wide_term_fails_typed_before_frontier_growth() {
     );
     core::mem::forget(wide);
 }
+
+/// PR #305 round 3 P1: constants at the exact depth boundary must
+/// not be charged a nonexistent child depth — `a > a` under depth
+/// limit 1 is `false`, not an error.
+#[test]
+fn constant_at_exact_depth_boundary_compares() {
+    let order = precedence(&[("a", 0)]);
+    let limits = RelationLimits::new(4_096, 1, 1, 1_000_000).unwrap();
+    let mut resources = RelationResources::new(&limits);
+    let outcome = lpo_greater(
+        &Term::constant("a"),
+        &Term::constant("a"),
+        &order,
+        &mut resources,
+    );
+    assert_eq!(outcome, Ok(false), "got {outcome:?}");
+}
+
+/// PR #305 round 3 P1: `f^63(a) > a` under default limits (leaf at
+/// depth 64, the exact ceiling) returns `true`, and the rule
+/// certifies.
+#[test]
+fn deep_legal_term_at_ceiling_compares_and_certifies() {
+    let mut deep = Term::constant("a");
+    for _ in 0..63 {
+        deep = Term::sym("f", [deep]);
+    }
+    let order = precedence(&[("f", 1), ("a", 0)]);
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    assert_eq!(
+        lpo_greater(&deep, &Term::constant("a"), &order, &mut resources),
+        Ok(true)
+    );
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let proof = prove_terminating(
+        &system(vec![rule(deep, Term::constant("a"))]),
+        &order,
+        &mut resources,
+    )
+    .expect("proof completes");
+    assert!(matches!(proof, TerminationProof::ProvedTerminating { .. }));
+}
