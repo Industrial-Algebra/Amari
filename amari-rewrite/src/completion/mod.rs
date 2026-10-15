@@ -344,7 +344,12 @@ fn equation_key(
     resources.record_term(right_nodes, right_depth)?;
     // Joint canonicalization: variables are renumbered across BOTH
     // sides, preserving cross-side variable identity — h(x,y) and
-    // h(x,z) must not collide (PR #310 round 1).
+    // h(x,z) must not collide (PR #310 round 1). The fingerprint is
+    // traversal-ordered: the SWAPPED equation (r, l) can hash
+    // differently, so a swapped duplicate may be processed once
+    // more. Dedup is sound (never merges distinct equations);
+    // swap-completeness is deliberately not paid for (PR #310
+    // round 2, P3 documented).
     let digests = Sha256Digest::canonical_terms(EQUATION_FRAME, &[left, right]);
     let (left_digest, right_digest) = (digests[0], digests[1]);
     Ok(if left_digest <= right_digest {
