@@ -28,8 +28,8 @@ row cites the exact script line range, and every command is verbatim.
 | 9 | Phantom contracts, core | `cargo test --package amari-core verified_contracts --quiet` | FULL | BLOCKS (`exit 1`) | 144-148 |
 | 10 | Phantom contracts, tropical | `cargo test --package amari-tropical verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 149-151 |
 | 11 | Phantom contracts, network | `cargo test --package amari-network verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 152-154 |
-| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c "test " \|\| echo "0")` | FULL | gather only; `2>/dev/null` + `\|\| echo "0"` yield count 0 on failure; the L159 gate decides | 157-158 |
-| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | BLOCKS below 300 (`exit 1`) | 159-163 |
+| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c "test " \|\| echo "0")` | FULL | gather only. NOTE the failure shape: when the gather fails or matches nothing, `grep -c` still prints `0` and exits 1, so `\|\| echo "0"` APPENDS a second line — `TOTAL_TESTS` becomes the two-line string `0\n0`, not `0` | 157-158 |
+| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | Blocks below 300 on a WELL-FORMED count. In the gather-failure case the two-line `0\n0` is not an integer, the comparison itself errors (non-zero status), and the hook CONTINUES — the floor does NOT block on gather failure (vacuous-on-failure; repair is M-REP-B) | 159-163 |
 | 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 167-171 |
 | 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 183-187 |
 | 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 192-196 |
