@@ -56,11 +56,13 @@ jobs:
           echo "Using source code count: $FINAL_COUNT"
         fi
 
-        # Count files carrying formal-annotation markers
+        # Count #[test] functions inside files carrying formal-annotation markers
+        # (matching-file heuristic: filenames containing formal_verification|verify_|proof_;
+        # the count is per test function in those files, not per file)
         ANNOTATION_COUNT=$(find . -name "*.rs" -type f -not -path "./target/*" -exec grep -l "formal_verification\|verify_\|proof_" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
 
         echo "Total tests found: $FINAL_COUNT"
-        echo "Files with formal annotations found: $ANNOTATION_COUNT"
+        echo "Test functions in annotation-marker files: $ANNOTATION_COUNT"
 
         # Set outputs
         echo "count=$FINAL_COUNT" >> $GITHUB_OUTPUT
@@ -104,7 +106,7 @@ jobs:
         {
           "schemaVersion": 1,
           "label": "formal annotations",
-          "message": "${{ steps.count.outputs.annotation }} files with formal annotations",
+          "message": "${{ steps.count.outputs.annotation }} test functions in annotation-marker files",
           "color": "blue"
         }
         EOF

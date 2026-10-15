@@ -1,8 +1,11 @@
-//! Formally verified geometric algebra with phantom types and Creusot annotations
+//! Phantom-typed geometric algebra with formal-annotation compatibility
 //!
-//! This module provides type-safe, mathematically verified implementations of
-//! geometric algebra operations using phantom types for compile-time invariants
-//! and Creusot annotations for formal verification.
+//! This module provides type-safe implementations of geometric algebra
+//! operations using phantom types for compile-time invariants (dimension,
+//! signature) and Creusot-compatible annotations. The annotations express
+//! intended contracts only; ordinary builds compile them to nothing (see
+//! the CORE-D07 matrix: C1 — annotation compatibility, not proof), and
+//! discharged proof obligations are a separate pre-1.0 gate (C3/C4).
 
 use num_traits::{Float, One, Zero};
 use std::marker::PhantomData;

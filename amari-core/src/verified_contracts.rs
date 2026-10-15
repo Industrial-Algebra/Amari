@@ -42,9 +42,15 @@ where
     a.add(b)
 }
 
-/// Verified norm computation
+/// Norm computation (sum of squares, then square root).
+///
+/// The former `ensures(result >= T::zero())` contract was removed on
+/// 2026-10-15 (M-REP-A review round 1): it is falsified by NaN
+/// coefficients (`verified_norm([NaN, 0]) == NaN`, and `NaN >= 0` is
+/// false). For finite coefficients the claim holds (sum of squares is
+/// nonnegative, as is its sqrt). A finiteness-guarded contract is
+/// M-REP-C scope.
 #[requires(!mv.coefficients.is_empty())]
-#[ensures(result >= T::zero())]
 pub fn verified_norm<T, const P: usize, const Q: usize, const R: usize>(
     mv: &VerifiedMultivector<T, P, Q, R>,
 ) -> T
