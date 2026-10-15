@@ -64,9 +64,10 @@ to CI.
 
 ### 3. 📊 Continuous monitoring (counts)
 - Minimum 300+ `#[test]` functions (currently 579+)
-- The coverage floor is a real gate: the gather yields a single well-formed
-  count and `[ "$TOTAL_TESTS" -lt 300 ]` blocks both a low count and a gather
-  failure (M-REP-B)
+- The coverage floor is a real gate: the gather captures cargo's exit
+  status separately and a FAILED gather exits 1 in the gather itself;
+  a well-formed low count is then blocked by `[ "$TOTAL_TESTS" -lt 300 ]`
+  (M-REP-B, hardened R1)
 - Test-function counts in annotation-marker files are source-inventory counts
 - All phantom type constraints that the compiler can check are enforced at
   compile time

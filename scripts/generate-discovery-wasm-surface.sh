@@ -58,7 +58,7 @@ echo "==> Wrote $OUTPUT ($(wc -c < "$OUTPUT") bytes)"
 echo "==> Verifying generated catalog"
 # Named-suite vacuity gate (M-REP-B): the filter must select exactly the one
 # approved test and it must pass. A zero-match run exits 0 and is not evidence.
-bash scripts/verify-named-suite.sh amari-discovery generated_has_valid_schema_version \
+bash "$REPO_ROOT/scripts/verify-named-suite.sh" amari-discovery generated_has_valid_schema_version \
     generated_has_valid_schema_version
 
 echo "==> Done. Commit catalog/generated-wasm.json when the surface changes."
