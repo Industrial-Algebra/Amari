@@ -137,7 +137,7 @@ mod contract_tests {
         let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0);
         let result = verified_scalar_mult(3.0, &mv);
 
-        // The Creusot contracts ensure these properties
+        // The annotations express these intended properties; the asserts check them for this instance
         assert_eq!(result.coefficients[0], 6.0);
         assert_eq!(result.coefficients.len(), mv.coefficients.len());
     }

@@ -46,13 +46,13 @@ below are the actual repaired occurrences.
 | Location | Before | After |
 |---|---|---|
 | job output (:23) | `verification-count: …outputs.verification` | `annotation-count: …outputs.annotation` |
-| :59/:60 | `# Count verification tests` / `VERIFICATION_COUNT` | `# Count files carrying formal-annotation markers` / `ANNOTATION_COUNT` |
-| :63/:67 | `Verification tests found: …` / `verification=…` | `Files with formal annotations found: …` / `annotation=…` |
-| summary :73 | `**Verification Tests**: …` | `**Files with Formal Annotations**: …` |
-| badge file/label/message | `verification-report.json` / `"verification"` / `"N verified"` | `annotation-report.json` / `"formal annotations"` / `"N files with formal annotations"` |
+| :59/:60 | `# Count verification tests` / `VERIFICATION_COUNT` | `# Count #[test] functions in annotation-marker files` / `ANNOTATION_COUNT` |
+| :63/:67 | `Verification tests found: …` / `verification=…` | `Test functions in annotation-marker files: …` / `annotation=…` |
+| summary :73 | `**Verification Tests**: …` | `**Test Functions in Annotation-Marker Files**: …` |
+| badge file/label/message | `verification-report.json` / `"verification"` / `"N verified"` | `annotation-report.json` / `"formal annotations"` / `"N test functions in annotation-marker files"` |
 | test badge message | `"N passing"` | `"N test functions found"` |
 | artifact path | `verification-report.json` | `annotation-report.json` |
-| PR comment | `verificationCount`, `**Verification Tests**`, `✅ All test counts verified!` | `annotationCount`, `**Files with Formal Annotations**`, `✅ Test and annotation counts reported.` |
+| PR comment | `verificationCount`, `**Verification Tests**`, `✅ All test counts verified!` | `annotationCount`, `**Test Functions in Annotation-Marker Files**`, `✅ Test and annotation counts reported.` |
 
 Counts, arithmetic, filters, `test-count` output, badges shape and exit
 semantics are unchanged.
@@ -69,7 +69,7 @@ semantics are unchanged.
   falsified by NaN (`verified_norm([NaN,0]) == NaN`; `NaN >= 0` false);
   finiteness-guarded contract deferred to M-REP-C
   contract.
-- **Out of scope, noted for a separate sweep:** `.github/workflows/status-badges.yml`
+- `status-badges.yml` commented badge templates were repaired IN this package (same class, folded in after the first implementation round)
   still carries active `VERIFICATION_TESTS` labels and a `"N verified"` badge
   message. It is a third workflow, outside the two dispatched files.
 

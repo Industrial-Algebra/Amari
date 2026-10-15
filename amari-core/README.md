@@ -14,7 +14,7 @@ Core geometric algebra (Clifford algebra) implementation for the Amari mathemati
 - **SIMD Optimization**: AVX2-accelerated operations on x86/x86_64 platforms
 - **High-Precision Arithmetic**: Optional extended precision for scientific computing
 - **no_std Support**: Can be used in embedded and WASM environments
-- **Phantom Types**: Compile-time verification of algebraic invariants
+- **Phantom Types**: Compile-time enforcement of dimension and signature invariants (algebraic-law contracts are expressed via annotations; see the formal-verification caveats in the docs)
 
 ## Installation
 
