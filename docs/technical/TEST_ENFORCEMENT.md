@@ -10,18 +10,28 @@
 ## Overview
 
 The Amari workspace runs a pre-commit hook plus CI checks. IMPORTANT —
-the hook has TWO branches with different coverage:
+what the hook actually runs, per its source (`.githooks/pre-commit`):
 
-- **Targeted branch** (single crate changed, no `[full-test]` flag):
-  checks scoped to that crate only; doctest outcomes can pass the hook in
-  this path; the formal-verification feature suites are NOT run.
-- **Full branch** (multiple crates or workspace-level files changed, no
-  crate changes at all, or `[full-test]` in the commit message): the full
-  workspace test suite, the formal-verification feature suites, the
-  doctest run, and the documentation build.
+**Always, in BOTH branches (workspace-wide):**
+- `cargo fmt --check`
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings`
 
-A green TARGETED hook does not mean the full pipeline passed — the
-authoritative gate is CI (see `CI_SETUP.md`). Either branch is a
+**Full branch** (multiple crates or workspace-level files changed, no
+crate changes at all, or `[full-test]` in the commit message) additionally
+runs: the full workspace test suite; the `formal-verification` feature
+suite (annotation-compatibility tests); workspace integration tests;
+workspace doctests; the `geometric_axioms` filtered suite; WASM
+validation.
+
+**Targeted branch** (exactly one crate changed, no `[full-test]` flag)
+additionally runs, scoped to that crate: its test suite; its doctests —
+with failures TOLERATED (the step downgrades any doctest failure to a
+"may be okay" warning); its documentation build; WASM validation if the
+crate is in the WASM-relevant list. The formal-verification feature
+suite is NOT run in this branch.
+
+A green TARGETED hook therefore does not mean the full pipeline passed —
+the authoritative gate is CI (see `CI_SETUP.md`). Either branch is a
 regression guard and convenience, not a source of mathematical proof.
 
 ## 🎯 Why test enforcement?
@@ -155,13 +165,13 @@ prover or discharged.
 ## 📈 Benefits
 
 ### Regression protection
-- **Blocked-failure commits**: both hook branches reject commits whose
-  checks fail outright (formatting, lint, unit paths; targeted branch is
-  scoped to the changed crate)
+- **Blocked-failure commits**: both branches reject formatting/Clippy
+  failures workspace-wide and test failures in their respective scope
+  (targeted: the changed crate; full: the workspace)
 - **Continuous execution**: the full suite runs on every push via CI
 - **Early detection**: most errors are caught before they reach users —
-  the targeted branch's narrower coverage remains until the full branch
-  or CI runs
+  the targeted branch's tolerances (doctests, no formal suite, one
+  crate's tests) remain until the full branch or CI runs
 
 ### Development quality
 - **Consistent code style**: uniform formatting across all crates
