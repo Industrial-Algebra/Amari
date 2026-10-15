@@ -9,10 +9,16 @@
 
 ## Overview
 
-The Amari workspace enforces a strict pre-commit and CI pipeline so that a
-change cannot land while the formatting, lint, test, or documentation checks
-fail. This is important for a library that other crates build on top of, but it
-is a *regression guard*, not a source of mathematical proof.
+The Amari workspace runs a pre-commit hook plus CI checks. IMPORTANT —
+what the local hook actually guarantees: it is a TARGETED fast gate. When
+only a subset of crates changed, it runs checks scoped to those crates;
+certain failures are tolerated locally (e.g. doctest outcomes in the
+targeted path can pass the hook), and the formal-verification feature
+suites are NOT part of the local hook — they run in CI. A green local
+hook therefore does NOT mean every check that CI runs has passed; the
+authoritative gate is CI (see `CI_SETUP.md`). The hook is a regression
+guard and convenience, not a source of mathematical proof, and not a
+substitute for the full pipeline.
 
 ## 🎯 Why test enforcement?
 
@@ -145,9 +151,11 @@ prover or discharged.
 ## 📈 Benefits
 
 ### Regression protection
-- **Zero observed regressions**: blocked commits cannot break exercised paths
-- **Continuous execution**: the suites run on every commit
-- **Early detection**: errors are caught before they reach users
+- **Blocked-targeted-failure commits**: the hook rejects commits whose
+  targeted checks fail outright (formatting, lint, unit paths)
+- **Continuous execution**: the full suite runs on every push via CI
+- **Early detection**: most errors are caught before they reach users —
+  the local/CI coverage differences above remain until CI runs
 
 ### Development quality
 - **Consistent code style**: uniform formatting across all crates

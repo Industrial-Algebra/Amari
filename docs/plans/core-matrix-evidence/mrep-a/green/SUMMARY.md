@@ -17,9 +17,12 @@ The cumulative change edits **four** workflows (all wording/label only; no
 | `.github/workflows/status-badges.yml` | comments/stdout/summary/badge template → annotation-inventory language |
 | `.github/workflows/parallel-verification.yml` | report wording → test-suite language |
 
-All four describe the same kind of value: a count of `#[test]` functions in
-files carrying formal-annotation markers — **not** a file count and **not** a
-count of proved statements. The message form “N test functions in
+Two workflows (`test-status.yml`, `status-badges.yml`) emit the
+marker-file inventory — a count of `#[test]` functions in files carrying
+formal-annotation markers: **not** a file count and **not** a count of
+proved statements. The other two repaired workflows
+(`mathematical-correctness.yml`, `parallel-verification.yml`) carry
+execution-honest wording but no inventory count. The message form “N test functions in
 annotation-marker files” is used by both producer workflows.
 
 **Scope caveat:** `test-status.yml` and `status-badges.yml` use different
@@ -40,8 +43,11 @@ Source/doc changes in the cumulative diff: `amari-core/src/verified.rs`
 `amari-core/src/verified.rs`, `Vector::dot`:
 
 - Removed `#[cfg_attr(feature = "formal-verification", ensures(result >= T::zero()))]`.
-  The contract is unsound for mixed vectors (`dot([1], [-1]) == -1`) and for
-  indefinite signatures (the type is generic over all `P, Q, R`).
+  The contract is unsound for mixed vectors (`dot([1], [-1]) == -1`) and
+  for indefinite signatures (the verified-module `Vector<T, D>` is
+  dimension-generic; the surrounding crate's signature-generic
+  `Vector<P, Q, R>` is a distinct type — the annotation's metric claim
+  ignores both distinctions).
 - Replaced with a rustdoc note recording the 2026-10-15 removal and assigning
   any sound self-dot-only contract for definite signatures to M-REP-C.
 - **No new contract was added.** The change is annotation-only: under default
