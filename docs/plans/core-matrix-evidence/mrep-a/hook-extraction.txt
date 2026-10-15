@@ -63,7 +63,14 @@ L152  cargo test --package amari-network verified_contracts --quiet 2>/dev/null
        flags   : 2>/dev/null, --quiet
 L158  cargo test --workspace --lib --bins -- --list 2>/dev/null
        context : FULL (RUN_FULL_TESTS=true)
-       handling: UNCONDITIONAL gather; failure -> 0 via `|| echo`; the separate L159 count gate BLOCKS below 300
+       handling: UNCONDITIONAL gather. [CORRECTED 2026-10-15, review R10/R11 —
+       the original extraction line read "failure -> 0 via || echo; the L159
+       count gate BLOCKS below 300", which is INEXACT: on gather failure or
+       zero matches, grep -c prints 0 AND exits 1, so || echo "0" APPENDS a
+       second line — TOTAL_TESTS is the two-line string 0\n0; the -lt 300
+       comparison then errors on the non-integer and the hook CONTINUES. The
+       floor gate blocks only on a WELL-FORMED count below 300; it is
+       vacuous-on-failure. Mechanics repair: M-REP-B.]
        flags   : 2>/dev/null, grep -c "test
 L167  cargo doc --workspace --no-deps --quiet
        context : FULL (RUN_FULL_TESTS=true)
