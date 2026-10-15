@@ -9,26 +9,36 @@
 
 ## Overview
 
-The Amari workspace runs a pre-commit hook plus CI checks. IMPORTANT —
-what the hook actually runs, per its source (`.githooks/pre-commit`):
+The Amari workspace runs a pre-commit hook plus CI checks. The complete
+source-mapped description of the hook (`.githooks/pre-commit`, both
+branches):
 
-**Always, in BOTH branches (workspace-wide):**
-- `cargo fmt --check`
-- `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+| # | Check | Scope / command | Branch | Failure handling |
+|---|---|---|---|---|
+| 1 | Formatting | `cargo fmt --check` (workspace) | BOTH | blocks |
+| 2 | Clippy | `--workspace --all-targets --all-features -D warnings` | BOTH | blocks |
+| 3 | Workspace tests | `cargo test --workspace` | full | blocks |
+| 4 | Formal-feature suite | `--workspace --features formal-verification` (annotation-compatibility tests) | full | blocks |
+| 5 | Integration tests | `--workspace --tests` | full | blocks |
+| 6 | Doctests | `--workspace --doc` | full | blocks |
+| 7 | `geometric_axioms` filter | `-p amari-core geometric_axioms` | full | blocks (selection size not asserted — M-REP-B) |
+| 8 | `semiring_axioms` filter | `-p amari-tropical semiring_axioms` | full | blocks |
+| 9 | Phantom contracts, core | `-p amari-core verified_contracts` | full | blocks |
+| 10 | Phantom contracts, tropical/network | `verified_contracts` filters | full | TOLERATED (warning only) |
+| 11 | Coverage floor | `--lib --bins --list` count ≥ 300 | full | blocks below 300 |
+| 12 | Workspace docs | `cargo doc --workspace --no-deps` | full | blocks |
+| 13 | Crate tests | `-p $CRATE` | targeted | blocks |
+| 14 | Crate doctests | `-p $CRATE --doc` (stderr suppressed) | targeted | TOLERATED (failure downgraded to "may be okay") |
+| 15 | Crate docs | `-p $CRATE --no-deps` | targeted | blocks |
+| 16 | WASM: amari-wasm | `check --target wasm32-unknown-unknown` | both (WASM-relevant crates) | blocks |
+| 17 | WASM: other crates | per-crate `check --target wasm…` | full: all WASM crates; targeted: the changed crate | TOLERATED ("may be expected") |
+| 18 | WASM target install | `rustup target add` if missing | both | auto-installs |
 
-**Full branch** (multiple crates or workspace-level files changed, no
-crate changes at all, or `[full-test]` in the commit message) additionally
-runs: the full workspace test suite; the `formal-verification` feature
-suite (annotation-compatibility tests); workspace integration tests;
-workspace doctests; the `geometric_axioms` filtered suite; WASM
-validation.
-
-**Targeted branch** (exactly one crate changed, no `[full-test]` flag)
-additionally runs, scoped to that crate: its test suite; its doctests —
-with failures TOLERATED (the step downgrades any doctest failure to a
-"may be okay" warning); its documentation build; WASM validation if the
-crate is in the WASM-relevant list. The formal-verification feature
-suite is NOT run in this branch.
+Branch selection precedence: `[full-test]` in the commit message, OR
+workspace-level changed files (Cargo.toml/.githooks/.github/scripts), OR
+no crate changes at all, OR more than one changed crate → FULL branch;
+exactly one changed crate → TARGETED branch. The targeted branch prints a
+reminder that the full suite runs in CI/CD.
 
 A green TARGETED hook therefore does not mean the full pipeline passed —
 the authoritative gate is CI (see `CI_SETUP.md`). Either branch is a

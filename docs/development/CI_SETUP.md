@@ -22,7 +22,7 @@ run its test, lint, and documentation suites. This dual approach provides:
 ## Workflows
 
 ### 1. `mathematical-correctness.yml`
-**Purpose**: Comprehensive test/lint/doc run matching the pre-commit hook
+**Purpose**: Comprehensive test/lint/doc run (the authoritative gate; the pre-commit hook's targeted branch is narrower — see `TEST_ENFORCEMENT.md`)
 **Runtime**: ~5-7 minutes
 **Triggers**: Push to main/develop, all PRs
 

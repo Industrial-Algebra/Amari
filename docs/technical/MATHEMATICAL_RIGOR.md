@@ -23,18 +23,25 @@ contracts* — not a claim of proof.
 ### 1. 🛡️ Pre-commit hook (local)
 **Purpose**: Immediate feedback to prevent commits that fail checks
 **Runtime**: ~30 seconds
-**Coverage**: The same test/lint/doc checks as CI
+**Coverage**: Branch-dependent — formatting + Clippy always (workspace);
+the full test/formal/doctest/doc battery ONLY on the full branch; the
+targeted branch (single changed crate) runs that crate's tests/docs with
+doctest failures tolerated and NO formal-feature suite. See the complete
+source-mapped table in `TEST_ENFORCEMENT.md`; coverage is NOT identical
+to CI.
 
 ```bash
 # Automatically runs on every commit attempt
 .githooks/pre-commit
 ```
 
-**Blocks commits whose checks fail:**
-- Code formatting (rustfmt)
-- Linting violations (clippy -D warnings)
-- Any failing test
-- Documentation build failures
+**Blocks commits whose (in-scope) checks fail:**
+- Code formatting (rustfmt) — always, workspace-wide
+- Linting violations (clippy -D warnings) — always, workspace-wide
+- Failing tests — in the branch's scope only (targeted: one crate;
+  full: workspace; tolerances per the TEST_ENFORCEMENT.md table)
+- Documentation build failures — workspace (full branch) or the changed
+  crate (targeted branch)
 
 ### 2. 🔬 GitHub Actions CI (cloud)
 **Purpose**: Run the test/lint/doc suites in a clean environment
