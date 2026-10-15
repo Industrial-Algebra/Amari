@@ -1,0 +1,767 @@
+[
+  {
+    "id": "nightly-default-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core"
+    ],
+    "exit": 0,
+    "seconds": 8.8,
+    "log": "/tmp/amari-core-d07/nightly-default-tests.log",
+    "diagnostic_excerpt": [
+      "   Compiling thiserror v2.0.20",
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.47s",
+      "test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+    ]
+  },
+  {
+    "id": "nightly-default-clippy",
+    "command": [
+      "cargo",
+      "+nightly",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 101,
+    "seconds": 3.0,
+    "log": "/tmp/amari-core-d07/nightly-default-clippy.log",
+    "diagnostic_excerpt": [
+      "error: the loop variable `j` is used to index `other.coefficients`",
+      "error: the loop variable `j` is used to index `other.multivector.coefficients`",
+      "error: the loop variable `i` is used to index `self.multivector.coefficients`",
+      "error: could not compile `amari-core` (lib) due to 3 previous errors",
+      "warning: build failed, waiting for other jobs to finish..."
+    ]
+  },
+  {
+    "id": "nightly-minimal-check",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--lib"
+    ],
+    "exit": 101,
+    "seconds": 0.2,
+    "log": "/tmp/amari-core-d07/nightly-minimal-check.log",
+    "diagnostic_excerpt": [
+      "error: cannot find macro `vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "warning: unused imports: `Formatter` and `Result`",
+      "For more information about this error, try `rustc --explain E0425`.",
+      "warning: `amari-core` (lib) generated 1 warning",
+      "error: could not compile `amari-core` (lib) due to 3 previous errors; 1 warning emitted"
+    ]
+  },
+  {
+    "id": "nightly-std-tests",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std"
+    ],
+    "exit": 101,
+    "seconds": 1.1,
+    "log": "/tmp/amari-core-d07/nightly-std-tests.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "stable-default-tests",
+    "command": [
+      "cargo",
+      "+stable",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core"
+    ],
+    "exit": 0,
+    "seconds": 10.7,
+    "log": "/tmp/amari-core-d07/stable-default-tests.log",
+    "diagnostic_excerpt": [
+      "   Compiling thiserror v2.0.20",
+      "   Compiling quick-error v1.2.3",
+      "   Compiling thiserror-impl v2.0.20",
+      "    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.35s",
+      "test result: ok. 202 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s",
+      "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+    ]
+  },
+  {
+    "id": "stable-default-clippy",
+    "command": [
+      "cargo",
+      "+stable",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 5.0,
+    "log": "/tmp/amari-core-d07/stable-default-clippy.log",
+    "diagnostic_excerpt": [
+      "    Checking quick-error v1.2.3",
+      "    Checking thiserror v2.0.20",
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.96s"
+    ]
+  },
+  {
+    "id": "nightly-default-rustdoc",
+    "command": [
+      "cargo",
+      "+nightly",
+      "doc",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-deps"
+    ],
+    "exit": 0,
+    "seconds": 0.1,
+    "log": "/tmp/amari-core-d07/nightly-default-rustdoc.log",
+    "diagnostic_excerpt": [
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s"
+    ]
+  },
+  {
+    "id": "workspace-fmt",
+    "command": [
+      "cargo",
+      "+nightly",
+      "fmt",
+      "--all",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 1.1,
+    "log": "/tmp/amari-core-d07/workspace-fmt.log",
+    "diagnostic_excerpt": []
+  },
+  {
+    "id": "nightly-check-std-gf2",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,gf2",
+      "--all-targets"
+    ],
+    "exit": 0,
+    "seconds": 2.0,
+    "log": "/tmp/amari-core-d07/nightly-check-std-gf2.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)",
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.89s"
+    ]
+  },
+  {
+    "id": "nightly-check-std-phantom-types",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,phantom-types",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-std-phantom-types.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "nightly-check-std-high-precision",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,high-precision",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.5,
+    "log": "/tmp/amari-core-d07/nightly-check-std-high-precision.log",
+    "diagnostic_excerpt": [
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish..."
+    ]
+  },
+  {
+    "id": "nightly-check-std-wasm-precision",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,wasm-precision",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-std-wasm-precision.log",
+    "diagnostic_excerpt": [
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish..."
+    ]
+  },
+  {
+    "id": "nightly-check-std-serialize",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,serialize",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-std-serialize.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "nightly-check-std-serde",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,serde",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.5,
+    "log": "/tmp/amari-core-d07/nightly-check-std-serde.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "nightly-check-std-parallel",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,parallel",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.5,
+    "log": "/tmp/amari-core-d07/nightly-check-std-parallel.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "nightly-check-std-rayon",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,rayon",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-std-rayon.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "nightly-check-std-native-precision",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,native-precision",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 3.9,
+    "log": "/tmp/amari-core-d07/nightly-check-std-native-precision.log",
+    "diagnostic_excerpt": [
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish..."
+    ]
+  },
+  {
+    "id": "nightly-check-std-full-precision",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,full-precision",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-std-full-precision.log",
+    "diagnostic_excerpt": [
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish..."
+    ]
+  },
+  {
+    "id": "nightly-check-std-formal-verification",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,formal-verification",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 5.9,
+    "log": "/tmp/amari-core-d07/nightly-check-std-formal-verification.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "nightly-check-std-creusot-contracts",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "std,creusot-contracts",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-std-creusot-contracts.log",
+    "diagnostic_excerpt": [
+      "warning: unused imports: `Formatter` and `Result`",
+      "warning: `amari-core` (lib) generated 1 warning (run `cargo fix --lib -p amari-core` to apply 1 suggestion)",
+      "error[E0432]: unresolved import `amari_core::gf2`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "warning: unused import: `super::*`",
+      "For more information about this error, try `rustc --explain E0432`.",
+      "warning: `amari-core` (test \"gf2_tests\") generated 3 warnings",
+      "error: could not compile `amari-core` (test \"gf2_tests\") due to 1 previous error; 3 warnings emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning (1 duplicate)"
+    ]
+  },
+  {
+    "id": "nightly-check-phantom-types",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "phantom-types",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.5,
+    "log": "/tmp/amari-core-d07/nightly-check-phantom-types.log",
+    "diagnostic_excerpt": [
+      "error: could not compile `amari-core` (lib) due to 25 previous errors; 1 warning emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "error[E0283]: type annotations needed",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "error[E0283]: type annotations needed for `verified::VerifiedMultivector<_, 3, 0, 0>`",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "error[E0283]: type annotations needed",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "error[E0283]: type annotations needed",
+      "     = note: this error originates in the macro `float_impl_std` (in Nightly builds, run with -Z macro-backtrace for more info)",
+      "warning: `amari-core` (lib test) generated 2 warnings (1 duplicate)",
+      "error: could not compile `amari-core` (lib test) due to 38 previous errors; 2 warnings emitted"
+    ]
+  },
+  {
+    "id": "nightly-check-gf2",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "gf2",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.5,
+    "log": "/tmp/amari-core-d07/nightly-check-gf2.log",
+    "diagnostic_excerpt": [
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "warning: unused import: `alloc::format`",
+      "For more information about this error, try `rustc --explain E0425`.",
+      "warning: `amari-core` (lib) generated 1 warning",
+      "error: could not compile `amari-core` (lib) due to 4 previous errors; 1 warning emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 2 warnings (1 duplicate)",
+      "error: could not compile `amari-core` (lib test) due to 12 previous errors; 2 warnings emitted"
+    ]
+  },
+  {
+    "id": "nightly-check-high-precision",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "high-precision",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-high-precision.log",
+    "diagnostic_excerpt": [
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "warning: unused import: `alloc::format`",
+      "For more information about this error, try `rustc --explain E0425`.",
+      "error: could not compile `amari-core` (lib) due to 3 previous errors",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 1 warning",
+      "error: could not compile `amari-core` (lib test) due to 11 previous errors; 1 warning emitted"
+    ]
+  },
+  {
+    "id": "nightly-check-serialize",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "serialize",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-serialize.log",
+    "diagnostic_excerpt": [
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "warning: unused import: `alloc::format`",
+      "For more information about this error, try `rustc --explain E0425`.",
+      "warning: `amari-core` (lib) generated 1 warning",
+      "error: could not compile `amari-core` (lib) due to 3 previous errors; 1 warning emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 2 warnings (1 duplicate)",
+      "error: could not compile `amari-core` (lib test) due to 11 previous errors; 2 warnings emitted"
+    ]
+  },
+  {
+    "id": "nightly-check-parallel",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--no-default-features",
+      "--features",
+      "parallel",
+      "--all-targets"
+    ],
+    "exit": 101,
+    "seconds": 0.4,
+    "log": "/tmp/amari-core-d07/nightly-check-parallel.log",
+    "diagnostic_excerpt": [
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "error[E0425]: cannot find type `Vec` in this scope",
+      "warning: unused import: `alloc::format`",
+      "For more information about this error, try `rustc --explain E0425`.",
+      "warning: `amari-core` (lib) generated 1 warning",
+      "error: could not compile `amari-core` (lib) due to 3 previous errors; 1 warning emitted",
+      "warning: build failed, waiting for other jobs to finish...",
+      "warning: `amari-core` (lib test) generated 2 warnings (1 duplicate)",
+      "error: could not compile `amari-core` (lib test) due to 11 previous errors; 2 warnings emitted"
+    ]
+  },
+  {
+    "id": "nightly-all-features-check",
+    "command": [
+      "cargo",
+      "+nightly",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--all-features",
+      "--all-targets"
+    ],
+    "exit": 0,
+    "seconds": 0.6,
+    "log": "/tmp/amari-core-d07/nightly-all-features-check.log",
+    "diagnostic_excerpt": [
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.54s"
+    ]
+  },
+  {
+    "id": "stable-formal-check",
+    "command": [
+      "cargo",
+      "+stable",
+      "check",
+      "--locked",
+      "--offline",
+      "-p",
+      "amari-core",
+      "--features",
+      "formal-verification",
+      "--all-targets"
+    ],
+    "exit": 0,
+    "seconds": 5.6,
+    "log": "/tmp/amari-core-d07/stable-formal-check.log",
+    "diagnostic_excerpt": [
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.59s"
+    ]
+  }
+]

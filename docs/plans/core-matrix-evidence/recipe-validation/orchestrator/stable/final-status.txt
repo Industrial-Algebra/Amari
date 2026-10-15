@@ -1,0 +1,5 @@
+## chore/core-verification-matrix...origin/develop
+?? .pi/
+?? docs/plans/2026-10-09-amari-core-matrix-validation-checkpoint.md
+?? docs/plans/2026-10-09-amari-core-verification-matrix.md
+?? docs/plans/core-matrix-evidence/
