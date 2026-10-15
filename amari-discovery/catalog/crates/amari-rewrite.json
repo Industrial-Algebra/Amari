@@ -10,6 +10,9 @@
   ],
   "features": [
     {
+      "name": "completion"
+    },
+    {
       "name": "default",
       "enables": [
         "std"
@@ -2162,6 +2165,494 @@
           "is_reexport": false,
           "declaration_module": "amari_rewrite::ars",
           "declaration_ident": "System::successors"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionConfig",
+      "kind": "struct",
+      "signature": "pub struct CompletionConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "precedence",
+            "ty": "Precedence"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::config",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CompletionConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "precedence",
+                "ty": "Precedence"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/config.rs",
+          "source_module": "amari_rewrite::completion::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::config",
+          "declaration_ident": "CompletionConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (precedence : Precedence) -> Self",
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (precedence : Precedence) -> Self",
+          "source_path": "amari-rewrite/src/completion/config.rs",
+          "source_module": "amari_rewrite::completion::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::config",
+          "declaration_ident": "CompletionConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionOutcome",
+      "kind": "enum",
+      "signature": "pub enum CompletionOutcome",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Complete",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "system",
+                  "ty": "TermSystem"
+                },
+                {
+                  "name": "trace",
+                  "ty": "CompletionTrace"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Partial",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "system",
+                  "ty": "TermSystem"
+                },
+                {
+                  "name": "trace",
+                  "ty": "CompletionTrace"
+                },
+                {
+                  "name": "reason",
+                  "ty": "PartialReason"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Failed",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "FailedReason"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum CompletionOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Complete",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "system",
+                      "ty": "TermSystem"
+                    },
+                    {
+                      "name": "trace",
+                      "ty": "CompletionTrace"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Partial",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "system",
+                      "ty": "TermSystem"
+                    },
+                    {
+                      "name": "trace",
+                      "ty": "CompletionTrace"
+                    },
+                    {
+                      "name": "reason",
+                      "ty": "PartialReason"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Failed",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "FailedReason"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/mod.rs",
+          "source_module": "amari_rewrite::completion",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion",
+          "declaration_ident": "CompletionOutcome"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionTrace",
+      "kind": "struct",
+      "signature": "pub struct CompletionTrace",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "rules_added",
+            "ty": "usize"
+          },
+          {
+            "label": "pairs_processed",
+            "ty": "usize"
+          },
+          {
+            "label": "steps",
+            "ty": "Vec < TraceStep >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::trace",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CompletionTrace",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "rules_added",
+                "ty": "usize"
+              },
+              {
+                "label": "pairs_processed",
+                "ty": "usize"
+              },
+              {
+                "label": "steps",
+                "ty": "Vec < TraceStep >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/trace.rs",
+          "source_module": "amari_rewrite::completion::trace",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::trace",
+          "declaration_ident": "CompletionTrace"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::FailedReason",
+      "kind": "enum",
+      "signature": "pub enum FailedReason",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidInput",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum FailedReason",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "InvalidInput",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/mod.rs",
+          "source_module": "amari_rewrite::completion",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion",
+          "declaration_ident": "FailedReason"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::PartialReason",
+      "kind": "enum",
+      "signature": "pub enum PartialReason",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "UnorientableRule",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "rule_terms",
+                  "ty": "(Term , Term)"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NonLeftLinear",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "ConfluenceNotCertified",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum PartialReason",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "UnorientableRule",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "rule_terms",
+                      "ty": "(Term , Term)"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonLeftLinear",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "ConfluenceNotCertified",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/mod.rs",
+          "source_module": "amari_rewrite::completion",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion",
+          "declaration_ident": "PartialReason"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::TraceStep",
+      "kind": "enum",
+      "signature": "pub enum TraceStep",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pair",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "left_rule",
+                  "ty": "usize"
+                },
+                {
+                  "name": "right_rule",
+                  "ty": "usize"
+                },
+                {
+                  "name": "path",
+                  "ty": "Path"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Oriented",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "rule_index",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Simplified",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "rule_index",
+                  "ty": "usize"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::trace",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum TraceStep",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Pair",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "left_rule",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "right_rule",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "path",
+                      "ty": "Path"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Oriented",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "rule_index",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Simplified",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "rule_index",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/trace.rs",
+          "source_module": "amari_rewrite::completion::trace",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::trace",
+          "declaration_ident": "TraceStep"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::complete",
+      "kind": "fn",
+      "signature": "pub fn complete (system : & TermSystem , config : & CompletionConfig , resources : & mut RelationResources ,) -> RewriteResult < CompletionOutcome >",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn complete (system : & TermSystem , config : & CompletionConfig , resources : & mut RelationResources ,) -> RewriteResult < CompletionOutcome >",
+          "source_path": "amari-rewrite/src/completion/mod.rs",
+          "source_module": "amari_rewrite::completion",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion",
+          "declaration_ident": "complete"
         }
       ]
     },
@@ -14643,6 +15134,114 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::CompletionConfig",
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::config",
+        "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "CompletionOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::CompletionTrace",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "CompletionTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::FailedReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "FailedReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::PartialReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "PartialReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::TraceStep",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "TraceStep"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::error::RewriteError",
       "source_path": "amari-rewrite/src/error.rs",
       "source_ordinal": 0,
@@ -16806,6 +17405,114 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::CompletionConfig",
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::config",
+        "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "CompletionOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::CompletionTrace",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "CompletionTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::FailedReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "FailedReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::PartialReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "PartialReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::TraceStep",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "TraceStep"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::error::RewriteError",
       "source_path": "amari-rewrite/src/error.rs",
       "source_ordinal": 0,
@@ -18374,6 +19081,24 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::completion::CompletionTrace",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "CompletionTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
       "source_path": "amari-rewrite/src/inverse/config.rs",
       "source_ordinal": 4,
@@ -18908,6 +19633,114 @@
         "kind": "local",
         "module": "amari_rewrite::ars",
         "ident": "Strategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::CompletionConfig",
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::config",
+        "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "CompletionOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::CompletionTrace",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "CompletionTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::FailedReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "FailedReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::PartialReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "PartialReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::TraceStep",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "TraceStep"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -21403,6 +22236,114 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::CompletionConfig",
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::config",
+        "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "CompletionOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::CompletionTrace",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "CompletionTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::FailedReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "FailedReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::PartialReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion",
+        "ident": "PartialReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::TraceStep",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::trace",
+        "ident": "TraceStep"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::error::RewriteError",
       "source_path": "amari-rewrite/src/error.rs",
       "source_ordinal": 0,
@@ -23885,6 +24826,78 @@
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::completion",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionConfig",
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionConfig::new",
+      "source_path": "amari-rewrite/src/completion/config.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionOutcome",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionTrace",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::FailedReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::PartialReason",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::TraceStep",
+      "source_path": "amari-rewrite/src/completion/trace.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::complete",
+      "source_path": "amari-rewrite/src/completion/mod.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_rewrite::error",
@@ -27717,6 +28730,7 @@
     "amari_rewrite",
     "amari_rewrite::analysis",
     "amari_rewrite::ars",
+    "amari_rewrite::completion",
     "amari_rewrite::error",
     "amari_rewrite::inverse",
     "amari_rewrite::language",
