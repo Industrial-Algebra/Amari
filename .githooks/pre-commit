@@ -175,7 +175,16 @@ if [ "$RUN_FULL_TESTS" = true ]; then
     echo -e "${GREEN}✅ Phantom type safety validated${NC}"
 
     echo -e "${YELLOW}📊 Validating test coverage...${NC}"
-    TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || true)
+    # Preserve cargo's exit status: a partial listing followed by a failed
+    # target must fail the gate, never pass through on the records emitted so
+    # far. (`|| ...` keeps `set -e` from aborting before we inspect the code.)
+    COVERAGE_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || COVERAGE_STATUS=$?
+    COVERAGE_STATUS=${COVERAGE_STATUS:-0}
+    if [ "$COVERAGE_STATUS" -ne 0 ]; then
+        echo -e "${RED}❌ Test coverage gather failed (cargo exit $COVERAGE_STATUS); cannot validate coverage${NC}"
+        exit 1
+    fi
+    TOTAL_TESTS=$(printf '%s\n' "$COVERAGE_LIST" | grep -c ": test$" || true)
     if [ -z "$TOTAL_TESTS" ]; then
         TOTAL_TESTS=0
     fi

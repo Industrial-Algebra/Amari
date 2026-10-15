@@ -1,0 +1,6 @@
+BATTERY OK:   rename-prefix mock exited 1 (nonzero)
+BATTERY OK:   duplicate-args mock exited 2 (nonzero)
+BATTERY OK:   cargo-failure mock (300 records, exit 101) exited 1 (nonzero)
+GUARD OK:     hook + workflow + helper carry the hardened gates
+
+ALL BATTERIES PASSED (3 behavioral + 1 source guard)

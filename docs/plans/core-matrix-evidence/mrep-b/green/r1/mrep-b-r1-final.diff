@@ -1,0 +1,2003 @@
+diff --git a/.githooks/pre-commit b/.githooks/pre-commit
+index 8be294b..c8fa317 100755
+--- a/.githooks/pre-commit
++++ b/.githooks/pre-commit
+@@ -175,7 +175,16 @@ if [ "$RUN_FULL_TESTS" = true ]; then
+     echo -e "${GREEN}✅ Phantom type safety validated${NC}"
+ 
+     echo -e "${YELLOW}📊 Validating test coverage...${NC}"
+-    TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || true)
++    # Preserve cargo's exit status: a partial listing followed by a failed
++    # target must fail the gate, never pass through on the records emitted so
++    # far. (`|| ...` keeps `set -e` from aborting before we inspect the code.)
++    COVERAGE_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || COVERAGE_STATUS=$?
++    COVERAGE_STATUS=${COVERAGE_STATUS:-0}
++    if [ "$COVERAGE_STATUS" -ne 0 ]; then
++        echo -e "${RED}❌ Test coverage gather failed (cargo exit $COVERAGE_STATUS); cannot validate coverage${NC}"
++        exit 1
++    fi
++    TOTAL_TESTS=$(printf '%s\n' "$COVERAGE_LIST" | grep -c ": test$" || true)
+     if [ -z "$TOTAL_TESTS" ]; then
+         TOTAL_TESTS=0
+     fi
+diff --git a/.github/workflows/mathematical-correctness.yml b/.github/workflows/mathematical-correctness.yml
+index 5fba9c4..5efac65 100644
+--- a/.github/workflows/mathematical-correctness.yml
++++ b/.github/workflows/mathematical-correctness.yml
+@@ -113,11 +113,26 @@ jobs:
+     - name: Mathematical property analysis
+       run: |
+         echo "🔍 Analyzing mathematical properties..."
+-        TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || true)
++        # Preserve cargo's exit status: a partial listing followed by a failed
++        # target must fail the gate, never pass through on the records emitted
++        # so far. (`|| ...` keeps `-e` from aborting before we inspect the code.)
++        TOTAL_TESTS_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || TOTAL_TESTS_STATUS=$?
++        TOTAL_TESTS_STATUS=${TOTAL_TESTS_STATUS:-0}
++        if [ "$TOTAL_TESTS_STATUS" -ne 0 ]; then
++          echo "❌ Test coverage gather failed (cargo exit $TOTAL_TESTS_STATUS)"
++          exit 1
++        fi
++        TOTAL_TESTS=$(printf '%s\n' "$TOTAL_TESTS_LIST" | grep -c ": test$" || true)
+         if [ -z "$TOTAL_TESTS" ]; then
+           TOTAL_TESTS=0
+         fi
+-        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || true)
++        FORMAL_FEATURE_TESTS_LIST=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null) || FORMAL_FEATURE_TESTS_STATUS=$?
++        FORMAL_FEATURE_TESTS_STATUS=${FORMAL_FEATURE_TESTS_STATUS:-0}
++        if [ "$FORMAL_FEATURE_TESTS_STATUS" -ne 0 ]; then
++          echo "❌ Formal-feature gather failed (cargo exit $FORMAL_FEATURE_TESTS_STATUS)"
++          exit 1
++        fi
++        FORMAL_FEATURE_TESTS=$(printf '%s\n' "$FORMAL_FEATURE_TESTS_LIST" | grep -c ": test$" || true)
+         if [ -z "$FORMAL_FEATURE_TESTS" ]; then
+           FORMAL_FEATURE_TESTS=0
+         fi
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-clippy-default.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-clippy-default.log
+new file mode 100644
+index 0000000..ce43e2b
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-clippy-default.log
+@@ -0,0 +1 @@
++    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-clippy-formal.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-clippy-formal.log
+new file mode 100644
+index 0000000..ce43e2b
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-clippy-formal.log
+@@ -0,0 +1 @@
++    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-default-test.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-default-test.log
+new file mode 100644
+index 0000000..f1efc4a
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-default-test.log
+@@ -0,0 +1,604 @@
++    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
++     Running unittests src/lib.rs (target/mrepb/debug/deps/amari_core-a35530a3f2975921)
++
++running 241 tests
++test aligned_alloc::tests::test_aligned_f64_vec ... ok
++test aligned_alloc::tests::test_aligned_coefficients ... ok
++test aligned_alloc::tests::test_aligned_memory ... ok
++test basis::tests::test_builder ... ok
++test basis::tests::test_blade_names ... ok
++test aligned_alloc::tests::test_memory_pool ... ok
++test cayley::tests::test_euclidean_3d ... ok
++test basis::tests::basis_helpers_enforce_the_dimensional_domain ... ok
++test basis::tests::test_basis_helpers ... ok
++test cayley::tests::test_null_vectors ... ok
++test cayley::tests::test_minkowski_spacetime ... ok
++test comprehensive_tests::accessor_tests::test_bivector_part ... ok
++test comprehensive_tests::accessor_tests::test_as_slice ... ok
++test comprehensive_tests::accessor_tests::test_get_set ... ok
++test comprehensive_tests::accessor_tests::test_scalar_part ... ok
++test comprehensive_tests::accessor_tests::test_set_bivector_component ... ok
++test comprehensive_tests::accessor_tests::test_set_scalar ... ok
++test comprehensive_tests::accessor_tests::test_set_vector_component ... ok
++test comprehensive_tests::accessor_tests::test_trivector_part ... ok
++test comprehensive_tests::accessor_tests::test_vector_component ... ok
++test comprehensive_tests::accessor_tests::test_vector_part ... ok
++test comprehensive_tests::advanced_operations_tests::test_exp_zero ... ok
++test comprehensive_tests::advanced_operations_tests::test_exp_scalar ... ok
++test comprehensive_tests::arithmetic_tests::test_addition ... ok
++test comprehensive_tests::arithmetic_tests::test_operator_addition ... ok
++test comprehensive_tests::arithmetic_tests::test_operator_negation ... ok
++test comprehensive_tests::arithmetic_tests::test_operator_subtraction ... ok
++test comprehensive_tests::arithmetic_tests::test_scalar_multiplication ... ok
++test comprehensive_tests::bivector_tests::test_bivector_basis_bivectors ... ok
++test comprehensive_tests::advanced_operations_tests::test_exp_bivector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_from_components ... ok
++test comprehensive_tests::bivector_tests::test_bivector_from_multivector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_bivector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_get ... ok
++test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_vector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_index_access ... ok
++test comprehensive_tests::bivector_tests::test_bivector_magnitude ... ok
++test comprehensive_tests::bivector_tests::test_bivector_inner_product ... ok
++test comprehensive_tests::bivector_tests::test_bivector_inner_product_with_vector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_outer_product_with_vector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_outer_product ... ok
++test comprehensive_tests::bivector_tests::test_bivector_right_contraction ... ok
++test comprehensive_tests::constructor_tests::test_basis_vector ... ok
++test comprehensive_tests::constructor_tests::test_from_coefficients ... ok
++test comprehensive_tests::constructor_tests::test_from_slice ... ok
++test comprehensive_tests::constructor_tests::test_scalar ... ok
++test comprehensive_tests::constructor_tests::test_zero ... ok
++test comprehensive_tests::integration_tests::test_basis_vector_anticommutativity ... ok
++test comprehensive_tests::integration_tests::test_basis_vector_squares ... ok
++test comprehensive_tests::integration_tests::test_distributivity ... ok
++test comprehensive_tests::integration_tests::test_identity_elements ... ok
++test comprehensive_tests::integration_tests::test_reverse_involution ... ok
++test comprehensive_tests::operation_tests::test_grade ... ok
++test comprehensive_tests::operation_tests::test_grade_projection ... ok
++test comprehensive_tests::operation_tests::test_reverse ... ok
++test comprehensive_tests::product_tests::test_geometric_product ... ok
++test comprehensive_tests::product_tests::test_inner_product ... ok
++test comprehensive_tests::product_tests::test_geometric_product_associativity ... ok
++test comprehensive_tests::product_tests::test_outer_product ... ok
++test comprehensive_tests::product_tests::test_outer_product_antisymmetric ... ok
++test comprehensive_tests::product_tests::test_scalar_product ... ok
++test comprehensive_tests::scalar_tests::test_scalar_from ... ok
++test comprehensive_tests::scalar_tests::test_scalar_commutative_multiplication ... ok
++test comprehensive_tests::scalar_tests::test_scalar_from_trait ... ok
++test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_multivector ... ok
++test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_vector ... ok
++test comprehensive_tests::scalar_tests::test_scalar_identity ... ok
++test comprehensive_tests::scalar_tests::test_scalar_one ... ok
++test comprehensive_tests::utility_tests::test_approx_eq ... ok
++test comprehensive_tests::utility_tests::test_abs ... ok
++test comprehensive_tests::utility_tests::test_equality ... ok
++test comprehensive_tests::utility_tests::test_inverse_small ... ok
++test comprehensive_tests::utility_tests::test_inverse ... ok
++test comprehensive_tests::utility_tests::test_is_zero ... ok
++test comprehensive_tests::utility_tests::test_norm ... ok
++test comprehensive_tests::utility_tests::test_magnitude ... ok
++test comprehensive_tests::utility_tests::test_inverse_zero ... ok
++test comprehensive_tests::utility_tests::test_norm_squared ... ok
++test comprehensive_tests::utility_tests::test_normalize ... ok
++test comprehensive_tests::utility_tests::test_normalize_small ... ok
++test comprehensive_tests::utility_tests::test_normalize_zero ... ok
++test comprehensive_tests::vector_tests::test_vector_add ... ok
++test comprehensive_tests::vector_tests::test_vector_as_slice ... ok
++test comprehensive_tests::vector_tests::test_vector_basis_vectors ... ok
++test comprehensive_tests::vector_tests::test_vector_from_components ... ok
++test comprehensive_tests::vector_tests::test_vector_from_multivector ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_bivector ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_multivector ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_scalar ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_vector ... ok
++test comprehensive_tests::vector_tests::test_vector_hodge_dual ... ok
++test comprehensive_tests::vector_tests::test_vector_inner_product ... ok
++test comprehensive_tests::vector_tests::test_vector_inner_product_with_bivector ... ok
++test comprehensive_tests::vector_tests::test_vector_inner_product_with_mv ... ok
++test comprehensive_tests::vector_tests::test_vector_left_contraction ... ok
++test comprehensive_tests::vector_tests::test_vector_magnitude ... ok
++test comprehensive_tests::vector_tests::test_vector_norm ... ok
++test comprehensive_tests::vector_tests::test_vector_norm_squared ... ok
++test comprehensive_tests::vector_tests::test_vector_normalize ... ok
++test comprehensive_tests::vector_tests::test_vector_normalize_zero ... ok
++test comprehensive_tests::vector_tests::test_vector_outer_product ... ok
++test comprehensive_tests::vector_tests::test_vector_outer_product_with_bivector ... ok
++test comprehensive_tests::vector_tests::test_vector_reverse ... ok
++test comprehensive_tests::vector_tests::test_vector_outer_product_with_mv ... ok
++test comprehensive_tests::vector_tests::test_vector_zero ... ok
++test exact_square::tests::extraction_subnormal_from_raw_accumulator ... ok
++test exact_square::tests::extraction_integer_five ... ok
++test exact_square::tests::exact_reverse_norm_rejects_signatures_above_max_basis ... ok
++test exact_square::tests::extraction_integer_three ... ok
++test exact_square::tests::exact_ratio_division_is_correctly_rounded ... ok
++test exact_square::tests::crafted_dyadic_extraction_within_one_ulp ... ok
++test exact_square::tests::extraction_subnormal_single_blade ... ok
++test exact_square::tests::symbolic_scale_subnormal_order_rounds_once ... ok
++test exact_square::tests::symbolic_scale_overflow_composition_is_finite ... ok
++test exact_square::tests::symbolic_scale_over_2a_is_exactly_half_for_c_equals_a ... ok
++test exact_square::tests::exact_power_matches_bigint ... ok
++test exact_square::tests::three_way_symbolic_scale_composes_before_rounding ... ok
++test generic::tests::test_blade_product_e12_e1_cl300 ... ok
++test generic::tests::test_blade_product_e1_e1_cl300 ... ok
++test generic::tests::test_blade_product_e2_e1_cl300 ... ok
++test exact_square::tests::mixed_extreme_capacity_is_exact ... ok
++test generic::tests::test_blade_product_e3_e3_cl210 ... ok
++test generic::tests::test_blade_product_e1_e2_cl300 ... ok
++test generic::tests::test_blade_product_null_signature ... ok
++test generic::tests::test_blade_product_scalar_scalar ... ok
++test generic::tests::test_generic_gp_matches_const_generic_cl210 ... ok
++test generic::tests::test_generic_gp_matches_const_generic_cl300 ... ok
++test generic::tests::test_generic_gp_scalar_only ... ok
++test gf2::clifford::tests::test_basis_vector_square_degenerate ... ok
++test gf2::clifford::tests::test_basis_vector_square_nondegenerate ... ok
++test gf2::clifford::tests::test_commutativity_over_gf2 ... ok
++test gf2::clifford::tests::test_geometric_product_associativity ... ok
++test gf2::clifford::tests::test_grade_projection ... ok
++test exact_square::tests::mul_magnitude_matches_bigint ... ok
++test gf2::clifford::tests::test_outer_product_dependent ... ok
++test exact_square::tests::nilpotent_d_scheme_matches_bigint_rational ... ok
++test gf2::clifford::tests::test_outer_product_independent_blades ... ok
++test gf2::clifford::tests::test_pseudoscalar_product ... ok
++test gf2::clifford::tests::test_reverse ... ok
++test gf2::clifford::tests::test_to_real_from_real_roundtrip ... ok
++test gf2::clifford::tests::test_zero_and_identity ... ok
++test gf2::grassmannian::tests::test_binary_grassmannian_size ... ok
++test gf2::grassmannian::tests::test_gaussian_binomial_edge_cases ... ok
++test gf2::grassmannian::tests::test_gaussian_binomial_known_values ... ok
++test gf2::grassmannian::tests::test_schubert_cell_size_formula ... ok
++test exact_square::tests::nilpotent_polynomial_matches_closed_form ... ok
++test gf2::matrix::tests::test_determinant_non_square ... ok
++test generic::tests::test_generic_gp_random_cl410 ... ok
++test gf2::matrix::tests::test_full_rank ... ok
++test gf2::grassmannian::tests::test_schubert_cell_sizes_sum ... ok
++test gf2::matrix::tests::test_identity_properties ... ok
++test gf2::grassmannian::tests::test_enumerate_subspaces_count ... ok
++test gf2::grassmannian::tests::test_enumerate_subspaces_valid_rref ... ok
++test gf2::matrix::tests::test_matrix_vector_product ... ok
++test gf2::matrix::tests::test_matrix_product ... ok
++test gf2::matrix::tests::test_rank_deficient ... ok
++test gf2::matrix::tests::test_null_space ... ok
++test gf2::matrix::tests::test_row_echelon_and_rank ... ok
++test gf2::matrix::tests::test_solve ... ok
++test gf2::matrix::tests::test_solve_inconsistent ... ok
++test gf2::matrix::tests::test_transpose_roundtrip ... ok
++test gf2::scalar::tests::test_conversions ... ok
++test gf2::scalar::tests::test_distributivity ... ok
++test gf2::scalar::tests::test_field_addition ... ok
++test gf2::scalar::tests::test_field_multiplication ... ok
++test gf2::scalar::tests::test_multiplicative_inverse ... ok
++test gf2::scalar::tests::test_self_inverse ... ok
++test gf2::vector::tests::test_dot_product ... ok
++test gf2::vector::tests::test_from_bits ... ok
++test gf2::vector::tests::test_from_u64_roundtrip ... ok
++test gf2::vector::tests::test_get_set_roundtrip ... ok
++test gf2::vector::tests::test_large_vector ... ok
++test gf2::vector::tests::test_hamming_weight_and_distance ... ok
++test gf2::vector::tests::test_xor_addition ... ok
++test gf2::vector::tests::test_zero_vector ... ok
++test precision::tests::test_dashu_float_creation ... ok
++test precision::tests::test_dashu_float_arithmetic ... ok
++test precision::tests::test_dashu_float_precision_operations ... ok
++test precision::tests::test_default_tolerance ... ok
++test precision::tests::test_standard_float_precision ... ok
++test precision::tests::test_dashu_float_transcendental ... ok
++test rotor::tests::test_cl6_i_rotor_logarithm_is_uncertified ... ok
++test property_tests::unit_property_tests::test_property_framework ... ok
++test rotor::tests::test_direction_candidate_identities_positive_sign ... ok
++test rotor::tests::test_logarithm_above_six_dimensions_is_uncertified ... ok
++test rotor::tests::test_logarithm_elliptic_extreme_scale_is_range_safe ... ok
++test rotor::tests::test_direction_candidate_identities_negative_sign ... ok
++test rotor::tests::test_logarithm_scalar_branches ... ok
++test rotor::tests::test_negative_sheet_logarithm_rejects ... ok
++test rotor::tests::test_logarithm_round_trip_witness_within_17_ulp ... ok
++test rotor::tests::test_logarithm_hyperbolic_extreme_rapidity_is_range_safe ... ok
++test rotor::tests::test_hyperbolic_log_ratio_is_correctly_rounded ... ok
++test rotor::tests::test_logarithm_hyperbolic_mixed_component_rapidity_is_28_ln2 ... ok
++test rotor::tests::slerp_extreme_coefficient_dot_overflow_selects_the_negated_representative ... ok
++test rotor::tests::test_power_integer_r32_chain_is_degenerate ... ok
++test rotor::tests::test_reflection ... ok
++test rotor::tests::test_rotor_composition ... ok
++test rotor::tests::test_dyadic_multiphane_binary_power_chain_is_exact ... ok
++test simd::tests::test_aligned_buffer ... ok
++test rotor::tests::test_rotor_90_degrees ... ok
++test simd::tests::test_runtime_feature_detection ... ok
++test tests::squaring_detector_threshold_is_overflow_safe ... ok
++test tests::series_scaling_meets_frozen_target_for_boundary_norm ... ok
++test tests::symbolic_scalar_scale_composition_matches_exp ... ok
++test tests::test_basis_vectors ... ok
++test tests::test_grade_operations ... ok
++test tests::test_inner_and_outer_products ... ok
++test tests::test_algebraic_identities ... ok
++test rotor::tests::test_negative_sheet_stored_inverse_uses_reverse_over_norm ... ok
++test tests::test_wedge_product ... ok
++test tests::test_metric_signature ... ok
++test unicode_ops::tests::test_extended_unicode_operations ... ok
++test tests::test_rotor_from_bivector ... ok
++test unicode_ops::tests::test_unicode_grade_projection ... ok
++test unicode_ops::tests::test_unicode_inner_product ... ok
++test unicode_ops::tests::test_unicode_unary_operations ... ok
++test unicode_ops::tests::test_unicode_mathematical_identities ... ok
++test rotor::tests::test_slerp_coefficient_dot_tie_keeps_second_representative ... ok
++test unicode_ops::tests::test_unicode_wedge_product ... ok
++test verified::tests::test_grade_preservation ... ok
++test verified::tests::test_outer_product_type_safety ... ok
++test verified::tests::test_phantom_type_dimension_safety ... ok
++test unicode_ops::tests::test_unicode_geometric_product ... ok
++test verified::tests::test_signature_type_safety ... ok
++test property_tests::prop_outer_product_antisymmetric ... ok
++test property_tests::prop_multiplicative_identity ... ok
++test property_tests::prop_basis_vector_squares ... ok
++test property_tests::prop_outer_product_self_zero ... ok
++test property_tests::prop_reverse_antiautomorphism ... ok
++test exact_square::tests::exhaustive_small_signatures ... ok
++test property_tests::prop_norm_via_reverse ... ok
++test property_tests::prop_additive_identity ... ok
++test property_tests::prop_basis_anticommutativity ... ok
++test property_tests::prop_addition_associative ... ok
++test property_tests::prop_rotor_preserves_norm ... ok
++test property_tests::prop_addition_commutative ... ok
++test property_tests::prop_scalar_multiplication_commutative ... ok
++test property_tests::prop_left_distributivity ... ok
++test property_tests::prop_geometric_product_associative ... ok
++test exact_square::tests::randomized_coefficients_match_bigint ... ok
++test exact_square::tests::randomized_full_multivectors_match_bigint ... ok
++
++test result: ok. 241 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
++
++     Running tests/arithmetic_regressions.rs (target/mrepb/debug/deps/arithmetic_regressions-363f7f6264508d54)
++
++running 6 tests
++test gp_small_finite_factor_is_not_zero ... ok
++test gp_associativity_does_not_drop_a_small_intermediate ... ok
++test structural_grade_reports_a_small_nonzero_component ... ok
++test projected_outer_product_keeps_small_grade_components ... ok
++test projected_inner_and_contractions_keep_small_grade_components ... ok
++test structural_hodge_transport_is_linear_at_small_scale ... ok
++
++test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/audit_tests.rs (target/mrepb/debug/deps/audit_tests-9e4f1076a4d043b9)
++
++running 15 tests
++test contraction_tests::test_inner_product_vector_bivector ... ok
++test cayley_tests::test_full_cayley_table_cl300 ... ok
++test contraction_tests::test_left_contraction_vector_vector ... ok
++test hodge_dual_tests::test_hodge_dual_basis_vectors_3d ... ok
++test contraction_tests::test_left_contraction_vector_bivector ... ok
++test hodge_dual_tests::test_hodge_dual_double_dual_3d ... ok
++test hodge_dual_tests::test_hodge_dual_scalar_pseudoscalar_3d ... ok
++test hodge_dual_tests::test_hodge_dual_bivectors_3d ... ok
++test numeric_tests::test_geometric_product_associativity ... ok
++test numeric_tests::test_large_coefficients ... ok
++test hodge_dual_tests::test_hodge_dual_mixed_grade ... ok
++test numeric_tests::test_inverse_zero ... ok
++test numeric_tests::test_identity_geometric_product ... ok
++test signature_tests::test_projective_ga_cl201 ... ok
++test signature_tests::test_minkowski_spacetime_cl130 ... ok
++
++test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/basis_word_oracle.rs (target/mrepb/debug/deps/basis_word_oracle-0f3ac01d43110f6d)
++
++running 1 test
++test oracle_all_basis_pairs_through_dimension_four ... ok
++
++test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
++
++     Running tests/geometric_axioms.rs (target/mrepb/debug/deps/geometric_axioms-cbaef151101815d9)
++
++running 6 tests
++test geometric_axioms::additive_identity ... ok
++test geometric_axioms::distributivity ... ok
++test geometric_axioms::basis_vector_signature ... ok
++test geometric_axioms::associativity ... ok
++test geometric_axioms::scalar_commutes ... ok
++test geometric_axioms::multiplicative_identity ... ok
++
++test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/geometric_product.rs (target/mrepb/debug/deps/geometric_product-5b257ebabd99ea4f)
++
++running 15 tests
++test geometric_product_tests::test_basis_vector_squared_negative_signature ... ok
++test geometric_product_tests::test_basis_vector_squared_null_signature ... ok
++test geometric_product_tests::test_basis_vector_squared_positive_signature ... ok
++test geometric_product_tests::test_bivector_vector_product ... ok
++test geometric_product_tests::test_general_multivector_product ... ok
++test geometric_product_tests::test_geometric_product_associativity ... ok
++test geometric_product_tests::test_orthogonal_basis_vectors_anticommute ... ok
++test geometric_product_tests::test_grade_mixing_in_product ... ok
++test geometric_product_tests::test_scalar_multiplication_commutes ... ok
++test geometric_product_tests::test_self_product_positive_definite ... ok
++test geometric_product_tests::test_multiplicative_identity ... ok
++test geometric_product_tests::test_vector_bivector_product ... ok
++test geometric_product_tests::test_geometric_product_distributivity ... ok
++test geometric_product_tests::test_zero_element ... ok
++test performance_tests::test_geometric_product_performance ... ok
++
++test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
++
++     Running tests/gf2_tests.rs (target/mrepb/debug/deps/gf2_tests-dd030e7b021e45f2)
++
++running 6 tests
++test scalar_vector_matrix_chain::test_null_space_orthogonal_to_row_space ... ok
++test clifford_real_integration::test_from_real_reduces_mod2 ... ok
++test clifford_real_integration::test_binary_to_real_geometric_product ... ok
++test grassmannian_matrix_integration::test_subspace_closure_under_xor ... ok
++test scalar_vector_matrix_chain::test_matrix_solve_and_verify ... ok
++test grassmannian_matrix_integration::test_enumerate_and_verify_subspaces ... ok
++
++test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/inverse_contracts_green.rs (target/mrepb/debug/deps/inverse_contracts_green-9f9549254058ec57)
++
++running 11 tests
++test nilpotent_and_zero_divisors_return_none ... ok
++test null_generator_is_not_invertible ... ok
++test scalar_overflow_scale_inverse ... ok
++test versor_inverse_across_signatures ... ok
++test vector_inverse_is_self_when_square_one ... ok
++test scalar_inverse_across_signatures ... ok
++test well_conditioned_random_inverses_euclidean ... ok
++test non_versor_inverse_across_signatures ... ok
++test well_conditioned_random_inverses_null_generator ... ok
++test well_conditioned_random_inverses_degenerate_mixed ... ok
++test well_conditioned_random_inverses_mixed ... ok
++
++test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/inverse_exp_contracts.rs (target/mrepb/debug/deps/inverse_exp_contracts-a943984996477491)
++
++running 48 tests
++test crafted_dyadic_false_zero ... ok
++test degenerate_nilpotent_blade ... ok
++test exp_zero_is_identity_and_scalar_uses_f64 ... ok
++test huge_circular_single_blade_bounded ... ok
++test huge_exact_nilpotent_returns_exactly_one_plus_b ... ok
++test degenerate_mixed_hyperbolic ... ok
++test erratum_case_huge_simple_circular ... ok
++test hyperbolic_overflow_is_error ... ok
++test large_norm_scalar_vector_exponential_converges ... ok
++test long_angle_general_multivector ... ok
++test mixed_signature_hyperbolic_plane ... ok
++test mixed_signature_circular_plane ... ok
++test near_zero_circular_and_hyperbolic ... ok
++test nilpotent_bivector_exponential_is_exact ... ok
++test non_versor_inverse_solves_both_orders ... ok
++test round1_inverse_fast_path_rejects_non_finite_quotient ... ok
++test round1_circular_vector_at_scale_bit_exact ... ok
++test round1_square_zero_vector_at_scale_is_exact ... ok
++test round1_disjoint_null_pairs_scalar_square_is_exact ... ok
++test round1_scaling_boundary_norm_errors_honestly ... ok
++test round2_scalar_plus_square_zero_is_exact ... ok
++test round2_scalar_factored_closed_form_long_angle ... ok
++test round3_scalar_factoring_rescues_underflowed_scale ... ok
++test round3_scalar_factoring_overflow_is_honest_error ... ok
++test round4_hyperbolic_closed_form_carries_symbolic_scale ... ok
++test round2_nilpotent_index_three_exact_at_scale ... ok
++test round4_symbolic_scale_subnormal_order_is_correct ... ok
++test round4_symbolic_scale_overflow_composition_is_finite ... ok
++test round3_nilpotent_single_final_rounding_after_division ... ok
++test round5_circular_factor_scaling_is_symbolic ... ok
++test round4_subnormal_division_rounds_once_at_destination ... ok
++test round5_hyperbolic_factor_scaling_is_symbolic ... ok
++test round5_hyperbolic_symbolic_vector_matches_scalar_bits ... ok
++test round3_nilpotent_near_cancellation_is_exact ... ok
++test scalar_overflow_scale_inverse ... ok
++test small_scale_versor_inverse_not_rejected ... ok
++test rounded_false_zero_routes_by_exact_square ... ok
++test non_simple_bivector_scalar_zero_grade4_nonzero ... ok
++test square_zero_vector_exponential_survives ... ok
++test subnormal_square_extraction ... ok
++test round4_nilpotent_finalization_carries_symbolic_scale ... ok
++test round5_hyperbolic_symbolic_fallback_never_forms_two_a ... ok
++test round5_polynomial_scale_overflow_reports_scalar_route ... ok
++test round2_nilpotent_index_four_polynomial ... ok
++test non_simple_bivector_euclidean ... ok
++test round3_uncertified_input_never_reports_closed_form ... ok
++test round1_squaring_cancellation_detector_fires ... ok
++test round3_index_eight_nilpotent_polynomial ... ok
++
++test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
++
++     Running tests/macro_contracts.rs (target/mrepb/debug/deps/macro_contracts-feb64ef4eda2cc92)
++
++running 2 tests
++test unit_macro_handles_subnormal_operands ... ok
++test unit_macro_normalizes_multivector_operands ... ok
++
++test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/numerical_contracts.rs (target/mrepb/debug/deps/numerical_contracts-63f88334eb1dc4ac)
++
++running 13 tests
++test approx_eq_accepts_relative_scales ... ok
++test approx_eq_nonfinite_is_false_unless_exactly_equal ... ok
++test approx_eq_relative_component_at_large_scale ... ok
++test approx_eq_rejects_nonzero_null_difference ... ok
++test coefficient_norm_nonfinite_policy ... ok
++test coefficient_norm_of_nonzero_null_element_is_nonzero ... ok
++test coefficient_norm_preserves_representable_extremes ... ok
++test div_f64_distinguishes_division_from_reciprocal_scaling ... ok
++test exact_zero_rejects_tiny_but_nonzero_coefficients ... ok
++test is_approx_zero_matches_approx_eq_against_zero ... ok
++test vector_normalize_handles_subnormal_metric_square ... ok
++test zero_trait_delegates_exact_semantics ... ok
++test vector_normalize_requires_strictly_positive_square ... ok
++
++test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/products.rs (target/mrepb/debug/deps/products-210ad209adde5a19)
++
++running 17 tests
++test product_tests::test_bivector_bivector_products ... ok
++test product_tests::test_contraction_properties ... ok
++test product_tests::test_bivector_vector_inner_product ... ok
++test product_tests::test_inner_product_grade_lowering ... ok
++test product_tests::test_inner_product_metric_signature ... ok
++test product_tests::test_outer_product_anticommutativity ... ok
++test product_tests::test_hodge_duality_preview ... ok
++test product_tests::test_geometric_product_decomposition ... ok
++test product_tests::test_outer_product_associativity ... ok
++test product_tests::test_outer_product_grade_raising ... ok
++test product_tests::test_outer_product_self_is_zero ... ok
++test product_tests::test_product_with_zero ... ok
++test product_tests::test_outer_product_with_scalar ... ok
++test product_tests::test_vector_inner_product_orthogonality ... ok
++test product_tests::test_product_commutativity_properties ... ok
++test product_tests::test_vector_bivector_products ... ok
++test product_tests::test_vector_inner_product_parallel ... ok
++
++test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/rotor_duals_components_s4.rs (target/mrepb/debug/deps/rotor_duals_components_s4-6c57f0837afbe502)
++
++running 23 tests
++test bivector_component_round_trip_4d ... ok
++test bivector_get_keeps_out_of_range_zero_and_blade_semantics ... ok
++test bivector_zero_exists_in_4d ... ok
++test e_ij_rejects_reversed_equal_and_out_of_range_indices ... ok
++test e_ij_constructs_the_named_blades ... ok
++test formal_complement_cl_2_0_1_maps_e3_to_e12 ... ok
++test formal_complement_euclidean_3d_basis ... ok
++test formal_complement_is_linear_on_mixed_grades ... ok
++test formal_complement_maps_grade_to_complement_grade ... ok
++test formal_complement_squares_to_the_grade_sign_law_3d ... ok
++test formal_complement_squares_to_the_grade_sign_law_4d ... ok
++test from_components_delegates_to_the_general_map ... ok
++test hodge_dual_cl_2_0_0_table ... ok
++test hodge_dual_cl_2_0_1_rejects_the_degenerate_pseudoscalar ... ok
++test named_bivector_constructors_enforce_the_dimensional_domain ... ok
++test hodge_dual_euclidean_3d_table ... ok
++test hodge_dual_double_dual_is_identity_in_3d ... ok
++test named_vector_constructors_enforce_the_dimensional_domain ... ok
++test out_of_range_component_writes_are_rejected_without_write ... ok
++test set_bivector_component_4d_component_3_round_trips_e23 ... ok
++test typed_bivector_dual_cl_3_0_0 ... ok
++test typed_duals_cl_0_3_0_exist ... ok
++test typed_vector_dual_cl_3_0_0 ... ok
++
++test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/rotor_error_privacy_s1.rs (target/mrepb/debug/deps/rotor_error_privacy_s1-e9bb21e72c6d4816)
++
++running 18 tests
++test exact_certification_helpers_return_errors_above_six_dimensions ... ok
++test exp_error_carrier_is_lossless ... ok
++test escape_round_trips_preserve_coefficients ... ok
++test from_multivector_bivector_rejects_nan_in_a_foreign_grade ... ok
++test from_multivector_bivector_rejects_a_vector ... ok
++test from_vectors_s1_precedence_is_not_a_vector_then_null ... ok
++test dyadic_boost_base_is_exactly_representable ... ok
++test scalar_and_bivector_try_from_share_the_foreign_grade_predicate ... ok
++test angle_one_boost_stored_inverse_matches_exact_stored_element_inverse ... ok
++test q_plus_times_q_minus_is_exact_zero_rotor ... ok
++test r32_boost_chain_is_degenerate_for_inverse_and_apply ... ok
++test vector_try_from_rejects_mixed_grades_and_nan_foreign_grades ... ok
++test apply_overflowing_quotient_is_degenerate ... ok
++test inverse_uses_exact_reverse_norm_not_a_rounded_denominator ... ok
++test exact_n_inverse_rejects_an_unrepresentable_output ... ok
++test to_rotation_matrix_propagates_a_compose_domain_exit_instead_of_panicking ... ok
++test apply_zero_loss_gate_is_post_exact_quotient ... ok
++test exact_sandwich_extreme_dynamic_range_matches_fraction_oracles ... ok
++
++test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
++
++     Running tests/rotor_log_powers_s2.rs (target/mrepb/debug/deps/rotor_log_powers_s2-42ea41ff56263675)
++
++running 16 tests
++test boost_fixture_power_integer_one_is_bit_exact_clone ... ok
++test hyperbolic_round_trip_is_fixture_bounded ... ok
++test power_integer_zero_one_negative_one_laws ... ok
++test multiphane_power_error_kinds_are_per_operation ... ok
++test binary_power_of_a_rounded_multiphane_rotor_is_degenerate ... ok
++test power_integer_minus_two_boost_matches_exact_oracle ... ok
++test non_integral_power_propagates_log_domain_errors ... ok
++test uncertified_multiphane_log_is_rejected ... ok
++test two_pi_rotor_power_integer_one_clones_residual_bivector ... ok
++test log_exp_selects_the_principal_branch_for_two_pi_plane ... ok
++test small_angle_bivector_is_preserved_by_the_atan2_route ... ok
++test hyperbolic_small_boost_rapidity_is_two_pow_minus_54 ... ok
++test power_preserves_the_logarithm_scale_of_the_twenty_squared_rotor ... ok
++test elliptic_round_trip_is_fixture_bounded ... ok
++test non_integral_power_matches_a_half_angle_construction ... ok
++test integral_power_delegates_to_power_integer ... ok
++
++test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/rotor_slerp_vectors_reflect_s3.rs (target/mrepb/debug/deps/rotor_slerp_vectors_reflect_s3-00679857ed4049e3)
++
++running 25 tests
++test candidate_identities_hold_for_both_signs ... ok
++test from_vectors_cl0_2_0_maps_e1_to_e2 ... ok
++test from_vectors_cl0_2_0_antipodal_resolves_in_two_dimensions ... ok
++test from_vectors_cl0_2_0_same_vector_is_identity_not_antipodal ... ok
++test from_vectors_cl1_1_0_sheet_change_is_rejected ... ok
++test from_vectors_cl2_1_0_null_candidate_is_rejected ... ok
++test from_vectors_mv_scalar_input_is_not_a_vector ... ok
++test from_vectors_indefinite_2d_antipodal_is_rejected_as_antipodal ... ok
++test from_vectors_mixed_causal_types_are_rejected ... ok
++test from_vectors_null_vector_is_rejected ... ok
++test reflect_fixes_scalars ... ok
++test slerp_identity_to_identity_2d_is_ok_identity ... ok
++test reflect_line_fixes_its_own_line ... ok
++test reflect_preserves_perpendicular_blades ... ok
++test reflect_negates_the_normal ... ok
++test reflect_normal_errors_follow_not_a_vector_precedence ... ok
++test slerp_identity_endpoint_returns_single_plane_4d_rotor_exactly ... ok
++test slerp_endpoints_are_exact_direct_returns ... ok
++test from_vectors_euclidean_2d_non_axis_antipodal_maps_direction ... ok
++test slerp_differing_sign_fixture_selects_the_same_hemisphere ... ok
++test from_vectors_subnormal_direction_is_normalized_symbolically ... ok
++test reflect_is_an_involution ... ok
++test slerp_negative_coefficient_dot_selects_the_negated_representative ... ok
++test slerp_interior_preserves_the_stored_element_scale ... ok
++test from_vectors_direction_normalization_is_scale_invariant ... ok
++
++test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
++
++     Running tests/rotors.rs (target/mrepb/debug/deps/rotors-c02b292ba29b3680)
++
++running 29 tests
++test rotor_tests::test_rotor_composition ... ok
++test rotor_tests::test_rotor_from_axis_angle ... ok
++test rotor_tests::test_rotor_double_cover ... ok
++test rotor_tests::test_rotor_from_vectors ... ok
++test rotor_tests::test_rotor_commutator ... ok
++test rotor_tests::test_rotor_180_degree ... ok
++test rotor_tests::test_rotor_from_axis_angle_normalizes_overflowing_axes_symbolically ... ok
++test rotor_tests::test_rotor_from_axis_angle_is_range_safe ... ok
++test rotor_tests::test_rotor_power_fractional ... ok
++test rotor_tests::test_rotor_from_bivector ... ok
++test rotor_tests::test_euler_angle_composition ... ok
++test rotor_tests::test_rotor_power ... ok
++test rotor_tests::test_rotor_identity ... ok
++test rotor_tests::test_rotor_small_angle ... ok
++test rotor_tests::test_rotor_logarithm ... ok
++test rotor_tests::test_rotor_power_negative ... ok
++test rotor_tests::test_rotor_interpolation ... ok
++test rotor_tests::test_rotor_from_axis_angle_diagonal ... ok
++test rotor_tests::test_rotor_rotation_e13_plane ... ok
++test rotor_tests::test_rotor_preserves_magnitude ... ok
++test rotor_tests::test_slerp_endpoints ... ok
++test rotor_tests::test_rotor_rotation_of_vector ... ok
++test rotor_tests::test_rotor_inverse ... ok
++test rotor_tests::test_rotor_power_zero ... ok
++test rotor_tests::test_rotor_power_third ... ok
++test rotor_tests::test_rotor_rotation_e23_plane ... ok
++test rotor_tests::test_rotor_preserves_angles ... ok
++test rotor_tests::test_to_rotation_matrix_e13_plane ... ok
++test rotor_tests::test_rotor_to_matrix ... ok
++
++test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
++
++   Doc-tests amari_core
++
++running 3 tests
++test amari-core/src/lib.rs - Vector (line 1771) - compile fail ... ok
++test amari-core/src/lib.rs - Multivector<P,Q,R>::grade_magnitude (line 561) ... ok
++test amari-core/src/unicode_ops.rs - unicode_ops (line 25) ... ok
++
++test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
++
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-formal-test.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-formal-test.log
+new file mode 100644
+index 0000000..03e7109
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-formal-test.log
+@@ -0,0 +1,608 @@
++    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
++     Running unittests src/lib.rs (target/mrepb/debug/deps/amari_core-d578302cee61e512)
++
++running 245 tests
++test aligned_alloc::tests::test_memory_pool ... ok
++test aligned_alloc::tests::test_aligned_memory ... ok
++test aligned_alloc::tests::test_aligned_f64_vec ... ok
++test basis::tests::basis_helpers_enforce_the_dimensional_domain ... ok
++test basis::tests::test_builder ... ok
++test basis::tests::test_basis_helpers ... ok
++test cayley::tests::test_null_vectors ... ok
++test cayley::tests::test_minkowski_spacetime ... ok
++test cayley::tests::test_euclidean_3d ... ok
++test comprehensive_tests::accessor_tests::test_get_set ... ok
++test comprehensive_tests::accessor_tests::test_scalar_part ... ok
++test comprehensive_tests::accessor_tests::test_set_bivector_component ... ok
++test comprehensive_tests::accessor_tests::test_as_slice ... ok
++test comprehensive_tests::accessor_tests::test_bivector_part ... ok
++test basis::tests::test_blade_names ... ok
++test comprehensive_tests::accessor_tests::test_set_scalar ... ok
++test comprehensive_tests::accessor_tests::test_set_vector_component ... ok
++test comprehensive_tests::accessor_tests::test_trivector_part ... ok
++test aligned_alloc::tests::test_aligned_coefficients ... ok
++test comprehensive_tests::accessor_tests::test_vector_component ... ok
++test comprehensive_tests::accessor_tests::test_vector_part ... ok
++test comprehensive_tests::advanced_operations_tests::test_exp_scalar ... ok
++test comprehensive_tests::advanced_operations_tests::test_exp_zero ... ok
++test comprehensive_tests::arithmetic_tests::test_addition ... ok
++test comprehensive_tests::arithmetic_tests::test_operator_addition ... ok
++test comprehensive_tests::arithmetic_tests::test_operator_negation ... ok
++test comprehensive_tests::arithmetic_tests::test_operator_subtraction ... ok
++test comprehensive_tests::arithmetic_tests::test_scalar_multiplication ... ok
++test comprehensive_tests::advanced_operations_tests::test_exp_bivector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_basis_bivectors ... ok
++test comprehensive_tests::bivector_tests::test_bivector_from_components ... ok
++test comprehensive_tests::bivector_tests::test_bivector_from_multivector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_bivector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_geometric_product_with_vector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_get ... ok
++test comprehensive_tests::bivector_tests::test_bivector_index_access ... ok
++test comprehensive_tests::bivector_tests::test_bivector_inner_product ... ok
++test comprehensive_tests::bivector_tests::test_bivector_inner_product_with_vector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_magnitude ... ok
++test comprehensive_tests::bivector_tests::test_bivector_outer_product ... ok
++test comprehensive_tests::bivector_tests::test_bivector_outer_product_with_vector ... ok
++test comprehensive_tests::bivector_tests::test_bivector_right_contraction ... ok
++test comprehensive_tests::constructor_tests::test_basis_vector ... ok
++test comprehensive_tests::constructor_tests::test_from_coefficients ... ok
++test comprehensive_tests::constructor_tests::test_from_slice ... ok
++test comprehensive_tests::constructor_tests::test_scalar ... ok
++test comprehensive_tests::constructor_tests::test_zero ... ok
++test comprehensive_tests::integration_tests::test_basis_vector_anticommutativity ... ok
++test comprehensive_tests::integration_tests::test_basis_vector_squares ... ok
++test comprehensive_tests::integration_tests::test_distributivity ... ok
++test comprehensive_tests::integration_tests::test_identity_elements ... ok
++test comprehensive_tests::operation_tests::test_grade ... ok
++test comprehensive_tests::operation_tests::test_grade_projection ... ok
++test comprehensive_tests::integration_tests::test_reverse_involution ... ok
++test comprehensive_tests::operation_tests::test_reverse ... ok
++test comprehensive_tests::product_tests::test_geometric_product ... ok
++test comprehensive_tests::product_tests::test_inner_product ... ok
++test comprehensive_tests::product_tests::test_geometric_product_associativity ... ok
++test comprehensive_tests::product_tests::test_outer_product ... ok
++test comprehensive_tests::product_tests::test_scalar_product ... ok
++test comprehensive_tests::product_tests::test_outer_product_antisymmetric ... ok
++test comprehensive_tests::scalar_tests::test_scalar_commutative_multiplication ... ok
++test comprehensive_tests::scalar_tests::test_scalar_from ... ok
++test comprehensive_tests::scalar_tests::test_scalar_from_trait ... ok
++test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_multivector ... ok
++test comprehensive_tests::scalar_tests::test_scalar_geometric_product_with_vector ... ok
++test comprehensive_tests::scalar_tests::test_scalar_identity ... ok
++test comprehensive_tests::scalar_tests::test_scalar_one ... ok
++test comprehensive_tests::utility_tests::test_approx_eq ... ok
++test comprehensive_tests::utility_tests::test_abs ... ok
++test comprehensive_tests::utility_tests::test_equality ... ok
++test comprehensive_tests::utility_tests::test_inverse_small ... ok
++test comprehensive_tests::utility_tests::test_inverse ... ok
++test comprehensive_tests::utility_tests::test_is_zero ... ok
++test comprehensive_tests::utility_tests::test_norm ... ok
++test comprehensive_tests::utility_tests::test_magnitude ... ok
++test comprehensive_tests::utility_tests::test_norm_squared ... ok
++test comprehensive_tests::utility_tests::test_inverse_zero ... ok
++test comprehensive_tests::utility_tests::test_normalize ... ok
++test comprehensive_tests::utility_tests::test_normalize_small ... ok
++test comprehensive_tests::utility_tests::test_normalize_zero ... ok
++test comprehensive_tests::vector_tests::test_vector_add ... ok
++test comprehensive_tests::vector_tests::test_vector_as_slice ... ok
++test comprehensive_tests::vector_tests::test_vector_basis_vectors ... ok
++test comprehensive_tests::vector_tests::test_vector_from_components ... ok
++test comprehensive_tests::vector_tests::test_vector_from_multivector ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_bivector ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_multivector ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_scalar ... ok
++test comprehensive_tests::vector_tests::test_vector_geometric_product_with_vector ... ok
++test comprehensive_tests::vector_tests::test_vector_hodge_dual ... ok
++test comprehensive_tests::vector_tests::test_vector_inner_product ... ok
++test comprehensive_tests::vector_tests::test_vector_inner_product_with_bivector ... ok
++test comprehensive_tests::vector_tests::test_vector_left_contraction ... ok
++test comprehensive_tests::vector_tests::test_vector_inner_product_with_mv ... ok
++test comprehensive_tests::vector_tests::test_vector_magnitude ... ok
++test comprehensive_tests::vector_tests::test_vector_norm ... ok
++test comprehensive_tests::vector_tests::test_vector_norm_squared ... ok
++test comprehensive_tests::vector_tests::test_vector_normalize ... ok
++test comprehensive_tests::vector_tests::test_vector_normalize_zero ... ok
++test comprehensive_tests::vector_tests::test_vector_outer_product ... ok
++test comprehensive_tests::vector_tests::test_vector_outer_product_with_bivector ... ok
++test comprehensive_tests::vector_tests::test_vector_reverse ... ok
++test comprehensive_tests::vector_tests::test_vector_outer_product_with_mv ... ok
++test comprehensive_tests::vector_tests::test_vector_zero ... ok
++test exact_square::tests::exact_reverse_norm_rejects_signatures_above_max_basis ... ok
++test exact_square::tests::extraction_integer_five ... ok
++test exact_square::tests::extraction_integer_three ... ok
++test exact_square::tests::extraction_subnormal_single_blade ... ok
++test exact_square::tests::exact_ratio_division_is_correctly_rounded ... ok
++test exact_square::tests::crafted_dyadic_extraction_within_one_ulp ... ok
++test exact_square::tests::exact_power_matches_bigint ... ok
++test exact_square::tests::symbolic_scale_overflow_composition_is_finite ... ok
++test generic::tests::test_blade_product_e12_e1_cl300 ... ok
++test generic::tests::test_blade_product_e1_e1_cl300 ... ok
++test generic::tests::test_blade_product_e2_e1_cl300 ... ok
++test exact_square::tests::nilpotent_d_scheme_matches_bigint_rational ... ok
++test generic::tests::test_blade_product_null_signature ... ok
++test generic::tests::test_blade_product_scalar_scalar ... ok
++test generic::tests::test_generic_gp_matches_const_generic_cl210 ... ok
++test exact_square::tests::mul_magnitude_matches_bigint ... ok
++test exact_square::tests::three_way_symbolic_scale_composes_before_rounding ... ok
++test gf2::clifford::tests::test_reverse ... ok
++test exact_square::tests::symbolic_scale_over_2a_is_exactly_half_for_c_equals_a ... ok
++test exact_square::tests::symbolic_scale_subnormal_order_rounds_once ... ok
++test generic::tests::test_blade_product_e3_e3_cl210 ... ok
++test generic::tests::test_blade_product_e1_e2_cl300 ... ok
++test exact_square::tests::extraction_subnormal_from_raw_accumulator ... ok
++test generic::tests::test_generic_gp_matches_const_generic_cl300 ... ok
++test generic::tests::test_generic_gp_scalar_only ... ok
++test gf2::clifford::tests::test_basis_vector_square_degenerate ... ok
++test gf2::clifford::tests::test_basis_vector_square_nondegenerate ... ok
++test gf2::clifford::tests::test_outer_product_dependent ... ok
++test exact_square::tests::mixed_extreme_capacity_is_exact ... ok
++test exact_square::tests::nilpotent_polynomial_matches_closed_form ... ok
++test gf2::clifford::tests::test_pseudoscalar_product ... ok
++test gf2::clifford::tests::test_outer_product_independent_blades ... ok
++test gf2::clifford::tests::test_grade_projection ... ok
++test gf2::clifford::tests::test_geometric_product_associativity ... ok
++test gf2::clifford::tests::test_to_real_from_real_roundtrip ... ok
++test gf2::clifford::tests::test_zero_and_identity ... ok
++test gf2::clifford::tests::test_commutativity_over_gf2 ... ok
++test gf2::grassmannian::tests::test_binary_grassmannian_size ... ok
++test gf2::grassmannian::tests::test_gaussian_binomial_edge_cases ... ok
++test gf2::grassmannian::tests::test_gaussian_binomial_known_values ... ok
++test gf2::grassmannian::tests::test_schubert_cell_size_formula ... ok
++test gf2::matrix::tests::test_determinant_non_square ... ok
++test generic::tests::test_generic_gp_random_cl410 ... ok
++test gf2::grassmannian::tests::test_schubert_cell_sizes_sum ... ok
++test gf2::matrix::tests::test_full_rank ... ok
++test gf2::matrix::tests::test_identity_properties ... ok
++test gf2::matrix::tests::test_matrix_product ... ok
++test gf2::matrix::tests::test_matrix_vector_product ... ok
++test gf2::grassmannian::tests::test_enumerate_subspaces_count ... ok
++test gf2::matrix::tests::test_null_space ... ok
++test gf2::matrix::tests::test_rank_deficient ... ok
++test gf2::matrix::tests::test_row_echelon_and_rank ... ok
++test gf2::matrix::tests::test_solve ... ok
++test gf2::matrix::tests::test_solve_inconsistent ... ok
++test gf2::matrix::tests::test_transpose_roundtrip ... ok
++test gf2::scalar::tests::test_conversions ... ok
++test gf2::scalar::tests::test_distributivity ... ok
++test gf2::scalar::tests::test_field_addition ... ok
++test gf2::grassmannian::tests::test_enumerate_subspaces_valid_rref ... ok
++test gf2::scalar::tests::test_field_multiplication ... ok
++test gf2::scalar::tests::test_multiplicative_inverse ... ok
++test gf2::scalar::tests::test_self_inverse ... ok
++test gf2::vector::tests::test_dot_product ... ok
++test gf2::vector::tests::test_from_bits ... ok
++test gf2::vector::tests::test_from_u64_roundtrip ... ok
++test gf2::vector::tests::test_get_set_roundtrip ... ok
++test gf2::vector::tests::test_hamming_weight_and_distance ... ok
++test gf2::vector::tests::test_large_vector ... ok
++test gf2::vector::tests::test_xor_addition ... ok
++test gf2::vector::tests::test_zero_vector ... ok
++test precision::tests::test_dashu_float_creation ... ok
++test precision::tests::test_dashu_float_arithmetic ... ok
++test precision::tests::test_dashu_float_precision_operations ... ok
++test precision::tests::test_default_tolerance ... ok
++test precision::tests::test_standard_float_precision ... ok
++test precision::tests::test_dashu_float_transcendental ... ok
++test property_tests::unit_property_tests::test_property_framework ... ok
++test rotor::tests::test_logarithm_above_six_dimensions_is_uncertified ... ok
++test rotor::tests::test_cl6_i_rotor_logarithm_is_uncertified ... ok
++test rotor::tests::test_direction_candidate_identities_negative_sign ... ok
++test rotor::tests::test_direction_candidate_identities_positive_sign ... ok
++test rotor::tests::test_logarithm_elliptic_extreme_scale_is_range_safe ... ok
++test rotor::tests::slerp_extreme_coefficient_dot_overflow_selects_the_negated_representative ... ok
++test rotor::tests::test_logarithm_scalar_branches ... ok
++test rotor::tests::test_negative_sheet_logarithm_rejects ... ok
++test rotor::tests::test_logarithm_round_trip_witness_within_17_ulp ... ok
++test rotor::tests::test_logarithm_hyperbolic_mixed_component_rapidity_is_28_ln2 ... ok
++test rotor::tests::test_hyperbolic_log_ratio_is_correctly_rounded ... ok
++test rotor::tests::test_power_integer_r32_chain_is_degenerate ... ok
++test rotor::tests::test_logarithm_hyperbolic_extreme_rapidity_is_range_safe ... ok
++test rotor::tests::test_reflection ... ok
++test rotor::tests::test_negative_sheet_stored_inverse_uses_reverse_over_norm ... ok
++test simd::tests::test_runtime_feature_detection ... ok
++test rotor::tests::test_dyadic_multiphane_binary_power_chain_is_exact ... ok
++test tests::series_scaling_meets_frozen_target_for_boundary_norm ... ok
++test tests::squaring_detector_threshold_is_overflow_safe ... ok
++test simd::tests::test_aligned_buffer ... ok
++test rotor::tests::test_slerp_coefficient_dot_tie_keeps_second_representative ... ok
++test tests::symbolic_scalar_scale_composition_matches_exp ... ok
++test rotor::tests::test_rotor_composition ... ok
++test tests::test_basis_vectors ... ok
++test tests::test_algebraic_identities ... ok
++test tests::test_grade_operations ... ok
++test tests::test_rotor_from_bivector ... ok
++test tests::test_wedge_product ... ok
++test tests::test_metric_signature ... ok
++test unicode_ops::tests::test_extended_unicode_operations ... ok
++test rotor::tests::test_rotor_90_degrees ... ok
++test unicode_ops::tests::test_unicode_geometric_product ... ok
++test tests::test_inner_and_outer_products ... ok
++test unicode_ops::tests::test_unicode_grade_projection ... ok
++test unicode_ops::tests::test_unicode_inner_product ... ok
++test unicode_ops::tests::test_unicode_unary_operations ... ok
++test unicode_ops::tests::test_unicode_mathematical_identities ... ok
++test verified::tests::test_grade_preservation ... ok
++test unicode_ops::tests::test_unicode_wedge_product ... ok
++test verified::tests::test_outer_product_type_safety ... ok
++test verified::tests::test_phantom_type_dimension_safety ... ok
++test verified::tests::test_signature_type_safety ... ok
++test verified_contracts::contract_tests::test_verified_addition_properties ... ok
++test verified_contracts::contract_tests::test_signature_verification ... ok
++test verified_contracts::contract_tests::test_verified_identity_laws ... ok
++test verified_contracts::contract_tests::test_verified_scalar_multiplication ... ok
++test exact_square::tests::exhaustive_small_signatures ... ok
++test property_tests::prop_outer_product_antisymmetric ... ok
++test property_tests::prop_basis_vector_squares ... ok
++test property_tests::prop_multiplicative_identity ... ok
++test property_tests::prop_outer_product_self_zero ... ok
++test property_tests::prop_additive_identity ... ok
++test property_tests::prop_addition_commutative ... ok
++test property_tests::prop_scalar_multiplication_commutative ... ok
++test property_tests::prop_basis_anticommutativity ... ok
++test property_tests::prop_reverse_antiautomorphism ... ok
++test property_tests::prop_rotor_preserves_norm ... ok
++test property_tests::prop_norm_via_reverse ... ok
++test property_tests::prop_addition_associative ... ok
++test property_tests::prop_geometric_product_associative ... ok
++test property_tests::prop_left_distributivity ... ok
++test exact_square::tests::randomized_coefficients_match_bigint ... ok
++test exact_square::tests::randomized_full_multivectors_match_bigint ... ok
++
++test result: ok. 245 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
++
++     Running tests/arithmetic_regressions.rs (target/mrepb/debug/deps/arithmetic_regressions-2e539df1246da60c)
++
++running 6 tests
++test gp_associativity_does_not_drop_a_small_intermediate ... ok
++test projected_inner_and_contractions_keep_small_grade_components ... ok
++test gp_small_finite_factor_is_not_zero ... ok
++test projected_outer_product_keeps_small_grade_components ... ok
++test structural_grade_reports_a_small_nonzero_component ... ok
++test structural_hodge_transport_is_linear_at_small_scale ... ok
++
++test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/audit_tests.rs (target/mrepb/debug/deps/audit_tests-e2a4169bc6bc023e)
++
++running 15 tests
++test contraction_tests::test_left_contraction_vector_bivector ... ok
++test contraction_tests::test_inner_product_vector_bivector ... ok
++test cayley_tests::test_full_cayley_table_cl300 ... ok
++test contraction_tests::test_left_contraction_vector_vector ... ok
++test hodge_dual_tests::test_hodge_dual_double_dual_3d ... ok
++test hodge_dual_tests::test_hodge_dual_basis_vectors_3d ... ok
++test hodge_dual_tests::test_hodge_dual_bivectors_3d ... ok
++test hodge_dual_tests::test_hodge_dual_scalar_pseudoscalar_3d ... ok
++test numeric_tests::test_geometric_product_associativity ... ok
++test numeric_tests::test_identity_geometric_product ... ok
++test hodge_dual_tests::test_hodge_dual_mixed_grade ... ok
++test numeric_tests::test_large_coefficients ... ok
++test numeric_tests::test_inverse_zero ... ok
++test signature_tests::test_projective_ga_cl201 ... ok
++test signature_tests::test_minkowski_spacetime_cl130 ... ok
++
++test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/basis_word_oracle.rs (target/mrepb/debug/deps/basis_word_oracle-48d628533085ba71)
++
++running 1 test
++test oracle_all_basis_pairs_through_dimension_four ... ok
++
++test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
++
++     Running tests/geometric_axioms.rs (target/mrepb/debug/deps/geometric_axioms-0ab572dfd2c5ccdd)
++
++running 6 tests
++test geometric_axioms::additive_identity ... ok
++test geometric_axioms::associativity ... ok
++test geometric_axioms::scalar_commutes ... ok
++test geometric_axioms::multiplicative_identity ... ok
++test geometric_axioms::distributivity ... ok
++test geometric_axioms::basis_vector_signature ... ok
++
++test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/geometric_product.rs (target/mrepb/debug/deps/geometric_product-f644bdca56146907)
++
++running 15 tests
++test geometric_product_tests::test_basis_vector_squared_negative_signature ... ok
++test geometric_product_tests::test_basis_vector_squared_null_signature ... ok
++test geometric_product_tests::test_basis_vector_squared_positive_signature ... ok
++test geometric_product_tests::test_general_multivector_product ... ok
++test geometric_product_tests::test_bivector_vector_product ... ok
++test geometric_product_tests::test_geometric_product_associativity ... ok
++test geometric_product_tests::test_grade_mixing_in_product ... ok
++test geometric_product_tests::test_multiplicative_identity ... ok
++test geometric_product_tests::test_scalar_multiplication_commutes ... ok
++test geometric_product_tests::test_orthogonal_basis_vectors_anticommute ... ok
++test geometric_product_tests::test_geometric_product_distributivity ... ok
++test geometric_product_tests::test_self_product_positive_definite ... ok
++test geometric_product_tests::test_vector_bivector_product ... ok
++test geometric_product_tests::test_zero_element ... ok
++test performance_tests::test_geometric_product_performance ... ok
++
++test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
++
++     Running tests/gf2_tests.rs (target/mrepb/debug/deps/gf2_tests-2aa3a64757d426c7)
++
++running 6 tests
++test clifford_real_integration::test_from_real_reduces_mod2 ... ok
++test clifford_real_integration::test_binary_to_real_geometric_product ... ok
++test scalar_vector_matrix_chain::test_matrix_solve_and_verify ... ok
++test grassmannian_matrix_integration::test_subspace_closure_under_xor ... ok
++test scalar_vector_matrix_chain::test_null_space_orthogonal_to_row_space ... ok
++test grassmannian_matrix_integration::test_enumerate_and_verify_subspaces ... ok
++
++test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/inverse_contracts_green.rs (target/mrepb/debug/deps/inverse_contracts_green-dd25d3c476b9eb5b)
++
++running 11 tests
++test nilpotent_and_zero_divisors_return_none ... ok
++test scalar_inverse_across_signatures ... ok
++test scalar_overflow_scale_inverse ... ok
++test null_generator_is_not_invertible ... ok
++test vector_inverse_is_self_when_square_one ... ok
++test versor_inverse_across_signatures ... ok
++test non_versor_inverse_across_signatures ... ok
++test well_conditioned_random_inverses_null_generator ... ok
++test well_conditioned_random_inverses_euclidean ... ok
++test well_conditioned_random_inverses_mixed ... ok
++test well_conditioned_random_inverses_degenerate_mixed ... ok
++
++test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/inverse_exp_contracts.rs (target/mrepb/debug/deps/inverse_exp_contracts-d4e461428522c0c1)
++
++running 48 tests
++test crafted_dyadic_false_zero ... ok
++test degenerate_nilpotent_blade ... ok
++test degenerate_mixed_hyperbolic ... ok
++test erratum_case_huge_simple_circular ... ok
++test hyperbolic_overflow_is_error ... ok
++test exp_zero_is_identity_and_scalar_uses_f64 ... ok
++test huge_exact_nilpotent_returns_exactly_one_plus_b ... ok
++test mixed_signature_hyperbolic_plane ... ok
++test round1_circular_vector_at_scale_bit_exact ... ok
++test nilpotent_bivector_exponential_is_exact ... ok
++test huge_circular_single_blade_bounded ... ok
++test near_zero_circular_and_hyperbolic ... ok
++test large_norm_scalar_vector_exponential_converges ... ok
++test non_versor_inverse_solves_both_orders ... ok
++test long_angle_general_multivector ... ok
++test mixed_signature_circular_plane ... ok
++test round1_inverse_fast_path_rejects_non_finite_quotient ... ok
++test round1_disjoint_null_pairs_scalar_square_is_exact ... ok
++test round1_scaling_boundary_norm_errors_honestly ... ok
++test round1_square_zero_vector_at_scale_is_exact ... ok
++test round2_scalar_factored_closed_form_long_angle ... ok
++test round2_scalar_plus_square_zero_is_exact ... ok
++test round3_scalar_factoring_overflow_is_honest_error ... ok
++test round3_scalar_factoring_rescues_underflowed_scale ... ok
++test round3_nilpotent_near_cancellation_is_exact ... ok
++test round4_hyperbolic_closed_form_carries_symbolic_scale ... ok
++test round2_nilpotent_index_three_exact_at_scale ... ok
++test round4_symbolic_scale_overflow_composition_is_finite ... ok
++test round3_nilpotent_single_final_rounding_after_division ... ok
++test round5_hyperbolic_symbolic_fallback_never_forms_two_a ... ok
++test round4_symbolic_scale_subnormal_order_is_correct ... ok
++test round5_circular_factor_scaling_is_symbolic ... ok
++test round5_hyperbolic_factor_scaling_is_symbolic ... ok
++test round5_hyperbolic_symbolic_vector_matches_scalar_bits ... ok
++test small_scale_versor_inverse_not_rejected ... ok
++test scalar_overflow_scale_inverse ... ok
++test round4_subnormal_division_rounds_once_at_destination ... ok
++test round4_nilpotent_finalization_carries_symbolic_scale ... ok
++test square_zero_vector_exponential_survives ... ok
++test subnormal_square_extraction ... ok
++test rounded_false_zero_routes_by_exact_square ... ok
++test round5_polynomial_scale_overflow_reports_scalar_route ... ok
++test non_simple_bivector_scalar_zero_grade4_nonzero ... ok
++test round2_nilpotent_index_four_polynomial ... ok
++test non_simple_bivector_euclidean ... ok
++test round3_uncertified_input_never_reports_closed_form ... ok
++test round1_squaring_cancellation_detector_fires ... ok
++test round3_index_eight_nilpotent_polynomial ... ok
++
++test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
++
++     Running tests/macro_contracts.rs (target/mrepb/debug/deps/macro_contracts-efb66b31f0ac2809)
++
++running 2 tests
++test unit_macro_handles_subnormal_operands ... ok
++test unit_macro_normalizes_multivector_operands ... ok
++
++test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/numerical_contracts.rs (target/mrepb/debug/deps/numerical_contracts-2b0e1086050ecdbc)
++
++running 13 tests
++test approx_eq_accepts_relative_scales ... ok
++test approx_eq_nonfinite_is_false_unless_exactly_equal ... ok
++test approx_eq_rejects_nonzero_null_difference ... ok
++test approx_eq_relative_component_at_large_scale ... ok
++test coefficient_norm_nonfinite_policy ... ok
++test coefficient_norm_of_nonzero_null_element_is_nonzero ... ok
++test coefficient_norm_preserves_representable_extremes ... ok
++test div_f64_distinguishes_division_from_reciprocal_scaling ... ok
++test exact_zero_rejects_tiny_but_nonzero_coefficients ... ok
++test is_approx_zero_matches_approx_eq_against_zero ... ok
++test zero_trait_delegates_exact_semantics ... ok
++test vector_normalize_handles_subnormal_metric_square ... ok
++test vector_normalize_requires_strictly_positive_square ... ok
++
++test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/products.rs (target/mrepb/debug/deps/products-c940d62e17feafe7)
++
++running 17 tests
++test product_tests::test_bivector_bivector_products ... ok
++test product_tests::test_bivector_vector_inner_product ... ok
++test product_tests::test_contraction_properties ... ok
++test product_tests::test_inner_product_grade_lowering ... ok
++test product_tests::test_inner_product_metric_signature ... ok
++test product_tests::test_outer_product_associativity ... ok
++test product_tests::test_geometric_product_decomposition ... ok
++test product_tests::test_outer_product_anticommutativity ... ok
++test product_tests::test_outer_product_grade_raising ... ok
++test product_tests::test_outer_product_self_is_zero ... ok
++test product_tests::test_hodge_duality_preview ... ok
++test product_tests::test_outer_product_with_scalar ... ok
++test product_tests::test_product_with_zero ... ok
++test product_tests::test_product_commutativity_properties ... ok
++test product_tests::test_vector_bivector_products ... ok
++test product_tests::test_vector_inner_product_orthogonality ... ok
++test product_tests::test_vector_inner_product_parallel ... ok
++
++test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/rotor_duals_components_s4.rs (target/mrepb/debug/deps/rotor_duals_components_s4-dc2e797ab1370175)
++
++running 23 tests
++test bivector_component_round_trip_4d ... ok
++test bivector_get_keeps_out_of_range_zero_and_blade_semantics ... ok
++test e_ij_rejects_reversed_equal_and_out_of_range_indices ... ok
++test bivector_zero_exists_in_4d ... ok
++test formal_complement_cl_2_0_1_maps_e3_to_e12 ... ok
++test e_ij_constructs_the_named_blades ... ok
++test formal_complement_euclidean_3d_basis ... ok
++test formal_complement_is_linear_on_mixed_grades ... ok
++test formal_complement_maps_grade_to_complement_grade ... ok
++test formal_complement_squares_to_the_grade_sign_law_3d ... ok
++test formal_complement_squares_to_the_grade_sign_law_4d ... ok
++test from_components_delegates_to_the_general_map ... ok
++test hodge_dual_cl_2_0_0_table ... ok
++test hodge_dual_cl_2_0_1_rejects_the_degenerate_pseudoscalar ... ok
++test named_bivector_constructors_enforce_the_dimensional_domain ... ok
++test hodge_dual_double_dual_is_identity_in_3d ... ok
++test named_vector_constructors_enforce_the_dimensional_domain ... ok
++test out_of_range_component_writes_are_rejected_without_write ... ok
++test hodge_dual_euclidean_3d_table ... ok
++test set_bivector_component_4d_component_3_round_trips_e23 ... ok
++test typed_bivector_dual_cl_3_0_0 ... ok
++test typed_duals_cl_0_3_0_exist ... ok
++test typed_vector_dual_cl_3_0_0 ... ok
++
++test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/rotor_error_privacy_s1.rs (target/mrepb/debug/deps/rotor_error_privacy_s1-7e84a733336738fe)
++
++running 18 tests
++test escape_round_trips_preserve_coefficients ... ok
++test exp_error_carrier_is_lossless ... ok
++test from_multivector_bivector_rejects_nan_in_a_foreign_grade ... ok
++test from_multivector_bivector_rejects_a_vector ... ok
++test dyadic_boost_base_is_exactly_representable ... ok
++test scalar_and_bivector_try_from_share_the_foreign_grade_predicate ... ok
++test exact_certification_helpers_return_errors_above_six_dimensions ... ok
++test from_vectors_s1_precedence_is_not_a_vector_then_null ... ok
++test vector_try_from_rejects_mixed_grades_and_nan_foreign_grades ... ok
++test q_plus_times_q_minus_is_exact_zero_rotor ... ok
++test angle_one_boost_stored_inverse_matches_exact_stored_element_inverse ... ok
++test r32_boost_chain_is_degenerate_for_inverse_and_apply ... ok
++test apply_overflowing_quotient_is_degenerate ... ok
++test inverse_uses_exact_reverse_norm_not_a_rounded_denominator ... ok
++test to_rotation_matrix_propagates_a_compose_domain_exit_instead_of_panicking ... ok
++test exact_n_inverse_rejects_an_unrepresentable_output ... ok
++test apply_zero_loss_gate_is_post_exact_quotient ... ok
++test exact_sandwich_extreme_dynamic_range_matches_fraction_oracles ... ok
++
++test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
++
++     Running tests/rotor_log_powers_s2.rs (target/mrepb/debug/deps/rotor_log_powers_s2-ecdaa94849dfc9a6)
++
++running 16 tests
++test boost_fixture_power_integer_one_is_bit_exact_clone ... ok
++test log_exp_selects_the_principal_branch_for_two_pi_plane ... ok
++test hyperbolic_small_boost_rapidity_is_two_pow_minus_54 ... ok
++test two_pi_rotor_power_integer_one_clones_residual_bivector ... ok
++test small_angle_bivector_is_preserved_by_the_atan2_route ... ok
++test non_integral_power_matches_a_half_angle_construction ... ok
++test uncertified_multiphane_log_is_rejected ... ok
++test power_preserves_the_logarithm_scale_of_the_twenty_squared_rotor ... ok
++test power_integer_minus_two_boost_matches_exact_oracle ... ok
++test non_integral_power_propagates_log_domain_errors ... ok
++test hyperbolic_round_trip_is_fixture_bounded ... ok
++test elliptic_round_trip_is_fixture_bounded ... ok
++test multiphane_power_error_kinds_are_per_operation ... ok
++test integral_power_delegates_to_power_integer ... ok
++test power_integer_zero_one_negative_one_laws ... ok
++test binary_power_of_a_rounded_multiphane_rotor_is_degenerate ... ok
++
++test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/rotor_slerp_vectors_reflect_s3.rs (target/mrepb/debug/deps/rotor_slerp_vectors_reflect_s3-aea96d3b96db742a)
++
++running 25 tests
++test candidate_identities_hold_for_both_signs ... ok
++test from_vectors_indefinite_2d_antipodal_is_rejected_as_antipodal ... ok
++test from_vectors_cl0_2_0_same_vector_is_identity_not_antipodal ... ok
++test from_vectors_mv_scalar_input_is_not_a_vector ... ok
++test from_vectors_mixed_causal_types_are_rejected ... ok
++test from_vectors_cl1_1_0_sheet_change_is_rejected ... ok
++test from_vectors_null_vector_is_rejected ... ok
++test from_vectors_cl2_1_0_null_candidate_is_rejected ... ok
++test from_vectors_cl0_2_0_maps_e1_to_e2 ... ok
++test reflect_fixes_scalars ... ok
++test reflect_line_fixes_its_own_line ... ok
++test from_vectors_cl0_2_0_antipodal_resolves_in_two_dimensions ... ok
++test slerp_identity_to_identity_2d_is_ok_identity ... ok
++test reflect_preserves_perpendicular_blades ... ok
++test reflect_normal_errors_follow_not_a_vector_precedence ... ok
++test reflect_negates_the_normal ... ok
++test slerp_endpoints_are_exact_direct_returns ... ok
++test slerp_interior_preserves_the_stored_element_scale ... ok
++test slerp_negative_coefficient_dot_selects_the_negated_representative ... ok
++test from_vectors_subnormal_direction_is_normalized_symbolically ... ok
++test slerp_identity_endpoint_returns_single_plane_4d_rotor_exactly ... ok
++test reflect_is_an_involution ... ok
++test from_vectors_euclidean_2d_non_axis_antipodal_maps_direction ... ok
++test slerp_differing_sign_fixture_selects_the_same_hemisphere ... ok
++test from_vectors_direction_normalization_is_scale_invariant ... ok
++
++test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
++
++     Running tests/rotors.rs (target/mrepb/debug/deps/rotors-b20438018dcf0d85)
++
++running 29 tests
++test rotor_tests::test_rotor_identity ... ok
++test rotor_tests::test_rotor_composition ... ok
++test rotor_tests::test_rotor_commutator ... ok
++test rotor_tests::test_euler_angle_composition ... ok
++test rotor_tests::test_rotor_double_cover ... ok
++test rotor_tests::test_rotor_from_bivector ... ok
++test rotor_tests::test_rotor_power ... ok
++test rotor_tests::test_rotor_from_axis_angle ... ok
++test rotor_tests::test_rotor_logarithm ... ok
++test rotor_tests::test_rotor_inverse ... ok
++test rotor_tests::test_rotor_power_third ... ok
++test rotor_tests::test_rotor_power_zero ... ok
++test rotor_tests::test_rotor_from_axis_angle_is_range_safe ... ok
++test rotor_tests::test_rotor_power_fractional ... ok
++test rotor_tests::test_rotor_180_degree ... ok
++test rotor_tests::test_rotor_power_negative ... ok
++test rotor_tests::test_slerp_endpoints ... ok
++test rotor_tests::test_rotor_small_angle ... ok
++test rotor_tests::test_rotor_from_vectors ... ok
++test rotor_tests::test_rotor_interpolation ... ok
++test rotor_tests::test_rotor_rotation_e23_plane ... ok
++test rotor_tests::test_rotor_rotation_of_vector ... ok
++test rotor_tests::test_rotor_from_axis_angle_normalizes_overflowing_axes_symbolically ... ok
++test rotor_tests::test_rotor_preserves_magnitude ... ok
++test rotor_tests::test_rotor_rotation_e13_plane ... ok
++test rotor_tests::test_rotor_from_axis_angle_diagonal ... ok
++test rotor_tests::test_rotor_to_matrix ... ok
++test rotor_tests::test_rotor_preserves_angles ... ok
++test rotor_tests::test_to_rotation_matrix_e13_plane ... ok
++
++test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++   Doc-tests amari_core
++
++running 3 tests
++test amari-core/src/lib.rs - Vector (line 1771) - compile fail ... ok
++test amari-core/src/lib.rs - Multivector<P,Q,R>::grade_magnitude (line 561) ... ok
++test amari-core/src/unicode_ops.rs - unicode_ops (line 25) ... ok
++
++test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
++
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-rustdoc.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-rustdoc.log
+new file mode 100644
+index 0000000..0993d80
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-core-rustdoc.log
+@@ -0,0 +1,2 @@
++    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
++   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-b/target/mrepb/doc/amari_core/index.html
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-network-default-test.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-network-default-test.log
+new file mode 100644
+index 0000000..795a815
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-network-default-test.log
+@@ -0,0 +1,46 @@
++    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
++     Running unittests src/lib.rs (target/mrepb/debug/deps/amari_network-aafc9d8aa41c450b)
++
++running 4 tests
++test tropical::tests::test_betweenness_centrality ... ignored, Currently hanging - needs investigation
++test tropical::tests::test_no_path ... ignored, Currently hanging - needs investigation
++test tropical::tests::test_simple_shortest_path ... ignored, Currently hanging - needs investigation
++test tropical::tests::test_tropical_network_creation ... ok
++
++test result: ok. 1 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/integration.rs (target/mrepb/debug/deps/integration-84afc90248590bc6)
++
++running 13 tests
++test test_basic_network_construction ... ok
++test test_geometric_centrality ... ok
++test test_betweenness_centrality ... ok
++test test_community_detection ... ok
++test test_error_handling ... ok
++test test_geometric_distance ... ok
++test test_geometric_path_finding ... ok
++test test_tropical_network_conversion ... ignored
++test test_shortest_path ... ok
++test test_information_diffusion ... ok
++test test_node_metadata ... ok
++test test_no_path_exists ... ok
++test test_spectral_clustering ... ok
++
++test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/phantom_types.rs (target/mrepb/debug/deps/phantom_types-eb2db40b802abfd2)
++
++running 3 tests
++test regular_tests::test_regular_network_without_verification ... ok
++test test_type_safety_compilation ... ok
++test test_different_signatures ... ok
++
++test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++   Doc-tests amari_network
++
++running 1 test
++test amari-network/src/lib.rs - (line 19) ... ok
++
++test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
++
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-tropical-contracts-test.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-tropical-contracts-test.log
+new file mode 100644
+index 0000000..748fd80
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-tropical-contracts-test.log
+@@ -0,0 +1,76 @@
++    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
++     Running unittests src/lib.rs (target/mrepb/debug/deps/amari_tropical-462458a6ae019b77)
++
++running 38 tests
++test ordinal::tests::finite_ordinals_intern_canonically ... ok
++test ordinal::tests::interned_equal_ordinals_share_ids ... ok
++test ordinal::tests::leading_exponent_and_term_are_reported ... ok
++test ordinal::tests::ordinal_kind_and_inspection_helpers_work ... ok
++test ordinal::tests::ordinal_addition_matches_standard_examples ... ok
++test ordinal::tests::ordinal_weight_aggregation_and_inspection_helpers_work ... ok
++test ordinal::tests::omega_and_basic_formatting_work ... ok
++test ordinal::tests::unsorted_duplicate_terms_normalize ... ok
++test ordinal::tests::ordinal_weight_operations_work ... ok
++test polytope::tests::test_from_attention_scores ... ok
++test polytope::tests::test_convex_hull ... ok
++test polytope::tests::test_minkowski_sum ... ok
++test ordinal::tests::ordinal_comparison_matches_standard_examples ... ok
++test polytope::tests::test_point_containment ... ok
++test polytope::tests::test_tropical_hyperplane ... ok
++test polytope::tests::test_tropical_polytope_creation ... ok
++test semiring::tests::fold_helpers_match_tropical_expectations ... ok
++test semiring::tests::tropical_number_semiring_matches_existing_operations ... ok
++test types::tests::test_tropical_identities ... ok
++test types::tests::test_tropical_matrix_creation ... ok
++test types::tests::test_tropical_matrix_identity ... ok
++test types::tests::test_tropical_matrix_multiplication ... ok
++test types::tests::test_tropical_multivector_addition ... ok
++test types::tests::test_tropical_multivector_creation ... ok
++test types::tests::test_tropical_number_basics ... ok
++test verified::tests::test_tropical_matrix_multiplication ... ok
++test verified::tests::test_verified_tropical_matrix ... ok
++test verified::tests::test_verified_tropical_multivector ... ok
++test verified::tests::test_verified_tropical_number_max_plus ... ok
++test verified::tests::test_verified_tropical_number_min_plus ... ok
++test verified_contracts::contract_tests::test_matrix_contracts ... ok
++test verified_contracts::contract_tests::test_maxplus_semiring_contracts ... ok
++test verified_contracts::contract_tests::test_minplus_semiring_contracts ... ok
++test verified_contracts::contract_tests::test_tropical_identities ... ok
++test verified_contracts::contract_tests::test_multivector_contracts ... ok
++test viterbi::tests::test_forward_probabilities ... ok
++test viterbi::tests::test_tropical_polynomial ... ok
++test viterbi::tests::test_viterbi_decoding ... ok
++
++test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/optimization.rs (target/mrepb/debug/deps/optimization-eb786b5aca329992)
++
++running 5 tests
++test max_plus_semiring_laws_hold_on_small_sample ... ok
++test ordinal_weight_comparison_orders_bottom_below_ordinals ... ok
++test ordinal_weight_composition_matches_repeated_addition ... ok
++test ordinal_weight_selection_matches_repeated_oplus ... ok
++test ordinal_weight_semiring_style_associativity_holds_on_small_examples ... ok
++
++test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/tropical.rs (target/mrepb/debug/deps/tropical-ac5fb91ef4f2c09b)
++
++running 6 tests
++test tropical_tests::test_tropical_viterbi_path ... ignored, TropicalMultivector::viterbi requires API update for v0.12.0 (needs 4 generic parameters)
++test tropical_tests::test_tropical_addition_is_max ... ok
++test tropical_tests::test_tropical_multiplication_is_addition ... ok
++test tropical_tests::test_tropical_one_is_zero ... ok
++test tropical_tests::test_tropical_zero_is_negative_infinity ... ok
++test tropical_tests::test_tropical_softmax_becomes_max ... ok
++
++test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++   Doc-tests amari_tropical
++
++running 2 tests
++test amari-tropical/src/types.rs - types::TropicalNumber<T>::new (line 51) ... ok
++test amari-tropical/src/ordinal.rs - ordinal (line 16) ... ok
++
++test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
++
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-tropical-default-test.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-tropical-default-test.log
+new file mode 100644
+index 0000000..1875805
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/amari-tropical-default-test.log
+@@ -0,0 +1,71 @@
++    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
++     Running unittests src/lib.rs (target/mrepb/debug/deps/amari_tropical-63e244954a33b14a)
++
++running 33 tests
++test ordinal::tests::finite_ordinals_intern_canonically ... ok
++test ordinal::tests::interned_equal_ordinals_share_ids ... ok
++test ordinal::tests::omega_and_basic_formatting_work ... ok
++test ordinal::tests::leading_exponent_and_term_are_reported ... ok
++test ordinal::tests::ordinal_addition_matches_standard_examples ... ok
++test ordinal::tests::ordinal_kind_and_inspection_helpers_work ... ok
++test ordinal::tests::ordinal_weight_operations_work ... ok
++test ordinal::tests::ordinal_comparison_matches_standard_examples ... ok
++test ordinal::tests::unsorted_duplicate_terms_normalize ... ok
++test polytope::tests::test_from_attention_scores ... ok
++test polytope::tests::test_minkowski_sum ... ok
++test polytope::tests::test_point_containment ... ok
++test polytope::tests::test_convex_hull ... ok
++test polytope::tests::test_tropical_hyperplane ... ok
++test polytope::tests::test_tropical_polytope_creation ... ok
++test ordinal::tests::ordinal_weight_aggregation_and_inspection_helpers_work ... ok
++test semiring::tests::fold_helpers_match_tropical_expectations ... ok
++test semiring::tests::tropical_number_semiring_matches_existing_operations ... ok
++test types::tests::test_tropical_identities ... ok
++test types::tests::test_tropical_matrix_creation ... ok
++test types::tests::test_tropical_matrix_identity ... ok
++test types::tests::test_tropical_matrix_multiplication ... ok
++test types::tests::test_tropical_multivector_addition ... ok
++test types::tests::test_tropical_multivector_creation ... ok
++test types::tests::test_tropical_number_basics ... ok
++test verified::tests::test_tropical_matrix_multiplication ... ok
++test verified::tests::test_verified_tropical_matrix ... ok
++test verified::tests::test_verified_tropical_multivector ... ok
++test verified::tests::test_verified_tropical_number_max_plus ... ok
++test verified::tests::test_verified_tropical_number_min_plus ... ok
++test viterbi::tests::test_forward_probabilities ... ok
++test viterbi::tests::test_tropical_polynomial ... ok
++test viterbi::tests::test_viterbi_decoding ... ok
++
++test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/optimization.rs (target/mrepb/debug/deps/optimization-e641634b346e15e4)
++
++running 5 tests
++test max_plus_semiring_laws_hold_on_small_sample ... ok
++test ordinal_weight_comparison_orders_bottom_below_ordinals ... ok
++test ordinal_weight_selection_matches_repeated_oplus ... ok
++test ordinal_weight_composition_matches_repeated_addition ... ok
++test ordinal_weight_semiring_style_associativity_holds_on_small_examples ... ok
++
++test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++     Running tests/tropical.rs (target/mrepb/debug/deps/tropical-37c2866828a21d1d)
++
++running 6 tests
++test tropical_tests::test_tropical_addition_is_max ... ok
++test tropical_tests::test_tropical_viterbi_path ... ignored, TropicalMultivector::viterbi requires API update for v0.12.0 (needs 4 generic parameters)
++test tropical_tests::test_tropical_multiplication_is_addition ... ok
++test tropical_tests::test_tropical_one_is_zero ... ok
++test tropical_tests::test_tropical_zero_is_negative_infinity ... ok
++test tropical_tests::test_tropical_softmax_becomes_max ... ok
++
++test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
++
++   Doc-tests amari_tropical
++
++running 2 tests
++test amari-tropical/src/types.rs - types::TropicalNumber<T>::new (line 51) ... ok
++test amari-tropical/src/ordinal.rs - ordinal (line 16) ... ok
++
++test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
++
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/coverage-floor-repair-r1.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/coverage-floor-repair-r1.log
+new file mode 100644
+index 0000000..6bdc9c8
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/coverage-floor-repair-r1.log
+@@ -0,0 +1,13 @@
++# M-REP-B R1 — coverage-floor gather: status preservation (pinned recipe, --locked)
++# 2026-10-15T04:39:06Z
++
++## OLD logic (review R1 reproduction): 300 records then cargo exit 101
++OLD: FALSE GREEN: TOTAL_TESTS=300 with cargo exit 101
++OLD exit=0 (1 would be correct; 0 = the R1 defect)
++
++## NEW logic: capture listing output and exit status separately
++NEW: gather blocked (cargo exit 101)
++NEW exit=1 (expected 1)
++
++## Real gather (new status-preserving logic), workspace --lib --bins
++REAL: cargo exit 0, TOTAL_TESTS=2075 (floor 300 satisfied: yes)
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/fmt-check.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/fmt-check.log
+new file mode 100644
+index 0000000..e69de29
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/mrep-b-negative-batteries.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/mrep-b-negative-batteries.log
+new file mode 100644
+index 0000000..c44599f
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/mrep-b-negative-batteries.log
+@@ -0,0 +1,6 @@
++BATTERY OK:   rename-prefix mock exited 1 (nonzero)
++BATTERY OK:   duplicate-args mock exited 2 (nonzero)
++BATTERY OK:   cargo-failure mock (300 records, exit 101) exited 1 (nonzero)
++GUARD OK:     hook + workflow + helper carry the hardened gates
++
++ALL BATTERIES PASSED (3 behavioral + 1 source guard)
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/named-suite-assertions.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/named-suite-assertions.log
+new file mode 100644
+index 0000000..99307ed
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/named-suite-assertions.log
+@@ -0,0 +1,8 @@
++# M-REP-B R1 remediation — named-suite positive assertions (pinned recipe, --locked)
++# 2026-10-15T04:38:33Z
++verify-named-suite: OK — amari-core :: geometric_axioms: 6 passed, 0 ignored, inventory of 6 complete
++verify-named-suite: OK — amari-tropical :: semiring_contracts (features: contracts): 2 passed, 0 ignored, inventory of 2 complete
++verify-named-suite: OK — amari-core :: verified_contracts (features: formal-verification): 4 passed, 0 ignored, inventory of 4 complete
++verify-named-suite: OK — amari-tropical :: verified_contracts (features: contracts): 5 passed, 0 ignored, inventory of 5 complete
++# discovery generator named-filter wiring (F3)
++verify-named-suite: OK — amari-discovery :: generated_has_valid_schema_version: 1 passed, 0 ignored, inventory of 1 complete
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/recipe-env.txt b/docs/plans/core-matrix-evidence/mrep-b/green/r1/recipe-env.txt
+new file mode 100644
+index 0000000..ec9f8b1
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/recipe-env.txt
+@@ -0,0 +1,6 @@
++export RUSTC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
++export RUSTDOC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
++export RUSTC_WRAPPER=''
++export RUSTC_WORKSPACE_WRAPPER=''
++export RUSTFLAGS='-C target-cpu=x86-64 -C target-feature=-avx2'
++export CARGO_TARGET_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-b/target/mrepb
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/shell-validation.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/shell-validation.log
+new file mode 100644
+index 0000000..25f14dc
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/shell-validation.log
+@@ -0,0 +1,4 @@
++OK pre-commit
++OK verify-named-suite.sh
++OK mrep-b-negative-batteries.sh
++OK generate-discovery-wasm-surface.sh
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/workspace-check.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/workspace-check.log
+new file mode 100644
+index 0000000..1d83ea9
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/workspace-check.log
+@@ -0,0 +1 @@
++    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/green/r1/yaml-validity.log b/docs/plans/core-matrix-evidence/mrep-b/green/r1/yaml-validity.log
+new file mode 100644
+index 0000000..24dea6d
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-b/green/r1/yaml-validity.log
+@@ -0,0 +1,8 @@
++OK  .github/workflows/ci.yml
++OK  .github/workflows/mathematical-correctness.yml
++OK  .github/workflows/parallel-verification.yml
++OK  .github/workflows/project.yml
++OK  .github/workflows/publish.yml
++OK  .github/workflows/status-badges.yml
++OK  .github/workflows/test-status.yml
++7/7 valid
+diff --git a/docs/plans/core-matrix-evidence/mrep-b/investigation.md b/docs/plans/core-matrix-evidence/mrep-b/investigation.md
+index 7d258b1..b11c92e 100644
+--- a/docs/plans/core-matrix-evidence/mrep-b/investigation.md
++++ b/docs/plans/core-matrix-evidence/mrep-b/investigation.md
+@@ -109,3 +109,125 @@ Approved inventories (verbatim, as passed to the helper):
+ | `semiring_contracts` | amari-tropical | `contracts` | `verified_contracts::contract_tests::{test_maxplus_semiring_contracts, test_minplus_semiring_contracts}` |
+ | `verified_contracts` | amari-core | `formal-verification` | `verified_contracts::contract_tests::{test_signature_verification, test_verified_addition_properties, test_verified_identity_laws, test_verified_scalar_multiplication}` |
+ | `verified_contracts` | amari-tropical | `contracts` | `verified_contracts::contract_tests::{test_matrix_contracts, test_maxplus_semiring_contracts, test_minplus_semiring_contracts, test_multivector_contracts, test_tropical_identities}` |
++
++---
++
++## Round-2 expansion — exhaustive live string-filter index (review R1 F3)
++
++Date: 2026-10-15. Round-1 review HEAD: `601bb3b` (the base for this
++remediation); worktree `core-mrep-b`; target `target/mrepb`.
++
++Review R1 found that the nine-site record above is not the exhaustive
++filter-invocation index the matrix requires. Enumerated with the reviewer's
++command at `601bb3b`:
++
++```bash
++git grep -nE 'cargo( \+[^ ]+)? test' -- ':!docs' ':!*.md' ':!*.rs' ':!Cargo.lock'
++```
++
++Scope rule (matching the reviewer's round): a **string-filter site** is any
++executable invocation that passes a positional test-name filter — either to
++`cargo test` directly or through the `verify-named-suite.sh` wrapper (which
++passes the filter on to cargo). Excluded: whole-suite runs with no positional
++filter (`cargo test --workspace`, `cargo test --test integration`), target-only
++`--test <name>` selections with no filter, and `-- --list` / `--no-run`
++gathers (the latter are dispositioned under the coverage floor above).
++Historical `docs/` and plan prose are not executable and are out of scope.
++
++The full live index is **16 sites**: 8 wrapped in `verify-named-suite.sh`, 7 in
++the legacy `run_all_tests.sh`, and 1 discovery generator (which this
++remediation wires, making it a 9th wrapped site).
++
++| # | Site at `601bb3b` | Filter | Class | Disposition |
++|---|---|---|---|---|
++| 1 | `.github/workflows/mathematical-correctness.yml:85` | `amari-core geometric_axioms` | wrapped | evidence gate — asserted inventory of 6 |
++| 2 | `.github/workflows/mathematical-correctness.yml:92` | `amari-tropical semiring_contracts` (`contracts`) | wrapped | evidence gate — 2 |
++| 3 | `.github/workflows/mathematical-correctness.yml:100` | `amari-tropical verified_contracts` (`contracts`) | wrapped | evidence gate — 5 |
++| 4 | `.github/workflows/mathematical-correctness.yml:106` | `amari-core verified_contracts` (`formal-verification`) | wrapped | evidence gate — 4 |
++| 5 | `.githooks/pre-commit:128` | `amari-core geometric_axioms` | wrapped | evidence gate — 6; blocks |
++| 6 | `.githooks/pre-commit:142` | `amari-tropical semiring_contracts` (`contracts`) | wrapped | evidence gate — 2; blocks |
++| 7 | `.githooks/pre-commit:152` | `amari-core verified_contracts` (`formal-verification`) | wrapped | evidence gate — 4; blocks |
++| 8 | `.githooks/pre-commit:161` | `amari-tropical verified_contracts` (`contracts`) | wrapped | evidence gate — 5; blocks |
++| 9 | `scripts/generate-discovery-wasm-surface.sh:59` | `amari-discovery generated_has_valid_schema_version` | evidence-bearing (CI + publish) | **wired by this remediation** — asserted inventory of 1 (was a `tail -5` zero-match pass-through) |
++| 10 | `run_all_tests.sh:67` | `amari-core geometric_product_tests` | legacy runner | not-evidence-bearing (see note) |
++| 11 | `run_all_tests.sh:72` | `amari-core product_tests` | legacy runner | not-evidence-bearing |
++| 12 | `run_all_tests.sh:77` | `amari-core rotor_tests` | legacy runner | not-evidence-bearing |
++| 13 | `run_all_tests.sh:82` | `amari-tropical tropical_tests` | legacy runner | not-evidence-bearing |
++| 14 | `run_all_tests.sh:87` | `amari-dual dual_tests` | legacy runner | not-evidence-bearing |
++| 15 | `run_all_tests.sh:92` | `amari-info-geom info_geom_tests` | legacy runner | not-evidence-bearing |
++| 16 | `run_all_tests.sh:127` | `integration test_performance` (`--test integration`) | legacy runner | informational-count / out-of-fence (release-profile performance signal; not a correctness gate) |
++
++### Note on the seven legacy runner sites (10–16)
++
++`run_all_tests.sh` is a standalone developer-convenience runner. It is not
++invoked by any CI workflow, and `scripts/verify-publish-test-scope.py:70-71`
++explicitly forbids its use in publish (`run_all_tests.sh reintroduces
++amari-gpu runtime tests`). Its filters are therefore **not evidence-bearing**:
++they carry no approved inventory, no vacuity assertion, and are not relied upon
++as verification evidence. Current matches (independently listed by review R1):
++`geometric_product_tests`=14, `product_tests`=37, `rotor_tests`=29,
++`tropical_tests`=6, `dual_tests`=4, `info_geom_tests`=4. If the runner is ever
++wired into CI or publication, each filter must first be wrapped with
++`verify-named-suite.sh` and an approved inventory. Site 16 is additionally
++out-of-fence: it is a `--release` performance signal, not a correctness gate.
++
++### Note on site 9 (discovery generator)
++
++`scripts/generate-discovery-wasm-surface.sh` runs in CI
++(`.github/workflows/ci.yml:230`) and at publication
++(`.github/workflows/publish.yml:77`). Its previous verification step,
++`cargo test -p amari-discovery --test catalog_wasm -- generated_has_valid_schema_version 2>&1 | tail -5`,
++accepted a zero-match exit-0 run as green. It now calls
++`verify-named-suite.sh amari-discovery generated_has_valid_schema_version
++generated_has_valid_schema_version`, which asserts the one-test approved
++inventory and blocks on a vacuous selection. Evidence:
++`green/r1/named-suite-assertions.log`.
++
++## Round-2 remediation — F1 / F2 (review R1)
++
++### F1 — exact-inventory semantics (`scripts/verify-named-suite.sh`)
++
++The round-1 helper compared a raw count plus a substring membership search
++(`grep -qF "$name: test"`), so a prefixed rename
++(`renamed::geometric_axioms::associativity`) satisfied the approved
++`geometric_axioms::associativity`, and duplicate approved arguments were
++accepted. The helper now:
++
++1. rejects duplicate approved names at argument-parse time (usage error, exit 2);
++2. normalizes both sides to sorted multisets of FULL test names (the `--list`
++   records with the trailing `: test` stripped) and requires exact equality —
++   no missing, no extra; a prefixed rename is now a mismatch.
++
++Negative controls: `scripts/mrep-b-negative-batteries.sh` (rename mock →
++exit 1; duplicate-args mock → exit 2). Evidence:
++`green/r1/mrep-b-negative-batteries.log`.
++
++### F2 — preserve cargo's exit status (hook + workflow)
++
++The round-1 coverage gather piped `cargo ... | grep -c ... || true`, discarding
++cargo's status; a partial listing followed by a failed target passed. Both the
++hook (`.githooks/pre-commit`) and the workflow
++(`.github/workflows/mathematical-correctness.yml`, both `TOTAL_TESTS` and
++`FORMAL_FEATURE_TESTS`) now capture the listing and its exit status separately
++(`OUT=$(cargo ...) || STATUS=$?`), fail closed on any nonzero status, and keep
++the well-formed-count handling (`grep -c ": test$" || true` + empty guard)
++only for `rc=0`. Negative control: 300 records then exit 101 now blocks.
++Evidence: `green/r1/coverage-floor-repair-r1.log` and
++`green/r1/mrep-b-negative-batteries.log`.
++
++The R1 review also flagged that `docs/technical/TEST_ENFORCEMENT.md` claimed a
++gather failure was normalized to `0`; that overclaim is corrected there to
++state the status is captured separately and any nonzero status blocks before
++the floor is evaluated.
++
++### Exhaustiveness
++
++`git grep` was re-run at the remediation HEAD; the 16-row index above is the
++full live enumeration under the scope rule. No site is silently skipped.
++
++The remediation adds `scripts/mrep-b-negative-batteries.sh`, an offline test
++harness in which `cargo` is a shell-function mock. Its `cargo test ... --list`
++lines are fixture code with no positional filter (and never invoke a real
++toolchain), so they fall under the `--list`-gather exclusion and are not live
++filter sites. Its `bash "$HELPER"` calls exercise the four suite variants as
++assertions, not as additional invocation sites.
+diff --git a/docs/technical/TEST_ENFORCEMENT.md b/docs/technical/TEST_ENFORCEMENT.md
+index a526eb4..8033edb 100644
+--- a/docs/technical/TEST_ENFORCEMENT.md
++++ b/docs/technical/TEST_ENFORCEMENT.md
+@@ -38,8 +38,8 @@ line range, and every command is verbatim.
+ | 9 | Phantom contracts, core | `bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts` + 4 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 152-160 |
+ | 10 | Phantom contracts, tropical | `bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts` + 5 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 161-170 |
+ | 11 | Phantom contracts, network | **REMOVED (M-REP-B)** — the module has no `#[test]` functions even with `--features formal-verification`; the former tolerated invocation silently selected 0 tests | — | — | — |
+-| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c ": test$" \|\| true)`; then `[ -z "$TOTAL_TESTS" ] && TOTAL_TESTS=0` | FULL | **[CORRECTED 2026-10-15, M-REP-B]** The former hook shape used `grep -c "test "` — a pattern that matched none of the `name: test` list lines, so its count was 0 — with `\|\| echo "0"`, which on failure appended a second `0` (two-line `0\n0`). The gather now yields a single well-formed integer on success and on failure | 178-181 |
+-| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | **[CORRECTED 2026-10-15, M-REP-B]** Blocks a well-formed count below 300 **and** gather failure (now normalized to `0`). The M-REP-A table described the OLD vacuous-on-failure shape; see `docs/plans/core-matrix-evidence/mrep-b/` | 182-186 |
++| 12 | Coverage gather | `COVERAGE_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) \|\| COVERAGE_STATUS=$?`; `exit 1` if `COVERAGE_STATUS != 0`; else `TOTAL_TESTS=$(printf '%s\n' "$COVERAGE_LIST" \| grep -c ": test$" \|\| true)` with `[ -z "$TOTAL_TESTS" ] && TOTAL_TESTS=0` | FULL | **[CORRECTED 2026-10-15, M-REP-B; HARDENED R1]** The former hook shape used `grep -c "test "` — a pattern that matched none of the `name: test` list lines, so its count was 0 — with `\|\| echo "0"`, which on failure appended a second `0` (two-line `0\n0`). The gather now captures cargo's listing **and its exit status separately**, fails closed (`exit 1`) on any nonzero status, and otherwise yields a single well-formed integer; a zero-match success is normalized to `0` | 178-190 |
++| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | **[CORRECTED 2026-10-15, M-REP-B; HARDENED R1]** Blocks a well-formed count below 300. Gather failure does **not** reach the floor: it exits 1 in the gather itself. The M-REP-A table described the OLD vacuous-on-failure shape; R1 review disproved the claim that failure was normalized to `0` (it held only for failure before any matching output), so the status is now captured explicitly. Evidence: `docs/plans/core-matrix-evidence/mrep-b/green/r1/` | 191-195 |
+ | 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 190-194 |
+ | 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 206-210 |
+ | 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 215-219 |
+@@ -182,10 +182,17 @@ The workspace coverage floor is computed by the pre-commit hook and by
+ `"test "` pattern that matched none of the `name: test` list lines, so its
+ gather returned `0` on every run, and the `\|\| echo "0"` failure fallback
+ appended a second `0`, making `[ "$TOTAL_TESTS" -lt 300 ]` error out instead of
+-blocking. The gather now yields a single well-formed integer and the ≥300 floor
+-blocks on both a low count and a gather failure. Evidence:
+-`docs/plans/core-matrix-evidence/mrep-b/green/coverage-floor-repair.log` and
+-`green/named-suite-assertions.log`.
++blocking. The gather now captures cargo's listing **and its exit status
++separately**, fails closed (`exit 1`) on any nonzero status, and otherwise
++yields a single well-formed integer; the ≥300 floor then blocks a low count.
++**[HARDENED 2026-10-15, M-REP-B review R1]** the first repair still piped
++cargo into `grep`, so a partial listing followed by a failed target produced
++more than 300 records and passed; the review disproved the claim that gather
++failure was normalized to `0`. Cargo's status is now captured separately and
++any nonzero status blocks irrespective of records emitted. Evidence:
++`docs/plans/core-matrix-evidence/mrep-b/green/coverage-floor-repair.log`,
++`green/r1/coverage-floor-repair-r1.log`, and
++`green/r1/mrep-b-negative-batteries.log`.
+ 
+ ### Test count targets
+ - **amari-core**: 140+ tests covering geometric algebra operations
+diff --git a/scripts/generate-discovery-wasm-surface.sh b/scripts/generate-discovery-wasm-surface.sh
+index faee271..ab397fc 100755
+--- a/scripts/generate-discovery-wasm-surface.sh
++++ b/scripts/generate-discovery-wasm-surface.sh
+@@ -56,6 +56,9 @@ echo "==> Wrote $OUTPUT ($(wc -c < "$OUTPUT") bytes)"
+ 
+ # ----- verify the output parses -----
+ echo "==> Verifying generated catalog"
+-cargo test -p amari-discovery --test catalog_wasm -- generated_has_valid_schema_version 2>&1 | tail -5
++# Named-suite vacuity gate (M-REP-B): the filter must select exactly the one
++# approved test and it must pass. A zero-match run exits 0 and is not evidence.
++bash scripts/verify-named-suite.sh amari-discovery generated_has_valid_schema_version \
++    generated_has_valid_schema_version
+ 
+ echo "==> Done. Commit catalog/generated-wasm.json when the surface changes."
+diff --git a/scripts/mrep-b-negative-batteries.sh b/scripts/mrep-b-negative-batteries.sh
+new file mode 100755
+index 0000000..1443998
+--- /dev/null
++++ b/scripts/mrep-b-negative-batteries.sh
+@@ -0,0 +1,142 @@
++#!/usr/bin/env bash
++# SPDX-License-Identifier: MIT OR Apache-2.0
++#
++# mrep-b-negative-batteries.sh — adversarial negative controls for the M-REP-B
++# suite-integrity gates. Each mock reproduces a FALSE GREEN that review round 1
++# demonstrated at HEAD 601bb3b:
++#
++#   1. prefixed rename  — exact-inventory matching must reject a renamed test
++#                          (F1, scripts/verify-named-suite.sh);
++#   2. duplicate args   — duplicate approved names must be a usage error
++#                          (F1, scripts/verify-named-suite.sh);
++#   3. cargo failure    — the coverage gather must block when cargo emits 300
++#                          matching records and then exits 101 (F2, hook +
++#                          workflow).
++#
++# A fourth source guard asserts the status-preserving gather is present in both
++# artifacts, so the behavioral battery cannot silently drift from them.
++#
++# Exit status: 0 only when all batteries and the guard pass.
++
++set -uo pipefail
++
++REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
++HELPER="$REPO_ROOT/scripts/verify-named-suite.sh"
++HOOK="$REPO_ROOT/.githooks/pre-commit"
++WORKFLOW="$REPO_ROOT/.github/workflows/mathematical-correctness.yml"
++
++FAILURES=0
++
++# Run a command expected to exit nonzero; record pass/fail.
++expect_nonzero() {
++    local name="$1"
++    shift
++    local rc=0
++    "$@" >/dev/null 2>&1 || rc=$?
++    if [ "$rc" -eq 0 ]; then
++        echo "BATTERY FAIL: $name exited 0 (expected nonzero)"
++        FAILURES=$((FAILURES + 1))
++    else
++        echo "BATTERY OK:   $name exited $rc (nonzero)"
++    fi
++}
++
++# --- Battery 1: a prefixed rename must fail exact-inventory matching -------
++battery_rename() {
++    cargo() {
++        if [[ " $* " == *" --list "* ]]; then
++            echo 'renamed::geometric_axioms::associativity: test'
++        else
++            echo 'test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out'
++        fi
++    }
++    export -f cargo
++    bash "$HELPER" dummy geometric_axioms geometric_axioms::associativity
++}
++
++# --- Battery 2: duplicate approved names must be a usage error -------------
++battery_duplicate() {
++    cargo() {
++        if [[ " $* " == *" --list "* ]]; then
++            echo 'suite::a: test'
++        else
++            echo 'test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out'
++        fi
++    }
++    export -f cargo
++    bash "$HELPER" dummy suite suite::a suite::a
++}
++
++# --- Battery 3: cargo emits 300 records then exits 101 -> gate must block ---
++# Verbatim reproduction of the coverage-floor gather + floor as it now stands
++# in .githooks/pre-commit and .github/workflows/mathematical-correctness.yml.
++battery_cargo_failure() {
++    cargo() {
++        local i
++        for ((i = 0; i < 300; i++)); do
++            echo "test_$i: test"
++        done
++        return 101
++    }
++    export -f cargo
++    local COVERAGE_LIST COVERAGE_STATUS TOTAL_TESTS
++    COVERAGE_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || COVERAGE_STATUS=$?
++    COVERAGE_STATUS=${COVERAGE_STATUS:-0}
++    if [ "$COVERAGE_STATUS" -ne 0 ]; then
++        echo "  (gather blocked: cargo exit $COVERAGE_STATUS)" >&2
++        return 1
++    fi
++    TOTAL_TESTS=$(printf '%s\n' "$COVERAGE_LIST" | grep -c ": test$" || true)
++    if [ -z "$TOTAL_TESTS" ]; then
++        TOTAL_TESTS=0
++    fi
++    if [ "$TOTAL_TESTS" -lt 300 ]; then
++        echo "  (floor blocked: $TOTAL_TESTS < 300)" >&2
++        return 1
++    fi
++    echo "  FALSE GREEN: $TOTAL_TESTS records accepted despite cargo failure" >&2
++    return 0
++}
++
++# --- Source guard: the real artifacts carry the status check ---------------
++guard_source() {
++    local failed=0
++    if ! grep -Fq 'COVERAGE_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || COVERAGE_STATUS=$?' "$HOOK"; then
++        echo "GUARD FAIL: hook lacks the status-preserving coverage gather"
++        failed=1
++    fi
++    if ! grep -Fq 'TOTAL_TESTS_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || TOTAL_TESTS_STATUS=$?' "$WORKFLOW"; then
++        echo "GUARD FAIL: workflow lacks the status-preserving total gather"
++        failed=1
++    fi
++    if ! grep -Fq 'FORMAL_FEATURE_TESTS_LIST=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null) || FORMAL_FEATURE_TESTS_STATUS=$?' "$WORKFLOW"; then
++        echo "GUARD FAIL: workflow lacks the status-preserving formal gather"
++        failed=1
++    fi
++    if ! grep -Fq 'SELECTED_SORTED=$(printf' "$HELPER"; then
++        echo "GUARD FAIL: helper lacks exact sorted-inventory comparison"
++        failed=1
++    fi
++    if ! grep -Fq 'duplicate approved name' "$HELPER"; then
++        echo "GUARD FAIL: helper lacks duplicate-approved-name rejection"
++        failed=1
++    fi
++    if [ "$failed" -eq 0 ]; then
++        echo "GUARD OK:     hook + workflow + helper carry the hardened gates"
++    else
++        FAILURES=$((FAILURES + 1))
++    fi
++}
++
++expect_nonzero "rename-prefix mock" battery_rename
++expect_nonzero "duplicate-args mock" battery_duplicate
++expect_nonzero "cargo-failure mock (300 records, exit 101)" battery_cargo_failure
++guard_source
++
++echo ""
++if [ "$FAILURES" -eq 0 ]; then
++    echo "ALL BATTERIES PASSED (3 behavioral + 1 source guard)"
++    exit 0
++fi
++echo "NEGATIVE BATTERIES FAILED: $FAILURES"
++exit 1
+diff --git a/scripts/verify-named-suite.sh b/scripts/verify-named-suite.sh
+index 69fda6b..507757a 100755
+--- a/scripts/verify-named-suite.sh
++++ b/scripts/verify-named-suite.sh
+@@ -9,7 +9,9 @@
+ # a real gate. It:
+ #
+ #   1. lists the tests the filter selects (`-- --list`);
+-#   2. requires the list to contain EXACTLY the approved inventory names;
++#   2. requires the selected FULL test names to equal EXACTLY the approved
++#      inventory as a sorted multiset (no missing, no extra, no prefixed
++#      renames); duplicate approved names are a usage error;
+ #   3. runs the filtered tests and parses the `test result:` lines;
+ #   4. requires `passed >= 1` (non-vacuous) and `ignored == 0` (the approved
+ #      inventories contain no ignored/skipped tests).
+@@ -48,6 +50,15 @@ shift 2
+ 
+ EXPECTED_COUNT="$#"
+ 
++# The approved inventory is a set: reject duplicate expected names at parse
++# time (usage error), before any cargo invocation.
++DUPLICATE_EXPECTED=$(printf '%s\n' "$@" | sort | uniq -d)
++if [ -n "$DUPLICATE_EXPECTED" ]; then
++    echo "verify-named-suite: usage error — duplicate approved name(s):" >&2
++    printf '%s\n' "$DUPLICATE_EXPECTED" | sed 's/^/    /' >&2
++    exit 2
++fi
++
+ cargo_args=(test --locked --quiet --package "$PACKAGE")
+ if [ -n "$FEATURES" ]; then
+     cargo_args+=(--features "$FEATURES")
+@@ -67,7 +78,10 @@ if [ "$LIST_STATUS" -ne 0 ]; then
+     exit 1
+ fi
+ 
+-# 2. Exact inventory comparison (count + membership).
++# 2. Exact inventory comparison: sorted full-name multisets must be equal.
++#    Full names are the `--list` records with the trailing `: test` stripped,
++#    so a prefixed rename (`renamed::suite::name`) is NOT a match for the
++#    approved `suite::name`.
+ SELECTED_COUNT=$(printf '%s\n' "$LIST_OUT" | grep -c ': test$' || true)
+ if [ -z "$SELECTED_COUNT" ]; then
+     SELECTED_COUNT=0
+@@ -77,18 +91,17 @@ if [ "$SELECTED_COUNT" -eq 0 ]; then
+     printf '%s\n' "$LIST_OUT" >&2
+     exit 1
+ fi
+-if [ "$SELECTED_COUNT" -ne "$EXPECTED_COUNT" ]; then
+-    echo "verify-named-suite: FAIL — $SUITE selected $SELECTED_COUNT test(s), approved inventory has $EXPECTED_COUNT" >&2
++SELECTED_SORTED=$(printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/: test$//' | sort || true)
++EXPECTED_SORTED=$(printf '%s\n' "$@" | sort)
++if [ "$SELECTED_COUNT" -ne "$EXPECTED_COUNT" ] || [ "$SELECTED_SORTED" != "$EXPECTED_SORTED" ]; then
++    echo "verify-named-suite: FAIL — $SUITE inventory mismatch: selected $SELECTED_COUNT test(s), approved inventory has $EXPECTED_COUNT" >&2
++    echo "    missing (approved, not selected):" >&2
++    comm -23 <(printf '%s\n' "$EXPECTED_SORTED") <(printf '%s\n' "$SELECTED_SORTED") | sed 's/^/        /' >&2
++    echo "    unexpected (selected, not approved):" >&2
++    comm -13 <(printf '%s\n' "$EXPECTED_SORTED") <(printf '%s\n' "$SELECTED_SORTED") | sed 's/^/        /' >&2
+     printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/^/    selected: /' >&2
+     exit 1
+ fi
+-for name in "$@"; do
+-    if ! printf '%s\n' "$LIST_OUT" | grep -qF "$name: test"; then
+-        echo "verify-named-suite: FAIL — expected test '$name' not selected by $SUITE" >&2
+-        printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/^/    selected: /' >&2
+-        exit 1
+-    fi
+-done
+ 
+ # 3. Run the filtered tests and parse the `test result:` lines.
+ RUN_OUT=$(cargo "${cargo_args[@]}" "$FILTER" 2>&1)

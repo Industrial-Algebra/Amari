@@ -113,11 +113,26 @@ jobs:
     - name: Mathematical property analysis
       run: |
         echo "🔍 Analyzing mathematical properties..."
-        TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || true)
+        # Preserve cargo's exit status: a partial listing followed by a failed
+        # target must fail the gate, never pass through on the records emitted
+        # so far. (`|| ...` keeps `-e` from aborting before we inspect the code.)
+        TOTAL_TESTS_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || TOTAL_TESTS_STATUS=$?
+        TOTAL_TESTS_STATUS=${TOTAL_TESTS_STATUS:-0}
+        if [ "$TOTAL_TESTS_STATUS" -ne 0 ]; then
+          echo "❌ Test coverage gather failed (cargo exit $TOTAL_TESTS_STATUS)"
+          exit 1
+        fi
+        TOTAL_TESTS=$(printf '%s\n' "$TOTAL_TESTS_LIST" | grep -c ": test$" || true)
         if [ -z "$TOTAL_TESTS" ]; then
           TOTAL_TESTS=0
         fi
-        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || true)
+        FORMAL_FEATURE_TESTS_LIST=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null) || FORMAL_FEATURE_TESTS_STATUS=$?
+        FORMAL_FEATURE_TESTS_STATUS=${FORMAL_FEATURE_TESTS_STATUS:-0}
+        if [ "$FORMAL_FEATURE_TESTS_STATUS" -ne 0 ]; then
+          echo "❌ Formal-feature gather failed (cargo exit $FORMAL_FEATURE_TESTS_STATUS)"
+          exit 1
+        fi
+        FORMAL_FEATURE_TESTS=$(printf '%s\n' "$FORMAL_FEATURE_TESTS_LIST" | grep -c ": test$" || true)
         if [ -z "$FORMAL_FEATURE_TESTS" ]; then
           FORMAL_FEATURE_TESTS=0
         fi

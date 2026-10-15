@@ -9,7 +9,9 @@
 # a real gate. It:
 #
 #   1. lists the tests the filter selects (`-- --list`);
-#   2. requires the list to contain EXACTLY the approved inventory names;
+#   2. requires the selected FULL test names to equal EXACTLY the approved
+#      inventory as a sorted multiset (no missing, no extra, no prefixed
+#      renames); duplicate approved names are a usage error;
 #   3. runs the filtered tests and parses the `test result:` lines;
 #   4. requires `passed >= 1` (non-vacuous) and `ignored == 0` (the approved
 #      inventories contain no ignored/skipped tests).
@@ -48,6 +50,15 @@ shift 2
 
 EXPECTED_COUNT="$#"
 
+# The approved inventory is a set: reject duplicate expected names at parse
+# time (usage error), before any cargo invocation.
+DUPLICATE_EXPECTED=$(printf '%s\n' "$@" | sort | uniq -d)
+if [ -n "$DUPLICATE_EXPECTED" ]; then
+    echo "verify-named-suite: usage error — duplicate approved name(s):" >&2
+    printf '%s\n' "$DUPLICATE_EXPECTED" | sed 's/^/    /' >&2
+    exit 2
+fi
+
 cargo_args=(test --locked --quiet --package "$PACKAGE")
 if [ -n "$FEATURES" ]; then
     cargo_args+=(--features "$FEATURES")
@@ -67,7 +78,10 @@ if [ "$LIST_STATUS" -ne 0 ]; then
     exit 1
 fi
 
-# 2. Exact inventory comparison (count + membership).
+# 2. Exact inventory comparison: sorted full-name multisets must be equal.
+#    Full names are the `--list` records with the trailing `: test` stripped,
+#    so a prefixed rename (`renamed::suite::name`) is NOT a match for the
+#    approved `suite::name`.
 SELECTED_COUNT=$(printf '%s\n' "$LIST_OUT" | grep -c ': test$' || true)
 if [ -z "$SELECTED_COUNT" ]; then
     SELECTED_COUNT=0
@@ -77,18 +91,17 @@ if [ "$SELECTED_COUNT" -eq 0 ]; then
     printf '%s\n' "$LIST_OUT" >&2
     exit 1
 fi
-if [ "$SELECTED_COUNT" -ne "$EXPECTED_COUNT" ]; then
-    echo "verify-named-suite: FAIL — $SUITE selected $SELECTED_COUNT test(s), approved inventory has $EXPECTED_COUNT" >&2
+SELECTED_SORTED=$(printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/: test$//' | sort || true)
+EXPECTED_SORTED=$(printf '%s\n' "$@" | sort)
+if [ "$SELECTED_COUNT" -ne "$EXPECTED_COUNT" ] || [ "$SELECTED_SORTED" != "$EXPECTED_SORTED" ]; then
+    echo "verify-named-suite: FAIL — $SUITE inventory mismatch: selected $SELECTED_COUNT test(s), approved inventory has $EXPECTED_COUNT" >&2
+    echo "    missing (approved, not selected):" >&2
+    comm -23 <(printf '%s\n' "$EXPECTED_SORTED") <(printf '%s\n' "$SELECTED_SORTED") | sed 's/^/        /' >&2
+    echo "    unexpected (selected, not approved):" >&2
+    comm -13 <(printf '%s\n' "$EXPECTED_SORTED") <(printf '%s\n' "$SELECTED_SORTED") | sed 's/^/        /' >&2
     printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/^/    selected: /' >&2
     exit 1
 fi
-for name in "$@"; do
-    if ! printf '%s\n' "$LIST_OUT" | grep -qF "$name: test"; then
-        echo "verify-named-suite: FAIL — expected test '$name' not selected by $SUITE" >&2
-        printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/^/    selected: /' >&2
-        exit 1
-    fi
-done
 
 # 3. Run the filtered tests and parse the `test result:` lines.
 RUN_OUT=$(cargo "${cargo_args[@]}" "$FILTER" 2>&1)

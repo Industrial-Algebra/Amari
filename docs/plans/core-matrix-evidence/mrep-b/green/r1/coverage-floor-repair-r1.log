@@ -1,0 +1,13 @@
+# M-REP-B R1 — coverage-floor gather: status preservation (pinned recipe, --locked)
+# 2026-10-15T04:39:06Z
+
+## OLD logic (review R1 reproduction): 300 records then cargo exit 101
+OLD: FALSE GREEN: TOTAL_TESTS=300 with cargo exit 101
+OLD exit=0 (1 would be correct; 0 = the R1 defect)
+
+## NEW logic: capture listing output and exit status separately
+NEW: gather blocked (cargo exit 101)
+NEW exit=1 (expected 1)
+
+## Real gather (new status-preserving logic), workspace --lib --bins
+REAL: cargo exit 0, TOTAL_TESTS=2075 (floor 300 satisfied: yes)

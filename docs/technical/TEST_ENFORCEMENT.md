@@ -38,8 +38,8 @@ line range, and every command is verbatim.
 | 9 | Phantom contracts, core | `bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts` + 4 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 152-160 |
 | 10 | Phantom contracts, tropical | `bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts` + 5 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 161-170 |
 | 11 | Phantom contracts, network | **REMOVED (M-REP-B)** — the module has no `#[test]` functions even with `--features formal-verification`; the former tolerated invocation silently selected 0 tests | — | — | — |
-| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c ": test$" \|\| true)`; then `[ -z "$TOTAL_TESTS" ] && TOTAL_TESTS=0` | FULL | **[CORRECTED 2026-10-15, M-REP-B]** The former hook shape used `grep -c "test "` — a pattern that matched none of the `name: test` list lines, so its count was 0 — with `\|\| echo "0"`, which on failure appended a second `0` (two-line `0\n0`). The gather now yields a single well-formed integer on success and on failure | 178-181 |
-| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | **[CORRECTED 2026-10-15, M-REP-B]** Blocks a well-formed count below 300 **and** gather failure (now normalized to `0`). The M-REP-A table described the OLD vacuous-on-failure shape; see `docs/plans/core-matrix-evidence/mrep-b/` | 182-186 |
+| 12 | Coverage gather | `COVERAGE_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) \|\| COVERAGE_STATUS=$?`; `exit 1` if `COVERAGE_STATUS != 0`; else `TOTAL_TESTS=$(printf '%s\n' "$COVERAGE_LIST" \| grep -c ": test$" \|\| true)` with `[ -z "$TOTAL_TESTS" ] && TOTAL_TESTS=0` | FULL | **[CORRECTED 2026-10-15, M-REP-B; HARDENED R1]** The former hook shape used `grep -c "test "` — a pattern that matched none of the `name: test` list lines, so its count was 0 — with `\|\| echo "0"`, which on failure appended a second `0` (two-line `0\n0`). The gather now captures cargo's listing **and its exit status separately**, fails closed (`exit 1`) on any nonzero status, and otherwise yields a single well-formed integer; a zero-match success is normalized to `0` | 178-190 |
+| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | **[CORRECTED 2026-10-15, M-REP-B; HARDENED R1]** Blocks a well-formed count below 300. Gather failure does **not** reach the floor: it exits 1 in the gather itself. The M-REP-A table described the OLD vacuous-on-failure shape; R1 review disproved the claim that failure was normalized to `0` (it held only for failure before any matching output), so the status is now captured explicitly. Evidence: `docs/plans/core-matrix-evidence/mrep-b/green/r1/` | 191-195 |
 | 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 190-194 |
 | 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 206-210 |
 | 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 215-219 |
@@ -182,10 +182,17 @@ The workspace coverage floor is computed by the pre-commit hook and by
 `"test "` pattern that matched none of the `name: test` list lines, so its
 gather returned `0` on every run, and the `\|\| echo "0"` failure fallback
 appended a second `0`, making `[ "$TOTAL_TESTS" -lt 300 ]` error out instead of
-blocking. The gather now yields a single well-formed integer and the ≥300 floor
-blocks on both a low count and a gather failure. Evidence:
-`docs/plans/core-matrix-evidence/mrep-b/green/coverage-floor-repair.log` and
-`green/named-suite-assertions.log`.
+blocking. The gather now captures cargo's listing **and its exit status
+separately**, fails closed (`exit 1`) on any nonzero status, and otherwise
+yields a single well-formed integer; the ≥300 floor then blocks a low count.
+**[HARDENED 2026-10-15, M-REP-B review R1]** the first repair still piped
+cargo into `grep`, so a partial listing followed by a failed target produced
+more than 300 records and passed; the review disproved the claim that gather
+failure was normalized to `0`. Cargo's status is now captured separately and
+any nonzero status blocks irrespective of records emitted. Evidence:
+`docs/plans/core-matrix-evidence/mrep-b/green/coverage-floor-repair.log`,
+`green/r1/coverage-floor-repair-r1.log`, and
+`green/r1/mrep-b-negative-batteries.log`.
 
 ### Test count targets
 - **amari-core**: 140+ tests covering geometric algebra operations

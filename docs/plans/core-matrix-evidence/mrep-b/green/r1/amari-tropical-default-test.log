@@ -1,0 +1,71 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (target/mrepb/debug/deps/amari_tropical-63e244954a33b14a)
+
+running 33 tests
+test ordinal::tests::finite_ordinals_intern_canonically ... ok
+test ordinal::tests::interned_equal_ordinals_share_ids ... ok
+test ordinal::tests::omega_and_basic_formatting_work ... ok
+test ordinal::tests::leading_exponent_and_term_are_reported ... ok
+test ordinal::tests::ordinal_addition_matches_standard_examples ... ok
+test ordinal::tests::ordinal_kind_and_inspection_helpers_work ... ok
+test ordinal::tests::ordinal_weight_operations_work ... ok
+test ordinal::tests::ordinal_comparison_matches_standard_examples ... ok
+test ordinal::tests::unsorted_duplicate_terms_normalize ... ok
+test polytope::tests::test_from_attention_scores ... ok
+test polytope::tests::test_minkowski_sum ... ok
+test polytope::tests::test_point_containment ... ok
+test polytope::tests::test_convex_hull ... ok
+test polytope::tests::test_tropical_hyperplane ... ok
+test polytope::tests::test_tropical_polytope_creation ... ok
+test ordinal::tests::ordinal_weight_aggregation_and_inspection_helpers_work ... ok
+test semiring::tests::fold_helpers_match_tropical_expectations ... ok
+test semiring::tests::tropical_number_semiring_matches_existing_operations ... ok
+test types::tests::test_tropical_identities ... ok
+test types::tests::test_tropical_matrix_creation ... ok
+test types::tests::test_tropical_matrix_identity ... ok
+test types::tests::test_tropical_matrix_multiplication ... ok
+test types::tests::test_tropical_multivector_addition ... ok
+test types::tests::test_tropical_multivector_creation ... ok
+test types::tests::test_tropical_number_basics ... ok
+test verified::tests::test_tropical_matrix_multiplication ... ok
+test verified::tests::test_verified_tropical_matrix ... ok
+test verified::tests::test_verified_tropical_multivector ... ok
+test verified::tests::test_verified_tropical_number_max_plus ... ok
+test verified::tests::test_verified_tropical_number_min_plus ... ok
+test viterbi::tests::test_forward_probabilities ... ok
+test viterbi::tests::test_tropical_polynomial ... ok
+test viterbi::tests::test_viterbi_decoding ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/optimization.rs (target/mrepb/debug/deps/optimization-e641634b346e15e4)
+
+running 5 tests
+test max_plus_semiring_laws_hold_on_small_sample ... ok
+test ordinal_weight_comparison_orders_bottom_below_ordinals ... ok
+test ordinal_weight_selection_matches_repeated_oplus ... ok
+test ordinal_weight_composition_matches_repeated_addition ... ok
+test ordinal_weight_semiring_style_associativity_holds_on_small_examples ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/tropical.rs (target/mrepb/debug/deps/tropical-37c2866828a21d1d)
+
+running 6 tests
+test tropical_tests::test_tropical_addition_is_max ... ok
+test tropical_tests::test_tropical_viterbi_path ... ignored, TropicalMultivector::viterbi requires API update for v0.12.0 (needs 4 generic parameters)
+test tropical_tests::test_tropical_multiplication_is_addition ... ok
+test tropical_tests::test_tropical_one_is_zero ... ok
+test tropical_tests::test_tropical_zero_is_negative_infinity ... ok
+test tropical_tests::test_tropical_softmax_becomes_max ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests amari_tropical
+
+running 2 tests
+test amari-tropical/src/types.rs - types::TropicalNumber<T>::new (line 51) ... ok
+test amari-tropical/src/ordinal.rs - ordinal (line 16) ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
