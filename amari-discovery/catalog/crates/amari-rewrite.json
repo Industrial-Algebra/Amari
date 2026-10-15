@@ -12343,6 +12343,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::relation::Sha256Digest::canonical_terms",
+      "kind": "method",
+      "signature": "pub fn canonical_terms (frame : & str , terms : & [& Term]) -> Vec < Self >",
+      "source_path": "amari-rewrite/src/relation/digest.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::relation::digest",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn canonical_terms (frame : & str , terms : & [& Term]) -> Vec < Self >",
+          "source_path": "amari-rewrite/src/relation/digest.rs",
+          "source_module": "amari_rewrite::relation::digest",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::relation::digest",
+          "declaration_ident": "Sha256Digest::canonical_terms"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::relation::Sha256Digest::framed",
       "kind": "method",
       "signature": "pub fn framed (frame : & str , payload : & [u8]) -> Self",
@@ -15154,7 +15173,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15190,7 +15209,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::completion::FailedReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15208,7 +15227,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -17425,7 +17444,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -17461,7 +17480,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::completion::FailedReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -17479,7 +17498,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -19660,7 +19679,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -19696,7 +19715,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::completion::FailedReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -19714,7 +19733,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -22256,7 +22275,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::completion::CompletionOutcome",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -22292,7 +22311,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::completion::FailedReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -22310,7 +22329,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -24854,7 +24873,7 @@
     {
       "path": "amari_rewrite::completion::CompletionOutcome",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 1,
       "gate": "feature(\"completion\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -24870,7 +24889,7 @@
     {
       "path": "amari_rewrite::completion::FailedReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 3,
       "gate": "feature(\"completion\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -24878,7 +24897,7 @@
     {
       "path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 2,
       "gate": "feature(\"completion\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -24894,7 +24913,7 @@
     {
       "path": "amari_rewrite::completion::complete",
       "source_path": "amari-rewrite/src/completion/mod.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 4,
       "gate": "feature(\"completion\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -27860,6 +27879,14 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::relation::Sha256Digest::canonical_terms",
+      "source_path": "amari-rewrite/src/relation/digest.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::relation::Sha256Digest::framed",
       "source_path": "amari-rewrite/src/relation/digest.rs",
       "source_ordinal": 2,
@@ -27878,7 +27905,7 @@
     {
       "path": "amari_rewrite::relation::Sha256Digest::parse_hex",
       "source_path": "amari-rewrite/src/relation/digest.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -27886,7 +27913,7 @@
     {
       "path": "amari_rewrite::relation::Sha256Digest::to_hex",
       "source_path": "amari-rewrite/src/relation/digest.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"

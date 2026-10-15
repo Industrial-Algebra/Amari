@@ -63,12 +63,6 @@ pub use trace::{CompletionTrace, TraceStep};
 /// Frame label for the alpha-canonical equation fingerprint.
 const EQUATION_FRAME: &str = "amari.completion.equation/v1";
 
-/// Bound on normalization steps per [`normalize`] call. The current
-/// system is LPO-terminating, so normalization always reaches a
-/// fixed point well within this bound; the cap exists only so an
-/// adversarial input fails typed instead of running unbounded.
-const MAX_NORMALIZE_STEPS: usize = 1_024;
-
 /// Result of a bounded completion run.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CompletionOutcome {
@@ -348,8 +342,11 @@ fn equation_key(
     let (right_nodes, right_depth) = shape_of(right);
     resources.record_term(left_nodes, left_depth)?;
     resources.record_term(right_nodes, right_depth)?;
-    let left_digest = Sha256Digest::canonical_term(EQUATION_FRAME, left);
-    let right_digest = Sha256Digest::canonical_term(EQUATION_FRAME, right);
+    // Joint canonicalization: variables are renumbered across BOTH
+    // sides, preserving cross-side variable identity — h(x,y) and
+    // h(x,z) must not collide (PR #310 round 1).
+    let digests = Sha256Digest::canonical_terms(EQUATION_FRAME, &[left, right]);
+    let (left_digest, right_digest) = (digests[0], digests[1]);
     Ok(if left_digest <= right_digest {
         (left_digest, right_digest)
     } else {
@@ -363,27 +360,24 @@ fn equation_key(
 /// applied, matching [`TermSystem::apply_once`], and every candidate
 /// rewrite is shape-validated before it is constructed. The current
 /// system is always LPO-terminating, so this reaches a fixed point;
-/// the [`MAX_NORMALIZE_STEPS`] cap fails typed if it ever does not.
+/// the shared operation budget bounds the search for it.
 fn normalize(
     system: &TermSystem,
     term: &Term,
     resources: &mut RelationResources,
 ) -> RewriteResult<Term> {
     let mut current = term.clone();
-    for _ in 0..MAX_NORMALIZE_STEPS {
+    // Bounded by the shared operation budget (every step charges
+    // one operation plus step_once's internal accounting) — the
+    // system is LPO-terminating, so the fixed point exists; the
+    // budget is the only bound (PR #310 round 1).
+    loop {
         resources.record_operations(1)?;
         match step_once(system, &current, resources)? {
             Some(next) => current = next,
             None => return Ok(current),
         }
     }
-    if step_once(system, &current, resources)?.is_some() {
-        return Err(RewriteError::RelationLimitExceeded {
-            resource: "normalization steps",
-            limit: MAX_NORMALIZE_STEPS,
-        });
-    }
-    Ok(current)
 }
 
 /// Apply the first outermost one-step rewrite, metering every attempt.

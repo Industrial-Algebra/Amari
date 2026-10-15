@@ -355,3 +355,111 @@ fn reversed_ground_rule_is_strictly_decreasing() {
         other => panic!("expected Complete, got {other:?}"),
     }
 }
+
+/// PR #310 round 1 P1: input validation must bound shapes BEFORE
+/// traversing occurrences — an adversarially deep input fails typed,
+/// never aborts on allocation.
+#[test]
+fn deeply_nested_input_fails_typed_not_abort() {
+    let mut deep = Term::var("x");
+    for _ in 0..20_000 {
+        deep = Term::sym("f", [deep]);
+    }
+    // Move, never clone: derived Clone recurses over the unvalidated
+    // depth (the same hazard class as #306's recursive Drop).
+    let system = TermSystem::new(vec![Rule::new(deep, Term::var("x")).unwrap()]);
+    let config = CompletionConfig {
+        precedence: precedence(&[("f", 1)]),
+    };
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let outcome = complete(&system, &config, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "expected typed limit, got {:?}",
+        outcome.map(|o| core::mem::discriminant(&o))
+    );
+    core::mem::forget(system);
+}
+
+/// PR #310 round 1 P2: equation fingerprints must preserve
+/// cross-side variable identity — `h(x,y)` and `h(x,z)` are
+/// DISTINCT equations.
+#[test]
+fn fingerprints_preserve_cross_side_variable_identity() {
+    // The reviewer's exact system: completion must process BOTH
+    // distinct pairs and then report the unorientable equation.
+    let (x, y, z) = (Term::var("x"), Term::var("y"), Term::var("z"));
+    let f_xyz = || Term::sym("f", vec![x.clone(), y.clone(), z.clone()]);
+    let g_xyz = || Term::sym("g", vec![x.clone(), y.clone(), z.clone()]);
+    let h = |l: Term, r: Term| Term::sym("h", vec![l, r]);
+    let rules = vec![
+        rule(f_xyz(), h(x.clone(), y.clone())),
+        rule(f_xyz(), h(x.clone(), z.clone())),
+        rule(g_xyz(), h(x.clone(), y.clone())),
+        rule(g_xyz(), h(z.clone(), y.clone())),
+        rule(h(x.clone(), y.clone()), x.clone()),
+    ];
+    let system = TermSystem::new(rules);
+    let config = CompletionConfig {
+        precedence: precedence(&[("f", 3), ("g", 3), ("h", 2)]),
+    };
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let outcome = complete(&system, &config, &mut resources).expect("typed outcome");
+    match outcome {
+        CompletionOutcome::Partial { reason, trace, .. } => {
+            assert!(
+                matches!(reason, PartialReason::UnorientableRule { .. }),
+                "expected UnorientableRule, got {reason:?}"
+            );
+            assert!(
+                trace.pairs_processed >= 2,
+                "both distinct pairs must be processed, got {}",
+                trace.pairs_processed
+            );
+        }
+        other => panic!("expected Partial, got {other:?}"),
+    }
+}
+
+/// PR #310 round 1 P2: normalization is bounded by the shared
+/// operation budget, not a fixed step cap — a legal input needing
+/// MORE than 1,024 contractions must normalize (the cap's resource
+/// string must never appear).
+#[test]
+fn normalization_uses_shared_operation_budget() {
+    // T(0) = a; T(n+1) = f(T(n), T(n)): T(10) needs 2,047
+    // contractions under {a -> b, f(b,x) -> x}. The pair (T10, x)
+    // normalizes to (b, x), which is unorientable, so completion
+    // returns Partial BEFORE the confluence postcheck (whose reduct
+    // space for doubling trees is exponential by design).
+    let mut t10 = Term::constant("a");
+    for _ in 0..10 {
+        t10 = Term::sym("f", [t10.clone(), t10]);
+    }
+    let rules = vec![
+        rule(Term::sym("p", [Term::var("x")]), t10),
+        rule(Term::sym("p", [Term::var("x")]), Term::var("x")),
+        rule(Term::constant("a"), Term::constant("b")),
+        rule(
+            Term::sym("f", [Term::constant("b"), Term::var("x")]),
+            Term::var("x"),
+        ),
+    ];
+    let system = TermSystem::new(rules);
+    let config = CompletionConfig {
+        precedence: precedence(&[("p", 1), ("f", 2), ("a", 0), ("b", 0)]),
+    };
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let outcome = complete(&system, &config, &mut resources).expect("typed outcome");
+    assert!(
+        matches!(
+            outcome,
+            CompletionOutcome::Partial {
+                reason: PartialReason::UnorientableRule { .. },
+                ..
+            }
+        ),
+        "expected Partial(UnorientableRule) after 2,047 contractions: {:?}",
+        core::mem::discriminant(&outcome)
+    );
+}
