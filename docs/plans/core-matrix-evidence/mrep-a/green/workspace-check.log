@@ -1,0 +1,170 @@
+   Compiling libm v0.2.16
+    Checking unicode-ident v1.0.27
+   Compiling version_check v0.9.5
+   Compiling getrandom v0.4.3
+    Checking once_cell v1.21.4
+   Compiling zerocopy v0.8.62
+    Checking typenum v1.20.1
+    Checking memchr v2.8.3
+   Compiling wasm-bindgen-shared v0.2.129
+   Compiling quote v1.0.47
+   Compiling num-traits v0.2.19
+   Compiling matrixmultiply v0.3.11
+    Checking pin-project-lite v0.2.17
+   Compiling cfg_aliases v0.1.1
+    Checking rawpointer v0.2.1
+    Checking futures-core v0.3.34
+    Checking futures-sink v0.3.34
+   Compiling bumpalo v3.20.3
+    Checking futures-task v0.3.34
+    Checking slab v0.4.12
+    Checking hashbrown v0.17.1
+    Checking futures-io v0.3.34
+   Compiling serde_core v1.0.229
+    Checking equivalent v1.0.2
+   Compiling wasm-bindgen v0.2.129
+   Compiling parking_lot_core v0.9.12
+    Checking winnow v1.0.4
+   Compiling thiserror v1.0.69
+   Compiling serde_json v1.0.151
+    Checking allocator-api2 v0.2.21
+    Checking futures-channel v0.3.34
+   Compiling khronos-egl v6.0.0
+   Compiling ash v0.37.3+1.3.251
+   Compiling proc-macro2 v1.0.107
+    Checking unicode-width v0.1.14
+    Checking smallvec v1.16.3
+    Checking bit-vec v0.6.3
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+    Checking utf8parse v0.2.2
+   Compiling generic-array v0.14.7
+   Compiling ahash v0.8.12
+    Checking termcolor v1.4.1
+    Checking scopeguard v1.2.0
+    Checking anstyle-parse v1.0.0
+   Compiling wgpu-hal v0.19.5
+    Checking gpu-descriptor-types v0.1.2
+    Checking rand v0.10.3
+    Checking gpu-alloc-types v0.3.1
+    Checking lock_api v0.4.14
+    Checking libloading v0.7.4
+    Checking libloading v0.8.9
+    Checking bit-set v0.5.3
+    Checking spirv v0.3.0+sdk-1.3.268.0
+    Checking anstyle-query v1.1.5
+    Checking codespan-reporting v0.11.1
+    Checking rustc-hash v1.1.0
+    Checking colorchoice v1.0.5
+    Checking log v0.4.34
+    Checking is_terminal_polyfill v1.70.2
+   Compiling ref-cast v1.0.27
+    Checking unicode-xid v0.2.6
+    Checking hexf-parse v0.2.1
+    Checking parking_lot v0.12.5
+    Checking gpu-alloc v0.6.2
+    Checking anstream v1.0.0
+   Compiling wgpu-core v0.19.4
+   Compiling zmij v1.0.23
+    Checking wgpu-types v0.19.2
+    Checking profiling v1.0.18
+    Checking renderdoc-sys v1.1.0
+    Checking raw-window-handle v0.6.2
+   Compiling heck v0.5.0
+    Checking strsim v0.11.1
+    Checking arrayvec v0.7.8
+   Compiling itoa v1.0.18
+    Checking indexmap v2.14.2
+    Checking either v1.19.0
+   Compiling rustix v1.1.5
+    Checking cpufeatures v0.2.17
+    Checking glow v0.13.1
+    Checking clap_builder v4.6.7
+   Compiling wgpu v0.19.4
+    Checking toml_datetime v1.1.2+spec-1.1.0
+    Checking serde_spanned v1.1.2
+    Checking linux-raw-sys v0.12.1
+    Checking rayon v1.12.0
+   Compiling amari-discovery v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-discovery)
+    Checking toml_writer v1.1.3+spec-1.1.0
+    Checking dyn-clone v1.0.20
+    Checking hex v0.4.3
+   Compiling amari-wasm v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-wasm)
+    Checking toml_parser v1.1.5+spec-1.1.0
+    Checking tokio v1.53.2
+    Checking pollster v1.0.1
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking toml v1.1.8+spec-1.1.0
+    Checking toml_edit v0.25.17+spec-1.1.0
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+    Checking approx v0.5.1
+    Checking num-integer v0.1.47
+    Checking num-complex v0.4.6
+    Checking rand_distr v0.6.0
+    Checking proc-macro-crate v3.5.0
+    Checking num-bigint v0.4.8
+    Checking amari-flynn-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-flynn-macros)
+    Checking amari-rewrite-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-rewrite-macros)
+    Checking num-rational v0.4.2
+    Checking amari-discovery-macros v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-discovery-macros)
+   Compiling nalgebra-macros v0.3.0
+   Compiling thiserror-impl v1.0.69
+    Checking ppv-lite86 v0.2.21
+    Checking hashbrown v0.14.5
+    Checking amari-flynn v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-flynn)
+    Checking rand_chacha v0.10.0
+   Compiling wasm-bindgen-macro-support v0.2.129
+   Compiling serde_derive_internals v0.30.0
+    Checking gpu-descriptor v0.2.4
+    Checking naga v0.19.2
+   Compiling bytemuck_derive v1.12.1
+   Compiling thiserror-impl v2.0.21
+   Compiling futures-macro v0.3.34
+   Compiling serde_derive v1.0.229
+   Compiling ref-cast-impl v1.0.27
+   Compiling clap_derive v4.6.7
+   Compiling schemars_derive v1.2.2
+    Checking futures-util v0.3.34
+    Checking bytemuck v1.25.2
+    Checking thiserror v2.0.21
+    Checking amari-cgt v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-cgt)
+    Checking amari-rewrite v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-rewrite)
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-core)
+    Checking safe_arch v1.2.0
+    Checking clap v4.6.7
+    Checking amari-surreal v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-surreal)
+    Checking wide v1.7.1
+    Checking amari-surcomplex v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-surcomplex)
+    Checking amari-tropical v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-tropical)
+    Checking amari-dual v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-dual)
+    Checking amari-info-geom v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-info-geom)
+    Checking amari-holographic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-holographic)
+    Checking amari-enumerative v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-enumerative)
+    Checking amari-measure v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-measure)
+    Checking amari-optimization v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-optimization)
+    Checking amari-fusion v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-fusion)
+    Checking amari-automata v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-automata)
+    Checking serde v1.0.229
+   Compiling wasm-bindgen-macro v0.2.129
+    Checking amari-calculus v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-calculus)
+    Checking amari-probabilistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-probabilistic)
+    Checking amari-topology v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-topology)
+    Checking amari-functional v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-functional)
+    Checking schemars v1.2.2
+    Checking futures-executor v0.3.34
+    Checking futures v0.3.34
+    Checking js-sys v0.3.106
+    Checking console_error_panic_hook v0.1.7
+    Checking simba v0.10.2
+    Checking nalgebra v0.35.0
+    Checking wasm-bindgen-futures v0.4.79
+    Checking web-sys v0.3.106
+    Checking serde-wasm-bindgen v0.6.5
+    Checking amari-network v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-network)
+    Checking amari-relativistic v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-relativistic)
+    Checking amari-dynamics v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-dynamics)
+    Checking amari v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a)
+    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-a/amari-gpu)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.21s

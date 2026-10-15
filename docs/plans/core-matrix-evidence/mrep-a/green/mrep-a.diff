@@ -1,0 +1,210 @@
+diff --git a/.github/workflows/mathematical-correctness.yml b/.github/workflows/mathematical-correctness.yml
+index 029f2e7..56ce801 100644
+--- a/.github/workflows/mathematical-correctness.yml
++++ b/.github/workflows/mathematical-correctness.yml
+@@ -61,15 +61,15 @@ jobs:
+       run: |
+         echo "🧪 Running core mathematical tests..."
+         cargo test --workspace --lib --bins
+-        echo "✅ Core mathematical properties verified"
++        echo "✅ Core mathematical property tests passed"
+       env:
+         RUST_TEST_NOCAPTURE: 1
+ 
+-    - name: Run formal verification tests
++    - name: Run formal-verification feature tests
+       run: |
+-        echo "🔬 Running formal verification tests..."
++        echo "🔬 Running formal-verification feature tests..."
+         cargo test --workspace --lib --bins --features formal-verification
+-        echo "✅ Formal verification contracts validated"
++        echo "✅ Formal-annotation compatibility tests passed"
+       env:
+         RUST_TEST_NOCAPTURE: 1
+ 
+@@ -77,32 +77,32 @@ jobs:
+       run: |
+         echo "📖 Running documentation tests..."
+         cargo test --workspace --doc
+-        echo "✅ Documentation examples verified"
++        echo "✅ Documentation examples (doctests) passed"
+ 
+-    - name: Verify geometric algebra axioms
++    - name: Run geometric algebra axiom tests
+       run: |
+-        echo "📐 Verifying geometric algebra axioms..."
++        echo "📐 Running geometric algebra axiom tests..."
+         cargo test --package amari-core geometric_axioms
+         cargo test --package amari-tropical semiring_axioms
+-        echo "✅ All algebraic axioms satisfied"
++        echo "✅ Algebraic test suites passed"
+ 
+-    - name: Validate phantom type safety
++    - name: Run phantom type-safety tests
+       run: |
+-        echo "👻 Validating phantom type safety..."
++        echo "👻 Running phantom type-safety tests..."
+         cargo test --package amari-tropical verified_contracts
+         cargo test --package amari-core verified_contracts
+-        echo "✅ Type safety constraints verified"
++        echo "✅ Type-safety constraint tests passed"
+ 
+     - name: Mathematical property analysis
+       run: |
+         echo "🔍 Analyzing mathematical properties..."
+         TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+-        VERIFICATION_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
++        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+ 
+         echo "📊 Test Coverage Summary:"
+         echo "  Total tests: $TOTAL_TESTS"
+-        echo "  Verification tests: $VERIFICATION_TESTS"
+-        echo "  Mathematical rigor: 100%"
++        echo "  Formal-feature tests: $FORMAL_FEATURE_TESTS"
++        echo "  Mathematical test suites: executed"
+ 
+         if [ "$TOTAL_TESTS" -lt 300 ]; then
+           echo "❌ Insufficient test coverage for mathematical library"
+@@ -129,7 +129,7 @@ jobs:
+       run: |
+         echo "🔗 Running workspace integration tests..."
+         cargo test --workspace --exclude amari-discovery --tests
+-        echo "✅ Workspace integration correctness confirmed"
++        echo "✅ Workspace integration tests passed"
+ 
+   discovery-catalog:
+     name: Discovery Catalog Tests
+@@ -213,7 +213,7 @@ jobs:
+           echo "❌ Discovery integration checks failed"
+           exit 1
+         fi
+-        echo "✅ Discovery integration correctness confirmed"
++        echo "✅ Discovery integration tests passed"
+ 
+   documentation:
+     name: Mathematical Documentation
+@@ -267,11 +267,11 @@ jobs:
+            [ "$WORKSPACE_INTEGRATION" != "success" ] || \
+            [ "$DISCOVERY_INTEGRATION" != "success" ] || \
+            [ "$DOCUMENTATION" != "success" ]; then
+-          echo "❌ Mathematical integrity compromised!"
++          echo "❌ Mathematical-correctness test suites failed!"
+           exit 1
+         fi
+ 
+-        echo "✨ Mathematical correctness maintained ✨"
+-        echo "All geometric algebra properties verified"
+-        echo "All tropical semiring axioms confirmed"
+-        echo "All phantom type constraints validated"
++        echo "Mathematical-correctness test suites green"
++        echo "Geometric-algebra test suites passed"
++        echo "Tropical semiring test suites passed"
++        echo "Phantom type constraint test suites passed"
+diff --git a/.github/workflows/test-status.yml b/.github/workflows/test-status.yml
+index 0555cf4..c186e44 100644
+--- a/.github/workflows/test-status.yml
++++ b/.github/workflows/test-status.yml
+@@ -20,7 +20,7 @@ jobs:
+       RUSTUP_TOOLCHAIN: stable
+     outputs:
+       test-count: ${{ steps.count.outputs.count }}
+-      verification-count: ${{ steps.count.outputs.verification }}
++      annotation-count: ${{ steps.count.outputs.annotation }}
+ 
+     steps:
+     - uses: actions/checkout@v7
+@@ -56,21 +56,21 @@ jobs:
+           echo "Using source code count: $FINAL_COUNT"
+         fi
+ 
+-        # Count verification tests
+-        VERIFICATION_COUNT=$(find . -name "*.rs" -type f -not -path "./target/*" -exec grep -l "formal_verification\|verify_\|proof_" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
++        # Count files carrying formal-annotation markers
++        ANNOTATION_COUNT=$(find . -name "*.rs" -type f -not -path "./target/*" -exec grep -l "formal_verification\|verify_\|proof_" {} \; | xargs grep "#\[test\]" 2>/dev/null | wc -l || echo "0")
+ 
+         echo "Total tests found: $FINAL_COUNT"
+-        echo "Verification tests found: $VERIFICATION_COUNT"
++        echo "Files with formal annotations found: $ANNOTATION_COUNT"
+ 
+         # Set outputs
+         echo "count=$FINAL_COUNT" >> $GITHUB_OUTPUT
+-        echo "verification=$VERIFICATION_COUNT" >> $GITHUB_OUTPUT
++        echo "annotation=$ANNOTATION_COUNT" >> $GITHUB_OUTPUT
+ 
+         # Create summary
+         echo "## Test Count Summary 📊" >> $GITHUB_STEP_SUMMARY
+         echo "" >> $GITHUB_STEP_SUMMARY
+         echo "- **Total Tests**: $FINAL_COUNT" >> $GITHUB_STEP_SUMMARY
+-        echo "- **Verification Tests**: $VERIFICATION_COUNT" >> $GITHUB_STEP_SUMMARY
++        echo "- **Files with Formal Annotations**: $ANNOTATION_COUNT" >> $GITHUB_STEP_SUMMARY
+         echo "" >> $GITHUB_STEP_SUMMARY
+         echo "### Test Distribution" >> $GITHUB_STEP_SUMMARY
+         echo "" >> $GITHUB_STEP_SUMMARY
+@@ -95,16 +95,16 @@ jobs:
+         {
+           "schemaVersion": 1,
+           "label": "tests",
+-          "message": "${{ steps.count.outputs.count }} passing",
++          "message": "${{ steps.count.outputs.count }} test functions found",
+           "color": "brightgreen"
+         }
+         EOF
+ 
+-        cat > verification-report.json << EOF
++        cat > annotation-report.json << EOF
+         {
+           "schemaVersion": 1,
+-          "label": "verification",
+-          "message": "${{ steps.count.outputs.verification }} verified",
++          "label": "formal annotations",
++          "message": "${{ steps.count.outputs.annotation }} files with formal annotations",
+           "color": "blue"
+         }
+         EOF
+@@ -117,7 +117,7 @@ jobs:
+         name: badge-data
+         path: |
+           test-report.json
+-          verification-report.json
++          annotation-report.json
+         retention-days: 30
+ 
+     - name: Comment on PR (if applicable)
+@@ -128,16 +128,16 @@ jobs:
+         script: |
+           try {
+             const testCount = '${{ steps.count.outputs.count }}';
+-            const verificationCount = '${{ steps.count.outputs.verification }}';
++            const annotationCount = '${{ steps.count.outputs.annotation }}';
+ 
+             const body = `## 📊 Test Statistics
+ 
+             | Metric | Count |
+             |--------|-------|
+             | **Total Tests** | ${testCount} |
+-            | **Verification Tests** | ${verificationCount} |
++            | **Files with Formal Annotations** | ${annotationCount} |
+ 
+-            ✅ All test counts verified!`;
++            ✅ Test and annotation counts reported.`;
+ 
+             await github.rest.issues.createComment({
+               issue_number: context.issue.number,
+diff --git a/amari-core/src/verified.rs b/amari-core/src/verified.rs
+index 454eea7..554e5a7 100644
+--- a/amari-core/src/verified.rs
++++ b/amari-core/src/verified.rs
+@@ -560,8 +560,11 @@ where
+     }
+ 
+     /// Dot product (only defined for same dimension - enforced by types)
+-    #[cfg_attr(feature = "formal-verification",
+-        ensures(result >= T::zero()))] // For positive-definite metrics
++    ///
++    /// The former `ensures(result >= T::zero())` contract was removed on
++    /// 2026-10-15 (M-REP-A / MATRIX-02): it is unsound for mixed vectors
++    /// (e.g. `dot([1], [-1]) == -1`) and for indefinite signatures. A sound
++    /// self-dot-only contract for definite signatures is M-REP-C scope.
+     pub fn dot(&self, other: &Self) -> T {
+         self.data
+             .iter()

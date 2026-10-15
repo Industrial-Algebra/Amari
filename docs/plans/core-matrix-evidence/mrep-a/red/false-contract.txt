@@ -1,0 +1,1 @@
+564:        ensures(result >= T::zero()))] // For positive-definite metrics

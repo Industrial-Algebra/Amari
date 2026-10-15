@@ -560,8 +560,11 @@ where
     }
 
     /// Dot product (only defined for same dimension - enforced by types)
-    #[cfg_attr(feature = "formal-verification",
-        ensures(result >= T::zero()))] // For positive-definite metrics
+    ///
+    /// The former `ensures(result >= T::zero())` contract was removed on
+    /// 2026-10-15 (M-REP-A / MATRIX-02): it is unsound for mixed vectors
+    /// (e.g. `dot([1], [-1]) == -1`) and for indefinite signatures. A sound
+    /// self-dot-only contract for definite signatures is M-REP-C scope.
     pub fn dot(&self, other: &Self) -> T {
         self.data
             .iter()

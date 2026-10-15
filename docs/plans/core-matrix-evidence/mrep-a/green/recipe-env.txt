@@ -1,0 +1,3 @@
+RUSTC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
+RUSTDOC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
+RUSTFLAGS=-C target-cpu=x86-64 -C target-feature=-avx2
