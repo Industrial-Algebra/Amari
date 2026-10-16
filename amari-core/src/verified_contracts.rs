@@ -7,8 +7,21 @@ use super::verified::VerifiedMultivector;
 use creusot_contracts::macros::requires;
 use num_traits::{Float, One, Zero};
 
+/// True iff every coefficient is finite (no `NaN`, no ±infinity).
+///
+/// M-REP-C runtime precondition predicate for the equality contracts. It
+/// mirrors the construction-time finiteness guarantee enforced by
+/// [`VerifiedMultivector::new`]. `T: Float` supplies `is_finite`.
+fn coefficients_are_finite<T: Float>(coefficients: &[T]) -> bool {
+    coefficients
+        .iter()
+        .all(|coefficient| coefficient.is_finite())
+}
+
 /// Verified scalar multiplication
 #[requires(scalar != T::zero())]
+#[requires(scalar.is_finite())]
+#[requires(coefficients_are_finite(&mv.coefficients))]
 #[ensures(result.coefficients.len() == mv.coefficients.len())]
 #[ensures(result.coefficients[0] == scalar * mv.coefficients[0])]
 pub fn verified_scalar_mult<T, const P: usize, const Q: usize, const R: usize>(
@@ -18,6 +31,15 @@ pub fn verified_scalar_mult<T, const P: usize, const Q: usize, const R: usize>(
 where
     T: Float + Zero + One + Copy,
 {
+    debug_assert!(
+        scalar.is_finite(),
+        "verified_scalar_mult: scalar must be finite"
+    );
+    debug_assert!(
+        coefficients_are_finite(&mv.coefficients),
+        "verified_scalar_mult: all multivector coefficients must be finite"
+    );
+
     let mut coefficients = Vec::with_capacity(mv.coefficients.len());
     for &coeff in &mv.coefficients {
         coefficients.push(scalar * coeff);
@@ -27,6 +49,8 @@ where
 }
 
 /// Verified addition with mathematical properties
+#[requires(coefficients_are_finite(&a.coefficients))]
+#[requires(coefficients_are_finite(&b.coefficients))]
 #[requires(a.coefficients.len() == b.coefficients.len())]
 #[ensures(result.coefficients.len() == a.coefficients.len())]
 #[ensures(forall(|i: usize| i < result.coefficients.len() ==>
@@ -39,6 +63,15 @@ pub fn verified_addition<T, const P: usize, const Q: usize, const R: usize>(
 where
     T: Float + Zero + One + Copy,
 {
+    debug_assert!(
+        coefficients_are_finite(&a.coefficients),
+        "verified_addition: all coefficients of the first operand must be finite"
+    );
+    debug_assert!(
+        coefficients_are_finite(&b.coefficients),
+        "verified_addition: all coefficients of the second operand must be finite"
+    );
+
     a.add(b)
 }
 
@@ -47,9 +80,13 @@ where
 /// The former `ensures(result >= T::zero())` contract was removed on
 /// 2026-10-15 (M-REP-A review round 1): it is falsified by NaN
 /// coefficients (`verified_norm([NaN, 0]) == NaN`, and `NaN >= 0` is
-/// false). For finite coefficients the claim holds (sum of squares is
-/// nonnegative, as is its sqrt). A finiteness-guarded contract is
-/// M-REP-C scope.
+/// false). M-REP-C (2026-10-15) closed the non-finite gap at construction
+/// (`VerifiedMultivector` constructors reject `NaN`/±infinity) and added the
+/// sound, sqrt-free nonnegativity contract
+/// [`Vector::verified_self_dot`](super::verified::Vector::verified_self_dot).
+/// This function keeps only its non-emptiness precondition: it still does not
+/// assert nonnegativity, because a `VerifiedMultivector` produced by an
+/// overflowing operation can carry `inf`.
 #[requires(!mv.coefficients.is_empty())]
 pub fn verified_norm<T, const P: usize, const Q: usize, const R: usize>(
     mv: &VerifiedMultivector<T, P, Q, R>,
@@ -78,6 +115,7 @@ where
 
 /// Verification that scalar identity holds
 #[requires(mv.coefficients.len() == VerifiedMultivector::<T, P, Q, R>::BASIS_SIZE)]
+#[requires(coefficients_are_finite(&mv.coefficients))]
 #[ensures(result.coefficients.len() == mv.coefficients.len())]
 #[ensures(forall(|i: usize| i < result.coefficients.len() ==>
     result.coefficients[i] == mv.coefficients[i]
@@ -88,12 +126,18 @@ pub fn verify_scalar_identity<T, const P: usize, const Q: usize, const R: usize>
 where
     T: Float + Zero + One + Copy,
 {
-    let identity = VerifiedMultivector::scalar(T::one());
+    debug_assert!(
+        coefficients_are_finite(&mv.coefficients),
+        "verify_scalar_identity: all coefficients must be finite"
+    );
+
+    let identity = VerifiedMultivector::scalar(T::one()).unwrap();
     mv.geometric_product(&identity)
 }
 
 /// Verification that zero addition holds
 #[requires(mv.coefficients.len() == VerifiedMultivector::<T, P, Q, R>::BASIS_SIZE)]
+#[requires(coefficients_are_finite(&mv.coefficients))]
 #[ensures(result.coefficients.len() == mv.coefficients.len())]
 #[ensures(forall(|i: usize| i < result.coefficients.len() ==>
     result.coefficients[i] == mv.coefficients[i]
@@ -104,7 +148,12 @@ pub fn verify_zero_addition<T, const P: usize, const Q: usize, const R: usize>(
 where
     T: Float + Zero + One + Copy,
 {
-    let zero = VerifiedMultivector::scalar(T::zero());
+    debug_assert!(
+        coefficients_are_finite(&mv.coefficients),
+        "verify_zero_addition: all coefficients must be finite"
+    );
+
+    let zero = VerifiedMultivector::scalar(T::zero()).unwrap();
     mv.add(&zero)
 }
 
@@ -134,7 +183,7 @@ mod contract_tests {
 
     #[test]
     fn test_verified_scalar_multiplication() {
-        let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0);
+        let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
         let result = verified_scalar_mult(3.0, &mv);
 
         // The annotations express these intended properties; the asserts check them for this instance
@@ -144,8 +193,8 @@ mod contract_tests {
 
     #[test]
     fn test_verified_addition_properties() {
-        let mv1 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0);
-        let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0);
+        let mv1 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+        let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0).unwrap();
         let result = verified_addition(&mv1, &mv2);
 
         // The annotations express intended coefficient-wise addition
@@ -154,7 +203,7 @@ mod contract_tests {
 
     #[test]
     fn test_verified_identity_laws() {
-        let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(5.0);
+        let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(5.0).unwrap();
 
         // Test multiplicative identity
         let result = verify_scalar_identity(&mv);

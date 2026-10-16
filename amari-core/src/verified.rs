@@ -13,6 +13,16 @@ use std::marker::PhantomData;
 #[cfg(feature = "formal-verification")]
 use creusot_contracts::macros::{ensures, requires};
 
+/// True iff every value is finite (no `NaN`, no ±infinity).
+///
+/// M-REP-C construction-time finiteness predicate. `T: Float` supplies
+/// `is_finite`. This is an ordinary runtime predicate; the
+/// `formal-verification` annotations are intended specifications only and are
+/// compiled away in ordinary builds.
+fn all_finite<T: Float>(values: &[T]) -> bool {
+    values.iter().all(|value| value.is_finite())
+}
+
 /// Phantom type encoding the metric signature of a Clifford algebra Cl(p,q,r)
 /// - P: number of positive basis vectors (e_i² = +1)
 /// - Q: number of negative basis vectors (e_i² = -1)
@@ -59,11 +69,22 @@ where
     /// # Type Invariants
     /// - Coefficients array must have exactly 2^(P+Q+R) elements
     /// - Signature is encoded at type level and cannot be violated
+    /// - Every coefficient must be finite (`T::is_finite()`); `NaN` and
+    ///   ±infinity are rejected (M-REP-C finiteness invariant)
+    ///
+    /// # Errors
+    /// - `"Coefficient array size must equal 2^(P+Q+R)"` on length mismatch
+    /// - `"All coefficients must be finite (no NaN or infinity)"` on any
+    ///   non-finite coefficient
     #[cfg_attr(feature = "formal-verification",
-        requires(coefficients.len() == Self::BASIS_SIZE))]
+        requires(coefficients.len() == Self::BASIS_SIZE),
+        requires(all_finite(&coefficients)))]
     pub fn new(coefficients: Vec<T>) -> Result<Self, &'static str> {
         if coefficients.len() != Self::BASIS_SIZE {
             return Err("Coefficient array size must equal 2^(P+Q+R)");
+        }
+        if !all_finite(&coefficients) {
+            return Err("All coefficients must be finite (no NaN or infinity)");
         }
 
         Ok(Self {
@@ -73,18 +94,30 @@ where
     }
 
     /// Create a scalar multivector
+    ///
+    /// # Errors
+    /// Returns `Err("Scalar coefficient must be finite (no NaN or
+    /// infinity)")` when `value` is not finite (M-REP-C finiteness
+    /// invariant). Finite inputs produce the same multivector as before; only
+    /// the return type became fallible.
     #[cfg_attr(feature = "formal-verification",
-        ensures(result.is_scalar()),
-        ensures(result.coefficients[0] == value),
-        ensures(result.coefficients.len() == Self::BASIS_SIZE))]
-    pub fn scalar(value: T) -> Self {
+        ensures(result.is_ok()),
+        ensures(result.is_ok() ==> result.unwrap().is_scalar()),
+        ensures(result.is_ok() ==> result.unwrap().coefficients[0] == value),
+        ensures(result.is_ok() ==>
+            result.unwrap().coefficients.len() == Self::BASIS_SIZE))]
+    pub fn scalar(value: T) -> Result<Self, &'static str> {
+        if !value.is_finite() {
+            return Err("Scalar coefficient must be finite (no NaN or infinity)");
+        }
+
         let mut coefficients = vec![T::zero(); Self::BASIS_SIZE];
         coefficients[0] = value;
 
-        Self {
+        Ok(Self {
             coefficients,
             _signature: PhantomData,
-        }
+        })
     }
 
     /// Create a basis vector e_i
@@ -99,13 +132,13 @@ where
             return Err("Basis vector index exceeds dimension");
         }
 
+        // Basis coefficients are `0`/`1` and therefore finite by
+        // construction; routing through `new` keeps every multivector
+        // constructor on the same finiteness-checked path (M-REP-C).
         let mut coefficients = vec![T::zero(); Self::BASIS_SIZE];
         coefficients[1 << index] = T::one();
 
-        Ok(Self {
-            coefficients,
-            _signature: PhantomData,
-        })
+        Self::new(coefficients)
     }
 
     /// Check if this is a pure scalar
@@ -451,30 +484,40 @@ where
     /// Create a rotor from a multivector.
     ///
     /// # Checks performed
+    /// - **Finite coefficients**: every coefficient must be finite
+    ///   (`T::is_finite()`); otherwise this returns
+    ///   `Err("Rotor coefficients must be finite (no NaN or infinity)")`.
     /// - **Even grade**: every odd-grade coefficient must compare equal to
     ///   zero (`coeff != 0`); otherwise this returns
     ///   `Err("Rotor must have even grade")`.
-    /// - **Unit norm**: the Euclidean coefficient norm computed as
-    ///   `sqrt(sum(c_i^2))` must satisfy `(norm - 1).abs() <= 1e-4`; otherwise
-    ///   this returns `Err("Rotor must have unit norm")`.
+    /// - **Unit norm (type-invariant tolerance)**: the Euclidean coefficient
+    ///   norm computed as `sqrt(sum(c_i^2))` must satisfy
+    ///   `(norm - 1).abs() <= 1e-4`; otherwise this returns
+    ///   `Err("Rotor must have unit norm")`. `1e-4` is the documented
+    ///   **type-invariant tolerance**, not a mathematical guarantee: the
+    ///   accepted set is finite, even-grade, approximately-unit
+    ///   (`|norm - 1| <= 1e-4`) multivectors.
     ///
-    /// Both checks are ordinary runtime comparisons executed by this method.
+    /// All checks are ordinary runtime comparisons executed by this method.
     /// The `formal-verification` attributes below are *intended
     /// specifications* (contract annotations); they are compiled away in
     /// normal builds and no proof of them is discharged here.
     ///
-    /// # Non-finite coefficients (specification gap, M-REP-C)
-    /// The unit-norm rejection is written as `(norm - 1).abs() > 1e-4`, which
-    /// is `false` when `norm` is `NaN`. Consequently a multivector with a
-    /// `NaN` norm (for example a scalar `NaN`) is **accepted** by this
-    /// constructor today. Handling of non-finite coefficients and the exact
-    /// rotor specification/implementation are out of scope for M-REP-A
-    /// (wording repair) and deferred to M-REP-C.
+    /// # Non-finite coefficients (closed by M-REP-C, 2026-10-15)
+    /// The former `(norm - 1).abs() > 1e-4` test alone accepted `NaN`
+    /// (`NaN > tolerance` is `false`). M-REP-C enforces finiteness **before**
+    /// the even-grade and norm checks, so a `NaN`/±infinity coefficient is
+    /// now **rejected** with `Err`. This dated correction supersedes the
+    /// M-REP-A note that recorded the NaN-acceptance gap.
     #[cfg_attr(feature = "formal-verification",
         requires(mv.is_even_grade()),
-        requires((mv.coefficient_norm() - T::one()).abs() < T::from(0.0001).unwrap()),
+        requires(all_finite(&mv.coefficients)),
+        requires((Self::compute_norm(&mv) - T::one()).abs() < T::from(0.0001).unwrap()),
         ensures(result.is_ok()))]
     pub fn new(mv: VerifiedMultivector<T, P, Q, R>) -> Result<Self, &'static str> {
+        if !all_finite(&mv.coefficients) {
+            return Err("Rotor coefficients must be finite (no NaN or infinity)");
+        }
         if !Self::is_even_grade(&mv) {
             return Err("Rotor must have even grade");
         }
@@ -581,12 +624,21 @@ where
     T: Float + Zero + One,
 {
     /// Create a new vector (dimension checked at compile time)
+    ///
+    /// # Errors
+    /// - `"Vector data length must match dimension"` on length mismatch
+    /// - `"All vector components must be finite (no NaN or infinity)"` on
+    ///   any non-finite component (M-REP-C finiteness invariant)
     #[cfg_attr(feature = "formal-verification",
         requires(data.len() == D),
+        requires(all_finite(&data)),
         ensures(result.dimension() == D))]
     pub fn new(data: Vec<T>) -> Result<Self, &'static str> {
         if data.len() != D {
             return Err("Vector data length must match dimension");
+        }
+        if !all_finite(&data) {
+            return Err("All vector components must be finite (no NaN or infinity)");
         }
 
         Ok(Self {
@@ -604,13 +656,42 @@ where
     ///
     /// The former `ensures(result >= T::zero())` contract was removed on
     /// 2026-10-15 (M-REP-A / MATRIX-02): it is unsound for mixed vectors
-    /// (e.g. `dot([1], [-1]) == -1`) and for indefinite signatures. A sound
-    /// self-dot-only contract for definite signatures is M-REP-C scope.
+    /// (e.g. `dot([1], [-1]) == -1`) and for indefinite signatures. This
+    /// method carries **no** contract. The sound, signature-independent
+    /// successor is [`Self::verified_self_dot`] (M-REP-C, 2026-10-15).
     pub fn dot(&self, other: &Self) -> T {
         self.data
             .iter()
             .zip(&other.data)
             .map(|(a, b)| *a * *b)
+            .fold(T::zero(), |acc, x| acc + x)
+    }
+
+    /// Sound self-dot: the sum of squares of this vector's coefficients,
+    /// `Σ data[i]²` (M-REP-C successor to the removed dot contract).
+    ///
+    /// # Soundness scope
+    /// This is an ordinary coordinate sum of squares. It makes **no** metric
+    /// or signature claim, and performs no square root, so it is
+    /// signature-independent. For every finite coefficient the sum of squares
+    /// is finite and nonnegative, so the `result >= T::zero()` contract is
+    /// sound for finite inputs. `NaN`/±infinity components are rejected at
+    /// construction by [`Self::new`], but operations such as [`Self::add`] or
+    /// [`Self::dot`] can still overflow finite inputs to `inf`; the contract
+    /// is scoped to finite coefficients, not to arbitrary intermediate IEEE
+    /// arithmetic.
+    ///
+    /// Contrast with the removed dot contract: that claimed nonnegativity for
+    /// `a·b` over *two* arbitrary vectors, which is false for mixed signs
+    /// (`dot([1], [-1]) == -1`); a self-dot over one vector cannot exhibit
+    /// that counterexample.
+    #[cfg_attr(feature = "formal-verification",
+        requires(!self.data.is_empty()),
+        ensures(result >= T::zero()))]
+    pub fn verified_self_dot(&self) -> T {
+        self.data
+            .iter()
+            .map(|x| *x * *x)
             .fold(T::zero(), |acc, x| acc + x)
     }
 
@@ -647,8 +728,8 @@ mod tests {
     #[test]
     fn test_signature_type_safety() {
         // Clifford algebra Cl(3,0,0) - 3D Euclidean space
-        let mv1 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0);
-        let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0);
+        let mv1 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+        let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0).unwrap();
         let _mv3 = mv1.add(&mv2); // OK - same signature
 
         // The following would not compile:
@@ -660,7 +741,7 @@ mod tests {
     fn test_grade_preservation() {
         // Create a bivector (grade 2)
         let bivector =
-            KVector::<f64, 2, 3, 0, 0>::from_multivector(VerifiedMultivector::scalar(1.0));
+            KVector::<f64, 2, 3, 0, 0>::from_multivector(VerifiedMultivector::scalar(1.0).unwrap());
 
         assert_eq!(bivector.grade(), 2);
         // Grade is guaranteed at compile time
@@ -687,5 +768,177 @@ mod tests {
         // The following would not compile due to type mismatch:
         // let wrong: KVector<f64, 3, 3, 0, 0> = v1.outer_product(&v2);
         // Error: expected KVector<_, 3, _, _, _>, found KVector<_, 2, _, _, _>
+    }
+
+    // ---- M-REP-C finiteness battery (construction-time rejection) ----
+
+    #[test]
+    fn mrepc_multivector_new_rejects_nan() {
+        let coefficients = vec![f64::NAN; VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE];
+        let err = VerifiedMultivector::<f64, 3, 0, 0>::new(coefficients).unwrap_err();
+        assert!(err.contains("finite"), "unexpected error: {err}");
+    }
+
+    #[test]
+    fn mrepc_multivector_new_rejects_positive_infinity() {
+        let mut coefficients = vec![0.0; VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE];
+        coefficients[0] = f64::INFINITY;
+        assert!(VerifiedMultivector::<f64, 3, 0, 0>::new(coefficients).is_err());
+    }
+
+    #[test]
+    fn mrepc_multivector_new_rejects_negative_infinity() {
+        let mut coefficients = vec![0.0; VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE];
+        coefficients[5] = f64::NEG_INFINITY;
+        assert!(VerifiedMultivector::<f64, 3, 0, 0>::new(coefficients).is_err());
+    }
+
+    #[test]
+    fn mrepc_multivector_new_rejects_mixed_nonfinite() {
+        let mut coefficients = vec![1.0; VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE];
+        coefficients[2] = f64::NAN;
+        assert!(VerifiedMultivector::<f64, 3, 0, 0>::new(coefficients).is_err());
+    }
+
+    #[test]
+    fn mrepc_multivector_new_accepts_finite() {
+        let coefficients = vec![1.0; VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE];
+        let mv = VerifiedMultivector::<f64, 3, 0, 0>::new(coefficients).unwrap();
+        assert_eq!(mv.coefficients[0], 1.0);
+        assert_eq!(
+            mv.coefficients.len(),
+            VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE
+        );
+    }
+
+    #[test]
+    fn mrepc_scalar_rejects_nonfinite() {
+        assert!(VerifiedMultivector::<f64, 3, 0, 0>::scalar(f64::NAN).is_err());
+        assert!(VerifiedMultivector::<f64, 3, 0, 0>::scalar(f64::INFINITY).is_err());
+        assert!(VerifiedMultivector::<f64, 3, 0, 0>::scalar(f64::NEG_INFINITY).is_err());
+    }
+
+    #[test]
+    fn mrepc_scalar_accepts_finite() {
+        let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.5).unwrap();
+        assert_eq!(mv.coefficients[0], 2.5);
+        assert!(mv.is_scalar());
+    }
+
+    #[test]
+    fn mrepc_basis_vector_accepts_finite() {
+        let basis = VerifiedMultivector::<f64, 3, 0, 0>::basis_vector(2).unwrap();
+        assert_eq!(basis.coefficients[1 << 2], 1.0);
+    }
+
+    #[test]
+    fn mrepc_vector_new_rejects_nonfinite() {
+        assert!(Vector::<f64, 3>::new(vec![1.0, f64::NAN, 3.0]).is_err());
+        assert!(Vector::<f64, 3>::new(vec![1.0, 2.0, f64::INFINITY]).is_err());
+        assert!(Vector::<f64, 3>::new(vec![1.0, 2.0, f64::NEG_INFINITY]).is_err());
+    }
+
+    #[test]
+    fn mrepc_vector_new_accepts_finite() {
+        let v = Vector::<f64, 3>::new(vec![1.0, 2.0, 3.0]).unwrap();
+        assert_eq!(v.dimension(), 3);
+    }
+
+    #[test]
+    fn mrepc_rotor_new_rejects_nonfinite_coefficients() {
+        // A `NaN` scalar is grade-0 (even), so it passes the even-grade check
+        // and the old `NaN > tolerance` norm test; only the finiteness check
+        // catches it. Build via a struct literal to bypass `new` and reach the
+        // `VerifiedRotor` defense-in-depth check (M-REP-C).
+        let mut coefficients = vec![0.0; VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE];
+        coefficients[0] = f64::NAN;
+        let nan_mv = VerifiedMultivector::<f64, 3, 0, 0> {
+            coefficients,
+            _signature: PhantomData,
+        };
+        let err = VerifiedRotor::new(nan_mv).err().unwrap();
+        assert!(err.contains("finite"), "unexpected error: {err}");
+
+        let mut mixed = vec![0.0; VerifiedMultivector::<f64, 3, 0, 0>::BASIS_SIZE];
+        mixed[0] = 1.0;
+        mixed[3] = f64::INFINITY; // grade-2 (even) coefficient
+        let inf_mv = VerifiedMultivector::<f64, 3, 0, 0> {
+            coefficients: mixed,
+            _signature: PhantomData,
+        };
+        assert!(VerifiedRotor::new(inf_mv).is_err());
+    }
+
+    // ---- M-REP-C `verified_self_dot` battery ----
+
+    #[test]
+    fn mrepc_self_dot_known_values() {
+        let v = Vector::<f64, 3>::new(vec![3.0, 4.0, 0.0]).unwrap();
+        assert_eq!(v.verified_self_dot(), 25.0);
+    }
+
+    #[test]
+    fn mrepc_self_dot_zero_vector_is_zero() {
+        let v = Vector::<f64, 3>::new(vec![0.0, 0.0, 0.0]).unwrap();
+        assert_eq!(v.verified_self_dot(), 0.0);
+    }
+
+    #[test]
+    fn mrepc_self_dot_single_coefficient() {
+        let v = Vector::<f64, 1>::new(vec![-2.5]).unwrap();
+        assert_eq!(v.verified_self_dot(), 6.25);
+    }
+
+    #[test]
+    fn mrepc_self_dot_is_nonnegative() {
+        let sign_mixed = Vector::<f64, 3>::new(vec![1.0, -2.0, -3.0]).unwrap();
+        assert!(sign_mixed.verified_self_dot() >= 0.0);
+
+        // The removed `dot` contract was unsound for mixed vectors, but a
+        // self-dot over a single vector is always nonnegative for finite
+        // coefficients.
+        let one_d = Vector::<f64, 1>::new(vec![1.0]).unwrap();
+        assert_eq!(one_d.dot(&one_d), 1.0);
+        assert!(one_d.verified_self_dot() >= 0.0);
+    }
+
+    // ---- M-REP-C contract-precondition battery (formal feature only) ----
+
+    #[cfg(feature = "formal-verification")]
+    mod contract_battery {
+        use super::*;
+        use crate::verified_contracts::{
+            verified_addition, verified_scalar_mult, verify_scalar_identity,
+        };
+
+        #[test]
+        fn mrepc_contract_scalar_mult_finite_exact() {
+            let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+            let result = verified_scalar_mult(3.0, &mv);
+            assert_eq!(result.coefficients[0], 6.0);
+            assert_eq!(result.coefficients.len(), mv.coefficients.len());
+        }
+
+        #[test]
+        fn mrepc_contract_addition_finite_exact() {
+            let a = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+            let b = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0).unwrap();
+            let result = verified_addition(&a, &b);
+            assert_eq!(result.coefficients[0], 5.0);
+        }
+
+        #[test]
+        fn mrepc_contract_scalar_identity_finite_exact() {
+            let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(5.0).unwrap();
+            let result = verify_scalar_identity(&mv);
+            assert_eq!(result.coefficients[0], mv.coefficients[0]);
+        }
+
+        #[test]
+        #[should_panic(expected = "finite")]
+        fn mrepc_contract_scalar_mult_nonfinite_scalar_panics() {
+            let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(1.0).unwrap();
+            let _ = verified_scalar_mult(f64::NAN, &mv);
+        }
     }
 }

@@ -14,6 +14,18 @@
 > repaired. Rows 7–13 below were updated from the M-REP-A transcript; see
 > `docs/plans/core-matrix-evidence/mrep-b/investigation.md` for the per-site
 > evidence.
+>
+> **Update (M-REP-C, 2026-10-15): specification audit.** The phantom module
+> now enforces finiteness at construction (`VerifiedMultivector::new/scalar`,
+> `Vector::new`, `VerifiedRotor::new` reject `NaN`/±infinity), the equality
+> contracts carry finiteness preconditions with runtime `debug_assert!`s, the
+> sound `Vector::verified_self_dot` replaces the removed dot contract, and the
+> unreachable stub `verified_laws.rs` was removed. This added **+15** test
+> functions to the default `amari-core` suite (495/18 → **510/18**) and **+19**
+> to the `formal-verification` suite (499/18 → **518/18**). The two
+> named-suite inventories are unchanged (`geometric_axioms` 6,
+> `verified_contracts` 4); rows 7–10 are therefore unaffected. Evidence:
+> `docs/plans/core-matrix-evidence/mrep-c/green/`.
 
 ## Overview
 

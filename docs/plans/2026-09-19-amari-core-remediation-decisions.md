@@ -118,7 +118,7 @@ Do not claim a decomposition valid for arbitrary indefinite/degenerate algebras 
 
 ## CORE-D05 — Enforce actual invariants, not decorative phantom types
 
-**Prerequisite:** finish the chronological audit of `unicode_ops.rs`, `verified.rs`, `verified_contracts.rs`, `verified_laws.rs` and their associated tests. Establish what is reachable, enforced and actually proved.
+**Prerequisite:** finish the chronological audit of `unicode_ops.rs`, `verified.rs`, `verified_contracts.rs`, `verified_laws.rs` and their associated tests. Establish what is reachable, enforced and actually proved. *(2026-10-15, M-REP-C: `verified_laws.rs` was audited and REMOVED as an unreachable stub; MATRIX-03 closed. This prerequisite line is historical.)*
 
 **Evidence:** CORE-09/14/15 and TYPE/API-01. Public `mv` fields bypass grades; a valid method constructs a grade-three `Bivector`; raw constructors and 3D-only helpers are available more broadly than their implementation.
 

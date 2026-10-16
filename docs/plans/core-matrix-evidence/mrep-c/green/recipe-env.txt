@@ -1,0 +1,9 @@
+RUSTC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
+RUSTDOC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
+RUSTC_WRAPPER=''
+RUSTC_WORKSPACE_WRAPPER=''
+RUSTFLAGS=-C target-cpu=x86-64 -C target-feature=-avx2
+CARGO_TARGET_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/target/mrepc
+RUSTUP_TOOLCHAIN=stable (for scripts/verify-named-suite.sh, which invokes plain `cargo`)
+pinned: cargo +stable (rust-toolchain.toml pins nightly; stable Cargo used per M-REP-A, nightly clippy-driver forwards -Z flags stable rustc rejects)
+base: develop b3f2e0b; worktree core-mrep-c; lock: --locked (no dependency changes)
