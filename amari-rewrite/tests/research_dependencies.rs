@@ -2,8 +2,9 @@
 //!
 //! Pins the exact external surface each research feature is allowed to use:
 //! `sha2` as a small no_std core dependency for canonical evidence digests,
-//! Candle CPU tensors under `neural`, vendored Z3 under `smt`, and the
-//! optional holographic/network guidance crates under their features.
+//! vendored Z3 under `smt`, and the optional holographic/network guidance
+//! crates under their features. (Candle was removed 2026-10-16 — see the
+//! note in Cargo.toml; the neural feature stays trait-only until Katakuri.)
 
 use sha2::{Digest, Sha256};
 
@@ -18,28 +19,6 @@ fn sha256_core_dependency_matches_known_vector() {
         hex,
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     );
-}
-
-/// `neural` wires Candle CPU-only: a tensor computation plus a VarMap/
-/// backprop round trip proves both `candle-core` and `candle-nn` resolve.
-#[cfg(feature = "neural")]
-#[test]
-fn neural_feature_provides_candle_cpu_tensor_and_varmap() {
-    use candle_core::{DType, Device, Tensor};
-    use candle_nn::{linear, Linear, Module, VarBuilder, VarMap};
-
-    let device = Device::Cpu;
-    let a = Tensor::from_slice(&[1.0f32, 2.0, 3.0, 4.0], (2, 2), &device).unwrap();
-    let b = Tensor::eye(2, DType::F32, &device).unwrap();
-    let product = a.matmul(&b).unwrap();
-    let flat: Vec<f32> = product.flatten_all().unwrap().to_vec1().unwrap();
-    assert_eq!(flat, vec![1.0, 2.0, 3.0, 4.0]);
-
-    let var_map = VarMap::new();
-    let vb = VarBuilder::from_varmap(&var_map, DType::F32, &device);
-    let layer: Linear = linear(2, 1, vb).unwrap();
-    let output = layer.forward(&a).unwrap();
-    assert_eq!(output.dims(), &[2, 1]);
 }
 
 /// `smt` wires vendored Z3: a trivial satisfiability check proves the
