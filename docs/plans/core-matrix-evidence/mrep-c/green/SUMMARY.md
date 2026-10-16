@@ -167,3 +167,99 @@ named-suite helper was run with `RUSTUP_TOOLCHAIN=stable` (it invokes plain
   becoming a *certified* layer via a pre-1.0 certification/verification pass
   (candidate: Karpal proof/verify) — is recorded here and in the removal note,
   but is explicitly **not** part of M-REP-C.
+
+---
+
+# M-REP-C review-round-1 remediation (2026-10-16)
+
+Base: `8bc3011` (M-REP-C closure) on PR #311
+(`fix/core-mrep-c-specification-audit` → `develop`). Round-scoped fix of all
+four P1 review findings plus the P3 path scrub and a proactive panic sweep.
+Theme: **construction-time finiteness cannot protect operation results**; the
+operations themselves now carry their own domain handling. Evidence for this
+round: `r1/`.
+
+## Findings fixed
+
+| # | Finding | Remediation | Battery |
+|---|---|---|---|
+| F1 | `Vector::verified_self_dot` `result >= 0` contract violated by the `[MAX]+[MAX]=inf`, then `(+inf)+(-inf)=NaN` coefficient chain; doc claimed "finite ⇒ finite sum" (false: `[MAX]` self-dot is `+inf`) | `verified_self_dot` now returns `Result<T, &'static str>`, rejecting non-finite coefficients; contract `Ok(r) ==> r >= 0` (sound: finite `c ⇒ c² >= 0`, possibly `+inf`; a sum of nonnegatives is never `NaN`); doc corrected | `mrepc_self_dot_rejects_overflow_nan_chain` → `Err`; `mrepc_self_dot_single_max_overflows_to_positive_infinity` → `Ok(+inf)`, `+inf >= 0`; zero vector → `Ok(0)` |
+| F2 | `VerifiedMultivector::scalar` unconditional `ensures(result.is_ok())` contradicts `Err`-on-`NaN` | Contract re-encoded success-conditionally (`Ok` ⇒ `is_scalar` ∧ `coefficients[0] == value` ∧ `len == BASIS_SIZE`; `Err` ⇒ `!value.is_finite()`) | existing `mrepc_scalar_rejects_nonfinite` / `mrepc_scalar_accepts_finite` |
+| F3 | `verified_scalar_mult` satisfied every `requires` for `2.0 × scalar(MAX)` yet panicked on `new(...).unwrap()` when the product overflowed to `inf` | `verified_scalar_mult` returns `Result<Self, &'static str>`, routing the product through `VerifiedMultivector::new` (no unwrap); contract success-conditional; `requires` inputs/scalar finite; `debug_assert` mirrors; call sites migrated | `mrepc_contract_scalar_mult_overflow_rejected` → `Err`; `mrepc_contract_scalar_mult_finite_exact` → exact `6.0` |
+| F4 | `VerifiedRotor::compose` divided by a zero norm in `Cl(1,1,0)` (`[s,0,0,s] ∘ [s,0,0,-s] == 0`), manufacturing `NaN` coefficients that `apply` then propagated | `compose` returns `Result<Self, &'static str>`; zero/non-finite denominator ⇒ `Err("composition is degenerate")`; normalized coefficients re-checked by `VerifiedMultivector::new`; exact-unit-norm `ensures` removed (dated note) | `mrepc_compose_degenerate_product_is_error` → `Err`; `mrepc_compose_ordinary_product_is_ok`; `mrepc_apply_on_valid_rotor_is_finite` (the apply-on-degenerate path is unreachable) |
+| F5 | 6 host paths across 4 evidence files under `mrep-c/` | Scrubbed to `$AMARI` / `$HOME` placeholders (0 host paths remain) | a local-home-prefix grep of this directory returns empty |
+
+**Proactive sweep (same class).** Runtime `unwrap`/`expect`/`panic` paths
+reachable from finite constructed inputs: **6 → 0** (see
+`r1/unwrap-sweep.txt`). The remaining `.unwrap()` occurrences are
+specification-annotation text (dropped by the dummy Creusot proc-macro under
+the pinned recipe) and test-only (`(A)`/`(T)` classes). The `geometric_product`
+`T::from(sign).unwrap()` was replaced by a total `match`; the `VerifiedRotor`
+tolerance now reads through the private `rotor_tolerance::<T>()` helper. As
+"siblings with the same shape", `verified_addition`, `verify_scalar_identity`,
+`verify_zero_addition`, and `verify_basis_vector_square` also became fallible
+so their `Ok` coefficient equalities cannot be falsified by `NaN` and no
+constant-`scalar`/`basis_vector` unwrap remains.
+
+## Test-count deltas (disclosed)
+
+| Gate | Before R1 | After R1 | Delta |
+|---|---|---|---|
+| `cargo test -p amari-core` (default) | 510 / 18 suites | **515 / 18 suites** | **+5** |
+| `cargo test -p amari-core --features formal-verification` | 518 / 18 suites | **525 / 18 suites** | **+7** |
+
+The +5 default tests are the F1 battery (2) + the F4 compose/apply battery (3).
+The formal run adds the 2 new `contract_battery` overflow tests
+(`verified_scalar_mult` + `verified_addition`). Named-suite inventories are
+**unchanged**: `geometric_axioms` **6**, `verified_contracts` (formal) **4**.
+
+## Verification — pinned recipe (`r1/`)
+
+Same pinned recipe as the closure round (`r1/recipe-env.txt`): stable
+`RUSTC`/`RUSTDOC`, empty wrappers, `RUSTFLAGS='-C target-cpu=x86-64 -C
+target-feature=-avx2'`, `CARGO_TARGET_DIR=$PWD/target/mrepc`, `--locked`,
+`cargo +stable` (named-suite helper under `RUSTUP_TOOLCHAIN=stable`).
+
+| Gate | Result | Log |
+|---|---|---|
+| `cargo +stable test -p amari-core --locked` | **515 passed / 18 suites**, exit 0, 0 failed, 0 ignored | `r1/amari-core-default-test.log` |
+| `cargo +stable test -p amari-core --features formal-verification --locked` | **525 passed / 18 suites**, exit 0, 0 failed, 0 ignored | `r1/amari-core-formal-test.log` |
+| `cargo +stable clippy -p amari-core --all-targets --locked -- -D warnings` | exit 0, 0 warnings | `r1/amari-core-clippy-default.log` |
+| `cargo +stable clippy -p amari-core --all-targets --features formal-verification --locked -- -D warnings` | exit 0, 0 warnings | `r1/amari-core-clippy-formal.log` |
+| `cargo +stable fmt --all --check` | exit 0 | `r1/fmt-check.log` |
+| `RUSTDOCFLAGS='-D warnings' cargo +stable doc -p amari-core --no-deps --locked` | exit 0 | `r1/amari-core-rustdoc.log` |
+| `cargo +stable check --workspace --locked` | exit 0 | `r1/workspace-check.log` |
+| `geometric_axioms` named-suite assertion | OK — 6 passed, 0 ignored, exact inventory | `r1/named-suite-assertions.log` |
+| `verified_contracts` (formal) named-suite assertion | OK — 4 passed, 0 ignored, exact inventory | `r1/named-suite-assertions.log` |
+| operation-result unwrap/panic sweep | runtime 6 → 0; F-class list; method | `r1/unwrap-sweep.txt` |
+
+## R1 ambiguities resolved
+
+1. **"Sibling with the same shape" breadth.** F3 names `verified_scalar_mult`
+   explicitly; the probe sweep named `add/sub/neg/geometric_product/compose/
+   apply/inverse`. `verified_addition`, `verify_scalar_identity`,
+   `verify_zero_addition`, and `verify_basis_vector_square` were treated as
+   siblings — each can take finite inputs to a non-finite (or, for the last,
+   out-of-range) result — and made fallible so no unchecked `.unwrap()` and no
+   `NaN`-falsifiable `Ok` equality remains. `VerifiedMultivector::add` /
+   `geometric_product` / `apply_to_multivector` stay infallible arithmetic
+   (panic-free); their checked wrappers own the finiteness boundary.
+2. **`compose` error wording.** Zero and non-finite denominators both map to
+   the dispatch's exact `"composition is degenerate"`; a non-finite
+   *normalized* coefficient is rejected by `VerifiedMultivector::new`'s own
+   message (also an `Err`).
+3. **`verified_self_dot` precondition.** The stale `requires(!data.is_empty())`
+   was replaced by `requires(all_finite(&self.data))` (the encoded domain the
+   dispatch asked for); an empty `Vector<T,0>` would today return `Ok(0)`.
+4. **Exact-unit-norm contract.** The unsound `ensures(norm == 1)` was removed
+   with a dated note rather than "repaired"; the actual postcondition (finite
+   coefficients) is now the `Ok` ensures.
+
+## R1 residuals
+
+- No proof tool invoked; annotations remain expressed, not discharged (C3/C4).
+- Infallible `add` / `geometric_product` / `apply` still may overflow finite
+  inputs to `±inf`; callers needing the finite-coefficient invariant use the
+  checked wrappers or `VerifiedMultivector::new`.
+- Workspace `--all-features` Clippy remains blocked by the pre-existing
+  `z3-sys` cmake failure disclosed by M-REP-B.

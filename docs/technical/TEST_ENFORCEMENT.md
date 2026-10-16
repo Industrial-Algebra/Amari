@@ -26,6 +26,18 @@
 > named-suite inventories are unchanged (`geometric_axioms` 6,
 > `verified_contracts` 4); rows 7–10 are therefore unaffected. Evidence:
 > `docs/plans/core-matrix-evidence/mrep-c/green/`.
+>
+> **Update (M-REP-C review round 1, 2026-10-16): operation-result domain
+> handling.** Construction-time finiteness alone cannot protect operation
+> results (`[MAX]+[MAX] = inf` then `(+inf)+(-inf) = NaN`, or a rotor product
+> that normalizes by zero). `Vector::verified_self_dot` and `VerifiedRotor::
+> compose` are now fallible, `verified_scalar_mult`/`verified_addition`/
+> `verify_scalar_identity`/`verify_zero_addition`/`verify_basis_vector_square`
+> return `Result` instead of unwrapping, and every runtime unwrap/panic path
+> reachable from finite constructed inputs was removed (6 → 0). Default
+> `amari-core` is now **515/18** (+5) and `formal-verification` **525/18**
+> (+7). Named-suite inventories remain unchanged. Evidence:
+> `docs/plans/core-matrix-evidence/mrep-c/green/r1/`.
 
 ## Overview
 

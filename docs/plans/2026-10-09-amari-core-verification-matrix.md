@@ -400,11 +400,22 @@ four-form vocabulary cannot express (it covers existing promises only).
 > MATRIX-02 and MATRIX-03 are CLOSED. The M-REP-A-removed dot contract now
 > has a sound successor (`Vector::verified_self_dot`); finiteness is enforced
 > at construction and the equality contracts carry finiteness preconditions;
-> `verified_laws.rs` is REMOVED-STUB; the named-suite inventories are
-> unchanged (`geometric_axioms` 6, `verified_contracts` 4). Current
-> `amari-core` default: **510 passed / 18 suites**; `--features
-> formal-verification`: **518 passed / 18 suites**. Evidence:
+> unaudited stub `verified_laws.rs` is REMOVED-STUB; the named-suite inventories
+> are unchanged (`geometric_axioms` 6, `verified_contracts` 4). Current
+> `amari-core` default: **515 passed / 18 suites**; `--features
+> formal-verification`: **525 passed / 18 suites**. Evidence:
 > `docs/plans/core-matrix-evidence/mrep-c/green/`.
+>
+> **2026-10-16 M-REP-C review round 1 (operation-result domain handling):**
+> construction-time finiteness cannot protect operation results, so the
+> checked operations are now fallible (`Vector::verified_self_dot`,
+> `VerifiedRotor::compose`, `verified_scalar_mult`, `verified_addition`,
+> `verify_scalar_identity`, `verify_zero_addition`,
+> `verify_basis_vector_square`) and every runtime unwrap/panic path reachable
+> from finite constructed inputs was removed (6 → 0). Default `amari-core`
+> **515/18**, `formal-verification` **525/18**; named-suite inventories
+> unchanged. Evidence:
+> `docs/plans/core-matrix-evidence/mrep-c/green/r1/`.
 
 After resolving missing downloaded artifacts under the unchanged lock:
 

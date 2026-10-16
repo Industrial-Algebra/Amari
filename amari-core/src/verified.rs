@@ -23,6 +23,21 @@ fn all_finite<T: Float>(values: &[T]) -> bool {
     values.iter().all(|value| value.is_finite())
 }
 
+/// Type-invariant unit-norm tolerance (`1e-4`) for [`VerifiedRotor`].
+///
+/// `T::from(0.0001)` is `num_traits::NumCast::from`, which returns `None`
+/// only for a `Float` type that cannot represent `0.0001`. Every concrete
+/// `Float` used by this crate (`f32`, `f64`) represents it; the `zero`
+/// fallback keeps this constructor free of any panic path in the
+/// (unreachable in-tree) `None` case, matching the module policy of errors
+/// rather than panics.
+fn rotor_tolerance<T: Float>() -> T {
+    match T::from(0.0001) {
+        Some(tolerance) => tolerance,
+        None => T::zero(),
+    }
+}
+
 /// Phantom type encoding the metric signature of a Clifford algebra Cl(p,q,r)
 /// - P: number of positive basis vectors (e_i² = +1)
 /// - Q: number of negative basis vectors (e_i² = -1)
@@ -101,11 +116,11 @@ where
     /// invariant). Finite inputs produce the same multivector as before; only
     /// the return type became fallible.
     #[cfg_attr(feature = "formal-verification",
-        ensures(result.is_ok()),
         ensures(result.is_ok() ==> result.unwrap().is_scalar()),
         ensures(result.is_ok() ==> result.unwrap().coefficients[0] == value),
         ensures(result.is_ok() ==>
-            result.unwrap().coefficients.len() == Self::BASIS_SIZE))]
+            result.unwrap().coefficients.len() == Self::BASIS_SIZE),
+        ensures(result.is_err() ==> !value.is_finite()))]
     pub fn scalar(value: T) -> Result<Self, &'static str> {
         if !value.is_finite() {
             return Err("Scalar coefficient must be finite (no NaN or infinity)");
@@ -201,9 +216,16 @@ where
         for i in 0..Self::BASIS_SIZE {
             for (j, &other_j) in other.coefficients.iter().enumerate() {
                 let sign = self.compute_product_sign(i, j);
+                // `compute_product_sign` returns only `-1`, `0`, or `1`; map
+                // it to a total `T` factor without a fallible `NumCast`.
+                let factor = match sign {
+                    0 => T::zero(),
+                    1 => T::one(),
+                    _ => -T::one(),
+                };
                 let target_index = i ^ j; // XOR gives the resulting basis blade
                 result[target_index] =
-                    result[target_index] + self.coefficients[i] * other_j * T::from(sign).unwrap();
+                    result[target_index] + self.coefficients[i] * other_j * factor;
             }
         }
 
@@ -512,7 +534,7 @@ where
     #[cfg_attr(feature = "formal-verification",
         requires(mv.is_even_grade()),
         requires(all_finite(&mv.coefficients)),
-        requires((Self::compute_norm(&mv) - T::one()).abs() < T::from(0.0001).unwrap()),
+        requires((Self::compute_norm(&mv) - T::one()).abs() < rotor_tolerance::<T>()),
         ensures(result.is_ok()))]
     pub fn new(mv: VerifiedMultivector<T, P, Q, R>) -> Result<Self, &'static str> {
         if !all_finite(&mv.coefficients) {
@@ -523,7 +545,7 @@ where
         }
 
         let norm = Self::compute_norm(&mv);
-        if (norm - T::one()).abs() > T::from(0.0001).unwrap() {
+        if (norm - T::one()).abs() > rotor_tolerance::<T>() {
             return Err("Rotor must have unit norm");
         }
 
@@ -556,32 +578,43 @@ where
     /// Compose two rotors (rotation composition).
     ///
     /// The geometric product of the two rotors is computed and then divided by
-    /// its computed norm. This method performs **no runtime check** that the
-    /// result is even grade or unit norm: the properties below are *intended
-    /// invariants* (to be established by a future proof), not runtime-enforced
-    /// guarantees. Normalization is a floating-point operation, so the result
-    /// is only approximately unit norm.
+    /// its computed norm. The normalization denominator is checked explicitly:
+    /// a zero or non-finite norm (a degenerate product such as two
+    /// null-product rotors in `Cl(1,1,0)`, or an overflow) returns
+    /// `Err("composition is degenerate")` instead of dividing by zero and
+    /// manufacturing `NaN` coefficients. The normalized coefficients are
+    /// routed through [`VerifiedMultivector::new`], so a non-finite
+    /// coefficient cannot be stored in the result either.
     ///
-    /// # Intended invariants (not runtime-enforced)
-    /// - Result is intended to be a valid rotor
-    /// - Unit norm is intended to be preserved
+    /// # Postcondition
+    /// On `Ok`, every result coefficient is finite (the constructor gate
+    /// holds). Exact unit norm is **not** guaranteed: normalization is a
+    /// floating-point division, so the invariant is approximate only. The
+    /// former `ensures(Self::compute_norm(&result.multivector) == T::one())`
+    /// annotation was removed on 2026-10-16 (M-REP-C review round 1) as
+    /// unsound; no proof of it was ever discharged.
     #[cfg_attr(feature = "formal-verification",
-        ensures(Self::compute_norm(&result.multivector) == T::one()))]
-    pub fn compose(&self, other: &Self) -> Self {
+        requires(all_finite(&self.multivector.coefficients)),
+        requires(all_finite(&other.multivector.coefficients)),
+        ensures(result.is_ok() ==>
+            all_finite(&result.unwrap().multivector.coefficients)))]
+    pub fn compose(&self, other: &Self) -> Result<Self, &'static str> {
         let composed = self.multivector.geometric_product(&other.multivector);
 
-        // Normalize by the computed norm (expected to be close to one, but not
-        // checked here; non-finite handling is M-REP-C).
+        // Reject a zero or non-finite normalization denominator explicitly;
+        // dividing by it would produce `NaN`/`inf` coefficients.
         let norm = Self::compute_norm(&composed);
-        let normalized = VerifiedMultivector {
-            coefficients: composed.coefficients.iter().map(|c| *c / norm).collect(),
-            _signature: PhantomData,
-        };
+        if norm.is_zero() || !norm.is_finite() {
+            return Err("composition is degenerate");
+        }
 
-        Self {
+        let normalized =
+            VerifiedMultivector::new(composed.coefficients.iter().map(|c| *c / norm).collect())?;
+
+        Ok(Self {
             multivector: normalized,
             _rotor_invariant: PhantomData,
-        }
+        })
     }
 
     /// Apply rotor to a multivector (rotation/reflection)
@@ -673,26 +706,40 @@ where
     /// # Soundness scope
     /// This is an ordinary coordinate sum of squares. It makes **no** metric
     /// or signature claim, and performs no square root, so it is
-    /// signature-independent. For every finite coefficient the sum of squares
-    /// is finite and nonnegative, so the `result >= T::zero()` contract is
-    /// sound for finite inputs. `NaN`/±infinity components are rejected at
-    /// construction by [`Self::new`], but operations such as [`Self::add`] or
-    /// [`Self::dot`] can still overflow finite inputs to `inf`; the contract
-    /// is scoped to finite coefficients, not to arbitrary intermediate IEEE
-    /// arithmetic.
+    /// signature-independent. Every finite coefficient squares to a
+    /// nonnegative value, and a sum of nonnegative values is never `NaN`, so
+    /// for finite coefficients the result satisfies `>= T::zero()` even when
+    /// it is `+inf` (the square of `f64::MAX` overflows to `+inf`). The sum
+    /// is therefore **not** always finite — the earlier claim "finite
+    /// coefficients imply a finite sum" was false — but it is always
+    /// nonnegative.
+    ///
+    /// This method rejects non-finite coefficients at runtime and returns
+    /// `Err("Vector components must be finite (no NaN or infinity)")`. That
+    /// matters because [`Self::new`] only rejects non-finite input at
+    /// construction; an operation such as [`Self::add`] or [`Self::dot`] can
+    /// overflow finite inputs to `±inf`, and a subsequent `(+inf) + (-inf)`
+    /// produces `NaN`, for which `NaN >= 0` is false. The guard makes the
+    /// `Ok(result) ==> result >= T::zero()` contract sound.
     ///
     /// Contrast with the removed dot contract: that claimed nonnegativity for
     /// `a·b` over *two* arbitrary vectors, which is false for mixed signs
     /// (`dot([1], [-1]) == -1`); a self-dot over one vector cannot exhibit
     /// that counterexample.
     #[cfg_attr(feature = "formal-verification",
-        requires(!self.data.is_empty()),
-        ensures(result >= T::zero()))]
-    pub fn verified_self_dot(&self) -> T {
-        self.data
+        requires(all_finite(&self.data)),
+        ensures(result.is_ok() ==> result.unwrap() >= T::zero()),
+        ensures(result.is_err() == !all_finite(&self.data)))]
+    pub fn verified_self_dot(&self) -> Result<T, &'static str> {
+        if !all_finite(&self.data) {
+            return Err("Vector components must be finite (no NaN or infinity)");
+        }
+
+        Ok(self
+            .data
             .iter()
             .map(|x| *x * *x)
-            .fold(T::zero(), |acc, x| acc + x)
+            .fold(T::zero(), |acc, x| acc + x))
     }
 
     /// Add two vectors (same dimension enforced at compile time)
@@ -874,32 +921,107 @@ mod tests {
     #[test]
     fn mrepc_self_dot_known_values() {
         let v = Vector::<f64, 3>::new(vec![3.0, 4.0, 0.0]).unwrap();
-        assert_eq!(v.verified_self_dot(), 25.0);
+        assert_eq!(v.verified_self_dot().unwrap(), 25.0);
     }
 
     #[test]
     fn mrepc_self_dot_zero_vector_is_zero() {
         let v = Vector::<f64, 3>::new(vec![0.0, 0.0, 0.0]).unwrap();
-        assert_eq!(v.verified_self_dot(), 0.0);
+        assert_eq!(v.verified_self_dot().unwrap(), 0.0);
     }
 
     #[test]
     fn mrepc_self_dot_single_coefficient() {
         let v = Vector::<f64, 1>::new(vec![-2.5]).unwrap();
-        assert_eq!(v.verified_self_dot(), 6.25);
+        assert_eq!(v.verified_self_dot().unwrap(), 6.25);
     }
 
     #[test]
     fn mrepc_self_dot_is_nonnegative() {
         let sign_mixed = Vector::<f64, 3>::new(vec![1.0, -2.0, -3.0]).unwrap();
-        assert!(sign_mixed.verified_self_dot() >= 0.0);
+        assert!(sign_mixed.verified_self_dot().unwrap() >= 0.0);
 
         // The removed `dot` contract was unsound for mixed vectors, but a
         // self-dot over a single vector is always nonnegative for finite
         // coefficients.
         let one_d = Vector::<f64, 1>::new(vec![1.0]).unwrap();
         assert_eq!(one_d.dot(&one_d), 1.0);
-        assert!(one_d.verified_self_dot() >= 0.0);
+        assert!(one_d.verified_self_dot().unwrap() >= 0.0);
+    }
+
+    #[test]
+    fn mrepc_self_dot_single_max_overflows_to_positive_infinity() {
+        // A single finite coefficient squares to `+inf`, which is not finite
+        // but *is* `>= 0`: the `Ok` contract holds and NaN is impossible.
+        let v = Vector::<f64, 1>::new(vec![f64::MAX]).unwrap();
+        let result = v.verified_self_dot().unwrap();
+        assert!(result.is_infinite() && result > 0.0);
+        assert!(result >= 0.0);
+    }
+
+    #[test]
+    fn mrepc_self_dot_rejects_overflow_nan_chain() {
+        // Finite constructed vectors; `add` overflows them to ±inf, and
+        // `(+inf) + (-inf) = NaN`. `NaN >= 0` is false, so the non-finite
+        // coefficient must be rejected rather than returned as `NaN`.
+        let pos = Vector::<f64, 1>::new(vec![f64::MAX]).unwrap();
+        let inf = pos.add(&pos); // [inf]
+        let neg = Vector::<f64, 1>::new(vec![-f64::MAX]).unwrap();
+        let ninf = neg.add(&neg); // [-inf]
+        let nan = inf.add(&ninf); // [NaN]
+        assert!(nan.data[0].is_nan());
+        assert!(nan.verified_self_dot().is_err());
+    }
+
+    // ---- M-REP-C `compose` zero-normalization battery (F4) ----
+
+    /// A unit even rotor `[s,0,0,±s]` in `Cl(1,1,0)`, `s = 1/√2`.
+    fn hyperbolic_unit_rotor(sign: f64) -> VerifiedRotor<f64, 1, 1, 0> {
+        let s = 1.0 / 2.0f64.sqrt();
+        VerifiedRotor::new(
+            VerifiedMultivector::<f64, 1, 1, 0>::new(vec![s, 0.0, 0.0, sign * s]).unwrap(),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn mrepc_compose_degenerate_product_is_error() {
+        // In Cl(1,1,0) the even blades are index 0 (scalar) and index 3
+        // (e1e2). `[s,0,0,s] · [s,0,0,-s]` is exactly zero, so the
+        // normalization denominator is zero and the former code divided by
+        // it, manufacturing NaN coefficients. It must be rejected.
+        let a = hyperbolic_unit_rotor(1.0);
+        let b = hyperbolic_unit_rotor(-1.0);
+        let err = a.compose(&b).err().unwrap();
+        assert!(err.contains("degenerate"), "unexpected error: {err}");
+    }
+
+    #[test]
+    fn mrepc_compose_ordinary_product_is_ok() {
+        // The same rotor composed with itself has the finite non-zero
+        // product `1 + e12`, so normalization succeeds and the result is a
+        // finite multivector (ordinary compose is unchanged).
+        let a = hyperbolic_unit_rotor(1.0);
+        let composed = a.compose(&a).unwrap();
+        assert!(composed
+            .multivector
+            .coefficients
+            .iter()
+            .all(|c| c.is_finite()));
+        // `a` is idempotent under composition in Cl(1,1,0): `a∘a == a`.
+        let s = 1.0 / 2.0f64.sqrt();
+        assert!((composed.multivector.coefficients[0] - s).abs() < 1e-12);
+        assert!((composed.multivector.coefficients[3] - s).abs() < 1e-12);
+    }
+
+    #[test]
+    fn mrepc_apply_on_valid_rotor_is_finite() {
+        // `compose` cannot produce a degenerate (NaN) rotor, so `apply` only
+        // ever receives finite rotors; applying a valid rotor is finite.
+        let r = hyperbolic_unit_rotor(1.0);
+        let v = VerifiedMultivector::<f64, 1, 1, 0>::new(vec![0.0, 1.0, 0.0, 0.0]).unwrap();
+        let applied = r.apply_to_multivector(&v);
+        assert!(applied.coefficients.iter().all(|c| c.is_finite()));
     }
 
     // ---- M-REP-C contract-precondition battery (formal feature only) ----
@@ -914,23 +1036,42 @@ mod tests {
         #[test]
         fn mrepc_contract_scalar_mult_finite_exact() {
             let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
-            let result = verified_scalar_mult(3.0, &mv);
+            let result = verified_scalar_mult(3.0, &mv).unwrap();
             assert_eq!(result.coefficients[0], 6.0);
             assert_eq!(result.coefficients.len(), mv.coefficients.len());
+        }
+
+        #[test]
+        fn mrepc_contract_scalar_mult_overflow_rejected() {
+            // `2.0 * f64::MAX` overflows to `+inf`. Every `requires` is
+            // satisfied (both inputs are finite), but the former
+            // `new(...).unwrap()` panicked on the non-finite product. It is
+            // now a checked `Err`.
+            let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(f64::MAX).unwrap();
+            assert!(verified_scalar_mult(2.0, &mv).is_err());
         }
 
         #[test]
         fn mrepc_contract_addition_finite_exact() {
             let a = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
             let b = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0).unwrap();
-            let result = verified_addition(&a, &b);
+            let result = verified_addition(&a, &b).unwrap();
             assert_eq!(result.coefficients[0], 5.0);
+        }
+
+        #[test]
+        fn mrepc_contract_addition_overflow_rejected() {
+            // `MAX + MAX` overflows to `+inf`; the checked sum returns `Err`
+            // rather than a non-finite multivector whose coefficient
+            // equality (`inf == MAX + MAX`) is a NaN-adjacent false claim.
+            let a = VerifiedMultivector::<f64, 3, 0, 0>::scalar(f64::MAX).unwrap();
+            assert!(verified_addition(&a, &a).is_err());
         }
 
         #[test]
         fn mrepc_contract_scalar_identity_finite_exact() {
             let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(5.0).unwrap();
-            let result = verify_scalar_identity(&mv);
+            let result = verify_scalar_identity(&mv).unwrap();
             assert_eq!(result.coefficients[0], mv.coefficients[0]);
         }
 

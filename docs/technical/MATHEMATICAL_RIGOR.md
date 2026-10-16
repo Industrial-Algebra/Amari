@@ -132,10 +132,16 @@ not to this page.
   `verified_contracts.rs` carry matching finiteness preconditions and runtime
   `debug_assert!`s. (Before M-REP-C, `VerifiedRotor::new` accepted a `NaN`
   scalar because its unit-norm test `(norm - 1).abs() > 1e-4` is `false` for
-  `NaN`.) Arithmetic operations can still overflow finite inputs to `inf`
-  (`add`, `dot`, `geometric_product`), so the sound self-dot contract
-  `Vector::verified_self_dot` (`Σ x_i² >= 0`) is scoped to finite
-  coefficients. `verified_laws.rs` was removed as unreachable stub code
+  `NaN`.) **Operation results need their own domain handling (M-REP-C review
+  round 1, 2026-10-16):** finite inputs can still overflow (`[MAX]+[MAX]` is
+  `+inf`, and `(+inf)+(-inf)` is `NaN`), so `Vector::verified_self_dot`
+  rejects non-finite coefficients and returns `Ok(r) ==> r >= 0`; the checked
+  `verified_scalar_mult` / `verified_addition` / `verify_scalar_identity` /
+  `verify_zero_addition` operations and `VerifiedRotor::compose` return
+  `Result` and route their result through `VerifiedMultivector::new`, whose
+  finiteness gate is the single checked boundary. The infallible arithmetic
+  (`add`, `geometric_product`, `apply`) remains panic-free but can still carry
+  `inf`. `verified_laws.rs` was removed as unreachable stub code
   (MATRIX-03); replacing that surface with a real proof/verification pass is a
   future pre-1.0 direction, not part of M-REP-C.
 - **Counts are not proofs.** Test-function and coverage counts measure how much

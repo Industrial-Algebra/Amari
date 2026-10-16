@@ -1,6 +1,6 @@
     Blocking waiting for file lock on package cache
     Blocking waiting for file lock on package cache
-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/amari-core)
+   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-mrep-c/amari-core)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.85s
      Running unittests src/lib.rs (target/mrepc/debug/deps/amari_core-d578302cee61e512)
 

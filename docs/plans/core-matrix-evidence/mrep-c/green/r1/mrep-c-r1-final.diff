@@ -1,0 +1,916 @@
+diff --git a/amari-core/src/verified.rs b/amari-core/src/verified.rs
+index 67f1174..f8a463d 100644
+--- a/amari-core/src/verified.rs
++++ b/amari-core/src/verified.rs
+@@ -23,6 +23,21 @@ fn all_finite<T: Float>(values: &[T]) -> bool {
+     values.iter().all(|value| value.is_finite())
+ }
+ 
++/// Type-invariant unit-norm tolerance (`1e-4`) for [`VerifiedRotor`].
++///
++/// `T::from(0.0001)` is `num_traits::NumCast::from`, which returns `None`
++/// only for a `Float` type that cannot represent `0.0001`. Every concrete
++/// `Float` used by this crate (`f32`, `f64`) represents it; the `zero`
++/// fallback keeps this constructor free of any panic path in the
++/// (unreachable in-tree) `None` case, matching the module policy of errors
++/// rather than panics.
++fn rotor_tolerance<T: Float>() -> T {
++    match T::from(0.0001) {
++        Some(tolerance) => tolerance,
++        None => T::zero(),
++    }
++}
++
+ /// Phantom type encoding the metric signature of a Clifford algebra Cl(p,q,r)
+ /// - P: number of positive basis vectors (e_i² = +1)
+ /// - Q: number of negative basis vectors (e_i² = -1)
+@@ -101,11 +116,11 @@ where
+     /// invariant). Finite inputs produce the same multivector as before; only
+     /// the return type became fallible.
+     #[cfg_attr(feature = "formal-verification",
+-        ensures(result.is_ok()),
+         ensures(result.is_ok() ==> result.unwrap().is_scalar()),
+         ensures(result.is_ok() ==> result.unwrap().coefficients[0] == value),
+         ensures(result.is_ok() ==>
+-            result.unwrap().coefficients.len() == Self::BASIS_SIZE))]
++            result.unwrap().coefficients.len() == Self::BASIS_SIZE),
++        ensures(result.is_err() ==> !value.is_finite()))]
+     pub fn scalar(value: T) -> Result<Self, &'static str> {
+         if !value.is_finite() {
+             return Err("Scalar coefficient must be finite (no NaN or infinity)");
+@@ -201,9 +216,16 @@ where
+         for i in 0..Self::BASIS_SIZE {
+             for (j, &other_j) in other.coefficients.iter().enumerate() {
+                 let sign = self.compute_product_sign(i, j);
++                // `compute_product_sign` returns only `-1`, `0`, or `1`; map
++                // it to a total `T` factor without a fallible `NumCast`.
++                let factor = match sign {
++                    0 => T::zero(),
++                    1 => T::one(),
++                    _ => -T::one(),
++                };
+                 let target_index = i ^ j; // XOR gives the resulting basis blade
+                 result[target_index] =
+-                    result[target_index] + self.coefficients[i] * other_j * T::from(sign).unwrap();
++                    result[target_index] + self.coefficients[i] * other_j * factor;
+             }
+         }
+ 
+@@ -512,7 +534,7 @@ where
+     #[cfg_attr(feature = "formal-verification",
+         requires(mv.is_even_grade()),
+         requires(all_finite(&mv.coefficients)),
+-        requires((Self::compute_norm(&mv) - T::one()).abs() < T::from(0.0001).unwrap()),
++        requires((Self::compute_norm(&mv) - T::one()).abs() < rotor_tolerance::<T>()),
+         ensures(result.is_ok()))]
+     pub fn new(mv: VerifiedMultivector<T, P, Q, R>) -> Result<Self, &'static str> {
+         if !all_finite(&mv.coefficients) {
+@@ -523,7 +545,7 @@ where
+         }
+ 
+         let norm = Self::compute_norm(&mv);
+-        if (norm - T::one()).abs() > T::from(0.0001).unwrap() {
++        if (norm - T::one()).abs() > rotor_tolerance::<T>() {
+             return Err("Rotor must have unit norm");
+         }
+ 
+@@ -556,32 +578,43 @@ where
+     /// Compose two rotors (rotation composition).
+     ///
+     /// The geometric product of the two rotors is computed and then divided by
+-    /// its computed norm. This method performs **no runtime check** that the
+-    /// result is even grade or unit norm: the properties below are *intended
+-    /// invariants* (to be established by a future proof), not runtime-enforced
+-    /// guarantees. Normalization is a floating-point operation, so the result
+-    /// is only approximately unit norm.
++    /// its computed norm. The normalization denominator is checked explicitly:
++    /// a zero or non-finite norm (a degenerate product such as two
++    /// null-product rotors in `Cl(1,1,0)`, or an overflow) returns
++    /// `Err("composition is degenerate")` instead of dividing by zero and
++    /// manufacturing `NaN` coefficients. The normalized coefficients are
++    /// routed through [`VerifiedMultivector::new`], so a non-finite
++    /// coefficient cannot be stored in the result either.
+     ///
+-    /// # Intended invariants (not runtime-enforced)
+-    /// - Result is intended to be a valid rotor
+-    /// - Unit norm is intended to be preserved
++    /// # Postcondition
++    /// On `Ok`, every result coefficient is finite (the constructor gate
++    /// holds). Exact unit norm is **not** guaranteed: normalization is a
++    /// floating-point division, so the invariant is approximate only. The
++    /// former `ensures(Self::compute_norm(&result.multivector) == T::one())`
++    /// annotation was removed on 2026-10-16 (M-REP-C review round 1) as
++    /// unsound; no proof of it was ever discharged.
+     #[cfg_attr(feature = "formal-verification",
+-        ensures(Self::compute_norm(&result.multivector) == T::one()))]
+-    pub fn compose(&self, other: &Self) -> Self {
++        requires(all_finite(&self.multivector.coefficients)),
++        requires(all_finite(&other.multivector.coefficients)),
++        ensures(result.is_ok() ==>
++            all_finite(&result.unwrap().multivector.coefficients)))]
++    pub fn compose(&self, other: &Self) -> Result<Self, &'static str> {
+         let composed = self.multivector.geometric_product(&other.multivector);
+ 
+-        // Normalize by the computed norm (expected to be close to one, but not
+-        // checked here; non-finite handling is M-REP-C).
++        // Reject a zero or non-finite normalization denominator explicitly;
++        // dividing by it would produce `NaN`/`inf` coefficients.
+         let norm = Self::compute_norm(&composed);
+-        let normalized = VerifiedMultivector {
+-            coefficients: composed.coefficients.iter().map(|c| *c / norm).collect(),
+-            _signature: PhantomData,
+-        };
++        if norm.is_zero() || !norm.is_finite() {
++            return Err("composition is degenerate");
++        }
+ 
+-        Self {
++        let normalized =
++            VerifiedMultivector::new(composed.coefficients.iter().map(|c| *c / norm).collect())?;
++
++        Ok(Self {
+             multivector: normalized,
+             _rotor_invariant: PhantomData,
+-        }
++        })
+     }
+ 
+     /// Apply rotor to a multivector (rotation/reflection)
+@@ -673,26 +706,40 @@ where
+     /// # Soundness scope
+     /// This is an ordinary coordinate sum of squares. It makes **no** metric
+     /// or signature claim, and performs no square root, so it is
+-    /// signature-independent. For every finite coefficient the sum of squares
+-    /// is finite and nonnegative, so the `result >= T::zero()` contract is
+-    /// sound for finite inputs. `NaN`/±infinity components are rejected at
+-    /// construction by [`Self::new`], but operations such as [`Self::add`] or
+-    /// [`Self::dot`] can still overflow finite inputs to `inf`; the contract
+-    /// is scoped to finite coefficients, not to arbitrary intermediate IEEE
+-    /// arithmetic.
++    /// signature-independent. Every finite coefficient squares to a
++    /// nonnegative value, and a sum of nonnegative values is never `NaN`, so
++    /// for finite coefficients the result satisfies `>= T::zero()` even when
++    /// it is `+inf` (the square of `f64::MAX` overflows to `+inf`). The sum
++    /// is therefore **not** always finite — the earlier claim "finite
++    /// coefficients imply a finite sum" was false — but it is always
++    /// nonnegative.
++    ///
++    /// This method rejects non-finite coefficients at runtime and returns
++    /// `Err("Vector components must be finite (no NaN or infinity)")`. That
++    /// matters because [`Self::new`] only rejects non-finite input at
++    /// construction; an operation such as [`Self::add`] or [`Self::dot`] can
++    /// overflow finite inputs to `±inf`, and a subsequent `(+inf) + (-inf)`
++    /// produces `NaN`, for which `NaN >= 0` is false. The guard makes the
++    /// `Ok(result) ==> result >= T::zero()` contract sound.
+     ///
+     /// Contrast with the removed dot contract: that claimed nonnegativity for
+     /// `a·b` over *two* arbitrary vectors, which is false for mixed signs
+     /// (`dot([1], [-1]) == -1`); a self-dot over one vector cannot exhibit
+     /// that counterexample.
+     #[cfg_attr(feature = "formal-verification",
+-        requires(!self.data.is_empty()),
+-        ensures(result >= T::zero()))]
+-    pub fn verified_self_dot(&self) -> T {
+-        self.data
++        requires(all_finite(&self.data)),
++        ensures(result.is_ok() ==> result.unwrap() >= T::zero()),
++        ensures(result.is_err() == !all_finite(&self.data)))]
++    pub fn verified_self_dot(&self) -> Result<T, &'static str> {
++        if !all_finite(&self.data) {
++            return Err("Vector components must be finite (no NaN or infinity)");
++        }
++
++        Ok(self
++            .data
+             .iter()
+             .map(|x| *x * *x)
+-            .fold(T::zero(), |acc, x| acc + x)
++            .fold(T::zero(), |acc, x| acc + x))
+     }
+ 
+     /// Add two vectors (same dimension enforced at compile time)
+@@ -874,32 +921,107 @@ mod tests {
+     #[test]
+     fn mrepc_self_dot_known_values() {
+         let v = Vector::<f64, 3>::new(vec![3.0, 4.0, 0.0]).unwrap();
+-        assert_eq!(v.verified_self_dot(), 25.0);
++        assert_eq!(v.verified_self_dot().unwrap(), 25.0);
+     }
+ 
+     #[test]
+     fn mrepc_self_dot_zero_vector_is_zero() {
+         let v = Vector::<f64, 3>::new(vec![0.0, 0.0, 0.0]).unwrap();
+-        assert_eq!(v.verified_self_dot(), 0.0);
++        assert_eq!(v.verified_self_dot().unwrap(), 0.0);
+     }
+ 
+     #[test]
+     fn mrepc_self_dot_single_coefficient() {
+         let v = Vector::<f64, 1>::new(vec![-2.5]).unwrap();
+-        assert_eq!(v.verified_self_dot(), 6.25);
++        assert_eq!(v.verified_self_dot().unwrap(), 6.25);
+     }
+ 
+     #[test]
+     fn mrepc_self_dot_is_nonnegative() {
+         let sign_mixed = Vector::<f64, 3>::new(vec![1.0, -2.0, -3.0]).unwrap();
+-        assert!(sign_mixed.verified_self_dot() >= 0.0);
++        assert!(sign_mixed.verified_self_dot().unwrap() >= 0.0);
+ 
+         // The removed `dot` contract was unsound for mixed vectors, but a
+         // self-dot over a single vector is always nonnegative for finite
+         // coefficients.
+         let one_d = Vector::<f64, 1>::new(vec![1.0]).unwrap();
+         assert_eq!(one_d.dot(&one_d), 1.0);
+-        assert!(one_d.verified_self_dot() >= 0.0);
++        assert!(one_d.verified_self_dot().unwrap() >= 0.0);
++    }
++
++    #[test]
++    fn mrepc_self_dot_single_max_overflows_to_positive_infinity() {
++        // A single finite coefficient squares to `+inf`, which is not finite
++        // but *is* `>= 0`: the `Ok` contract holds and NaN is impossible.
++        let v = Vector::<f64, 1>::new(vec![f64::MAX]).unwrap();
++        let result = v.verified_self_dot().unwrap();
++        assert!(result.is_infinite() && result > 0.0);
++        assert!(result >= 0.0);
++    }
++
++    #[test]
++    fn mrepc_self_dot_rejects_overflow_nan_chain() {
++        // Finite constructed vectors; `add` overflows them to ±inf, and
++        // `(+inf) + (-inf) = NaN`. `NaN >= 0` is false, so the non-finite
++        // coefficient must be rejected rather than returned as `NaN`.
++        let pos = Vector::<f64, 1>::new(vec![f64::MAX]).unwrap();
++        let inf = pos.add(&pos); // [inf]
++        let neg = Vector::<f64, 1>::new(vec![-f64::MAX]).unwrap();
++        let ninf = neg.add(&neg); // [-inf]
++        let nan = inf.add(&ninf); // [NaN]
++        assert!(nan.data[0].is_nan());
++        assert!(nan.verified_self_dot().is_err());
++    }
++
++    // ---- M-REP-C `compose` zero-normalization battery (F4) ----
++
++    /// A unit even rotor `[s,0,0,±s]` in `Cl(1,1,0)`, `s = 1/√2`.
++    fn hyperbolic_unit_rotor(sign: f64) -> VerifiedRotor<f64, 1, 1, 0> {
++        let s = 1.0 / 2.0f64.sqrt();
++        VerifiedRotor::new(
++            VerifiedMultivector::<f64, 1, 1, 0>::new(vec![s, 0.0, 0.0, sign * s]).unwrap(),
++        )
++        .unwrap()
++    }
++
++    #[test]
++    fn mrepc_compose_degenerate_product_is_error() {
++        // In Cl(1,1,0) the even blades are index 0 (scalar) and index 3
++        // (e1e2). `[s,0,0,s] · [s,0,0,-s]` is exactly zero, so the
++        // normalization denominator is zero and the former code divided by
++        // it, manufacturing NaN coefficients. It must be rejected.
++        let a = hyperbolic_unit_rotor(1.0);
++        let b = hyperbolic_unit_rotor(-1.0);
++        let err = a.compose(&b).err().unwrap();
++        assert!(err.contains("degenerate"), "unexpected error: {err}");
++    }
++
++    #[test]
++    fn mrepc_compose_ordinary_product_is_ok() {
++        // The same rotor composed with itself has the finite non-zero
++        // product `1 + e12`, so normalization succeeds and the result is a
++        // finite multivector (ordinary compose is unchanged).
++        let a = hyperbolic_unit_rotor(1.0);
++        let composed = a.compose(&a).unwrap();
++        assert!(composed
++            .multivector
++            .coefficients
++            .iter()
++            .all(|c| c.is_finite()));
++        // `a` is idempotent under composition in Cl(1,1,0): `a∘a == a`.
++        let s = 1.0 / 2.0f64.sqrt();
++        assert!((composed.multivector.coefficients[0] - s).abs() < 1e-12);
++        assert!((composed.multivector.coefficients[3] - s).abs() < 1e-12);
++    }
++
++    #[test]
++    fn mrepc_apply_on_valid_rotor_is_finite() {
++        // `compose` cannot produce a degenerate (NaN) rotor, so `apply` only
++        // ever receives finite rotors; applying a valid rotor is finite.
++        let r = hyperbolic_unit_rotor(1.0);
++        let v = VerifiedMultivector::<f64, 1, 1, 0>::new(vec![0.0, 1.0, 0.0, 0.0]).unwrap();
++        let applied = r.apply_to_multivector(&v);
++        assert!(applied.coefficients.iter().all(|c| c.is_finite()));
+     }
+ 
+     // ---- M-REP-C contract-precondition battery (formal feature only) ----
+@@ -914,23 +1036,42 @@ mod tests {
+         #[test]
+         fn mrepc_contract_scalar_mult_finite_exact() {
+             let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+-            let result = verified_scalar_mult(3.0, &mv);
++            let result = verified_scalar_mult(3.0, &mv).unwrap();
+             assert_eq!(result.coefficients[0], 6.0);
+             assert_eq!(result.coefficients.len(), mv.coefficients.len());
+         }
+ 
++        #[test]
++        fn mrepc_contract_scalar_mult_overflow_rejected() {
++            // `2.0 * f64::MAX` overflows to `+inf`. Every `requires` is
++            // satisfied (both inputs are finite), but the former
++            // `new(...).unwrap()` panicked on the non-finite product. It is
++            // now a checked `Err`.
++            let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(f64::MAX).unwrap();
++            assert!(verified_scalar_mult(2.0, &mv).is_err());
++        }
++
+         #[test]
+         fn mrepc_contract_addition_finite_exact() {
+             let a = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+             let b = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0).unwrap();
+-            let result = verified_addition(&a, &b);
++            let result = verified_addition(&a, &b).unwrap();
+             assert_eq!(result.coefficients[0], 5.0);
+         }
+ 
++        #[test]
++        fn mrepc_contract_addition_overflow_rejected() {
++            // `MAX + MAX` overflows to `+inf`; the checked sum returns `Err`
++            // rather than a non-finite multivector whose coefficient
++            // equality (`inf == MAX + MAX`) is a NaN-adjacent false claim.
++            let a = VerifiedMultivector::<f64, 3, 0, 0>::scalar(f64::MAX).unwrap();
++            assert!(verified_addition(&a, &a).is_err());
++        }
++
+         #[test]
+         fn mrepc_contract_scalar_identity_finite_exact() {
+             let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(5.0).unwrap();
+-            let result = verify_scalar_identity(&mv);
++            let result = verify_scalar_identity(&mv).unwrap();
+             assert_eq!(result.coefficients[0], mv.coefficients[0]);
+         }
+ 
+diff --git a/amari-core/src/verified_contracts.rs b/amari-core/src/verified_contracts.rs
+index 979d6de..8d8532f 100644
+--- a/amari-core/src/verified_contracts.rs
++++ b/amari-core/src/verified_contracts.rs
+@@ -19,15 +19,24 @@ fn coefficients_are_finite<T: Float>(coefficients: &[T]) -> bool {
+ }
+ 
+ /// Verified scalar multiplication
++///
++/// The product can be non-finite even when every input is finite
++/// (`2.0 * f64::MAX == inf`); the result is therefore routed through the
++/// finiteness gate in [`VerifiedMultivector::new`] and reported as `Err`
++/// rather than unwrapped (which formerly panicked on overflow).
+ #[requires(scalar != T::zero())]
+ #[requires(scalar.is_finite())]
+ #[requires(coefficients_are_finite(&mv.coefficients))]
+-#[ensures(result.coefficients.len() == mv.coefficients.len())]
+-#[ensures(result.coefficients[0] == scalar * mv.coefficients[0])]
++#[ensures(result.is_ok() ==>
++    result.unwrap().coefficients.len() == mv.coefficients.len())]
++#[ensures(result.is_ok() ==> forall(|i: usize|
++    i < result.unwrap().coefficients.len() ==>
++        result.unwrap().coefficients[i] == scalar * mv.coefficients[i]
++))]
+ pub fn verified_scalar_mult<T, const P: usize, const Q: usize, const R: usize>(
+     scalar: T,
+     mv: &VerifiedMultivector<T, P, Q, R>,
+-) -> VerifiedMultivector<T, P, Q, R>
++) -> Result<VerifiedMultivector<T, P, Q, R>, &'static str>
+ where
+     T: Float + Zero + One + Copy,
+ {
+@@ -45,21 +54,28 @@ where
+         coefficients.push(scalar * coeff);
+     }
+ 
+-    VerifiedMultivector::new(coefficients).unwrap()
++    VerifiedMultivector::new(coefficients)
+ }
+ 
+ /// Verified addition with mathematical properties
++///
++/// The coefficient-wise sum can be non-finite even when both operands are
++/// finite; the sum is routed through [`VerifiedMultivector::new`] and
++/// reported as `Err` in that case, so the `Ok` coefficient equalities are
++/// sound (a `NaN` result would otherwise falsify `result[i] == a[i] + b[i]`).
+ #[requires(coefficients_are_finite(&a.coefficients))]
+ #[requires(coefficients_are_finite(&b.coefficients))]
+ #[requires(a.coefficients.len() == b.coefficients.len())]
+-#[ensures(result.coefficients.len() == a.coefficients.len())]
+-#[ensures(forall(|i: usize| i < result.coefficients.len() ==>
+-    result.coefficients[i] == a.coefficients[i] + b.coefficients[i]
++#[ensures(result.is_ok() ==>
++    result.unwrap().coefficients.len() == a.coefficients.len())]
++#[ensures(result.is_ok() ==> forall(|i: usize|
++    i < result.unwrap().coefficients.len() ==>
++        result.unwrap().coefficients[i] == a.coefficients[i] + b.coefficients[i]
+ ))]
+ pub fn verified_addition<T, const P: usize, const Q: usize, const R: usize>(
+     a: &VerifiedMultivector<T, P, Q, R>,
+     b: &VerifiedMultivector<T, P, Q, R>,
+-) -> VerifiedMultivector<T, P, Q, R>
++) -> Result<VerifiedMultivector<T, P, Q, R>, &'static str>
+ where
+     T: Float + Zero + One + Copy,
+ {
+@@ -72,7 +88,8 @@ where
+         "verified_addition: all coefficients of the second operand must be finite"
+     );
+ 
+-    a.add(b)
++    let sum = a.add(b);
++    VerifiedMultivector::new(sum.coefficients)
+ }
+ 
+ /// Norm computation (sum of squares, then square root).
+@@ -116,13 +133,15 @@ where
+ /// Verification that scalar identity holds
+ #[requires(mv.coefficients.len() == VerifiedMultivector::<T, P, Q, R>::BASIS_SIZE)]
+ #[requires(coefficients_are_finite(&mv.coefficients))]
+-#[ensures(result.coefficients.len() == mv.coefficients.len())]
+-#[ensures(forall(|i: usize| i < result.coefficients.len() ==>
+-    result.coefficients[i] == mv.coefficients[i]
++#[ensures(result.is_ok() ==>
++    result.unwrap().coefficients.len() == mv.coefficients.len())]
++#[ensures(result.is_ok() ==> forall(|i: usize|
++    i < result.unwrap().coefficients.len() ==>
++        result.unwrap().coefficients[i] == mv.coefficients[i]
+ ))]
+ pub fn verify_scalar_identity<T, const P: usize, const Q: usize, const R: usize>(
+     mv: &VerifiedMultivector<T, P, Q, R>,
+-) -> VerifiedMultivector<T, P, Q, R>
++) -> Result<VerifiedMultivector<T, P, Q, R>, &'static str>
+ where
+     T: Float + Zero + One + Copy,
+ {
+@@ -131,20 +150,23 @@ where
+         "verify_scalar_identity: all coefficients must be finite"
+     );
+ 
+-    let identity = VerifiedMultivector::scalar(T::one()).unwrap();
+-    mv.geometric_product(&identity)
++    let identity = VerifiedMultivector::scalar(T::one())?;
++    let product = mv.geometric_product(&identity);
++    VerifiedMultivector::new(product.coefficients)
+ }
+ 
+ /// Verification that zero addition holds
+ #[requires(mv.coefficients.len() == VerifiedMultivector::<T, P, Q, R>::BASIS_SIZE)]
+ #[requires(coefficients_are_finite(&mv.coefficients))]
+-#[ensures(result.coefficients.len() == mv.coefficients.len())]
+-#[ensures(forall(|i: usize| i < result.coefficients.len() ==>
+-    result.coefficients[i] == mv.coefficients[i]
++#[ensures(result.is_ok() ==>
++    result.unwrap().coefficients.len() == mv.coefficients.len())]
++#[ensures(result.is_ok() ==> forall(|i: usize|
++    i < result.unwrap().coefficients.len() ==>
++        result.unwrap().coefficients[i] == mv.coefficients[i]
+ ))]
+ pub fn verify_zero_addition<T, const P: usize, const Q: usize, const R: usize>(
+     mv: &VerifiedMultivector<T, P, Q, R>,
+-) -> VerifiedMultivector<T, P, Q, R>
++) -> Result<VerifiedMultivector<T, P, Q, R>, &'static str>
+ where
+     T: Float + Zero + One + Copy,
+ {
+@@ -153,28 +175,29 @@ where
+         "verify_zero_addition: all coefficients must be finite"
+     );
+ 
+-    let zero = VerifiedMultivector::scalar(T::zero()).unwrap();
+-    mv.add(&zero)
++    let zero = VerifiedMultivector::scalar(T::zero())?;
++    let sum = mv.add(&zero);
++    VerifiedMultivector::new(sum.coefficients)
+ }
+ 
+ /// Verify that basis vectors square correctly according to signature
+ #[requires(index < P + Q + R)]
+-#[ensures(
+-    (index < P ==> (result - T::one()).abs() < T::from(0.0001).unwrap()) &&
+-    (P <= index && index < P + Q ==> (result + T::one()).abs() < T::from(0.0001).unwrap()) &&
+-    (P + Q <= index ==> result.abs() < T::from(0.0001).unwrap())
+-)]
++#[ensures(result.is_ok() ==> (
++    (index < P ==> (result.unwrap() - T::one()).abs() < T::from(0.0001).unwrap()) &&
++    (P <= index && index < P + Q ==> (result.unwrap() + T::one()).abs() < T::from(0.0001).unwrap()) &&
++    (P + Q <= index ==> result.unwrap().abs() < T::from(0.0001).unwrap())
++))]
+ pub fn verify_basis_vector_square<T, const P: usize, const Q: usize, const R: usize>(
+     index: usize,
+-) -> T
++) -> Result<T, &'static str>
+ where
+     T: Float + Zero + One + Copy,
+ {
+-    let basis = VerifiedMultivector::<T, P, Q, R>::basis_vector(index).unwrap();
++    let basis = VerifiedMultivector::<T, P, Q, R>::basis_vector(index)?;
+     let square = basis.geometric_product(&basis);
+ 
+     // Extract scalar part (coefficient[0])
+-    square.coefficients[0]
++    Ok(square.coefficients[0])
+ }
+ 
+ #[cfg(test)]
+@@ -184,7 +207,7 @@ mod contract_tests {
+     #[test]
+     fn test_verified_scalar_multiplication() {
+         let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+-        let result = verified_scalar_mult(3.0, &mv);
++        let result = verified_scalar_mult(3.0, &mv).unwrap();
+ 
+         // The annotations express these intended properties; the asserts check them for this instance
+         assert_eq!(result.coefficients[0], 6.0);
+@@ -195,7 +218,7 @@ mod contract_tests {
+     fn test_verified_addition_properties() {
+         let mv1 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(2.0).unwrap();
+         let mv2 = VerifiedMultivector::<f64, 3, 0, 0>::scalar(3.0).unwrap();
+-        let result = verified_addition(&mv1, &mv2);
++        let result = verified_addition(&mv1, &mv2).unwrap();
+ 
+         // The annotations express intended coefficient-wise addition
+         assert_eq!(result.coefficients[0], 5.0);
+@@ -206,11 +229,11 @@ mod contract_tests {
+         let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(5.0).unwrap();
+ 
+         // Test multiplicative identity
+-        let result = verify_scalar_identity(&mv);
++        let result = verify_scalar_identity(&mv).unwrap();
+         assert_eq!(result.coefficients[0], mv.coefficients[0]);
+ 
+         // Test additive identity
+-        let result = verify_zero_addition(&mv);
++        let result = verify_zero_addition(&mv).unwrap();
+         assert_eq!(result.coefficients[0], mv.coefficients[0]);
+     }
+ 
+@@ -219,7 +242,7 @@ mod contract_tests {
+         // Test Euclidean 3-space Cl(3,0,0)
+         // e₁² = e₂² = e₃² = +1
+         for i in 0..3 {
+-            let square = verify_basis_vector_square::<f64, 3, 0, 0>(i);
++            let square = verify_basis_vector_square::<f64, 3, 0, 0>(i).unwrap();
+             assert!((square - 1.0).abs() < 0.0001);
+         }
+     }
+diff --git a/docs/plans/2026-10-09-amari-core-verification-matrix.md b/docs/plans/2026-10-09-amari-core-verification-matrix.md
+index 12e2c42..910a07a 100644
+--- a/docs/plans/2026-10-09-amari-core-verification-matrix.md
++++ b/docs/plans/2026-10-09-amari-core-verification-matrix.md
+@@ -400,11 +400,22 @@ four-form vocabulary cannot express (it covers existing promises only).
+ > MATRIX-02 and MATRIX-03 are CLOSED. The M-REP-A-removed dot contract now
+ > has a sound successor (`Vector::verified_self_dot`); finiteness is enforced
+ > at construction and the equality contracts carry finiteness preconditions;
+-> `verified_laws.rs` is REMOVED-STUB; the named-suite inventories are
+-> unchanged (`geometric_axioms` 6, `verified_contracts` 4). Current
+-> `amari-core` default: **510 passed / 18 suites**; `--features
+-> formal-verification`: **518 passed / 18 suites**. Evidence:
++> unaudited stub `verified_laws.rs` is REMOVED-STUB; the named-suite inventories
++> are unchanged (`geometric_axioms` 6, `verified_contracts` 4). Current
++> `amari-core` default: **515 passed / 18 suites**; `--features
++> formal-verification`: **525 passed / 18 suites**. Evidence:
+ > `docs/plans/core-matrix-evidence/mrep-c/green/`.
++>
++> **2026-10-16 M-REP-C review round 1 (operation-result domain handling):**
++> construction-time finiteness cannot protect operation results, so the
++> checked operations are now fallible (`Vector::verified_self_dot`,
++> `VerifiedRotor::compose`, `verified_scalar_mult`, `verified_addition`,
++> `verify_scalar_identity`, `verify_zero_addition`,
++> `verify_basis_vector_square`) and every runtime unwrap/panic path reachable
++> from finite constructed inputs was removed (6 → 0). Default `amari-core`
++> **515/18**, `formal-verification` **525/18**; named-suite inventories
++> unchanged. Evidence:
++> `docs/plans/core-matrix-evidence/mrep-c/green/r1/`.
+ 
+ After resolving missing downloaded artifacts under the unchanged lock:
+ 
+diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/SUMMARY.md b/docs/plans/core-matrix-evidence/mrep-c/green/SUMMARY.md
+index a24f6a3..f2ccac9 100644
+--- a/docs/plans/core-matrix-evidence/mrep-c/green/SUMMARY.md
++++ b/docs/plans/core-matrix-evidence/mrep-c/green/SUMMARY.md
+@@ -167,3 +167,99 @@ named-suite helper was run with `RUSTUP_TOOLCHAIN=stable` (it invokes plain
+   becoming a *certified* layer via a pre-1.0 certification/verification pass
+   (candidate: Karpal proof/verify) — is recorded here and in the removal note,
+   but is explicitly **not** part of M-REP-C.
++
++---
++
++# M-REP-C review-round-1 remediation (2026-10-16)
++
++Base: `8bc3011` (M-REP-C closure) on PR #311
++(`fix/core-mrep-c-specification-audit` → `develop`). Round-scoped fix of all
++four P1 review findings plus the P3 path scrub and a proactive panic sweep.
++Theme: **construction-time finiteness cannot protect operation results**; the
++operations themselves now carry their own domain handling. Evidence for this
++round: `r1/`.
++
++## Findings fixed
++
++| # | Finding | Remediation | Battery |
++|---|---|---|---|
++| F1 | `Vector::verified_self_dot` `result >= 0` contract violated by the `[MAX]+[MAX]=inf`, then `(+inf)+(-inf)=NaN` coefficient chain; doc claimed "finite ⇒ finite sum" (false: `[MAX]` self-dot is `+inf`) | `verified_self_dot` now returns `Result<T, &'static str>`, rejecting non-finite coefficients; contract `Ok(r) ==> r >= 0` (sound: finite `c ⇒ c² >= 0`, possibly `+inf`; a sum of nonnegatives is never `NaN`); doc corrected | `mrepc_self_dot_rejects_overflow_nan_chain` → `Err`; `mrepc_self_dot_single_max_overflows_to_positive_infinity` → `Ok(+inf)`, `+inf >= 0`; zero vector → `Ok(0)` |
++| F2 | `VerifiedMultivector::scalar` unconditional `ensures(result.is_ok())` contradicts `Err`-on-`NaN` | Contract re-encoded success-conditionally (`Ok` ⇒ `is_scalar` ∧ `coefficients[0] == value` ∧ `len == BASIS_SIZE`; `Err` ⇒ `!value.is_finite()`) | existing `mrepc_scalar_rejects_nonfinite` / `mrepc_scalar_accepts_finite` |
++| F3 | `verified_scalar_mult` satisfied every `requires` for `2.0 × scalar(MAX)` yet panicked on `new(...).unwrap()` when the product overflowed to `inf` | `verified_scalar_mult` returns `Result<Self, &'static str>`, routing the product through `VerifiedMultivector::new` (no unwrap); contract success-conditional; `requires` inputs/scalar finite; `debug_assert` mirrors; call sites migrated | `mrepc_contract_scalar_mult_overflow_rejected` → `Err`; `mrepc_contract_scalar_mult_finite_exact` → exact `6.0` |
++| F4 | `VerifiedRotor::compose` divided by a zero norm in `Cl(1,1,0)` (`[s,0,0,s] ∘ [s,0,0,-s] == 0`), manufacturing `NaN` coefficients that `apply` then propagated | `compose` returns `Result<Self, &'static str>`; zero/non-finite denominator ⇒ `Err("composition is degenerate")`; normalized coefficients re-checked by `VerifiedMultivector::new`; exact-unit-norm `ensures` removed (dated note) | `mrepc_compose_degenerate_product_is_error` → `Err`; `mrepc_compose_ordinary_product_is_ok`; `mrepc_apply_on_valid_rotor_is_finite` (the apply-on-degenerate path is unreachable) |
++| F5 | 6 host paths across 4 evidence files under `mrep-c/` | Scrubbed to `$AMARI` / `$HOME` placeholders (0 host paths remain) | a local-home-prefix grep of this directory returns empty |
++
++**Proactive sweep (same class).** Runtime `unwrap`/`expect`/`panic` paths
++reachable from finite constructed inputs: **6 → 0** (see
++`r1/unwrap-sweep.txt`). The remaining `.unwrap()` occurrences are
++specification-annotation text (dropped by the dummy Creusot proc-macro under
++the pinned recipe) and test-only (`(A)`/`(T)` classes). The `geometric_product`
++`T::from(sign).unwrap()` was replaced by a total `match`; the `VerifiedRotor`
++tolerance now reads through the private `rotor_tolerance::<T>()` helper. As
++"siblings with the same shape", `verified_addition`, `verify_scalar_identity`,
++`verify_zero_addition`, and `verify_basis_vector_square` also became fallible
++so their `Ok` coefficient equalities cannot be falsified by `NaN` and no
++constant-`scalar`/`basis_vector` unwrap remains.
++
++## Test-count deltas (disclosed)
++
++| Gate | Before R1 | After R1 | Delta |
++|---|---|---|---|
++| `cargo test -p amari-core` (default) | 510 / 18 suites | **515 / 18 suites** | **+5** |
++| `cargo test -p amari-core --features formal-verification` | 518 / 18 suites | **525 / 18 suites** | **+7** |
++
++The +5 default tests are the F1 battery (2) + the F4 compose/apply battery (3).
++The formal run adds the 2 new `contract_battery` overflow tests
++(`verified_scalar_mult` + `verified_addition`). Named-suite inventories are
++**unchanged**: `geometric_axioms` **6**, `verified_contracts` (formal) **4**.
++
++## Verification — pinned recipe (`r1/`)
++
++Same pinned recipe as the closure round (`r1/recipe-env.txt`): stable
++`RUSTC`/`RUSTDOC`, empty wrappers, `RUSTFLAGS='-C target-cpu=x86-64 -C
++target-feature=-avx2'`, `CARGO_TARGET_DIR=$PWD/target/mrepc`, `--locked`,
++`cargo +stable` (named-suite helper under `RUSTUP_TOOLCHAIN=stable`).
++
++| Gate | Result | Log |
++|---|---|---|
++| `cargo +stable test -p amari-core --locked` | **515 passed / 18 suites**, exit 0, 0 failed, 0 ignored | `r1/amari-core-default-test.log` |
++| `cargo +stable test -p amari-core --features formal-verification --locked` | **525 passed / 18 suites**, exit 0, 0 failed, 0 ignored | `r1/amari-core-formal-test.log` |
++| `cargo +stable clippy -p amari-core --all-targets --locked -- -D warnings` | exit 0, 0 warnings | `r1/amari-core-clippy-default.log` |
++| `cargo +stable clippy -p amari-core --all-targets --features formal-verification --locked -- -D warnings` | exit 0, 0 warnings | `r1/amari-core-clippy-formal.log` |
++| `cargo +stable fmt --all --check` | exit 0 | `r1/fmt-check.log` |
++| `RUSTDOCFLAGS='-D warnings' cargo +stable doc -p amari-core --no-deps --locked` | exit 0 | `r1/amari-core-rustdoc.log` |
++| `cargo +stable check --workspace --locked` | exit 0 | `r1/workspace-check.log` |
++| `geometric_axioms` named-suite assertion | OK — 6 passed, 0 ignored, exact inventory | `r1/named-suite-assertions.log` |
++| `verified_contracts` (formal) named-suite assertion | OK — 4 passed, 0 ignored, exact inventory | `r1/named-suite-assertions.log` |
++| operation-result unwrap/panic sweep | runtime 6 → 0; F-class list; method | `r1/unwrap-sweep.txt` |
++
++## R1 ambiguities resolved
++
++1. **"Sibling with the same shape" breadth.** F3 names `verified_scalar_mult`
++   explicitly; the probe sweep named `add/sub/neg/geometric_product/compose/
++   apply/inverse`. `verified_addition`, `verify_scalar_identity`,
++   `verify_zero_addition`, and `verify_basis_vector_square` were treated as
++   siblings — each can take finite inputs to a non-finite (or, for the last,
++   out-of-range) result — and made fallible so no unchecked `.unwrap()` and no
++   `NaN`-falsifiable `Ok` equality remains. `VerifiedMultivector::add` /
++   `geometric_product` / `apply_to_multivector` stay infallible arithmetic
++   (panic-free); their checked wrappers own the finiteness boundary.
++2. **`compose` error wording.** Zero and non-finite denominators both map to
++   the dispatch's exact `"composition is degenerate"`; a non-finite
++   *normalized* coefficient is rejected by `VerifiedMultivector::new`'s own
++   message (also an `Err`).
++3. **`verified_self_dot` precondition.** The stale `requires(!data.is_empty())`
++   was replaced by `requires(all_finite(&self.data))` (the encoded domain the
++   dispatch asked for); an empty `Vector<T,0>` would today return `Ok(0)`.
++4. **Exact-unit-norm contract.** The unsound `ensures(norm == 1)` was removed
++   with a dated note rather than "repaired"; the actual postcondition (finite
++   coefficients) is now the `Ok` ensures.
++
++## R1 residuals
++
++- No proof tool invoked; annotations remain expressed, not discharged (C3/C4).
++- Infallible `add` / `geometric_product` / `apply` still may overflow finite
++  inputs to `±inf`; callers needing the finite-coefficient invariant use the
++  checked wrappers or `VerifiedMultivector::new`.
++- Workspace `--all-features` Clippy remains blocked by the pre-existing
++  `z3-sys` cmake failure disclosed by M-REP-B.
+diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-default-test.log b/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-default-test.log
+index d91824f..c6ce49b 100644
+--- a/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-default-test.log
++++ b/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-default-test.log
+@@ -1,4 +1,4 @@
+-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/amari-core)
++   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-mrep-c/amari-core)
+     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
+      Running unittests src/lib.rs (target/mrepc/debug/deps/amari_core-a35530a3f2975921)
+ 
+diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-formal-test.log b/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-formal-test.log
+index 1a267d0..6c40246 100644
+--- a/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-formal-test.log
++++ b/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-formal-test.log
+@@ -1,6 +1,6 @@
+     Blocking waiting for file lock on package cache
+     Blocking waiting for file lock on package cache
+-   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/amari-core)
++   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-mrep-c/amari-core)
+     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.85s
+      Running unittests src/lib.rs (target/mrepc/debug/deps/amari_core-d578302cee61e512)
+ 
+diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-rustdoc.log b/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-rustdoc.log
+index b097336..e31ec1a 100644
+--- a/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-rustdoc.log
++++ b/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-rustdoc.log
+@@ -1,3 +1,3 @@
+     Blocking waiting for file lock on package cache
+     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
+-   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/target/mrepc/doc/amari_core/index.html
++   Generated $AMARI/.worktrees/core-mrep-c/target/mrepc/doc/amari_core/index.html
+diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/r1/recipe-env.txt b/docs/plans/core-matrix-evidence/mrep-c/green/r1/recipe-env.txt
+new file mode 100644
+index 0000000..2d1b8d2
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-c/green/r1/recipe-env.txt
+@@ -0,0 +1,10 @@
++RUSTC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
++RUSTDOC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
++RUSTC_WRAPPER=''
++RUSTC_WORKSPACE_WRAPPER=''
++RUSTFLAGS=-C target-cpu=x86-64 -C target-feature=-avx2
++CARGO_TARGET_DIR=$PWD/target/mrepc
++RUSTUP_TOOLCHAIN=stable (for scripts/verify-named-suite.sh, which invokes plain `cargo`)
++pinned: cargo +stable (rust-toolchain.toml pins nightly; stable Cargo used per M-REP-A, nightly clippy-driver forwards -Z flags stable rustc rejects)
++base: develop b3f2e0b + M-REP-C 8bc3011; worktree core-mrep-c; lock: --locked (no dependency changes)
++round: M-REP-C review round 1 remediation (F1-F5 + operation-result unwrap sweep), 2026-10-16
+diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/r1/unwrap-sweep.txt b/docs/plans/core-matrix-evidence/mrep-c/green/r1/unwrap-sweep.txt
+new file mode 100644
+index 0000000..30e1a8b
+--- /dev/null
++++ b/docs/plans/core-matrix-evidence/mrep-c/green/r1/unwrap-sweep.txt
+@@ -0,0 +1,106 @@
++=== M-REP-C review round 1 — operation-result unwrap/panic sweep (2026-10-16) ===
++
++Scope.  The verified/phantom module: amari-core/src/verified.rs and
++amari-core/src/verified_contracts.rs.  Round-scoped exhaustive sweep of every
++unwrap / expect / panic! / unreachable! / todo! / unimplemented! path reachable
++from finite constructed inputs, plus a method-by-method walk of the operation
++surface named by the dispatch (add, sub, neg, geometric_product, compose,
++apply, inverse).  No full corpus archive; this file is the durable record
++(method + counts + items).
++
++Method
++  1. Grep the two sources:
++       grep -nE 'unwrap|expect|panic!|unreachable!|todo!|unimplemented!' \
++         amari-core/src/verified.rs amari-core/src/verified_contracts.rs
++  2. Classify every hit:
++       (R) runtime path reachable from finite constructed inputs;
++       (A) specification-annotation text — compiled away by the dummy Creusot
++           proc-macro under the pinned `formal-verification` feature recipe
++           (see "Pinned annotation semantics" below); a proof obligation under
++           real Creusot, never a runtime branch;
++       (T) test-only.
++  3. For each operation on the named surface, decide "provably total on finite
++     inputs" (returns without panicking) or "made fallible with the contract
++     updated".  A fallible operation is routed through
++     VerifiedMultivector::new, whose finiteness + length gate is the single
++     checked boundary.
++
++Pinned annotation semantics (why (A) is not a panic path)
++  `#[requires]`/`#[ensures]` come from creusot-contracts 0.8.  Under a normal
++  `cargo build`/`cargo test` (which is what the pinned recipe runs, with
++  `--features formal-verification` but without the `creusot` cfg), the proc
++  macro is the *dummy* implementation: creusot-contracts-proc-0.8.0/src/dummy.rs
++  returns the function item unchanged and discards the attribute expression.
++  The body is therefore never type-checked or evaluated at runtime.  Proof
++  discharge is a separate pre-1.0 gate (matrix C3/C4) and no proof tool is
++  invoked by this package.
++
++Counts
++  Runtime (R) unwrap/expect/panic paths in the two files:
++    before R1: 6
++      verified.rs
++        geometric_product          -> T::from(sign).unwrap()
++        VerifiedRotor::new         -> T::from(0.0001).unwrap()
++      verified_contracts.rs
++        verified_scalar_mult       -> VerifiedMultivector::new(..).unwrap()
++        verify_scalar_identity     -> VerifiedMultivector::scalar(T::one()).unwrap()
++        verify_zero_addition       -> VerifiedMultivector::scalar(T::zero()).unwrap()
++        verify_basis_vector_square -> VerifiedMultivector::basis_vector(index).unwrap()
++    after R1: 0
++  Annotation-only (A) `.unwrap()` text: before 7, after 19.  The increase is
++  the direct consequence of F1-F4: each contract now describes the `Ok` arm of
++  a Result (`result.is_ok() ==> result.unwrap()...`) instead of an infallible
++  return.  The two `T::from(0.0001).unwrap()` hits are inside the
++  verify_basis_vector_square annotations and are likewise never runtime.
++  Test-only (T) unwraps: unchanged; they call the checked constructors on
++  known-finite fixtures.
++
++Per-operation disposition
++  operation                    path                              disposition
++  ---------------------------  --------------------------------  --------------------------------------------
++  VerifiedMultivector::add     arithmetic only                   total; finite inputs may overflow to
++                                                                 ±inf, no panic (documented operation-result
++                                                                 scope; the checked wrapper rejects it)
++  sub                          not present in the module         N/A
++  neg                          not present in the module         N/A
++  geometric_product            NumCast factor                    total after F-sweep: `T::from(sign).unwrap()`
++                                                                 replaced by a match (sign ∈ {-1,0,1});
++                                                                 finite inputs may overflow, no panic
++  compose                      norm normalization                fallible (F4): zero/non-finite denominator
++                                                                 -> Err("composition is degenerate");
++                                                                 normalized coefficients re-checked by
++                                                                 VerifiedMultivector::new
++  apply_to_multivector         R v R†                            total; with F4 no NaN rotor can be produced
++                                                                 by compose, so the degenerate path is
++                                                                 unreachable
++  inverse                      not present in the module         N/A
++  verified_scalar_mult         product                           fallible (F3): product re-checked by
++                                                                 VerifiedMultivector::new; Err on non-finite
++  verified_addition            coefficient-wise sum              fallible: sum re-checked; Err on non-finite
++                                                                 (keeps the Ok coefficient equality sound
++                                                                 against NaN)
++  verify_scalar_identity       geometric product                 fallible: constant scalar(1) errors now
++                                                                 propagate with `?`; product re-checked
++  verify_zero_addition         add                               fallible: constant scalar(0) errors now
++                                                                 propagate with `?`; sum re-checked
++  verify_basis_vector_square   basis-vector square               fallible: `basis_vector(index)` Err now
++                                                                 propagates with `?`
++  VerifiedRotor::new           constant tolerance                total after F-sweep: tolerance read through
++                                                                 the private `rotor_tolerance::<T>()` helper
++                                                                 (match, no unwrap)
++
++F-class list (round 1 items closed by this sweep)
++  F1  verified_self_dot NaN contract violation            -> fallible guard; Ok(c) >= 0 contract
++  F2  VerifiedMultivector::scalar unconditional ensures   -> success-conditional + Err condition
++  F3  verified_scalar_mult overflow panic                 -> Result; unwrap removed; call sites migrated
++  F4  compose zero-normalization NaN rotor                -> Result; degenerate denominator rejected
++  F5  evidence host-path scrub                            -> $HOME/$AMARI placeholders (0 host paths)
++
++Residuals
++  - Real-Creusot proof discharge is not attempted; the annotations are
++    EXPRESSED, not discharged (matrix C3/C4).
++  - VerifiedMultivector::add / geometric_product / apply_to_multivector remain
++    infallible arithmetic: they are panic-free, but their finite inputs can
++    overflow to ±inf.  Callers who need the type's finite-coefficient invariant
++    use the checked wrappers (verified_addition, verified_scalar_mult,
++    verify_scalar_identity/zero_addition) or VerifiedMultivector::new.
+diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/recipe-env.txt b/docs/plans/core-matrix-evidence/mrep-c/green/recipe-env.txt
+index d413f00..e307f5b 100644
+--- a/docs/plans/core-matrix-evidence/mrep-c/green/recipe-env.txt
++++ b/docs/plans/core-matrix-evidence/mrep-c/green/recipe-env.txt
+@@ -1,9 +1,9 @@
+-RUSTC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
+-RUSTDOC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
++RUSTC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
++RUSTDOC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
+ RUSTC_WRAPPER=''
+ RUSTC_WORKSPACE_WRAPPER=''
+ RUSTFLAGS=-C target-cpu=x86-64 -C target-feature=-avx2
+-CARGO_TARGET_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/target/mrepc
++CARGO_TARGET_DIR=$AMARI/.worktrees/core-mrep-c/target/mrepc
+ RUSTUP_TOOLCHAIN=stable (for scripts/verify-named-suite.sh, which invokes plain `cargo`)
+ pinned: cargo +stable (rust-toolchain.toml pins nightly; stable Cargo used per M-REP-A, nightly clippy-driver forwards -Z flags stable rustc rejects)
+ base: develop b3f2e0b; worktree core-mrep-c; lock: --locked (no dependency changes)
+diff --git a/docs/technical/MATHEMATICAL_RIGOR.md b/docs/technical/MATHEMATICAL_RIGOR.md
+index ae95d94..432131c 100644
+--- a/docs/technical/MATHEMATICAL_RIGOR.md
++++ b/docs/technical/MATHEMATICAL_RIGOR.md
+@@ -132,10 +132,16 @@ not to this page.
+   `verified_contracts.rs` carry matching finiteness preconditions and runtime
+   `debug_assert!`s. (Before M-REP-C, `VerifiedRotor::new` accepted a `NaN`
+   scalar because its unit-norm test `(norm - 1).abs() > 1e-4` is `false` for
+-  `NaN`.) Arithmetic operations can still overflow finite inputs to `inf`
+-  (`add`, `dot`, `geometric_product`), so the sound self-dot contract
+-  `Vector::verified_self_dot` (`Σ x_i² >= 0`) is scoped to finite
+-  coefficients. `verified_laws.rs` was removed as unreachable stub code
++  `NaN`.) **Operation results need their own domain handling (M-REP-C review
++  round 1, 2026-10-16):** finite inputs can still overflow (`[MAX]+[MAX]` is
++  `+inf`, and `(+inf)+(-inf)` is `NaN`), so `Vector::verified_self_dot`
++  rejects non-finite coefficients and returns `Ok(r) ==> r >= 0`; the checked
++  `verified_scalar_mult` / `verified_addition` / `verify_scalar_identity` /
++  `verify_zero_addition` operations and `VerifiedRotor::compose` return
++  `Result` and route their result through `VerifiedMultivector::new`, whose
++  finiteness gate is the single checked boundary. The infallible arithmetic
++  (`add`, `geometric_product`, `apply`) remains panic-free but can still carry
++  `inf`. `verified_laws.rs` was removed as unreachable stub code
+   (MATRIX-03); replacing that surface with a real proof/verification pass is a
+   future pre-1.0 direction, not part of M-REP-C.
+ - **Counts are not proofs.** Test-function and coverage counts measure how much
+diff --git a/docs/technical/TEST_ENFORCEMENT.md b/docs/technical/TEST_ENFORCEMENT.md
+index c220608..3d09558 100644
+--- a/docs/technical/TEST_ENFORCEMENT.md
++++ b/docs/technical/TEST_ENFORCEMENT.md
+@@ -26,6 +26,18 @@
+ > named-suite inventories are unchanged (`geometric_axioms` 6,
+ > `verified_contracts` 4); rows 7–10 are therefore unaffected. Evidence:
+ > `docs/plans/core-matrix-evidence/mrep-c/green/`.
++>
++> **Update (M-REP-C review round 1, 2026-10-16): operation-result domain
++> handling.** Construction-time finiteness alone cannot protect operation
++> results (`[MAX]+[MAX] = inf` then `(+inf)+(-inf) = NaN`, or a rotor product
++> that normalizes by zero). `Vector::verified_self_dot` and `VerifiedRotor::
++> compose` are now fallible, `verified_scalar_mult`/`verified_addition`/
++> `verify_scalar_identity`/`verify_zero_addition`/`verify_basis_vector_square`
++> return `Result` instead of unwrapping, and every runtime unwrap/panic path
++> reachable from finite constructed inputs was removed (6 → 0). Default
++> `amari-core` is now **515/18** (+5) and `formal-verification` **525/18**
++> (+7). Named-suite inventories remain unchanged. Evidence:
++> `docs/plans/core-matrix-evidence/mrep-c/green/r1/`.
+ 
+ ## Overview
+ 

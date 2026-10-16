@@ -1,0 +1,106 @@
+=== M-REP-C review round 1 — operation-result unwrap/panic sweep (2026-10-16) ===
+
+Scope.  The verified/phantom module: amari-core/src/verified.rs and
+amari-core/src/verified_contracts.rs.  Round-scoped exhaustive sweep of every
+unwrap / expect / panic! / unreachable! / todo! / unimplemented! path reachable
+from finite constructed inputs, plus a method-by-method walk of the operation
+surface named by the dispatch (add, sub, neg, geometric_product, compose,
+apply, inverse).  No full corpus archive; this file is the durable record
+(method + counts + items).
+
+Method
+  1. Grep the two sources:
+       grep -nE 'unwrap|expect|panic!|unreachable!|todo!|unimplemented!' \
+         amari-core/src/verified.rs amari-core/src/verified_contracts.rs
+  2. Classify every hit:
+       (R) runtime path reachable from finite constructed inputs;
+       (A) specification-annotation text — compiled away by the dummy Creusot
+           proc-macro under the pinned `formal-verification` feature recipe
+           (see "Pinned annotation semantics" below); a proof obligation under
+           real Creusot, never a runtime branch;
+       (T) test-only.
+  3. For each operation on the named surface, decide "provably total on finite
+     inputs" (returns without panicking) or "made fallible with the contract
+     updated".  A fallible operation is routed through
+     VerifiedMultivector::new, whose finiteness + length gate is the single
+     checked boundary.
+
+Pinned annotation semantics (why (A) is not a panic path)
+  `#[requires]`/`#[ensures]` come from creusot-contracts 0.8.  Under a normal
+  `cargo build`/`cargo test` (which is what the pinned recipe runs, with
+  `--features formal-verification` but without the `creusot` cfg), the proc
+  macro is the *dummy* implementation: creusot-contracts-proc-0.8.0/src/dummy.rs
+  returns the function item unchanged and discards the attribute expression.
+  The body is therefore never type-checked or evaluated at runtime.  Proof
+  discharge is a separate pre-1.0 gate (matrix C3/C4) and no proof tool is
+  invoked by this package.
+
+Counts
+  Runtime (R) unwrap/expect/panic paths in the two files:
+    before R1: 6
+      verified.rs
+        geometric_product          -> T::from(sign).unwrap()
+        VerifiedRotor::new         -> T::from(0.0001).unwrap()
+      verified_contracts.rs
+        verified_scalar_mult       -> VerifiedMultivector::new(..).unwrap()
+        verify_scalar_identity     -> VerifiedMultivector::scalar(T::one()).unwrap()
+        verify_zero_addition       -> VerifiedMultivector::scalar(T::zero()).unwrap()
+        verify_basis_vector_square -> VerifiedMultivector::basis_vector(index).unwrap()
+    after R1: 0
+  Annotation-only (A) `.unwrap()` text: before 7, after 19.  The increase is
+  the direct consequence of F1-F4: each contract now describes the `Ok` arm of
+  a Result (`result.is_ok() ==> result.unwrap()...`) instead of an infallible
+  return.  The two `T::from(0.0001).unwrap()` hits are inside the
+  verify_basis_vector_square annotations and are likewise never runtime.
+  Test-only (T) unwraps: unchanged; they call the checked constructors on
+  known-finite fixtures.
+
+Per-operation disposition
+  operation                    path                              disposition
+  ---------------------------  --------------------------------  --------------------------------------------
+  VerifiedMultivector::add     arithmetic only                   total; finite inputs may overflow to
+                                                                 ±inf, no panic (documented operation-result
+                                                                 scope; the checked wrapper rejects it)
+  sub                          not present in the module         N/A
+  neg                          not present in the module         N/A
+  geometric_product            NumCast factor                    total after F-sweep: `T::from(sign).unwrap()`
+                                                                 replaced by a match (sign ∈ {-1,0,1});
+                                                                 finite inputs may overflow, no panic
+  compose                      norm normalization                fallible (F4): zero/non-finite denominator
+                                                                 -> Err("composition is degenerate");
+                                                                 normalized coefficients re-checked by
+                                                                 VerifiedMultivector::new
+  apply_to_multivector         R v R†                            total; with F4 no NaN rotor can be produced
+                                                                 by compose, so the degenerate path is
+                                                                 unreachable
+  inverse                      not present in the module         N/A
+  verified_scalar_mult         product                           fallible (F3): product re-checked by
+                                                                 VerifiedMultivector::new; Err on non-finite
+  verified_addition            coefficient-wise sum              fallible: sum re-checked; Err on non-finite
+                                                                 (keeps the Ok coefficient equality sound
+                                                                 against NaN)
+  verify_scalar_identity       geometric product                 fallible: constant scalar(1) errors now
+                                                                 propagate with `?`; product re-checked
+  verify_zero_addition         add                               fallible: constant scalar(0) errors now
+                                                                 propagate with `?`; sum re-checked
+  verify_basis_vector_square   basis-vector square               fallible: `basis_vector(index)` Err now
+                                                                 propagates with `?`
+  VerifiedRotor::new           constant tolerance                total after F-sweep: tolerance read through
+                                                                 the private `rotor_tolerance::<T>()` helper
+                                                                 (match, no unwrap)
+
+F-class list (round 1 items closed by this sweep)
+  F1  verified_self_dot NaN contract violation            -> fallible guard; Ok(c) >= 0 contract
+  F2  VerifiedMultivector::scalar unconditional ensures   -> success-conditional + Err condition
+  F3  verified_scalar_mult overflow panic                 -> Result; unwrap removed; call sites migrated
+  F4  compose zero-normalization NaN rotor                -> Result; degenerate denominator rejected
+  F5  evidence host-path scrub                            -> $HOME/$AMARI placeholders (0 host paths)
+
+Residuals
+  - Real-Creusot proof discharge is not attempted; the annotations are
+    EXPRESSED, not discharged (matrix C3/C4).
+  - VerifiedMultivector::add / geometric_product / apply_to_multivector remain
+    infallible arithmetic: they are panic-free, but their finite inputs can
+    overflow to ±inf.  Callers who need the type's finite-coefficient invariant
+    use the checked wrappers (verified_addition, verified_scalar_mult,
+    verify_scalar_identity/zero_addition) or VerifiedMultivector::new.
