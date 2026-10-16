@@ -13,10 +13,13 @@
 //! (`NaN`, `±inf`). Unchecked arithmetic (`add`, `geometric_product`,
 //! `apply_to_multivector`) is deliberately infallible and MAY overflow
 //! finite inputs to `±inf` or produce `NaN` (`inf + (-inf)`). To restore
-//! the invariant after unchecked arithmetic, revalidate with
+//! the invariant after unchecked arithmetic: KEEP the coefficient `Vec`
+//! before constructing (the types do not expose their private coefficients
+//! for later revalidation), then re-enter through
 //! [`VerifiedMultivector::new`] (returns `Err` on non-finite coefficients)
 //! or use the fallible `verified_*` wrappers in `verified_contracts`,
-//! which reject non-finite results.
+//! which reject non-finite results. There is no post-hoc revalidation of
+//! an existing `Verified*` value.
 
 use num_traits::{Float, One, Zero};
 use std::marker::PhantomData;
@@ -1117,33 +1120,35 @@ mod tests {
 mod mrepc_r2_tests {
     use super::*;
 
+    /// R2's exact cancellation fixture (reviewer-pinned): the product of
+    /// a=[s,0,0,0,0,s,0,0] and b=[s,0,0,t,0,-s,0,0] (s=1/sqrt2, t=2.3e-162,
+    /// Cl(2,1,0)) has ONLY coefficients 3 and 6 nonzero, each
+    /// 1.6263455967290592e-162. Squaring each rounds to the minimum
+    /// subnormal, so the NAIVE norm underflowed to
+    /// 3.1434555694052576e-162 and the broken implementation returned Ok
+    /// with Euclidean norm 0.7316788639818951 — outside [0.9999, 1.0001].
     #[test]
-    fn compose_subnormal_spread_normalizes_within_tolerance() {
-        // R2 fixture: accepted Cl(2,1,0) rotors with s-scale and subnormal
-        // t-scale components. The naive sum-of-squares underflowed (the
-        // t^2 ~ 2.6e-324 subnormals were lost against the s^2 ~ 0.5 terms
-        // after cancellation), yielding Ok(norm 0.73) outside [0.9999,1.0001].
+    fn compose_subnormal_cancellation_normalizes_within_tolerance() {
         let s = std::f64::consts::FRAC_1_SQRT_2;
         let t = 2.3e-162_f64;
-        // unit-norm even-grade rotors carrying a subnormal e13 component:
-        // norm^2 = 1/2 + 1/2 + t^2 = 1 (t^2 negligible)
-        let mv_a = VerifiedMultivector::<f64, 2, 1, 0>::new(vec![s, 0.0, 0.0, s, 0.0, t, 0.0, 0.0])
-            .unwrap();
+        let mv_a =
+            VerifiedMultivector::<f64, 2, 1, 0>::new(vec![s, 0.0, 0.0, 0.0, 0.0, s, 0.0, 0.0])
+                .unwrap();
         let mv_b =
-            VerifiedMultivector::<f64, 2, 1, 0>::new(vec![s, 0.0, 0.0, -s, 0.0, t, 0.0, 0.0])
+            VerifiedMultivector::<f64, 2, 1, 0>::new(vec![s, 0.0, 0.0, t, 0.0, -s, 0.0, 0.0])
                 .unwrap();
         let ra = VerifiedRotor::new(mv_a).unwrap();
         let rb = VerifiedRotor::new(mv_b).unwrap();
-        // the s-scale components cancel in the product; the surviving
-        // t-scale terms must normalize robustly
-        let rc = match ra.compose(&rb) {
-            Ok(r) => r,
-            Err(e) => panic!("subnormal-spread compose must not be degenerate: {e}"),
-        };
-        let norm_c = VerifiedRotor::<f64, 2, 1, 0>::compute_norm(&rc.multivector);
+        let rc = ra
+            .compose(&rb)
+            .expect("subnormal-cancellation compose must not be degenerate");
+        // The product's only nonzero coefficients (3 and 6) must normalize
+        // to a unit rotor: pin the exact post-fix shape.
+        let c = &rc.multivector.coefficients;
+        let norm = (c.iter().map(|x| x * x).sum::<f64>()).sqrt();
         assert!(
-            (norm_c - 1.0).abs() <= 1e-4,
-            "norm {norm_c} outside tolerance"
+            (norm - 1.0).abs() <= 1e-4,
+            "norm {norm} outside tolerance (pre-fix value was 0.7316788639818951)"
         );
     }
 }
