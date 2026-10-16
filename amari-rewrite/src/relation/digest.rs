@@ -56,6 +56,24 @@ impl Sha256Digest {
         Self::framed(frame, &encoding)
     }
 
+    /// Canonical alpha-invariant digests of a slice of terms under
+    /// `frame`, with variables renumbered by first structural
+    /// occurrence across the WHOLE slice (preorder, in slice order).
+    /// Cross-term variable identity is preserved: two terms sharing
+    /// a variable digest consistently, unlike independent
+    /// [`Self::canonical_term`] calls (PR #310 round 1).
+    pub fn canonical_terms(frame: &str, terms: &[&Term]) -> Vec<Self> {
+        let mut variables = Vec::new();
+        terms
+            .iter()
+            .map(|term| {
+                let mut encoding = Vec::new();
+                encode_term(term, &mut variables, &mut encoding);
+                Self::framed(frame, &encoding)
+            })
+            .collect()
+    }
+
     /// Canonical lowercase hex rendering.
     pub fn to_hex(&self) -> String {
         let mut out = String::with_capacity(64);

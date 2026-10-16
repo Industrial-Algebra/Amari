@@ -29,6 +29,9 @@ z3 = { version = "=0.20.2", default-features = false, features = ["vendored"], o
 default = ["std"]
 std = []
 serialize = ["dep:serde"]
+# Bounded Knuth-Bendix completion (Task 33). Non-default: the module
+# is experimental and adds no runtime dependencies.
+completion = []
 macros = ["dep:amari-rewrite-macros"]
 smt = ["std", "dep:z3"]
 neural = ["std", "dep:candle-core", "dep:candle-nn"]

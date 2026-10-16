@@ -45,11 +45,22 @@ impl Rule {
 
     /// True when no variable occurs more than once in the LHS.
     pub fn is_left_linear(&self) -> bool {
+        // Iterative explicit worklist, no path materialization: the
+        // check must not recurse or allocate quadratically on
+        // adversarially deep/wide patterns (PR #310 round 1).
         let mut seen = BTreeSet::new();
-        self.lhs
-            .variable_occurrences()
-            .into_iter()
-            .all(|(variable, _)| seen.insert(variable))
+        let mut stack = alloc::vec::Vec::from([&self.lhs]);
+        while let Some(term) = stack.pop() {
+            match term {
+                Term::Var(variable) => {
+                    if !seen.insert(variable.clone()) {
+                        return false;
+                    }
+                }
+                Term::Sym(_, args) => stack.extend(args.iter()),
+            }
+        }
+        true
     }
 
     /// Match the LHS against `term`.

@@ -15,6 +15,8 @@ extern crate self as amari_rewrite;
 
 pub mod analysis;
 pub mod ars;
+#[cfg(feature = "completion")]
+pub mod completion;
 pub mod error;
 pub mod inverse;
 pub mod language;
