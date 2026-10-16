@@ -215,16 +215,30 @@ pub fn guided_predecessors(
     // candidate's own derivation.
     let mut verified: Option<Vec<Term>> = None;
     let mut rejected: Vec<CandidateRejection> = Vec::new();
+    let mut replay_cut = false;
     for candidate in completed_candidates {
-        match directed_path(original, &candidate.term, target, resources)? {
-            Some(path) => {
+        // The replay respects the configured search depth (the
+        // documented same-bound contract): a candidate derivable
+        // only by LONGER derivations is truncated, not rejected
+        // (PR #312 round 2).
+        match directed_path(
+            original,
+            &candidate.term,
+            target,
+            config.max_depth(),
+            resources,
+        )? {
+            DirectedPathOutcome::Found(path) => {
                 if verified.is_none() {
                     verified = Some(path);
                 }
             }
-            None => rejected.push(CandidateRejection::NotAnOriginalPredecessor {
-                predecessor: candidate.term,
-            }),
+            DirectedPathOutcome::Exhausted => {
+                rejected.push(CandidateRejection::NotAnOriginalPredecessor {
+                    predecessor: candidate.term,
+                });
+            }
+            DirectedPathOutcome::Cut => replay_cut = true,
         }
     }
 
@@ -234,10 +248,11 @@ pub fn guided_predecessors(
             candidates_rejected: rejected,
         });
     }
-    if completed_cut {
-        // The completed-system search was cut: candidates may be
-        // missing, so absence of a verified witness is inconclusive,
-        // never a negative claim.
+    if completed_cut || replay_cut {
+        // The completed-system search or the original replay was
+        // cut: candidates may be missing or undecided, so absence of
+        // a verified witness is inconclusive, never a negative
+        // claim.
         return Ok(GuidedSearchOutcome::Inconclusive {
             reason: InconclusiveReason::BudgetCut,
             candidates_rejected: rejected,
@@ -285,11 +300,14 @@ pub fn verify_equivalence(
 
     let mut b_derivations = Vec::new();
     for rule in b_convergent.rules() {
-        let path = match directed_path(a, rule.lhs(), rule.rhs(), resources)? {
-            Some(path) => path,
-            None => match directed_path(a, rule.rhs(), rule.lhs(), resources)? {
-                Some(path) => path,
-                None => return Ok(None),
+        let bound = RelationLimits::MAX_TERM_DEPTH as u64;
+        let path = match directed_path(a, rule.lhs(), rule.rhs(), bound, resources)? {
+            DirectedPathOutcome::Found(path) => path,
+            _ => match directed_path(a, rule.rhs(), rule.lhs(), bound, resources)? {
+                DirectedPathOutcome::Found(path) => path,
+                // Exhausted or Cut: no certificate on undecided
+                // derivability.
+                _ => return Ok(None),
             },
         };
         b_derivations.push(RuleDerivation {
@@ -449,12 +467,25 @@ fn charge_replacement(
 /// Bounded forward derivation search from `start` to `goal` under
 /// `system`, metered against `resources`. The returned path starts at
 /// `start` and ends at a term alpha-equivalent to `goal`.
+/// Outcome of a bounded derivability search: `Found` (a derivation
+/// within the step bound), `Exhausted` (the bounded search space was
+/// fully explored without reaching the goal — a genuine bounded
+/// rejection), or `Cut` (the step bound pruned open frontier — the
+/// goal may be derivable by longer derivations; NOT a rejection).
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum DirectedPathOutcome {
+    Found(Vec<Term>),
+    Exhausted,
+    Cut,
+}
+
 fn directed_path(
     system: &TermSystem,
     start: &Term,
     goal: &Term,
+    max_steps: u64,
     resources: &mut RelationResources,
-) -> RewriteResult<Option<Vec<Term>>> {
+) -> RewriteResult<DirectedPathOutcome> {
     let (nodes, depth) = shape_of(start);
     resources.record_term(nodes, depth)?;
     // Variable identity is FIXED within one derivation (rewriting
@@ -463,11 +494,14 @@ fn directed_path(
     // distinct variables (PR #312 round 1: f(x,y)->x falsely
     // "derived" y).
     if start == goal {
-        return Ok(Some(alloc::vec![start.clone()]));
+        return Ok(DirectedPathOutcome::Found(alloc::vec![start.clone()]));
     }
-    // Directed derivability is bounded by the fixed term-depth
-    // ceiling; the shared operation budget is the tighter bound.
-    let max_depth = RelationLimits::MAX_TERM_DEPTH as u64;
+    // The caller's step bound is the search bound (the replay must
+    // respect the configured depth — PR #312 round 2); the shared
+    // operation budget is the tighter resource bound. The term-depth
+    // ceiling still caps the overall search.
+    let bound = max_steps.min(RelationLimits::MAX_TERM_DEPTH as u64);
+    let mut cut = false;
     let mut visited: BTreeSet<Term> = BTreeSet::new();
     visited.insert(start.clone());
     let mut queue: VecDeque<(Term, Vec<Term>)> = VecDeque::new();
@@ -475,14 +509,15 @@ fn directed_path(
 
     while let Some((term, path)) = queue.pop_front() {
         let depth = (path.len() - 1) as u64;
-        if depth >= max_depth {
+        if depth >= bound {
+            cut = true;
             continue;
         }
         for successor in one_step_successors(system, &term, resources)? {
             if successor == *goal {
                 let mut next_path = path.clone();
                 next_path.push(successor);
-                return Ok(Some(next_path));
+                return Ok(DirectedPathOutcome::Found(next_path));
             }
             if !visited.insert(successor.clone()) {
                 continue;
@@ -492,7 +527,11 @@ fn directed_path(
             queue.push_back((successor, next_path));
         }
     }
-    Ok(None)
+    Ok(if cut {
+        DirectedPathOutcome::Cut
+    } else {
+        DirectedPathOutcome::Exhausted
+    })
 }
 
 /// Bounded, metered normalization under `system`: repeatedly apply

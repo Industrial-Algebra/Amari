@@ -487,3 +487,56 @@ fn normalization_charges_before_materializing_expansions() {
         resources.operations()
     );
 }
+
+/// PR #312 round 2 P2: original replay must respect the configured
+/// search depth — with max_depth 1, only the 1-step derivation
+/// verifies; a 2-step derivation is truncated, not verified and not
+/// exhaustively rejected.
+#[test]
+fn original_replay_respects_the_configured_depth() {
+    let original = TermSystem::new(vec![
+        rule(Term::constant("a"), Term::constant("m")),
+        rule(Term::constant("m"), Term::constant("z")),
+    ]);
+    let completed = TermSystem::new(vec![
+        rule(Term::constant("a"), Term::constant("z")),
+        rule(Term::constant("m"), Term::constant("z")),
+    ]);
+    let guidance = CompletionGuidance {
+        completed,
+        trace: CompletionTrace::default(),
+    };
+    let defaults = InverseSearchConfig::default();
+    let config = InverseSearchConfig::new(
+        1, // max_depth: only one-step derivations verify
+        defaults.max_states(),
+        defaults.max_transitions(),
+        defaults.max_term_nodes(),
+        defaults.max_term_depth(),
+        defaults.max_constraints(),
+        defaults.max_groundings(),
+        defaults.max_operations(),
+        defaults.max_frontier_bytes(),
+        defaults.max_trace_bytes(),
+    )
+    .expect("valid config");
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let outcome = guided_predecessors(
+        &original,
+        &guidance,
+        &Term::constant("z"),
+        &config,
+        &mut resources,
+    )
+    .expect("typed outcome");
+    match outcome {
+        GuidedSearchOutcome::VerifiedWitness { path, .. } => {
+            assert_eq!(
+                path,
+                vec![Term::constant("m"), Term::constant("z")],
+                "the 1-step witness, not the 2-step one: {path:?}"
+            );
+        }
+        other => panic!("expected the 1-step VerifiedWitness, got {other:?}"),
+    }
+}
