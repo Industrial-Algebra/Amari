@@ -21,8 +21,14 @@ sha2 = { workspace = true }
 amari-network = { workspace = true, optional = true }
 amari-holographic = { workspace = true, optional = true }
 amari-rewrite-macros = { workspace = true, optional = true }
-candle-core = { version = "=0.11.0", optional = true }
-candle-nn = { version = "=0.11.0", optional = true }
+# NOTE 2026-10-16: candle-core/candle-nn optional deps REMOVED — they were
+# pre-declared in #242 for neural-backend work that never consumed them (zero
+# imports), and their transitive `zip ^8.6.0` requirement became unsatisfiable
+# when zip's entire 8.x line was yanked from crates.io, breaking every
+# `--all-features` CI resolution without a single line of code being involved.
+# The `neural` feature stays trait-only. When a backend is wanted, adopt
+# Katakuri (Shandora workspace, built over Zunesha) — do NOT re-introduce a
+# pre-declared tensor-framework dependency.
 z3 = { version = "=0.20.2", default-features = false, features = ["vendored"], optional = true }
 
 [features]
@@ -34,7 +40,7 @@ serialize = ["dep:serde"]
 completion = []
 macros = ["dep:amari-rewrite-macros"]
 smt = ["std", "dep:z3"]
-neural = ["std", "dep:candle-core", "dep:candle-nn"]
+neural = ["std"]
 network = ["std", "neural", "dep:amari-network"]
 holographic-guidance = ["std", "dep:amari-holographic"]
 
