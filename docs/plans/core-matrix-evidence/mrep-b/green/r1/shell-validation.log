@@ -1,0 +1,4 @@
+OK pre-commit
+OK verify-named-suite.sh
+OK mrep-b-negative-batteries.sh
+OK generate-discovery-wasm-surface.sh

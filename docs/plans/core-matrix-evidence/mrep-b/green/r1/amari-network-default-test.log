@@ -1,0 +1,46 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (target/mrepb/debug/deps/amari_network-aafc9d8aa41c450b)
+
+running 4 tests
+test tropical::tests::test_betweenness_centrality ... ignored, Currently hanging - needs investigation
+test tropical::tests::test_no_path ... ignored, Currently hanging - needs investigation
+test tropical::tests::test_simple_shortest_path ... ignored, Currently hanging - needs investigation
+test tropical::tests::test_tropical_network_creation ... ok
+
+test result: ok. 1 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration.rs (target/mrepb/debug/deps/integration-84afc90248590bc6)
+
+running 13 tests
+test test_basic_network_construction ... ok
+test test_geometric_centrality ... ok
+test test_betweenness_centrality ... ok
+test test_community_detection ... ok
+test test_error_handling ... ok
+test test_geometric_distance ... ok
+test test_geometric_path_finding ... ok
+test test_tropical_network_conversion ... ignored
+test test_shortest_path ... ok
+test test_information_diffusion ... ok
+test test_node_metadata ... ok
+test test_no_path_exists ... ok
+test test_spectral_clustering ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phantom_types.rs (target/mrepb/debug/deps/phantom_types-eb2db40b802abfd2)
+
+running 3 tests
+test regular_tests::test_regular_network_without_verification ... ok
+test test_type_safety_compilation ... ok
+test test_different_signatures ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests amari_network
+
+running 1 test
+test amari-network/src/lib.rs - (line 19) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+

@@ -1,0 +1,6 @@
+# M-REP-B shell validation
+# 2026-10-15T04:26:18Z
+== bash -n .githooks/pre-commit ==
+OK: .githooks/pre-commit
+== bash -n scripts/verify-named-suite.sh ==
+OK: scripts/verify-named-suite.sh

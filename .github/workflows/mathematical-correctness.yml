@@ -82,22 +82,60 @@ jobs:
     - name: Run geometric algebra axiom tests
       run: |
         echo "📐 Running geometric algebra axiom tests..."
-        cargo test --package amari-core geometric_axioms
-        cargo test --package amari-tropical semiring_axioms
+        bash scripts/verify-named-suite.sh amari-core geometric_axioms \
+          geometric_axioms::additive_identity \
+          geometric_axioms::associativity \
+          geometric_axioms::basis_vector_signature \
+          geometric_axioms::distributivity \
+          geometric_axioms::multiplicative_identity \
+          geometric_axioms::scalar_commutes
+        bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts \
+          verified_contracts::contract_tests::test_maxplus_semiring_contracts \
+          verified_contracts::contract_tests::test_minplus_semiring_contracts
         echo "✅ Algebraic test suites passed"
 
     - name: Run phantom type-safety tests
       run: |
         echo "👻 Running phantom type-safety tests..."
-        cargo test --package amari-tropical verified_contracts
-        cargo test --package amari-core verified_contracts
+        bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts \
+          verified_contracts::contract_tests::test_matrix_contracts \
+          verified_contracts::contract_tests::test_maxplus_semiring_contracts \
+          verified_contracts::contract_tests::test_minplus_semiring_contracts \
+          verified_contracts::contract_tests::test_multivector_contracts \
+          verified_contracts::contract_tests::test_tropical_identities
+        bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts \
+          verified_contracts::contract_tests::test_signature_verification \
+          verified_contracts::contract_tests::test_verified_addition_properties \
+          verified_contracts::contract_tests::test_verified_identity_laws \
+          verified_contracts::contract_tests::test_verified_scalar_multiplication
         echo "✅ Type-safety constraint tests passed"
 
     - name: Mathematical property analysis
       run: |
         echo "🔍 Analyzing mathematical properties..."
-        TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || echo "0")
-        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+        # Preserve cargo's exit status: a partial listing followed by a failed
+        # target must fail the gate, never pass through on the records emitted
+        # so far. (`|| ...` keeps `-e` from aborting before we inspect the code.)
+        TOTAL_TESTS_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) || TOTAL_TESTS_STATUS=$?
+        TOTAL_TESTS_STATUS=${TOTAL_TESTS_STATUS:-0}
+        if [ "$TOTAL_TESTS_STATUS" -ne 0 ]; then
+          echo "❌ Test coverage gather failed (cargo exit $TOTAL_TESTS_STATUS)"
+          exit 1
+        fi
+        TOTAL_TESTS=$(printf '%s\n' "$TOTAL_TESTS_LIST" | grep -c ": test$" || true)
+        if [ -z "$TOTAL_TESTS" ]; then
+          TOTAL_TESTS=0
+        fi
+        FORMAL_FEATURE_TESTS_LIST=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null) || FORMAL_FEATURE_TESTS_STATUS=$?
+        FORMAL_FEATURE_TESTS_STATUS=${FORMAL_FEATURE_TESTS_STATUS:-0}
+        if [ "$FORMAL_FEATURE_TESTS_STATUS" -ne 0 ]; then
+          echo "❌ Formal-feature gather failed (cargo exit $FORMAL_FEATURE_TESTS_STATUS)"
+          exit 1
+        fi
+        FORMAL_FEATURE_TESTS=$(printf '%s\n' "$FORMAL_FEATURE_TESTS_LIST" | grep -c ": test$" || true)
+        if [ -z "$FORMAL_FEATURE_TESTS" ]; then
+          FORMAL_FEATURE_TESTS=0
+        fi
 
         echo "📊 Test Coverage Summary:"
         echo "  Total tests: $TOTAL_TESTS"

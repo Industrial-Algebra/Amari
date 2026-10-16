@@ -1,0 +1,14 @@
+# M-REP-B coverage-floor gather repair (pinned recipe, --locked)
+# 2026-10-15T04:26:37Z
+
+## OLD shape (hook, pre-repair): grep -c "test " || echo "0"
+OLD TOTAL_TESTS=$'0\n0'
+OLD floor: comparison errored -> does NOT block (vacuous-on-failure)
+
+## NEW shape (hook + workflow): grep -c ": test$" || true; [ -z ] && =0
+NEW TOTAL_TESTS=0 (well-formed)
+NEW floor: BLOCKS (correct on gather failure)
+
+## real gather on repaired pattern
+NEW real TOTAL_TESTS=2075 (floor 300 satisfied)
+OLD real pattern count (grep -c 'test '): 0 (pattern never matched ': test$' lines)

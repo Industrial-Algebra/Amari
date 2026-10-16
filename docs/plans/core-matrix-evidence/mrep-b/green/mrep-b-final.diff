@@ -1,0 +1,594 @@
+diff --git a/.githooks/pre-commit b/.githooks/pre-commit
+index 195e432..8be294b 100755
+--- a/.githooks/pre-commit
++++ b/.githooks/pre-commit
+@@ -125,7 +125,13 @@ if [ "$RUN_FULL_TESTS" = true ]; then
+     echo -e "${GREEN}✅ Documentation tests passed${NC}"
+ 
+     echo -e "${YELLOW}📐 Verifying geometric algebra axioms...${NC}"
+-    if ! cargo test --package amari-core geometric_axioms --quiet; then
++    if ! bash scripts/verify-named-suite.sh amari-core geometric_axioms \
++        geometric_axioms::additive_identity \
++        geometric_axioms::associativity \
++        geometric_axioms::basis_vector_signature \
++        geometric_axioms::distributivity \
++        geometric_axioms::multiplicative_identity \
++        geometric_axioms::scalar_commutes; then
+         echo -e "${RED}❌ Geometric algebra axioms verification failed!${NC}"
+         echo "Geometric algebra properties are fundamental to mathematical correctness"
+         exit 1
+@@ -133,7 +139,9 @@ if [ "$RUN_FULL_TESTS" = true ]; then
+     echo -e "${GREEN}✅ Geometric algebra axioms verified${NC}"
+ 
+     echo -e "${YELLOW}🏝️ Verifying tropical semiring axioms...${NC}"
+-    if ! cargo test --package amari-tropical semiring_axioms --quiet; then
++    if ! bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts \
++        verified_contracts::contract_tests::test_maxplus_semiring_contracts \
++        verified_contracts::contract_tests::test_minplus_semiring_contracts; then
+         echo -e "${RED}❌ Tropical semiring axioms verification failed!${NC}"
+         echo "Tropical algebra properties are fundamental to mathematical correctness"
+         exit 1
+@@ -141,21 +149,36 @@ if [ "$RUN_FULL_TESTS" = true ]; then
+     echo -e "${GREEN}✅ Tropical semiring axioms verified${NC}"
+ 
+     echo -e "${YELLOW}👻 Validating phantom type safety...${NC}"
+-    if ! cargo test --package amari-core verified_contracts --quiet; then
++    if ! bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts \
++        verified_contracts::contract_tests::test_signature_verification \
++        verified_contracts::contract_tests::test_verified_addition_properties \
++        verified_contracts::contract_tests::test_verified_identity_laws \
++        verified_contracts::contract_tests::test_verified_scalar_multiplication; then
+         echo -e "${RED}❌ Core phantom type safety validation failed!${NC}"
+         echo "Type safety constraints are critical for mathematical correctness"
+         exit 1
+     fi
+-    if ! cargo test --package amari-tropical verified_contracts --quiet 2>/dev/null; then
+-        echo -e "${YELLOW}⚠️ Tropical phantom type contracts not found (may be okay)${NC}"
+-    fi
+-    if ! cargo test --package amari-network verified_contracts --quiet 2>/dev/null; then
+-        echo -e "${YELLOW}⚠️ Network phantom type contracts not found (may be okay)${NC}"
++    if ! bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts \
++        verified_contracts::contract_tests::test_matrix_contracts \
++        verified_contracts::contract_tests::test_maxplus_semiring_contracts \
++        verified_contracts::contract_tests::test_minplus_semiring_contracts \
++        verified_contracts::contract_tests::test_multivector_contracts \
++        verified_contracts::contract_tests::test_tropical_identities; then
++        echo -e "${RED}❌ Tropical phantom type contracts failed!${NC}"
++        echo "Tropical contract tests must pass before committing"
++        exit 1
+     fi
++    # NOTE (M-REP-B): the former tolerated `amari-network verified_contracts`
++    # invocation was removed. That module has no #[test] functions even with
++    # --features formal-verification, so the command silently selected 0 tests
++    # (fake-green). See docs/plans/core-matrix-evidence/mrep-b/investigation.md.
+     echo -e "${GREEN}✅ Phantom type safety validated${NC}"
+ 
+     echo -e "${YELLOW}📊 Validating test coverage...${NC}"
+-    TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c "test " || echo "0")
++    TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || true)
++    if [ -z "$TOTAL_TESTS" ]; then
++        TOTAL_TESTS=0
++    fi
+     if [ "$TOTAL_TESTS" -lt 300 ]; then
+         echo -e "${RED}❌ Insufficient test coverage: $TOTAL_TESTS tests (minimum 300 required)${NC}"
+         echo "Mathematical libraries require comprehensive test coverage"
+diff --git a/.github/workflows/mathematical-correctness.yml b/.github/workflows/mathematical-correctness.yml
+index 56ce801..5fba9c4 100644
+--- a/.github/workflows/mathematical-correctness.yml
++++ b/.github/workflows/mathematical-correctness.yml
+@@ -82,22 +82,45 @@ jobs:
+     - name: Run geometric algebra axiom tests
+       run: |
+         echo "📐 Running geometric algebra axiom tests..."
+-        cargo test --package amari-core geometric_axioms
+-        cargo test --package amari-tropical semiring_axioms
++        bash scripts/verify-named-suite.sh amari-core geometric_axioms \
++          geometric_axioms::additive_identity \
++          geometric_axioms::associativity \
++          geometric_axioms::basis_vector_signature \
++          geometric_axioms::distributivity \
++          geometric_axioms::multiplicative_identity \
++          geometric_axioms::scalar_commutes
++        bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts \
++          verified_contracts::contract_tests::test_maxplus_semiring_contracts \
++          verified_contracts::contract_tests::test_minplus_semiring_contracts
+         echo "✅ Algebraic test suites passed"
+ 
+     - name: Run phantom type-safety tests
+       run: |
+         echo "👻 Running phantom type-safety tests..."
+-        cargo test --package amari-tropical verified_contracts
+-        cargo test --package amari-core verified_contracts
++        bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts \
++          verified_contracts::contract_tests::test_matrix_contracts \
++          verified_contracts::contract_tests::test_maxplus_semiring_contracts \
++          verified_contracts::contract_tests::test_minplus_semiring_contracts \
++          verified_contracts::contract_tests::test_multivector_contracts \
++          verified_contracts::contract_tests::test_tropical_identities
++        bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts \
++          verified_contracts::contract_tests::test_signature_verification \
++          verified_contracts::contract_tests::test_verified_addition_properties \
++          verified_contracts::contract_tests::test_verified_identity_laws \
++          verified_contracts::contract_tests::test_verified_scalar_multiplication
+         echo "✅ Type-safety constraint tests passed"
+ 
+     - name: Mathematical property analysis
+       run: |
+         echo "🔍 Analyzing mathematical properties..."
+-        TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || echo "0")
+-        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || echo "0")
++        TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null | grep -c ": test$" || true)
++        if [ -z "$TOTAL_TESTS" ]; then
++          TOTAL_TESTS=0
++        fi
++        FORMAL_FEATURE_TESTS=$(cargo test --workspace --features formal-verification -- --list 2>/dev/null | grep -c ": test$" || true)
++        if [ -z "$FORMAL_FEATURE_TESTS" ]; then
++          FORMAL_FEATURE_TESTS=0
++        fi
+ 
+         echo "📊 Test Coverage Summary:"
+         echo "  Total tests: $TOTAL_TESTS"
+diff --git a/amari-core/tests/geometric_axioms.rs b/amari-core/tests/geometric_axioms.rs
+new file mode 100644
+index 0000000..5c77fd7
+--- /dev/null
++++ b/amari-core/tests/geometric_axioms.rs
+@@ -0,0 +1,113 @@
++//! Geometric-product axiom instance tests for the public `amari-core` API.
++//!
++//! Every test asserts a concrete algebraic instance on sampled multivectors of
++//! `Cl(3,0,0)` (or the listed signature). They are **executed-instance**
++//! checks, not universally quantified proofs; the CORE-D07 matrix tracks
++//! actual proof obligations separately (C3/C4). See
++//! `docs/technical/MATHEMATICAL_RIGOR.md`.
++//!
++//! The module name `geometric_axioms` is the advertised pre-commit/CI named
++//! suite, so the approved invocation
++//! `cargo test --package amari-core geometric_axioms` selects these tests.
++//! The corresponding vacuity assertion lives in `scripts/verify-named-suite.sh`.
++
++use amari_core::{Multivector, Scalar, Vector};
++use approx::assert_relative_eq;
++
++mod geometric_axioms {
++    use super::*;
++
++    /// The geometric product is associative on sampled multivectors:
++    /// `(a b) c = a (b c)`.
++    #[test]
++    fn associativity() {
++        let a = Multivector::<3, 0, 0>::from_slice(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
++        let b = Multivector::<3, 0, 0>::from_slice(&[8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0]);
++        let c = Multivector::<3, 0, 0>::from_slice(&[1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0]);
++
++        let left = a.geometric_product(&b).geometric_product(&c);
++        let right = a.geometric_product(&b.geometric_product(&c));
++
++        for i in 0..8 {
++            assert_relative_eq!(left.as_slice()[i], right.as_slice()[i], epsilon = 1e-10);
++        }
++    }
++
++    /// The geometric product distributes over addition on sampled vectors:
++    /// `a (b + c) = a b + a c`.
++    #[test]
++    fn distributivity() {
++        let a = Vector::<3, 0, 0>::from_components(1.0, 2.0, 3.0);
++        let b = Vector::<3, 0, 0>::from_components(4.0, 5.0, 6.0);
++        let c = Vector::<3, 0, 0>::from_components(7.0, 8.0, 9.0);
++
++        let left = a.geometric_product(&b.add(&c));
++        let right = a.geometric_product(&b).add(&a.geometric_product(&c));
++
++        assert_relative_eq!(left.as_slice(), right.as_slice(), epsilon = 1e-10);
++    }
++
++    /// The unit scalar is a two-sided multiplicative identity:
++    /// `1 a = a 1 = a`.
++    #[test]
++    fn multiplicative_identity() {
++        let one = Scalar::<3, 0, 0>::one();
++        let a = Multivector::<3, 0, 0>::from_slice(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
++
++        assert_relative_eq!(one.geometric_product(&a).as_slice(), a.as_slice());
++        assert_relative_eq!(
++            a.geometric_product(one.as_multivector()).as_slice(),
++            a.as_slice()
++        );
++    }
++
++    /// The additive zero is a two-sided additive identity: `a + 0 = a`.
++    #[test]
++    fn additive_identity() {
++        let a = Multivector::<3, 0, 0>::from_slice(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
++        let zero = Multivector::<3, 0, 0>::zero();
++
++        assert_relative_eq!(a.add(&zero).as_slice(), a.as_slice());
++        assert_relative_eq!(zero.add(&a).as_slice(), a.as_slice());
++    }
++
++    /// Scalar multiplication commutes with the geometric product:
++    /// `(s a) = (a s)` for a scalar `s` and vector `a`.
++    #[test]
++    fn scalar_commutes() {
++        let scalar = Scalar::<3, 0, 0>::from(2.5);
++        let a = Vector::<3, 0, 0>::from_components(1.0, 2.0, 3.0);
++
++        let scalar_first = scalar.geometric_product_with_vector(&a);
++        let scalar_last = a.geometric_product_with_scalar(&scalar);
++
++        assert_relative_eq!(scalar_first.as_slice(), scalar_last.as_slice());
++    }
++
++    /// Basis-vector squares follow the metric signature: `e_i^2 = +1` for a
++    /// positive coordinate, `-1` for a negative coordinate, and `0` for a
++    /// null coordinate.
++    #[test]
++    fn basis_vector_signature() {
++        let e_pos = Vector::<3, 0, 0>::e1().expect("Cl(3,0,0) has basis vector e1");
++        assert_relative_eq!(
++            e_pos.geometric_product(&e_pos).scalar_part(),
++            1.0,
++            epsilon = 1e-12
++        );
++
++        let e_neg = Vector::<0, 1, 0>::e1().expect("Cl(0,1,0) has basis vector e1");
++        assert_relative_eq!(
++            e_neg.geometric_product(&e_neg).scalar_part(),
++            -1.0,
++            epsilon = 1e-12
++        );
++
++        let e_null = Vector::<0, 0, 1>::e1().expect("Cl(0,0,1) has basis vector e1");
++        assert_relative_eq!(
++            e_null.geometric_product(&e_null).scalar_part(),
++            0.0,
++            epsilon = 1e-12
++        );
++    }
++}
+diff --git a/docs/technical/MATHEMATICAL_RIGOR.md b/docs/technical/MATHEMATICAL_RIGOR.md
+index 7c6529f..6a6a08d 100644
+--- a/docs/technical/MATHEMATICAL_RIGOR.md
++++ b/docs/technical/MATHEMATICAL_RIGOR.md
+@@ -55,12 +55,18 @@ to CI.
+ 3. **Formal-annotation compatibility**: `formal-verification` feature test suites
+ 4. **Integration test suites**: cross-crate interaction
+ 5. **Documentation tests**: doc examples must compile and pass
+-6. **Geometric algebra axiom test suites**: explicit algebraic property tests
+-7. **Phantom type type-safety tests**: compile-time constraint (type) tests
++6. **Geometric algebra axiom test suites**: explicit algebraic property tests,
++   non-vacuity asserted against an approved inventory
++7. **Phantom type type-safety tests**: compile-time constraint (type) tests,
++   gated per crate (`formal-verification` for `amari-core`, `contracts` for
++   `amari-tropical`)
+ 8. **Test-count reporting**: coverage/inventory counts
+ 
+ ### 3. 📊 Continuous monitoring (counts)
+ - Minimum 300+ `#[test]` functions (currently 579+)
++- The coverage floor is a real gate: the gather yields a single well-formed
++  count and `[ "$TOTAL_TESTS" -lt 300 ]` blocks both a low count and a gather
++  failure (M-REP-B)
+ - Test-function counts in annotation-marker files are source-inventory counts
+ - All phantom type constraints that the compiler can check are enforced at
+   compile time
+@@ -191,10 +197,22 @@ By contributing to this repository, you agree that:
+ # See the source-mapped table in TEST_ENFORCEMENT.md.
+ ./.githooks/pre-commit
+ 
+-# Specific property test suites
+-cargo test geometric_axioms
+-cargo test semiring_axioms
+-cargo test verified_contracts
++# Specific named property suites. Each invocation is wrapped by the
++# approved-inventory + non-vacuity assertion (scripts/verify-named-suite.sh):
++# a filter that selects zero tests (or misses an approved name) fails.
++# See TEST_ENFORCEMENT.md for the per-suite inventories.
++bash scripts/verify-named-suite.sh amari-core geometric_axioms \
++  geometric_axioms::associativity geometric_axioms::distributivity \
++  geometric_axioms::multiplicative_identity geometric_axioms::additive_identity \
++  geometric_axioms::scalar_commutes geometric_axioms::basis_vector_signature
++bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts \
++  verified_contracts::contract_tests::test_maxplus_semiring_contracts \
++  verified_contracts::contract_tests::test_minplus_semiring_contracts
++bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts \
++  verified_contracts::contract_tests::test_signature_verification \
++  verified_contracts::contract_tests::test_verified_addition_properties \
++  verified_contracts::contract_tests::test_verified_identity_laws \
++  verified_contracts::contract_tests::test_verified_scalar_multiplication
+ ```
+ 
+ ### Manual CI trigger
+diff --git a/docs/technical/TEST_ENFORCEMENT.md b/docs/technical/TEST_ENFORCEMENT.md
+index ebc5d5e..821f3e3 100644
+--- a/docs/technical/TEST_ENFORCEMENT.md
++++ b/docs/technical/TEST_ENFORCEMENT.md
+@@ -6,14 +6,24 @@
+ > theorems. This page now describes the enforcement mechanics and what they do
+ > and do not establish. See `docs/technical/MATHEMATICAL_RIGOR.md` for the
+ > epistemic framing and the approved C3/C4 proof gates.
++>
++> **Update (M-REP-B, 2026-10-15): named-suite filter integrity.** Every
++> advertised named filter now carries an approved test-name inventory and an
++> executable vacuity assertion (`scripts/verify-named-suite.sh`). Filters that
++> selected zero tests were fixed or removed, and the coverage-floor gather was
++> repaired. Rows 7–13 below were updated from the M-REP-A transcript; see
++> `docs/plans/core-matrix-evidence/mrep-b/investigation.md` for the per-site
++> evidence.
+ 
+ ## Overview
+ 
+ The Amari workspace runs a pre-commit hook plus CI checks. The table below is
+-**transcribed by script** from `.githooks/pre-commit` (292 lines) — mechanically
+-extracted, not hand-summarised. The extractor and its complete output are
+-archived in `docs/plans/core-matrix-evidence/mrep-a/hook-extraction.txt`; every
+-row cites the exact script line range, and every command is verbatim.
++**transcribed by script** from `.githooks/pre-commit` (315 lines) — mechanically
++extracted, not hand-summarised. The M-REP-A extractor and its complete output
++are archived in `docs/plans/core-matrix-evidence/mrep-a/hook-extraction.txt`;
++the rows changed by M-REP-B (7–13) and the line ranges shifted by those edits
++are updated here against the current hook. Every row cites the exact script
++line range, and every command is verbatim.
+ 
+ | # | Check | Command (verbatim) | Branch condition | Failure handling | Script lines |
+ |---|---|---|---|---|---|
+@@ -23,25 +33,25 @@ row cites the exact script line range, and every command is verbatim.
+ | 4 | Formal-feature suite | `cargo test --workspace --features formal-verification --quiet` | FULL | BLOCKS (`exit 1`) | 104-108 |
+ | 5 | Integration tests | `cargo test --workspace --tests --quiet` | FULL | BLOCKS (`exit 1`) | 112-116 |
+ | 6 | Doctests | `cargo test --workspace --doc --quiet` | FULL | BLOCKS (`exit 1`) | 120-124 |
+-| 7 | `geometric_axioms` filter | `cargo test --package amari-core geometric_axioms --quiet` | FULL | BLOCKS (`exit 1`); selected-test count not asserted — M-REP-B | 128-132 |
+-| 8 | `semiring_axioms` filter | `cargo test --package amari-tropical semiring_axioms --quiet` | FULL | BLOCKS (`exit 1`) | 136-140 |
+-| 9 | Phantom contracts, core | `cargo test --package amari-core verified_contracts --quiet` | FULL | BLOCKS (`exit 1`) | 144-148 |
+-| 10 | Phantom contracts, tropical | `cargo test --package amari-tropical verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 149-151 |
+-| 11 | Phantom contracts, network | `cargo test --package amari-network verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 152-154 |
+-| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c "test " \|\| echo "0")` | FULL | gather only. NOTE the failure shape: when the gather fails or matches nothing, `grep -c` still prints `0` and exits 1, so `\|\| echo "0"` APPENDS a second line — `TOTAL_TESTS` becomes the two-line string `0\n0`, not `0` | 157-158 |
+-| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | Blocks below 300 on a WELL-FORMED count. In the gather-failure case the two-line `0\n0` is not an integer, the comparison itself errors (non-zero status), and the hook CONTINUES — the floor does NOT block on gather failure (vacuous-on-failure; repair is M-REP-B) | 159-163 |
+-| 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 167-171 |
+-| 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 183-187 |
+-| 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 192-196 |
+-| 17 | Crate docs | `cargo doc --package "$CHANGED_CRATE" --no-deps --quiet` | TARGETED | BLOCKS (`exit 1`) | 200-204 |
+-| 18 | WASM gate determination | `WASM_CRATES=(...)`; `WASM_AFFECTED=true` if `RUN_FULL_TESTS=true`, else loop `CHANGED_CRATE` over `WASM_CRATES` | FULL: always; TARGETED: `CHANGED_CRATE` is one of `WASM_CRATES` | selection only (no command) | 215-228 |
+-| 19 | WASM target lookup | `rustup target list --installed \| grep -q wasm32-unknown-unknown` | WASM-conditional (`WASM_AFFECTED=true`) | condition only; gates the install step | 234-237 |
+-| 20 | WASM target install | `rustup target add wasm32-unknown-unknown` | WASM-conditional, only when the lookup fails | BLOCKS: unguarded, no failure branch; a non-zero exit aborts under `set -e` (L7), with no custom message | 236 (with 7) |
+-| 21 | WASM `amari-wasm`, full | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + FULL | BLOCKS (`exit 1`) | 242-246 |
+-| 22 | WASM per-crate loop, full | `cargo check --package "$crate" --target wasm32-unknown-unknown --quiet 2>/dev/null` for `$crate` in `WASM_CRATES` **excluding `amari-wasm` and `amari`** | WASM-conditional + FULL + loop | TOLERATED (warning echo only; no `exit 1`) | 248-255 |
+-| 23 | WASM `amari-wasm`, targeted | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + TARGETED + `CHANGED_CRATE=amari-wasm` | BLOCKS (`exit 1`) | 258-263 |
+-| 24 | WASM changed crate, targeted | `cargo check --package "$CHANGED_CRATE" --target wasm32-unknown-unknown --quiet 2>/dev/null` | WASM-conditional + TARGETED + `CHANGED_CRATE != amari-wasm` **and** `!= amari` | TOLERATED (warning echo only; no `exit 1`) | 264-269 |
+-| 25 | `amari` (root) special case | **no WASM `cargo check` is issued** | WASM-conditional | full: excluded by the loop condition (L250); targeted: the `elif [ "$CHANGED_CRATE" != "amari" ]` guard (L264) skips the check. The WASM banner and target-install step still run | 250, 264 |
++| 7 | `geometric_axioms` suite | `bash scripts/verify-named-suite.sh amari-core geometric_axioms` + 6 approved names | FULL | **ASSERTED** (`passed >= 1`, `ignored == 0`, exact inventory); BLOCKS (`exit 1`) | 128-139 |
++| 8 | `semiring_contracts` suite (was `semiring_axioms`) | `bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts` + 2 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 142-149 |
++| 9 | Phantom contracts, core | `bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts` + 4 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 152-160 |
++| 10 | Phantom contracts, tropical | `bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts` + 5 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 161-170 |
++| 11 | Phantom contracts, network | **REMOVED (M-REP-B)** — the module has no `#[test]` functions even with `--features formal-verification`; the former tolerated invocation silently selected 0 tests | — | — | — |
++| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c ": test$" \|\| true)`; then `[ -z "$TOTAL_TESTS" ] && TOTAL_TESTS=0` | FULL | **[CORRECTED 2026-10-15, M-REP-B]** The former hook shape used `grep -c "test "` — a pattern that matched none of the `name: test` list lines, so its count was 0 — with `\|\| echo "0"`, which on failure appended a second `0` (two-line `0\n0`). The gather now yields a single well-formed integer on success and on failure | 178-181 |
++| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | **[CORRECTED 2026-10-15, M-REP-B]** Blocks a well-formed count below 300 **and** gather failure (now normalized to `0`). The M-REP-A table described the OLD vacuous-on-failure shape; see `docs/plans/core-matrix-evidence/mrep-b/` | 182-186 |
++| 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 190-194 |
++| 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 206-210 |
++| 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 215-219 |
++| 17 | Crate docs | `cargo doc --package "$CHANGED_CRATE" --no-deps --quiet` | TARGETED | BLOCKS (`exit 1`) | 223-227 |
++| 18 | WASM gate determination | `WASM_CRATES=(...)`; `WASM_AFFECTED=true` if `RUN_FULL_TESTS=true`, else loop `CHANGED_CRATE` over `WASM_CRATES` | FULL: always; TARGETED: `CHANGED_CRATE` is one of `WASM_CRATES` | selection only (no command) | 238-251 |
++| 19 | WASM target lookup | `rustup target list --installed \| grep -q wasm32-unknown-unknown` | WASM-conditional (`WASM_AFFECTED=true`) | condition only; gates the install step | 257-260 |
++| 20 | WASM target install | `rustup target add wasm32-unknown-unknown` | WASM-conditional, only when the lookup fails | BLOCKS: unguarded, no failure branch; a non-zero exit aborts under `set -e` (L7), with no custom message | 259 (with 7) |
++| 21 | WASM `amari-wasm`, full | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + FULL | BLOCKS (`exit 1`) | 265-269 |
++| 22 | WASM per-crate loop, full | `cargo check --package "$crate" --target wasm32-unknown-unknown --quiet 2>/dev/null` for `$crate` in `WASM_CRATES` **excluding `amari-wasm` and `amari`** | WASM-conditional + FULL + loop | TOLERATED (warning echo only; no `exit 1`) | 272-278 |
++| 23 | WASM `amari-wasm`, targeted | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + TARGETED + `CHANGED_CRATE=amari-wasm` | BLOCKS (`exit 1`) | 281-286 |
++| 24 | WASM changed crate, targeted | `cargo check --package "$CHANGED_CRATE" --target wasm32-unknown-unknown --quiet 2>/dev/null` | WASM-conditional + TARGETED + `CHANGED_CRATE != amari-wasm` **and** `!= amari` | TOLERATED (warning echo only; no `exit 1`) | 287-291 |
++| 25 | `amari` (root) special case | **no WASM `cargo check` is issued** | WASM-conditional | full: excluded by the loop condition (L273); targeted: the `elif [ "$CHANGED_CRATE" != "amari" ]` guard (L287) skips the check. The WASM banner and target-install step still run | 273, 287 |
+ 
+ Source semantics for the WASM rows: `amari-wasm` is the only crate whose WASM
+ check **blocks** (rows 21, 23); every other checked crate is **TOLERATED**
+@@ -54,9 +64,9 @@ workspace-level changed files (`Cargo.toml`, `.githooks`, `.github`,
+ `scripts`; L30), OR no crate changes (`CRATE_COUNT=0`), OR more than one
+ changed crate (`CRATE_COUNT>1`) → **FULL**; otherwise exactly one changed
+ crate → **TARGETED** with `CHANGED_CRATE` set (L55-61). The targeted branch
+-prints a reminder that the full suite runs in CI/CD (L208).
++prints a reminder that the full suite runs in CI/CD (L231).
+ 
+-**WASM gate** (script lines 215-228): `WASM_AFFECTED=true` whenever the FULL
++**WASM gate** (script lines 215-228 → current 238-251): `WASM_AFFECTED=true` whenever the FULL
+ branch runs; in the TARGETED branch it is true only when `CHANGED_CRATE` is
+ one of `WASM_CRATES` = `amari amari-core amari-tropical amari-dual
+ amari-network amari-relativistic amari-info-geom amari-enumerative
+@@ -118,6 +128,16 @@ for the per-check branch and failure handling.
+    - All documentation compiles
+    - Doc examples are tested
+ 
++6. **Named algebraic suites** (`scripts/verify-named-suite.sh`)
++   - `amari-core geometric_axioms` (default features),
++     `amari-tropical semiring_contracts` (`--features contracts`), and the
++     `verified_contracts` suites for `amari-core`
++     (`--features formal-verification`) and `amari-tropical`
++     (`--features contracts`)
++   - Each carries an approved test-name inventory and asserts `passed >= 1`
++     and `ignored == 0`; a filter that selects nothing fails the hook instead
++     of reporting a vacuous pass
++
+ ## 🚦 Test enforcement workflow
+ 
+ ### Normal commit flow
+@@ -129,6 +149,7 @@ git commit -m "feat: implement new mathematical operation"
+ # ✅ Clippy lints                      (both branches, workspace)
+ # ✅ Core test suites                  (FULL: all crates; TARGETED: changed crate)
+ # ✅ formal-verification feature suites (FULL branch only)
++# ✅ Named algebraic suites           (FULL branch only; inventory + non-vacuity asserted)
+ # ✅ Documentation build               (FULL: workspace; TARGETED: changed crate)
+ # Commit proceeds if the branch's in-scope checks pass.
+ # The TARGETED branch tolerates crate doctest failures and skips the formal suite
+@@ -153,7 +174,18 @@ git commit --no-verify -m "emergency: critical security fix"
+ 
+ ## 📊 Test coverage standards
+ 
+-The enforcement system gates on the test suites and reports coverage counts:
++The enforcement system gates on the test suites and reports coverage counts.
++The workspace coverage floor is computed by the pre-commit hook and by
++`mathematical-correctness.yml` as a count of executed test names
++(`cargo test --workspace --lib --bins -- --list | grep -c ": test$"`).
++**[CORRECTED 2026-10-15, M-REP-B]** the hook previously counted with a
++`"test "` pattern that matched none of the `name: test` list lines, so its
++gather returned `0` on every run, and the `\|\| echo "0"` failure fallback
++appended a second `0`, making `[ "$TOTAL_TESTS" -lt 300 ]` error out instead of
++blocking. The gather now yields a single well-formed integer and the ≥300 floor
++blocks on both a low count and a gather failure. Evidence:
++`docs/plans/core-matrix-evidence/mrep-b/green/coverage-floor-repair.log` and
++`green/named-suite-assertions.log`.
+ 
+ ### Test count targets
+ - **amari-core**: 140+ tests covering geometric algebra operations
+@@ -174,7 +206,7 @@ much code they exercise. They are not a measure of proved mathematics.
+ 
+ ## 🔬 Formal-annotation compatibility
+ 
+-The `formal-verification` feature suites specifically check that:
++The `formal-verification`/`contracts` feature suites specifically check that:
+ 
+ ### Mathematical properties are exercised
+ - **Associativity**: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)` on the tested inputs
+@@ -198,9 +230,13 @@ associative at extremes: for scalar `f64` `a = b = 1e308`, `c = 0`,
+   compile
+ - **Information geometry annotations**: manifold contract annotations compile
+ 
+-A green `formal-verification` run means the annotations compile and the
+-compatibility suites pass; it does not mean any contract was translated to a
+-prover or discharged.
++A green `formal-verification` (or `contracts`) run means the annotations compile
++and the compatibility suites pass; it does not mean any contract was translated
++to a prover or discharged. The two crates gate the `verified_contracts` module
++differently: `amari-core` uses `formal-verification` directly, while
++`amari-tropical` declares `#[cfg(feature = "contracts")]` (and `contracts`
++enables `formal-verification`). Named-suite invocations therefore pass the
++feature each crate actually requires.
+ 
+ ## 📈 Benefits
+ 
+@@ -222,7 +258,9 @@ prover or discharged.
+ - **Reproducible execution**: the hook's FULL-branch checks and CI share
+   overlapping definitions; the TARGETED branch is a strict subset, and local
+   coverage is NOT identical to CI (see the table above and `MATHEMATICAL_RIGOR.md`)
+-- **Trustworthy foundation**: exercised behavior is protected
++- **Trustworthy foundation**: exercised behavior is protected; advertised
++  named suites assert non-vacuity and an approved test-name inventory, so a
++  filter that selects nothing fails rather than passing silently
+ - **Type-level safety**: phantom types give compile-time type constraints
+ 
+ ## 🛠️ Troubleshooting
+diff --git a/scripts/verify-named-suite.sh b/scripts/verify-named-suite.sh
+new file mode 100755
+index 0000000..69fda6b
+--- /dev/null
++++ b/scripts/verify-named-suite.sh
+@@ -0,0 +1,115 @@
++#!/usr/bin/env bash
++#
++# verify-named-suite.sh — executable vacuity assertion for a named cargo-test
++# filter (CORE-D07 matrix §3, "named-suite filter integrity"; M-REP-B).
++#
++# A filtered invocation such as `cargo test -p amari-core geometric_axioms`
++# exits 0 and prints "0 passed" when the filter matches nothing: an evidence-
++# integrity defect, not a green row. This helper turns such an invocation into
++# a real gate. It:
++#
++#   1. lists the tests the filter selects (`-- --list`);
++#   2. requires the list to contain EXACTLY the approved inventory names;
++#   3. runs the filtered tests and parses the `test result:` lines;
++#   4. requires `passed >= 1` (non-vacuous) and `ignored == 0` (the approved
++#      inventories contain no ignored/skipped tests).
++#
++# Usage:
++#   scripts/verify-named-suite.sh [--features <FEATURES>] <PACKAGE> <FILTER> \
++#       <EXPECTED_NAME> [<EXPECTED_NAME>...]
++#
++# Example:
++#   scripts/verify-named-suite.sh amari-core geometric_axioms \
++#       geometric_axioms::associativity geometric_axioms::distributivity
++#
++# Exit status: 0 only when the filter is non-vacuous and the inventory is
++# complete; nonzero otherwise.
++
++set -uo pipefail
++
++FEATURES=""
++if [ "${1:-}" = "--features" ]; then
++    if [ "$#" -lt 3 ]; then
++        echo "verify-named-suite: --features requires a value and a suite" >&2
++        exit 2
++    fi
++    FEATURES="$2"
++    shift 2
++fi
++
++if [ "$#" -lt 3 ]; then
++    echo "verify-named-suite: usage: [--features <FEATURES>] <PACKAGE> <FILTER> <EXPECTED_NAME>..." >&2
++    exit 2
++fi
++
++PACKAGE="$1"
++FILTER="$2"
++shift 2
++
++EXPECTED_COUNT="$#"
++
++cargo_args=(test --locked --quiet --package "$PACKAGE")
++if [ -n "$FEATURES" ]; then
++    cargo_args+=(--features "$FEATURES")
++fi
++
++SUITE="$PACKAGE :: $FILTER"
++if [ -n "$FEATURES" ]; then
++    SUITE="$SUITE (features: $FEATURES)"
++fi
++
++# 1. List the selected tests. A compile failure here must fail the gate.
++LIST_OUT=$(cargo "${cargo_args[@]}" "$FILTER" -- --list 2>&1)
++LIST_STATUS=$?
++if [ "$LIST_STATUS" -ne 0 ]; then
++    echo "verify-named-suite: FAIL — could not list $SUITE (exit $LIST_STATUS)" >&2
++    printf '%s\n' "$LIST_OUT" >&2
++    exit 1
++fi
++
++# 2. Exact inventory comparison (count + membership).
++SELECTED_COUNT=$(printf '%s\n' "$LIST_OUT" | grep -c ': test$' || true)
++if [ -z "$SELECTED_COUNT" ]; then
++    SELECTED_COUNT=0
++fi
++if [ "$SELECTED_COUNT" -eq 0 ]; then
++    echo "verify-named-suite: FAIL — VACUOUS: $SUITE selected 0 tests" >&2
++    printf '%s\n' "$LIST_OUT" >&2
++    exit 1
++fi
++if [ "$SELECTED_COUNT" -ne "$EXPECTED_COUNT" ]; then
++    echo "verify-named-suite: FAIL — $SUITE selected $SELECTED_COUNT test(s), approved inventory has $EXPECTED_COUNT" >&2
++    printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/^/    selected: /' >&2
++    exit 1
++fi
++for name in "$@"; do
++    if ! printf '%s\n' "$LIST_OUT" | grep -qF "$name: test"; then
++        echo "verify-named-suite: FAIL — expected test '$name' not selected by $SUITE" >&2
++        printf '%s\n' "$LIST_OUT" | grep ': test$' | sed 's/^/    selected: /' >&2
++        exit 1
++    fi
++done
++
++# 3. Run the filtered tests and parse the `test result:` lines.
++RUN_OUT=$(cargo "${cargo_args[@]}" "$FILTER" 2>&1)
++RUN_STATUS=$?
++PASSED=$(printf '%s\n' "$RUN_OUT" | sed -n 's/.*test result: [A-Za-z]*\. \([0-9][0-9]*\) passed.*/\1/p' | awk '{s+=$1} END {print s+0}')
++IGNORED=$(printf '%s\n' "$RUN_OUT" | sed -n 's/.* \([0-9][0-9]*\) ignored.*/\1/p' | awk '{s+=$1} END {print s+0}')
++
++if [ "$RUN_STATUS" -ne 0 ]; then
++    echo "verify-named-suite: FAIL — $SUITE run exited $RUN_STATUS" >&2
++    printf '%s\n' "$RUN_OUT" >&2
++    exit 1
++fi
++if [ "$PASSED" -lt 1 ]; then
++    echo "verify-named-suite: FAIL — VACUOUS: $SUITE reported $PASSED passed test(s)" >&2
++    printf '%s\n' "$RUN_OUT" >&2
++    exit 1
++fi
++if [ "$IGNORED" -ne 0 ]; then
++    echo "verify-named-suite: FAIL — $SUITE reported $IGNORED ignored test(s); approved inventory declares none" >&2
++    exit 1
++fi
++
++echo "verify-named-suite: OK — $SUITE: $PASSED passed, $IGNORED ignored, inventory of $EXPECTED_COUNT complete"
++exit 0

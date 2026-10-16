@@ -1,0 +1,9 @@
+.github/workflows/mathematical-correctness.yml:85:        cargo test --package amari-core geometric_axioms
+.github/workflows/mathematical-correctness.yml:86:        cargo test --package amari-tropical semiring_axioms
+.github/workflows/mathematical-correctness.yml:92:        cargo test --package amari-tropical verified_contracts
+.github/workflows/mathematical-correctness.yml:93:        cargo test --package amari-core verified_contracts
+.githooks/pre-commit:128:    if ! cargo test --package amari-core geometric_axioms --quiet; then
+.githooks/pre-commit:136:    if ! cargo test --package amari-tropical semiring_axioms --quiet; then
+.githooks/pre-commit:144:    if ! cargo test --package amari-core verified_contracts --quiet; then
+.githooks/pre-commit:149:    if ! cargo test --package amari-tropical verified_contracts --quiet 2>/dev/null; then
+.githooks/pre-commit:152:    if ! cargo test --package amari-network verified_contracts --quiet 2>/dev/null; then

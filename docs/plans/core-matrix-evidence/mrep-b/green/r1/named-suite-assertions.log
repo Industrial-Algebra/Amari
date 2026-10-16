@@ -1,0 +1,8 @@
+# M-REP-B R1 remediation — named-suite positive assertions (pinned recipe, --locked)
+# 2026-10-15T04:38:33Z
+verify-named-suite: OK — amari-core :: geometric_axioms: 6 passed, 0 ignored, inventory of 6 complete
+verify-named-suite: OK — amari-tropical :: semiring_contracts (features: contracts): 2 passed, 0 ignored, inventory of 2 complete
+verify-named-suite: OK — amari-core :: verified_contracts (features: formal-verification): 4 passed, 0 ignored, inventory of 4 complete
+verify-named-suite: OK — amari-tropical :: verified_contracts (features: contracts): 5 passed, 0 ignored, inventory of 5 complete
+# discovery generator named-filter wiring (F3)
+verify-named-suite: OK — amari-discovery :: generated_has_valid_schema_version: 1 passed, 0 ignored, inventory of 1 complete

@@ -6,14 +6,24 @@
 > theorems. This page now describes the enforcement mechanics and what they do
 > and do not establish. See `docs/technical/MATHEMATICAL_RIGOR.md` for the
 > epistemic framing and the approved C3/C4 proof gates.
+>
+> **Update (M-REP-B, 2026-10-15): named-suite filter integrity.** Every
+> advertised named filter now carries an approved test-name inventory and an
+> executable vacuity assertion (`scripts/verify-named-suite.sh`). Filters that
+> selected zero tests were fixed or removed, and the coverage-floor gather was
+> repaired. Rows 7–13 below were updated from the M-REP-A transcript; see
+> `docs/plans/core-matrix-evidence/mrep-b/investigation.md` for the per-site
+> evidence.
 
 ## Overview
 
 The Amari workspace runs a pre-commit hook plus CI checks. The table below is
-**transcribed by script** from `.githooks/pre-commit` (292 lines) — mechanically
-extracted, not hand-summarised. The extractor and its complete output are
-archived in `docs/plans/core-matrix-evidence/mrep-a/hook-extraction.txt`; every
-row cites the exact script line range, and every command is verbatim.
+**transcribed by script** from `.githooks/pre-commit` (315 lines) — mechanically
+extracted, not hand-summarised. The M-REP-A extractor and its complete output
+are archived in `docs/plans/core-matrix-evidence/mrep-a/hook-extraction.txt`;
+the rows changed by M-REP-B (7–13) and the line ranges shifted by those edits
+are updated here against the current hook. Every row cites the exact script
+line range, and every command is verbatim.
 
 | # | Check | Command (verbatim) | Branch condition | Failure handling | Script lines |
 |---|---|---|---|---|---|
@@ -23,25 +33,25 @@ row cites the exact script line range, and every command is verbatim.
 | 4 | Formal-feature suite | `cargo test --workspace --features formal-verification --quiet` | FULL | BLOCKS (`exit 1`) | 104-108 |
 | 5 | Integration tests | `cargo test --workspace --tests --quiet` | FULL | BLOCKS (`exit 1`) | 112-116 |
 | 6 | Doctests | `cargo test --workspace --doc --quiet` | FULL | BLOCKS (`exit 1`) | 120-124 |
-| 7 | `geometric_axioms` filter | `cargo test --package amari-core geometric_axioms --quiet` | FULL | BLOCKS (`exit 1`); selected-test count not asserted — M-REP-B | 128-132 |
-| 8 | `semiring_axioms` filter | `cargo test --package amari-tropical semiring_axioms --quiet` | FULL | BLOCKS (`exit 1`) | 136-140 |
-| 9 | Phantom contracts, core | `cargo test --package amari-core verified_contracts --quiet` | FULL | BLOCKS (`exit 1`) | 144-148 |
-| 10 | Phantom contracts, tropical | `cargo test --package amari-tropical verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 149-151 |
-| 11 | Phantom contracts, network | `cargo test --package amari-network verified_contracts --quiet 2>/dev/null` | FULL | TOLERATED (warning echo only; no `exit 1`) | 152-154 |
-| 12 | Coverage gather | `TOTAL_TESTS=$(cargo test --workspace --lib --bins -- --list 2>/dev/null \| grep -c "test " \|\| echo "0")` | FULL | gather only. NOTE the failure shape: when the gather fails or matches nothing, `grep -c` still prints `0` and exits 1, so `\|\| echo "0"` APPENDS a second line — `TOTAL_TESTS` becomes the two-line string `0\n0`, not `0` | 157-158 |
-| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | Blocks below 300 on a WELL-FORMED count. In the gather-failure case the two-line `0\n0` is not an integer, the comparison itself errors (non-zero status), and the hook CONTINUES — the floor does NOT block on gather failure (vacuous-on-failure; repair is M-REP-B) | 159-163 |
-| 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 167-171 |
-| 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 183-187 |
-| 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 192-196 |
-| 17 | Crate docs | `cargo doc --package "$CHANGED_CRATE" --no-deps --quiet` | TARGETED | BLOCKS (`exit 1`) | 200-204 |
-| 18 | WASM gate determination | `WASM_CRATES=(...)`; `WASM_AFFECTED=true` if `RUN_FULL_TESTS=true`, else loop `CHANGED_CRATE` over `WASM_CRATES` | FULL: always; TARGETED: `CHANGED_CRATE` is one of `WASM_CRATES` | selection only (no command) | 215-228 |
-| 19 | WASM target lookup | `rustup target list --installed \| grep -q wasm32-unknown-unknown` | WASM-conditional (`WASM_AFFECTED=true`) | condition only; gates the install step | 234-237 |
-| 20 | WASM target install | `rustup target add wasm32-unknown-unknown` | WASM-conditional, only when the lookup fails | BLOCKS: unguarded, no failure branch; a non-zero exit aborts under `set -e` (L7), with no custom message | 236 (with 7) |
-| 21 | WASM `amari-wasm`, full | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + FULL | BLOCKS (`exit 1`) | 242-246 |
-| 22 | WASM per-crate loop, full | `cargo check --package "$crate" --target wasm32-unknown-unknown --quiet 2>/dev/null` for `$crate` in `WASM_CRATES` **excluding `amari-wasm` and `amari`** | WASM-conditional + FULL + loop | TOLERATED (warning echo only; no `exit 1`) | 248-255 |
-| 23 | WASM `amari-wasm`, targeted | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + TARGETED + `CHANGED_CRATE=amari-wasm` | BLOCKS (`exit 1`) | 258-263 |
-| 24 | WASM changed crate, targeted | `cargo check --package "$CHANGED_CRATE" --target wasm32-unknown-unknown --quiet 2>/dev/null` | WASM-conditional + TARGETED + `CHANGED_CRATE != amari-wasm` **and** `!= amari` | TOLERATED (warning echo only; no `exit 1`) | 264-269 |
-| 25 | `amari` (root) special case | **no WASM `cargo check` is issued** | WASM-conditional | full: excluded by the loop condition (L250); targeted: the `elif [ "$CHANGED_CRATE" != "amari" ]` guard (L264) skips the check. The WASM banner and target-install step still run | 250, 264 |
+| 7 | `geometric_axioms` suite | `bash scripts/verify-named-suite.sh amari-core geometric_axioms` + 6 approved names | FULL | **ASSERTED** (`passed >= 1`, `ignored == 0`, exact inventory); BLOCKS (`exit 1`) | 128-139 |
+| 8 | `semiring_contracts` suite (was `semiring_axioms`) | `bash scripts/verify-named-suite.sh --features contracts amari-tropical semiring_contracts` + 2 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 142-149 |
+| 9 | Phantom contracts, core | `bash scripts/verify-named-suite.sh --features formal-verification amari-core verified_contracts` + 4 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 152-160 |
+| 10 | Phantom contracts, tropical | `bash scripts/verify-named-suite.sh --features contracts amari-tropical verified_contracts` + 5 approved names | FULL | **ASSERTED**; BLOCKS (`exit 1`) | 161-170 |
+| 11 | Phantom contracts, network | **REMOVED (M-REP-B)** — the module has no `#[test]` functions even with `--features formal-verification`; the former tolerated invocation silently selected 0 tests | — | — | — |
+| 12 | Coverage gather | `COVERAGE_LIST=$(cargo test --workspace --lib --bins -- --list 2>/dev/null) \|\| COVERAGE_STATUS=$?`; `exit 1` if `COVERAGE_STATUS != 0`; else `TOTAL_TESTS=$(printf '%s\n' "$COVERAGE_LIST" \| grep -c ": test$" \|\| true)` with `[ -z "$TOTAL_TESTS" ] && TOTAL_TESTS=0` | FULL | **[CORRECTED 2026-10-15, M-REP-B; HARDENED R1]** The former hook shape used `grep -c "test "` — a pattern that matched none of the `name: test` list lines, so its count was 0 — with `\|\| echo "0"`, which on failure appended a second `0` (two-line `0\n0`). The gather now captures cargo's listing **and its exit status separately**, fails closed (`exit 1`) on any nonzero status, and otherwise yields a single well-formed integer; a zero-match success is normalized to `0` | 178-190 |
+| 13 | Coverage floor | `[ "$TOTAL_TESTS" -lt 300 ]` | FULL | **[CORRECTED 2026-10-15, M-REP-B; HARDENED R1]** Blocks a well-formed count below 300. Gather failure does **not** reach the floor: it exits 1 in the gather itself. The M-REP-A table described the OLD vacuous-on-failure shape; R1 review disproved the claim that failure was normalized to `0` (it held only for failure before any matching output), so the status is now captured explicitly. Evidence: `docs/plans/core-matrix-evidence/mrep-b/green/r1/` | 191-195 |
+| 14 | Workspace docs | `cargo doc --workspace --no-deps --quiet` | FULL | BLOCKS (`exit 1`) | 199-203 |
+| 15 | Crate tests | `cargo test --package "$CHANGED_CRATE" --quiet` | TARGETED (`CHANGED_CRATE` set) | BLOCKS (`exit 1`) | 215-219 |
+| 16 | Crate doctests | `cargo test --package "$CHANGED_CRATE" --doc --quiet 2>/dev/null` | TARGETED | TOLERATED (`if`-failure prints warning; `else` prints success) | 224-228 |
+| 17 | Crate docs | `cargo doc --package "$CHANGED_CRATE" --no-deps --quiet` | TARGETED | BLOCKS (`exit 1`) | 232-236 |
+| 18 | WASM gate determination | `WASM_CRATES=(...)`; `WASM_AFFECTED=true` if `RUN_FULL_TESTS=true`, else loop `CHANGED_CRATE` over `WASM_CRATES` | FULL: always; TARGETED: `CHANGED_CRATE` is one of `WASM_CRATES` | selection only (no command) | 248-257 |
+| 19 | WASM target lookup | `rustup target list --installed \| grep -q wasm32-unknown-unknown` | WASM-conditional (`WASM_AFFECTED=true`) | condition only; gates the install step | 266-268 |
+| 20 | WASM target install | `rustup target add wasm32-unknown-unknown` | WASM-conditional, only when the lookup fails | BLOCKS: unguarded, no failure branch; a non-zero exit aborts under `set -e` (L7), with no custom message | 268 (with 7) |
+| 21 | WASM `amari-wasm`, full | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + FULL | BLOCKS (`exit 1`) | 274-278 |
+| 22 | WASM per-crate loop, full | `cargo check --package "$crate" --target wasm32-unknown-unknown --quiet 2>/dev/null` for `$crate` in `WASM_CRATES` **excluding `amari-wasm` and `amari`** | WASM-conditional + FULL + loop | TOLERATED (warning echo only; no `exit 1`) | 281-287 |
+| 23 | WASM `amari-wasm`, targeted | `cargo check --package amari-wasm --target wasm32-unknown-unknown --quiet` | WASM-conditional + TARGETED + `CHANGED_CRATE=amari-wasm` | BLOCKS (`exit 1`) | 290-295 |
+| 24 | WASM changed crate, targeted | `cargo check --package "$CHANGED_CRATE" --target wasm32-unknown-unknown --quiet 2>/dev/null` | WASM-conditional + TARGETED + `CHANGED_CRATE != amari-wasm` **and** `!= amari` | TOLERATED (warning echo only; no `exit 1`) | 296-301 |
+| 25 | `amari` (root) special case | **no WASM `cargo check` is issued** | WASM-conditional | full: excluded by the loop condition (L282); targeted: the `elif [ "$CHANGED_CRATE" != "amari" ]` guard (L296) skips the check. The WASM banner and target-install step still run | 282, 296 |
 
 Source semantics for the WASM rows: `amari-wasm` is the only crate whose WASM
 check **blocks** (rows 21, 23); every other checked crate is **TOLERATED**
@@ -54,13 +64,13 @@ workspace-level changed files (`Cargo.toml`, `.githooks`, `.github`,
 `scripts`; L30), OR no crate changes (`CRATE_COUNT=0`), OR more than one
 changed crate (`CRATE_COUNT>1`) → **FULL**; otherwise exactly one changed
 crate → **TARGETED** with `CHANGED_CRATE` set (L55-61). The targeted branch
-prints a reminder that the full suite runs in CI/CD (L208).
+prints a reminder that the full suite runs in CI/CD (L231).
 
-**WASM gate** (script lines 215-228): `WASM_AFFECTED=true` whenever the FULL
+**WASM gate** (script lines 215-228 → current 238-251): `WASM_AFFECTED=true` whenever the FULL
 branch runs; in the TARGETED branch it is true only when `CHANGED_CRATE` is
 one of `WASM_CRATES` = `amari amari-core amari-tropical amari-dual
 amari-network amari-relativistic amari-info-geom amari-enumerative
-amari-fusion amari-automata amari-wasm` (L216). The WASM validation block
+amari-fusion amari-automata amari-wasm` (L239). The WASM validation block
 (target lookup/install and the checks in rows 19-25) runs only when
 `WASM_AFFECTED=true`.
 
@@ -118,6 +128,16 @@ for the per-check branch and failure handling.
    - All documentation compiles
    - Doc examples are tested
 
+6. **Named algebraic suites** (`scripts/verify-named-suite.sh`)
+   - `amari-core geometric_axioms` (default features),
+     `amari-tropical semiring_contracts` (`--features contracts`), and the
+     `verified_contracts` suites for `amari-core`
+     (`--features formal-verification`) and `amari-tropical`
+     (`--features contracts`)
+   - Each carries an approved test-name inventory and asserts `passed >= 1`
+     and `ignored == 0`; a filter that selects nothing fails the hook instead
+     of reporting a vacuous pass
+
 ## 🚦 Test enforcement workflow
 
 ### Normal commit flow
@@ -129,6 +149,7 @@ git commit -m "feat: implement new mathematical operation"
 # ✅ Clippy lints                      (both branches, workspace)
 # ✅ Core test suites                  (FULL: all crates; TARGETED: changed crate)
 # ✅ formal-verification feature suites (FULL branch only)
+# ✅ Named algebraic suites           (FULL branch only; inventory + non-vacuity asserted)
 # ✅ Documentation build               (FULL: workspace; TARGETED: changed crate)
 # Commit proceeds if the branch's in-scope checks pass.
 # The TARGETED branch tolerates crate doctest failures and skips the formal suite
@@ -153,7 +174,25 @@ git commit --no-verify -m "emergency: critical security fix"
 
 ## 📊 Test coverage standards
 
-The enforcement system gates on the test suites and reports coverage counts:
+The enforcement system gates on the test suites and reports coverage counts.
+The workspace coverage floor is computed by the pre-commit hook and by
+`mathematical-correctness.yml` as a count of executed test names
+(`cargo test --workspace --lib --bins -- --list | grep -c ": test$"`).
+**[CORRECTED 2026-10-15, M-REP-B]** the hook previously counted with a
+`"test "` pattern that matched none of the `name: test` list lines, so its
+gather returned `0` on every run, and the `\|\| echo "0"` failure fallback
+appended a second `0`, making `[ "$TOTAL_TESTS" -lt 300 ]` error out instead of
+blocking. The gather now captures cargo's listing **and its exit status
+separately**, fails closed (`exit 1`) on any nonzero status, and otherwise
+yields a single well-formed integer; the ≥300 floor then blocks a low count.
+**[HARDENED 2026-10-15, M-REP-B review R1]** the first repair still piped
+cargo into `grep`, so a partial listing followed by a failed target produced
+more than 300 records and passed; the review disproved the claim that gather
+failure was normalized to `0`. Cargo's status is now captured separately and
+any nonzero status blocks irrespective of records emitted. Evidence:
+`docs/plans/core-matrix-evidence/mrep-b/green/coverage-floor-repair.log`,
+`green/r1/coverage-floor-repair-r1.log`, and
+`green/r1/mrep-b-negative-batteries.log`.
 
 ### Test count targets
 - **amari-core**: 140+ tests covering geometric algebra operations
@@ -174,7 +213,7 @@ much code they exercise. They are not a measure of proved mathematics.
 
 ## 🔬 Formal-annotation compatibility
 
-The `formal-verification` feature suites specifically check that:
+The `formal-verification`/`contracts` feature suites specifically check that:
 
 ### Mathematical properties are exercised
 - **Associativity**: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)` on the tested inputs
@@ -198,9 +237,13 @@ associative at extremes: for scalar `f64` `a = b = 1e308`, `c = 0`,
   compile
 - **Information geometry annotations**: manifold contract annotations compile
 
-A green `formal-verification` run means the annotations compile and the
-compatibility suites pass; it does not mean any contract was translated to a
-prover or discharged.
+A green `formal-verification` (or `contracts`) run means the annotations compile
+and the compatibility suites pass; it does not mean any contract was translated
+to a prover or discharged. The two crates gate the `verified_contracts` module
+differently: `amari-core` uses `formal-verification` directly, while
+`amari-tropical` declares `#[cfg(feature = "contracts")]` (and `contracts`
+enables `formal-verification`). Named-suite invocations therefore pass the
+feature each crate actually requires.
 
 ## 📈 Benefits
 
@@ -222,7 +265,9 @@ prover or discharged.
 - **Reproducible execution**: the hook's FULL-branch checks and CI share
   overlapping definitions; the TARGETED branch is a strict subset, and local
   coverage is NOT identical to CI (see the table above and `MATHEMATICAL_RIGOR.md`)
-- **Trustworthy foundation**: exercised behavior is protected
+- **Trustworthy foundation**: exercised behavior is protected; advertised
+  named suites assert non-vacuity and an approved test-name inventory, so a
+  filter that selects nothing fails rather than passing silently
 - **Type-level safety**: phantom types give compile-time type constraints
 
 ## 🛠️ Troubleshooting
