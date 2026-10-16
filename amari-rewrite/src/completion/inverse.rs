@@ -32,7 +32,7 @@
 //! and exhausting that budget is a typed
 //! [`crate::RewriteError::RelationLimitExceeded`] error.
 
-use alloc::collections::{BTreeMap, BTreeSet, VecDeque};
+use alloc::collections::{BTreeSet, VecDeque};
 use alloc::vec::Vec;
 
 use crate::analysis::Precedence;
@@ -206,23 +206,20 @@ pub fn guided_predecessors(
         });
     }
 
-    // Original-system replay: index every predecessor the original
-    // system reaches backward from `target` by its alpha-canonical
-    // digest, carrying the forward derivation.
-    let (original_candidates, original_cut) =
-        bounded_backward(original, target, config, resources)?;
-    let original_index: BTreeMap<Sha256Digest, Vec<Term>> = original_candidates
-        .into_iter()
-        .map(|candidate| (canonical(&candidate.term), candidate.forward_path))
-        .collect();
-
+    // Original-system replay: verify THE ACTUAL CANDIDATE by
+    // directed derivability to the target under the original
+    // system. An alpha-canonical index lookup conflates variable
+    // identities (f(x,z) vs f(z,y)) and would accept candidates
+    // whose real derivation misses the target (PR #312 round 1);
+    // directed_path preserves variable identity and returns the
+    // candidate's own derivation.
     let mut verified: Option<Vec<Term>> = None;
     let mut rejected: Vec<CandidateRejection> = Vec::new();
     for candidate in completed_candidates {
-        match original_index.get(&canonical(&candidate.term)) {
+        match directed_path(original, &candidate.term, target, resources)? {
             Some(path) => {
                 if verified.is_none() {
-                    verified = Some(path.clone());
+                    verified = Some(path);
                 }
             }
             None => rejected.push(CandidateRejection::NotAnOriginalPredecessor {
@@ -237,9 +234,10 @@ pub fn guided_predecessors(
             candidates_rejected: rejected,
         });
     }
-    if original_cut {
-        // The original replay was cut before it could decide: absence
-        // of a match is not a rejection of the candidates.
+    if completed_cut {
+        // The completed-system search was cut: candidates may be
+        // missing, so absence of a verified witness is inconclusive,
+        // never a negative claim.
         return Ok(GuidedSearchOutcome::Inconclusive {
             reason: InconclusiveReason::BudgetCut,
             candidates_rejected: rejected,
@@ -275,7 +273,11 @@ pub fn verify_equivalence(
     for rule in a.rules() {
         let lhs_normal = metered_normalize(b_convergent, rule.lhs(), resources)?;
         let rhs_normal = metered_normalize(b_convergent, rule.rhs(), resources)?;
-        if canonical(&lhs_normal) != canonical(&rhs_normal) {
+        // Joint canonicalization: the two normal forms share one
+        // renaming, so x and y stay distinct — independent per-side
+        // canonicalization falsely equated them (PR #312 round 1).
+        let digests = Sha256Digest::canonical_terms(CANONICAL_FRAME, &[&lhs_normal, &rhs_normal]);
+        if digests[0] != digests[1] {
             return Ok(None);
         }
         a_normal_form_witnesses.push((lhs_normal, rhs_normal));
@@ -304,16 +306,18 @@ pub fn verify_equivalence(
     }))
 }
 
-/// One candidate predecessor together with its forward derivation.
+/// One candidate predecessor from the completed system.
 struct Candidate {
     term: Term,
-    forward_path: Vec<Term>,
 }
+
+/// Frame label for completion-inverse canonical digests.
+const CANONICAL_FRAME: &str = "amari.completion.inverse.term/v1";
 
 /// Alpha-canonical digest of a term under the completion-inverse
 /// frame.
 fn canonical(term: &Term) -> Sha256Digest {
-    Sha256Digest::canonical_term("amari.completion.inverse.term/v1", term)
+    Sha256Digest::canonical_term(CANONICAL_FRAME, term)
 }
 
 /// Bounded backward breadth-first enumeration.
@@ -337,13 +341,12 @@ fn bounded_backward(
 
     let mut visited: BTreeSet<Sha256Digest> = BTreeSet::new();
     visited.insert(canonical(target));
-    let mut queue: VecDeque<(Term, Vec<Term>)> = VecDeque::new();
-    queue.push_back((target.clone(), alloc::vec![target.clone()]));
+    let mut queue: VecDeque<(Term, u64)> = VecDeque::new();
+    queue.push_back((target.clone(), 0));
     let mut candidates: Vec<Candidate> = Vec::new();
     let mut cut = false;
 
-    while let Some((term, path)) = queue.pop_front() {
-        let depth = (path.len() - 1) as u64;
+    while let Some((term, depth)) = queue.pop_front() {
         if depth >= max_depth {
             cut = true;
             continue;
@@ -356,14 +359,10 @@ fn bounded_backward(
                 cut = true;
                 break;
             }
-            let mut forward_path = Vec::with_capacity(path.len() + 1);
-            forward_path.push(predecessor.clone());
-            forward_path.extend(path.iter().cloned());
             candidates.push(Candidate {
                 term: predecessor.clone(),
-                forward_path: forward_path.clone(),
             });
-            queue.push_back((predecessor, forward_path));
+            queue.push_back((predecessor, depth + 1));
         }
         if cut {
             break;
@@ -458,15 +457,19 @@ fn directed_path(
 ) -> RewriteResult<Option<Vec<Term>>> {
     let (nodes, depth) = shape_of(start);
     resources.record_term(nodes, depth)?;
-    let goal_digest = canonical(goal);
-    if canonical(start) == goal_digest {
+    // Variable identity is FIXED within one derivation (rewriting
+    // never renames), so the goal check and visited keys use exact
+    // structural equality — alpha-canonical keys would conflate
+    // distinct variables (PR #312 round 1: f(x,y)->x falsely
+    // "derived" y).
+    if start == goal {
         return Ok(Some(alloc::vec![start.clone()]));
     }
     // Directed derivability is bounded by the fixed term-depth
     // ceiling; the shared operation budget is the tighter bound.
     let max_depth = RelationLimits::MAX_TERM_DEPTH as u64;
-    let mut visited: BTreeSet<Sha256Digest> = BTreeSet::new();
-    visited.insert(canonical(start));
+    let mut visited: BTreeSet<Term> = BTreeSet::new();
+    visited.insert(start.clone());
     let mut queue: VecDeque<(Term, Vec<Term>)> = VecDeque::new();
     queue.push_back((start.clone(), alloc::vec![start.clone()]));
 
@@ -476,15 +479,16 @@ fn directed_path(
             continue;
         }
         for successor in one_step_successors(system, &term, resources)? {
-            let digest = canonical(&successor);
-            if !visited.insert(digest) {
+            if successor == *goal {
+                let mut next_path = path.clone();
+                next_path.push(successor);
+                return Ok(Some(next_path));
+            }
+            if !visited.insert(successor.clone()) {
                 continue;
             }
             let mut next_path = path.clone();
             next_path.push(successor.clone());
-            if digest == goal_digest {
-                return Ok(Some(next_path));
-            }
             queue.push_back((successor, next_path));
         }
     }
@@ -504,14 +508,13 @@ fn metered_normalize(
     let (nodes, depth) = shape_of(term);
     resources.record_term(nodes, depth)?;
     let mut current = term.clone();
+    // step_once charges every rule attempt and validates the
+    // replacement shape BEFORE materialization — apply_once would
+    // build an over-limit replacement first (PR #312 round 1).
     loop {
         resources.record_operations(1)?;
-        match system.apply_once(&current)? {
-            Some(next) => {
-                let (nodes, depth) = shape_of(&next);
-                resources.record_term(nodes, depth)?;
-                current = next;
-            }
+        match super::step_once(system, &current, resources)? {
+            Some(next) => current = next,
             None => return Ok(current),
         }
     }

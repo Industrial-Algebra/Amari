@@ -398,7 +398,7 @@ fn normalize(
 /// [`Term::replace_at`] constructs it, and the replacement is built
 /// with [`Substitution::apply_matcher`] so match bindings are never
 /// chain-resolved.
-fn step_once(
+pub(crate) fn step_once(
     system: &TermSystem,
     term: &Term,
     resources: &mut RelationResources,

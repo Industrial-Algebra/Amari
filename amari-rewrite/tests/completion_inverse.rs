@@ -16,6 +16,7 @@ use amari_rewrite::completion::inverse::{
     guided_predecessors, prepare_guidance, verify_equivalence, CandidateRejection,
     CompletionGuidance, GuidedSearchOutcome, InconclusiveReason,
 };
+use amari_rewrite::completion::CompletionTrace;
 use amari_rewrite::inverse::InverseSearchConfig;
 use amari_rewrite::relation::{RelationLimits, RelationResources};
 use amari_rewrite::trs::{Rule, Symbol, Term, TermSystem};
@@ -393,4 +394,96 @@ fn guided_search_is_deterministic() {
     )
     .expect("guided search runs");
     assert_eq!(first, second);
+}
+
+/// PR #312 round 1 P1: equivalence certificates must preserve
+/// variable identity — {f(x,y)->x} and {f(x,y)->y} are NOT
+/// equivalent (independent canonicalization conflated x with y).
+#[test]
+fn equivalence_certificate_distinguishes_variables() {
+    let a = TermSystem::new(vec![rule(
+        Term::sym("f", [Term::var("x"), Term::var("y")]),
+        Term::var("x"),
+    )]);
+    let b = TermSystem::new(vec![rule(
+        Term::sym("f", [Term::var("x"), Term::var("y")]),
+        Term::var("y"),
+    )]);
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let certificate = verify_equivalence(&a, &b, &mut resources).expect("typed outcome");
+    assert!(
+        certificate.is_none(),
+        "x-projecting and y-projecting systems are not equivalent"
+    );
+}
+
+/// PR #312 round 1 P2: a candidate valid in the completed system
+/// but not derivable in the original must be REJECTED — alpha-only
+/// lookup accepted f(x,z) whose original successor is g(x).
+#[test]
+fn candidate_preserving_target_variables_is_verified_exactly() {
+    let original = TermSystem::new(vec![rule(
+        Term::sym("f", [Term::var("x"), Term::var("y")]),
+        Term::sym("g", [Term::var("x")]),
+    )]);
+    // Tampered "completed" system (public guidance fields): sends
+    // the candidate down the WRONG variable.
+    let tampered = TermSystem::new(vec![rule(
+        Term::sym("f", [Term::var("x"), Term::var("y")]),
+        Term::sym("g", [Term::var("y")]),
+    )]);
+    let guidance = CompletionGuidance {
+        completed: tampered,
+        trace: CompletionTrace::default(),
+    };
+    let config = InverseSearchConfig::default();
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let outcome = guided_predecessors(
+        &original,
+        &guidance,
+        &Term::sym("g", [Term::var("z")]),
+        &config,
+        &mut resources,
+    )
+    .expect("typed outcome");
+    assert!(
+        !matches!(outcome, GuidedSearchOutcome::VerifiedWitness { .. }),
+        "no witness may verify through the wrong variable: {outcome:?}"
+    );
+}
+
+/// PR #312 round 1 P2: normalization must charge the replacement
+/// shape BEFORE materialization and meter individual rule attempts
+/// — a 3,000-ary expansion past the node ceiling is a typed error
+/// with observable per-attempt accounting.
+#[test]
+fn normalization_charges_before_materializing_expansions() {
+    // `a`'s ground rule side f(g(a)) is normalized under `b`'s
+    // exploding rule f(x) -> h(x, ..., x): the replacement is
+    // 6,001 nodes — over the 4,096 ceiling.
+    let big_rhs = Term::sym("h", vec![Term::var("x"); 3_000]);
+    // Decoy j-rule in `b` so the exploding f-rule is the SECOND
+    // attempt at the root — per-attempt metering is observable.
+    let b = TermSystem::new(vec![
+        rule(Term::sym("j", [Term::var("x")]), Term::var("x")),
+        rule(Term::sym("f", [Term::var("x")]), big_rhs),
+    ]);
+    let a = TermSystem::new(vec![rule(
+        Term::sym("f", [Term::sym("g", [Term::constant("a")])]),
+        Term::constant("c"),
+    )]);
+    let mut resources = RelationResources::new(&RelationLimits::default());
+    let outcome = verify_equivalence(&a, &b, &mut resources);
+    assert!(
+        matches!(outcome, Err(RewriteError::RelationLimitExceeded { .. })),
+        "expected typed limit, got {outcome:?}"
+    );
+    // Per-attempt metering: the decoy j-rule and the exploding
+    // f-rule attempts at the root are each charged. Unmetered
+    // apply_once charged only the loop iteration (1 op).
+    assert!(
+        resources.operations() >= 3,
+        "individual rule attempts must be metered, got {}",
+        resources.operations()
+    );
 }
