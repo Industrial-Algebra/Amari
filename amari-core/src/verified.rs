@@ -6,6 +6,17 @@
 //! intended contracts only; ordinary builds compile them to nothing (see
 //! the CORE-D07 matrix: C1 — annotation compatibility, not proof), and
 //! discharged proof obligations are a separate pre-1.0 gate (C3/C4).
+//!
+//! ## Finiteness: a construction-time guarantee only
+//!
+//! Every coefficient-taking constructor rejects non-finite values
+//! (`NaN`, `±inf`). Unchecked arithmetic (`add`, `geometric_product`,
+//! `apply_to_multivector`) is deliberately infallible and MAY overflow
+//! finite inputs to `±inf` or produce `NaN` (`inf + (-inf)`). To restore
+//! the invariant after unchecked arithmetic, revalidate with
+//! [`VerifiedMultivector::new`] (returns `Err` on non-finite coefficients)
+//! or use the fallible `verified_*` wrappers in `verified_contracts`,
+//! which reject non-finite results.
 
 use num_traits::{Float, One, Zero};
 use std::marker::PhantomData;
@@ -601,9 +612,27 @@ where
     pub fn compose(&self, other: &Self) -> Result<Self, &'static str> {
         let composed = self.multivector.geometric_product(&other.multivector);
 
-        // Reject a zero or non-finite normalization denominator explicitly;
-        // dividing by it would produce `NaN`/`inf` coefficients.
-        let norm = Self::compute_norm(&composed);
+        // Scale-first normalization (R2): with a wide coefficient spread
+        // (e.g. a subnormal-dominated product) the naive sum of squares
+        // underflows and the normalized result silently violates the
+        // tolerance (observed norm 0.73 on the s/sqrt(2), t=2.3e-162
+        // fixture). Compute the norm relative to the largest coefficient.
+        let scale = composed
+            .coefficients
+            .iter()
+            .fold(T::zero(), |m, c| m.max(c.abs()));
+        if scale.is_zero() || !scale.is_finite() {
+            return Err("composition is degenerate");
+        }
+        let sum: T = composed
+            .coefficients
+            .iter()
+            .map(|c| {
+                let r = *c / scale;
+                r * r
+            })
+            .fold(T::zero(), |acc, x| acc + x);
+        let norm = scale * sum.sqrt();
         if norm.is_zero() || !norm.is_finite() {
             return Err("composition is degenerate");
         }
@@ -611,10 +640,10 @@ where
         let normalized =
             VerifiedMultivector::new(composed.coefficients.iter().map(|c| *c / norm).collect())?;
 
-        Ok(Self {
-            multivector: normalized,
-            _rotor_invariant: PhantomData,
-        })
+        // Revalidate through the rotor constructor — the even-grade +
+        // tolerance checks are the output gate (R2: do not construct
+        // directly).
+        Self::new(normalized)
     }
 
     /// Apply rotor to a multivector (rotation/reflection)
@@ -1081,5 +1110,40 @@ mod tests {
             let mv = VerifiedMultivector::<f64, 3, 0, 0>::scalar(1.0).unwrap();
             let _ = verified_scalar_mult(f64::NAN, &mv);
         }
+    }
+}
+
+#[cfg(test)]
+mod mrepc_r2_tests {
+    use super::*;
+
+    #[test]
+    fn compose_subnormal_spread_normalizes_within_tolerance() {
+        // R2 fixture: accepted Cl(2,1,0) rotors with s-scale and subnormal
+        // t-scale components. The naive sum-of-squares underflowed (the
+        // t^2 ~ 2.6e-324 subnormals were lost against the s^2 ~ 0.5 terms
+        // after cancellation), yielding Ok(norm 0.73) outside [0.9999,1.0001].
+        let s = std::f64::consts::FRAC_1_SQRT_2;
+        let t = 2.3e-162_f64;
+        // unit-norm even-grade rotors carrying a subnormal e13 component:
+        // norm^2 = 1/2 + 1/2 + t^2 = 1 (t^2 negligible)
+        let mv_a = VerifiedMultivector::<f64, 2, 1, 0>::new(vec![s, 0.0, 0.0, s, 0.0, t, 0.0, 0.0])
+            .unwrap();
+        let mv_b =
+            VerifiedMultivector::<f64, 2, 1, 0>::new(vec![s, 0.0, 0.0, -s, 0.0, t, 0.0, 0.0])
+                .unwrap();
+        let ra = VerifiedRotor::new(mv_a).unwrap();
+        let rb = VerifiedRotor::new(mv_b).unwrap();
+        // the s-scale components cancel in the product; the surviving
+        // t-scale terms must normalize robustly
+        let rc = match ra.compose(&rb) {
+            Ok(r) => r,
+            Err(e) => panic!("subnormal-spread compose must not be degenerate: {e}"),
+        };
+        let norm_c = VerifiedRotor::<f64, 2, 1, 0>::compute_norm(&rc.multivector);
+        assert!(
+            (norm_c - 1.0).abs() <= 1e-4,
+            "norm {norm_c} outside tolerance"
+        );
     }
 }

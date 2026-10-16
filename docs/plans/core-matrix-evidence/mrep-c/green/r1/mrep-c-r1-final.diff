@@ -695,7 +695,7 @@ index d91824f..c6ce49b 100644
 --- a/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-default-test.log
 +++ b/docs/plans/core-matrix-evidence/mrep-c/green/amari-core-default-test.log
 @@ -1,4 +1,4 @@
--   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/amari-core)
+-   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-mrep-c/amari-core)
 +   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-mrep-c/amari-core)
      Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
       Running unittests src/lib.rs (target/mrepc/debug/deps/amari_core-a35530a3f2975921)
@@ -707,7 +707,7 @@ index 1a267d0..6c40246 100644
 @@ -1,6 +1,6 @@
      Blocking waiting for file lock on package cache
      Blocking waiting for file lock on package cache
--   Compiling amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/amari-core)
+-   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-mrep-c/amari-core)
 +   Compiling amari-core v0.24.1 ($AMARI/.worktrees/core-mrep-c/amari-core)
      Finished `test` profile [unoptimized + debuginfo] target(s) in 0.85s
       Running unittests src/lib.rs (target/mrepc/debug/deps/amari_core-d578302cee61e512)
@@ -719,7 +719,7 @@ index b097336..e31ec1a 100644
 @@ -1,3 +1,3 @@
      Blocking waiting for file lock on package cache
      Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
--   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/target/mrepc/doc/amari_core/index.html
+-   Generated $AMARI/.worktrees/core-mrep-c/target/mrepc/doc/amari_core/index.html
 +   Generated $AMARI/.worktrees/core-mrep-c/target/mrepc/doc/amari_core/index.html
 diff --git a/docs/plans/core-matrix-evidence/mrep-c/green/r1/recipe-env.txt b/docs/plans/core-matrix-evidence/mrep-c/green/r1/recipe-env.txt
 new file mode 100644
@@ -854,14 +854,14 @@ index d413f00..e307f5b 100644
 --- a/docs/plans/core-matrix-evidence/mrep-c/green/recipe-env.txt
 +++ b/docs/plans/core-matrix-evidence/mrep-c/green/recipe-env.txt
 @@ -1,9 +1,9 @@
--RUSTC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
--RUSTDOC=/home/lucien/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
+-RUSTC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
+-RUSTDOC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
 +RUSTC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc
 +RUSTDOC=$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc
  RUSTC_WRAPPER=''
  RUSTC_WORKSPACE_WRAPPER=''
  RUSTFLAGS=-C target-cpu=x86-64 -C target-feature=-avx2
--CARGO_TARGET_DIR=/home/lucien/working/industrial-algebra/Amari/.worktrees/core-mrep-c/target/mrepc
+-CARGO_TARGET_DIR=$AMARI/.worktrees/core-mrep-c/target/mrepc
 +CARGO_TARGET_DIR=$AMARI/.worktrees/core-mrep-c/target/mrepc
  RUSTUP_TOOLCHAIN=stable (for scripts/verify-named-suite.sh, which invokes plain `cargo`)
  pinned: cargo +stable (rust-toolchain.toml pins nightly; stable Cargo used per M-REP-A, nightly clippy-driver forwards -Z flags stable rustc rejects)
