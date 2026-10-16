@@ -2169,6 +2169,59 @@
       ]
     },
     {
+      "path": "amari_rewrite::completion::CandidateRejection",
+      "kind": "enum",
+      "signature": "pub enum CandidateRejection",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NotAnOriginalPredecessor",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "predecessor",
+                  "ty": "Term"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum CandidateRejection",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NotAnOriginalPredecessor",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "predecessor",
+                      "ty": "Term"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "CandidateRejection"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::completion::CompletionConfig",
       "kind": "struct",
       "signature": "pub struct CompletionConfig",
@@ -2221,6 +2274,51 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::completion::config",
           "declaration_ident": "CompletionConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionGuidance",
+      "kind": "struct",
+      "signature": "pub struct CompletionGuidance",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "completed",
+            "ty": "TermSystem"
+          },
+          {
+            "label": "trace",
+            "ty": "CompletionTrace"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CompletionGuidance",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "completed",
+                "ty": "TermSystem"
+              },
+              {
+                "label": "trace",
+                "ty": "CompletionTrace"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "CompletionGuidance"
         }
       ]
     },
@@ -2444,6 +2542,176 @@
       ]
     },
     {
+      "path": "amari_rewrite::completion::GuidedSearchOutcome",
+      "kind": "enum",
+      "signature": "pub enum GuidedSearchOutcome",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "VerifiedWitness",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "path",
+                  "ty": "Vec < Term >"
+                },
+                {
+                  "name": "candidates_rejected",
+                  "ty": "Vec < CandidateRejection >"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NoVerifiedWitness",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "candidates_rejected",
+                  "ty": "Vec < CandidateRejection >"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Inconclusive",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "InconclusiveReason"
+                },
+                {
+                  "name": "candidates_rejected",
+                  "ty": "Vec < CandidateRejection >"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum GuidedSearchOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "VerifiedWitness",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "path",
+                      "ty": "Vec < Term >"
+                    },
+                    {
+                      "name": "candidates_rejected",
+                      "ty": "Vec < CandidateRejection >"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NoVerifiedWitness",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "candidates_rejected",
+                      "ty": "Vec < CandidateRejection >"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Inconclusive",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "InconclusiveReason"
+                    },
+                    {
+                      "name": "candidates_rejected",
+                      "ty": "Vec < CandidateRejection >"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "GuidedSearchOutcome"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::InconclusiveReason",
+      "kind": "enum",
+      "signature": "pub enum InconclusiveReason",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoCandidatesGenerated",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "BudgetCut",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InconclusiveReason",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NoCandidatesGenerated",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "BudgetCut",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "InconclusiveReason"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::completion::PartialReason",
       "kind": "enum",
       "signature": "pub enum PartialReason",
@@ -2517,6 +2785,112 @@
           "is_reexport": false,
           "declaration_module": "amari_rewrite::completion",
           "declaration_ident": "PartialReason"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::RelationEquivalenceCertificate",
+      "kind": "struct",
+      "signature": "pub struct RelationEquivalenceCertificate",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "a_hash",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "b_hash",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "a_normal_form_witnesses",
+            "ty": "Vec < (Term , Term) >"
+          },
+          {
+            "label": "b_derivations",
+            "ty": "Vec < RuleDerivation >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RelationEquivalenceCertificate",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "a_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "b_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "a_normal_form_witnesses",
+                "ty": "Vec < (Term , Term) >"
+              },
+              {
+                "label": "b_derivations",
+                "ty": "Vec < RuleDerivation >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "RelationEquivalenceCertificate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::RuleDerivation",
+      "kind": "struct",
+      "signature": "pub struct RuleDerivation",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "equation",
+            "ty": "(Term , Term)"
+          },
+          {
+            "label": "path",
+            "ty": "Vec < Term >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RuleDerivation",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "equation",
+                "ty": "(Term , Term)"
+              },
+              {
+                "label": "path",
+                "ty": "Vec < Term >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "RuleDerivation"
         }
       ]
     },
@@ -2653,6 +3027,494 @@
           "is_reexport": false,
           "declaration_module": "amari_rewrite::completion",
           "declaration_ident": "complete"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::guided_predecessors",
+      "kind": "fn",
+      "signature": "pub fn guided_predecessors (original : & TermSystem , guidance : & CompletionGuidance , target : & Term , config : & InverseSearchConfig , resources : & mut RelationResources ,) -> RewriteResult < GuidedSearchOutcome >",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn guided_predecessors (original : & TermSystem , guidance : & CompletionGuidance , target : & Term , config : & InverseSearchConfig , resources : & mut RelationResources ,) -> RewriteResult < GuidedSearchOutcome >",
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "guided_predecessors"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::CandidateRejection",
+      "kind": "enum",
+      "signature": "pub enum CandidateRejection",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NotAnOriginalPredecessor",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "predecessor",
+                  "ty": "Term"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum CandidateRejection",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NotAnOriginalPredecessor",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "predecessor",
+                      "ty": "Term"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "CandidateRejection"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::CompletionGuidance",
+      "kind": "struct",
+      "signature": "pub struct CompletionGuidance",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "completed",
+            "ty": "TermSystem"
+          },
+          {
+            "label": "trace",
+            "ty": "CompletionTrace"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CompletionGuidance",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "completed",
+                "ty": "TermSystem"
+              },
+              {
+                "label": "trace",
+                "ty": "CompletionTrace"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "CompletionGuidance"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::GuidedSearchOutcome",
+      "kind": "enum",
+      "signature": "pub enum GuidedSearchOutcome",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "VerifiedWitness",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "path",
+                  "ty": "Vec < Term >"
+                },
+                {
+                  "name": "candidates_rejected",
+                  "ty": "Vec < CandidateRejection >"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NoVerifiedWitness",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "candidates_rejected",
+                  "ty": "Vec < CandidateRejection >"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Inconclusive",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "InconclusiveReason"
+                },
+                {
+                  "name": "candidates_rejected",
+                  "ty": "Vec < CandidateRejection >"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum GuidedSearchOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "VerifiedWitness",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "path",
+                      "ty": "Vec < Term >"
+                    },
+                    {
+                      "name": "candidates_rejected",
+                      "ty": "Vec < CandidateRejection >"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NoVerifiedWitness",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "candidates_rejected",
+                      "ty": "Vec < CandidateRejection >"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Inconclusive",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "InconclusiveReason"
+                    },
+                    {
+                      "name": "candidates_rejected",
+                      "ty": "Vec < CandidateRejection >"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "GuidedSearchOutcome"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::InconclusiveReason",
+      "kind": "enum",
+      "signature": "pub enum InconclusiveReason",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoCandidatesGenerated",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "BudgetCut",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InconclusiveReason",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NoCandidatesGenerated",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "BudgetCut",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "InconclusiveReason"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::RelationEquivalenceCertificate",
+      "kind": "struct",
+      "signature": "pub struct RelationEquivalenceCertificate",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "a_hash",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "b_hash",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "a_normal_form_witnesses",
+            "ty": "Vec < (Term , Term) >"
+          },
+          {
+            "label": "b_derivations",
+            "ty": "Vec < RuleDerivation >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RelationEquivalenceCertificate",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "a_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "b_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "a_normal_form_witnesses",
+                "ty": "Vec < (Term , Term) >"
+              },
+              {
+                "label": "b_derivations",
+                "ty": "Vec < RuleDerivation >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "RelationEquivalenceCertificate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::RuleDerivation",
+      "kind": "struct",
+      "signature": "pub struct RuleDerivation",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "equation",
+            "ty": "(Term , Term)"
+          },
+          {
+            "label": "path",
+            "ty": "Vec < Term >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RuleDerivation",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "equation",
+                "ty": "(Term , Term)"
+              },
+              {
+                "label": "path",
+                "ty": "Vec < Term >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "RuleDerivation"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::guided_predecessors",
+      "kind": "fn",
+      "signature": "pub fn guided_predecessors (original : & TermSystem , guidance : & CompletionGuidance , target : & Term , config : & InverseSearchConfig , resources : & mut RelationResources ,) -> RewriteResult < GuidedSearchOutcome >",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn guided_predecessors (original : & TermSystem , guidance : & CompletionGuidance , target : & Term , config : & InverseSearchConfig , resources : & mut RelationResources ,) -> RewriteResult < GuidedSearchOutcome >",
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "guided_predecessors"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::prepare_guidance",
+      "kind": "fn",
+      "signature": "pub fn prepare_guidance (system : & TermSystem , precedence : Precedence , resources : & mut RelationResources ,) -> RewriteResult < Option < CompletionGuidance > >",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn prepare_guidance (system : & TermSystem , precedence : Precedence , resources : & mut RelationResources ,) -> RewriteResult < Option < CompletionGuidance > >",
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "prepare_guidance"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::verify_equivalence",
+      "kind": "fn",
+      "signature": "pub fn verify_equivalence (a : & TermSystem , b_convergent : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < Option < RelationEquivalenceCertificate > >",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn verify_equivalence (a : & TermSystem , b_convergent : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < Option < RelationEquivalenceCertificate > >",
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "verify_equivalence"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::prepare_guidance",
+      "kind": "fn",
+      "signature": "pub fn prepare_guidance (system : & TermSystem , precedence : Precedence , resources : & mut RelationResources ,) -> RewriteResult < Option < CompletionGuidance > >",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn prepare_guidance (system : & TermSystem , precedence : Precedence , resources : & mut RelationResources ,) -> RewriteResult < Option < CompletionGuidance > >",
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "prepare_guidance"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::completion::verify_equivalence",
+      "kind": "fn",
+      "signature": "pub fn verify_equivalence (a : & TermSystem , b_convergent : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < Option < RelationEquivalenceCertificate > >",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::completion::inverse",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn verify_equivalence (a : & TermSystem , b_convergent : & TermSystem , resources : & mut RelationResources ,) -> RewriteResult < Option < RelationEquivalenceCertificate > >",
+          "source_path": "amari-rewrite/src/completion/inverse.rs",
+          "source_module": "amari_rewrite::completion::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::completion::inverse",
+          "declaration_ident": "verify_equivalence"
         }
       ]
     },
@@ -15153,6 +16015,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::completion::CompletionConfig",
       "source_path": "amari-rewrite/src/completion/config.rs",
       "source_ordinal": 0,
@@ -15164,6 +16044,24 @@
         "kind": "local",
         "module": "amari_rewrite::completion::config",
         "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -15225,6 +16123,42 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
       "source_ordinal": 2,
@@ -15243,6 +16177,42 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::completion::TraceStep",
       "source_path": "amari-rewrite/src/completion/trace.rs",
       "source_ordinal": 0,
@@ -15254,6 +16224,114 @@
         "kind": "local",
         "module": "amari_rewrite::completion::trace",
         "ident": "TraceStep"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::inverse::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::inverse::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::inverse::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::inverse::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::completion::inverse::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -16847,6 +17925,42 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::completion::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::completion::inverse::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
       "source_path": "amari-rewrite/src/inverse/config.rs",
       "source_ordinal": 2,
@@ -17424,6 +18538,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::completion::CompletionConfig",
       "source_path": "amari-rewrite/src/completion/config.rs",
       "source_ordinal": 0,
@@ -17435,6 +18567,24 @@
         "kind": "local",
         "module": "amari_rewrite::completion::config",
         "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -17496,6 +18646,42 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
       "source_ordinal": 2,
@@ -17514,6 +18700,42 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::completion::TraceStep",
       "source_path": "amari-rewrite/src/completion/trace.rs",
       "source_ordinal": 0,
@@ -17525,6 +18747,114 @@
         "kind": "local",
         "module": "amari_rewrite::completion::trace",
         "ident": "TraceStep"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::inverse::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::inverse::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::inverse::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::inverse::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::completion::inverse::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -19659,6 +20989,24 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::completion::CompletionConfig",
       "source_path": "amari-rewrite/src/completion/config.rs",
       "source_ordinal": 0,
@@ -19670,6 +21018,24 @@
         "kind": "local",
         "module": "amari_rewrite::completion::config",
         "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -19731,6 +21097,42 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
       "source_ordinal": 2,
@@ -19749,6 +21151,42 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::completion::TraceStep",
       "source_path": "amari-rewrite/src/completion/trace.rs",
       "source_ordinal": 0,
@@ -19760,6 +21198,114 @@
         "kind": "local",
         "module": "amari_rewrite::completion::trace",
         "ident": "TraceStep"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::inverse::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::inverse::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::inverse::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::inverse::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::completion::inverse::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -22255,6 +23801,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::completion::CompletionConfig",
       "source_path": "amari-rewrite/src/completion/config.rs",
       "source_ordinal": 0,
@@ -22266,6 +23830,24 @@
         "kind": "local",
         "module": "amari_rewrite::completion::config",
         "ident": "CompletionConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -22327,6 +23909,42 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
       "source_ordinal": 2,
@@ -22345,6 +23963,42 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::completion::TraceStep",
       "source_path": "amari-rewrite/src/completion/trace.rs",
       "source_ordinal": 0,
@@ -22356,6 +24010,114 @@
         "kind": "local",
         "module": "amari_rewrite::completion::trace",
         "ident": "TraceStep"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::inverse::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CandidateRejection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::inverse::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "CompletionGuidance"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "GuidedSearchOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::inverse::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::inverse::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RelationEquivalenceCertificate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::completion::inverse::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::completion::inverse",
+        "ident": "RuleDerivation"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -24855,6 +26617,14 @@
       "surface_kind": "module"
     },
     {
+      "path": "amari_rewrite::completion::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::completion::CompletionConfig",
       "source_path": "amari-rewrite/src/completion/config.rs",
       "source_ordinal": 0,
@@ -24869,6 +26639,14 @@
       "gate": "feature(\"completion\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::completion::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_rewrite::completion::CompletionOutcome",
@@ -24895,9 +26673,41 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::completion::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::completion::PartialReason",
       "source_path": "amari-rewrite/src/completion/mod.rs",
       "source_ordinal": 2,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
       "gate": "feature(\"completion\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -24914,6 +26724,110 @@
       "path": "amari_rewrite::completion::complete",
       "source_path": "amari-rewrite/src/completion/mod.rs",
       "source_ordinal": 4,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::guided_predecessors",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::CandidateRejection",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::CompletionGuidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::InconclusiveReason",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::RelationEquivalenceCertificate",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::RuleDerivation",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::guided_predecessors",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::prepare_guidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::inverse::verify_equivalence",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::prepare_guidance",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"completion\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::completion::verify_equivalence",
+      "source_path": "amari-rewrite/src/completion/inverse.rs",
+      "source_ordinal": 8,
       "gate": "feature(\"completion\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -28758,6 +30672,7 @@
     "amari_rewrite::analysis",
     "amari_rewrite::ars",
     "amari_rewrite::completion",
+    "amari_rewrite::completion::inverse",
     "amari_rewrite::error",
     "amari_rewrite::inverse",
     "amari_rewrite::language",

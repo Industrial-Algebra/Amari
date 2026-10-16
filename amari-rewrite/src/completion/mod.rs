@@ -45,6 +45,7 @@
 //! deduction step charges [`RelationResources::record_operations`].
 
 mod config;
+pub mod inverse;
 mod trace;
 
 use alloc::collections::BTreeSet;
@@ -58,6 +59,11 @@ use crate::trs::{Rule, Substitution, Term, TermSystem};
 use crate::{Path, RewriteError, RewriteResult};
 
 pub use config::CompletionConfig;
+pub use inverse::{
+    guided_predecessors, prepare_guidance, verify_equivalence, CandidateRejection,
+    CompletionGuidance, GuidedSearchOutcome, InconclusiveReason, RelationEquivalenceCertificate,
+    RuleDerivation,
+};
 pub use trace::{CompletionTrace, TraceStep};
 
 /// Frame label for the alpha-canonical equation fingerprint.
@@ -459,7 +465,7 @@ fn simplify(
 ///
 /// Iterative: callers must never depend on the call stack for term
 /// shape, and this runs on terms that may be near the depth ceiling.
-fn shape_of(term: &Term) -> (usize, usize) {
+pub(crate) fn shape_of(term: &Term) -> (usize, usize) {
     let mut nodes = 0usize;
     let mut depth = 0usize;
     let mut stack = Vec::from([(term, 1usize)]);
@@ -478,7 +484,7 @@ fn shape_of(term: &Term) -> (usize, usize) {
 /// Exact `(nodes, depth)` of `term` with the subtree at `except`
 /// removed (the spine): `spine_shape(t, p)` plus the shape of the
 /// replacement is the exact shape of `t.replace_at(p, _)`.
-fn spine_shape(term: &Term, except: &Path) -> (usize, usize) {
+pub(crate) fn spine_shape(term: &Term, except: &Path) -> (usize, usize) {
     let mut nodes = 0usize;
     let mut depth = 0usize;
     let mut stack = Vec::from([(term, Path::root())]);
@@ -501,7 +507,7 @@ fn spine_shape(term: &Term, except: &Path) -> (usize, usize) {
 /// one-level, ranges counted verbatim, so the shape equals what
 /// [`Substitution::apply_matcher`] will build. Saturating arithmetic
 /// fails closed.
-fn matched_shape(template: &Term, subst: &Substitution) -> (usize, usize) {
+pub(crate) fn matched_shape(template: &Term, subst: &Substitution) -> (usize, usize) {
     let mut nodes = 0usize;
     let mut depth = 0usize;
     let mut stack = Vec::from([(template, 1usize)]);
