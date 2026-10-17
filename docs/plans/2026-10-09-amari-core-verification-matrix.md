@@ -304,7 +304,7 @@ No workflow dispatch, backend omission, blanket lint allow, reduced test asserti
 
 ### C1 — Ordinary annotation compatibility (**full-H execution: milestone M-H**; historical coverage W00–W04 ran representative rows)
 
-Run full H and named formal rows on ordinary stable/nightly. Reachable core modules are `verified.rs` under phantom types and `verified_contracts.rs` under formal. `verified_laws.rs` has no module declaration/inclusion and is dormant. Do not attach it merely to increase counts.
+Run full H and named formal rows on ordinary stable/nightly. Reachable core modules are `verified.rs` under phantom types and `verified_contracts.rs` under formal. `verified_laws.rs` had no module declaration/inclusion (dormant) and was **removed by M-REP-C (2026-10-15)** as an unimplemented stub (MATRIX-03). Do not re-attach dead proof-naming code merely to increase counts.
 
 Creusot contracts/proc macros 0.8.0 select dummy implementations outside `cfg(creusot)`. Ordinary `requires`/`ensures` remove contract expressions; a green build does not even establish that those expressions are meaningful for proof translation. Runtime assertions validate only their executed cases.
 
@@ -340,8 +340,8 @@ These are bounded matrix-research observations, not completion of the remaining 
 | ID | Evidence / defect | Proposed owning work and deadline |
 |---|---|---|
 | MATRIX-01 | Ordinary formal-feature tests erase annotations; current verified/CI wording implies proof | W09 evidence/claim repair + phantom/formal audit; stop making proof claims immediately; actual proof gate pre-1.0 |
-| MATRIX-02 | `verified.rs:568` claims arbitrary dot product nonnegative; valid vectors `[1]`, `[-1]` give `-1` | Phantom/formal specification audit before any core proof claim; not an arithmetic-product defect to bundle into W01 |
-| MATRIX-03 | `verified_laws.rs` unreachable; its internal test/function names do not establish the asserted laws | Phantom/formal audit + explicitly approved integration/replacement; before proof closure |
+| MATRIX-02 | `verified.rs:568` claims arbitrary dot product nonnegative; valid vectors `[1]`, `[-1]` give `-1` | Phantom/formal specification audit before any core proof claim; not an arithmetic-product defect to bundle into W01. **[CLOSED — M-REP-C, 2026-10-15]** the unsound `dot` contract was removed by M-REP-A; the sound, signature-independent successor `Vector::verified_self_dot` (`Σ x_i² >= 0`, scoped to finite coefficients) was added. Evidence: `docs/plans/core-matrix-evidence/mrep-c/green/SUMMARY.md` |
+| MATRIX-03 | `verified_laws.rs` unreachable; its internal test/function names do not establish the asserted laws | Phantom/formal audit + explicitly approved integration/replacement; before proof closure. **[CLOSED as REMOVED-STUB — M-REP-C, 2026-10-15]** the whole file was `#![cfg(feature = "formal-verification")]` and never compiled in any default run; its bodies were stubs (`associativity_property` returned a hardcoded `true`, law functions empty). `git rm`-ed with disclosure. Operator direction: this surface is a candidate for replacement by Karpal proof/verify in a future pre-1.0 pass. Evidence: `docs/plans/core-matrix-evidence/mrep-c/green/SUMMARY.md` |
 | MATRIX-04 | `geometric_axioms` filter executes zero tests; core verified-contract filter without feature cannot exercise its absent module; badges fall back to source counts | Separate W09/CI evidence-integrity repair before relying on these named suites; no passing/verified labels from source counts |
 | MATRIX-05 | True no_std target support blocked by dependency std activation, not just imports; feature-off host tests reveal further missing imports in GF(2)/verified/test modules
     **[2026-10-14: PARTIALLY RESOLVED.]** Bare `--no-default-features` lib check green on `354945a` (W04 repaired `exact_square.rs` no-default imports). Still RED: `+gf2` (1 error), `+phantom-types` (27 errors), `+formal-verification` (32 errors) — the GF(2)/verified-module import repairs remain owed to W00-scope host repair + P-EMBED. | W00 bounded host repairs plus separate P-EMBED portability contract/implementation; pre-1.0 |
@@ -395,6 +395,27 @@ four-form vocabulary cannot express (it covers existing promises only).
 > implicit dep features (serde, rayon, creusot-contracts) = 13 selectable
 > names, same as the draft; the 8192→1440→320 closure math was INDEPENDENTLY
 > REPRODUCED by review round 2 and holds at this manifest.
+>
+> **2026-10-15 M-REP-C closure (develop `b3f2e0b`, worktree `core-mrep-c`):**
+> MATRIX-02 and MATRIX-03 are CLOSED. The M-REP-A-removed dot contract now
+> has a sound successor (`Vector::verified_self_dot`); finiteness is enforced
+> at construction and the equality contracts carry finiteness preconditions;
+> unaudited stub `verified_laws.rs` is REMOVED-STUB; the named-suite inventories
+> are unchanged (`geometric_axioms` 6, `verified_contracts` 4). Current
+> `amari-core` default: **515 passed / 18 suites**; `--features
+> formal-verification`: **525 passed / 18 suites**. Evidence:
+> `docs/plans/core-matrix-evidence/mrep-c/green/`.
+>
+> **2026-10-16 M-REP-C review round 1 (operation-result domain handling):**
+> construction-time finiteness cannot protect operation results, so the
+> checked operations are now fallible (`Vector::verified_self_dot`,
+> `VerifiedRotor::compose`, `verified_scalar_mult`, `verified_addition`,
+> `verify_scalar_identity`, `verify_zero_addition`,
+> `verify_basis_vector_square`) and every runtime unwrap/panic path reachable
+> from finite constructed inputs was removed (6 → 0). Default `amari-core`
+> **515/18**, `formal-verification` **525/18**; named-suite inventories
+> unchanged. Evidence:
+> `docs/plans/core-matrix-evidence/mrep-c/green/r1/`.
 
 After resolving missing downloaded artifacts under the unchanged lock:
 

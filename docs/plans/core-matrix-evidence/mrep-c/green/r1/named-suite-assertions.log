@@ -1,0 +1,7 @@
+=== geometric_axioms (default) ===
+verify-named-suite: OK — amari-core :: geometric_axioms: 6 passed, 0 ignored, inventory of 6 complete
+exit=0
+
+=== verified_contracts (formal-verification) ===
+verify-named-suite: OK — amari-core :: verified_contracts (features: formal-verification): 4 passed, 0 ignored, inventory of 4 complete
+exit=0

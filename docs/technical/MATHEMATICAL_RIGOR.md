@@ -124,12 +124,26 @@ not to this page.
   associative. For scalar `f64` `a = b = 1e308`, `c = 0`: `(a*b)*c` evaluates
   to `NaN` while `a*(b*c)` evaluates to `0`. Ordinary tests of associativity
   are therefore instance checks, not a universal guarantee.
-- **Non-finite inputs are not universally rejected.** For example,
-  `VerifiedRotor::new` computes a unit-norm check written as
-  `(norm - 1).abs() > 1e-4`, which is `false` for `NaN`; a scalar `NaN` is
-  consequently accepted as a "verified" rotor. Retained coefficient-equality
-  annotations likewise fail on `NaN`/`inf`. Non-finite handling and the exact
-  specification are deferred to M-REP-C.
+- **Non-finite inputs are rejected at construction, not everywhere (M-REP-C,
+  2026-10-15).** The phantom-module constructors that take coefficients
+  (`VerifiedMultivector::new`, `VerifiedMultivector::scalar`, `Vector::new`,
+  and `VerifiedRotor::new` via its inner multivector) reject `NaN` and
+  ±infinity with a clear `Err`; the equality contracts in
+  `verified_contracts.rs` carry matching finiteness preconditions and runtime
+  `debug_assert!`s. (Before M-REP-C, `VerifiedRotor::new` accepted a `NaN`
+  scalar because its unit-norm test `(norm - 1).abs() > 1e-4` is `false` for
+  `NaN`.) **Operation results need their own domain handling (M-REP-C review
+  round 1, 2026-10-16):** finite inputs can still overflow (`[MAX]+[MAX]` is
+  `+inf`, and `(+inf)+(-inf)` is `NaN`), so `Vector::verified_self_dot`
+  rejects non-finite coefficients and returns `Ok(r) ==> r >= 0`; the checked
+  `verified_scalar_mult` / `verified_addition` / `verify_scalar_identity` /
+  `verify_zero_addition` operations and `VerifiedRotor::compose` return
+  `Result` and route their result through `VerifiedMultivector::new`, whose
+  finiteness gate is the single checked boundary. The infallible arithmetic
+  (`add`, `geometric_product`, `apply`) remains panic-free but can still carry
+  `inf`. `verified_laws.rs` was removed as unreachable stub code
+  (MATRIX-03); replacing that surface with a real proof/verification pass is a
+  future pre-1.0 direction, not part of M-REP-C.
 - **Counts are not proofs.** Test-function and coverage counts measure how much
   code is exercised, not how much mathematics is proved.
 
