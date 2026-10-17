@@ -1,0 +1,8 @@
+test property_tests::prop_addition_associative ... ok
+test property_tests::prop_geometric_product_associative ... ok
+test property_tests::prop_left_distributivity ... ok
+test exact_square::tests::randomized_coefficients_match_bigint ... ok
+test exact_square::tests::randomized_full_multivectors_match_bigint ... ok
+
+test result: ok. 241 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+

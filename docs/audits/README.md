@@ -77,7 +77,7 @@ Paths below are relative to `amari-core/`. All coverage is at the first-pass bas
 | 2025-09-16 `deb88f9` | `src/unicode_ops.rs` | **Next source file: pending** |
 | 2025-09-30 `0106ae0` | `src/verified.rs` | Pending; Clippy baseline failures recorded only |
 | 2025-09-30 `0106ae0` | `src/verified_contracts.rs` | Pending |
-| 2025-09-30 `0106ae0` | `src/verified_laws.rs` | Pending; reachability/proof status must be established |
+| 2025-09-30 `0106ae0` | `src/verified_laws.rs` | **REMOVED (M-REP-C, 2026-10-15)** — never reachable (no module declaration) and its body was stub code; MATRIX-03 closed as REMOVED-STUB. Historical commit remains. |
 | 2025-09-30 `0106ae0` | `src/property_tests.rs` | Executed under defaults; source audit pending |
 | 2025-09-30 `0106ae0` | `src/comprehensive_tests.rs` | Executed under defaults; source audit pending |
 | 2025-10-01 `fe317e0` | `src/error.rs` | Pending |

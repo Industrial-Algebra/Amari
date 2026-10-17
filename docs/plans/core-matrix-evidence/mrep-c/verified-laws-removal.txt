@@ -1,0 +1,34 @@
+=== M-REP-C verified_laws.rs removal evidence (MATRIX-03) ===
+commit deleted from: b3f2e0be2319929f1eb677ed2953563dd7ffcfa6 (develop b3f2e0b)
+
+--- 1. no module declaration / inclusion anywhere ---
+(no 'mod verified_laws' declaration in any Rust source)
+
+--- 2. whole-file feature gate (never compiled in default runs) ---
+6:#![cfg(feature = "formal-verification")]
+
+--- 3. stub bodies ---
+19:    fn associativity_property(&self, b: &Self, c: &Self) -> bool {
+20:        // This would be verified in a real proof
+21:        true
+38:    fn left_distributivity() {}
+45:    fn right_distributivity() {}
+61:    fn signature_law(&self) -> f64;
+74:    fn anticommutativity_law(&self);
+88:    fn idempotence_law(&self);
+95:    fn orthogonality_law(&self);
+110:    fn norm_preservation(&self);
+117:    fn composition_law(&self);
+134:    fn quaternion_squares(&self);
+144:    fn hamilton_identity(&self);
+168:    pub fn scalar_commutativity() {}
+178:    pub fn multiplicative_identity() {}
+185:    pub fn additive_identity() {}
+193:    pub fn grade_involution_law() {}
+201:    pub fn reversion_antiautomorphism() {}
+
+--- 4. file size at HEAD ---
+299
+
+--- 5. affected default test count: file contributed 0 tests to any default suite ---
+(it was not part of any module tree; the only build inclusion would have required an unqualified mod verified_laws; none exists)
