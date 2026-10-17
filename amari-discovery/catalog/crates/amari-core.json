@@ -8463,6 +8463,25 @@
       ]
     },
     {
+      "path": "amari_core::verified::Vector::verified_self_dot",
+      "kind": "method",
+      "signature": "pub fn verified_self_dot (& self) -> Result < T , & 'static str >",
+      "source_path": "amari-core/src/verified.rs",
+      "is_reexport": false,
+      "source_module": "amari_core::verified",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verified_self_dot (& self) -> Result < T , & 'static str >",
+          "source_path": "amari-core/src/verified.rs",
+          "source_module": "amari_core::verified",
+          "is_reexport": false,
+          "declaration_module": "amari_core::verified",
+          "declaration_ident": "Vector::verified_self_dot"
+        }
+      ]
+    },
+    {
       "path": "amari_core::verified::VerifiedMultivector",
       "kind": "struct",
       "signature": "pub struct VerifiedMultivector < T , const P : usize , const Q : usize , const R : usize > where T : Float + Zero + One ,",
@@ -8644,14 +8663,14 @@
     {
       "path": "amari_core::verified::VerifiedMultivector::scalar",
       "kind": "method",
-      "signature": "pub fn scalar (value : T) -> Self",
+      "signature": "pub fn scalar (value : T) -> Result < Self , & 'static str >",
       "source_path": "amari-core/src/verified.rs",
       "is_reexport": false,
       "source_module": "amari_core::verified",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn scalar (value : T) -> Self",
+          "signature": "pub fn scalar (value : T) -> Result < Self , & 'static str >",
           "source_path": "amari-core/src/verified.rs",
           "source_module": "amari_core::verified",
           "is_reexport": false,
@@ -8709,14 +8728,14 @@
     {
       "path": "amari_core::verified::VerifiedRotor::compose",
       "kind": "method",
-      "signature": "pub fn compose (& self , other : & Self) -> Self",
+      "signature": "pub fn compose (& self , other : & Self) -> Result < Self , & 'static str >",
       "source_path": "amari-core/src/verified.rs",
       "is_reexport": false,
       "source_module": "amari_core::verified",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn compose (& self , other : & Self) -> Self",
+          "signature": "pub fn compose (& self , other : & Self) -> Result < Self , & 'static str >",
           "source_path": "amari-core/src/verified.rs",
           "source_module": "amari_core::verified",
           "is_reexport": false,
@@ -8747,14 +8766,14 @@
     {
       "path": "amari_core::verified_contracts::verified_addition",
       "kind": "fn",
-      "signature": "pub fn verified_addition < T , const P : usize , const Q : usize , const R : usize > (a : & VerifiedMultivector < T , P , Q , R > , b : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+      "signature": "pub fn verified_addition < T , const P : usize , const Q : usize , const R : usize > (a : & VerifiedMultivector < T , P , Q , R > , b : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
       "source_path": "amari-core/src/verified_contracts.rs",
       "is_reexport": false,
       "source_module": "amari_core::verified_contracts",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn verified_addition < T , const P : usize , const Q : usize , const R : usize > (a : & VerifiedMultivector < T , P , Q , R > , b : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+          "signature": "pub fn verified_addition < T , const P : usize , const Q : usize , const R : usize > (a : & VerifiedMultivector < T , P , Q , R > , b : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
           "source_path": "amari-core/src/verified_contracts.rs",
           "source_module": "amari_core::verified_contracts",
           "is_reexport": false,
@@ -8804,14 +8823,14 @@
     {
       "path": "amari_core::verified_contracts::verified_scalar_mult",
       "kind": "fn",
-      "signature": "pub fn verified_scalar_mult < T , const P : usize , const Q : usize , const R : usize > (scalar : T , mv : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+      "signature": "pub fn verified_scalar_mult < T , const P : usize , const Q : usize , const R : usize > (scalar : T , mv : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
       "source_path": "amari-core/src/verified_contracts.rs",
       "is_reexport": false,
       "source_module": "amari_core::verified_contracts",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn verified_scalar_mult < T , const P : usize , const Q : usize , const R : usize > (scalar : T , mv : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+          "signature": "pub fn verified_scalar_mult < T , const P : usize , const Q : usize , const R : usize > (scalar : T , mv : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
           "source_path": "amari-core/src/verified_contracts.rs",
           "source_module": "amari_core::verified_contracts",
           "is_reexport": false,
@@ -8823,14 +8842,14 @@
     {
       "path": "amari_core::verified_contracts::verify_basis_vector_square",
       "kind": "fn",
-      "signature": "pub fn verify_basis_vector_square < T , const P : usize , const Q : usize , const R : usize > (index : usize ,) -> T where T : Float + Zero + One + Copy ,",
+      "signature": "pub fn verify_basis_vector_square < T , const P : usize , const Q : usize , const R : usize > (index : usize ,) -> Result < T , & 'static str > where T : Float + Zero + One + Copy ,",
       "source_path": "amari-core/src/verified_contracts.rs",
       "is_reexport": false,
       "source_module": "amari_core::verified_contracts",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn verify_basis_vector_square < T , const P : usize , const Q : usize , const R : usize > (index : usize ,) -> T where T : Float + Zero + One + Copy ,",
+          "signature": "pub fn verify_basis_vector_square < T , const P : usize , const Q : usize , const R : usize > (index : usize ,) -> Result < T , & 'static str > where T : Float + Zero + One + Copy ,",
           "source_path": "amari-core/src/verified_contracts.rs",
           "source_module": "amari_core::verified_contracts",
           "is_reexport": false,
@@ -8842,14 +8861,14 @@
     {
       "path": "amari_core::verified_contracts::verify_scalar_identity",
       "kind": "fn",
-      "signature": "pub fn verify_scalar_identity < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+      "signature": "pub fn verify_scalar_identity < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
       "source_path": "amari-core/src/verified_contracts.rs",
       "is_reexport": false,
       "source_module": "amari_core::verified_contracts",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn verify_scalar_identity < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+          "signature": "pub fn verify_scalar_identity < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
           "source_path": "amari-core/src/verified_contracts.rs",
           "source_module": "amari_core::verified_contracts",
           "is_reexport": false,
@@ -8861,14 +8880,14 @@
     {
       "path": "amari_core::verified_contracts::verify_zero_addition",
       "kind": "fn",
-      "signature": "pub fn verify_zero_addition < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+      "signature": "pub fn verify_zero_addition < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
       "source_path": "amari-core/src/verified_contracts.rs",
       "is_reexport": false,
       "source_module": "amari_core::verified_contracts",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn verify_zero_addition < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> VerifiedMultivector < T , P , Q , R > where T : Float + Zero + One + Copy ,",
+          "signature": "pub fn verify_zero_addition < T , const P : usize , const Q : usize , const R : usize > (mv : & VerifiedMultivector < T , P , Q , R > ,) -> Result < VerifiedMultivector < T , P , Q , R > , & 'static str > where T : Float + Zero + One + Copy ,",
           "source_path": "amari-core/src/verified_contracts.rs",
           "source_module": "amari_core::verified_contracts",
           "is_reexport": false,
@@ -9489,7 +9508,7 @@
     {
       "export_path": "amari_core::verified::OuterProduct",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "local",
         "module": "amari_core::verified",
@@ -10246,7 +10265,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_core::verified::VerifiedMultivector",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -11080,7 +11099,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_core::verified::VerifiedMultivector",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -12724,47 +12743,47 @@
       "trait_path": "amari_core::verified::OuterProduct",
       "impl_type_path": "amari_core::verified::KVector",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "local",
-        "module": "amari_core::verified",
-        "ident": "OuterProduct"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_core::verified",
-        "ident": "KVector"
-      },
-      "generics": "< T , const P : usize , const Q : usize , const R : usize >",
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "amari_core::verified::OuterProduct",
-      "impl_type_path": "amari_core::verified::KVector",
-      "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 9,
-      "trait_endpoint": {
-        "kind": "local",
-        "module": "amari_core::verified",
-        "ident": "OuterProduct"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_core::verified",
-        "ident": "KVector"
-      },
-      "generics": "< T , const P : usize , const Q : usize , const R : usize >",
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "amari_core::verified::OuterProduct",
-      "impl_type_path": "amari_core::verified::KVector",
-      "source_path": "amari-core/src/verified.rs",
       "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_core::verified",
+        "ident": "OuterProduct"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::verified",
+        "ident": "KVector"
+      },
+      "generics": "< T , const P : usize , const Q : usize , const R : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_core::verified::OuterProduct",
+      "impl_type_path": "amari_core::verified::KVector",
+      "source_path": "amari-core/src/verified.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_core::verified",
+        "ident": "OuterProduct"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_core::verified",
+        "ident": "KVector"
+      },
+      "generics": "< T , const P : usize , const Q : usize , const R : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_core::verified::OuterProduct",
+      "impl_type_path": "amari_core::verified::KVector",
+      "source_path": "amari-core/src/verified.rs",
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "local",
         "module": "amari_core::verified",
@@ -16429,7 +16448,7 @@
     {
       "path": "amari_core::verified::Dim",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 4,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16437,7 +16456,7 @@
     {
       "path": "amari_core::verified::Grade",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16445,7 +16464,7 @@
     {
       "path": "amari_core::verified::KVector",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 7,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16477,7 +16496,7 @@
     {
       "path": "amari_core::verified::OuterProduct",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 9,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16501,7 +16520,7 @@
     {
       "path": "amari_core::verified::Signature",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16509,7 +16528,7 @@
     {
       "path": "amari_core::verified::Vector",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 15,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16517,7 +16536,7 @@
     {
       "path": "amari_core::verified::Vector::add",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -16547,9 +16566,17 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_core::verified::VerifiedMultivector",
+      "path": "amari_core::verified::Vector::verified_self_dot",
       "source_path": "amari-core/src/verified.rs",
       "source_ordinal": 3,
+      "gate": "feature(\"phantom-types\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_core::verified::VerifiedMultivector",
+      "source_path": "amari-core/src/verified.rs",
+      "source_ordinal": 5,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16629,7 +16656,7 @@
     {
       "path": "amari_core::verified::VerifiedRotor",
       "source_path": "amari-core/src/verified.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 13,
       "gate": "feature(\"phantom-types\")",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -16669,7 +16696,7 @@
     {
       "path": "amari_core::verified_contracts::verified_addition",
       "source_path": "amari-core/src/verified_contracts.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "feature(\"formal-verification\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -16677,7 +16704,7 @@
     {
       "path": "amari_core::verified_contracts::verified_grade",
       "source_path": "amari-core/src/verified_contracts.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "feature(\"formal-verification\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -16685,7 +16712,7 @@
     {
       "path": "amari_core::verified_contracts::verified_norm",
       "source_path": "amari-core/src/verified_contracts.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "feature(\"formal-verification\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -16693,7 +16720,7 @@
     {
       "path": "amari_core::verified_contracts::verified_scalar_mult",
       "source_path": "amari-core/src/verified_contracts.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "gate": "feature(\"formal-verification\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -16701,7 +16728,7 @@
     {
       "path": "amari_core::verified_contracts::verify_basis_vector_square",
       "source_path": "amari-core/src/verified_contracts.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "feature(\"formal-verification\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -16709,7 +16736,7 @@
     {
       "path": "amari_core::verified_contracts::verify_scalar_identity",
       "source_path": "amari-core/src/verified_contracts.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "feature(\"formal-verification\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -16717,7 +16744,7 @@
     {
       "path": "amari_core::verified_contracts::verify_zero_addition",
       "source_path": "amari-core/src/verified_contracts.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "feature(\"formal-verification\")",
       "status": "disabled",
       "surface_kind": "top_level"
