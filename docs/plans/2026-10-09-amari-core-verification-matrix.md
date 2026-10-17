@@ -396,6 +396,15 @@ four-form vocabulary cannot express (it covers existing promises only).
 > names, same as the draft; the 8192→1440→320 closure math was INDEPENDENTLY
 > REPRODUCED by review round 2 and holds at this manifest.
 >
+> **2026-10-17 M-REP-C merged-and-closed addendum:** PR #311 merged at develop
+> `6a80128` (loop converged R4; final branch tip `6ab05d3`). The 2026-10-16
+> zip-8.x-yank CI outage was upstream and diff-independent (diagnosis and heal:
+> PR #313, candle removal — zero usage); the post-merge catalog regen miss was
+> caught live by the M-REP-B drift gate. Full loop + incident record:
+> `docs/plans/core-matrix-evidence/mrep-c/CLOSURE.md`. Residuals carried to
+> M-REP-D / pre-1.0. Strategic follow-on: Katakuri + Borsalino tensor
+> extension (Shandora handovers, 2026-10-16).
+
 > **2026-10-15 M-REP-C closure (develop `b3f2e0b`, worktree `core-mrep-c`):**
 > MATRIX-02 and MATRIX-03 are CLOSED. The M-REP-A-removed dot contract now
 > has a sound successor (`Vector::verified_self_dot`); finiteness is enforced
