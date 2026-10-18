@@ -28,8 +28,9 @@ use core::ops::{Add, Div, Mul, Neg, Sub};
 ///
 /// # Performance
 ///
-/// ~10-20% slower than native f32 due to disabled optimizations.
-/// Use `feature = "fast"` for non-networked applications.
+/// Carries overhead relative to native f32 (fixed iteration counts,
+/// `#[inline(never)]` boundaries); no specific figure is claimed. For
+/// non-networked applications, use the standard `f32` types directly.
 ///
 /// # Example
 /// ```
