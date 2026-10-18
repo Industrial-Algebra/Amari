@@ -81,11 +81,29 @@ fn reconstruct(m: BigInt, e: i32) -> f64 {
         m <<= 1u32;
         e -= 1;
     }
-    let f = m.to_string().parse::<f64>().unwrap() * 2f64.powi(e);
+    ldexp_f64(m.to_string().parse::<f64>().unwrap(), e, neg)
+}
+
+/// Scale by 2^e in bounded chunks so the exponentiation itself never
+/// underflows before the final multiply (R1 P2: the naive `2f64.powi(e)`
+/// returned 0 for e = -1075, making the oracle report 0 for
+/// MIN_POSITIVE * 0.5 whose exact value is the subnormal 2^-1023).
+fn ldexp_f64(m: f64, e: i32, neg: bool) -> f64 {
+    let mut x = m;
+    let mut e = e;
+    while e > 1000 {
+        x *= 2f64.powi(1000);
+        e -= 1000;
+    }
+    while e < -1000 {
+        x *= 2f64.powi(-1000);
+        e += 1000;
+    }
+    x *= 2f64.powi(e);
     if neg {
-        -f
+        -x
     } else {
-        f
+        x
     }
 }
 
@@ -140,22 +158,27 @@ fn exact_coefficient(lhs: &[f64; 8], rhs: &[f64; 8], out: usize) -> f64 {
     target_feature = "avx2",
     target_feature = "fma"
 ))]
-fn cancellation_scale(lhs: &[f64; 8], rhs: &[f64; 8], out: usize) -> f64 {
+/// Per-coefficient term scale (M-REP-D R1 P2): M = Σ_i |lhs[i]·rhs[i^k]|
+/// over EXACTLY the 8 pairs contributing to coefficient `out`, accumulated
+/// in f64 with a STICKY overflow flag. The flag — not `M == MAX` — defines
+/// the saturation regime: a sum that merely lands on MAX does not authorize
+/// finiteness-class exceptions, and unrelated coefficients' terms cannot.
+fn cancellation_scale(lhs: &[f64; 8], rhs: &[f64; 8], out: usize) -> (f64, bool) {
     let mut m: f64 = 0.0;
-    for l in lhs {
-        for r in rhs {
-            let a = l.abs();
-            let b = r.abs();
-            if a != 0.0 && b != 0.0 {
-                let _ = out;
-                // over-approximation over all pairs: the true term set is a
-                // subset, so this M is >= the exact M — a weaker but sound
-                // tolerance scale, recorded per case.
-                m += a * b;
+    let mut overflow = false;
+    for (i, l) in lhs.iter().enumerate() {
+        let r = rhs[i ^ out];
+        let t = l.abs() * r.abs();
+        if t.is_infinite() {
+            overflow = true;
+        } else {
+            m += t;
+            if m.is_infinite() {
+                overflow = true;
             }
         }
     }
-    m.min(f64::MAX)
+    (m.min(f64::MAX), overflow)
 }
 
 #[cfg(all(
@@ -164,11 +187,17 @@ fn cancellation_scale(lhs: &[f64; 8], rhs: &[f64; 8], out: usize) -> f64 {
     target_feature = "fma"
 ))]
 fn ulp(x: f64) -> f64 {
+    // FINITE endpoint (R1 P1): at MAX the next bit pattern is infinity;
+    // the naive form returns inf and makes every saturated bound vacuous.
+    // At the top of the range the spacing is measured downward.
     if !x.is_finite() {
-        f64::INFINITY
+        return f64::MAX - f64::from_bits(f64::MAX.to_bits() - 1);
+    }
+    let next = f64::from_bits(x.to_bits() + 1);
+    if next.is_finite() {
+        (next - x).abs().max(f64::MIN_POSITIVE)
     } else {
-        let next = f64::from_bits(x.to_bits() + 1);
-        (next - x).abs().max(f64::MIN_POSITIVE * 2.0)
+        (x - f64::from_bits(x.to_bits() - 1)).max(f64::MIN_POSITIVE)
     }
 }
 
@@ -181,21 +210,22 @@ mod simd_rows {
     use super::*;
     use std::sync::atomic::Ordering;
 
-    fn check_case(a: &[f64; 8], b: &[f64; 8]) {
+    fn check_case(a: &[f64; 8], b: &[f64; 8]) -> u32 {
         let lhs = Cl3::from_coefficients(a.to_vec());
         let rhs = Cl3::from_coefficients(b.to_vec());
         let scalar = lhs.geometric_product(&rhs);
         let simd = amari_core::simd::geometric_product_3d_avx2(&lhs, &rhs);
-        let mut sat_events = 0;
+        let mut divergent = 0u32;
         for k in 0..8 {
             let s = scalar.get(k);
             let v = simd.get(k);
-            let m_raw = cancellation_scale(a, b, k);
-            if m_raw == f64::MAX {
-                sat_events += 1;
+            let (m_raw, overflowed) = cancellation_scale(a, b, k);
+            if overflowed {
+                EXPECTED_DIVERGENT_OVERFLOW.fetch_add(1, Ordering::Relaxed);
             }
             if s.is_finite() && v.is_finite() {
                 let bound = (16.0 * ulp(m_raw)).max(1e-300);
+                assert!(bound.is_finite(), "bound must be finite (M={m_raw})");
                 assert!(
                     (s - v).abs() <= bound,
                     "coefficient {k}: |{s} - {v}| = {} > bound {bound} (M={m_raw})",
@@ -212,45 +242,46 @@ mod simd_rows {
                 }
             } else {
                 // FMA-semantics note (battery-execution addendum 2026-10-18):
-                // in the saturation regime (M raw overflowed), FMA's
-                // exact-intermediate product can legitimately resolve a
-                // scalar NaN (inf + -inf under separate rounding) to a
-                // signed inf, or vice versa. Such class divergences are
-                // EXPECTED-DIVERGENT-OVERFLOW: recorded, counted, surfaced
-                // in the summary — never silently passed, never failures.
-                let saturated = m_raw == f64::MAX;
+                // in the overflow regime (STICKY flag — a term or partial
+                // sum actually overflowed), FMA's exact-intermediate
+                // product can legitimately resolve a scalar NaN
+                // (inf + -inf under separate rounding) to a signed inf, or
+                // vice versa. Class divergences are EXPECTED-DIVERGENT-
+                // OVERFLOW: counted here, surfaced per test — never silent,
+                // never authorized without the flag.
                 let classes_match = (s.is_nan() == v.is_nan())
                     && (s.is_infinite() == v.is_infinite())
                     && (!s.is_infinite() || s.signum() == v.signum());
                 if !classes_match {
                     assert!(
-                        saturated && !s.is_finite() != v.is_finite() || saturated,
-                        "coefficient {k}: finiteness-class divergence scalar={s} simd={v} WITHOUT saturation (M={m_raw})"
+                        overflowed,
+                        "coefficient {k}: finiteness-class divergence scalar={s} simd={v} WITHOUT term overflow (M={m_raw})"
                     );
-                    EXPECTED_DIVERGENT_OVERFLOW.fetch_add(1, Ordering::Relaxed);
+                    divergent += 1;
                 }
             }
         }
-        if sat_events > 0 {
-            eprintln!("NOTE: {sat_events} saturation events in this case");
-        }
+        divergent
     }
 
     #[test]
     fn tier1_all_basis_pairs() {
+        let mut div = 0u32;
         for i in 0..8usize {
             for j in 0..8usize {
                 let mut a = [0.0f64; 8];
                 let mut b = [0.0f64; 8];
                 a[i] = 1.0;
                 b[j] = 1.0;
-                check_case(&a, &b);
+                div += check_case(&a, &b);
             }
         }
+        println!("tier1_all_basis_pairs: {div} EXPECTED-DIVERGENT-OVERFLOW");
     }
 
     #[test]
     fn tier1_adversarial_sets() {
+        let mut div = 0u32;
         let max = f64::MAX;
         let sub = f64::MIN_POSITIVE; // smallest normal
         let cases: Vec<[f64; 8]> = vec![
@@ -273,9 +304,10 @@ mod simd_rows {
         ];
         for a in &cases {
             for b in &cases {
-                check_case(a, b);
+                div += check_case(a, b);
             }
         }
+        println!("tier1_adversarial_sets: {div} EXPECTED-DIVERGENT-OVERFLOW");
     }
 
     #[test]
@@ -289,11 +321,17 @@ mod simd_rows {
         b[0] = 4.0; // product term = 2*MAX -> inf
         a[1] = max / 2.0;
         b[1] = -4.0; // product term = -2*MAX -> -inf
-        check_case(&a, &b);
+        let div = check_case(&a, &b);
+        assert!(
+            div >= 1,
+            "engineered fixture must exercise EXPECTED-DIVERGENT-OVERFLOW"
+        );
+        println!("tier1_expected_divergent: {div} EXPECTED-DIVERGENT-OVERFLOW");
     }
 
     #[test]
     fn tier1_randomized_dense() {
+        let mut div = 0u32;
         let mut state = 0x853c49e6748fea9bu64;
         let mut next = || {
             state ^= state << 13;
@@ -314,15 +352,10 @@ mod simd_rows {
                 let unit2 = ((r2 >> 32) as i64 as f64) / (i32::MAX as f64);
                 b[k] = unit2 * scale2;
             }
-            check_case(&a, &b);
+            div += check_case(&a, &b);
         }
-    }
-
-    #[test]
-    fn summary_reports_expected_divergent_overflow() {
-        // Run after the batteries; surfaces the recorded count (stdout).
         println!(
-            "EXPECTED-DIVERGENT-OVERFLOW total: {}",
+            "tier1_randomized_dense: {div} EXPECTED-DIVERGENT-OVERFLOW (global sticky: {})",
             EXPECTED_DIVERGENT_OVERFLOW.load(Ordering::Relaxed)
         );
     }
@@ -446,5 +479,55 @@ mod oracle_selfcheck {
                 );
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod oracle_subnormal_regression {
+    use super::*;
+
+    /// R1 P2: the naive `2f64.powi(-1075)` underflowed to 0, making the
+    /// oracle report 0 for MIN_POSITIVE * 0.5 (true value: subnormal
+    /// 1.1125369292536007e-308). The chunked ldexp fixes it.
+    #[test]
+    fn oracle_handles_subnormal_results() {
+        let x = f64::MIN_POSITIVE;
+        let h = 0.5f64;
+        // exact product via decompose/reconstruct directly
+        let (m1, e1) = decompose(x);
+        let (m2, e2) = decompose(h);
+        let got = reconstruct(m1 * m2, e1 + e2);
+        assert_eq!(got, 1.1125369292536007e-308);
+    }
+}
+
+#[cfg(all(
+    target_arch = "x86_64",
+    target_feature = "avx2",
+    target_feature = "fma"
+))]
+#[cfg(test)]
+mod bound_rejection {
+    use super::*;
+
+    /// Test-the-test (R1 P1): the pre-fix `ulp(MAX)` was infinite, so a
+    /// bogus zero answer at MAX-scale passed the bound. The fixed bound
+    /// must reject it.
+    #[test]
+    fn bound_rejects_bogus_results_at_max_scale() {
+        let m = f64::MAX;
+        let bound = (16.0 * ulp(m)).max(1e-300);
+        // The R1 defect: ulp(MAX) was INFINITY, so the bound was infinite
+        // and admitted literally any finite error. The fix makes it finite.
+        assert!(bound.is_finite(), "bound must be finite at MAX scale");
+        // At saturated scale the honest path-vs-path tolerance is huge
+        // (16*ulp(MAX) ~ 3e293) — correctness there is Tier-2 oracle
+        // territory, which is why Tier 2 runs wherever scalar is finite.
+        // The rejection force of the bound lives at ordinary scales:
+        let m_normal = 1.0f64;
+        let bound_normal = (16.0 * ulp(m_normal)).max(1e-300);
+        assert!(bound_normal < 1e-12, "ordinary-scale bound too coarse");
+        // a bogus zero against a true 1.0 at ordinary scale MUST be rejected
+        assert!((0.0f64 - 1.0).abs() > bound_normal);
     }
 }
