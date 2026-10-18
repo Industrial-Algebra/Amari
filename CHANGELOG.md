@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### `amari-rewrite` analysis and completion (0.25.0 Cohort 6)
+
+- Metered critical-pair enumeration with typed evidence (`analysis::critical_pairs`): trivial-overlap accounting and non-left-linear rule reporting
+- Bounded joinability and local-confluence certification (`analysis::{joinable, local_confluence}`) with per-pair outcomes and certification blockers
+- Lexicographic path-order termination proofs (`analysis::{Precedence, lpo_greater, prove_terminating}`): validated strict-total-order precedences, `ProvedTerminating` only when every rule strictly decreases, `NotDecreasing` with the failing rule index
+- Bounded Knuth–Bendix completion behind the non-default `completion` feature (`completion::complete`): `Complete` is reported only after termination, left-linearity, and local-confluence postchecks (Newman); RHS-only simplification preserves orientation; limit exhaustion is always a typed `Partial`
+- Completion-assisted inverse search (`completion::inverse`): a convergent completion proposes predecessor candidates, the original system alone certifies witnesses via per-candidate bounded derivability with exact variable identity, and truncated search is `Inconclusive`, never a negative claim; cross-system `verify_equivalence` issues certificates only on two-sided bounded derivability
+- `Sha256Digest::canonical_terms` joint alpha-canonical fingerprints for multi-term structures
+- `amari-discovery` probes `rewrite:analysis` and `rewrite:completion` with semantic capability wiring, plus an engine-level iterative request-JSON bounds guard shared by all probes and typed domain-failure outcomes carrying resource observations
+
 ### Fixed
 
 #### `amari-core` exact-zero arithmetic (CORE-02)
