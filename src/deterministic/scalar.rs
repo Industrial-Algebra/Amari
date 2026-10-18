@@ -2,12 +2,15 @@
 //!
 //! Determinism guarantees (M-REP-D S7, revised R3 2026-10-18 — the
 //! earlier "libm in DetRotor2" premise was WRONG):
-//! - **Cross-platform bit-exactness**: the entire `deterministic` family is
-//!   pure fixed arithmetic — bit manipulation, IEEE-754 basic operations,
-//!   and fixed-iteration approximations (Newton sqrt in this file; Taylor
-//!   sin/cos and the atan2 approximation in `approx.rs`). No libm call
-//!   exists anywhere in the family, so identical inputs yield identical
-//!   bits across platforms and builds.
+//! - **Cross-platform bit-exactness on the finite domain**: the entire
+//!   `deterministic` family is pure fixed arithmetic — bit manipulation,
+//!   IEEE-754 basic operations, and fixed-iteration approximations (Newton
+//!   sqrt in this file; Taylor sin/cos and the atan2 approximation in
+//!   `approx.rs`). No libm call exists anywhere in the family, so
+//!   computations with finite inputs, intermediates, and final results
+//!   yield identical bits across platforms and builds. NaN-producing
+//!   computations carry NO bit-identity promise (Rust permits NaN
+//!   sign/payload variation even within one binary).
 //! - **Not claimed**: ACCURACY. The approximations do not converge outside
 //!   their working ranges (see each method's docs — e.g. the Newton sqrt
 //!   from a raw-input start, and Taylor series near zero). Deterministic,
@@ -34,7 +37,7 @@ use core::ops::{Add, Div, Mul, Neg, Sub};
 ///
 /// let a = DetF32::from_f32(1.5);
 /// let b = DetF32::from_f32(2.0);
-/// let c = a * b;  // Bit-exact on all platforms
+/// let c = a * b;  // Bit-exact on all platforms (finite domain)
 /// assert_eq!(c.to_bits(), 0x40400000);
 /// ```
 #[repr(transparent)]
@@ -69,8 +72,10 @@ pub unsafe trait Deterministic {}
 // SAFETY (M-REP-D S7): DetF32 wraps f32 and exposes bit manipulation,
 // IEEE-754 basic arithmetic, and fixed-iteration approximations (Newton
 // sqrt here; Taylor sin/cos/atan2 in approx.rs) — all pure arithmetic,
-// no libm. Bit-identical for identical inputs in any binary on any
-// platform. No accuracy claim (see the method docs).
+// no libm. Bit-identical across binaries and platforms for computations
+// finite through inputs, intermediates, and results (the trait's finite
+// domain; NaN bit patterns carry no promise). No accuracy claim (see the
+// method docs).
 unsafe impl Deterministic for DetF32 {}
 
 impl DetF32 {
