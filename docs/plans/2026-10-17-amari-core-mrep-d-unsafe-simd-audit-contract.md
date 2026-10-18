@@ -27,7 +27,7 @@ false-positives dispositioned:
 | S5 | `amari-calculus/src/manifold/metric.rs` — 4× `transmute_copy` | array reinterpret between dimension layouts (e.g. `[[ScalarField;2];2]` → `[[ScalarField;DIM];DIM]` under a `DIM==2` guard) | **Correction (R1):** `transmute_copy`'s size check is a **runtime panic**, not compile-time, and the operation **duplicates ownership bitwise** — the source is dropped at scope end while the copy lives on. Soundness therefore requires the SAME field-closure argument as S6: `ScalarField` = `fn(&[f64])->f64 + usize`, no heap, **no drop glue** — verified. Retention requires, per site: the DIM guard, a matching-layout argument (src/dst element counts equal by construction in each branch), and the no-owning-state/no-Drop argument written at the site. Disposition: DOCUMENTED with these arguments, or REPLACED by safe construction if the operator prefers |
 | S6 | `amari-calculus/src/manifold/connection.rs:27,87` — 2× `ptr::read` "clone hack" | bitwise copy with original retained | **Sound today**: `MetricTensor` = `[[ScalarField; DIM]; DIM]`, `ScalarField` = `fn(&[f64]) -> f64 + usize` — no heap, no Drop ⇒ no double-drop. Fragile: the SAFETY comment admits "hack"; adding any owning field makes it UB. Replace with proper `Clone` |
 
-| S7 | root `amari` crate `src/deterministic/` — `pub unsafe trait Deterministic` (`scalar.rs:45`) + 4 `unsafe impl`s (`DetF32`, `DetVector2`, `DetRotor2`, one more per census) | marker-trait unsafety — **attestation, not execution** | The trait's `# Safety` contract demands bit-exact reproducibility across platforms/compilers/opt-levels; each `unsafe impl` ATTESTS that guarantee. Audit question: is the attestation justified for each type's full operation surface (e.g. `DetF32` arithmetic inheriting f32 non-associativity is fine for determinism-per-identical-inputs, but cross-opt-level bit-exactness of `from_bits`/ops must hold)? Disposition: VERIFIED-SOUND with per-type argument or trait-scope REPAIR | (R1: this crate was entirely missing from my census — root `src/`, not `*/src/`) |
+| S7 | root `amari` crate `src/deterministic/` — `pub unsafe trait Deterministic` (`scalar.rs:45`) + exactly **3 `unsafe impl`s** (R2 census: `DetF32` in `scalar.rs`, `DetVector2` and `DetRotor2` in `ga2d.rs`; `approx.rs`/`mod.rs` contain none) | marker-trait unsafety — **attestation, not execution** | The trait's `# Safety` contract demands bit-exact reproducibility across platforms/compilers/opt-levels; each `unsafe impl` ATTESTS that guarantee. Audit question: is the attestation justified for each type's full operation surface (e.g. `DetF32` arithmetic inheriting f32 non-associativity is fine for determinism-per-identical-inputs, but cross-opt-level bit-exactness of `from_bits`/ops must hold)? Disposition: VERIFIED-SOUND with per-type argument or trait-scope REPAIR | (R1: this crate was entirely missing from my census — root `src/`, not `*/src/`) |
 | S8 | `amari-rewrite/tests/language_metered.rs:367-377` — test-local `MaxSingleAlloc` `unsafe impl GlobalAlloc` + delegating `alloc`/`dealloc` | test-only allocator proxy over `System` | Delegation preserves `GlobalAlloc`'s contract (same layout forwarded both directions; `fetch_max`/atomics are safe); test scope means no production exposure. Disposition: VERIFIED-SOUND with the delegation argument written at the site | (R1: tests/ were outside my census scope) |
 
 ### 1.2 Audited, not unsafe code (excluded from the surface, recorded here)
@@ -80,12 +80,20 @@ check it.
   invariants at each site, vs rewrite as safe index copies — recommendation:
   keep + document (rewrites churn proof-carrying code for zero gain).
 - **D5 (batteries) — frozen acceptance policy (R1):**
-  **Tier 1, SIMD-vs-scalar (both under +avx2,+fma):** where both results are
-  finite, require `|simd − scalar| ≤ max(8 ulp of scalar, 1e-13 · |scalar|)`
-  (8 ulp headroom for FMA reassociation; tighten if achieved). Where either
-  is nonfinite, require **identical finiteness class** (both-NaN, or both
-  ±inf with matching sign when the exact value overflows) — bit-identity of
-  NaN payloads NOT required.
+  **Tier 1, SIMD-vs-scalar (both under +avx2,+fma) — cancellation-aware
+  bound (R2 correction; the R1 ulp-of-result bound is DISPROVEN by
+  cancellation: for terms whose exact sum is ~2⁻⁵⁴, separate mul+add can
+  yield 0 while FMA yields the correct −5.551115123125783e-17 — an error of
+  5.55e-17 against an allowed ~4e-323 at result≈0):** where both results
+  are finite, require
+  `|simd − scalar| ≤ max(K · ulp(M), 1e-300)` with `M = Σ|term_i|` — the
+  sum of absolute products accumulated in f64 (the cancellation scale), and
+  `K = 16` (headroom for FMA-vs-separate reassociation across the 4-lane
+  chains; tighten if measurements allow). `M` is computed by the battery
+  harness itself in f64 and recorded per case. Where either result is
+  nonfinite, require **identical finiteness class** (both-NaN, or both ±inf
+  with matching sign when the exact value overflows) — bit-identity of NaN
+  payloads NOT required.
   **Tier 2, scalar-vs-oracle:** only where scalar is finite — the established
   W03 exact-Fraction regime (Fraction-rounded-once comparison within the
   documented tolerance). Where scalar is nonfinite and the exact value is
@@ -95,9 +103,12 @@ check it.
   finding; escalation to P1 only when SIMD and scalar *differ* in class.
   Adversarial sets: zeros, subnormal-spread, ±MAX mixes, cancellation-heavy
   products, all 64 basis-pair products, seeded randomized dense draws (≥10⁴).
-- **D6 (S3/§1.3):** leave dispatcher and `AlignedBuffer` as-is (documented)
-  vs adopt aligned buffers in the SIMD hot path — recommendation: **leave**;
-  `loadu` needs no alignment; perf claims wait for M-H data.
+- **D6 (S3/§1.3):** dispatcher *policy* stays runtime-detection (structure
+  unchanged) but its **feature predicate is repaired per S1** (detect both
+  AVX2 and FMA) — "leave" refers to the dispatch architecture, not the
+  gate; `AlignedBuffer` disposition follows D6's second half as-is
+  (recommendation: leave unused / remove per D1; `loadu` needs no
+  alignment; perf claims wait for M-H data).
 
 ## 4. Verification battery (acceptance criteria)
 
@@ -111,9 +122,18 @@ check it.
    documented as such (per matrix: no assumption either way).
 4. **Sanitizers** — ASan/LSan on the alloc-bearing build **if** S4 is
    retained; if removed, recorded not-applicable.
-5. **Both-feature matrix** — clippy `-D warnings` and tests for
-   `RUSTFLAGS='-C target-feature=+avx2'` AND the existing `-avx2` pinned
-   recipe; MSRV row on both.
+5. **Feature matrix (R2 correction — the post-repair rows):**
+   - **`+avx2,+fma`** — the SIMD EXECUTION row: kernel compiles, dispatches,
+     equivalence battery runs, runtime inventory reports the AVX2 path;
+     clippy `-D warnings` + tests + MSRV.
+   - **`+avx2` alone** — the EXCLUSION row (P-AVX2's exact flag, retained as
+     fallback evidence): SIMD path compiled OUT by the corrected
+     `all(avx2, fma)` gate; scalar fallback compiles and passes; dispatcher
+     must never reach the FMA kernel; inventory reports scalar.
+   - **existing `-avx2` pinned recipe** — unchanged production row.
+   Consistency rule: every cfg gate on the SIMD surface, its tests, and its
+   callers must use the same `all(target_feature = "avx2", target_feature =
+   "fma")` predicate (no site may test avx2 alone).
 6. **Runtime SIMD inventory** — a test that reports which implementation
    `select_geometric_product_impl` returns under each build, so CI evidence
    distinguishes compiled-in vs dispatched paths (P-AVX2's "runtime SIMD
@@ -137,11 +157,21 @@ performance optimization.
 
 ---
 
-*Inventory commands (corrected R1 — extended regex, root + member src/ AND
-tests/benches/examples/build.rs):*
-`rg -n -E '\bunsafe\b' src/ */src/ */tests/ */benches/ */examples/`
-`rg -ln -E 'std::arch|target_feature\(enable|_mm256|_mm_|is_x86_feature_detected|__m256|__m128' src/ */src/`
-`rg -n -E 'transmute|from_raw_parts|\.set_len|get_unchecked|assume_aligned' src/ */src/ */tests/`
-(comment lines excluded; false-positive dispositions in §1.2). Coverage
-statement: the census universe is every `.rs` file compiled by the workspace
-member graph plus the root crate, production and test targets alike.
+*Inventory commands (corrected R2 — ripgrep's regex engine is default;
+`-E` is `--encoding` and breaks all three commands; the universe is
+enumerated explicitly rather than globbed):*
+universe = `src/` (root crate) + every member's `src/`, `tests/`,
+`benches/`, `examples/` + every `build.rs` in the workspace.
+
+```
+rg -n --no-heading '\bunsafe\b' src amari-core/src amari-core/tests \
+  amari-rewrite/src amari-rewrite/tests amari-discovery/src \
+  amari-calculus/src <…each member's target dirs…>
+rg -ln 'std::arch|target_feature\(enable|_mm256|_mm_|is_x86_feature_detected|__m256|__m128' src */src
+rg -n 'transmute|from_raw_parts|\.set_len|get_unchecked|assume_aligned' src */src */tests
+find . -name build.rs -not -path './target/*' -exec rg -n '\bunsafe\b' {} +
+```
+
+(comment lines excluded; false-positive dispositions in §1.2). The exact
+member list is `cargo metadata`'s workspace members at the audited commit;
+the archive records the enumerated file list, not a glob.
