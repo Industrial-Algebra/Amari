@@ -1,15 +1,17 @@
 //! Deterministic floating-point scalar type
 //!
-//! Determinism guarantees (M-REP-D S7, 2026-10-18):
+//! Determinism guarantees (M-REP-D S7, revised R2 2026-10-18):
 //! - **In-binary**: every operation is bit-exact reproducible for identical
 //!   inputs (no hidden state, fixed iteration counts).
 //! - **Cross-platform**: bit manipulation and IEEE-754 basic arithmetic are
-//!   exact everywhere; the square root is a fixed 4-iteration Newton
-//!   method over basic arithmetic (documented relative error < 2^-20) —
-//!   cross-platform bit-exact because it invokes no libm.
-//! - What is NOT claimed: transcendental libm functions anywhere in the
-//!   `deterministic` module family (see `ga2d::DetRotor2`, whose angle
-//!   constructors are fixed-binary-only).
+//!   exact everywhere. The square root is a fixed 4-iteration Newton
+//!   method over basic arithmetic — cross-platform bit-exact (no libm),
+//!   but NOT converged for inputs far from 1.0 (see the method docs; it
+//!   is a determinism-preserving approximation, not an accuracy guarantee).
+//! - **Not claimed**: cross-platform bit-exactness of the module FAMILY —
+//!   `ga2d::DetRotor2`'s angle constructors call `f32::sin`/`cos`/`atan2`
+//!   (libm), which are fixed-binary-only; and no accuracy claims anywhere
+//!   in this module.
 
 use core::ops::{Add, Div, Mul, Neg, Sub};
 
@@ -57,11 +59,12 @@ pub struct DetF32(f32);
 pub unsafe trait Deterministic {}
 
 // SAFETY (M-REP-D S7): DetF32 wraps f32 and exposes bit manipulation,
-// IEEE-754 basic arithmetic, and a fixed-iteration Newton sqrt — all pure
-// arithmetic over fully-specified operations, no libm. Bit-identical for
-// identical inputs in the same binary; cross-platform bit-exact for this
-// type's whole surface (the module-family exception is DetRotor2's angle
-// constructors).
+// IEEE-754 basic arithmetic, and a fixed-iteration Newton sqrt (an
+// approximation — see the method docs; no accuracy claim). All pure
+// arithmetic over fully-specified operations, no libm on this type:
+// bit-identical for identical inputs in the same binary, and
+// cross-platform bit-exact for this type's surface. The module-family
+// exception (DetRotor2's libm angle constructors) does not touch DetF32.
 unsafe impl Deterministic for DetF32 {}
 
 impl DetF32 {
@@ -112,9 +115,13 @@ impl DetF32 {
 
     /// Deterministic square root using Newton-Raphson
     ///
-    /// Uses fixed 4 iterations for reproducibility. NOT correctly rounded:
-    /// documented relative error < 2^-20 (M-REP-D S7 — earlier wording
-    /// implying a rounding guarantee was withdrawn).
+    /// Uses fixed 4 iterations from an initial guess equal to the input,
+    /// for reproducibility. NOT an accuracy guarantee: convergence is NOT
+    /// achieved for inputs far from 1.0 — e.g. `sqrt(100)` returns
+    /// approximately 10.84 after four iterations (observed; M-REP-D R2).
+    /// Deterministic (fixed iteration count, pure arithmetic); accurate
+    /// only near unity. Accuracy improvements are follow-up work outside
+    /// this audit's scope.
     #[inline(never)]
     pub fn sqrt(self) -> Self {
         if self.to_f32() <= 0.0 {

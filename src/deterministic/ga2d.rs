@@ -12,9 +12,10 @@ pub struct DetVector2 {
 
 // SAFETY (M-REP-D S7): every DetVector2 operation reduces to DetF32
 // arithmetic (add/mul for dot/wedge; magnitude/normalize additionally use
-// DetF32's fixed-iteration Newton sqrt, relative error < 2^-20 — NOT
-// correctly rounded) — deterministic per binary, cross-platform bit-exact
-// (no libm on this path).
+// DetF32's fixed-iteration Newton sqrt — an approximation that is NOT
+// converged far from 1.0; see the method docs; no accuracy claim is made
+// or inherited) — deterministic per binary, cross-platform bit-exact (no
+// libm on this path).
 unsafe impl Deterministic for DetVector2 {}
 
 impl DetVector2 {
