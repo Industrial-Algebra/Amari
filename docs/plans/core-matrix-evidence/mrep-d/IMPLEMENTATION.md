@@ -21,9 +21,18 @@ Worktree core-mrep-d, branch fix/core-mrep-d-unsafe-simd-audit.
 - S5 DOCUMENTED (D4): per-site SAFETY comments (DIM guard, matching
   layout, no-drop-glue closure of ScalarField).
 - S6 REPAIRED (D2): MetricTensor derives Clone; ptr::read sites replaced.
-- S7 trait-scope REPAIRED: Deterministic contract narrowed to
-  fixed-binary determinism — cross-platform bit-exactness unattestable
-  for DetRotor2 (sin/cos/atan2 libm variation); per-impl attestations.
+- S7 trait-scope REPAIRED THROUGH THREE REVISIONS (final state, R3-R4):
+  the R1 narrowing premised on 'libm in DetRotor2' was WRONG — the rotor
+  angle constructors call DetF32's Taylor sin/cos/atan2 (approx.rs, with
+  rem_2pi argument reduction): pure fixed arithmetic, NO libm anywhere
+  in the family. The trait contract was RESTORED to the strong
+  cross-platform bit-exact form with the mechanism stated, one R4 scope
+  qualification (cross-platform bit-identity promised for finite inputs
+  and intermediates; arithmetic-NaN sign/payload is implementation-
+  defined in Rust and not promised portable), and the accuracy story
+  kept honest (determinism contract, not accuracy; the sqrt's false
+  '< 2^-20' bound withdrawn — sqrt(100) ~= 10.84 observed; method-level
+  trig error bounds predate the audit and are uncertified by it).
 - S8 DOCUMENTED: GlobalAlloc proxy delegation argument at the site.
 - Public API: simd module now pub; new pub fn
   select_geometric_product_impl_name() — honest runtime inventory

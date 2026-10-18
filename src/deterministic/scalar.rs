@@ -52,6 +52,13 @@ pub struct DetF32(f32);
 /// iteration approximations; no libm anywhere — M-REP-D R3 correction of
 /// the R1 premise that claimed otherwise).
 ///
+/// Scope qualification (R4): cross-platform bit-identity is promised for
+/// computations whose inputs and intermediates are finite. Where an
+/// operation produces a NaN, its sign and payload are
+/// implementation-defined in Rust and NOT promised portable (the local
+/// `0/0` payload is `0xffc00000`, but that is an observation, not a
+/// guarantee); NaN results are deterministic within a fixed binary.
+///
 /// This is a DETERMINISM contract, not an accuracy contract: the
 /// approximation-based methods (Newton sqrt, Taylor sin/cos/atan2) are not
 /// converged outside their working ranges and no accuracy is claimed.
