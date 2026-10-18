@@ -17,10 +17,11 @@ use core::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Deterministic 32-bit floating-point wrapper
 ///
-/// Guarantees bit-exact results within a fixed binary (see the module
-/// docs for the precise cross-platform scope: basic ops and the
-/// fixed-iteration Newton sqrt are cross-platform bit-exact; no libm
-/// surface on this type).
+/// Guarantees bit-exact results on the finite domain (see the module
+/// docs for the precise scope: basic ops, bit manipulation, and the
+/// fixed-iteration approximations are cross-platform bit-exact for
+/// finite computations; no libm surface on this type; NaN bit patterns
+/// carry no promise).
 ///
 /// # Performance
 ///
@@ -45,19 +46,20 @@ pub struct DetF32(f32);
 /// # Safety (M-REP-D S7 — trait scope narrowed to the honest attestation)
 ///
 /// Implementors guarantee bit-exact reproducibility of every exposed
-/// operation: identical inputs produce identical bit patterns — with no
-/// hidden state, address or time dependence — in a fixed binary, and
-/// ACROSS platforms and builds, because the entire family is pure fixed
-/// arithmetic (IEEE-754 basic operations, bit manipulation, fixed-
-/// iteration approximations; no libm anywhere — M-REP-D R3 correction of
-/// the R1 premise that claimed otherwise).
+/// operation on the finite domain (see the scope qualification below):
+/// identical finite inputs with finite intermediates and results produce
+/// identical bit patterns — no hidden state, address or time dependence —
+/// in a fixed binary and ACROSS platforms and builds, because the entire
+/// family is pure fixed arithmetic (IEEE-754 basic operations, bit
+/// manipulation, fixed-iteration approximations; no libm anywhere —
+/// M-REP-D R3 correction of the R1 premise that claimed otherwise).
 ///
-/// Scope qualification (R4): cross-platform bit-identity is promised for
-/// computations whose inputs and intermediates are finite. Where an
-/// operation produces a NaN, its sign and payload are
-/// implementation-defined in Rust and NOT promised portable (the local
-/// `0/0` payload is `0xffc00000`, but that is an observation, not a
-/// guarantee); NaN results are deterministic within a fixed binary.
+/// Scope qualification (R4, tightened R5): bit-identity is promised only
+/// for computations whose inputs, intermediates, and final results are
+/// finite. Where an operation produces a NaN, NOTHING is promised — Rust
+/// permits the sign and payload to differ between repetitions of the same
+/// operation in the same binary (the local `0/0` payload `0xffc00000` is
+/// an observation, not a guarantee, of stability or portability).
 ///
 /// This is a DETERMINISM contract, not an accuracy contract: the
 /// approximation-based methods (Newton sqrt, Taylor sin/cos/atan2) are not

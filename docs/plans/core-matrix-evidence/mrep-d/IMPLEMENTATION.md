@@ -26,10 +26,11 @@ Worktree core-mrep-d, branch fix/core-mrep-d-unsafe-simd-audit.
   angle constructors call DetF32's Taylor sin/cos/atan2 (approx.rs, with
   rem_2pi argument reduction): pure fixed arithmetic, NO libm anywhere
   in the family. The trait contract was RESTORED to the strong
-  cross-platform bit-exact form with the mechanism stated, one R4 scope
-  qualification (cross-platform bit-identity promised for finite inputs
-  and intermediates; arithmetic-NaN sign/payload is implementation-
-  defined in Rust and not promised portable), and the accuracy story
+  cross-platform bit-exact form with the mechanism stated, one R4/R5 scope
+  qualification (bit-identity promised ONLY for computations with
+  finite inputs, intermediates, and results; NaN bit patterns carry NO
+  promise — Rust permits them to vary even between repetitions in the
+  same binary), and the accuracy story
   kept honest (determinism contract, not accuracy; the sqrt's false
   '< 2^-20' bound withdrawn — sqrt(100) ~= 10.84 observed; method-level
   trig error bounds predate the audit and are uncertified by it).
