@@ -10,6 +10,9 @@ pub struct DetVector2 {
     pub y: DetF32,
 }
 
+// SAFETY (M-REP-D S7): every DetVector2 operation reduces to IEEE-754
+// basic arithmetic on DetF32 (add/mul for dot/wedge, plus one correctly-
+// rounded sqrt in `magnitude`/`normalize`) — deterministic per binary.
 unsafe impl Deterministic for DetVector2 {}
 
 impl DetVector2 {
@@ -124,6 +127,11 @@ pub struct DetRotor2 {
     pub b: DetF32,
 }
 
+// SAFETY (M-REP-D S7): compose/transform/inverse are IEEE-754 basic
+// arithmetic; `from_angle`/`to_angle` additionally use sin/cos/atan2 —
+// deterministic within a fixed binary, NOT across platforms/opt-levels
+// (see the narrowed trait contract). This attestation is the reason the
+// trait scope was repaired.
 unsafe impl Deterministic for DetRotor2 {}
 
 impl DetRotor2 {

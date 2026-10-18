@@ -8138,6 +8138,82 @@
       ]
     },
     {
+      "path": "amari_core::simd::batch_geometric_product_avx2",
+      "kind": "fn",
+      "signature": "pub fn batch_geometric_product_avx2 (lhs_batch : & [f64] , rhs_batch : & [f64] , result_batch : & mut [f64] ,)",
+      "source_path": "amari-core/src/simd.rs",
+      "is_reexport": false,
+      "source_module": "amari_core::simd",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn batch_geometric_product_avx2 (lhs_batch : & [f64] , rhs_batch : & [f64] , result_batch : & mut [f64] ,)",
+          "source_path": "amari-core/src/simd.rs",
+          "source_module": "amari_core::simd",
+          "is_reexport": false,
+          "declaration_module": "amari_core::simd",
+          "declaration_ident": "batch_geometric_product_avx2"
+        }
+      ]
+    },
+    {
+      "path": "amari_core::simd::geometric_product_3d_avx2",
+      "kind": "fn",
+      "signature": "pub fn geometric_product_3d_avx2 (lhs : & Multivector < 3 , 0 , 0 > , rhs : & Multivector < 3 , 0 , 0 > ,) -> Multivector < 3 , 0 , 0 >",
+      "source_path": "amari-core/src/simd.rs",
+      "is_reexport": false,
+      "source_module": "amari_core::simd",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn geometric_product_3d_avx2 (lhs : & Multivector < 3 , 0 , 0 > , rhs : & Multivector < 3 , 0 , 0 > ,) -> Multivector < 3 , 0 , 0 >",
+          "source_path": "amari-core/src/simd.rs",
+          "source_module": "amari_core::simd",
+          "is_reexport": false,
+          "declaration_module": "amari_core::simd",
+          "declaration_ident": "geometric_product_3d_avx2"
+        }
+      ]
+    },
+    {
+      "path": "amari_core::simd::select_geometric_product_impl",
+      "kind": "fn",
+      "signature": "pub fn select_geometric_product_impl () -> fn (& Multivector < 3 , 0 , 0 > , & Multivector < 3 , 0 , 0 >) -> Multivector < 3 , 0 , 0 >",
+      "source_path": "amari-core/src/simd.rs",
+      "is_reexport": false,
+      "source_module": "amari_core::simd",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn select_geometric_product_impl () -> fn (& Multivector < 3 , 0 , 0 > , & Multivector < 3 , 0 , 0 >) -> Multivector < 3 , 0 , 0 >",
+          "source_path": "amari-core/src/simd.rs",
+          "source_module": "amari_core::simd",
+          "is_reexport": false,
+          "declaration_module": "amari_core::simd",
+          "declaration_ident": "select_geometric_product_impl"
+        }
+      ]
+    },
+    {
+      "path": "amari_core::simd::select_geometric_product_impl_name",
+      "kind": "fn",
+      "signature": "pub fn select_geometric_product_impl_name () -> & 'static str",
+      "source_path": "amari-core/src/simd.rs",
+      "is_reexport": false,
+      "source_module": "amari_core::simd",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn select_geometric_product_impl_name () -> & 'static str",
+          "source_path": "amari-core/src/simd.rs",
+          "source_module": "amari_core::simd",
+          "is_reexport": false,
+          "declaration_module": "amari_core::simd",
+          "declaration_ident": "select_geometric_product_impl_name"
+        }
+      ]
+    },
+    {
       "path": "amari_core::verified::Dim",
       "kind": "struct",
       "signature": "pub struct Dim < const D : usize >",
@@ -16430,6 +16506,46 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_core::simd",
+      "source_path": "amari-core/src/simd.rs",
+      "source_ordinal": 0,
+      "gate": "unknown(target_arch = \"x86\", target_arch = \"x86_64\")",
+      "status": "unknown",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_core::simd::batch_geometric_product_avx2",
+      "source_path": "amari-core/src/simd.rs",
+      "source_ordinal": 1,
+      "gate": "unknown(target_arch = \"x86\", target_arch = \"x86_64\", target_feature = \"avx2\", target_feature = \"fma\")",
+      "status": "unknown",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::simd::geometric_product_3d_avx2",
+      "source_path": "amari-core/src/simd.rs",
+      "source_ordinal": 0,
+      "gate": "unknown(target_arch = \"x86\", target_arch = \"x86_64\", target_feature = \"avx2\", target_feature = \"fma\")",
+      "status": "unknown",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::simd::select_geometric_product_impl",
+      "source_path": "amari-core/src/simd.rs",
+      "source_ordinal": 2,
+      "gate": "unknown(target_arch = \"x86\", target_arch = \"x86_64\")",
+      "status": "unknown",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_core::simd::select_geometric_product_impl_name",
+      "source_path": "amari-core/src/simd.rs",
+      "source_ordinal": 3,
+      "gate": "unknown(target_arch = \"x86\", target_arch = \"x86_64\")",
+      "status": "unknown",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_core::unicode_ops",
       "source_path": "amari-core/src/unicode_ops.rs",
       "source_ordinal": 0,
@@ -16767,6 +16883,7 @@
     "amari_core::precision",
     "amari_core::property_tests",
     "amari_core::rotor",
+    "amari_core::simd",
     "amari_core::unicode_ops",
     "amari_core::verified",
     "amari_core::verified_contracts"

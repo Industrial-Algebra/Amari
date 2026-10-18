@@ -4328,6 +4328,25 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_calculus::manifold::MetricTensor",
+      "source_path": "amari-calculus/src/manifold/metric.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_calculus::manifold::metric",
+        "ident": "MetricTensor"
+      },
+      "generics": "< const DIM : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_calculus::manifold::connection::Connection",
       "source_path": "amari-calculus/src/manifold/connection.rs",
       "source_ordinal": 2,
@@ -4344,6 +4363,25 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": false
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_calculus::manifold::metric::MetricTensor",
+      "source_path": "amari-calculus/src/manifold/metric.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_calculus::manifold::metric",
+        "ident": "MetricTensor"
+      },
+      "generics": "< const DIM : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
     },
     {
       "trait_path": "Clone",

@@ -22,7 +22,6 @@ use core::ops::{Add, Div, Mul, Neg, Sub};
 use num_traits::Zero;
 
 #[allow(dead_code)]
-pub(crate) mod aligned_alloc;
 pub mod basis;
 pub mod cayley;
 pub mod error;
@@ -42,7 +41,7 @@ pub mod gf2;
 
 #[allow(dead_code)]
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-pub(crate) mod simd;
+pub mod simd;
 
 // Re-export error types
 pub use error::{

@@ -86,7 +86,13 @@ fn bench_batch_operations(c: &mut Criterion) {
             },
         );
 
-        #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
+        // M-REP-D uniform-predicate rule: the SIMD surface is gated on
+        // all(avx2, fma) everywhere — kernel, tests, and callers alike.
+        #[cfg(all(
+            target_arch = "x86_64",
+            target_feature = "avx2",
+            target_feature = "fma"
+        ))]
         {
             group.bench_with_input(
                 BenchmarkId::new("simd_batch_avx2", size),

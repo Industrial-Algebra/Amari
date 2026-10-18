@@ -34,16 +34,26 @@ pub struct DetF32(f32);
 
 /// Marker trait for types with deterministic guarantees
 ///
-/// # Safety
+/// # Safety (M-REP-D S7 — trait scope narrowed to the honest attestation)
 ///
-/// Implementors must guarantee bit-exact reproducibility across:
-/// - Platforms: x86-64, ARM64, WASM32
-/// - Compilers: rustc 1.70+
-/// - Optimization levels
+/// Implementors guarantee bit-exact reproducibility of every exposed
+/// operation **for a fixed compiled binary on a fixed platform**: identical
+/// inputs produce identical bit patterns on every call (no hidden state,
+/// no nondeterministic reduction order, no time/address dependence).
 ///
-/// All operations must produce identical bit patterns given identical inputs.
+/// Cross-platform and cross-optimization-level bit-exactness is NOT part of
+/// this contract: `DetRotor2::from_angle`/`to_angle` use `sin`/`cos`/`atan2`,
+/// whose libm results are permitted to differ between platforms and builds.
+/// The original contract's cross-platform claim was withdrawn by the
+/// M-REP-D audit (2026-10-18) as unattestable for these types; run-to-run
+/// and thread-to-thread determinism — what reproducible simulations need —
+/// remains fully guaranteed.
 pub unsafe trait Deterministic {}
 
+// SAFETY (M-REP-D S7): DetF32 wraps f32 and exposes only IEEE-754
+// fully-specified operations (from_bits/to_bits, basic arithmetic) —
+// bit-identical for identical inputs in the same binary. No transcendental
+// surface, no state.
 unsafe impl Deterministic for DetF32 {}
 
 impl DetF32 {

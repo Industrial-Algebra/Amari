@@ -22,16 +22,12 @@ impl<const DIM: usize> Connection<DIM> {
     where
         [(); DIM]:,
     {
-        // Clone the metric components to avoid lifetime issues
-        // In a real implementation, we might use Rc or Arc for sharing
-        let metric_clone = unsafe {
-            // SAFETY: This is a hack to clone the metric
-            // In production, MetricTensor should impl Clone properly
-            std::ptr::read(metric as *const MetricTensor<DIM>)
-        };
-
         Self {
-            metric: metric_clone,
+            // M-REP-D D2: MetricTensor now derives Clone (ScalarField is a
+            // fn-pointer + usize); the former `ptr::read` bitwise "clone
+            // hack" was sound only while MetricTensor had no owning fields
+            // and is replaced by the real Clone impl.
+            metric: metric.clone(),
             h: 1e-5,
         }
     }
@@ -84,12 +80,10 @@ where
     [(); DIM]:,
 {
     fn clone(&self) -> Self {
-        unsafe {
-            let metric_clone = std::ptr::read(&self.metric as *const MetricTensor<DIM>);
-            Self {
-                metric: metric_clone,
-                h: self.h,
-            }
+        // M-REP-D D2: real Clone delegation (see from_metric).
+        Self {
+            metric: self.metric.clone(),
+            h: self.h,
         }
     }
 }
