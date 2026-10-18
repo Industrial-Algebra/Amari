@@ -32,10 +32,18 @@ false-positives dispositioned:
 
 ### 1.2 Audited, not unsafe code (excluded from the surface, recorded here)
 
-- `amari-discovery` `unsafe_trait: bool` catalog-metadata fields (5+2+1
-  occurrences) — data *about* trait unsafety, not unsafe code.
+- `amari-discovery/src` `unsafe_trait: bool` catalog-metadata fields
+  (traits.rs ×5, model.rs ×1, generate.rs ×1) — data *about* trait
+  unsafety, not unsafe code.
+- **X1 (R4):** `amari-discovery/tests/catalog_traits.rs:259,432,438` —
+  test assertions plus a fixture string containing `unsafe impl Send` —
+  exercising metadata extraction, not executing unsafe.
+- **X2 (R4):** `amari-discovery/tests/catalog_signatures.rs:103,120` —
+  fixture string `pub unsafe fn` and a signature-content assertion —
+  metadata testing, not unsafe code.
 - `amari-discovery/src/inspect/rust/parser.rs:735,740` — `#![forbid(unsafe_code)]`
   inside a **test fixture string**.
+- `amari-gpu/src/enumerative.rs` — `subset_len` field-name collisions.
 - `amari-gpu/src/enumerative.rs` — the 5 grep hits are the `subset_len`
   **field name** (substring of `set_len`); host code contains no unsafe;
   compute is WGSL-side. GPU crate excluded from this audit.
@@ -163,11 +171,16 @@ performance optimization.
 
 ---
 
-*Inventory census (R3 — executable and archived): the complete command
-transcript, the enumerated member/dir universe from
-`cargo metadata --no-deps`, and the raw results are archived at
-`docs/plans/core-matrix-evidence/mrep-d/census-transcript.txt`
-(30 raw `unsafe`-bearing lines over the full universe; the §1/§1.2
-dispositions map every line). The census commands in the transcript are
-copy-paste executable; no placeholder remains.*
+*Inventory census (R4 — verified count): the executable command transcript
+with full output is archived at
+`docs/plans/core-matrix-evidence/mrep-d/census-transcript.txt`. The
+verified universe yields **exactly 24 unsafe-bearing lines** (R3's "30"
+was a miscount of the archive's own header/comment lines), every one
+mapped in the transcript's disposition block: S1 (1), S4 (3), S5 (4),
+S6 (2), S7 (4), S8 (5), plus the R4-identified exclusion class X1/X2
+(5 lines): discovery **test fixtures and assertions** exercising the
+catalog's `unsafe_trait`/signature metadata (`catalog_traits.rs:259,432,438`,
+`catalog_signatures.rs:103,120`) — strings and assertions about metadata,
+not unsafe code, extending §1.2's exclusion class from src to test
+targets.*
 the archive records the enumerated file list, not a glob.
