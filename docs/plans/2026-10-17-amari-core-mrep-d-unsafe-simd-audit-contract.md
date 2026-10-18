@@ -86,11 +86,17 @@ check it.
   yield 0 while FMA yields the correct −5.551115123125783e-17 — an error of
   5.55e-17 against an allowed ~4e-323 at result≈0):** where both results
   are finite, require
-  `|simd − scalar| ≤ max(K · ulp(M), 1e-300)` with `M = Σ|term_i|` — the
-  sum of absolute products accumulated in f64 (the cancellation scale), and
+  `|simd − scalar| ≤ max(K · ulp(M̂), 1e-300)` with `M = Σ|term_i|` — the
+  sum of absolute products accumulated in f64 (the cancellation scale) —
+  **saturated: `M̂ = min(M, f64::MAX)`** (R3 correction: an overflowing `M`
+  would make `ulp(M)` infinite and the bound vacuous, accepting arbitrary
+  finite error; at term magnitudes near MAX the honest rounding scale is
+  `ulp(f64::MAX)`, which the saturation preserves), and
   `K = 16` (headroom for FMA-vs-separate reassociation across the 4-lane
-  chains; tighten if measurements allow). `M` is computed by the battery
-  harness itself in f64 and recorded per case. Where either result is
+  chains; tighten if measurements allow). `M` (and whether saturation
+  engaged) is computed by the battery harness itself in f64 and recorded
+  per case; any case engaging saturation is additionally reported in the
+  battery summary. Where either result is
   nonfinite, require **identical finiteness class** (both-NaN, or both ±inf
   with matching sign when the exact value overflows) — bit-identity of NaN
   payloads NOT required.
@@ -157,21 +163,11 @@ performance optimization.
 
 ---
 
-*Inventory commands (corrected R2 — ripgrep's regex engine is default;
-`-E` is `--encoding` and breaks all three commands; the universe is
-enumerated explicitly rather than globbed):*
-universe = `src/` (root crate) + every member's `src/`, `tests/`,
-`benches/`, `examples/` + every `build.rs` in the workspace.
-
-```
-rg -n --no-heading '\bunsafe\b' src amari-core/src amari-core/tests \
-  amari-rewrite/src amari-rewrite/tests amari-discovery/src \
-  amari-calculus/src <…each member's target dirs…>
-rg -ln 'std::arch|target_feature\(enable|_mm256|_mm_|is_x86_feature_detected|__m256|__m128' src */src
-rg -n 'transmute|from_raw_parts|\.set_len|get_unchecked|assume_aligned' src */src */tests
-find . -name build.rs -not -path './target/*' -exec rg -n '\bunsafe\b' {} +
-```
-
-(comment lines excluded; false-positive dispositions in §1.2). The exact
-member list is `cargo metadata`'s workspace members at the audited commit;
+*Inventory census (R3 — executable and archived): the complete command
+transcript, the enumerated member/dir universe from
+`cargo metadata --no-deps`, and the raw results are archived at
+`docs/plans/core-matrix-evidence/mrep-d/census-transcript.txt`
+(30 raw `unsafe`-bearing lines over the full universe; the §1/§1.2
+dispositions map every line). The census commands in the transcript are
+copy-paste executable; no placeholder remains.*
 the archive records the enumerated file list, not a glob.
