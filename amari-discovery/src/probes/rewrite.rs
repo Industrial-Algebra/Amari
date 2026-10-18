@@ -3833,7 +3833,7 @@ pub struct RewriteCompletionTraceStep {
     compatibility = "additive_patch",
     constraints(
         bounded_trace = "at most 8 trace steps are reported; trace_step_count is the full count and trace_truncated reports withheld steps",
-        completion_outcome_three_valued = "completion reports complete, partial, or failed, with a typed partial or failed reason",
+        completion_outcomes = "completion reports complete, partial, or failed with a typed reason, guided-inverse outcomes, or error when the library declines within bounds (failure_reason)",
         guided_inverse_authority = "verified_witness carries an original-system derivation; no variant claims a negative result from completed-system search",
         rejected_candidates_bounded = "at most 8 rejected candidate terms are reported; candidates_rejected_count is the full count",
         system_hash_is_canonical = "system_hash is the sha256 hex digest of the completion result system"
