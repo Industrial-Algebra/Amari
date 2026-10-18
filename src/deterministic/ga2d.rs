@@ -11,11 +11,10 @@ pub struct DetVector2 {
 }
 
 // SAFETY (M-REP-D S7): every DetVector2 operation reduces to DetF32
-// arithmetic (add/mul for dot/wedge; magnitude/normalize additionally use
-// DetF32's fixed-iteration Newton sqrt — an approximation that is NOT
-// converged far from 1.0; see the method docs; no accuracy claim is made
-// or inherited) — deterministic per binary, cross-platform bit-exact (no
-// libm on this path).
+// arithmetic (add/mul for dot/wedge; magnitude/normalize use the
+// fixed-iteration Newton sqrt — an approximation, no accuracy claim).
+// Pure arithmetic, no libm: deterministic in any binary and
+// cross-platform bit-exact.
 unsafe impl Deterministic for DetVector2 {}
 
 impl DetVector2 {
@@ -130,11 +129,12 @@ pub struct DetRotor2 {
     pub b: DetF32,
 }
 
-// SAFETY (M-REP-D S7): compose/transform/inverse are IEEE-754 basic
-// arithmetic; `from_angle`/`to_angle` additionally use sin/cos/atan2 —
-// deterministic within a fixed binary, NOT across platforms/opt-levels
-// (see the narrowed trait contract). This attestation is the reason the
-// trait scope was repaired.
+// SAFETY (M-REP-D S7, R3 corrected): compose/transform/inverse are
+// IEEE-754 basic arithmetic; `from_angle`/`to_angle` call DetF32's
+// TAYLOR-series sin/cos and the atan2 approximation (approx.rs) — pure
+// fixed arithmetic, NOT libm (the R1 attestation claiming libm here was
+// wrong). Deterministic in any binary and cross-platform bit-exact;
+// accuracy limited to the Taylor working ranges (no accuracy claim).
 unsafe impl Deterministic for DetRotor2 {}
 
 impl DetRotor2 {

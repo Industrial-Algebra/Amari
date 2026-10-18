@@ -1,17 +1,17 @@
 //! Deterministic floating-point scalar type
 //!
-//! Determinism guarantees (M-REP-D S7, revised R2 2026-10-18):
-//! - **In-binary**: every operation is bit-exact reproducible for identical
-//!   inputs (no hidden state, fixed iteration counts).
-//! - **Cross-platform**: bit manipulation and IEEE-754 basic arithmetic are
-//!   exact everywhere. The square root is a fixed 4-iteration Newton
-//!   method over basic arithmetic — cross-platform bit-exact (no libm),
-//!   but NOT converged for inputs far from 1.0 (see the method docs; it
-//!   is a determinism-preserving approximation, not an accuracy guarantee).
-//! - **Not claimed**: cross-platform bit-exactness of the module FAMILY —
-//!   `ga2d::DetRotor2`'s angle constructors call `f32::sin`/`cos`/`atan2`
-//!   (libm), which are fixed-binary-only; and no accuracy claims anywhere
-//!   in this module.
+//! Determinism guarantees (M-REP-D S7, revised R3 2026-10-18 — the
+//! earlier "libm in DetRotor2" premise was WRONG):
+//! - **Cross-platform bit-exactness**: the entire `deterministic` family is
+//!   pure fixed arithmetic — bit manipulation, IEEE-754 basic operations,
+//!   and fixed-iteration approximations (Newton sqrt in this file; Taylor
+//!   sin/cos and the atan2 approximation in `approx.rs`). No libm call
+//!   exists anywhere in the family, so identical inputs yield identical
+//!   bits across platforms and builds.
+//! - **Not claimed**: ACCURACY. The approximations do not converge outside
+//!   their working ranges (see each method's docs — e.g. the Newton sqrt
+//!   from a raw-input start, and Taylor series near zero). Deterministic,
+//!   not correctly rounded.
 
 use core::ops::{Add, Div, Mul, Neg, Sub};
 
@@ -45,26 +45,23 @@ pub struct DetF32(f32);
 /// # Safety (M-REP-D S7 — trait scope narrowed to the honest attestation)
 ///
 /// Implementors guarantee bit-exact reproducibility of every exposed
-/// operation **for a fixed compiled binary on a fixed platform**: identical
-/// inputs produce identical bit patterns on every call (no hidden state,
-/// no nondeterministic reduction order, no time/address dependence).
+/// operation: identical inputs produce identical bit patterns — with no
+/// hidden state, address or time dependence — in a fixed binary, and
+/// ACROSS platforms and builds, because the entire family is pure fixed
+/// arithmetic (IEEE-754 basic operations, bit manipulation, fixed-
+/// iteration approximations; no libm anywhere — M-REP-D R3 correction of
+/// the R1 premise that claimed otherwise).
 ///
-/// Cross-platform and cross-optimization-level bit-exactness is NOT part of
-/// this contract: `DetRotor2::from_angle`/`to_angle` use `sin`/`cos`/`atan2`,
-/// whose libm results are permitted to differ between platforms and builds.
-/// The original contract's cross-platform claim was withdrawn by the
-/// M-REP-D audit (2026-10-18) as unattestable for these types; run-to-run
-/// and thread-to-thread determinism — what reproducible simulations need —
-/// remains fully guaranteed.
+/// This is a DETERMINISM contract, not an accuracy contract: the
+/// approximation-based methods (Newton sqrt, Taylor sin/cos/atan2) are not
+/// converged outside their working ranges and no accuracy is claimed.
 pub unsafe trait Deterministic {}
 
 // SAFETY (M-REP-D S7): DetF32 wraps f32 and exposes bit manipulation,
-// IEEE-754 basic arithmetic, and a fixed-iteration Newton sqrt (an
-// approximation — see the method docs; no accuracy claim). All pure
-// arithmetic over fully-specified operations, no libm on this type:
-// bit-identical for identical inputs in the same binary, and
-// cross-platform bit-exact for this type's surface. The module-family
-// exception (DetRotor2's libm angle constructors) does not touch DetF32.
+// IEEE-754 basic arithmetic, and fixed-iteration approximations (Newton
+// sqrt here; Taylor sin/cos/atan2 in approx.rs) — all pure arithmetic,
+// no libm. Bit-identical for identical inputs in any binary on any
+// platform. No accuracy claim (see the method docs).
 unsafe impl Deterministic for DetF32 {}
 
 impl DetF32 {
