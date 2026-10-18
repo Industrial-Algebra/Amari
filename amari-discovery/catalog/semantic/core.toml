@@ -414,3 +414,99 @@ example_refs = []
 probe_refs = ["amari-probe:rewrite:preimages:v1"]
 stability = "stable"
 cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:analysis:critical-pairs"
+name = "Deterministic critical pairs"
+description = "Enumerate every critical pair of a first-order rewrite system in a deterministic rule-and-path order, with renamed-apart unification and typed non-left-linear evidence."
+aliases = ["critical pairs", "overlap analysis"]
+concepts = ["term rewriting system", "critical pairs", "confluence"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::analysis::critical_pairs", "amari_rewrite::analysis::CriticalPair", "amari_rewrite::analysis::CriticalPairReport"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:analysis:local-confluence"
+name = "Bounded local-confluence analysis"
+description = "Bounded bidirectional joinability witnesses over critical pairs and honest local-confluence certification that is blocked by non-left-linear rules."
+aliases = ["local confluence", "joinability analysis"]
+concepts = ["term rewriting system", "confluence", "joinability"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::analysis::local_confluence", "amari_rewrite::analysis::ConfluenceReport", "amari_rewrite::analysis::PairJoinability", "amari_rewrite::analysis::JoinabilityWitness"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:analysis:v1"]
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:analysis:termination"
+name = "LPO termination certificates"
+description = "Caller-supplied strict total precedences, memoized lexicographic path-order comparisons, and whole-system termination certificates that prove only strict decrease."
+aliases = ["termination proof", "lexicographic path ordering"]
+concepts = ["term rewriting system", "termination", "orderings"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::analysis::prove_terminating", "amari_rewrite::analysis::Precedence", "amari_rewrite::analysis::TerminationProof", "amari_rewrite::analysis::lpo_greater"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:completion:knuth-bendix"
+name = "Bounded Knuth-Bendix completion"
+description = "Bounded completion to a convergent system with LPO, left-linearity, and local-confluence postchecks, plus completion-guided inverse search that replays every candidate against the original directed system."
+aliases = ["Knuth-Bendix", "completion", "completed-system guidance"]
+concepts = ["term rewriting system", "completion", "equational theories", "inverse rewriting"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:completion"]
+symbol_refs = ["amari_rewrite::completion::complete", "amari_rewrite::completion::CompletionOutcome", "amari_rewrite::completion::CompletionConfig", "amari_rewrite::completion::CompletionTrace", "amari_rewrite::completion::guided_predecessors", "amari_rewrite::completion::prepare_guidance", "amari_rewrite::completion::GuidedSearchOutcome"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:completion:v1"]
+stability = "experimental"
+cost = "moderate"
+
+[[relations]]
+from = "amari:amari-rewrite:analysis:critical-pairs"
+to = "amari:amari-rewrite:analysis:local-confluence"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:analysis:termination"
+to = "amari:amari-rewrite:analysis:local-confluence"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:analysis:critical-pairs"
+to = "amari:amari-rewrite:completion:knuth-bendix"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:analysis:termination"
+to = "amari:amari-rewrite:completion:knuth-bendix"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:analysis:local-confluence"
+to = "amari:amari-rewrite:completion:knuth-bendix"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:analysis:local-confluence"
+to = "amari:amari-rewrite:trs:normalization"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:completion:knuth-bendix"
+to = "amari:amari-rewrite:inverse:predecessors"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:completion:knuth-bendix"
+to = "amari:amari-rewrite:language:preimages"
+kind = "composes_with"

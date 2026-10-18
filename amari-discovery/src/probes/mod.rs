@@ -34,18 +34,20 @@ pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathReq
 pub use optimization::{ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest, ParetoPoint};
 use registry::{AdapterRegistration, EffectiveProbeLimits, ProbeRegistry};
 pub use rewrite::{
-    RewriteAutomaton, RewriteAutomatonTransition, RewriteBackwardSearchOutput,
-    RewriteBackwardSearchRequest, RewriteBidirectionalSearchOutput,
-    RewriteBidirectionalSearchRequest, RewriteBranchingEstimate, RewriteErasedBinding,
-    RewriteExample, RewriteForwardStep, RewriteGuidance, RewriteInferRuleOutput,
-    RewriteInferRuleRequest, RewriteInverseAnalysisOutput, RewriteInverseAnalysisRequest,
-    RewriteInverseRuleReport, RewriteLanguagesOutput, RewriteLanguagesRequest,
-    RewriteNormalizeOutput, RewriteNormalizeRequest, RewritePredecessorsOutput,
-    RewritePredecessorsRequest, RewritePreimagesOutput, RewritePreimagesRequest,
-    RewriteRankedSymbol, RewriteResidualAuthority, RewriteResidualReplayOutput,
-    RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode, RewriteSymbolicPredecessor,
-    RewriteSymbolicPredecessorsOutput, RewriteSymbolicPredecessorsRequest,
-    RewriteSymbolicProvenance, RewriteTerm, RewriteTermConstraint,
+    RewriteAnalysisOutput, RewriteAnalysisPair, RewriteAnalysisRequest, RewriteAutomaton,
+    RewriteAutomatonTransition, RewriteBackwardSearchOutput, RewriteBackwardSearchRequest,
+    RewriteBidirectionalSearchOutput, RewriteBidirectionalSearchRequest, RewriteBranchingEstimate,
+    RewriteCompletionOutput, RewriteCompletionRequest, RewriteCompletionTraceStep,
+    RewriteErasedBinding, RewriteExample, RewriteForwardStep, RewriteGuidance,
+    RewriteInferRuleOutput, RewriteInferRuleRequest, RewriteInverseAnalysisOutput,
+    RewriteInverseAnalysisRequest, RewriteInverseRuleReport, RewriteLanguagesOutput,
+    RewriteLanguagesRequest, RewriteNormalizeOutput, RewriteNormalizeRequest,
+    RewritePrecedenceSymbol, RewritePredecessorsOutput, RewritePredecessorsRequest,
+    RewritePreimagesOutput, RewritePreimagesRequest, RewriteRankedSymbol, RewriteResidualAuthority,
+    RewriteResidualReplayOutput, RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode,
+    RewriteSymbolicPredecessor, RewriteSymbolicPredecessorsOutput,
+    RewriteSymbolicPredecessorsRequest, RewriteSymbolicProvenance, RewriteTerm,
+    RewriteTermConstraint, RewriteTerminationSummary,
 };
 pub use surreal::{
     DecimalRational, DecimalSurcomplex, RationalSurcomplexDivisionOutput,
@@ -427,6 +429,18 @@ fn schema_document(schema_id: &str) -> DiscoveryResult<ProbeSchemaDocument> {
         "amari.discovery/probe/rewrite-preimages/output/v1" => {
             ProbeSchemaDocument::from_contract::<rewrite::RewritePreimagesOutput>()
         }
+        "amari.discovery/probe/rewrite-analysis/input/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteAnalysisRequest>()
+        }
+        "amari.discovery/probe/rewrite-analysis/output/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteAnalysisOutput>()
+        }
+        "amari.discovery/probe/rewrite-completion/input/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteCompletionRequest>()
+        }
+        "amari.discovery/probe/rewrite-completion/output/v1" => {
+            ProbeSchemaDocument::from_contract::<rewrite::RewriteCompletionOutput>()
+        }
         "amari.discovery/probe/rewrite-symbolic-predecessors/input/v1" => {
             ProbeSchemaDocument::from_contract::<RewriteSymbolicPredecessorsRequest>()
         }
@@ -511,8 +525,10 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
         holographic::superposition_registration()?,
         network::registration()?,
         optimization::registration()?,
+        rewrite::analysis_registration()?,
         rewrite::backward_search_registration()?,
         rewrite::bidirectional_search_registration()?,
+        rewrite::completion_registration()?,
         rewrite::languages_registration()?,
         rewrite::infer_rule_registration()?,
         rewrite::inverse_analysis_registration()?,

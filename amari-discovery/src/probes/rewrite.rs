@@ -7,6 +7,16 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 #[cfg(feature = "standard-probes")]
 use amari_rewrite::{
+    analysis::{
+        critical_pairs, local_confluence, prove_terminating, PairJoinability, Precedence,
+        TerminationProof,
+    },
+    completion::{
+        complete, guided_predecessors, prepare_guidance, CandidateRejection, CompletionConfig,
+        CompletionOutcome, CompletionTrace, FailedReason, GuidedSearchOutcome, InconclusiveReason,
+        PartialReason, TraceStep,
+    },
+    inverse::{system_hash, InverseSearchConfig},
     language::{
         classify_and_query, classify_system, finite_horizon_lower_bound, finite_horizon_preimage,
         one_step_lower_bound, one_step_preimage, saturation_lower_bound, saturation_preimage,
@@ -17,7 +27,7 @@ use amari_rewrite::{
     },
     relation::{RelationLimits, RelationResources, Sha256Digest},
     synthesis::infer_rule,
-    trs::{match_pattern, Rule, Term, TermSystem},
+    trs::{match_pattern, Rule, Symbol, Term, TermSystem},
     RewriteError,
 };
 use serde::{Deserialize, Serialize};
@@ -3533,5 +3543,910 @@ pub(super) fn preimages_registration() -> DiscoveryResult<AdapterRegistration> {
         side_effects: SideEffectPolicy::None,
         network: false,
         execute: execute_preimages,
+    })
+}
+
+// ============================================================================
+// Cohort 6 — bounded analysis/completion discovery surface (0.25 Task 35)
+// ============================================================================
+
+/// Probe-tightened ordered-rule ceiling for the analysis/completion
+/// probes.
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_RULES: u64 = 32;
+/// Probe-tightened per-term node ceiling (library default 4096).
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_TERM_NODES: u64 = 64;
+/// Probe-tightened per-term depth ceiling (library default 64).
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_TERM_DEPTH: u64 = 16;
+/// Probe-tightened operation ceiling (library default 1000000).
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_OPERATIONS: usize = 20_000;
+/// Maximum precedence symbols a request may declare.
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_PRECEDENCE_SYMBOLS: usize = 16;
+/// Maximum arity a declared precedence symbol may claim.
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_ARITY: u64 = 8;
+/// Maximum pair entries reported in one analysis output.
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_PAIRS: usize = 8;
+/// Maximum trace steps reported in one completion output.
+#[cfg(feature = "standard-probes")]
+const MAX_ANALYSIS_TRACE_STEPS: usize = 8;
+/// Probe-tightened guided-inverse search depth ceiling.
+#[cfg(feature = "standard-probes")]
+const MAX_COMPLETION_SEARCH_DEPTH: u64 = 8;
+/// Maximum rejected candidate terms reported in one output.
+#[cfg(feature = "standard-probes")]
+const MAX_COMPLETION_REJECTIONS: usize = 8;
+
+/// One ranked function symbol in a caller-supplied LPO precedence.
+///
+/// Entries are ordered highest precedence first, matching
+/// [`amari_rewrite::analysis::Precedence::new`]. The declared arity
+/// must agree with every use of the symbol in the request system.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewritePrecedenceSymbol {
+    /// Function symbol name.
+    pub name: String,
+    /// Declared arity, 0..=8.
+    pub arity: u64,
+}
+
+/// Typed input for the bounded analysis probe.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-analysis/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        operation_known = "operation is critical_pairs, confluence, or termination",
+        precedence_symbols_limit = "at most 16 precedence symbols with arity at most 8",
+        precedence_required = "termination requires a precedence that covers every used symbol at its arity",
+        rules_checked = "every rule RHS variable occurs in its LHS",
+        rules_count_limit = "at most 32 ordered rules are accepted",
+        term_bounds = "terms have depth at most 16 and at most 64 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes"
+    ),
+    example(
+        label = "root_overlap_critical_pairs",
+        value = "{\"operation\":\"critical_pairs\",\"rules\":[{\"lhs\":{\"kind\":\"symbol\",\"name\":\"f\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"x\"}]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}},{\"lhs\":{\"kind\":\"symbol\",\"name\":\"f\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"x\"}]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]}}],\"precedence\":null}"
+    )
+)]
+pub struct RewriteAnalysisRequest {
+    /// The operation: `critical_pairs`, `confluence`, or
+    /// `termination`.
+    pub operation: String,
+    /// Ordered checked rewrite rules forming the system.
+    pub rules: Vec<RewriteRule>,
+    /// The LPO precedence (required for `termination`; validated
+    /// against the probe ceilings whenever supplied).
+    pub precedence: Option<Vec<RewritePrecedenceSymbol>>,
+}
+
+/// One bounded critical-pair or joinability entry.
+///
+/// `outcome` is `overlap` for critical-pair enumeration, and
+/// `joinable` or `not_joinable` for local-confluence analysis.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteAnalysisPair {
+    /// Index of the overlapped (outer) rule.
+    pub left_rule: u64,
+    /// Index of the rule unified into the overlap position.
+    pub right_rule: u64,
+    /// Overlap position inside the outer rule's left-hand side.
+    pub path: Vec<u64>,
+    /// `overlap`, `joinable`, or `not_joinable`.
+    pub outcome: String,
+    /// The unified outer left-hand side (critical-pair entries).
+    pub overlap: Option<RewriteTerm>,
+    /// The outer rule's instantiated right-hand side.
+    pub root_step: Option<RewriteTerm>,
+    /// The outer left-hand side rewritten at `path`.
+    pub position_step: Option<RewriteTerm>,
+    /// The common reduct for a joinable pair.
+    pub join_term: Option<RewriteTerm>,
+}
+
+/// Per-system counts carried by a termination proof.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteTerminationSummary {
+    /// Number of rules examined.
+    pub rules_checked: u64,
+    /// Number of rules proved strictly decreasing.
+    pub decreasing_rules: u64,
+}
+
+/// Typed output of the bounded analysis probe.
+///
+/// Pair evidence is capped at eight entries; `pair_count` always
+/// reports the full enumeration count and `pairs_truncated` says
+/// whether entries were withheld.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-analysis/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        bounded_pair_evidence = "at most 8 pair entries are reported; pair_count is the full enumeration count and pairs_truncated reports withheld entries",
+        confluence_certified_honestly = "locally_confluent is true only when every pair joins and no rule blocks certification",
+        termination_certificate = "termination is proved_terminating only when every rule strictly decreases",
+        evidence_only = "outputs report terms, indices, and proof status, never an unbounded derivation set"
+    ),
+    example(
+        label = "root_overlap_critical_pairs",
+        value = "{\"outcome\":\"ok\",\"operation\":\"critical_pairs\",\"rule_count\":2,\"pair_count\":1,\"trivial_excluded\":0,\"non_left_linear_rules\":[],\"pairs\":[{\"left_rule\":0,\"right_rule\":1,\"path\":[],\"outcome\":\"overlap\",\"overlap\":{\"kind\":\"symbol\",\"name\":\"f\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"x\"}]},\"root_step\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"position_step\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]},\"join_term\":null}],\"pairs_truncated\":false,\"locally_confluent\":null,\"certification_blocked\":[],\"joinable_count\":null,\"not_joinable_count\":null,\"termination\":null,\"termination_report\":null,\"failing_rule\":null}"
+    )
+)]
+pub struct RewriteAnalysisOutput {
+    /// Always `ok` for a completed analysis.
+    pub outcome: String,
+    /// The dispatched operation.
+    pub operation: String,
+    /// Number of input rules.
+    pub rule_count: u64,
+    /// Full critical-pair count (critical-pair and confluence
+    /// operations).
+    pub pair_count: Option<u64>,
+    /// Overlaps excluded because both sides were structurally equal.
+    pub trivial_excluded: Option<u64>,
+    /// Indices of rules whose left-hand side is not left-linear.
+    pub non_left_linear_rules: Vec<u64>,
+    /// Bounded pair evidence.
+    pub pairs: Vec<RewriteAnalysisPair>,
+    /// Whether pair entries were withheld by the output ceiling.
+    pub pairs_truncated: Option<bool>,
+    /// Certified local confluence (confluence operation).
+    pub locally_confluent: Option<bool>,
+    /// Rule indices that block certification even when pairs join.
+    pub certification_blocked: Vec<u64>,
+    /// Number of joinable pairs.
+    pub joinable_count: Option<u64>,
+    /// Number of non-joinable pairs.
+    pub not_joinable_count: Option<u64>,
+    /// `proved_terminating` or `not_decreasing`.
+    pub termination: Option<String>,
+    /// Per-system counts for a termination proof.
+    pub termination_report: Option<RewriteTerminationSummary>,
+    /// First rule that did not strictly decrease.
+    pub failing_rule: Option<u64>,
+}
+
+/// Typed input for the bounded completion probe.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-completion/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        max_depth_limit = "max_depth is between 1 and 8 when supplied",
+        operation_known = "operation is complete or guided_inverse",
+        precedence_required = "a precedence covering every used symbol at its arity is always required",
+        precedence_symbols_limit = "at most 16 precedence symbols with arity at most 8",
+        rules_checked = "every rule RHS variable occurs in its LHS",
+        rules_count_limit = "at most 32 ordered rules are accepted",
+        target_required = "guided_inverse requires a target term",
+        term_bounds = "terms have depth at most 16 and at most 64 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes"
+    ),
+    example(
+        label = "complete_orientable_rule",
+        value = "{\"operation\":\"complete\",\"rules\":[{\"lhs\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]}}],\"precedence\":[{\"name\":\"a\",\"arity\":0},{\"name\":\"b\",\"arity\":0}],\"target\":null,\"max_depth\":null}"
+    )
+)]
+pub struct RewriteCompletionRequest {
+    /// The operation: `complete` or `guided_inverse`.
+    pub operation: String,
+    /// Ordered checked rewrite rules forming the input system.
+    pub rules: Vec<RewriteRule>,
+    /// The LPO precedence that orients every rule and generated
+    /// equation. Always required.
+    pub precedence: Vec<RewritePrecedenceSymbol>,
+    /// The target term for `guided_inverse` (required there; any
+    /// supplied term is validated against the probe ceilings).
+    pub target: Option<RewriteTerm>,
+    /// Guided-search depth for `guided_inverse`, 1..=8 (default 8).
+    /// Any supplied value is validated even for `complete`.
+    pub max_depth: Option<u64>,
+}
+
+/// One bounded completion trace event.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteCompletionTraceStep {
+    /// `pair`, `oriented`, or `simplified`.
+    pub kind: String,
+    /// Outer rule index for `pair`.
+    pub left_rule: Option<u64>,
+    /// Inner rule index for `pair`.
+    pub right_rule: Option<u64>,
+    /// Overlap position for `pair`.
+    pub path: Vec<u64>,
+    /// Affected rule index for `oriented` or `simplified`.
+    pub rule_index: Option<u64>,
+}
+
+/// Typed output of the bounded completion probe.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-completion/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        bounded_trace = "at most 8 trace steps are reported; trace_step_count is the full count and trace_truncated reports withheld steps",
+        completion_outcome_three_valued = "completion reports complete, partial, or failed, with a typed partial or failed reason",
+        guided_inverse_authority = "verified_witness carries an original-system derivation; no variant claims a negative result from completed-system search",
+        rejected_candidates_bounded = "at most 8 rejected candidate terms are reported; candidates_rejected_count is the full count",
+        system_hash_is_canonical = "system_hash is the sha256 hex digest of the completion result system"
+    ),
+    example(
+        label = "complete_orientable_rule",
+        value = "{\"outcome\":\"complete\",\"operation\":\"complete\",\"rule_count\":1,\"system_rule_count\":1,\"system_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"rules_added\":0,\"pairs_processed\":0,\"trace_step_count\":0,\"trace_steps\":[],\"trace_truncated\":false,\"partial_reason\":null,\"failed_reason\":null,\"path\":[],\"candidates_rejected\":[],\"candidates_rejected_count\":null,\"inconclusive_reason\":null,\"guidance_available\":null}"
+    )
+)]
+pub struct RewriteCompletionOutput {
+    /// `complete`, `partial`, `failed`, `verified_witness`,
+    /// `no_verified_witness`, or `inconclusive`.
+    pub outcome: String,
+    /// The dispatched operation.
+    pub operation: String,
+    /// Number of input rules.
+    pub rule_count: u64,
+    /// Rule count of the completion result system.
+    pub system_rule_count: Option<u64>,
+    /// Sha256 hex of the completion result system.
+    pub system_hash: Option<String>,
+    /// Rules completion generated from critical pairs.
+    pub rules_added: Option<u64>,
+    /// Distinct critical-pair equations processed.
+    pub pairs_processed: Option<u64>,
+    /// Full trace event count.
+    pub trace_step_count: Option<u64>,
+    /// Bounded trace events.
+    pub trace_steps: Vec<RewriteCompletionTraceStep>,
+    /// Whether trace events were withheld by the output ceiling.
+    pub trace_truncated: Option<bool>,
+    /// `unorientable_rule`, `non_left_linear`, or
+    /// `confluence_not_certified`.
+    pub partial_reason: Option<String>,
+    /// `invalid_input` for a fatal precondition failure.
+    pub failed_reason: Option<String>,
+    /// Verified original-system derivation, source first.
+    pub path: Vec<RewriteTerm>,
+    /// Bounded rejected completed-system candidates.
+    pub candidates_rejected: Vec<RewriteTerm>,
+    /// Full rejected-candidate count.
+    pub candidates_rejected_count: Option<u64>,
+    /// `no_candidates_generated`, `budget_cut`, or
+    /// `completion_not_complete`.
+    pub inconclusive_reason: Option<String>,
+    /// Whether convergent completion guidance was available.
+    pub guidance_available: Option<bool>,
+}
+
+/// Validate the rule-count and term ceilings shared by both probes.
+#[cfg(feature = "standard-probes")]
+fn validate_analysis_rules(rules: &[RewriteRule]) -> DiscoveryResult<u64> {
+    let rule_count = u64::try_from(rules.len())
+        .map_err(|_| DiscoveryError::LimitExceeded("analysis rule count overflow".to_owned()))?;
+    enforce("analysis rule count", rule_count, MAX_ANALYSIS_RULES)?;
+    let mut nodes = 0_u64;
+    for rule in rules {
+        for term in [&rule.lhs, &rule.rhs] {
+            let stats = term_stats(term, MAX_ANALYSIS_TERM_DEPTH, MAX_ANALYSIS_TERM_NODES)?;
+            nodes = nodes.checked_add(stats.nodes).ok_or_else(|| {
+                DiscoveryError::LimitExceeded("analysis input node count overflow".to_owned())
+            })?;
+        }
+    }
+    Ok(nodes)
+}
+
+/// Build a validated [`Precedence`] from the request DTO.
+#[cfg(feature = "standard-probes")]
+fn analysis_precedence(symbols: &[RewritePrecedenceSymbol]) -> DiscoveryResult<Precedence> {
+    if symbols.is_empty() {
+        return Err(DiscoveryError::InvalidInput(
+            "precedence requires at least one symbol".to_owned(),
+        ));
+    }
+    if symbols.len() > MAX_ANALYSIS_PRECEDENCE_SYMBOLS {
+        return Err(DiscoveryError::LimitExceeded(format!(
+            "precedence declares {} symbols; the probe ceiling is \
+             {MAX_ANALYSIS_PRECEDENCE_SYMBOLS}",
+            symbols.len()
+        )));
+    }
+    let mut ordering = Vec::with_capacity(symbols.len());
+    for symbol in symbols {
+        validate_name(&symbol.name)?;
+        if symbol.arity > MAX_ANALYSIS_ARITY {
+            return Err(DiscoveryError::LimitExceeded(format!(
+                "precedence symbol `{}` declares arity {}; the probe ceiling is \
+                 {MAX_ANALYSIS_ARITY}",
+                symbol.name, symbol.arity
+            )));
+        }
+        let arity = usize::try_from(symbol.arity)
+            .map_err(|_| DiscoveryError::LimitExceeded("precedence arity overflow".to_owned()))?;
+        ordering.push((Symbol::new(symbol.name.clone()), arity));
+    }
+    Precedence::new(ordering)
+        .map_err(|error| DiscoveryError::InvalidInput(format!("precedence rejected: {error}")))
+}
+
+/// Build the shared relation budget for the analysis/completion probes.
+#[cfg(feature = "standard-probes")]
+fn analysis_resources(limits: &EffectiveProbeLimits) -> DiscoveryResult<RelationResources> {
+    fn clamp(value: u64, ceiling: usize) -> usize {
+        usize::try_from(value)
+            .unwrap_or(usize::MAX)
+            .clamp(1, ceiling)
+    }
+    let relation_limits = RelationLimits::new(
+        clamp(limits.max_nodes, MAX_ANALYSIS_TERM_NODES as usize),
+        MAX_ANALYSIS_TERM_DEPTH as usize,
+        RelationLimits::MAX_CONSTRAINTS,
+        clamp(limits.max_operations, MAX_ANALYSIS_OPERATIONS),
+    )
+    .map_err(|error| DiscoveryError::InvalidInput(format!("probe limit profile: {error}")))?;
+    Ok(RelationResources::new(&relation_limits))
+}
+
+/// Convert a path into wire indices.
+#[cfg(feature = "standard-probes")]
+fn analysis_path(path: &amari_rewrite::rewritable::Path) -> Vec<u64> {
+    path.as_slice().iter().map(|index| *index as u64).collect()
+}
+
+/// Convert a count for a wire field, failing closed on overflow.
+#[cfg(feature = "standard-probes")]
+fn analysis_count(value: usize) -> DiscoveryResult<u64> {
+    u64::try_from(value)
+        .map_err(|_| DiscoveryError::LimitExceeded("analysis count overflow".to_owned()))
+}
+
+/// Base output for an analysis operation.
+#[cfg(feature = "standard-probes")]
+fn analysis_output_base(operation: &str, rule_count: u64) -> RewriteAnalysisOutput {
+    RewriteAnalysisOutput {
+        outcome: "ok".to_owned(),
+        operation: operation.to_owned(),
+        rule_count,
+        pair_count: None,
+        trivial_excluded: None,
+        non_left_linear_rules: Vec::new(),
+        pairs: Vec::new(),
+        pairs_truncated: None,
+        locally_confluent: None,
+        certification_blocked: Vec::new(),
+        joinable_count: None,
+        not_joinable_count: None,
+        termination: None,
+        termination_report: None,
+        failing_rule: None,
+    }
+}
+
+/// Base output for a completion operation.
+#[cfg(feature = "standard-probes")]
+fn completion_output_base(operation: &str, rule_count: u64) -> RewriteCompletionOutput {
+    RewriteCompletionOutput {
+        outcome: "ok".to_owned(),
+        operation: operation.to_owned(),
+        rule_count,
+        system_rule_count: None,
+        system_hash: None,
+        rules_added: None,
+        pairs_processed: None,
+        trace_step_count: None,
+        trace_steps: Vec::new(),
+        trace_truncated: None,
+        partial_reason: None,
+        failed_reason: None,
+        path: Vec::new(),
+        candidates_rejected: Vec::new(),
+        candidates_rejected_count: None,
+        inconclusive_reason: None,
+        guidance_available: None,
+    }
+}
+
+/// Name of a bounded partial-stop reason.
+#[cfg(feature = "standard-probes")]
+fn partial_reason_name(reason: &PartialReason) -> &'static str {
+    match reason {
+        PartialReason::UnorientableRule { .. } => "unorientable_rule",
+        PartialReason::NonLeftLinear => "non_left_linear",
+        PartialReason::ConfluenceNotCertified => "confluence_not_certified",
+    }
+}
+
+/// Name of a fatal completion failure reason.
+#[cfg(feature = "standard-probes")]
+fn failed_reason_name(reason: &FailedReason) -> &'static str {
+    match reason {
+        FailedReason::InvalidInput => "invalid_input",
+    }
+}
+
+/// Name of a guided-search inconclusive reason.
+#[cfg(feature = "standard-probes")]
+fn inconclusive_reason_name(reason: InconclusiveReason) -> &'static str {
+    match reason {
+        InconclusiveReason::NoCandidatesGenerated => "no_candidates_generated",
+        InconclusiveReason::BudgetCut => "budget_cut",
+    }
+}
+
+/// Record a completion trace summary, capped for the wire.
+#[cfg(feature = "standard-probes")]
+fn record_trace(trace: &CompletionTrace, output: &mut RewriteCompletionOutput) {
+    output.rules_added = Some(trace.rules_added as u64);
+    output.pairs_processed = Some(trace.pairs_processed as u64);
+    output.trace_step_count = Some(trace.steps.len() as u64);
+    output.trace_truncated = Some(trace.steps.len() > MAX_ANALYSIS_TRACE_STEPS);
+    output.trace_steps = trace
+        .steps
+        .iter()
+        .take(MAX_ANALYSIS_TRACE_STEPS)
+        .map(|step| match step {
+            TraceStep::Pair {
+                left_rule,
+                right_rule,
+                path,
+            } => RewriteCompletionTraceStep {
+                kind: "pair".to_owned(),
+                left_rule: Some(*left_rule as u64),
+                right_rule: Some(*right_rule as u64),
+                path: analysis_path(path),
+                rule_index: None,
+            },
+            TraceStep::Oriented { rule_index } => RewriteCompletionTraceStep {
+                kind: "oriented".to_owned(),
+                left_rule: None,
+                right_rule: None,
+                path: Vec::new(),
+                rule_index: Some(*rule_index as u64),
+            },
+            TraceStep::Simplified { rule_index } => RewriteCompletionTraceStep {
+                kind: "simplified".to_owned(),
+                left_rule: None,
+                right_rule: None,
+                path: Vec::new(),
+                rule_index: Some(*rule_index as u64),
+            },
+        })
+        .collect();
+}
+
+/// Record a boundedly-typed completion outcome.
+#[cfg(feature = "standard-probes")]
+fn record_completion_outcome(output: &mut RewriteCompletionOutput, outcome: CompletionOutcome) {
+    let (system, trace, partial, failed) = match outcome {
+        CompletionOutcome::Complete { system, trace } => (Some(system), trace, None, None),
+        CompletionOutcome::Partial {
+            system,
+            trace,
+            reason,
+        } => (
+            Some(system),
+            trace,
+            Some(partial_reason_name(&reason)),
+            None,
+        ),
+        CompletionOutcome::Failed { reason } => (
+            None,
+            CompletionTrace::default(),
+            None,
+            Some(failed_reason_name(&reason)),
+        ),
+    };
+    if let Some(system) = system {
+        output.system_rule_count = Some(system.rules().len() as u64);
+        output.system_hash = Some(system_hash(&system).to_hex());
+    }
+    output.partial_reason = partial.map(str::to_owned);
+    output.failed_reason = failed.map(str::to_owned);
+    record_trace(&trace, output);
+    output.outcome = if output.failed_reason.is_some() {
+        "failed".to_owned()
+    } else if output.partial_reason.is_some() {
+        "partial".to_owned()
+    } else {
+        "complete".to_owned()
+    };
+}
+
+/// Record rejected candidates, bounded for the wire.
+#[cfg(feature = "standard-probes")]
+fn record_rejections(rejections: &[CandidateRejection], output: &mut RewriteCompletionOutput) {
+    output.candidates_rejected_count = Some(rejections.len() as u64);
+    output.candidates_rejected = rejections
+        .iter()
+        .take(MAX_COMPLETION_REJECTIONS)
+        .map(|rejection| match rejection {
+            CandidateRejection::NotAnOriginalPredecessor { predecessor } => {
+                RewriteTerm::from_term(predecessor)
+            }
+        })
+        .collect();
+}
+
+/// Record a completion-guided inverse search outcome.
+#[cfg(feature = "standard-probes")]
+fn record_guided_outcome(output: &mut RewriteCompletionOutput, outcome: GuidedSearchOutcome) {
+    match outcome {
+        GuidedSearchOutcome::VerifiedWitness {
+            path,
+            candidates_rejected,
+        } => {
+            output.outcome = "verified_witness".to_owned();
+            output.path = path.iter().map(RewriteTerm::from_term).collect();
+            record_rejections(&candidates_rejected, output);
+        }
+        GuidedSearchOutcome::NoVerifiedWitness {
+            candidates_rejected,
+        } => {
+            output.outcome = "no_verified_witness".to_owned();
+            record_rejections(&candidates_rejected, output);
+        }
+        GuidedSearchOutcome::Inconclusive {
+            reason,
+            candidates_rejected,
+        } => {
+            output.outcome = "inconclusive".to_owned();
+            output.inconclusive_reason = Some(inconclusive_reason_name(reason).to_owned());
+            record_rejections(&candidates_rejected, output);
+        }
+    }
+}
+
+/// Build the bounded guided-search configuration.
+#[cfg(feature = "standard-probes")]
+fn completion_search_config(max_depth: u64) -> DiscoveryResult<InverseSearchConfig> {
+    InverseSearchConfig::new(
+        max_depth,
+        4_096,
+        16_384,
+        4_096,
+        64,
+        4_096,
+        65_536,
+        50_000,
+        1 << 20,
+        1 << 20,
+    )
+    .map_err(|error| {
+        DiscoveryError::InvalidInput(format!("completion search configuration invalid: {error}"))
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_analysis(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewriteAnalysisRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "analysis request has an invalid operation, rule, or precedence shape: {error}"
+            ))
+        })?;
+    if !matches!(
+        request.operation.as_str(),
+        "critical_pairs" | "confluence" | "termination"
+    ) {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "unknown analysis operation {:?}: expected critical_pairs, confluence, or termination",
+            request.operation
+        )));
+    }
+    let bounds = effective_bounds(limits);
+    let input_nodes = validate_analysis_rules(&request.rules)?;
+    let rule_count = analysis_count(request.rules.len())?;
+    // A supplied precedence is validated against the probe ceilings
+    // even when the selected operation does not consume it.
+    let precedence = match request.precedence.as_deref() {
+        Some(symbols) => Some(analysis_precedence(symbols)?),
+        None => None,
+    };
+    let rules = request
+        .rules
+        .iter()
+        .map(RewriteRule::to_rule)
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let system = TermSystem::new(rules);
+    let mut resources = analysis_resources(limits)?;
+    let mut output = analysis_output_base(&request.operation, rule_count);
+
+    match request.operation.as_str() {
+        "critical_pairs" => {
+            let report = critical_pairs(&system, &mut resources)
+                .map_err(|error| language_error("critical pairs", error))?;
+            output.pair_count = Some(analysis_count(report.pairs.len())?);
+            output.trivial_excluded = Some(analysis_count(report.trivial_excluded)?);
+            output.non_left_linear_rules = report
+                .non_left_linear_rules
+                .iter()
+                .map(|index| *index as u64)
+                .collect();
+            output.pairs_truncated = Some(report.pairs.len() > MAX_ANALYSIS_PAIRS);
+            output.pairs = report
+                .pairs
+                .iter()
+                .take(MAX_ANALYSIS_PAIRS)
+                .map(|pair| RewriteAnalysisPair {
+                    left_rule: pair.left_rule as u64,
+                    right_rule: pair.right_rule as u64,
+                    path: analysis_path(&pair.path),
+                    outcome: "overlap".to_owned(),
+                    overlap: Some(RewriteTerm::from_term(&pair.overlap)),
+                    root_step: Some(RewriteTerm::from_term(&pair.root_step)),
+                    position_step: Some(RewriteTerm::from_term(&pair.position_step)),
+                    join_term: None,
+                })
+                .collect();
+        }
+        "confluence" => {
+            let report = local_confluence(&system, &mut resources)
+                .map_err(|error| language_error("local confluence", error))?;
+            let mut joinable = 0_u64;
+            let mut not_joinable = 0_u64;
+            for (_, outcome) in &report.pairs {
+                match outcome {
+                    PairJoinability::Joinable(_) => joinable += 1,
+                    PairJoinability::NotJoinable => not_joinable += 1,
+                }
+            }
+            output.pair_count = Some(analysis_count(report.pairs.len())?);
+            output.joinable_count = Some(joinable);
+            output.not_joinable_count = Some(not_joinable);
+            output.locally_confluent = Some(report.locally_confluent);
+            output.certification_blocked = report
+                .certification_blocked
+                .iter()
+                .map(|index| *index as u64)
+                .collect();
+            output.pairs_truncated = Some(report.pairs.len() > MAX_ANALYSIS_PAIRS);
+            output.pairs = report
+                .pairs
+                .iter()
+                .take(MAX_ANALYSIS_PAIRS)
+                .map(|(pair, outcome)| {
+                    let (label, join_term) = match outcome {
+                        PairJoinability::Joinable(witness) => {
+                            ("joinable", Some(RewriteTerm::from_term(&witness.join_term)))
+                        }
+                        PairJoinability::NotJoinable => ("not_joinable", None),
+                    };
+                    RewriteAnalysisPair {
+                        left_rule: pair.left_rule as u64,
+                        right_rule: pair.right_rule as u64,
+                        path: analysis_path(&pair.path),
+                        outcome: label.to_owned(),
+                        overlap: None,
+                        root_step: Some(RewriteTerm::from_term(&pair.root_step)),
+                        position_step: Some(RewriteTerm::from_term(&pair.position_step)),
+                        join_term,
+                    }
+                })
+                .collect();
+        }
+        "termination" => {
+            let precedence = precedence.ok_or_else(|| {
+                DiscoveryError::InvalidInput(
+                    "termination requires a `precedence` covering every used symbol".to_owned(),
+                )
+            })?;
+            let proof = prove_terminating(&system, &precedence, &mut resources)
+                .map_err(|error| language_error("termination", error))?;
+            match proof {
+                TerminationProof::ProvedTerminating { report } => {
+                    output.termination = Some("proved_terminating".to_owned());
+                    output.termination_report = Some(RewriteTerminationSummary {
+                        rules_checked: analysis_count(report.rules_checked)?,
+                        decreasing_rules: analysis_count(report.decreasing_rules)?,
+                    });
+                }
+                TerminationProof::NotDecreasing { rule_index } => {
+                    output.termination = Some("not_decreasing".to_owned());
+                    output.failing_rule = Some(analysis_count(rule_index)?);
+                }
+            }
+        }
+        _ => unreachable!("analysis operation validated before dispatch"),
+    }
+
+    let _ = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations: analysis_count(resources.operations())?.max(1),
+            nodes: input_nodes,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_completion(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    let request: RewriteCompletionRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "completion request has an invalid operation, rule, precedence, target, or \
+                 depth shape: {error}"
+            ))
+        })?;
+    if !matches!(request.operation.as_str(), "complete" | "guided_inverse") {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "unknown completion operation {:?}: expected complete or guided_inverse",
+            request.operation
+        )));
+    }
+    let bounds = effective_bounds(limits);
+    let mut input_nodes = validate_analysis_rules(&request.rules)?;
+    let rule_count = analysis_count(request.rules.len())?;
+    let precedence = analysis_precedence(&request.precedence)?;
+    // Every supplied bounded field is validated before dispatch, even
+    // when the selected operation does not consume it.
+    if let Some(target) = &request.target {
+        let stats = term_stats(target, MAX_ANALYSIS_TERM_DEPTH, MAX_ANALYSIS_TERM_NODES)?;
+        input_nodes = input_nodes.checked_add(stats.nodes).ok_or_else(|| {
+            DiscoveryError::LimitExceeded("completion input node count overflow".to_owned())
+        })?;
+    }
+    let depth = request.max_depth.unwrap_or(MAX_COMPLETION_SEARCH_DEPTH);
+    if depth == 0 || depth > MAX_COMPLETION_SEARCH_DEPTH {
+        return Err(DiscoveryError::InvalidInput(format!(
+            "max_depth {depth} is outside 1..={MAX_COMPLETION_SEARCH_DEPTH}"
+        )));
+    }
+    let rules = request
+        .rules
+        .iter()
+        .map(RewriteRule::to_rule)
+        .collect::<DiscoveryResult<Vec<_>>>()?;
+    let system = TermSystem::new(rules);
+    let mut resources = analysis_resources(limits)?;
+    let mut output = completion_output_base(&request.operation, rule_count);
+
+    match request.operation.as_str() {
+        "complete" => {
+            let config = CompletionConfig::new(precedence);
+            let outcome = complete(&system, &config, &mut resources)
+                .map_err(|error| language_error("completion", error))?;
+            record_completion_outcome(&mut output, outcome);
+        }
+        "guided_inverse" => {
+            let target = request.target.as_ref().ok_or_else(|| {
+                DiscoveryError::InvalidInput("guided_inverse requires a `target` term".to_owned())
+            })?;
+            let target = target.to_term()?;
+            let guidance = prepare_guidance(&system, precedence, &mut resources)
+                .map_err(|error| language_error("completion guidance", error))?;
+            match guidance {
+                None => {
+                    // Only a convergent completion is equational
+                    // evidence; a partial or failed run offers no
+                    // guidance, so the search never starts.
+                    output.outcome = "inconclusive".to_owned();
+                    output.inconclusive_reason = Some("completion_not_complete".to_owned());
+                    output.guidance_available = Some(false);
+                }
+                Some(guidance) => {
+                    output.guidance_available = Some(true);
+                    output.system_rule_count = Some(guidance.completed.rules().len() as u64);
+                    output.system_hash = Some(system_hash(&guidance.completed).to_hex());
+                    record_trace(&guidance.trace, &mut output);
+                    let config = completion_search_config(depth)?;
+                    let outcome =
+                        guided_predecessors(&system, &guidance, &target, &config, &mut resources)
+                            .map_err(|error| language_error("guided inverse search", error))?;
+                    record_guided_outcome(&mut output, outcome);
+                }
+            }
+        }
+        _ => unreachable!("completion operation validated before dispatch"),
+    }
+
+    let _ = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations: analysis_count(resources.operations())?.max(1),
+            nodes: input_nodes,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn analysis_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:analysis:v1".parse()?,
+        capability_id: "amari:amari-rewrite:analysis:local-confluence".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-analysis/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-analysis/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_analysis,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn completion_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:completion:v1".parse()?,
+        capability_id: "amari:amari-rewrite:completion:knuth-bendix".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-completion/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-completion/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_completion,
     })
 }
