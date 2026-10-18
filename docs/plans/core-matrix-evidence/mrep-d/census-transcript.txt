@@ -44,7 +44,7 @@ amari-core/src/simd.rs
 
 ## Disposition map (24 lines -> contract sites):
 # S1  amari-core/src/simd.rs:18                                (1 line)
-# S4  amari-core/src/aligned_alloc.rs:39,44,68                 (3 lines)
+# S4  amari-core/src/aligned_alloc.rs:39,44,67                (3 lines)
 # S5  amari-calculus/src/manifold/metric.rs:111,119,155,199    (4 lines)
 # S6  amari-calculus/src/manifold/connection.rs:27,87          (2 lines)
 # S7  src/deterministic/scalar.rs:45,47 + ga2d.rs:13,127       (4 lines: trait decl, DetF32, DetVector2, DetRotor2)
