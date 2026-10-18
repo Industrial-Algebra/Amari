@@ -3581,6 +3581,19 @@ const MAX_COMPLETION_SEARCH_DEPTH: u64 = 8;
 /// Maximum rejected candidate terms reported in one output.
 #[cfg(feature = "standard-probes")]
 const MAX_COMPLETION_REJECTIONS: usize = 8;
+/// Record a library-domain failure as a typed outcome: the probe ran
+/// within its bounds and the library declined; the meter observations
+/// survive in the returned output (PR #316 round 1 P2).
+#[cfg(feature = "standard-probes")]
+fn record_domain_failure(
+    outcome: &mut String,
+    reason: &mut Option<String>,
+    operation: &str,
+    error: &RewriteError,
+) {
+    *outcome = "error".to_owned();
+    *reason = Some(format!("{operation}: {error}"));
+}
 
 /// One ranked function symbol in a caller-supplied LPO precedence.
 ///
@@ -3699,11 +3712,12 @@ pub struct RewriteTerminationSummary {
     ),
     example(
         label = "root_overlap_critical_pairs",
-        value = "{\"outcome\":\"ok\",\"operation\":\"critical_pairs\",\"rule_count\":2,\"pair_count\":1,\"trivial_excluded\":0,\"non_left_linear_rules\":[],\"pairs\":[{\"left_rule\":0,\"right_rule\":1,\"path\":[],\"outcome\":\"overlap\",\"overlap\":{\"kind\":\"symbol\",\"name\":\"f\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"x\"}]},\"root_step\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"position_step\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]},\"join_term\":null}],\"pairs_truncated\":false,\"locally_confluent\":null,\"certification_blocked\":[],\"joinable_count\":null,\"not_joinable_count\":null,\"termination\":null,\"termination_report\":null,\"failing_rule\":null}"
+        value = "{\"outcome\":\"ok\",\"operation\":\"critical_pairs\",\"rule_count\":2,\"pair_count\":1,\"trivial_excluded\":0,\"non_left_linear_rules\":[],\"pairs\":[{\"left_rule\":0,\"right_rule\":1,\"path\":[],\"outcome\":\"overlap\",\"overlap\":{\"kind\":\"symbol\",\"name\":\"f\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"x\"}]},\"root_step\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]},\"position_step\":{\"kind\":\"symbol\",\"name\":\"b\",\"arguments\":[]},\"join_term\":null}],\"pairs_truncated\":false,\"locally_confluent\":null,\"certification_blocked\":[],\"joinable_count\":null,\"not_joinable_count\":null,\"termination\":null,\"termination_report\":null,\"failing_rule\":null,\"failure_reason\":null}"
     )
 )]
 pub struct RewriteAnalysisOutput {
-    /// Always `ok` for a completed analysis.
+    /// `ok` for a completed analysis, or `error` when the library
+    /// declined within bounds (see `failure_reason`).
     pub outcome: String,
     /// The dispatched operation.
     pub operation: String,
@@ -3734,6 +3748,8 @@ pub struct RewriteAnalysisOutput {
     pub termination_report: Option<RewriteTerminationSummary>,
     /// First rule that did not strictly decrease.
     pub failing_rule: Option<u64>,
+    /// Library failure detail when `outcome` is `error`.
+    pub failure_reason: Option<String>,
 }
 
 /// Typed input for the bounded completion probe.
@@ -3824,12 +3840,13 @@ pub struct RewriteCompletionTraceStep {
     ),
     example(
         label = "complete_orientable_rule",
-        value = "{\"outcome\":\"complete\",\"operation\":\"complete\",\"rule_count\":1,\"system_rule_count\":1,\"system_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"rules_added\":0,\"pairs_processed\":0,\"trace_step_count\":0,\"trace_steps\":[],\"trace_truncated\":false,\"partial_reason\":null,\"failed_reason\":null,\"path\":[],\"candidates_rejected\":[],\"candidates_rejected_count\":null,\"inconclusive_reason\":null,\"guidance_available\":null}"
+        value = "{\"outcome\":\"complete\",\"operation\":\"complete\",\"rule_count\":1,\"system_rule_count\":1,\"system_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"rules_added\":0,\"pairs_processed\":0,\"trace_step_count\":0,\"trace_steps\":[],\"trace_truncated\":false,\"partial_reason\":null,\"failed_reason\":null,\"path\":[],\"candidates_rejected\":[],\"candidates_rejected_count\":null,\"inconclusive_reason\":null,\"guidance_available\":null,\"failure_reason\":null}"
     )
 )]
 pub struct RewriteCompletionOutput {
     /// `complete`, `partial`, `failed`, `verified_witness`,
-    /// `no_verified_witness`, or `inconclusive`.
+    /// `no_verified_witness`, `inconclusive`, or `error` when the
+    /// library declined within bounds (see `failure_reason`).
     pub outcome: String,
     /// The dispatched operation.
     pub operation: String,
@@ -3865,6 +3882,8 @@ pub struct RewriteCompletionOutput {
     pub inconclusive_reason: Option<String>,
     /// Whether convergent completion guidance was available.
     pub guidance_available: Option<bool>,
+    /// Library failure detail when `outcome` is `error`.
+    pub failure_reason: Option<String>,
 }
 
 /// Validate the rule-count and term ceilings shared by both probes.
@@ -3968,6 +3987,7 @@ fn analysis_output_base(operation: &str, rule_count: u64) -> RewriteAnalysisOutp
         termination: None,
         termination_report: None,
         failing_rule: None,
+        failure_reason: None,
     }
 }
 
@@ -3992,6 +4012,7 @@ fn completion_output_base(operation: &str, rule_count: u64) -> RewriteCompletion
         candidates_rejected_count: None,
         inconclusive_reason: None,
         guidance_available: None,
+        failure_reason: None,
     }
 }
 
@@ -4170,6 +4191,13 @@ fn execute_analysis(
     input: &Value,
     limits: &EffectiveProbeLimits,
 ) -> DiscoveryResult<AdapterOutput> {
+    // Meter first: JSON bounding, DTO validation, and domain-failure
+    // paths are all accounted (PR #316 round 1).
+    let mut resources = analysis_resources(limits)?;
+    let json_nodes = super::validate_json_bounds(input)?;
+    resources
+        .record_operations(usize::try_from(json_nodes).unwrap_or(usize::MAX))
+        .map_err(|error| language_error("request validation", error))?;
     let request: RewriteAnalysisRequest =
         serde_json::from_value(input.clone()).map_err(|error| {
             DiscoveryError::InvalidInput(format!(
@@ -4200,106 +4228,141 @@ fn execute_analysis(
         .map(RewriteRule::to_rule)
         .collect::<DiscoveryResult<Vec<_>>>()?;
     let system = TermSystem::new(rules);
-    let mut resources = analysis_resources(limits)?;
     let mut output = analysis_output_base(&request.operation, rule_count);
 
-    match request.operation.as_str() {
-        "critical_pairs" => {
-            let report = critical_pairs(&system, &mut resources)
-                .map_err(|error| language_error("critical pairs", error))?;
-            output.pair_count = Some(analysis_count(report.pairs.len())?);
-            output.trivial_excluded = Some(analysis_count(report.trivial_excluded)?);
-            output.non_left_linear_rules = report
-                .non_left_linear_rules
-                .iter()
-                .map(|index| *index as u64)
-                .collect();
-            output.pairs_truncated = Some(report.pairs.len() > MAX_ANALYSIS_PAIRS);
-            output.pairs = report
-                .pairs
-                .iter()
-                .take(MAX_ANALYSIS_PAIRS)
-                .map(|pair| RewriteAnalysisPair {
-                    left_rule: pair.left_rule as u64,
-                    right_rule: pair.right_rule as u64,
-                    path: analysis_path(&pair.path),
-                    outcome: "overlap".to_owned(),
-                    overlap: Some(RewriteTerm::from_term(&pair.overlap)),
-                    root_step: Some(RewriteTerm::from_term(&pair.root_step)),
-                    position_step: Some(RewriteTerm::from_term(&pair.position_step)),
-                    join_term: None,
-                })
-                .collect();
-        }
-        "confluence" => {
-            let report = local_confluence(&system, &mut resources)
-                .map_err(|error| language_error("local confluence", error))?;
-            let mut joinable = 0_u64;
-            let mut not_joinable = 0_u64;
-            for (_, outcome) in &report.pairs {
-                match outcome {
-                    PairJoinability::Joinable(_) => joinable += 1,
-                    PairJoinability::NotJoinable => not_joinable += 1,
-                }
-            }
-            output.pair_count = Some(analysis_count(report.pairs.len())?);
-            output.joinable_count = Some(joinable);
-            output.not_joinable_count = Some(not_joinable);
-            output.locally_confluent = Some(report.locally_confluent);
-            output.certification_blocked = report
-                .certification_blocked
-                .iter()
-                .map(|index| *index as u64)
-                .collect();
-            output.pairs_truncated = Some(report.pairs.len() > MAX_ANALYSIS_PAIRS);
-            output.pairs = report
-                .pairs
-                .iter()
-                .take(MAX_ANALYSIS_PAIRS)
-                .map(|(pair, outcome)| {
-                    let (label, join_term) = match outcome {
-                        PairJoinability::Joinable(witness) => {
-                            ("joinable", Some(RewriteTerm::from_term(&witness.join_term)))
-                        }
-                        PairJoinability::NotJoinable => ("not_joinable", None),
-                    };
-                    RewriteAnalysisPair {
+    let dispatch = |output: &mut RewriteAnalysisOutput,
+                    resources: &mut RelationResources|
+     -> DiscoveryResult<()> {
+        match request.operation.as_str() {
+            "critical_pairs" => {
+                let report = match critical_pairs(&system, resources) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        record_domain_failure(
+                            &mut output.outcome,
+                            &mut output.failure_reason,
+                            "critical pairs",
+                            &error,
+                        );
+                        return Ok(());
+                    }
+                };
+                output.pair_count = Some(analysis_count(report.pairs.len())?);
+                output.trivial_excluded = Some(analysis_count(report.trivial_excluded)?);
+                output.non_left_linear_rules = report
+                    .non_left_linear_rules
+                    .iter()
+                    .map(|index| *index as u64)
+                    .collect();
+                output.pairs_truncated = Some(report.pairs.len() > MAX_ANALYSIS_PAIRS);
+                output.pairs = report
+                    .pairs
+                    .iter()
+                    .take(MAX_ANALYSIS_PAIRS)
+                    .map(|pair| RewriteAnalysisPair {
                         left_rule: pair.left_rule as u64,
                         right_rule: pair.right_rule as u64,
                         path: analysis_path(&pair.path),
-                        outcome: label.to_owned(),
-                        overlap: None,
+                        outcome: "overlap".to_owned(),
+                        overlap: Some(RewriteTerm::from_term(&pair.overlap)),
                         root_step: Some(RewriteTerm::from_term(&pair.root_step)),
                         position_step: Some(RewriteTerm::from_term(&pair.position_step)),
-                        join_term,
+                        join_term: None,
+                    })
+                    .collect();
+            }
+            "confluence" => {
+                let report = match local_confluence(&system, resources) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        record_domain_failure(
+                            &mut output.outcome,
+                            &mut output.failure_reason,
+                            "local confluence",
+                            &error,
+                        );
+                        return Ok(());
                     }
-                })
-                .collect();
-        }
-        "termination" => {
-            let precedence = precedence.ok_or_else(|| {
-                DiscoveryError::InvalidInput(
-                    "termination requires a `precedence` covering every used symbol".to_owned(),
-                )
-            })?;
-            let proof = prove_terminating(&system, &precedence, &mut resources)
-                .map_err(|error| language_error("termination", error))?;
-            match proof {
-                TerminationProof::ProvedTerminating { report } => {
-                    output.termination = Some("proved_terminating".to_owned());
-                    output.termination_report = Some(RewriteTerminationSummary {
-                        rules_checked: analysis_count(report.rules_checked)?,
-                        decreasing_rules: analysis_count(report.decreasing_rules)?,
-                    });
+                };
+                let mut joinable = 0_u64;
+                let mut not_joinable = 0_u64;
+                for (_, outcome) in &report.pairs {
+                    match outcome {
+                        PairJoinability::Joinable(_) => joinable += 1,
+                        PairJoinability::NotJoinable => not_joinable += 1,
+                    }
                 }
-                TerminationProof::NotDecreasing { rule_index } => {
-                    output.termination = Some("not_decreasing".to_owned());
-                    output.failing_rule = Some(analysis_count(rule_index)?);
+                output.pair_count = Some(analysis_count(report.pairs.len())?);
+                output.joinable_count = Some(joinable);
+                output.not_joinable_count = Some(not_joinable);
+                output.locally_confluent = Some(report.locally_confluent);
+                output.certification_blocked = report
+                    .certification_blocked
+                    .iter()
+                    .map(|index| *index as u64)
+                    .collect();
+                output.pairs_truncated = Some(report.pairs.len() > MAX_ANALYSIS_PAIRS);
+                output.pairs = report
+                    .pairs
+                    .iter()
+                    .take(MAX_ANALYSIS_PAIRS)
+                    .map(|(pair, outcome)| {
+                        let (label, join_term) = match outcome {
+                            PairJoinability::Joinable(witness) => {
+                                ("joinable", Some(RewriteTerm::from_term(&witness.join_term)))
+                            }
+                            PairJoinability::NotJoinable => ("not_joinable", None),
+                        };
+                        RewriteAnalysisPair {
+                            left_rule: pair.left_rule as u64,
+                            right_rule: pair.right_rule as u64,
+                            path: analysis_path(&pair.path),
+                            outcome: label.to_owned(),
+                            overlap: None,
+                            root_step: Some(RewriteTerm::from_term(&pair.root_step)),
+                            position_step: Some(RewriteTerm::from_term(&pair.position_step)),
+                            join_term,
+                        }
+                    })
+                    .collect();
+            }
+            "termination" => {
+                let precedence = precedence.ok_or_else(|| {
+                    DiscoveryError::InvalidInput(
+                        "termination requires a `precedence` covering every used symbol".to_owned(),
+                    )
+                })?;
+                let proof = match prove_terminating(&system, &precedence, resources) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        record_domain_failure(
+                            &mut output.outcome,
+                            &mut output.failure_reason,
+                            "termination",
+                            &error,
+                        );
+                        return Ok(());
+                    }
+                };
+                match proof {
+                    TerminationProof::ProvedTerminating { report } => {
+                        output.termination = Some("proved_terminating".to_owned());
+                        output.termination_report = Some(RewriteTerminationSummary {
+                            rules_checked: analysis_count(report.rules_checked)?,
+                            decreasing_rules: analysis_count(report.decreasing_rules)?,
+                        });
+                    }
+                    TerminationProof::NotDecreasing { rule_index } => {
+                        output.termination = Some("not_decreasing".to_owned());
+                        output.failing_rule = Some(analysis_count(rule_index)?);
+                    }
                 }
             }
+            _ => unreachable!("analysis operation validated before dispatch"),
         }
-        _ => unreachable!("analysis operation validated before dispatch"),
-    }
+        Ok(())
+    };
+    dispatch(&mut output, &mut resources)?;
 
     let _ = validate_encoded_output(&output, bounds)?;
     Ok(AdapterOutput {
@@ -4318,6 +4381,13 @@ fn execute_completion(
     input: &Value,
     limits: &EffectiveProbeLimits,
 ) -> DiscoveryResult<AdapterOutput> {
+    // Meter first: JSON bounding, DTO validation, and domain-failure
+    // paths are all accounted (PR #316 round 1).
+    let mut resources = analysis_resources(limits)?;
+    let json_nodes = super::validate_json_bounds(input)?;
+    resources
+        .record_operations(usize::try_from(json_nodes).unwrap_or(usize::MAX))
+        .map_err(|error| language_error("request validation", error))?;
     let request: RewriteCompletionRequest =
         serde_json::from_value(input.clone()).map_err(|error| {
             DiscoveryError::InvalidInput(format!(
@@ -4355,47 +4425,85 @@ fn execute_completion(
         .map(RewriteRule::to_rule)
         .collect::<DiscoveryResult<Vec<_>>>()?;
     let system = TermSystem::new(rules);
-    let mut resources = analysis_resources(limits)?;
     let mut output = completion_output_base(&request.operation, rule_count);
 
-    match request.operation.as_str() {
-        "complete" => {
-            let config = CompletionConfig::new(precedence);
-            let outcome = complete(&system, &config, &mut resources)
-                .map_err(|error| language_error("completion", error))?;
-            record_completion_outcome(&mut output, outcome);
-        }
-        "guided_inverse" => {
-            let target = request.target.as_ref().ok_or_else(|| {
-                DiscoveryError::InvalidInput("guided_inverse requires a `target` term".to_owned())
-            })?;
-            let target = target.to_term()?;
-            let guidance = prepare_guidance(&system, precedence, &mut resources)
-                .map_err(|error| language_error("completion guidance", error))?;
-            match guidance {
-                None => {
-                    // Only a convergent completion is equational
-                    // evidence; a partial or failed run offers no
-                    // guidance, so the search never starts.
-                    output.outcome = "inconclusive".to_owned();
-                    output.inconclusive_reason = Some("completion_not_complete".to_owned());
-                    output.guidance_available = Some(false);
-                }
-                Some(guidance) => {
-                    output.guidance_available = Some(true);
-                    output.system_rule_count = Some(guidance.completed.rules().len() as u64);
-                    output.system_hash = Some(system_hash(&guidance.completed).to_hex());
-                    record_trace(&guidance.trace, &mut output);
-                    let config = completion_search_config(depth)?;
-                    let outcome =
-                        guided_predecessors(&system, &guidance, &target, &config, &mut resources)
-                            .map_err(|error| language_error("guided inverse search", error))?;
-                    record_guided_outcome(&mut output, outcome);
+    let dispatch = |output: &mut RewriteCompletionOutput,
+                    resources: &mut RelationResources|
+     -> DiscoveryResult<()> {
+        match request.operation.as_str() {
+            "complete" => {
+                let config = CompletionConfig::new(precedence);
+                let outcome = match complete(&system, &config, resources) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        record_domain_failure(
+                            &mut output.outcome,
+                            &mut output.failure_reason,
+                            "completion",
+                            &error,
+                        );
+                        return Ok(());
+                    }
+                };
+                record_completion_outcome(output, outcome);
+            }
+            "guided_inverse" => {
+                let target = request.target.as_ref().ok_or_else(|| {
+                    DiscoveryError::InvalidInput(
+                        "guided_inverse requires a `target` term".to_owned(),
+                    )
+                })?;
+                let target = target.to_term()?;
+                let guidance = match prepare_guidance(&system, precedence, resources) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        record_domain_failure(
+                            &mut output.outcome,
+                            &mut output.failure_reason,
+                            "completion guidance",
+                            &error,
+                        );
+                        return Ok(());
+                    }
+                };
+                match guidance {
+                    None => {
+                        // Only a convergent completion is equational
+                        // evidence; a partial or failed run offers no
+                        // guidance, so the search never starts.
+                        output.outcome = "inconclusive".to_owned();
+                        output.inconclusive_reason = Some("completion_not_complete".to_owned());
+                        output.guidance_available = Some(false);
+                    }
+                    Some(guidance) => {
+                        output.guidance_available = Some(true);
+                        output.system_rule_count = Some(guidance.completed.rules().len() as u64);
+                        output.system_hash = Some(system_hash(&guidance.completed).to_hex());
+                        record_trace(&guidance.trace, output);
+                        let config = completion_search_config(depth)?;
+                        let outcome = match guided_predecessors(
+                            &system, &guidance, &target, &config, resources,
+                        ) {
+                            Ok(value) => value,
+                            Err(error) => {
+                                record_domain_failure(
+                                    &mut output.outcome,
+                                    &mut output.failure_reason,
+                                    "guided inverse search",
+                                    &error,
+                                );
+                                return Ok(());
+                            }
+                        };
+                        record_guided_outcome(output, outcome);
+                    }
                 }
             }
+            _ => unreachable!("completion operation validated before dispatch"),
         }
-        _ => unreachable!("completion operation validated before dispatch"),
-    }
+        Ok(())
+    };
+    dispatch(&mut output, &mut resources)?;
 
     let _ = validate_encoded_output(&output, bounds)?;
     Ok(AdapterOutput {

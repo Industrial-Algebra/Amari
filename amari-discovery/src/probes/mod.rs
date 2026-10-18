@@ -63,6 +63,46 @@ use crate::{
     ProbeSchemaRegistration, ProbeWireSchemaRegistry, ResourceObservations,
 };
 
+/// Maximum request JSON nesting depth accepted by the probe engine.
+/// Generous over the deepest legitimate probe DTO (term depth 64,
+/// ~4 JSON levels per term level, plus wrappers).
+const MAX_JSON_DEPTH: u64 = 256;
+
+/// Maximum request JSON nodes (bounded by the input byte ceiling).
+const MAX_JSON_NODES: u64 = 65_536;
+
+/// Iteratively bound a borrowed request Value before any recursive
+/// walk (serialization, cloning, deserialization). Returns the node
+/// count so callers can meter the validation work.
+fn validate_json_bounds(input: &serde_json::Value) -> DiscoveryResult<u64> {
+    use serde_json::Value;
+    let mut nodes = 0_u64;
+    let mut stack: Vec<(&Value, u64)> = vec![(input, 1)];
+    while let Some((value, depth)) = stack.pop() {
+        if depth > MAX_JSON_DEPTH {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "request JSON is nested deeper than {MAX_JSON_DEPTH} levels"
+            )));
+        }
+        nodes += 1;
+        if nodes > MAX_JSON_NODES {
+            return Err(DiscoveryError::InvalidInput(format!(
+                "request JSON has more than {MAX_JSON_NODES} nodes"
+            )));
+        }
+        match value {
+            Value::Array(items) => {
+                stack.extend(items.iter().map(|item| (item, depth + 1)));
+            }
+            Value::Object(map) => {
+                stack.extend(map.values().map(|item| (item, depth + 1)));
+            }
+            _ => {}
+        }
+    }
+    Ok(nodes)
+}
+
 /// Caller-selected ceilings for cooperative in-process probe execution.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -237,6 +277,11 @@ impl ProbeEngine {
             max_nodes: descriptor_work_limit.min(self.limits.max_nodes),
             max_iterations: descriptor_work_limit.min(self.limits.max_iterations),
         };
+        // Bound the borrowed request JSON iteratively BEFORE any
+        // recursive serialization or deserialization: a caller-built
+        // Value can be arbitrarily deep, and recursive walks of it
+        // exhaust the native stack (PR #316 round 1 P1).
+        validate_json_bounds(input)?;
         let input_bytes = u64::try_from(serde_json::to_vec(input)?.len()).map_err(|_| {
             DiscoveryError::LimitExceeded("probe input byte count overflow".to_owned())
         })?;

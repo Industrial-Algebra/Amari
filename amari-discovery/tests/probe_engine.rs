@@ -4,10 +4,9 @@
 
 #[cfg(feature = "standard-probes")]
 use amari_discovery::ProbeIsolation;
-use amari_discovery::{
-    DiscoveryError, ProbeEngine, ProbeSchemaContractState, ProbeSchemaDocument,
-    TropicalViterbiOutput, TropicalViterbiRequest,
-};
+use amari_discovery::{DiscoveryError, ProbeEngine, TropicalViterbiRequest};
+#[cfg(feature = "standard-probes")]
+use amari_discovery::{ProbeSchemaContractState, ProbeSchemaDocument, TropicalViterbiOutput};
 use serde_json::json;
 
 const CGT_NIM_SUM: &str = "amari-probe:cgt:nim-sum:v1";

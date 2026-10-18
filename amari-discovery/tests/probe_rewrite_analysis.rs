@@ -10,7 +10,7 @@
 #![cfg(feature = "standard-probes")]
 
 use amari_discovery::{
-    DiscoveryError, ProbeEngine, RewriteAnalysisOutput, RewriteCompletionOutput,
+    DiscoveryError, ProbeEngine, ProbeEngineLimits, RewriteAnalysisOutput, RewriteCompletionOutput,
 };
 use assert_cmd::Command;
 use serde_json::{json, Value};
@@ -221,17 +221,21 @@ fn termination_reports_proof_and_not_decreasing() {
         matches!(missing, DiscoveryError::InvalidInput(ref message) if message.contains("precedence")),
         "unexpected error: {missing}"
     );
-    let uncovered = run_error(
-        ANALYSIS,
-        &json!({
-            "operation": "termination",
-            "rules": ground_rule(),
-            "precedence": precedence(&[("a", 0)])
-        }),
-    );
+    // A precedence missing a used symbol is a LIBRARY rejection: a
+    // typed `error` outcome with failure detail and observations,
+    // not a bare probe error (PR #316 round 1 P2).
+    let uncovered = run_analysis(&json!({
+        "operation": "termination",
+        "rules": ground_rule(),
+        "precedence": precedence(&[("a", 0)])
+    }));
+    assert_eq!(uncovered.outcome, "error");
     assert!(
-        matches!(uncovered, DiscoveryError::InvalidInput(ref message) if message.contains("termination")),
-        "unexpected error: {uncovered}"
+        uncovered
+            .failure_reason
+            .as_deref()
+            .is_some_and(|reason| reason.contains("termination")),
+        "unexpected outcome: {uncovered:?}"
     );
     let duplicate = run_error(
         ANALYSIS,
@@ -645,4 +649,80 @@ fn direct_and_process_execution_agree() {
         assert_eq!(cli["data"]["isolation"], json!("process"));
         assert_eq!(cli["data"]["crash_isolation"], json!(true));
     }
+}
+
+/// PR #316 round 1 P1: a caller-built request Value deeper than the
+/// JSON ceiling must be rejected with a typed error BEFORE recursive
+/// deserialization — never a deeply nested crash.
+fn deep_term(depth: usize) -> Value {
+    let mut term = sym0("a");
+    for _ in 0..depth {
+        term = sym1("f", term);
+    }
+    term
+}
+
+#[test]
+fn deep_json_input_returns_a_typed_error() {
+    let inputs = [
+        (
+            ANALYSIS,
+            json!({"operation": "critical_pairs", "rules": [rule(deep_term(800), sym0("b"))]}),
+        ),
+        (
+            COMPLETION,
+            json!({"operation": "complete", "rules": [rule(deep_term(800), sym0("b"))],
+                   "precedence": precedence(&[("f", 0), ("a", 1), ("b", 2)])}),
+        ),
+    ];
+    for (probe, input) in inputs {
+        let error = run_error(probe, &input);
+        assert!(
+            is_typed_resource_or_input_error(&error),
+            "probe {probe} must reject deep input with a typed error: {error:?}"
+        );
+        // Value's recursive Drop would exhaust the test stack on a
+        // depth-2400 tree; the probe already rejected it.
+        std::mem::forget(input);
+    }
+}
+
+/// PR #316 round 1 P2: library-domain failures must return a typed
+/// output with resource observations — never a bare error that
+/// discards the meter. A tiny engine operations budget exhausts the
+/// meter inside the library call.
+#[test]
+fn library_failure_reports_a_typed_outcome_with_observations() {
+    let input = json!({
+        "operation": "critical_pairs",
+        "rules": overlapping_rules(),
+    });
+    // Self-calibrating budget: measure the full run, then allow one
+    // operation less — the meter exhausts inside the library call,
+    // after validation has already been charged.
+    let full = ProbeEngine::new()
+        .unwrap()
+        .execute(&ANALYSIS.parse().unwrap(), &input)
+        .unwrap();
+    let limits = ProbeEngineLimits {
+        max_operations: full.resources.operations - 1,
+        ..ProbeEngineLimits::default()
+    };
+    let engine = ProbeEngine::with_limits(limits).unwrap();
+    let execution = engine
+        .execute(&ANALYSIS.parse().unwrap(), &input)
+        .expect("domain failure is a typed outcome, not a probe error");
+    let output: RewriteAnalysisOutput = serde_json::from_value(execution.output).unwrap();
+    assert_eq!(output.outcome, "error");
+    assert!(
+        output
+            .failure_reason
+            .as_deref()
+            .is_some_and(|reason| !reason.is_empty()),
+        "failure_reason must describe the domain failure: {output:?}"
+    );
+    assert!(
+        execution.resources.operations > 0,
+        "failure accounting: observations must accompany the outcome"
+    );
 }
