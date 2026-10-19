@@ -9,7 +9,7 @@
 //! path-order termination proofs ([`analysis`]). The non-default
 //! `completion` feature adds bounded Knuth–Bendix completion with
 //! convergence postchecks and completion-assisted inverse search
-//! ([`completion`]): a convergent completion may propose predecessor
+//! (`completion`): a convergent completion may propose predecessor
 //! candidates, but every witness is replayed against the original system
 //! and negative authority never transfers from the completed system.
 
