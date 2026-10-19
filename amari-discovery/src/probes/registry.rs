@@ -235,10 +235,12 @@ mod tests {
                 "amari-probe:holographic:superposition:v1".parse().unwrap(),
                 "amari-probe:network:shortest-path:v1".parse().unwrap(),
                 "amari-probe:optimization:pareto-front:v1".parse().unwrap(),
+                "amari-probe:rewrite:analysis:v1".parse().unwrap(),
                 "amari-probe:rewrite:backward-search:v1".parse().unwrap(),
                 "amari-probe:rewrite:bidirectional-search:v1"
                     .parse()
                     .unwrap(),
+                "amari-probe:rewrite:completion:v1".parse().unwrap(),
                 "amari-probe:rewrite:infer-rule:v1".parse().unwrap(),
                 "amari-probe:rewrite:inverse-analysis:v1".parse().unwrap(),
                 "amari-probe:rewrite:languages:v1".parse().unwrap(),

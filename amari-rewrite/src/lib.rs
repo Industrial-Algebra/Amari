@@ -3,6 +3,15 @@
 //! `amari-rewrite` provides foundational rewriting tools: abstract rewriting
 //! systems (ARS), first-order term rewriting systems (TRS), bounded inverse
 //! rewriting, and lightweight rule synthesis via anti-unification.
+//!
+//! The analysis surface adds metered critical-pair enumeration, bounded
+//! joinability and local-confluence certification, and lexicographic
+//! path-order termination proofs ([`analysis`]). The non-default
+//! `completion` feature adds bounded Knuth–Bendix completion with
+//! convergence postchecks and completion-assisted inverse search
+//! ([`completion`]): a convergent completion may propose predecessor
+//! candidates, but every witness is replayed against the original system
+//! and negative authority never transfers from the completed system.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 

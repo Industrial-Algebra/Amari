@@ -47,7 +47,12 @@ amari-holographic = { workspace = true }
 amari-cgt = { workspace = true, optional = true }
 amari-surreal = { workspace = true, optional = true }
 amari-surcomplex = { workspace = true, optional = true }
-amari-rewrite = { workspace = true }
+# The Cohort 6 analysis/completion probes expose the bounded
+# Knuth-Bendix surface, which `amari-rewrite` gates behind its
+# non-default `completion` feature. Enabling it here adds no runtime
+# dependencies, so every discovery build profile (default and
+# no-default-features) still compiles.
+amari-rewrite = { workspace = true, features = ["completion"] }
 amari-discovery-macros = { workspace = true }
 schemars = { workspace = true }
 

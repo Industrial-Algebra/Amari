@@ -77,9 +77,9 @@ fn catalog_descriptors_cover_the_languages_probe() {
         .map(|descriptor| descriptor.id.to_string())
         .collect();
     assert!(ids.iter().any(|id| id == LANGUAGES));
-    // Descriptor count is locked: the preimages probe extends the
-    // existing twenty.
-    assert_eq!(ids.len(), 21);
+    // Descriptor count is locked: the preimages probe extended the
+    // existing twenty, and Task 35 adds two analysis probes.
+    assert_eq!(ids.len(), 23);
 }
 
 #[test]

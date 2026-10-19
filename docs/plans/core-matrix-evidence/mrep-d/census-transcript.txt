@@ -1,0 +1,54 @@
+# M-REP-D census transcript (R4) — executable commands + output, 2026-10-18
+# Universe: root src/ + every member src/tests/benches/examples + every build.rs.
+# Members (cargo metadata --no-deps): amari-core amari-wasm amari-automata amari-dual amari-tropical amari-calculus amari-measure amari-info-geom amari-cgt amari-enumerative amari-flynn amari-flynn-macros amari-functional amari-fusion amari-holographic amari-network amari-optimization amari-gpu amari-probabilistic amari-relativistic amari-topology amari-surcomplex amari-surreal amari-dynamics amari-rewrite amari-rewrite-macros amari-discovery amari-discovery-macros amari
+
+## Command 1 (unsafe declarations) — literal:
+#   DIRS="src amari-core/src amari-core/tests amari-core/benches amari-core/examples amari-wasm/src amari-wasm/tests amari-wasm/examples amari-automata/src amari-automata/tests amari-dual/src amari-dual/tests amari-dual/benches amari-dual/examples amari-tropical/src amari-tropical/tests amari-tropical/benches amari-tropical/examples amari-calculus/src amari-calculus/benches amari-measure/src amari-measure/benches amari-measure/examples amari-info-geom/src amari-info-geom/tests amari-info-geom/examples amari-cgt/src amari-cgt/tests amari-cgt/benches amari-cgt/examples amari-enumerative/src amari-enumerative/tests amari-flynn/src amari-flynn/tests amari-flynn-macros/src amari-functional/src amari-functional/benches amari-fusion/src amari-fusion/benches amari-holographic/src amari-holographic/tests amari-network/src amari-network/tests amari-network/examples amari-optimization/src amari-optimization/tests amari-optimization/benches amari-optimization/examples amari-gpu/src amari-gpu/tests amari-probabilistic/src amari-relativistic/src amari-relativistic/benches amari-topology/src amari-topology/benches amari-surcomplex/src amari-surcomplex/tests amari-surreal/src amari-surreal/tests amari-surreal/benches amari-surreal/examples amari-dynamics/src amari-dynamics/tests amari-dynamics/examples amari-rewrite/src amari-rewrite/tests amari-rewrite/examples amari-rewrite-macros/src amari-rewrite-macros/tests amari-discovery/src amari-discovery/tests amari-discovery/examples amari-discovery-macros/src amari-discovery-macros/tests"
+#   rg -n --no-heading '\bunsafe\b' $DIRS | grep -vE ':\s*(//|///|//!)'
+#   (single-quoted patterns — R5 fix; the nested double-quote form broke copy-execution)
+## Output (verified 24 lines):
+amari-core/src/simd.rs:18:    unsafe {
+amari-core/src/aligned_alloc.rs:39:        let ptr = unsafe { alloc(layout) as *mut T };
+amari-core/src/aligned_alloc.rs:44:        let ptr = unsafe { NonNull::new_unchecked(ptr) };
+amari-core/src/aligned_alloc.rs:67:        unsafe {
+src/deterministic/scalar.rs:45:pub unsafe trait Deterministic {}
+src/deterministic/scalar.rs:47:unsafe impl Deterministic for DetF32 {}
+src/deterministic/ga2d.rs:13:unsafe impl Deterministic for DetVector2 {}
+src/deterministic/ga2d.rs:127:unsafe impl Deterministic for DetRotor2 {}
+amari-calculus/src/manifold/metric.rs:111:            unsafe { std::mem::transmute_copy(&comps) }
+amari-calculus/src/manifold/metric.rs:119:            unsafe { std::mem::transmute_copy(&comps) }
+amari-calculus/src/manifold/metric.rs:155:        let components = unsafe { std::mem::transmute_copy(&components_2d) };
+amari-calculus/src/manifold/metric.rs:199:        let components = unsafe { std::mem::transmute_copy(&components_2d) };
+amari-calculus/src/manifold/connection.rs:27:        let metric_clone = unsafe {
+amari-calculus/src/manifold/connection.rs:87:        unsafe {
+amari-rewrite/tests/language_metered.rs:367:    unsafe impl GlobalAlloc for MaxSingleAlloc {
+amari-rewrite/tests/language_metered.rs:368:        unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+amari-rewrite/tests/language_metered.rs:369:            let ptr = unsafe { System.alloc(layout) };
+amari-rewrite/tests/language_metered.rs:376:        unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+amari-rewrite/tests/language_metered.rs:377:            unsafe { System.dealloc(ptr, layout) }
+amari-discovery/tests/catalog_traits.rs:259:    assert!(!imp.unsafe_trait, "should not be unsafe");
+amari-discovery/tests/catalog_traits.rs:432:             unsafe impl Send for MyStruct {}\n",
+amari-discovery/tests/catalog_traits.rs:438:    assert!(imp.unsafe_trait, "expected unsafe impl");
+amari-discovery/tests/catalog_signatures.rs:103:            ("src/b.rs", "pub unsafe fn uns() {}\n"),
+amari-discovery/tests/catalog_signatures.rs:120:    assert!(tokens(&one(&catalog, "crate::b::uns").signature).contains(&"unsafe"));
+
+## Command 2 (build.rs):
+#   find . -maxdepth 2 -name build.rs -not -path "./target/*" | xargs rg -n "\bunsafe\b"
+## Output:
+(no output above = zero unsafe in build scripts)
+
+## Command 3 (intrinsics):
+#   rg -ln 'std::arch|target_feature\(enable|_mm256|_mm_|is_x86_feature_detected|__m256|__m128' src amari-core/src amari-core/tests amari-core/benches amari-core/examples amari-wasm/src amari-wasm/tests amari-wasm/examples amari-automata/src amari-automata/tests amari-dual/src amari-dual/tests amari-dual/benches amari-dual/examples amari-tropical/src amari-tropical/tests amari-tropical/benches amari-tropical/examples amari-calculus/src amari-calculus/benches amari-measure/src amari-measure/benches amari-measure/examples amari-info-geom/src amari-info-geom/tests amari-info-geom/examples amari-cgt/src amari-cgt/tests amari-cgt/benches amari-cgt/examples amari-enumerative/src amari-enumerative/tests amari-flynn/src amari-flynn/tests amari-flynn-macros/src amari-functional/src amari-functional/benches amari-fusion/src amari-fusion/benches amari-holographic/src amari-holographic/tests amari-network/src amari-network/tests amari-network/examples amari-optimization/src amari-optimization/tests amari-optimization/benches amari-optimization/examples amari-gpu/src amari-gpu/tests amari-probabilistic/src amari-relativistic/src amari-relativistic/benches amari-topology/src amari-topology/benches amari-surcomplex/src amari-surcomplex/tests amari-surreal/src amari-surreal/tests amari-surreal/benches amari-surreal/examples amari-dynamics/src amari-dynamics/tests amari-dynamics/examples amari-rewrite/src amari-rewrite/tests amari-rewrite/examples amari-rewrite-macros/src amari-rewrite-macros/tests amari-discovery/src amari-discovery/tests amari-discovery/examples amari-discovery-macros/src amari-discovery-macros/tests
+## Output:
+amari-core/src/simd.rs
+
+## Disposition map (24 lines -> contract sites):
+# S1  amari-core/src/simd.rs:18                                (1 line)
+# S4  amari-core/src/aligned_alloc.rs:39,44,67                (3 lines)
+# S5  amari-calculus/src/manifold/metric.rs:111,119,155,199    (4 lines)
+# S6  amari-calculus/src/manifold/connection.rs:27,87          (2 lines)
+# S7  src/deterministic/scalar.rs:45,47 + ga2d.rs:13,127       (4 lines: trait decl, DetF32, DetVector2, DetRotor2)
+# S8  amari-rewrite/tests/language_metered.rs (5 lines: unsafe impl GlobalAlloc + unsafe fn alloc + inner alloc + unsafe fn dealloc + inner dealloc)
+# X1  amari-discovery/tests/catalog_traits.rs:259,432,438      (3 lines: test assertions + a FIXTURE STRING containing "unsafe impl Send" — metadata testing, not unsafe code)
+# X2  amari-discovery/tests/catalog_signatures.rs:103,120      (2 lines: fixture string "pub unsafe fn" + signature assertion — metadata testing, not unsafe code)
+# TOTAL: 24 = 1+3+4+2+4+5+3+2 — every line mapped; X1/X2 extend the §1.2 exclusion class to discovery TEST fixtures/assertions.

@@ -314,3 +314,33 @@ max_input_bytes = 65536
 max_output_bytes = 65536
 max_operations = 100000
 timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:rewrite:analysis:v1"
+capability_id = "amari:amari-rewrite:analysis:local-confluence"
+input_schema = "amari.discovery/probe/rewrite-analysis/input/v1"
+output_schema = "amari.discovery/probe/rewrite-analysis/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
+
+[[probes]]
+id = "amari-probe:rewrite:completion:v1"
+capability_id = "amari:amari-rewrite:completion:knuth-bendix"
+input_schema = "amari.discovery/probe/rewrite-completion/input/v1"
+output_schema = "amari.discovery/probe/rewrite-completion/output/v1"
+required_features = ["standard-probes"]
+cost = "moderate"
+deterministic = true
+side_effects = "none"
+[probes.limits]
+max_input_bytes = 65536
+max_output_bytes = 65536
+max_operations = 100000
+timeout_millis = 2000
