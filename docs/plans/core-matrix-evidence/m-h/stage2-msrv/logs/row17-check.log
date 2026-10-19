@@ -1,0 +1,5 @@
+   Compiling syn v2.0.119
+   Compiling creusot-contracts-proc v0.8.0
+    Checking creusot-contracts v0.8.0
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.16s

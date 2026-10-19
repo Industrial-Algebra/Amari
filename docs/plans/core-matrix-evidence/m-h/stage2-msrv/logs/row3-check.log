@@ -1,0 +1,5 @@
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling serde_derive v1.0.229
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.69s

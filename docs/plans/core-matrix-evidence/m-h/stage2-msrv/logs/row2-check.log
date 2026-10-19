@@ -1,0 +1,8 @@
+   Compiling crossbeam-utils v0.8.23
+   Compiling crossbeam-epoch v0.9.21
+   Compiling crossbeam-deque v0.8.8
+   Compiling rayon-core v1.13.0
+    Checking either v1.19.0
+    Checking rayon v1.12.0
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.60s

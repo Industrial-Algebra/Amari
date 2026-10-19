@@ -1,0 +1,17 @@
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+error: cannot find macro `vec` in this scope
+  --> amari-core/src/gf2/grassmannian.rs:48:16
+   |
+48 |         return vec![GF2Matrix::zero(0, n)];
+   |                ^^^
+   |
+help: consider importing one of these macros
+   |
+4  + use crate::vec;
+   |
+4  + use alloc::vec;
+   |
+4  + use creusot_contracts::vec;
+   |
+
+error: could not compile `amari-core` (lib) due to 1 previous error
