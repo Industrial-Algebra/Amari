@@ -423,6 +423,11 @@ pub fn specialize_rules(
             if covers_partition(rule, &partition, &positives, &limits, &mut resources)?
                 && !covers_any(rule, &negatives, &limits, &mut resources)?
             {
+                // Retention copies the accepted rule into the result;
+                // charge both sides per node BEFORE the clone is
+                // allocated (PR #320 round 4 P2c).
+                let _lhs_shape = admit_term(rule.lhs(), &limits, &mut resources)?;
+                let _rhs_shape = admit_term(rule.rhs(), &limits, &mut resources)?;
                 retained = Some(rule.clone());
             }
         }
@@ -958,23 +963,57 @@ fn one_level_equals(
 /// (#303 interaction handling).
 struct FreshNames<'a> {
     next: usize,
+    exhausted: bool,
     reserved: &'a BTreeSet<Variable>,
 }
 
 impl<'a> FreshNames<'a> {
     fn new(reserved: &'a BTreeSet<Variable>) -> Self {
-        Self { next: 0, reserved }
+        Self {
+            next: 0,
+            exhausted: false,
+            reserved,
+        }
     }
 
-    fn fresh(&mut self) -> Variable {
+    /// Allocate the next non-reserved `_I*` name.
+    ///
+    /// Every attempt is charged before the name is built, so a run of
+    /// reserved names is metered and an exhausted budget aborts the
+    /// loop promptly. At the `usize::MAX` boundary the namespace is
+    /// marked exhausted and further attempts return a typed
+    /// [`RewriteError::RelationLimitExceeded`] instead of spinning or
+    /// duplicating the boundary name (the fallible-fresh convention of
+    /// `relation::variable`; PR #320 round 4 P2a).
+    fn fresh(&mut self, resources: &mut RelationResources) -> RewriteResult<Variable> {
         loop {
+            // Charge each attempt BEFORE constructing the candidate.
+            resources.record_operations(1)?;
+            if self.exhausted {
+                return Err(Self::exhausted_error());
+            }
+            let boundary = self.next == usize::MAX;
             let mut name = String::from("_I");
             name.push_str(&self.next.to_string());
-            self.next = self.next.saturating_add(1);
+            if boundary {
+                self.exhausted = true;
+            } else {
+                self.next = self.next.saturating_add(1);
+            }
             let variable = Variable::new(name);
             if !self.reserved.contains(&variable) {
-                return variable;
+                return Ok(variable);
             }
+            if boundary {
+                return Err(Self::exhausted_error());
+            }
+        }
+    }
+
+    fn exhausted_error() -> RewriteError {
+        RewriteError::RelationLimitExceeded {
+            resource: "fresh name namespace",
+            limit: usize::MAX,
         }
     }
 }
@@ -985,7 +1024,10 @@ impl<'a> FreshNames<'a> {
 /// partition or reserved-set clone is ever made (PR #320 round 2).
 struct Generalizer<'a> {
     names: FreshNames<'a>,
-    disagreements: BTreeMap<(Term, Term), Variable>,
+    /// Disagreement keys in first-seen order. Lookups compare every
+    /// visited key with the charged structural order: keyed
+    /// comparisons are never free (PR #320 round 4 P2b).
+    disagreements: Vec<((Term, Term), Variable)>,
     limits: RelationLimits,
 }
 
@@ -993,7 +1035,7 @@ impl<'a> Generalizer<'a> {
     fn new(reserved: &'a BTreeSet<Variable>, limits: RelationLimits) -> Self {
         Self {
             names: FreshNames::new(reserved),
-            disagreements: BTreeMap::new(),
+            disagreements: Vec::new(),
             limits,
         }
     }
@@ -1074,12 +1116,29 @@ impl<'a> Generalizer<'a> {
         let _left_shape = admit_term(left, &self.limits, resources)?;
         let _right_shape = admit_term(right, &self.limits, resources)?;
         let key = (left.clone(), right.clone());
-        if let Some(variable) = self.disagreements.get(&key) {
-            return Ok(variable.clone());
+        if let Some(variable) = self.existing_variable(&key, resources)? {
+            return Ok(variable);
         }
-        let variable = self.names.fresh();
-        self.disagreements.insert(key, variable.clone());
+        let variable = self.names.fresh(resources)?;
+        resources.record_operations(1)?;
+        self.disagreements.push((key, variable.clone()));
         Ok(variable)
+    }
+
+    fn existing_variable(
+        &self,
+        key: &(Term, Term),
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Option<Variable>> {
+        for (existing, variable) in &self.disagreements {
+            // Charge each visited key before comparing it, then charge
+            // every compared node pair through the structural order.
+            resources.record_operations(1)?;
+            if charged_pair_compare(existing, key, resources)? == Ordering::Equal {
+                return Ok(Some(variable.clone()));
+            }
+        }
+        Ok(None)
     }
 }
 
@@ -1192,4 +1251,36 @@ fn first_split(
         }
     }
     Ok(None)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{FreshNames, RelationLimits, RelationResources, RewriteError};
+    use alloc::collections::BTreeSet;
+
+    #[test]
+    fn exhausted_fresh_names_are_typed_and_sticky() {
+        // The namespace boundary is a typed outcome, never a spin or a
+        // duplicate boundary name (fallible-fresh convention,
+        // PR #320 round 4 P2a).
+        let reserved = BTreeSet::new();
+        let limits = RelationLimits::default();
+        let mut resources = RelationResources::new(&limits);
+        let mut names = FreshNames {
+            next: usize::MAX,
+            exhausted: false,
+            reserved: &reserved,
+        };
+        // The boundary index itself is usable once when free, exactly
+        // like the logic-variable namespace convention.
+        let boundary = names.fresh(&mut resources).unwrap();
+        assert_eq!(boundary.as_str(), alloc::format!("_I{}", usize::MAX));
+        assert!(names.exhausted);
+
+        // Sticky and prompt: one attempt charge, then the typed error.
+        let before = resources.operations();
+        let error = names.fresh(&mut resources).unwrap_err();
+        assert!(matches!(error, RewriteError::RelationLimitExceeded { .. }));
+        assert_eq!(resources.operations(), before + 1);
+    }
 }

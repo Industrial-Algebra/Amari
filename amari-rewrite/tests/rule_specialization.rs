@@ -601,11 +601,11 @@ fn admission_meters_term_traversal_before_generalization() {
 
 #[test]
 fn splitting_fixture_is_metered_end_to_end() {
-    // This fixture needs 174 metered units end to end; one unit short
+    // This fixture needs 188 metered units end to end; one unit short
     // is a typed operations error (PR #320 round 1 P3). The wide
     // variant in `splitting_meters_every_compared_subtree_node`
     // isolates the split's per-node comparison cost.
-    let limits = RelationLimits::new(4_096, 64, 4_096, 173).unwrap();
+    let limits = RelationLimits::new(4_096, 64, 4_096, 187).unwrap();
     let config = SpecializationConfig::new(
         SpecializationConfig::MAX_EXAMPLES,
         SpecializationConfig::MAX_CANDIDATES,
@@ -730,8 +730,8 @@ fn equality_meters_every_compared_node() {
     let narrow = wide_term(2);
     let positives = vec![(wide.clone(), c("a")), (wide, c("b"))];
     let narrow_positives = vec![(narrow.clone(), c("a")), (narrow, c("b"))];
-    assert_operation_boundary(&positives, &[], &boundary_limits(), 118_833, "equality");
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 118_833 / 2);
+    assert_operation_boundary(&positives, &[], &boundary_limits(), 127_029, "equality");
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 127_029 / 2);
 }
 
 #[test]
@@ -747,11 +747,11 @@ fn binding_traversal_meters_every_borrowed_node() {
         &positives,
         &negatives,
         &boundary_limits(),
-        16_434,
+        16_436,
         "binding",
     );
     assert!(
-        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 16_434 / 2
+        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 16_436 / 2
     );
 }
 
@@ -767,10 +767,10 @@ fn canonicalization_meters_every_comparison_node() {
         &positives,
         &[],
         &boundary_limits(),
-        40_980,
+        45_077,
         "canonicalization",
     );
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 40_980 / 2);
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 45_077 / 2);
 }
 
 #[test]
@@ -785,10 +785,10 @@ fn candidate_construction_meters_clones_and_validation() {
         &positives,
         &[],
         &boundary_limits(),
-        28_685,
+        32_782,
         "candidate construction",
     );
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 28_685 / 2);
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 32_782 / 2);
 }
 
 #[test]
@@ -812,12 +812,12 @@ fn splitting_meters_every_compared_subtree_node() {
         &positives,
         &negatives,
         &boundary_limits(),
-        106_458,
+        114_651,
         "splitting",
     );
     assert!(
         minimal_operation_budget(&narrow_positives, &narrow_negatives, &boundary_limits())
-            < 106_458 / 2
+            < 114_651 / 2
     );
 }
 
@@ -880,4 +880,70 @@ fn wide_binding_lookup_is_rejected_under_a_fixed_budget() {
     let error = specialize_rules(&positives, &[], &config)
         .expect_err("a linear binding scan cannot be funded by 50,000 operations");
     assert_eq!(limit_error_resource(&error), Some("operations"));
+}
+
+// ---- Round 4: fresh names, keyed comparisons, retention cloning ----
+
+#[test]
+fn fresh_name_attempts_charge_per_attempt() {
+    // Reserved `_I0.._I4090` names live in a wide negative example, so
+    // the candidate pattern stays small and the fresh-name loop (4,092
+    // attempts for the first generated variable) is what dominates.
+    let reserved: Vec<Term> = (0..4_091)
+        .map(|index| Term::var(format!("_I{index}")))
+        .collect();
+    let positives = vec![add_zero_pair(c("a")), add_zero_pair(c("b"))];
+    let negatives = vec![(f("f", reserved), c("w"))];
+    let narrow_negatives = vec![(f("f", [c("z")]), c("w"))];
+    assert_operation_boundary(
+        &positives,
+        &negatives,
+        &boundary_limits(),
+        12_392,
+        "fresh names",
+    );
+    assert!(
+        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 12_392 / 2
+    );
+}
+
+#[test]
+fn disagreement_key_comparisons_charge_per_node() {
+    // The second disagreement key shares a 2,038-node prefix with the
+    // first, so the keyed lookup must charge every compared node pair.
+    let prefix: Vec<Term> = (0..2_038).map(|_| c("z")).collect();
+    let key = |tag: &str| {
+        let mut args = prefix.clone();
+        args.push(c(tag));
+        f("w", args)
+    };
+    let positives = vec![
+        (f("g", [c("p"), key("x"), key("y")]), c("u")),
+        (f("g", [c("p"), key("z"), key("t")]), c("v")),
+    ];
+    let small = |tag: &str| f("w", [c("z"), c(tag)]);
+    let narrow_positives = vec![
+        (f("g", [c("p"), small("x"), small("y")]), c("u")),
+        (f("g", [c("p"), small("z"), small("t")]), c("v")),
+    ];
+    assert_operation_boundary(
+        &positives,
+        &[],
+        &boundary_limits(),
+        98_041,
+        "disagreement keys",
+    );
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 98_041 / 2);
+}
+
+#[test]
+fn retention_clone_charges_per_node() {
+    // The accepted rule is wide on both sides; copying it into the
+    // result is charged per node before the clone is allocated.
+    let wide = wide_term(4_095);
+    let narrow = wide_term(2);
+    let positives = vec![(wide.clone(), wide)];
+    let narrow_positives = vec![(narrow.clone(), narrow)];
+    assert_operation_boundary(&positives, &[], &boundary_limits(), 73_732, "retention");
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 73_732 / 2);
 }
