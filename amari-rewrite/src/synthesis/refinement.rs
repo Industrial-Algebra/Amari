@@ -728,12 +728,17 @@ impl<'a> Bindings<'a> {
         variable: &Variable,
         resources: &mut RelationResources,
     ) -> RewriteResult<Option<&'a Term>> {
-        resources.record_operations(1)?;
-        Ok(self
-            .entries
-            .iter()
-            .find(|(bound, _)| *bound == variable)
-            .map(|(_, term)| *term))
+        // Charge EVERY visited entry BEFORE comparing it: a miss costs
+        // the full walk, and an exhausted budget aborts the scan at the
+        // first unchargeable entry instead of visiting the rest for free
+        // (PR #320 round 3).
+        for (bound, term) in &self.entries {
+            resources.record_operations(1)?;
+            if *bound == variable {
+                return Ok(Some(term));
+            }
+        }
+        Ok(None)
     }
 
     fn insert(

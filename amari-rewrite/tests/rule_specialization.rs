@@ -601,11 +601,11 @@ fn admission_meters_term_traversal_before_generalization() {
 
 #[test]
 fn splitting_fixture_is_metered_end_to_end() {
-    // This fixture needs 177 metered units end to end; one unit short
+    // This fixture needs 174 metered units end to end; one unit short
     // is a typed operations error (PR #320 round 1 P3). The wide
     // variant in `splitting_meters_every_compared_subtree_node`
     // isolates the split's per-node comparison cost.
-    let limits = RelationLimits::new(4_096, 64, 4_096, 176).unwrap();
+    let limits = RelationLimits::new(4_096, 64, 4_096, 173).unwrap();
     let config = SpecializationConfig::new(
         SpecializationConfig::MAX_EXAMPLES,
         SpecializationConfig::MAX_CANDIDATES,
@@ -747,11 +747,11 @@ fn binding_traversal_meters_every_borrowed_node() {
         &positives,
         &negatives,
         &boundary_limits(),
-        16_438,
+        16_434,
         "binding",
     );
     assert!(
-        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 16_438 / 2
+        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 16_434 / 2
     );
 }
 
@@ -819,4 +819,65 @@ fn splitting_meters_every_compared_subtree_node() {
         minimal_operation_budget(&narrow_positives, &narrow_negatives, &boundary_limits())
             < 106_458 / 2
     );
+}
+
+// ---- Round 3: binding lookups charge every visited entry ----
+
+/// A term with `count` distinct variables: every lookup misses the
+/// whole binding list accumulated so far.
+fn distinct_variables_term(count: usize) -> Term {
+    Term::sym("f", (0..count).map(|index| Term::var(format!("X{index}"))))
+}
+
+#[test]
+fn binding_lookups_charge_every_visited_entry() {
+    // k distinct variables cost k(k-1)/2 entry visits per replay and
+    // replay runs twice (partition check plus final coverage), so the
+    // measured minimum must grow quadratically, not linearly.
+    let small = minimal_operation_budget(
+        &[(distinct_variables_term(400), c("a"))],
+        &[],
+        &boundary_limits(),
+    );
+    let large = minimal_operation_budget(
+        &[(distinct_variables_term(800), c("a"))],
+        &[],
+        &boundary_limits(),
+    );
+    assert!(
+        small >= 79_800,
+        "small fixture minimum {small} does not cover one replay's entry visits"
+    );
+    assert!(
+        large >= 3 * small,
+        "binding-entry metering must scale quadratically: small={small} large={large}"
+    );
+    let error = run_with_operation_budget(
+        &[(distinct_variables_term(800), c("a"))],
+        &[],
+        &boundary_limits(),
+        large - 1,
+    )
+    .expect_err("one operation short must fail");
+    assert_eq!(limit_error_resource(&error), Some("operations"));
+}
+
+#[test]
+fn wide_binding_lookup_is_rejected_under_a_fixed_budget() {
+    // The reviewer's shape: 4,095 distinct variables need about 8.4
+    // million binding-entry visits per replay, far beyond 50,000
+    // operations, so the scan must abort promptly with a typed error.
+    let limits = RelationLimits::new(4_096, 64, 4_096, 50_000).unwrap();
+    let config = SpecializationConfig::new(
+        SpecializationConfig::MAX_EXAMPLES,
+        SpecializationConfig::MAX_CANDIDATES,
+        SpecializationConfig::MAX_PARTITIONS,
+        limits,
+    )
+    .unwrap();
+    let positives = vec![(distinct_variables_term(4_095), c("a"))];
+
+    let error = specialize_rules(&positives, &[], &config)
+        .expect_err("a linear binding scan cannot be funded by 50,000 operations");
+    assert_eq!(limit_error_resource(&error), Some("operations"));
 }
