@@ -6,6 +6,7 @@ use crate::ScalarField;
 ///
 /// The metric tensor encodes distances and angles on a curved space:
 /// ds² = g_ij dx^i dx^j
+#[derive(Clone)]
 pub struct MetricTensor<const DIM: usize> {
     /// Metric components g_ij as functions of coordinates
     components: [[ScalarField<3, 0, 0>; DIM]; DIM],
@@ -107,7 +108,16 @@ impl<const DIM: usize> MetricTensor<DIM> {
         let components = if DIM == 2 {
             let comps: [[ScalarField<3, 0, 0>; 2]; 2] =
                 [[one.clone(), zero.clone()], [zero.clone(), one.clone()]];
-            // SAFETY: This is safe because we checked DIM == 2
+
+            // SAFETY (M-REP-D S5): `transmute_copy` reinterprets a
+            // `[[ScalarField<3,0,0>; N]; N]` as `[[ScalarField; DIM]; DIM]`.
+            // - Sizes: the branch guard pins N == DIM, so element counts and
+            //   layouts match exactly (transmute_copy's own size check would
+            //   panic otherwise; it is a runtime check, not compile-time).
+            // - Ownership: ScalarField is `{ fn(&[f64]) -> f64, usize }` —
+            //   no heap, no drop glue — so the bitwise duplication cannot
+            //   double-drop. Adding any owning field to ScalarField makes
+            //   this site UB; the invariant is asserted by the S5 audit.
             unsafe { std::mem::transmute_copy(&comps) }
         } else if DIM == 3 {
             let comps: [[ScalarField<3, 0, 0>; 3]; 3] = [
@@ -115,7 +125,16 @@ impl<const DIM: usize> MetricTensor<DIM> {
                 [zero.clone(), one.clone(), zero.clone()],
                 [zero.clone(), zero.clone(), one.clone()],
             ];
-            // SAFETY: This is safe because we checked DIM == 3
+
+            // SAFETY (M-REP-D S5): `transmute_copy` reinterprets a
+            // `[[ScalarField<3,0,0>; N]; N]` as `[[ScalarField; DIM]; DIM]`.
+            // - Sizes: the branch guard pins N == DIM, so element counts and
+            //   layouts match exactly (transmute_copy's own size check would
+            //   panic otherwise; it is a runtime check, not compile-time).
+            // - Ownership: ScalarField is `{ fn(&[f64]) -> f64, usize }` —
+            //   no heap, no drop glue — so the bitwise duplication cannot
+            //   double-drop. Adding any owning field to ScalarField makes
+            //   this site UB; the invariant is asserted by the S5 audit.
             unsafe { std::mem::transmute_copy(&comps) }
         } else {
             panic!("Euclidean metric only implemented for DIM=2 and DIM=3");
@@ -152,7 +171,10 @@ impl<const DIM: usize> MetricTensor<DIM> {
         ];
 
         // SAFETY: Safe because we checked DIM == 2
-        let components = unsafe { std::mem::transmute_copy(&components_2d) };
+        let components =
+            // SAFETY (M-REP-D S5): as above — N == DIM branch guard, matching
+            // layout, ScalarField has no owning state or drop glue.
+            unsafe { std::mem::transmute_copy(&components_2d) };
 
         Self { components }
     }
@@ -196,7 +218,10 @@ impl<const DIM: usize> MetricTensor<DIM> {
         ];
 
         // SAFETY: Safe because we checked DIM == 2
-        let components = unsafe { std::mem::transmute_copy(&components_2d) };
+        let components =
+            // SAFETY (M-REP-D S5): as above — N == DIM branch guard, matching
+            // layout, ScalarField has no owning state or drop glue.
+            unsafe { std::mem::transmute_copy(&components_2d) };
 
         Self { components }
     }

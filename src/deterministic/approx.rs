@@ -2,6 +2,14 @@
 //!
 //! Uses Chebyshev or Taylor series with fixed iteration counts
 //! to ensure deterministic results.
+//!
+//! Accuracy honesty (M-REP-D R3): fixed-iteration Taylor-series
+//! approximations over pure arithmetic with argument reduction to the
+//! primary range — deterministic and cross-platform bit-exact on the
+//! finite domain (see the Deterministic trait; NaN bit patterns carry
+//! no promise). The
+//! method-level error bounds documented below predate this audit and are
+//! not certified by it; this module claims determinism, not accuracy.
 
 use super::scalar::DetF32;
 

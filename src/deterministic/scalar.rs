@@ -1,23 +1,36 @@
 //! Deterministic floating-point scalar type
 //!
-//! Provides bit-exact reproducibility across platforms by:
-//! - Disabling FMA instructions
-//! - Using explicit rounding control
-//! - Implementing transcendentals via fixed-iteration algorithms
+//! Determinism guarantees (M-REP-D S7, revised R3 2026-10-18 — the
+//! earlier "libm in DetRotor2" premise was WRONG):
+//! - **Cross-platform bit-exactness on the finite domain**: the entire
+//!   `deterministic` family is pure fixed arithmetic — bit manipulation,
+//!   IEEE-754 basic operations, and fixed-iteration approximations (Newton
+//!   sqrt in this file; Taylor sin/cos and the atan2 approximation in
+//!   `approx.rs`). No libm call exists anywhere in the family, so
+//!   computations with finite inputs, intermediates, and final results
+//!   yield identical bits across platforms and builds. NaN-producing
+//!   computations carry NO bit-identity promise (Rust permits NaN
+//!   sign/payload variation even within one binary).
+//! - **Not claimed**: ACCURACY. The approximations do not converge outside
+//!   their working ranges (see each method's docs — e.g. the Newton sqrt
+//!   from a raw-input start, and Taylor series near zero). Deterministic,
+//!   not correctly rounded.
 
 use core::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Deterministic 32-bit floating-point wrapper
 ///
-/// Guarantees bit-exact results across:
-/// - Platforms: x86-64, ARM64, WASM32
-/// - Compilers: rustc 1.70+
-/// - Optimization levels: 0, 1, 2, 3
+/// Guarantees bit-exact results on the finite domain (see the module
+/// docs for the precise scope: basic ops, bit manipulation, and the
+/// fixed-iteration approximations are cross-platform bit-exact for
+/// finite computations; no libm surface on this type; NaN bit patterns
+/// carry no promise).
 ///
 /// # Performance
 ///
-/// ~10-20% slower than native f32 due to disabled optimizations.
-/// Use `feature = "fast"` for non-networked applications.
+/// Carries overhead relative to native f32 (fixed iteration counts,
+/// `#[inline(never)]` boundaries); no specific figure is claimed. For
+/// non-networked applications, use the standard `f32` types directly.
 ///
 /// # Example
 /// ```
@@ -25,7 +38,7 @@ use core::ops::{Add, Div, Mul, Neg, Sub};
 ///
 /// let a = DetF32::from_f32(1.5);
 /// let b = DetF32::from_f32(2.0);
-/// let c = a * b;  // Bit-exact on all platforms
+/// let c = a * b;  // Bit-exact on all platforms (finite domain)
 /// assert_eq!(c.to_bits(), 0x40400000);
 /// ```
 #[repr(transparent)]
@@ -34,16 +47,44 @@ pub struct DetF32(f32);
 
 /// Marker trait for types with deterministic guarantees
 ///
+/// # Safety (M-REP-D S7 — trait scope narrowed to the honest attestation)
+///
+/// Marker for deterministic-arithmetic types.
+///
+/// Implementors guarantee bit-exact reproducibility of every exposed
+/// operation on the finite domain (see the scope qualification below):
+/// identical finite inputs with finite intermediates and results produce
+/// identical bit patterns — no hidden state, address or time dependence —
+/// in a fixed binary and ACROSS platforms and builds, because the entire
+/// family is pure fixed arithmetic (IEEE-754 basic operations, bit
+/// manipulation, fixed-iteration approximations; no libm anywhere —
+/// M-REP-D R3 correction of the R1 premise that claimed otherwise).
+///
+/// This is a DETERMINISM contract, not an accuracy contract: the
+/// approximation-based methods (Newton sqrt, Taylor sin/cos/atan2) are not
+/// converged outside their working ranges and no accuracy is claimed.
+///
 /// # Safety
 ///
-/// Implementors must guarantee bit-exact reproducibility across:
-/// - Platforms: x86-64, ARM64, WASM32
-/// - Compilers: rustc 1.70+
-/// - Optimization levels
+/// Scope qualification (R4, tightened R5): bit-identity is promised only
+/// for computations whose inputs, intermediates, and final results are
+/// finite. Where an operation produces a NaN, NOTHING is promised — Rust
+/// permits the sign and payload to differ between repetitions of the same
+/// operation in the same binary (the local `0/0` payload `0xffc00000` is
+/// an observation, not a guarantee, of stability or portability).
 ///
-/// All operations must produce identical bit patterns given identical inputs.
+/// Implementors must contain only pure fixed arithmetic as described
+/// above; any libm call, hardware-varying approximation, hidden state, or
+/// input-length-dependent iteration forfeits the safety justification.
 pub unsafe trait Deterministic {}
 
+// SAFETY (M-REP-D S7): DetF32 wraps f32 and exposes bit manipulation,
+// IEEE-754 basic arithmetic, and fixed-iteration approximations (Newton
+// sqrt here; Taylor sin/cos/atan2 in approx.rs) — all pure arithmetic,
+// no libm. Bit-identical across binaries and platforms for computations
+// finite through inputs, intermediates, and results (the trait's finite
+// domain; NaN bit patterns carry no promise). No accuracy claim (see the
+// method docs).
 unsafe impl Deterministic for DetF32 {}
 
 impl DetF32 {
@@ -94,8 +135,13 @@ impl DetF32 {
 
     /// Deterministic square root using Newton-Raphson
     ///
-    /// Uses fixed 4 iterations for reproducibility.
-    /// Relative error: < 2^-20
+    /// Uses fixed 4 iterations from an initial guess equal to the input,
+    /// for reproducibility. NOT an accuracy guarantee: convergence is NOT
+    /// achieved for inputs far from 1.0 — e.g. `sqrt(100)` returns
+    /// approximately 10.84 after four iterations (observed; M-REP-D R2).
+    /// Deterministic (fixed iteration count, pure arithmetic); accurate
+    /// only near unity. Accuracy improvements are follow-up work outside
+    /// this audit's scope.
     #[inline(never)]
     pub fn sqrt(self) -> Self {
         if self.to_f32() <= 0.0 {

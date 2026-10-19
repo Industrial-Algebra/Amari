@@ -3,106 +3,114 @@
 //! This module provides vectorized implementations of critical geometric algebra
 //! operations using CPU SIMD instruction sets (AVX2, SSE) for maximum performance.
 
-#[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
+#[cfg(all(
+    target_arch = "x86_64",
+    target_feature = "avx2",
+    target_feature = "fma"
+))]
 use core::arch::x86_64::*;
 
 use crate::Multivector;
 
 /// SIMD-optimized geometric product for 3D Euclidean algebra (most common case)
-#[cfg(target_feature = "avx2")]
+#[cfg(all(
+    target_arch = "x86_64",
+    target_feature = "avx2",
+    target_feature = "fma"
+))]
 #[inline(always)]
 pub fn geometric_product_3d_avx2(
     lhs: &Multivector<3, 0, 0>,
     rhs: &Multivector<3, 0, 0>,
 ) -> Multivector<3, 0, 0> {
+    /// Per-`i` sign tables: lane `k` of the contribution of `lhs[i]` carries
+    /// `blade_sign(i, i ^ k)`, the Euclidean blade-product sign
+    /// `(-1)^(#{(a ∈ i, b ∈ i^k) : b < a})`. Generated from the same blade
+    /// algebra the audit oracle (tests/simd_audit.rs) uses and cross-checked
+    /// there over all 64 basis pairs plus 10⁴ randomized dense products.
+    ///
+    /// M-REP-D S1 note: the previous hand-tuned pattern tables used a
+    /// different coefficient-ordering convention than the library's bitmask
+    /// order and computed wrong products for most basis pairs (188/448
+    /// coefficient mismatches over the pair matrix); this formulation is
+    /// correct by construction: output[k] = Σ_i sign(i, i^k)·lhs[i]·rhs[i^k].
+    #[rustfmt::skip]
+    const SIGN_LO: [[f64; 4]; 8] = [
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, -1.0, 1.0, -1.0],
+        [-1.0, 1.0, -1.0, 1.0],
+        [1.0, -1.0, -1.0, 1.0],
+        [-1.0, 1.0, 1.0, -1.0],
+        [-1.0, -1.0, 1.0, 1.0],
+        [-1.0, -1.0, 1.0, 1.0],
+    ];
+    #[rustfmt::skip]
+    const SIGN_HI: [[f64; 4]; 8] = [
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, -1.0, 1.0, -1.0],
+        [-1.0, 1.0, -1.0, 1.0],
+        [1.0, -1.0, -1.0, 1.0],
+        [-1.0, 1.0, 1.0, -1.0],
+        [-1.0, -1.0, 1.0, 1.0],
+        [-1.0, -1.0, 1.0, 1.0],
+    ];
+
+    // SAFETY (M-REP-D S1): every gather index is `i ^ k` for i, k < 8 —
+    // itself < 8 — so all reads stay inside the 8-f64 coefficient arrays of
+    // `lhs`/`rhs`; their length is pinned to 2³ = 8 by every construction
+    // path (`from_coefficients` asserts `len == BASIS_COUNT`, boxed slice
+    // freezes it). Gathers take no alignment. The FMA intrinsics are
+    // compiled only under `all(avx2, fma)` and dispatched only after both
+    // are detected at runtime.
     unsafe {
-        let _result = Multivector::<3, 0, 0>::zero();
-
-        // Load coefficients into AVX2 registers (256-bit, 4 doubles each)
-        let lhs_low = _mm256_loadu_pd(lhs.as_slice().as_ptr());
-        let lhs_high = _mm256_loadu_pd(lhs.as_slice().as_ptr().add(4));
-        let rhs_low = _mm256_loadu_pd(rhs.as_slice().as_ptr());
-        let rhs_high = _mm256_loadu_pd(rhs.as_slice().as_ptr().add(4));
-
-        // Result accumulator
-        let mut result_low = _mm256_setzero_pd();
-        let mut result_high = _mm256_setzero_pd();
-
-        // Unrolled computation for 8x8 geometric product
-        // This manually implements the geometric product using
-        // precomputed multiplication patterns for 3D Euclidean space
-
-        // Scalar * all components
-        let scalar_lhs = _mm256_set1_pd(lhs.get(0));
-        result_low = _mm256_fmadd_pd(scalar_lhs, rhs_low, result_low);
-        result_high = _mm256_fmadd_pd(scalar_lhs, rhs_high, result_high);
-
-        // e1 products
-        let e1_lhs = _mm256_set1_pd(lhs.get(1));
-        let e1_pattern_low = _mm256_set_pd(-rhs.get(3), rhs.get(2), rhs.get(0), rhs.get(1));
-        let e1_pattern_high = _mm256_set_pd(-rhs.get(7), -rhs.get(6), rhs.get(5), rhs.get(4));
-        result_low = _mm256_fmadd_pd(e1_lhs, e1_pattern_low, result_low);
-        result_high = _mm256_fmadd_pd(e1_lhs, e1_pattern_high, result_high);
-
-        // e2 products
-        let e2_lhs = _mm256_set1_pd(lhs.get(2));
-        let e2_pattern_low = _mm256_set_pd(rhs.get(1), rhs.get(0), -rhs.get(3), rhs.get(2));
-        let e2_pattern_high = _mm256_set_pd(rhs.get(6), -rhs.get(7), rhs.get(4), -rhs.get(5));
-        result_low = _mm256_fmadd_pd(e2_lhs, e2_pattern_low, result_low);
-        result_high = _mm256_fmadd_pd(e2_lhs, e2_pattern_high, result_high);
-
-        // e3 products
-        let e3_lhs = _mm256_set1_pd(lhs.get(4));
-        let e3_pattern_low = _mm256_set_pd(-rhs.get(2), rhs.get(1), rhs.get(0), rhs.get(4));
-        let e3_pattern_high = _mm256_set_pd(-rhs.get(5), rhs.get(4), -rhs.get(7), rhs.get(6));
-        result_low = _mm256_fmadd_pd(e3_lhs, e3_pattern_low, result_low);
-        result_high = _mm256_fmadd_pd(e3_lhs, e3_pattern_high, result_high);
-
-        // e12 products
-        let e12_lhs = _mm256_set1_pd(lhs.get(3));
-        let e12_pattern_low = _mm256_set_pd(rhs.get(0), -rhs.get(4), rhs.get(1), -rhs.get(2));
-        let e12_pattern_high = _mm256_set_pd(rhs.get(4), rhs.get(7), -rhs.get(6), rhs.get(5));
-        result_low = _mm256_fmadd_pd(e12_lhs, e12_pattern_low, result_low);
-        result_high = _mm256_fmadd_pd(e12_lhs, e12_pattern_high, result_high);
-
-        // e13 products
-        let e13_lhs = _mm256_set1_pd(lhs.get(5));
-        let e13_pattern_low = _mm256_set_pd(rhs.get(4), rhs.get(0), -rhs.get(2), rhs.get(1));
-        let e13_pattern_high = _mm256_set_pd(-rhs.get(7), rhs.get(6), rhs.get(4), -rhs.get(5));
-        result_low = _mm256_fmadd_pd(e13_lhs, e13_pattern_low, result_low);
-        result_high = _mm256_fmadd_pd(e13_lhs, e13_pattern_high, result_high);
-
-        // e23 products
-        let e23_lhs = _mm256_set1_pd(lhs.get(6));
-        let e23_pattern_low = _mm256_set_pd(-rhs.get(1), rhs.get(0), rhs.get(4), rhs.get(2));
-        let e23_pattern_high = _mm256_set_pd(rhs.get(5), -rhs.get(4), rhs.get(7), rhs.get(6));
-        result_low = _mm256_fmadd_pd(e23_lhs, e23_pattern_low, result_low);
-        result_high = _mm256_fmadd_pd(e23_lhs, e23_pattern_high, result_high);
-
-        // e123 products
-        let e123_lhs = _mm256_set1_pd(lhs.get(7));
-        let e123_pattern_low = _mm256_set_pd(rhs.get(1), rhs.get(2), rhs.get(4), -rhs.get(0));
-        let e123_pattern_high = _mm256_set_pd(-rhs.get(5), -rhs.get(6), -rhs.get(7), rhs.get(4));
-        result_low = _mm256_fmadd_pd(e123_lhs, e123_pattern_low, result_low);
-        result_high = _mm256_fmadd_pd(e123_lhs, e123_pattern_high, result_high);
-
-        // Store results back to memory
-        let mut coeffs = [0.0; 8];
-        _mm256_storeu_pd(coeffs.as_mut_ptr(), result_low);
-        _mm256_storeu_pd(coeffs.as_mut_ptr().add(4), result_high);
-
-        Multivector::from_coefficients(coeffs.to_vec())
+        let lp = lhs.as_slice().as_ptr();
+        let rp = rhs.as_slice().as_ptr();
+        let mut acc_lo = _mm256_setzero_pd();
+        let mut acc_hi = _mm256_setzero_pd();
+        for i in 0usize..8 {
+            let li = _mm256_set1_pd(*lp.add(i));
+            // lanes k = 0..3 gather rhs[i ^ k] (k = 0 gives i itself)
+            let idx_lo =
+                _mm256_setr_epi64x(i as i64, (i ^ 1) as i64, (i ^ 2) as i64, (i ^ 3) as i64);
+            let idx_hi = _mm256_setr_epi64x(
+                (i ^ 4) as i64,
+                (i ^ 5) as i64,
+                (i ^ 6) as i64,
+                (i ^ 7) as i64,
+            );
+            let g_lo = _mm256_i64gather_pd(rp, idx_lo, 8);
+            let g_hi = _mm256_i64gather_pd(rp, idx_hi, 8);
+            let s_lo = _mm256_loadu_pd(SIGN_LO[i].as_ptr());
+            let s_hi = _mm256_loadu_pd(SIGN_HI[i].as_ptr());
+            acc_lo = _mm256_fmadd_pd(li, _mm256_mul_pd(s_lo, g_lo), acc_lo);
+            acc_hi = _mm256_fmadd_pd(li, _mm256_mul_pd(s_hi, g_hi), acc_hi);
+        }
+        let mut out = [0.0f64; 8];
+        _mm256_storeu_pd(out.as_mut_ptr(), acc_lo);
+        _mm256_storeu_pd(out.as_mut_ptr().add(4), acc_hi);
+        Multivector::<3, 0, 0>::from_coefficients(out.to_vec())
     }
 }
 
-/// Optimized batch geometric product for processing multiple multivector pairs
-#[cfg(target_feature = "avx2")]
+#[cfg(all(
+    target_arch = "x86_64",
+    target_feature = "avx2",
+    target_feature = "fma"
+))]
 pub fn batch_geometric_product_avx2(
     lhs_batch: &[f64],
     rhs_batch: &[f64],
     result_batch: &mut [f64],
 ) {
     const COEFFS_PER_MV: usize = 8;
+    assert!(
+        lhs_batch.len().is_multiple_of(COEFFS_PER_MV)
+            && rhs_batch.len().is_multiple_of(COEFFS_PER_MV)
+            && result_batch.len().is_multiple_of(COEFFS_PER_MV),
+        "batch_geometric_product_avx2: all batches must be a multiple of {COEFFS_PER_MV}          coefficients (8 per Cl(3,0,0) multivector); partial tails are rejected, not truncated"
+    );
     let num_pairs = lhs_batch.len() / COEFFS_PER_MV;
 
     for i in 0..num_pairs {
@@ -130,14 +138,28 @@ pub fn batch_geometric_product_avx2(
 /// In std environments, uses runtime detection; in no_std, uses compile-time detection
 pub fn select_geometric_product_impl(
 ) -> fn(&Multivector<3, 0, 0>, &Multivector<3, 0, 0>) -> Multivector<3, 0, 0> {
-    #[cfg(all(not(feature = "std"), target_feature = "avx2"))]
+    #[cfg(all(
+        not(feature = "std"),
+        all(
+            target_arch = "x86_64",
+            target_feature = "avx2",
+            target_feature = "fma"
+        )
+    ))]
     {
         return geometric_product_3d_avx2;
     }
 
-    #[cfg(all(feature = "std", target_feature = "avx2"))]
+    #[cfg(all(
+        feature = "std",
+        all(
+            target_arch = "x86_64",
+            target_feature = "avx2",
+            target_feature = "fma"
+        )
+    ))]
     {
-        if is_x86_feature_detected!("avx2") {
+        if is_x86_feature_detected!("avx2") && is_x86_feature_detected!("fma") {
             return geometric_product_3d_avx2;
         }
     }
@@ -146,30 +168,38 @@ pub fn select_geometric_product_impl(
     |lhs, rhs| lhs.geometric_product(rhs)
 }
 
-/// Memory-aligned buffer for SIMD operations
-#[repr(C, align(32))]
-pub struct AlignedBuffer<const N: usize> {
-    pub data: [f64; N],
-}
-
-impl<const N: usize> AlignedBuffer<N> {
-    pub fn new() -> Self {
-        Self { data: [0.0; N] }
+/// Runtime inventory (M-REP-D/P-AVX2): reports which implementation
+/// `select_geometric_product_impl` selects under the compiled feature set
+/// and the host's CPU features. Function-pointer identity is NOT stable
+/// across compilation units and must not be used as inventory evidence.
+pub fn select_geometric_product_impl_name() -> &'static str {
+    #[cfg(all(
+        not(feature = "std"),
+        all(
+            target_arch = "x86_64",
+            target_feature = "avx2",
+            target_feature = "fma"
+        )
+    ))]
+    {
+        return "avx2+fma";
     }
 
-    pub fn as_ptr(&self) -> *const f64 {
-        self.data.as_ptr()
+    #[cfg(all(
+        feature = "std",
+        all(
+            target_arch = "x86_64",
+            target_feature = "avx2",
+            target_feature = "fma"
+        )
+    ))]
+    {
+        if is_x86_feature_detected!("avx2") && is_x86_feature_detected!("fma") {
+            return "avx2+fma";
+        }
     }
 
-    pub fn as_mut_ptr(&mut self) -> *mut f64 {
-        self.data.as_mut_ptr()
-    }
-}
-
-impl<const N: usize> Default for AlignedBuffer<N> {
-    fn default() -> Self {
-        Self::new()
-    }
+    "scalar-fallback"
 }
 
 #[cfg(test)]
@@ -181,7 +211,11 @@ mod tests {
     type Cl3 = Multivector<3, 0, 0>;
 
     #[test]
-    #[cfg(target_feature = "avx2")]
+    #[cfg(all(
+        target_arch = "x86_64",
+        target_feature = "avx2",
+        target_feature = "fma"
+    ))]
     fn test_simd_geometric_product_correctness() {
         let e1 = Cl3::basis_vector(0);
         let e2 = Cl3::basis_vector(1);
@@ -193,17 +227,6 @@ mod tests {
         for i in 0..8 {
             assert_relative_eq!(scalar_result.get(i), simd_result.get(i), epsilon = 1e-14);
         }
-    }
-
-    #[test]
-    fn test_aligned_buffer() {
-        let mut buffer = AlignedBuffer::<8>::new();
-        buffer.data[0] = 1.0;
-        assert_eq!(buffer.data[0], 1.0);
-
-        // Verify alignment
-        let ptr = buffer.as_ptr() as usize;
-        assert_eq!(ptr % 32, 0);
     }
 
     #[test]

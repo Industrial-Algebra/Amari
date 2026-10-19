@@ -364,6 +364,11 @@ mod allocation {
 
     struct MaxSingleAlloc;
 
+    // SAFETY (M-REP-D S8): MaxSingleAlloc is a measurement proxy — every
+    // method delegates to `System` with the identical layout, preserving
+    // GlobalAlloc's contract; the atomics (fetch_max/Relaxed) are safe and
+    // side-effect-free with respect to allocation behavior. Test-only: not
+    // linked into any production target.
     unsafe impl GlobalAlloc for MaxSingleAlloc {
         unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
             let ptr = unsafe { System.alloc(layout) };
