@@ -18,13 +18,28 @@
 //! one-level matcher substitution
 //! ([`Substitution::apply_matcher`](crate::trs::Substitution::apply_matcher)),
 //! so example variable names cannot be captured by rule variables
-//! (Task 31 provenance discipline).
+//! (Task 31 provenance discipline). Replay is purely virtual: the
+//! prospective shape of the applied right-hand side is accounted
+//! BEFORE any term is materialized (Task 34 doctrine), and the
+//! virtually substituted template is compared node by node against the
+//! example right-hand side.
+//!
+//! # Admission
+//!
+//! Raw inputs are validated while still borrowed, iteratively, before
+//! any clone, sort, dedup, comparison, or variable collection runs:
+//! node and depth ceilings are checked with an explicit stack and the
+//! cumulative operation budget is charged per visited node. Deep or
+//! huge terms therefore surface as typed errors instead of aborting in
+//! a recursive clone or comparison (PR #320 round 1 P1).
 //!
 //! # Specialization
 //!
 //! 1. Both example lists are canonicalized (sorted and deduplicated);
 //!    a pair appearing as both positive and negative is a typed
-//!    [`RewriteError::InvalidRule`].
+//!    [`RewriteError::InvalidRule`]. The examples ceiling counts the
+//!    deduped examples; the raw duplicate stream stays bounded by the
+//!    operation budget charged during admission and canonicalization.
 //! 2. Each partition of positives is generalized with the shared
 //!    disagreement table used by
 //!    [`infer_rule`](crate::synthesis::infer_rule), reserving every
@@ -51,8 +66,11 @@
 //! Example counts, candidates, partitions, and the per-term node/depth
 //! and cumulative operation ceilings are enforced by
 //! [`SpecializationConfig`] and a single [`RelationResources`] budget
-//! covering the whole run. Every violation is a typed error; nothing
-//! is truncated silently and nothing panics.
+//! covering the whole run. One operation unit is charged per visited
+//! term node, per generalized node pair, per partition member and
+//! position examined while splitting, and per replay/equality node.
+//! Every violation is a typed error; nothing is truncated silently and
+//! nothing panics.
 
 use alloc::{
     collections::{BTreeMap, BTreeSet},
@@ -63,7 +81,7 @@ use alloc::{
 
 use crate::{
     relation::{RelationLimits, RelationResources},
-    trs::{Rule, Term, Variable},
+    trs::{Rule, Substitution, Term, Variable},
     Path, RewriteError, RewriteResult,
 };
 
@@ -71,14 +89,44 @@ use crate::{
 ///
 /// The associated constants are the hard ceilings; [`Self::new`] only
 /// accepts values inside `(0, ceiling]`. Term size and operation
-/// ceilings come from the enclosed [`RelationLimits`].
+/// ceilings come from the enclosed [`RelationLimits`], which is
+/// revalidated at construction, on deserialization, and at every
+/// entry point.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serialize", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 pub struct SpecializationConfig {
     max_examples: usize,
     max_candidates: usize,
     max_partitions: usize,
     limits: RelationLimits,
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> serde::Deserialize<'de> for SpecializationConfig {
+    /// Deserialization routes through the checked constructor, which
+    /// also revalidates the enclosed [`RelationLimits`]: its own
+    /// derive bypasses [`RelationLimits::new`], so a raw
+    /// `{"max_examples":99999,...}` or a zero/above-ceiling nested
+    /// limit never becomes a usable config (Task 32 precedent;
+    /// PR #320 round 1 P2).
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(serde::Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Raw {
+            max_examples: usize,
+            max_candidates: usize,
+            max_partitions: usize,
+            limits: RelationLimits,
+        }
+        let raw = <Raw as serde::Deserialize>::deserialize(deserializer)?;
+        Self::new(
+            raw.max_examples,
+            raw.max_candidates,
+            raw.max_partitions,
+            raw.limits,
+        )
+        .map_err(serde::de::Error::custom)
+    }
 }
 
 impl SpecializationConfig {
@@ -103,10 +151,27 @@ impl SpecializationConfig {
             max_partitions,
             limits,
         };
-        config.check("examples", max_examples, Self::MAX_EXAMPLES)?;
-        config.check("candidates", max_candidates, Self::MAX_CANDIDATES)?;
-        config.check("partitions", max_partitions, Self::MAX_PARTITIONS)?;
+        config.revalidate()?;
         Ok(config)
+    }
+
+    /// Revalidate every invariant, including the enclosed limits.
+    ///
+    /// `RelationLimits` deserializes through its derived impl, which
+    /// bypasses [`RelationLimits::new`]; re-running the checked
+    /// constructor here closes that route for a config received from
+    /// anywhere.
+    fn revalidate(&self) -> RewriteResult<()> {
+        self.check("examples", self.max_examples, Self::MAX_EXAMPLES)?;
+        self.check("candidates", self.max_candidates, Self::MAX_CANDIDATES)?;
+        self.check("partitions", self.max_partitions, Self::MAX_PARTITIONS)?;
+        let _limits = RelationLimits::new(
+            self.limits.max_term_nodes(),
+            self.limits.max_term_depth(),
+            self.limits.max_constraints(),
+            self.limits.max_operations(),
+        )?;
+        Ok(())
     }
 
     fn check(&self, resource: &'static str, value: usize, ceiling: usize) -> RewriteResult<()> {
@@ -257,6 +322,8 @@ pub enum SpecializationOutcome {
 /// - [`RewriteError::InvalidRule`] when there are no positive
 ///   examples, or when one example pair is supplied as both positive
 ///   and negative.
+/// - [`RewriteError::InvalidLimit`] when the configuration (including
+///   the enclosed relation limits) violates its invariants.
 /// - [`RewriteError::RelationLimitExceeded`] when the example,
 ///   candidate, partition, term node/depth, or operation ceilings are
 ///   exceeded.
@@ -265,13 +332,44 @@ pub fn specialize_rules(
     negatives: &[(Term, Term)],
     config: &SpecializationConfig,
 ) -> RewriteResult<SpecializationOutcome> {
-    let positives = canonical_examples(positives);
-    let negatives = canonical_examples(negatives);
+    // Revalidate the caller's config: deserialization and construction
+    // are checked, but a config is a public value and the entry point
+    // is the last line of defence (PR #320 round 1 P2).
+    config.revalidate()?;
     if positives.is_empty() {
         return Err(RewriteError::InvalidRule {
             message: String::from("cannot specialize without positive examples"),
         });
     }
+
+    let limits = *config.limits();
+    let mut resources = RelationResources::new(&limits);
+
+    // 1. Raw admission over the BORROWED inputs. Nothing below this
+    // loop may clone, sort, dedup, compare, or collect variables from
+    // an unvalidated term: a deep term must fail typed here instead of
+    // aborting in a recursive clone/sort (PR #320 round 1 P1).
+    for example in positives.iter().chain(negatives.iter()) {
+        resources.record_operations(1)?;
+        admit_term(&example.0, &limits, &mut resources)?;
+        admit_term(&example.1, &limits, &mut resources)?;
+    }
+
+    // 2. Canonicalization (charged before the clones run).
+    let positives = canonical_examples(positives, &mut resources)?;
+    let negatives = canonical_examples(negatives, &mut resources)?;
+
+    // 3. Deduped-count ceiling. The raw duplicate stream was bounded
+    // by the admission and canonicalization charges above.
+    let total = positives.len().saturating_add(negatives.len());
+    if total > config.max_examples() {
+        return Err(RewriteError::RelationLimitExceeded {
+            resource: "examples",
+            limit: config.max_examples(),
+        });
+    }
+
+    // 4. Conflicting duplicates.
     if positives
         .iter()
         .any(|pair| negatives.binary_search(pair).is_ok())
@@ -281,20 +379,9 @@ pub fn specialize_rules(
         });
     }
 
-    let mut resources = RelationResources::new(config.limits());
-    let total = positives.len().saturating_add(negatives.len());
-    if total > config.max_examples() {
-        return Err(RewriteError::RelationLimitExceeded {
-            resource: "examples",
-            limit: config.max_examples(),
-        });
-    }
-    for example in positives.iter().chain(negatives.iter()) {
-        charge_term(&example.0, &mut resources)?;
-        charge_term(&example.1, &mut resources)?;
-    }
+    // 5. Reserve every example variable name (charged traversal).
+    let reserved = example_variables(&positives, &negatives, &mut resources)?;
 
-    let reserved = example_variables(&positives, &negatives);
     let mut pending = BTreeSet::new();
     pending.insert((0..positives.len()).collect::<Vec<usize>>());
     let mut resolved: BTreeMap<Vec<usize>, Rule> = BTreeMap::new();
@@ -317,13 +404,14 @@ pub fn specialize_rules(
             &reserved,
             config.max_candidates(),
             &mut candidates,
+            &limits,
             &mut resources,
         )?;
 
         let mut retained = None;
         if let Some(rule) = candidate.as_ref() {
-            if covers_partition(rule, &partition, &positives, &mut resources)?
-                && !covers_any(rule, &negatives, &mut resources)?
+            if covers_partition(rule, &partition, &positives, &limits, &mut resources)?
+                && !covers_any(rule, &negatives, &limits, &mut resources)?
             {
                 retained = Some(rule.clone());
             }
@@ -333,8 +421,14 @@ pub fn specialize_rules(
             continue;
         }
 
-        let positions = discriminating_positions(candidate.as_ref(), &partition, &positives);
-        match first_split(&positions, &partition, &positives) {
+        let positions = discriminating_positions(
+            candidate.as_ref(),
+            &partition,
+            &positives,
+            &limits,
+            &mut resources,
+        )?;
+        match first_split(&positions, &partition, &positives, &mut resources)? {
             Some(groups) => pending.extend(groups),
             None => {
                 let reason = if candidate.is_some() {
@@ -353,7 +447,7 @@ pub fn specialize_rules(
     {
         return Ok(SpecializationOutcome::Inconclusive { reason });
     }
-    finish_refined(resolved, &positives, &negatives, &mut resources)
+    finish_refined(resolved, &positives, &negatives, &limits, &mut resources)
 }
 
 /// Replay every refined rule against every example and package the
@@ -364,6 +458,7 @@ fn finish_refined(
     resolved: BTreeMap<Vec<usize>, Rule>,
     positives: &[(Term, Term)],
     negatives: &[(Term, Term)],
+    limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<SpecializationOutcome> {
     let rules: Vec<Rule> = resolved.into_values().collect();
@@ -371,13 +466,13 @@ fn finish_refined(
     for (index, rule) in rules.iter().enumerate() {
         let mut covered_positives = Vec::new();
         for (positive_index, example) in positives.iter().enumerate() {
-            if covers(rule, example, resources)? {
+            if covers(rule, example, limits, resources)? {
                 covered_positives.push(positive_index);
             }
         }
         let mut covered_negatives = Vec::new();
         for (negative_index, example) in negatives.iter().enumerate() {
-            if covers(rule, example, resources)? {
+            if covers(rule, example, limits, resources)? {
                 covered_negatives.push(negative_index);
             }
         }
@@ -400,59 +495,133 @@ fn finish_refined(
     Ok(SpecializationOutcome::Refined { rules, coverage })
 }
 
-/// Sort and deduplicate example pairs by structural term order.
-fn canonical_examples(examples: &[(Term, Term)]) -> Vec<(Term, Term)> {
-    let mut canonical = examples.to_vec();
-    canonical.sort();
-    canonical.dedup();
-    canonical
-}
-
-/// Every variable name appearing in the supplied examples.
-fn example_variables(positives: &[(Term, Term)], negatives: &[(Term, Term)]) -> BTreeSet<Variable> {
-    let mut variables = BTreeSet::new();
-    for (lhs, rhs) in positives.iter().chain(negatives.iter()) {
-        variables.extend(lhs.variables());
-        variables.extend(rhs.variables());
-    }
-    variables
-}
-
-/// Charge one term against the node and depth ceilings.
-fn charge_term(term: &Term, resources: &mut RelationResources) -> RewriteResult<()> {
-    let (nodes, depth) = term_shape(term);
-    resources.record_term(nodes, depth)
-}
-
-/// Node count and maximum depth, computed iteratively.
-fn term_shape(term: &Term) -> (usize, usize) {
+/// Charge one unit, enforce the per-term node and depth ceilings, and
+/// return `(nodes, depth)` (leaf depth one) for a borrowed term.
+///
+/// Iterative with an explicit stack: the walk never depends on the
+/// call stack, so deeply nested input is rejected before any recursive
+/// clone or comparison can run. The frontier is bounded before
+/// children are enqueued, so an adversarially wide term fails typed
+/// instead of allocating the whole frontier.
+fn admit_term(
+    term: &Term,
+    limits: &RelationLimits,
+    resources: &mut RelationResources,
+) -> RewriteResult<(usize, usize)> {
     let mut nodes = 0usize;
     let mut depth = 0usize;
-    let mut stack = vec![(term, 0usize)];
+    let mut stack = vec![(term, 1usize)];
     while let Some((current, current_depth)) = stack.pop() {
+        // Charge BEFORE inspecting the node or enqueueing its
+        // children.
+        resources.record_operations(1)?;
         nodes = nodes.saturating_add(1);
         depth = depth.max(current_depth);
+        if nodes > limits.max_term_nodes() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term nodes",
+                limit: limits.max_term_nodes(),
+            });
+        }
+        if depth > limits.max_term_depth() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term depth",
+                limit: limits.max_term_depth(),
+            });
+        }
         if let Term::Sym(_, args) = current {
+            if args.is_empty() {
+                continue;
+            }
+            let child_depth = current_depth.saturating_add(1);
+            let prospective = stack.len().saturating_add(args.len());
+            if prospective > limits.max_term_nodes() {
+                return Err(RewriteError::RelationLimitExceeded {
+                    resource: "term nodes",
+                    limit: limits.max_term_nodes(),
+                });
+            }
+            if child_depth > limits.max_term_depth() {
+                return Err(RewriteError::RelationLimitExceeded {
+                    resource: "term depth",
+                    limit: limits.max_term_depth(),
+                });
+            }
             for arg in args {
-                stack.push((arg, current_depth.saturating_add(1)));
+                stack.push((arg, child_depth));
             }
         }
     }
-    (nodes, depth)
+    Ok((nodes, depth))
 }
 
-/// Exact coverage: the pattern matches and the applied rule yields the
-/// example right-hand side.
+/// Sort and deduplicate example pairs by structural term order.
+///
+/// The charge precedes the clone and the comparisons; callers must
+/// have admitted the underlying terms first.
+fn canonical_examples(
+    examples: &[(Term, Term)],
+    resources: &mut RelationResources,
+) -> RewriteResult<Vec<(Term, Term)>> {
+    resources.record_operations(examples.len())?;
+    let mut canonical = examples.to_vec();
+    canonical.sort();
+    canonical.dedup();
+    Ok(canonical)
+}
+
+/// Every variable name appearing in the supplied examples.
+fn example_variables(
+    positives: &[(Term, Term)],
+    negatives: &[(Term, Term)],
+    resources: &mut RelationResources,
+) -> RewriteResult<BTreeSet<Variable>> {
+    let mut variables = BTreeSet::new();
+    for (lhs, rhs) in positives.iter().chain(negatives.iter()) {
+        collect_variables(lhs, &mut variables, resources)?;
+        collect_variables(rhs, &mut variables, resources)?;
+    }
+    Ok(variables)
+}
+
+/// Charge one unit per visited node while collecting variables.
+fn collect_variables(
+    term: &Term,
+    variables: &mut BTreeSet<Variable>,
+    resources: &mut RelationResources,
+) -> RewriteResult<()> {
+    let mut stack = vec![term];
+    while let Some(current) = stack.pop() {
+        resources.record_operations(1)?;
+        match current {
+            Term::Var(variable) => {
+                variables.insert(variable.clone());
+            }
+            Term::Sym(_, args) => stack.extend(args.iter()),
+        }
+    }
+    Ok(())
+}
+
+/// Exact coverage: the pattern matches and the virtually applied rule
+/// yields the example right-hand side.
+///
+/// The applied right-hand side is never materialized. Its prospective
+/// shape is accounted first (Task 34 `matched_shape` doctrine) and the
+/// substituted template is then compared node by node with one-level
+/// matcher provenance.
 fn covers(
     rule: &Rule,
     example: &(Term, Term),
+    limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
-    resources.record_operations(1)?;
-    Ok(rule
-        .apply_root(&example.0)
-        .map(|produced| produced == example.1)
-        .unwrap_or(false))
+    let mut substitution = Substitution::new();
+    if !match_pattern(rule.lhs(), &example.0, &mut substitution, resources)? {
+        return Ok(false);
+    }
+    applied_shape(rule.rhs(), &substitution, limits, resources)?;
+    one_level_equals(rule.rhs(), &substitution, &example.1, resources)
 }
 
 /// True when the rule replays every positive in the partition.
@@ -460,10 +629,11 @@ fn covers_partition(
     rule: &Rule,
     partition: &[usize],
     positives: &[(Term, Term)],
+    limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
     for &index in partition {
-        if !covers(rule, &positives[index], resources)? {
+        if !covers(rule, &positives[index], limits, resources)? {
             return Ok(false);
         }
     }
@@ -474,14 +644,166 @@ fn covers_partition(
 fn covers_any(
     rule: &Rule,
     negatives: &[(Term, Term)],
+    limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
     for example in negatives {
-        if covers(rule, example, resources)? {
+        if covers(rule, example, limits, resources)? {
             return Ok(true);
         }
     }
     Ok(false)
+}
+
+/// Match a pattern against a term with a consistent substitution,
+/// charging one unit per visited node pair.
+///
+/// Capture-free exactly like [`crate::trs::match_pattern`]: bindings
+/// are verbatim term fragments and repeated variables compare by
+/// structure. Iterative, so matching never depends on the call stack.
+fn match_pattern(
+    pattern: &Term,
+    term: &Term,
+    substitution: &mut Substitution,
+    resources: &mut RelationResources,
+) -> RewriteResult<bool> {
+    let mut stack = vec![(pattern, term)];
+    while let Some((current_pattern, current_term)) = stack.pop() {
+        resources.record_operations(1)?;
+        match (current_pattern, current_term) {
+            (Term::Var(variable), _) => match substitution.get_var(variable) {
+                Some(existing) => {
+                    if !charged_equal(existing, current_term, resources)? {
+                        return Ok(false);
+                    }
+                }
+                None => {
+                    substitution.insert(variable.clone(), current_term.clone());
+                }
+            },
+            (Term::Sym(symbol, args), Term::Sym(term_symbol, term_args))
+                if symbol == term_symbol && args.len() == term_args.len() =>
+            {
+                stack.extend(args.iter().zip(term_args));
+            }
+            _ => return Ok(false),
+        }
+    }
+    Ok(true)
+}
+
+/// Structural equality, charged per compared node pair and iterative.
+fn charged_equal(
+    left: &Term,
+    right: &Term,
+    resources: &mut RelationResources,
+) -> RewriteResult<bool> {
+    let mut stack = vec![(left, right)];
+    while let Some((current_left, current_right)) = stack.pop() {
+        resources.record_operations(1)?;
+        match (current_left, current_right) {
+            (Term::Var(left_var), Term::Var(right_var)) if left_var == right_var => {}
+            (Term::Sym(left_symbol, left_args), Term::Sym(right_symbol, right_args))
+                if left_symbol == right_symbol && left_args.len() == right_args.len() =>
+            {
+                stack.extend(left_args.iter().zip(right_args));
+            }
+            _ => return Ok(false),
+        }
+    }
+    Ok(true)
+}
+
+/// Shape of `template` under a MATCH substitution, one-level and
+/// counted verbatim, exactly as [`Substitution::apply_matcher`] would
+/// build it.
+///
+/// The shape is checked against the per-term ceilings BEFORE any
+/// replacement is materialized: a binding that would push the result
+/// past the node or depth ceiling is a typed limit error, never an
+/// allocation (PR #320 round 1 P4).
+fn applied_shape(
+    template: &Term,
+    substitution: &Substitution,
+    limits: &RelationLimits,
+    resources: &mut RelationResources,
+) -> RewriteResult<(usize, usize)> {
+    let mut nodes = 0usize;
+    let mut depth = 0usize;
+    let mut stack = vec![(template, 1usize)];
+    while let Some((current, current_depth)) = stack.pop() {
+        resources.record_operations(1)?;
+        match current {
+            Term::Var(variable) => {
+                let (bound_nodes, bound_depth) = match substitution.get_var(variable) {
+                    Some(bound) => admit_term(bound, limits, resources)?,
+                    None => (1, 1),
+                };
+                nodes = nodes.saturating_add(bound_nodes);
+                let occurrence_depth = current_depth.saturating_sub(1).saturating_add(bound_depth);
+                depth = depth.max(occurrence_depth);
+            }
+            Term::Sym(_, args) => {
+                nodes = nodes.saturating_add(1);
+                depth = depth.max(current_depth);
+                for arg in args {
+                    stack.push((arg, current_depth.saturating_add(1)));
+                }
+            }
+        }
+        if nodes > limits.max_term_nodes() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term nodes",
+                limit: limits.max_term_nodes(),
+            });
+        }
+        if depth > limits.max_term_depth() {
+            return Err(RewriteError::RelationLimitExceeded {
+                resource: "term depth",
+                limit: limits.max_term_depth(),
+            });
+        }
+    }
+    Ok((nodes, depth))
+}
+
+/// Compare `apply_matcher(template)` with `expected` without
+/// materializing it. Bound variables compare by structure (verbatim
+/// ranges), unbound variables must appear as themselves, and symbols
+/// compare arity and children.
+fn one_level_equals(
+    template: &Term,
+    substitution: &Substitution,
+    expected: &Term,
+    resources: &mut RelationResources,
+) -> RewriteResult<bool> {
+    let mut stack = vec![(template, expected)];
+    while let Some((pattern, actual)) = stack.pop() {
+        resources.record_operations(1)?;
+        match pattern {
+            Term::Var(variable) => match substitution.get_var(variable) {
+                Some(bound) => {
+                    if !charged_equal(bound, actual, resources)? {
+                        return Ok(false);
+                    }
+                }
+                None => {
+                    if !matches!(actual, Term::Var(other) if other == variable) {
+                        return Ok(false);
+                    }
+                }
+            },
+            Term::Sym(symbol, args) => match actual {
+                Term::Sym(actual_symbol, actual_args)
+                    if symbol == actual_symbol && args.len() == actual_args.len() =>
+                {
+                    stack.extend(args.iter().zip(actual_args));
+                }
+                _ => return Ok(false),
+            },
+        }
+    }
+    Ok(true)
 }
 
 /// Fresh generated variables that never collide with example names
@@ -513,62 +835,93 @@ impl FreshNames {
 struct Generalizer {
     names: FreshNames,
     disagreements: BTreeMap<(Term, Term), Variable>,
+    limits: RelationLimits,
 }
 
 impl Generalizer {
-    fn new(reserved: BTreeSet<Variable>) -> Self {
+    fn new(reserved: BTreeSet<Variable>, limits: RelationLimits) -> Self {
         Self {
             names: FreshNames::new(reserved),
             disagreements: BTreeMap::new(),
+            limits,
         }
     }
 
-    fn generalize(&mut self, examples: &[(Term, Term)]) -> Option<(Term, Term)> {
+    fn generalize(
+        &mut self,
+        examples: &[(Term, Term)],
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Option<(Term, Term)>> {
         let lhs_terms: Vec<&Term> = examples.iter().map(|(lhs, _)| lhs).collect();
         let rhs_terms: Vec<&Term> = examples.iter().map(|(_, rhs)| rhs).collect();
-        let lhs = self.anti_unify_all(&lhs_terms)?;
-        let rhs = self.anti_unify_all(&rhs_terms)?;
-        Some((lhs, rhs))
+        let Some(lhs) = self.anti_unify_all(&lhs_terms, resources)? else {
+            return Ok(None);
+        };
+        let Some(rhs) = self.anti_unify_all(&rhs_terms, resources)? else {
+            return Ok(None);
+        };
+        Ok(Some((lhs, rhs)))
     }
 
-    fn anti_unify_all(&mut self, terms: &[&Term]) -> Option<Term> {
+    fn anti_unify_all(
+        &mut self,
+        terms: &[&Term],
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Option<Term>> {
         let mut iter = terms.iter();
-        let mut current = (*iter.next()?).clone();
+        let Some(first) = iter.next() else {
+            return Ok(None);
+        };
+        resources.record_operations(1)?;
+        let mut current = (*first).clone();
         for term in iter {
-            current = self.anti_unify(&current, term);
+            current = self.anti_unify(&current, term, resources)?;
         }
-        Some(current)
+        Ok(Some(current))
     }
 
-    fn anti_unify(&mut self, left: &Term, right: &Term) -> Term {
+    fn anti_unify(
+        &mut self,
+        left: &Term,
+        right: &Term,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Term> {
+        // One generalized node pair, charged before the comparison,
+        // clone, or recursion.
+        resources.record_operations(1)?;
         if left == right {
-            return left.clone();
+            return Ok(left.clone());
         }
         match (left, right) {
             (Term::Sym(left_symbol, left_args), Term::Sym(right_symbol, right_args))
                 if left_symbol == right_symbol && left_args.len() == right_args.len() =>
             {
-                Term::Sym(
-                    left_symbol.clone(),
-                    left_args
-                        .iter()
-                        .zip(right_args)
-                        .map(|(left_arg, right_arg)| self.anti_unify(left_arg, right_arg))
-                        .collect(),
-                )
+                let mut generalized = Vec::with_capacity(left_args.len());
+                for (left_arg, right_arg) in left_args.iter().zip(right_args) {
+                    generalized.push(self.anti_unify(left_arg, right_arg, resources)?);
+                }
+                Ok(Term::Sym(left_symbol.clone(), generalized))
             }
-            _ => Term::Var(self.variable_for(left, right)),
+            _ => Ok(Term::Var(self.variable_for(left, right, resources)?)),
         }
     }
 
-    fn variable_for(&mut self, left: &Term, right: &Term) -> Variable {
+    fn variable_for(
+        &mut self,
+        left: &Term,
+        right: &Term,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Variable> {
+        // Charge for the key's nodes BEFORE it is cloned.
+        let _left_shape = admit_term(left, &self.limits, resources)?;
+        let _right_shape = admit_term(right, &self.limits, resources)?;
         let key = (left.clone(), right.clone());
         if let Some(variable) = self.disagreements.get(&key) {
-            return variable.clone();
+            return Ok(variable.clone());
         }
         let variable = self.names.fresh();
         self.disagreements.insert(key, variable.clone());
-        variable
+        Ok(variable)
     }
 }
 
@@ -579,6 +932,7 @@ fn build_candidate(
     reserved: &BTreeSet<Variable>,
     max_candidates: usize,
     candidates: &mut usize,
+    limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<Option<Rule>> {
     *candidates = candidates.saturating_add(1);
@@ -594,12 +948,12 @@ fn build_candidate(
         .iter()
         .map(|&index| positives[index].clone())
         .collect();
-    let mut generalizer = Generalizer::new(reserved.clone());
-    let Some((lhs, rhs)) = generalizer.generalize(&examples) else {
+    let mut generalizer = Generalizer::new(reserved.clone(), *limits);
+    let Some((lhs, rhs)) = generalizer.generalize(&examples, resources)? else {
         return Ok(None);
     };
-    charge_term(&lhs, resources)?;
-    charge_term(&rhs, resources)?;
+    let _lhs_shape = admit_term(&lhs, limits, resources)?;
+    let _rhs_shape = admit_term(&rhs, limits, resources)?;
     Ok(Rule::new(lhs, rhs).ok())
 }
 
@@ -610,38 +964,48 @@ fn discriminating_positions(
     candidate: Option<&Rule>,
     partition: &[usize],
     positives: &[(Term, Term)],
-) -> Vec<(bool, Path)> {
+    limits: &RelationLimits,
+    resources: &mut RelationResources,
+) -> RewriteResult<Vec<(bool, Path)>> {
     let (lhs, rhs) = match candidate {
-        Some(rule) => (rule.lhs().clone(), rule.rhs().clone()),
-        None => positives[partition[0]].clone(),
+        Some(rule) => (rule.lhs(), rule.rhs()),
+        None => (&positives[partition[0]].0, &positives[partition[0]].1),
     };
+    // Charge the traversals before the position vectors are built.
+    let _lhs_shape = admit_term(lhs, limits, resources)?;
+    let _rhs_shape = admit_term(rhs, limits, resources)?;
     let mut positions: Vec<(bool, Path)> = lhs
         .positions()
         .into_iter()
         .map(|path| (true, path))
         .collect();
     positions.extend(rhs.positions().into_iter().map(|path| (false, path)));
-    positions
+    Ok(positions)
 }
 
 /// Split at the first position whose subterms separate the partition
 /// into at least two classes, in class order.
+///
+/// Every `(position, partition member)` lookup is charged BEFORE the
+/// subterm is read or cloned.
 fn first_split(
     positions: &[(bool, Path)],
     partition: &[usize],
     positives: &[(Term, Term)],
-) -> Option<Vec<Vec<usize>>> {
+    resources: &mut RelationResources,
+) -> RewriteResult<Option<Vec<Vec<usize>>>> {
     for (is_lhs, path) in positions {
         let mut groups: BTreeMap<Option<Term>, Vec<usize>> = BTreeMap::new();
         for &index in partition {
+            resources.record_operations(1)?;
             let (lhs, rhs) = &positives[index];
             let term = if *is_lhs { lhs } else { rhs };
             let key = term.subterm(path).cloned();
             groups.entry(key).or_default().push(index);
         }
         if groups.len() > 1 {
-            return Some(groups.into_values().collect());
+            return Ok(Some(groups.into_values().collect()));
         }
     }
-    None
+    Ok(None)
 }

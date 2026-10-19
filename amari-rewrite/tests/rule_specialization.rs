@@ -434,3 +434,211 @@ fn property_refined_rules_cover_a_positive_and_zero_negatives() {
         }
     }
 }
+
+/// Dismantle a deep term iteratively so dropping it cannot recurse.
+fn dismantle(term: Term) {
+    let mut stack = vec![term];
+    while let Some(mut current) = stack.pop() {
+        if let Term::Sym(_, args) = &mut current {
+            stack.append(args);
+        }
+    }
+}
+
+#[test]
+fn over_depth_examples_are_rejected_before_cloning() {
+    // Twenty thousand levels: admission must reject the borrowed input
+    // iteratively, before any recursive clone, sort, dedup, or
+    // comparison runs (PR #320 round 1 P1). The recursion in the
+    // unfixed path aborts the process here.
+    let mut deep = c("a");
+    for _ in 0..20_000 {
+        deep = f("f", [deep]);
+    }
+    let positives = vec![(deep, c("b"))];
+
+    let error = specialize_rules(&positives, &[], &SpecializationConfig::default())
+        .expect_err("over-depth input must be a typed error");
+    assert_eq!(limit_error_resource(&error), Some("term depth"));
+
+    for (lhs, rhs) in positives {
+        dismantle(lhs);
+        dismantle(rhs);
+    }
+}
+
+#[cfg(feature = "serialize")]
+fn config_json(
+    examples: usize,
+    candidates: usize,
+    partitions: usize,
+    nodes: usize,
+    depth: usize,
+    constraints: usize,
+    operations: usize,
+) -> String {
+    format!(
+        concat!(
+            "{{\"max_examples\":{},\"max_candidates\":{},\"max_partitions\":{},",
+            "\"limits\":{{\"max_term_nodes\":{},\"max_term_depth\":{},",
+            "\"max_constraints\":{},\"max_operations\":{}}}}}"
+        ),
+        examples, candidates, partitions, nodes, depth, constraints, operations
+    )
+}
+
+#[cfg(feature = "serialize")]
+#[test]
+fn deserialized_config_is_validated() {
+    // Derive-only Deserialize would bypass the checked constructor
+    // (PR #320 round 1 P2).
+    let defaults = (4_096, 64, 4_096, 1_000_000);
+    let (nodes, depth, constraints, operations) = defaults;
+
+    for json in [
+        config_json(0, 8, 8, nodes, depth, constraints, operations),
+        config_json(
+            SpecializationConfig::MAX_EXAMPLES + 1,
+            8,
+            8,
+            nodes,
+            depth,
+            constraints,
+            operations,
+        ),
+        config_json(8, 0, 8, nodes, depth, constraints, operations),
+        config_json(8, 8, 0, nodes, depth, constraints, operations),
+        config_json(
+            8,
+            SpecializationConfig::MAX_CANDIDATES + 1,
+            8,
+            nodes,
+            depth,
+            constraints,
+            operations,
+        ),
+        config_json(
+            8,
+            8,
+            SpecializationConfig::MAX_PARTITIONS + 1,
+            nodes,
+            depth,
+            constraints,
+            operations,
+        ),
+        // The enclosed RelationLimits derive bypasses its own
+        // constructor, so the config must revalidate it.
+        config_json(8, 8, 8, 0, depth, constraints, operations),
+        config_json(8, 8, 8, nodes, 65, constraints, operations),
+        config_json(8, 8, 8, nodes, depth, 0, operations),
+        config_json(8, 8, 8, nodes, depth, constraints, 0),
+    ] {
+        let parsed: Result<SpecializationConfig, _> = serde_json::from_str(&json);
+        assert!(parsed.is_err(), "invalid config JSON was accepted: {json}");
+    }
+
+    let valid = config_json(8, 8, 8, nodes, depth, constraints, operations);
+    let parsed: SpecializationConfig = serde_json::from_str(&valid).expect("valid config");
+    assert_eq!(parsed.max_examples(), 8);
+    assert_eq!(parsed.max_candidates(), 8);
+    assert_eq!(parsed.max_partitions(), 8);
+    assert_eq!(parsed.limits().max_term_nodes(), nodes);
+    assert_eq!(parsed.limits().max_term_depth(), depth);
+}
+
+#[cfg(feature = "serialize")]
+#[test]
+fn constructor_revalidates_deserialized_relation_limits() {
+    // A raw RelationLimits deserializes through its derive, bypassing
+    // RelationLimits::new; the config constructor must revalidate
+    // every enclosed invariant (PR #320 round 1 P2).
+    let limits: RelationLimits = serde_json::from_str(
+        r#"{"max_term_nodes":4096,"max_term_depth":64,"max_constraints":4096,"max_operations":0}"#,
+    )
+    .expect("the limits derive accepts the raw value");
+    let error = SpecializationConfig::new(4, 4, 4, limits)
+        .expect_err("zero operations must be rejected at construction");
+    assert!(matches!(error, RewriteError::InvalidLimit { .. }));
+}
+
+#[test]
+fn raw_duplicate_stream_exhausts_the_operation_budget() {
+    // Ten thousand duplicates must be metered as a stream even though
+    // only one deduped example survives (PR #320 round 1 P3).
+    let limits = RelationLimits::new(4_096, 64, 4_096, 3).unwrap();
+    let config = SpecializationConfig::new(
+        SpecializationConfig::MAX_EXAMPLES,
+        SpecializationConfig::MAX_CANDIDATES,
+        SpecializationConfig::MAX_PARTITIONS,
+        limits,
+    )
+    .unwrap();
+    let example = add_zero_pair(c("a"));
+    let positives: Vec<(Term, Term)> = (0..10_000).map(|_| example.clone()).collect();
+
+    let error = specialize_rules(&positives, &[], &config).unwrap_err();
+    assert_eq!(limit_error_resource(&error), Some("operations"));
+}
+
+#[test]
+fn admission_meters_term_traversal_before_generalization() {
+    // A single five-node example under a ten-operation budget must be
+    // rejected while the shape/variable walks run, not silently
+    // accepted (PR #320 round 1 P3).
+    let limits = RelationLimits::new(4_096, 64, 4_096, 10).unwrap();
+    let config = SpecializationConfig::new(
+        SpecializationConfig::MAX_EXAMPLES,
+        SpecializationConfig::MAX_CANDIDATES,
+        SpecializationConfig::MAX_PARTITIONS,
+        limits,
+    )
+    .unwrap();
+    let positives = vec![(f("f", [f("g", [f("h", [f("k", [c("a")])])])]), c("b"))];
+
+    let error = specialize_rules(&positives, &[], &config).unwrap_err();
+    assert_eq!(limit_error_resource(&error), Some("operations"));
+}
+
+#[test]
+fn splitting_exhausts_the_operation_budget() {
+    // The discriminating split runs after the first candidate covers a
+    // negative; its work must be metered too (PR #320 round 1 P3).
+    // 71 units admit admission, canonicalization, the first candidate,
+    // its positive/negative replay, and the position walk; the first
+    // split's member scans then exhaust the budget.
+    let limits = RelationLimits::new(4_096, 64, 4_096, 71).unwrap();
+    let config = SpecializationConfig::new(
+        SpecializationConfig::MAX_EXAMPLES,
+        SpecializationConfig::MAX_CANDIDATES,
+        SpecializationConfig::MAX_PARTITIONS,
+        limits,
+    )
+    .unwrap();
+    let positives = vec![add_zero_pair(c("a")), add_zero_pair(c("b"))];
+    let negatives = vec![add_zero_pair(c("c"))];
+
+    let error = specialize_rules(&positives, &negatives, &config).unwrap_err();
+    assert_eq!(limit_error_resource(&error), Some("operations"));
+}
+
+#[test]
+fn replay_never_materializes_beyond_the_term_ceiling() {
+    // Replaying X -> f(X, X) against g(a) would materialize the
+    // five-node f(g(a), g(a)) under a three-node ceiling. Prospective
+    // accounting must reject it as a typed error instead (Task 34
+    // doctrine; PR #320 round 1 P2/P4 fixture).
+    let limits = RelationLimits::new(3, 64, 4_096, 1_000_000).unwrap();
+    let config = SpecializationConfig::new(
+        SpecializationConfig::MAX_EXAMPLES,
+        SpecializationConfig::MAX_CANDIDATES,
+        SpecializationConfig::MAX_PARTITIONS,
+        limits,
+    )
+    .unwrap();
+    let positives = vec![(v("X"), f("f", [v("X"), v("X")]))];
+    let negatives = vec![(f("g", [c("a")]), c("b"))];
+
+    let error = specialize_rules(&positives, &negatives, &config)
+        .expect_err("prospective replay must respect the term ceiling");
+    assert_eq!(limit_error_resource(&error), Some("term nodes"));
+}
