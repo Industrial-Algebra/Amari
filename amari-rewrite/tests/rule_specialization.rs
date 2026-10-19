@@ -600,13 +600,12 @@ fn admission_meters_term_traversal_before_generalization() {
 }
 
 #[test]
-fn splitting_exhausts_the_operation_budget() {
-    // The discriminating split runs after the first candidate covers a
-    // negative; its work must be metered too (PR #320 round 1 P3).
-    // 71 units admit admission, canonicalization, the first candidate,
-    // its positive/negative replay, and the position walk; the first
-    // split's member scans then exhaust the budget.
-    let limits = RelationLimits::new(4_096, 64, 4_096, 71).unwrap();
+fn splitting_fixture_is_metered_end_to_end() {
+    // This fixture needs 177 metered units end to end; one unit short
+    // is a typed operations error (PR #320 round 1 P3). The wide
+    // variant in `splitting_meters_every_compared_subtree_node`
+    // isolates the split's per-node comparison cost.
+    let limits = RelationLimits::new(4_096, 64, 4_096, 176).unwrap();
     let config = SpecializationConfig::new(
         SpecializationConfig::MAX_EXAMPLES,
         SpecializationConfig::MAX_CANDIDATES,
@@ -641,4 +640,183 @@ fn replay_never_materializes_beyond_the_term_ceiling() {
     let error = specialize_rules(&positives, &negatives, &config)
         .expect_err("prospective replay must respect the term ceiling");
     assert_eq!(limit_error_resource(&error), Some("term nodes"));
+}
+
+// ---- Round 2: bulk work is metered per visited node ----
+//
+// Each fixture admits its wide terms, then drives one bulk site. The
+// measured minimum is the exact "one remaining operation" boundary:
+// one unit less must be a typed operations error. Values are measured
+// from the implementation; a metering change must re-measure them.
+
+/// Wide term with `children + 1` nodes (one `w` node plus constants).
+fn wide_term(children: usize) -> Term {
+    Term::sym("w", (0..children).map(|_| c("z")))
+}
+
+fn boundary_limits() -> RelationLimits {
+    RelationLimits::new(4_096, 64, 4_096, RelationLimits::MAX_OPERATIONS).unwrap()
+}
+
+fn run_with_operation_budget(
+    positives: &[(Term, Term)],
+    negatives: &[(Term, Term)],
+    base: &RelationLimits,
+    operations: usize,
+) -> Result<(), RewriteError> {
+    let limits = RelationLimits::new(
+        base.max_term_nodes(),
+        base.max_term_depth(),
+        base.max_constraints(),
+        operations,
+    )?;
+    let config = SpecializationConfig::new(
+        SpecializationConfig::MAX_EXAMPLES,
+        SpecializationConfig::MAX_CANDIDATES,
+        SpecializationConfig::MAX_PARTITIONS,
+        limits,
+    )?;
+    specialize_rules(positives, negatives, &config).map(|_outcome| ())
+}
+
+/// Smallest operation budget that completes the run. Success is
+/// monotone in the budget, so a binary search finds the boundary.
+fn minimal_operation_budget(
+    positives: &[(Term, Term)],
+    negatives: &[(Term, Term)],
+    base: &RelationLimits,
+) -> usize {
+    let mut low = 1usize;
+    let mut high = RelationLimits::MAX_OPERATIONS;
+    assert!(
+        run_with_operation_budget(positives, negatives, base, high).is_ok(),
+        "fixture must succeed under the hard operation ceiling"
+    );
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if run_with_operation_budget(positives, negatives, base, middle).is_ok() {
+            high = middle;
+        } else {
+            low = middle + 1;
+        }
+    }
+    low
+}
+
+/// Assert the one-remaining-operation boundary at one bulk site.
+fn assert_operation_boundary(
+    positives: &[(Term, Term)],
+    negatives: &[(Term, Term)],
+    base: &RelationLimits,
+    minimum: usize,
+    site: &str,
+) {
+    assert_eq!(
+        minimal_operation_budget(positives, negatives, base),
+        minimum,
+        "{site}: metered minimum changed"
+    );
+    let error = run_with_operation_budget(positives, negatives, base, minimum - 1)
+        .expect_err("one operation short must fail");
+    assert_eq!(limit_error_resource(&error), Some("operations"), "{site}");
+    assert!(run_with_operation_budget(positives, negatives, base, minimum).is_ok());
+}
+
+#[test]
+fn equality_meters_every_compared_node() {
+    // Two positives share a 4,096-node left-hand side, so the shared
+    // disagreement table must compare it in full and clone it in full.
+    let wide = wide_term(4_095);
+    let narrow = wide_term(2);
+    let positives = vec![(wide.clone(), c("a")), (wide, c("b"))];
+    let narrow_positives = vec![(narrow.clone(), c("a")), (narrow, c("b"))];
+    assert_operation_boundary(&positives, &[], &boundary_limits(), 118_833, "equality");
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 118_833 / 2);
+}
+
+#[test]
+fn binding_traversal_meters_every_borrowed_node() {
+    // The rule variable binds the 4,096-node negative left-hand side;
+    // the binding is borrowed and its traversal is charged per node.
+    let wide = wide_term(4_095);
+    let narrow = wide_term(2);
+    let positives = vec![(v("X"), v("X"))];
+    let negatives = vec![(wide, c("b"))];
+    let narrow_negatives = vec![(narrow, c("b"))];
+    assert_operation_boundary(
+        &positives,
+        &negatives,
+        &boundary_limits(),
+        16_438,
+        "binding",
+    );
+    assert!(
+        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 16_438 / 2
+    );
+}
+
+#[test]
+fn canonicalization_meters_every_comparison_node() {
+    // Two identical wide examples force a full structural comparison
+    // while sorting and again while deduplicating.
+    let wide = wide_term(4_095);
+    let narrow = wide_term(2);
+    let positives = vec![(wide.clone(), c("a")), (wide, c("a"))];
+    let narrow_positives = vec![(narrow.clone(), c("a")), (narrow, c("a"))];
+    assert_operation_boundary(
+        &positives,
+        &[],
+        &boundary_limits(),
+        40_980,
+        "canonicalization",
+    );
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 40_980 / 2);
+}
+
+#[test]
+fn candidate_construction_meters_clones_and_validation() {
+    // Generalizing a single wide example clones it once and rescans
+    // both sides for RHS variable validation.
+    let wide = wide_term(4_095);
+    let narrow = wide_term(2);
+    let positives = vec![(wide, c("a"))];
+    let narrow_positives = vec![(narrow, c("a"))];
+    assert_operation_boundary(
+        &positives,
+        &[],
+        &boundary_limits(),
+        28_685,
+        "candidate construction",
+    );
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 28_685 / 2);
+}
+
+#[test]
+fn splitting_meters_every_compared_subtree_node() {
+    // The candidate covers the negative, so the split must group the
+    // positives; position [0] compares the shared wide subtree in
+    // full, and position [1] discriminates.
+    let wide = wide_term(4_089);
+    let narrow = wide_term(2);
+    let positives = vec![
+        (f("h", [wide.clone(), c("a")]), c("u")),
+        (f("h", [wide, c("b")]), c("v")),
+    ];
+    let negatives = vec![(f("h", [wide_term(4_089), c("c")]), c("u"))];
+    let narrow_positives = vec![
+        (f("h", [narrow.clone(), c("a")]), c("u")),
+        (f("h", [narrow, c("b")]), c("v")),
+    ];
+    let narrow_negatives = vec![(f("h", [wide_term(2), c("c")]), c("u"))];
+    assert_operation_boundary(
+        &positives,
+        &negatives,
+        &boundary_limits(),
+        106_458,
+        "splitting",
+    );
+    assert!(
+        minimal_operation_budget(&narrow_positives, &narrow_negatives, &boundary_limits())
+            < 106_458 / 2
+    );
 }
