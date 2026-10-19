@@ -14,29 +14,31 @@
 //!
 //! A rule covers an example `(lhs, rhs)` exactly when the rule's
 //! left-hand pattern matches `lhs` and applying the rule at the root
-//! yields a term structurally equal to `rhs`. Application uses the
-//! one-level matcher substitution
-//! ([`Substitution::apply_matcher`](crate::trs::Substitution::apply_matcher)),
-//! so example variable names cannot be captured by rule variables
-//! (Task 31 provenance discipline). Replay is purely virtual: the
+//! yields a term structurally equal to `rhs`. Application uses
+//! one-level matcher provenance — bindings are verbatim example
+//! fragments and are never chain-resolved — so example variable names
+//! cannot be captured by rule variables (Task 31 discipline). Replay is
+//! purely virtual: bindings are BORROWED from the example, the
 //! prospective shape of the applied right-hand side is accounted
 //! BEFORE any term is materialized (Task 34 doctrine), and the
 //! virtually substituted template is compared node by node against the
-//! example right-hand side.
+//! example right-hand side. Nothing is cloned to replay a rule.
 //!
 //! # Admission
 //!
 //! Raw inputs are validated while still borrowed, iteratively, before
-//! any clone, sort, dedup, comparison, or variable collection runs:
-//! node and depth ceilings are checked with an explicit stack and the
+//! any sort, dedup, comparison, or variable collection runs: node and
+//! depth ceilings are checked with an explicit stack and the
 //! cumulative operation budget is charged per visited node. Deep or
 //! huge terms therefore surface as typed errors instead of aborting in
 //! a recursive clone or comparison (PR #320 round 1 P1).
 //!
 //! # Specialization
 //!
-//! 1. Both example lists are canonicalized (sorted and deduplicated);
-//!    a pair appearing as both positive and negative is a typed
+//! 1. Both example lists are canonicalized by sorting and
+//!    deduplicating borrowed references. Ordering comparisons charge
+//!    per compared node pair and no example is cloned; a pair
+//!    appearing as both positive and negative is a typed
 //!    [`RewriteError::InvalidRule`]. The examples ceiling counts the
 //!    deduped examples; the raw duplicate stream stays bounded by the
 //!    operation budget charged during admission and canonicalization.
@@ -44,14 +46,19 @@
 //!    disagreement table used by
 //!    [`infer_rule`](crate::synthesis::infer_rule), reserving every
 //!    example variable name so generated `_I*` variables cannot collide
-//!    with example variables (the #303 interaction).
+//!    with example variables (the #303 interaction). Partition
+//!    examples and the reserved-variable set are borrowed, never
+//!    cloned, and structural equality and cloning charge per visited
+//!    node.
 //! 3. A candidate that covers a negative (or fails to replay against
 //!    its own positives) is split at the first discriminating position
 //!    in canonical preorder over the candidate's left-hand side and
 //!    then its right-hand side. A position discriminates when the
 //!    positives' subterms there fall into at least two classes: a
 //!    sub-rule built from one class can only cover a negative whose
-//!    subterm at that position is in the same class.
+//!    subterm at that position is in the same class. Grouping compares
+//!    borrowed subterms with per-node charging; subtrees are never
+//!    cloned.
 //! 4. Partitions are processed in lexicographic order, so candidate,
 //!    partition, rule, and coverage order are identical across runs
 //!    and across input permutations. No random state is seeded or
@@ -67,10 +74,13 @@
 //! and cumulative operation ceilings are enforced by
 //! [`SpecializationConfig`] and a single [`RelationResources`] budget
 //! covering the whole run. One operation unit is charged per visited
-//! term node, per generalized node pair, per partition member and
-//! position examined while splitting, and per replay/equality node.
-//! Every violation is a typed error; nothing is truncated silently and
-//! nothing panics.
+//! term node, per compared node pair, per generalized node pair, per
+//! partition member and position examined while splitting, per binding
+//! lookup, and per replay/equality node. Bulk work is never funded by
+//! a single unit: equality, cloning, canonical ordering, grouping, and
+//! replay are all charged before the work they meter. Every violation
+//! is a typed error; nothing is truncated silently and nothing panics
+//! (PR #320 round 2).
 
 use alloc::{
     collections::{BTreeMap, BTreeSet},
@@ -78,10 +88,11 @@ use alloc::{
     vec,
     vec::Vec,
 };
+use core::cmp::Ordering;
 
 use crate::{
     relation::{RelationLimits, RelationResources},
-    trs::{Rule, Substitution, Term, Variable},
+    trs::{Rule, Term, Variable},
     Path, RewriteError, RewriteResult,
 };
 
@@ -346,8 +357,8 @@ pub fn specialize_rules(
     let mut resources = RelationResources::new(&limits);
 
     // 1. Raw admission over the BORROWED inputs. Nothing below this
-    // loop may clone, sort, dedup, compare, or collect variables from
-    // an unvalidated term: a deep term must fail typed here instead of
+    // loop may sort, dedup, compare, or collect variables from an
+    // unvalidated term: a deep term must fail typed here instead of
     // aborting in a recursive clone/sort (PR #320 round 1 P1).
     for example in positives.iter().chain(negatives.iter()) {
         resources.record_operations(1)?;
@@ -355,7 +366,7 @@ pub fn specialize_rules(
         admit_term(&example.1, &limits, &mut resources)?;
     }
 
-    // 2. Canonicalization (charged before the clones run).
+    // 2. Canonicalize borrowed references (charged comparisons).
     let positives = canonical_examples(positives, &mut resources)?;
     let negatives = canonical_examples(negatives, &mut resources)?;
 
@@ -369,14 +380,13 @@ pub fn specialize_rules(
         });
     }
 
-    // 4. Conflicting duplicates.
-    if positives
-        .iter()
-        .any(|pair| negatives.binary_search(pair).is_ok())
-    {
-        return Err(RewriteError::InvalidRule {
-            message: String::from("example pair is both positive and negative"),
-        });
+    // 4. Conflicting duplicates, with charged comparisons.
+    for pair in &positives {
+        if charged_contains(&negatives, pair, &mut resources)? {
+            return Err(RewriteError::InvalidRule {
+                message: String::from("example pair is both positive and negative"),
+            });
+        }
     }
 
     // 5. Reserve every example variable name (charged traversal).
@@ -456,8 +466,8 @@ pub fn specialize_rules(
 /// being returned.
 fn finish_refined(
     resolved: BTreeMap<Vec<usize>, Rule>,
-    positives: &[(Term, Term)],
-    negatives: &[(Term, Term)],
+    positives: &[&(Term, Term)],
+    negatives: &[&(Term, Term)],
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<SpecializationOutcome> {
@@ -465,13 +475,13 @@ fn finish_refined(
     let mut entries = Vec::with_capacity(rules.len());
     for (index, rule) in rules.iter().enumerate() {
         let mut covered_positives = Vec::new();
-        for (positive_index, example) in positives.iter().enumerate() {
+        for (positive_index, example) in positives.iter().copied().enumerate() {
             if covers(rule, example, limits, resources)? {
                 covered_positives.push(positive_index);
             }
         }
         let mut covered_negatives = Vec::new();
-        for (negative_index, example) in negatives.iter().enumerate() {
+        for (negative_index, example) in negatives.iter().copied().enumerate() {
             if covers(rule, example, limits, resources)? {
                 covered_negatives.push(negative_index);
             }
@@ -555,25 +565,119 @@ fn admit_term(
     Ok((nodes, depth))
 }
 
-/// Sort and deduplicate example pairs by structural term order.
+/// Compare two borrowed terms in their structural order, charging one
+/// unit per compared node pair BEFORE the comparison.
 ///
-/// The charge precedes the clone and the comparisons; callers must
-/// have admitted the underlying terms first.
-fn canonical_examples(
-    examples: &[(Term, Term)],
+/// The order is exactly the derived `Ord` for [`Term`] (variable
+/// before symbol, symbol name, then lexicographic arguments with
+/// length as the final tie-break), so charged ordering and charged
+/// binary search agree with the sort that produced the list.
+fn charged_compare(
+    left: &Term,
+    right: &Term,
     resources: &mut RelationResources,
-) -> RewriteResult<Vec<(Term, Term)>> {
+) -> RewriteResult<Ordering> {
+    resources.record_operations(1)?;
+    match (left, right) {
+        (Term::Var(left_var), Term::Var(right_var)) => Ok(left_var.cmp(right_var)),
+        (Term::Var(_), Term::Sym(_, _)) => Ok(Ordering::Less),
+        (Term::Sym(_, _), Term::Var(_)) => Ok(Ordering::Greater),
+        (Term::Sym(left_symbol, left_args), Term::Sym(right_symbol, right_args)) => {
+            let symbol_order = left_symbol.cmp(right_symbol);
+            if symbol_order != Ordering::Equal {
+                return Ok(symbol_order);
+            }
+            for (left_arg, right_arg) in left_args.iter().zip(right_args) {
+                let order = charged_compare(left_arg, right_arg, resources)?;
+                if order != Ordering::Equal {
+                    return Ok(order);
+                }
+            }
+            Ok(left_args.len().cmp(&right_args.len()))
+        }
+    }
+}
+
+/// Charged structural order for example pairs: left-hand side first,
+/// then right-hand side.
+fn charged_pair_compare(
+    left: &(Term, Term),
+    right: &(Term, Term),
+    resources: &mut RelationResources,
+) -> RewriteResult<Ordering> {
+    resources.record_operations(1)?;
+    let order = charged_compare(&left.0, &right.0, resources)?;
+    if order != Ordering::Equal {
+        return Ok(order);
+    }
+    charged_compare(&left.1, &right.1, resources)
+}
+
+/// Charged binary search over a canonically sorted example list.
+fn charged_contains(
+    sorted: &[&(Term, Term)],
+    needle: &(Term, Term),
+    resources: &mut RelationResources,
+) -> RewriteResult<bool> {
+    let mut low = 0usize;
+    let mut high = sorted.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        match charged_pair_compare(sorted[middle], needle, resources)? {
+            Ordering::Less => low = middle + 1,
+            Ordering::Greater => high = middle,
+            Ordering::Equal => return Ok(true),
+        }
+    }
+    Ok(false)
+}
+
+/// Sort and deduplicate borrowed example references.
+///
+/// Both the boundary-bound allocation (`len` units, charged first) and
+/// every structural comparison are metered; no example is cloned. The
+/// caller must have admitted the underlying terms first, so the
+/// comparisons are bounded by the validated node and depth ceilings.
+fn canonical_examples<'a>(
+    examples: &'a [(Term, Term)],
+    resources: &mut RelationResources,
+) -> RewriteResult<Vec<&'a (Term, Term)>> {
     resources.record_operations(examples.len())?;
-    let mut canonical = examples.to_vec();
-    canonical.sort();
-    canonical.dedup();
-    Ok(canonical)
+    let mut canonical: Vec<&'a (Term, Term)> = examples.iter().collect();
+    let mut failure = None;
+    canonical.sort_by(|left, right| {
+        if failure.is_some() {
+            return Ordering::Equal;
+        }
+        match charged_pair_compare(left, right, resources) {
+            Ok(ordering) => ordering,
+            Err(error) => {
+                failure = Some(error);
+                Ordering::Equal
+            }
+        }
+    });
+    if let Some(error) = failure {
+        return Err(error);
+    }
+
+    let mut unique: Vec<&'a (Term, Term)> = Vec::with_capacity(canonical.len());
+    for pair in canonical {
+        let duplicate = match unique.last() {
+            Some(previous) => charged_pair_compare(previous, pair, resources)? == Ordering::Equal,
+            None => false,
+        };
+        if !duplicate {
+            unique.push(pair);
+        }
+    }
+    Ok(unique)
 }
 
 /// Every variable name appearing in the supplied examples.
 fn example_variables(
-    positives: &[(Term, Term)],
-    negatives: &[(Term, Term)],
+    positives: &[&(Term, Term)],
+    negatives: &[&(Term, Term)],
     resources: &mut RelationResources,
 ) -> RewriteResult<BTreeSet<Variable>> {
     let mut variables = BTreeSet::new();
@@ -603,37 +707,78 @@ fn collect_variables(
     Ok(())
 }
 
+/// Borrowed one-level matcher bindings.
+///
+/// Ranges are verbatim example fragments, never chain-resolved, and
+/// are never cloned: replay borrows them. Lookups charge one unit and
+/// comparisons charge per visited node.
+struct Bindings<'a> {
+    entries: Vec<(&'a Variable, &'a Term)>,
+}
+
+impl<'a> Bindings<'a> {
+    fn new() -> Self {
+        Self {
+            entries: Vec::new(),
+        }
+    }
+
+    fn get(
+        &self,
+        variable: &Variable,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<Option<&'a Term>> {
+        resources.record_operations(1)?;
+        Ok(self
+            .entries
+            .iter()
+            .find(|(bound, _)| *bound == variable)
+            .map(|(_, term)| *term))
+    }
+
+    fn insert(
+        &mut self,
+        variable: &'a Variable,
+        term: &'a Term,
+        resources: &mut RelationResources,
+    ) -> RewriteResult<()> {
+        resources.record_operations(1)?;
+        self.entries.push((variable, term));
+        Ok(())
+    }
+}
+
 /// Exact coverage: the pattern matches and the virtually applied rule
 /// yields the example right-hand side.
 ///
-/// The applied right-hand side is never materialized. Its prospective
-/// shape is accounted first (Task 34 `matched_shape` doctrine) and the
-/// substituted template is then compared node by node with one-level
-/// matcher provenance.
-fn covers(
-    rule: &Rule,
-    example: &(Term, Term),
+/// The applied right-hand side is never materialized. Bindings are
+/// borrowed, the prospective shape is accounted first (Task 34
+/// `matched_shape` doctrine), and the substituted template is then
+/// compared node by node with one-level matcher provenance.
+fn covers<'a>(
+    rule: &'a Rule,
+    example: &'a (Term, Term),
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
-    let mut substitution = Substitution::new();
-    if !match_pattern(rule.lhs(), &example.0, &mut substitution, resources)? {
+    let mut bindings = Bindings::new();
+    if !match_pattern(rule.lhs(), &example.0, &mut bindings, resources)? {
         return Ok(false);
     }
-    applied_shape(rule.rhs(), &substitution, limits, resources)?;
-    one_level_equals(rule.rhs(), &substitution, &example.1, resources)
+    applied_shape(rule.rhs(), &bindings, limits, resources)?;
+    one_level_equals(rule.rhs(), &bindings, &example.1, resources)
 }
 
 /// True when the rule replays every positive in the partition.
 fn covers_partition(
     rule: &Rule,
     partition: &[usize],
-    positives: &[(Term, Term)],
+    positives: &[&(Term, Term)],
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
     for &index in partition {
-        if !covers(rule, &positives[index], limits, resources)? {
+        if !covers(rule, positives[index], limits, resources)? {
             return Ok(false);
         }
     }
@@ -643,7 +788,7 @@ fn covers_partition(
 /// True when the rule covers at least one negative.
 fn covers_any(
     rule: &Rule,
-    negatives: &[(Term, Term)],
+    negatives: &[&(Term, Term)],
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
@@ -655,31 +800,29 @@ fn covers_any(
     Ok(false)
 }
 
-/// Match a pattern against a term with a consistent substitution,
-/// charging one unit per visited node pair.
+/// Match a borrowed pattern against a borrowed term with consistent
+/// borrowed bindings, charging one unit per visited node pair.
 ///
 /// Capture-free exactly like [`crate::trs::match_pattern`]: bindings
-/// are verbatim term fragments and repeated variables compare by
-/// structure. Iterative, so matching never depends on the call stack.
-fn match_pattern(
-    pattern: &Term,
-    term: &Term,
-    substitution: &mut Substitution,
+/// are verbatim fragments and repeated variables compare by structure.
+/// Iterative, so matching never depends on the call stack.
+fn match_pattern<'a>(
+    pattern: &'a Term,
+    term: &'a Term,
+    bindings: &mut Bindings<'a>,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
     let mut stack = vec![(pattern, term)];
     while let Some((current_pattern, current_term)) = stack.pop() {
         resources.record_operations(1)?;
         match (current_pattern, current_term) {
-            (Term::Var(variable), _) => match substitution.get_var(variable) {
+            (Term::Var(variable), _) => match bindings.get(variable, resources)? {
                 Some(existing) => {
                     if !charged_equal(existing, current_term, resources)? {
                         return Ok(false);
                     }
                 }
-                None => {
-                    substitution.insert(variable.clone(), current_term.clone());
-                }
+                None => bindings.insert(variable, current_term, resources)?,
             },
             (Term::Sym(symbol, args), Term::Sym(term_symbol, term_args))
                 if symbol == term_symbol && args.len() == term_args.len() =>
@@ -692,7 +835,8 @@ fn match_pattern(
     Ok(true)
 }
 
-/// Structural equality, charged per compared node pair and iterative.
+/// Structural equality, charged per compared node pair BEFORE the
+/// comparison and iterative.
 fn charged_equal(
     left: &Term,
     right: &Term,
@@ -714,17 +858,16 @@ fn charged_equal(
     Ok(true)
 }
 
-/// Shape of `template` under a MATCH substitution, one-level and
-/// counted verbatim, exactly as [`Substitution::apply_matcher`] would
-/// build it.
+/// Shape of `template` under borrowed MATCH bindings, one-level and
+/// counted verbatim, exactly as the materialized application would be.
 ///
-/// The shape is checked against the per-term ceilings BEFORE any
-/// replacement is materialized: a binding that would push the result
-/// past the node or depth ceiling is a typed limit error, never an
-/// allocation (PR #320 round 1 P4).
+/// The shape is checked against the per-term ceilings BEFORE any term
+/// is materialized — in fact nothing is materialized — and every
+/// borrowed range is traversed with per-node charging (PR #320
+/// round 2).
 fn applied_shape(
     template: &Term,
-    substitution: &Substitution,
+    bindings: &Bindings<'_>,
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<(usize, usize)> {
@@ -735,7 +878,7 @@ fn applied_shape(
         resources.record_operations(1)?;
         match current {
             Term::Var(variable) => {
-                let (bound_nodes, bound_depth) = match substitution.get_var(variable) {
+                let (bound_nodes, bound_depth) = match bindings.get(variable, resources)? {
                     Some(bound) => admit_term(bound, limits, resources)?,
                     None => (1, 1),
                 };
@@ -767,13 +910,13 @@ fn applied_shape(
     Ok((nodes, depth))
 }
 
-/// Compare `apply_matcher(template)` with `expected` without
+/// Compare the virtually applied `template` with `expected` without
 /// materializing it. Bound variables compare by structure (verbatim
 /// ranges), unbound variables must appear as themselves, and symbols
 /// compare arity and children.
 fn one_level_equals(
     template: &Term,
-    substitution: &Substitution,
+    bindings: &Bindings<'_>,
     expected: &Term,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
@@ -781,7 +924,7 @@ fn one_level_equals(
     while let Some((pattern, actual)) = stack.pop() {
         resources.record_operations(1)?;
         match pattern {
-            Term::Var(variable) => match substitution.get_var(variable) {
+            Term::Var(variable) => match bindings.get(variable, resources)? {
                 Some(bound) => {
                     if !charged_equal(bound, actual, resources)? {
                         return Ok(false);
@@ -808,13 +951,13 @@ fn one_level_equals(
 
 /// Fresh generated variables that never collide with example names
 /// (#303 interaction handling).
-struct FreshNames {
+struct FreshNames<'a> {
     next: usize,
-    reserved: BTreeSet<Variable>,
+    reserved: &'a BTreeSet<Variable>,
 }
 
-impl FreshNames {
-    fn new(reserved: BTreeSet<Variable>) -> Self {
+impl<'a> FreshNames<'a> {
+    fn new(reserved: &'a BTreeSet<Variable>) -> Self {
         Self { next: 0, reserved }
     }
 
@@ -832,14 +975,17 @@ impl FreshNames {
 }
 
 /// Shared-disagreement-table generalization, as in `infer_rule`.
-struct Generalizer {
-    names: FreshNames,
+///
+/// Partition examples and the reserved-variable set are borrowed; no
+/// partition or reserved-set clone is ever made (PR #320 round 2).
+struct Generalizer<'a> {
+    names: FreshNames<'a>,
     disagreements: BTreeMap<(Term, Term), Variable>,
     limits: RelationLimits,
 }
 
-impl Generalizer {
-    fn new(reserved: BTreeSet<Variable>, limits: RelationLimits) -> Self {
+impl<'a> Generalizer<'a> {
+    fn new(reserved: &'a BTreeSet<Variable>, limits: RelationLimits) -> Self {
         Self {
             names: FreshNames::new(reserved),
             disagreements: BTreeMap::new(),
@@ -849,11 +995,13 @@ impl Generalizer {
 
     fn generalize(
         &mut self,
-        examples: &[(Term, Term)],
+        partition: &[usize],
+        positives: &[&(Term, Term)],
         resources: &mut RelationResources,
     ) -> RewriteResult<Option<(Term, Term)>> {
-        let lhs_terms: Vec<&Term> = examples.iter().map(|(lhs, _)| lhs).collect();
-        let rhs_terms: Vec<&Term> = examples.iter().map(|(_, rhs)| rhs).collect();
+        resources.record_operations(partition.len())?;
+        let lhs_terms: Vec<&Term> = partition.iter().map(|&index| &positives[index].0).collect();
+        let rhs_terms: Vec<&Term> = partition.iter().map(|&index| &positives[index].1).collect();
         let Some(lhs) = self.anti_unify_all(&lhs_terms, resources)? else {
             return Ok(None);
         };
@@ -872,7 +1020,8 @@ impl Generalizer {
         let Some(first) = iter.next() else {
             return Ok(None);
         };
-        resources.record_operations(1)?;
+        // Charge the initial clone per node BEFORE cloning.
+        let _shape = admit_term(first, &self.limits, resources)?;
         let mut current = (*first).clone();
         for term in iter {
             current = self.anti_unify(&current, term, resources)?;
@@ -886,10 +1035,14 @@ impl Generalizer {
         right: &Term,
         resources: &mut RelationResources,
     ) -> RewriteResult<Term> {
-        // One generalized node pair, charged before the comparison,
-        // clone, or recursion.
+        // One generalized node pair, charged before the comparison or
+        // clone.
         resources.record_operations(1)?;
-        if left == right {
+        // Equality and the clone it may produce are each charged per
+        // visited node: a four-thousand-node comparison or clone is
+        // never funded by one unit (PR #320 round 2).
+        if charged_equal(left, right, resources)? {
+            let _shape = admit_term(left, &self.limits, resources)?;
             return Ok(left.clone());
         }
         match (left, right) {
@@ -928,7 +1081,7 @@ impl Generalizer {
 /// Build the checked rule generalizing one positive partition.
 fn build_candidate(
     partition: &[usize],
-    positives: &[(Term, Term)],
+    positives: &[&(Term, Term)],
     reserved: &BTreeSet<Variable>,
     max_candidates: usize,
     candidates: &mut usize,
@@ -944,16 +1097,15 @@ fn build_candidate(
     }
     resources.record_operations(1)?;
 
-    let examples: Vec<(Term, Term)> = partition
-        .iter()
-        .map(|&index| positives[index].clone())
-        .collect();
-    let mut generalizer = Generalizer::new(reserved.clone(), *limits);
-    let Some((lhs, rhs)) = generalizer.generalize(&examples, resources)? else {
+    let mut generalizer = Generalizer::new(reserved, *limits);
+    let Some((lhs, rhs)) = generalizer.generalize(partition, positives, resources)? else {
         return Ok(None);
     };
-    let _lhs_shape = admit_term(&lhs, limits, resources)?;
-    let _rhs_shape = admit_term(&rhs, limits, resources)?;
+    let (lhs_nodes, _lhs_depth) = admit_term(&lhs, limits, resources)?;
+    let (rhs_nodes, _rhs_depth) = admit_term(&rhs, limits, resources)?;
+    // Rule::new rescans both sides for variable validation: metered
+    // before the scan, not after.
+    resources.record_operations(lhs_nodes.saturating_add(rhs_nodes))?;
     Ok(Rule::new(lhs, rhs).ok())
 }
 
@@ -963,7 +1115,7 @@ fn build_candidate(
 fn discriminating_positions(
     candidate: Option<&Rule>,
     partition: &[usize],
-    positives: &[(Term, Term)],
+    positives: &[&(Term, Term)],
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<Vec<(bool, Path)>> {
@@ -983,28 +1135,55 @@ fn discriminating_positions(
     Ok(positions)
 }
 
+/// Compare two optional borrowed subterms with charged equality.
+fn option_terms_equal(
+    left: Option<&Term>,
+    right: Option<&Term>,
+    resources: &mut RelationResources,
+) -> RewriteResult<bool> {
+    resources.record_operations(1)?;
+    match (left, right) {
+        (None, None) => Ok(true),
+        (Some(left), Some(right)) => charged_equal(left, right, resources),
+        _ => Ok(false),
+    }
+}
+
 /// Split at the first position whose subterms separate the partition
-/// into at least two classes, in class order.
+/// into at least two classes, in first-seen order.
 ///
-/// Every `(position, partition member)` lookup is charged BEFORE the
-/// subterm is read or cloned.
+/// Grouping compares BORROWED subterms with per-node charging; nothing
+/// is cloned, and every `(position, partition member)` lookup is
+/// charged BEFORE the comparison runs (PR #320 round 2).
 fn first_split(
     positions: &[(bool, Path)],
     partition: &[usize],
-    positives: &[(Term, Term)],
+    positives: &[&(Term, Term)],
     resources: &mut RelationResources,
 ) -> RewriteResult<Option<Vec<Vec<usize>>>> {
     for (is_lhs, path) in positions {
-        let mut groups: BTreeMap<Option<Term>, Vec<usize>> = BTreeMap::new();
+        let mut groups: Vec<(Option<&Term>, Vec<usize>)> = Vec::new();
         for &index in partition {
             resources.record_operations(1)?;
-            let (lhs, rhs) = &positives[index];
-            let term = if *is_lhs { lhs } else { rhs };
-            let key = term.subterm(path).cloned();
-            groups.entry(key).or_default().push(index);
+            let example = positives[index];
+            let term = if *is_lhs { &example.0 } else { &example.1 };
+            let key = term.subterm(path);
+            let mut placed = false;
+            for (existing, members) in groups.iter_mut() {
+                if option_terms_equal(*existing, key, resources)? {
+                    members.push(index);
+                    placed = true;
+                    break;
+                }
+            }
+            if !placed {
+                groups.push((key, vec![index]));
+            }
         }
         if groups.len() > 1 {
-            return Ok(Some(groups.into_values().collect()));
+            return Ok(Some(
+                groups.into_iter().map(|(_key, members)| members).collect(),
+            ));
         }
     }
     Ok(None)
