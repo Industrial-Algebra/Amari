@@ -483,3 +483,21 @@ The maintainer explicitly lifted the stop for **matrix planning only**: document
 Incident record: [ia-toolkit #21](https://github.com/Industrial-Algebra/ia-toolkit/issues/21). The monitor's `plan_tracker init` handler advances to `execute`; do not initialize a task tracker as a planning convenience. Ordinary task-status updates are not workflow-phase transitions. Reloading an already active mapped skill also resets workflow tracking in the installed version; check the actual state and do not use skill reloads to erase history or restrictions.
 
 **2026-10-14 state:** the corrected recipe is validated and battle-tested through six merged packages (§2 annotation); the validation checkpoint is complete. Next: report-only review round 2 against THIS refreshed draft (round 1 found 0 P1 / 2 P2 / 0 P3, corrections applied), then operator approval of the concrete matrix (rows, compilers, scheduling, ownership) — after which the matrix lands on develop via a reviewed chore PR and the remaining gates (full H execution, P-AVX2, P-EMBED, P-WASM closure, C2/C3/C4 proofs) schedule per §5/§7. No convergence or complete-matrix-green claim is made.
+
+### Addendum (2026-10-18): M-REP-D closed; P-AVX2 executable
+
+M-REP-D (unsafe/SIMD audit, S1–S8 + D1–D6) closed: contract #315 (`78f307a`,
+loop conv. R6) + implementation #317 (`e8183b1`, loop conv. R9). Headline:
+the AVX2 geometric-product kernel computed wrong products (188/448 coefficient
+mismatches over the basis-pair matrix; the only prior test checked `e1·e2`);
+rewritten table-driven from the blade algebra with an exact bigint oracle.
+FMA predicate `{avx2,fma}` unified across every gate. Deterministic-family
+attestations made truthful (finite-domain contract; NaN promises withdrawn;
+fictional features/figures/mechanisms removed). Full record:
+`core-matrix-evidence/mrep-d/CLOSURE.md`.
+
+**P-AVX2 is now executable** per §5: the battery (`amari-core/tests/simd_audit.rs`)
+IS the required evidence (compile +avx2 rows, runtime inventory, independent
+arithmetic checks via the exact oracle). Remaining §5/§7 gates unchanged;
+next matrix item: M-H (pilot wall-clock/storage estimate → staged-B
+full-matrix execution, 2,880-case cost, operator-approved staged default).
