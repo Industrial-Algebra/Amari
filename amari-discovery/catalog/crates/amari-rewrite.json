@@ -18215,7 +18215,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -18233,7 +18233,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -18251,7 +18251,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -18287,7 +18287,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -18809,7 +18809,7 @@
       "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Copy"
@@ -20828,7 +20828,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -20846,7 +20846,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -20864,7 +20864,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -20900,7 +20900,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -21332,7 +21332,7 @@
       "trait_path": "Default",
       "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Default"
@@ -23043,7 +23043,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -23061,7 +23061,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -23079,7 +23079,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -23115,7 +23115,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -26215,7 +26215,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -26233,7 +26233,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -26251,7 +26251,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -26287,7 +26287,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -27076,6 +27076,25 @@
         "kind": "local",
         "module": "amari_rewrite::language::certificate",
         "ident": "PreimageCertificate"
+      },
+      "generics": "< 'de >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "serde::Deserialize",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "serde::Deserialize"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
       },
       "generics": "< 'de >",
       "unsafe_trait": false,
@@ -31095,7 +31114,7 @@
     {
       "path": "amari_rewrite::synthesis::CoverageReport",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -31127,7 +31146,7 @@
     {
       "path": "amari_rewrite::synthesis::InconclusiveReason",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -31135,7 +31154,7 @@
     {
       "path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -31199,7 +31218,7 @@
     {
       "path": "amari_rewrite::synthesis::SpecializationConfig::limits",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -31207,7 +31226,7 @@
     {
       "path": "amari_rewrite::synthesis::SpecializationConfig::max_candidates",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -31215,7 +31234,7 @@
     {
       "path": "amari_rewrite::synthesis::SpecializationConfig::max_examples",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -31223,7 +31242,7 @@
     {
       "path": "amari_rewrite::synthesis::SpecializationConfig::max_partitions",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -31239,7 +31258,7 @@
     {
       "path": "amari_rewrite::synthesis::SpecializationOutcome",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -31319,7 +31338,7 @@
     {
       "path": "amari_rewrite::synthesis::specialize_rules",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
