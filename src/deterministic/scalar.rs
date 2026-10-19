@@ -49,6 +49,8 @@ pub struct DetF32(f32);
 ///
 /// # Safety (M-REP-D S7 — trait scope narrowed to the honest attestation)
 ///
+/// Marker for deterministic-arithmetic types.
+///
 /// Implementors guarantee bit-exact reproducibility of every exposed
 /// operation on the finite domain (see the scope qualification below):
 /// identical finite inputs with finite intermediates and results produce
@@ -58,6 +60,12 @@ pub struct DetF32(f32);
 /// manipulation, fixed-iteration approximations; no libm anywhere —
 /// M-REP-D R3 correction of the R1 premise that claimed otherwise).
 ///
+/// This is a DETERMINISM contract, not an accuracy contract: the
+/// approximation-based methods (Newton sqrt, Taylor sin/cos/atan2) are not
+/// converged outside their working ranges and no accuracy is claimed.
+///
+/// # Safety
+///
 /// Scope qualification (R4, tightened R5): bit-identity is promised only
 /// for computations whose inputs, intermediates, and final results are
 /// finite. Where an operation produces a NaN, NOTHING is promised — Rust
@@ -65,9 +73,9 @@ pub struct DetF32(f32);
 /// operation in the same binary (the local `0/0` payload `0xffc00000` is
 /// an observation, not a guarantee, of stability or portability).
 ///
-/// This is a DETERMINISM contract, not an accuracy contract: the
-/// approximation-based methods (Newton sqrt, Taylor sin/cos/atan2) are not
-/// converged outside their working ranges and no accuracy is claimed.
+/// Implementors must contain only pure fixed arithmetic as described
+/// above; any libm call, hardware-varying approximation, hidden state, or
+/// input-length-dependent iteration forfeits the safety justification.
 pub unsafe trait Deterministic {}
 
 // SAFETY (M-REP-D S7): DetF32 wraps f32 and exposes bit manipulation,
