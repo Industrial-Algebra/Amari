@@ -93,7 +93,7 @@ re-confirmed decision below supersedes it.
   additional test-module import sites — the 128-row re-run is the
   authoritative completeness gate.
 
-## Decision D1 — RE-CONFIRMED (operator, ask_user 2026-10-20): imports-only repair; libm wiring DEFERRED to P-EMBED where num-traits must build without std. Supersedes the original (a) taken on the corrected premise.
+## Decision D1 — RE-CONFIRMED (operator, ask_user 2026-10-20, after the R1 corrections): **imports-only repair; libm wiring DEFERRED to P-EMBED** where num-traits must build without std. Supersedes the original (a), which was taken on the false libm premise. The re-confirmation question presented the corrected evidence (unification proof, clean-compile proof, shrunk surface).
 
 ## Decision D1 (operator, ask_user) [historical]
 
