@@ -1,7 +1,0 @@
-   Compiling libc v0.2.191
-   Compiling gmp-mpfr-sys v1.7.1
-   Compiling libm v0.2.16
-   Compiling rug v1.30.0
-    Checking az v1.3.0
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.62s

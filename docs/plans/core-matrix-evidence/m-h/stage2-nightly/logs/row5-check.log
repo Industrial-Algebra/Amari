@@ -1,8 +1,0 @@
-   Compiling rustversion v1.0.23
-   Compiling dashu-int v0.4.3
-    Checking static_assertions v1.1.0
-    Checking dashu-base v0.4.3
-    Checking num-modular v0.6.5
-    Checking dashu-float v0.4.5
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.02s
