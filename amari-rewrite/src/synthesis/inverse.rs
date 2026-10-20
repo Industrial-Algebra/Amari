@@ -227,19 +227,18 @@ pub struct ResidualSchema {
 }
 
 impl ResidualSchema {
-    /// Derive the schema for an already sorted, deduplicated erased
-    /// variable list, charging per key before the key is built and
-    /// per variable before its name is cloned.
-    fn derive(erased: &[Variable], resources: &mut RelationResources) -> RewriteResult<Self> {
-        resources.record_operations(erased.len())?;
+    /// Derive the schema from the compiled contract's sorted erased
+    /// names, charging two units per entry (the key and the cloned
+    /// name) BEFORE the entry is built.
+    fn derive(erased: &[String], resources: &mut RelationResources) -> RewriteResult<Self> {
         let mut bindings = Vec::with_capacity(erased.len());
-        for (index, variable) in erased.iter().enumerate() {
+        for (index, name) in erased.iter().enumerate() {
             let index = u32::try_from(index).map_err(|_| RewriteError::RelationLimitExceeded {
                 resource: "residual schema",
                 limit: u32::MAX as usize,
             })?;
-            resources.record_operations(1)?;
-            bindings.push((LogicVar::new(0, index), variable.clone()));
+            resources.record_operations(2)?;
+            bindings.push((LogicVar::new(0, index), Variable::new(name.clone())));
         }
         Ok(Self { bindings })
     }
@@ -594,47 +593,14 @@ pub fn synthesize_inverse(
         }
     }
 
-    // 7. Gate 3: residual round-trip validates every clause.
+    // 7. Gate 3a: every lossless clause replays its checked reverse
+    // over each positive the forward rule covers.
     let mut residual_roundtrips = 0usize;
     let mut reversible_clauses = 0usize;
     let mut residual_clauses = 0usize;
     for (clause_index, clause) in clauses.iter().enumerate() {
         let Some(reverse) = clause.reverse_rule() else {
             residual_clauses = residual_clauses.saturating_add(1);
-            let verdict = validate_residual_evidence(
-                clause,
-                &residual_examples,
-                &limits,
-                &mut resources,
-                &mut residual_roundtrips,
-            )?;
-            match verdict {
-                ResidualVerdict::Validated => {}
-                ResidualVerdict::Refuted(residual) => {
-                    return Ok(InverseSynthesisOutcome::Refuted {
-                        witness: InverseWitness {
-                            refutation: InverseRefutation::ResidualRoundTrip {
-                                residual,
-                                clause: clause_index,
-                            },
-                        },
-                    });
-                }
-                ResidualVerdict::Underdetermined => {
-                    return Ok(InverseSynthesisOutcome::Unknown {
-                        reason: InverseUnknownReason::ResidualUnderdetermined {
-                            clause: clause_index,
-                        },
-                    });
-                }
-                ResidualVerdict::Ambiguous => {
-                    return Ok(InverseSynthesisOutcome::Unknown {
-                        reason: InverseUnknownReason::Ambiguous {
-                            clause: clause_index,
-                        },
-                    });
-                }
-            }
             continue;
         };
 
@@ -656,6 +622,37 @@ pub fn synthesize_inverse(
                     },
                 });
             }
+        }
+    }
+
+    // 8. Gate 3b: one global pass validates the residual schema of
+    // every erasing clause. A residual is obligated only to the
+    // clauses whose reverse target it matches, so an overlapping
+    // right-hand side never refutes another clause's evidence.
+    match validate_residual_evidence(
+        &clauses,
+        &residual_examples,
+        &limits,
+        &mut resources,
+        &mut residual_roundtrips,
+    )? {
+        ResidualVerdict::Validated => {}
+        ResidualVerdict::Refuted { residual, clause } => {
+            return Ok(InverseSynthesisOutcome::Refuted {
+                witness: InverseWitness {
+                    refutation: InverseRefutation::ResidualRoundTrip { residual, clause },
+                },
+            });
+        }
+        ResidualVerdict::Underdetermined { clause } => {
+            return Ok(InverseSynthesisOutcome::Unknown {
+                reason: InverseUnknownReason::ResidualUnderdetermined { clause },
+            });
+        }
+        ResidualVerdict::Ambiguous { clause } => {
+            return Ok(InverseSynthesisOutcome::Unknown {
+                reason: InverseUnknownReason::Ambiguous { clause },
+            });
         }
     }
 
@@ -693,54 +690,28 @@ fn admit_examples(
 
 /// Derive the clause for one checked forward rule.
 ///
-/// The backward contract compilation rescans both sides, sorts and
-/// deduplicates the erased set, and clones both terms; every one of
-/// those units is charged before the compile runs.
+/// The backward contract compilation is metered internally: variable
+/// collection, the quadratic RHS-subset and erased-set scans, the rule
+/// identity digest, and the two-sided clone all charge the shared
+/// budget per visited node and per visited entry (PR #335 round 1
+/// P2a). The residual schema is derived from the contract's own erased
+/// set, so clause, schema, and digest can never disagree.
 fn derive_clause(
     rule: &Rule,
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<InverseClause> {
+    // Enforce the per-term ceilings before any of the rule's work runs.
     let (lhs_nodes, _lhs_depth) = admit_term(rule.lhs(), limits, resources)?;
     let (rhs_nodes, _rhs_depth) = admit_term(rule.rhs(), limits, resources)?;
-    resources.record_operations(lhs_nodes.saturating_add(rhs_nodes))?;
-    let mut lhs_variables = BTreeSet::new();
-    collect_variables(rule.lhs(), &mut lhs_variables, resources)?;
-    let mut rhs_variables = BTreeSet::new();
-    collect_variables(rule.rhs(), &mut rhs_variables, resources)?;
-    resources.record_operations(lhs_variables.len().saturating_add(rhs_variables.len()))?;
 
-    // Defensive re-verification of the checked-rule invariant.
-    if let Some(missing) = rhs_variables
-        .iter()
-        .find(|variable| !lhs_variables.contains(*variable))
-    {
-        return Err(RewriteError::InvalidRule {
-            message: alloc::format!(
-                "forward rule rhs variable {} does not occur in \
-                 the lhs",
-                missing.as_str()
-            ),
-        });
-    }
-
-    // Erased variables in sorted (BTreeSet) order: this is the schema
-    // order the residual keys are built from.
-    resources.record_operations(lhs_variables.len())?;
-    let mut erased: Vec<Variable> = Vec::new();
-    for variable in &lhs_variables {
-        if !rhs_variables.contains(variable) {
-            erased.push(variable.clone());
-        }
-    }
-
-    let backward = BackwardClause::compile(rule)?;
-    let residual = ResidualSchema::derive(&erased, resources)?;
+    let backward = BackwardClause::compile_metered(rule, resources)?;
+    let residual = ResidualSchema::derive(backward.erased_variables(), resources)?;
 
     // A reverse rule exists only when the swap is checked: an erasing
     // forward rule would make `rhs -> lhs` invent its erased
     // variables. Never synthesize that unchecked rule.
-    let reverse = if erased.is_empty() {
+    let reverse = if residual.is_empty() {
         resources.record_operations(lhs_nodes.saturating_add(rhs_nodes))?;
         let reversed = Rule::new(rule.rhs().clone(), rule.lhs().clone()).ok();
         if reversed.is_none() {
@@ -764,12 +735,19 @@ fn derive_clause(
     })
 }
 
-/// The outcome of validating one clause's residual evidence.
+/// The residual gate's verdict after the global residual pass.
 enum ResidualVerdict {
     Validated,
-    Refuted(usize),
-    Underdetermined,
-    Ambiguous,
+    Refuted { residual: usize, clause: usize },
+    Underdetermined { clause: usize },
+    Ambiguous { clause: usize },
+}
+
+/// Residual evidence collected for one erasing clause.
+struct ClauseResiduals {
+    key_variables: Vec<Variable>,
+    instances: Vec<ResidualInstance>,
+    ambiguous: bool,
 }
 
 /// One validated residual instance: the reverse instance class (the
@@ -795,73 +773,147 @@ impl ResidualInstance {
     }
 }
 
-/// Validate the residual schema of one erasing clause against the
-/// residual examples.
+/// Validate the residual schema of every erasing clause in one global
+/// pass.
 ///
-/// Every walk is charged: the reverse-target match, the source match,
-/// the prospective reconstruction shape, the node-by-node comparison,
-/// and every captured binding and key comparison.
+/// Obligation is scoped per residual: a residual is offered only to
+/// those clauses whose reverse target (the rule's right-hand side) it
+/// matches, and it is accepted by the first such clause that also
+/// reconstructs its claimed source. Only a residual that EVERY
+/// target-compatible clause rejects is a refutation, and a residual
+/// that no erasing clause targets is ignored by contract (PR #335
+/// round 1 P1: two clauses sharing a right-hand side used to refute
+/// each other's evidence).
+///
+/// Every walk charges the shared budget per visited node and per
+/// visited entry: schema-entry collection, the reverse-instance key
+/// selection scan, the target and source matches, the prospective
+/// reconstruction shape, the node-by-node comparison, and every
+/// captured binding and key comparison (PR #335 round 1 P2b).
 fn validate_residual_evidence(
-    clause: &InverseClause,
+    clauses: &[InverseClause],
     residuals: &[&(Term, Term)],
     limits: &RelationLimits,
     resources: &mut RelationResources,
     roundtrips: &mut usize,
 ) -> RewriteResult<ResidualVerdict> {
-    let forward = clause.forward();
-    let schema = clause.residual_schema();
-
-    // Key variables: the LHS variables the schema does not erase, in
-    // sorted order. They identify the reverse instance class.
-    let mut lhs_variables = BTreeSet::new();
-    collect_variables(forward.lhs(), &mut lhs_variables, resources)?;
-    let erased: Vec<&Variable> = schema.variables().collect();
-    resources.record_operations(lhs_variables.len().saturating_add(erased.len()))?;
-    let mut key_variables: Vec<&Variable> = Vec::new();
-    for variable in &lhs_variables {
-        if !erased.contains(&variable) {
-            key_variables.push(variable);
-        }
-    }
-
-    let mut instances: Vec<ResidualInstance> = Vec::new();
-    for (residual_index, example) in residuals.iter().copied().enumerate() {
-        // Reverse-target match: the rule RHS must match the target,
-        // recovering the non-erased bindings.
-        let mut bindings = Bindings::new();
-        if !match_pattern(forward.rhs(), &example.1, &mut bindings, resources)? {
-            // This example describes a step no clause reverses.
+    // Per-clause reverse instance keys, charged before collection.
+    resources.record_operations(clauses.len())?;
+    let mut evidence: Vec<Option<ClauseResiduals>> = Vec::with_capacity(clauses.len());
+    for clause in clauses {
+        if clause.residual_schema().is_empty() {
+            evidence.push(None);
             continue;
         }
-        // The claimed source must be an instance of the rule LHS with
-        // the recovered bindings fixed; a mismatch refutes the claim.
-        if !match_pattern(forward.lhs(), &example.0, &mut bindings, resources)? {
-            return Ok(ResidualVerdict::Refuted(residual_index));
-        }
-        *roundtrips = roundtrips.saturating_add(1);
-
-        // Residual round trip: the reconstruction from the LHS template
-        // under the recovered bindings must equal the claimed source.
-        // The shape is accounted before anything could be materialized,
-        // and nothing ever is.
-        let _shape = applied_shape(forward.lhs(), &bindings, limits, resources)?;
-        if !one_level_equals(forward.lhs(), &bindings, &example.0, resources)? {
-            return Ok(ResidualVerdict::Refuted(residual_index));
-        }
-
-        let instance = capture_instance(&key_variables, schema, &bindings, limits, resources)?;
-        match find_instance(&instances, &instance, resources)? {
-            Some(existing) => {
-                if !existing.same_value(&instance, resources)? {
-                    return Ok(ResidualVerdict::Ambiguous);
+        let mut lhs_variables = BTreeSet::new();
+        collect_variables(clause.forward().lhs(), &mut lhs_variables, resources)?;
+        let schema = clause.residual_schema();
+        // Charge the schema-entry collection BEFORE it allocates.
+        resources.record_operations(schema.len())?;
+        let erased: Vec<&Variable> = schema.variables().collect();
+        let mut key_variables: Vec<Variable> = Vec::new();
+        for variable in &lhs_variables {
+            // Metered selection scan: every visited erased entry is
+            // charged BEFORE it is compared.
+            let mut erased_here = false;
+            for candidate in &erased {
+                resources.record_operations(1)?;
+                if *candidate == variable {
+                    erased_here = true;
+                    break;
                 }
             }
-            None => instances.push(instance),
+            if !erased_here {
+                resources.record_operations(1)?;
+                key_variables.push(variable.clone());
+            }
+        }
+        evidence.push(Some(ClauseResiduals {
+            key_variables,
+            instances: Vec::new(),
+            ambiguous: false,
+        }));
+    }
+
+    for (residual_index, example) in residuals.iter().copied().enumerate() {
+        let mut accepted = false;
+        let mut rejected_by: Option<usize> = None;
+        for (clause_index, clause) in clauses.iter().enumerate() {
+            let Some(meter) = evidence[clause_index].as_mut() else {
+                continue;
+            };
+            // Compatibility: the rule RHS must match the target,
+            // recovering the non-erased bindings.
+            let mut bindings = Bindings::new();
+            if !match_pattern(clause.forward().rhs(), &example.1, &mut bindings, resources)? {
+                continue;
+            }
+            // The claimed source must be an instance of the rule LHS
+            // with those bindings fixed, and the reconstruction must
+            // compare equal to it. Nothing is materialized.
+            let mut reconstructs =
+                match_pattern(clause.forward().lhs(), &example.0, &mut bindings, resources)?;
+            if reconstructs {
+                let _shape = applied_shape(clause.forward().lhs(), &bindings, limits, resources)?;
+                reconstructs =
+                    one_level_equals(clause.forward().lhs(), &bindings, &example.0, resources)?;
+            }
+            if !reconstructs {
+                if rejected_by.is_none() {
+                    rejected_by = Some(clause_index);
+                }
+                continue;
+            }
+
+            *roundtrips = roundtrips.saturating_add(1);
+            let instance = capture_instance(
+                &meter.key_variables,
+                clause.residual_schema(),
+                &bindings,
+                limits,
+                resources,
+            )?;
+            match find_instance(&meter.instances, &instance, resources)? {
+                Some(existing) => {
+                    if !existing.same_value(&instance, resources)? {
+                        meter.ambiguous = true;
+                    }
+                }
+                None => meter.instances.push(instance),
+            }
+            accepted = true;
+            break;
+        }
+        if !accepted {
+            if let Some(clause) = rejected_by {
+                return Ok(ResidualVerdict::Refuted {
+                    residual: residual_index,
+                    clause,
+                });
+            }
+            // No erasing clause targets this residual: ignored.
         }
     }
 
-    if instances.is_empty() {
-        return Ok(ResidualVerdict::Underdetermined);
+    // Conflicting reconstructions are reported before missing
+    // evidence: both are Unknown, and clause order is canonical.
+    for (clause_index, meter) in evidence.iter().enumerate() {
+        if let Some(meter) = meter {
+            if meter.ambiguous {
+                return Ok(ResidualVerdict::Ambiguous {
+                    clause: clause_index,
+                });
+            }
+        }
+    }
+    for (clause_index, meter) in evidence.iter().enumerate() {
+        if let Some(meter) = meter {
+            if meter.instances.is_empty() {
+                return Ok(ResidualVerdict::Underdetermined {
+                    clause: clause_index,
+                });
+            }
+        }
     }
     Ok(ResidualVerdict::Validated)
 }
@@ -869,7 +921,7 @@ fn validate_residual_evidence(
 /// Capture one residual instance, charging per clone before it is
 /// allocated.
 fn capture_instance(
-    key_variables: &[&Variable],
+    key_variables: &[Variable],
     schema: &ResidualSchema,
     bindings: &Bindings<'_>,
     limits: &RelationLimits,
@@ -885,7 +937,7 @@ fn capture_instance(
         };
         let _shape = admit_term(term, limits, resources)?;
         resources.record_operations(1)?;
-        key.push(((*variable).clone(), term.clone()));
+        key.push((variable.clone(), term.clone()));
     }
     let mut value = Vec::with_capacity(schema.len());
     for variable in schema.variables() {

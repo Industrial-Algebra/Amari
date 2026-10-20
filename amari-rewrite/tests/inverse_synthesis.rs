@@ -550,9 +550,20 @@ fn assert_operation_boundary(
 /// Exact end-to-end operation minimum of
 /// `residual_roundtrip_fixture_is_metered_end_to_end`, measured from
 /// the implementation: two positives admitted, canonicalized, and
-/// specialized; one clause derived; two forward replays; one residual
-/// round trip. A metering change must re-measure it.
-const EXACT_MINIMUM: usize = 325;
+/// specialized; one clause compiled (metered, including its rule
+/// digest); two forward replays; one residual round trip. A metering
+/// change must re-measure it.
+const EXACT_MINIMUM: usize = 392;
+
+/// Exact minima for `backward_compilation_is_metered`, measured from
+/// the implementation (8 and 64 distinct variables, lossless).
+const BACKWARD_COMPILATION_8: usize = 1_316;
+const BACKWARD_COMPILATION_64: usize = 44_072;
+
+/// Exact minima for `residual_schema_selection_is_metered`, measured
+/// from the implementation (8 and 64 distinct variables, erasing).
+const RESIDUAL_SELECTION_8: usize = 800;
+const RESIDUAL_SELECTION_64: usize = 21_772;
 
 fn boundary_limits() -> RelationLimits {
     RelationLimits::new(4_096, 64, 4_096, RelationLimits::MAX_OPERATIONS).unwrap()
@@ -561,6 +572,116 @@ fn boundary_limits() -> RelationLimits {
 /// Wide term with `children + 1` nodes (one `w` node plus constants).
 fn wide_term(children: usize) -> Term {
     Term::sym("w", (0..children).map(|_| c("z")))
+}
+
+#[test]
+fn residual_evidence_is_scoped_to_compatible_clauses() {
+    // Two erasing clauses share the reverse target symbol `out`, so a
+    // residual's target matches BOTH clauses' right-hand sides. Each
+    // residual is only obligated to the clause whose left-hand side
+    // accepts it; the other clause must stay silent (PR #335 round 1
+    // P1: a residual was refuted by every overlapping-RHS clause).
+    let positives = vec![
+        (f("f", [v("X"), v("Y")]), f("out", [v("X")])),
+        (f("g", [v("Z"), v("W")]), f("out", [v("Z")])),
+    ];
+    let residuals = positives.clone();
+
+    let (rules, clauses, evidence) = candidate(
+        synthesize_inverse(
+            &positives,
+            &[],
+            &residuals,
+            &InverseSynthesisConfig::default(),
+        )
+        .expect("compatible residual evidence must promote"),
+    );
+
+    assert_eq!(rules.len(), 2, "one clause per constructor family");
+    assert_eq!(clauses.len(), 2);
+    for clause in &clauses {
+        assert_eq!(
+            clause.residual_schema().len(),
+            1,
+            "each family erases exactly one variable"
+        );
+        assert!(!clause.is_reversible());
+    }
+    assert_eq!(evidence.residual_clauses(), 2);
+    assert_eq!(
+        evidence.residual_roundtrips(),
+        2,
+        "both residuals are attributed to their compatible clause"
+    );
+}
+
+/// `p(X0,..,Xn-1) -> q(X0,..,Xn-1)`: lossless, so the backward
+/// compilation and its rule digest are the only quadratic sites.
+fn many_variable_lossless(count: usize) -> (Term, Term) {
+    let variables: Vec<Term> = (0..count).map(|index| v(&format!("X{index}"))).collect();
+    (Term::sym("p", variables.clone()), f("q", variables))
+}
+
+/// `p(X0,..,Xn-1) -> q(X0)`: `n - 1` erased variables, so the schema
+/// selection and residual instance capture run quadratically too.
+fn many_variable_erasing(count: usize) -> (Term, Term) {
+    let variables: Vec<Term> = (0..count).map(|index| v(&format!("X{index}"))).collect();
+    (Term::sym("p", variables), f("q", [v("X0")]))
+}
+
+#[test]
+fn backward_compilation_is_metered() {
+    // Compiling the backward contract renumbers every variable
+    // occurrence, scans the accumulated names, and hashes the payload;
+    // all of it is quadratic in the variable count and must be charged
+    // per visited entry (PR #335 round 1 P2a). The 8- and 64-variable
+    // twins pin the measured minima: a 33x spread is the per-entry
+    // signal, since a per-term charge would leave them nearly equal.
+    let wide = many_variable_lossless(64);
+    let narrow = many_variable_lossless(8);
+    assert_operation_boundary(
+        std::slice::from_ref(&narrow),
+        &[],
+        &[],
+        &boundary_limits(),
+        BACKWARD_COMPILATION_8,
+        "backward compilation (8 variables)",
+    );
+    assert_operation_boundary(
+        std::slice::from_ref(&wide),
+        &[],
+        &[],
+        &boundary_limits(),
+        BACKWARD_COMPILATION_64,
+        "backward compilation (64 variables)",
+    );
+}
+
+#[test]
+fn residual_schema_selection_is_metered() {
+    // Selecting the reverse instance keys scans every left-hand
+    // variable against every schema entry; the scan is charged per
+    // visited entry rather than per variable (PR #335 round 1 P2b).
+    // The 8- and 64-variable twins pin the measured minima: a 27x
+    // spread is the per-entry signal.
+    let wide = many_variable_erasing(64);
+    let narrow = many_variable_erasing(8);
+    assert_operation_boundary(
+        std::slice::from_ref(&narrow),
+        &[],
+        std::slice::from_ref(&narrow),
+        &boundary_limits(),
+        RESIDUAL_SELECTION_8,
+        "residual schema selection (8 variables)",
+    );
+    assert_operation_boundary(
+        std::slice::from_ref(&wide),
+        &[],
+        std::slice::from_ref(&wide),
+        &boundary_limits(),
+        RESIDUAL_SELECTION_64,
+        "residual schema selection (64 variables)",
+    );
 }
 
 #[test]

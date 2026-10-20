@@ -16,6 +16,7 @@ use core::fmt;
 use sha2::{Digest, Sha256};
 
 use crate::error::{RewriteError, RewriteResult};
+use crate::relation::RelationResources;
 use crate::trs::Term;
 
 /// A validated SHA-256 digest.
@@ -122,23 +123,56 @@ fn hex_value(byte: u8) -> Option<u8> {
 /// Iterative (explicit worklist, children pushed in reverse so the
 /// pop order is preorder): the byte output and first-occurrence
 /// variable indexing match the former recursive encoding exactly.
+/// Unmetered: delegates to [`encode_term_metered`] under an unbounded
+/// budget, which can never be exhausted.
 pub(crate) fn encode_term(term: &Term, variables: &mut Vec<String>, out: &mut Vec<u8>) {
+    let mut resources = RelationResources::unbounded();
+    let _encoded = encode_term_metered(term, variables, out, &mut resources);
+}
+
+/// Metered canonical encoding.
+///
+/// Charges one unit per visited node, one per copied variable name,
+/// one per visited entry of the alpha-renumbering scan (including
+/// misses), and one per newly interned name — every charge lands
+/// BEFORE the work it meters. The renumbering scan is quadratic in the
+/// distinct-variable count, so an unmetered caller could hide
+/// thousands of comparisons behind a per-node charge (PR #335 round 1
+/// P2a).
+pub(crate) fn encode_term_metered(
+    term: &Term,
+    variables: &mut Vec<String>,
+    out: &mut Vec<u8>,
+    resources: &mut RelationResources,
+) -> RewriteResult<()> {
     let mut stack = Vec::from([term]);
     while let Some(node) = stack.pop() {
+        resources.record_operations(1)?;
         match node {
             Term::Var(variable) => {
+                resources.record_operations(1)?;
                 let name = variable.to_string();
-                let index = variables
-                    .iter()
-                    .position(|known| *known == name)
-                    .unwrap_or_else(|| {
+                let mut known = None;
+                for (index, existing) in variables.iter().enumerate() {
+                    resources.record_operations(1)?;
+                    if *existing == name {
+                        known = Some(index);
+                        break;
+                    }
+                }
+                let index = match known {
+                    Some(index) => index,
+                    None => {
+                        resources.record_operations(1)?;
                         variables.push(name);
                         variables.len() - 1
-                    });
+                    }
+                };
                 out.push(0x00);
                 push_u32(out, index as u32);
             }
             Term::Sym(symbol, args) => {
+                resources.record_operations(1)?;
                 out.push(0x01);
                 let name = symbol.to_string();
                 push_u32(out, args.len() as u32);
@@ -150,6 +184,7 @@ pub(crate) fn encode_term(term: &Term, variables: &mut Vec<String>, out: &mut Ve
             }
         }
     }
+    Ok(())
 }
 
 fn push_u32(out: &mut Vec<u8>, value: u32) {
