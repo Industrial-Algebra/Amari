@@ -35,7 +35,7 @@ nightly hash verified against the researched pin
 | Row | stable 1.98.0 | nightly pinned | MSRV 1.89.0 (check only) |
 |---|---|---|---|
 | EMPTY (cold dir: dep compile) | 15.8 | 16.4 | 2.3 |
-| FULL (new-dep closure) | 17.9 | 18.6 | 4.5 |
+| FULL (new-dep closure) | 17.9 | 18.8 | 4.5 |
 | MID1 (warm steady state) | 5.6 | 4.8 | 0.4 |
 | MID2 (warm steady state) | 5.4 | 4.9 | 0.4 |
 

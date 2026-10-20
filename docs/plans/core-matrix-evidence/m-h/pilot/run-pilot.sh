@@ -17,18 +17,15 @@ esac
 
 # Researched-compiler verification (matrix §4: hash, not date alone).
 ACTUAL_HASH=$(rustc +"$T" -vV | awk '/^commit-hash:/ {print $2}')
-case "$T" in
+case "$MODE" in
   stable)  EXPECTED_HASH="88d9e12ae178fab0fb5cc050a94da85685d449ea" ;;
   nightly) EXPECTED_HASH="787af2b8c80638c51a4fc8e44f84e6891f243ec7" ;;
   msrv)    EXPECTED_HASH="29483883eed69d5fb4db01964cdf2af4d86e9cb2" ;;
-  *)       EXPECTED_HASH="" ;;
+  *)       echo "unknown pilot mode $MODE" >&2; exit 3 ;;
 esac
-if [ -n "$EXPECTED_HASH" ] && [ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]; then
-  echo "PIN MISMATCH: $T is $ACTUAL_HASH, expected $EXPECTED_HASH" >&2
+if [ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]; then
+  echo "PIN MISMATCH: $MODE ($T) is $ACTUAL_HASH, expected $EXPECTED_HASH" >&2
   exit 3
-fi
-if [ -z "$EXPECTED_HASH" ]; then
-  echo "unknown toolchain mode $T" >&2; exit 3
 fi
 
 D07_BASELINE_TARGET_DIR="$PWD/target/mh-pilot-$MODE"
@@ -52,12 +49,26 @@ baseline_cargo() {
 
 dir_kb() { du -sk "$D07_BASELINE_TARGET_DIR" | awk '{print $1}'; }
 
-# Pre-execution cfg assertion: AVX/AVX2/FMA absent.
+# Pre-execution cfg assertion: AVX/AVX2/FMA absent (fail-closed, exact tokens).
 rustc +"$T" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg \
   > "$EVID/cfg-$MODE.txt"
-if grep -qE 'avx2|"fma"|avx ' "$EVID/cfg-$MODE.txt"; then
-  echo "cfg contamination: AVX/AVX2/FMA present" >&2; exit 4
+for tok in 'target_feature="avx"' 'target_feature="avx2"' 'target_feature="fma"'; do
+  if grep -qF "$tok" "$EVID/cfg-$MODE.txt"; then
+    echo "cfg contamination: $tok present" >&2; exit 4
+  fi
+done
+# Effective (Cargo-side) cfg probe through the wrapper (R3 fix: unconditional).
+EFFECTIVE_OUT="$EVID/effective-cfg-$MODE-pilot-empty.txt"
+if ! baseline_cargo rustc --locked -p amari-core --lib --target "$HOST" --no-default-features -- --print cfg > "$EFFECTIVE_OUT" 2>"$EFFECTIVE_OUT.err"; then
+  echo "effective-cfg probe acquisition FAILURE ($MODE) — aborting" >&2; exit 7
 fi
+[ -s "$EFFECTIVE_OUT" ] || { echo "effective-cfg probe EMPTY ($MODE)" >&2; exit 7; }
+rm -f "$EFFECTIVE_OUT.err"
+for tok in 'target_feature="avx"' 'target_feature="avx2"' 'target_feature="fma"'; do
+  if grep -qF "$tok" "$EFFECTIVE_OUT"; then
+    echo "effective cfg contamination: $tok present ($MODE)" >&2; exit 6
+  fi
+done
 
 # Representative rows (cost classes: empty/minimal-dep, maximal, two mids).
 ROWS=(

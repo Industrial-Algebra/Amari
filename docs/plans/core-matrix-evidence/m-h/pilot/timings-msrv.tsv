@@ -1,5 +1,5 @@
 toolchain	row	command	wall_s	dir_kb_before	dir_kb_after
-1.89.0	EMPTY	check	2.3	0	59048
-1.89.0	FULL	check	4.5	59048	214292
-1.89.0	MID1	check	0.4	214292	220948
-1.89.0	MID2	check	0.4	220948	229068
+1.89.0	EMPTY	check	0.6	56816	63916
+1.89.0	FULL	check	4.6	63916	219160
+1.89.0	MID1	check	0.4	219160	225816
+1.89.0	MID2	check	0.4	225816	233936

@@ -30,7 +30,15 @@ mh_assert_baseline_cfg() {
 mh_effective_cfg_probe() {
   local row_label="$1"; shift
   local out="$EVID/effective-cfg-$MODE-$row_label.txt"
-  baseline_cargo rustc --locked -p amari-core --lib --target "$HOST" "$@" -- --print cfg > "$out" 2>/dev/null
+  if ! baseline_cargo rustc --locked -p amari-core --lib --target "$HOST" "$@" -- --print cfg > "$out" 2>"$out.err"; then
+    echo "cfg probe acquisition FAILURE ($MODE/$row_label) — aborting" >&2
+    exit 7   # failed acquisition is NOT a clean result (R3 fix)
+  fi
+  if [ ! -s "$out" ]; then
+    echo "cfg probe produced EMPTY output ($MODE/$row_label) — aborting" >&2
+    exit 7
+  fi
+  rm -f "$out.err"
   mh_assert_baseline_cfg "$out"
 }
 
