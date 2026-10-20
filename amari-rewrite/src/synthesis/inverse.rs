@@ -594,11 +594,14 @@ pub fn synthesize_inverse(
     }
 
     // 7. Gate 3a: every lossless clause replays its checked reverse
-    // over each positive the forward rule covers.
+    // over each positive the forward rule covers. Every clause visit is
+    // charged BEFORE the clause is inspected, so an erasing clause's
+    // dismissal is metered too (PR #335 round 3 P2).
     let mut residual_roundtrips = 0usize;
     let mut reversible_clauses = 0usize;
     let mut residual_clauses = 0usize;
     for (clause_index, clause) in clauses.iter().enumerate() {
+        resources.record_operations(1)?;
         let Some(reverse) = clause.reverse_rule() else {
             residual_clauses = residual_clauses.saturating_add(1);
             continue;

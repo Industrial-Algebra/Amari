@@ -65,15 +65,58 @@ impl RuleId {
     }
 }
 
+/// Fallible insertion sort with metered comparisons and moves.
+///
+/// The sort is deliberately hand-written rather than delegating to
+/// `slice::sort_by`: std's sort PANICS when a comparator reports an
+/// ordering that violates the total-order contract, so a comparator
+/// that keeps returning equalities after the budget runs out turns the
+/// "budget exhausted" path into a process panic. Here the ONLY abort
+/// path is the typed [`RewriteError::RelationLimitExceeded`] returned
+/// from the exact comparison or move the budget could not fund; no
+/// ordering is ever invented, and no panic is reachable (PR #335
+/// round 3 P1).
+///
+/// Metering lives in the sort rather than in the comparator because
+/// the comparator has no failure mode of its own: `Ord` cannot fail,
+/// so a fallible comparator would only be a way of smuggling the
+/// budget back in. Charging one unit per comparison and one per swap
+/// (which performs two moves) BEFORE the work keeps the accounting
+/// exact, and the comparison count is the sort's real count rather
+/// than a per-entry estimate.
+fn fallible_sort_by<T, F>(
+    items: &mut [T],
+    resources: &mut RelationResources,
+    mut compare: F,
+) -> RewriteResult<()>
+where
+    F: FnMut(&T, &T) -> Ordering,
+{
+    for index in 1..items.len() {
+        let mut position = index;
+        while position > 0 {
+            resources.record_operations(1)?;
+            if compare(&items[position - 1], &items[position]) != Ordering::Greater {
+                break;
+            }
+            // One swap moves two elements.
+            resources.record_operations(1)?;
+            items.swap(position - 1, position);
+            position -= 1;
+        }
+    }
+    Ok(())
+}
+
 /// Sorted, deduplicated variable names of a term.
 ///
 /// Charges one unit per visited node, one per copied name, one per
-/// comparison the sort performs (charged inside the comparator, so an
-/// exhausted budget aborts the sort promptly with the typed error
-/// instead of finishing it), and one per dedup comparison. The sort
-/// and dedup of `n` names are never funded by a per-entry charge
-/// (PR #335 round 2 P2a). Returns the visited node count so callers
-/// can charge the clone they take from the same term.
+/// comparison and swap the fallible sort performs, and one per dedup
+/// comparison. The sort and dedup of `n` names are never funded by a
+/// per-entry charge (PR #335 round 2 P2a), and an exhausted budget
+/// aborts inside the sort with the typed error instead of a fabricated
+/// ordering (PR #335 round 3 P1). Returns the visited node count so
+/// callers can charge the clone they take from the same term.
 fn metered_variable_names(
     term: &Term,
     resources: &mut RelationResources,
@@ -93,26 +136,12 @@ fn metered_variable_names(
         }
     }
 
-    // Charge each ordering comparison BEFORE it runs. Once the budget
-    // is spent the comparator reports equality (so the sort terminates
-    // promptly) and the failure is returned instead of a partial
-    // result.
-    let mut failure = None;
-    names.sort_by(|left, right| {
-        if failure.is_some() {
-            return Ordering::Equal;
-        }
-        match resources.record_operations(1) {
-            Ok(()) => left.cmp(right),
-            Err(error) => {
-                failure = Some(error);
-                Ordering::Equal
-            }
-        }
-    });
-    if let Some(error) = failure {
-        return Err(error);
-    }
+    // Charge each ordering comparison BEFORE it runs and abort from the
+    // exact comparison the budget cannot fund: the sort is genuinely
+    // fallible, so no ordering is ever fabricated (a fabricated
+    // ordering violates the total-order contract and std's sort panics
+    // on it — PR #335 round 3 P1).
+    fallible_sort_by(&mut names, resources, |left, right| left.cmp(right))?;
 
     // Dedup compares adjacent entries: charge every comparison too.
     resources.record_operations(names.len())?;

@@ -18795,7 +18795,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::relation::BackwardClause",
       "source_path": "amari-rewrite/src/relation/clause.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -21606,7 +21606,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::relation::BackwardClause",
       "source_path": "amari-rewrite/src/relation/clause.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -23947,7 +23947,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::relation::BackwardClause",
       "source_path": "amari-rewrite/src/relation/clause.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -27263,7 +27263,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::relation::BackwardClause",
       "source_path": "amari-rewrite/src/relation/clause.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -28473,7 +28473,7 @@
       "trait_path": "fmt::Debug",
       "impl_type_path": "amari_rewrite::relation::RuleId",
       "source_path": "amari-rewrite/src/relation/clause.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Debug"
@@ -28527,7 +28527,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_rewrite::relation::RuleId",
       "source_path": "amari-rewrite/src/relation/clause.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -31831,7 +31831,7 @@
     {
       "path": "amari_rewrite::relation::BackwardClause",
       "source_path": "amari-rewrite/src/relation/clause.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"

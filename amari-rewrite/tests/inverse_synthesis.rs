@@ -553,37 +553,38 @@ fn assert_operation_boundary(
 /// specialized; one clause compiled (metered, including its rule
 /// digest); two forward replays; one residual round trip. A metering
 /// change must re-measure it.
-const EXACT_MINIMUM: usize = 397;
+const EXACT_MINIMUM: usize = 399;
 
 /// Exact minima for `backward_compilation_is_metered`, measured from
 /// the implementation (8 and 64 distinct variables, lossless).
-const BACKWARD_COMPILATION_8: usize = 1_370;
-const BACKWARD_COMPILATION_64: usize = 44_358;
+const BACKWARD_COMPILATION_8: usize = 1_427;
+const BACKWARD_COMPILATION_64: usize = 50_903;
 
 /// Exact minima for `residual_schema_selection_is_metered`, measured
 /// from the implementation (8 and 64 distinct variables, erasing).
-const RESIDUAL_SELECTION_8: usize = 830;
-const RESIDUAL_SELECTION_64: usize = 21_918;
-
-/// Exact minimum for `sort_comparisons_abort_with_the_typed_error`
-/// (64 distinct variable names, lossless), measured from the
-/// implementation.
-const SORT_FIXTURE_MINIMUM: usize = 44_358;
-
-/// Sort and dedup charges of that 64-name compilation, measured as the
-/// difference the per-comparison metering added to its minimum.
-const SORT_AND_DEDUP_64: usize = 286;
+const RESIDUAL_SELECTION_8: usize = 859;
+const RESIDUAL_SELECTION_64: usize = 25_191;
 
 /// Exact minima for `residual_traversal_is_metered_per_visited_clause`
 /// (64 erasing clauses, with and without 64 unrelated residuals),
 /// measured from the implementation.
-const TRAVERSAL_WITHOUT_UNRELATED: usize = 55_694;
-const TRAVERSAL_WITH_UNRELATED: usize = 66_015;
+const TRAVERSAL_WITHOUT_UNRELATED: usize = 55_822;
+const TRAVERSAL_WITH_UNRELATED: usize = 66_143;
+
+/// The budget of the reviewer's sort-panic repro (PR #335 round 3 P1).
+const REVIEWER_SORT_BUDGET: usize = 14_375;
+
+/// Exact minimum for `gate_scan_is_metered_per_clause` (64 erasing
+/// clauses, no residual evidence), measured from the implementation.
+/// The pre-fix value was 48,252; isolating the two round-3 changes
+/// gives 48,316 with the gate visit charge alone (64 clause visits) and
+/// 48,380 with the fallible-sort path for these 64 two-name rules.
+const GATE_MINIMUM: usize = 48_380;
 
 /// Exact minimum for `residual_traversal_is_bypassed_without_erasing_clauses`
 /// (64 lossless clauses plus 64 unrelated residuals), measured from the
 /// implementation.
-const BYPASS_MINIMUM: usize = 20_730;
+const BYPASS_MINIMUM: usize = 20_731;
 
 fn boundary_limits() -> RelationLimits {
     RelationLimits::new(4_096, 64, 4_096, RelationLimits::MAX_OPERATIONS).unwrap()
@@ -726,33 +727,40 @@ fn unrelated_residuals(count: usize, tag: &str) -> Vec<(Term, Term)> {
 }
 
 #[test]
-fn sort_comparisons_abort_with_the_typed_error() {
-    // Sorting the variable names of a 64-name rule performs far more
-    // comparisons than entries; the measured minimum pins them, and a
-    // budget spent during the sort aborts promptly with the typed
-    // error instead of finishing the sort and truncating the outcome
-    // (PR #335 round 2 P2a).
+fn sort_is_fallible_under_exhaustion() {
+    // The 64-name sort performs real comparisons; a budget spent there
+    // must abort with the typed operations error and never panic. A
+    // comparator that fabricated an ordering after exhaustion would
+    // make std's sort panic (PR #335 round 3 P1), so every sampled
+    // window is caught and asserted.
     let wide = many_variable_lossless(64);
     let minimum =
         minimal_operation_budget(std::slice::from_ref(&wide), &[], &[], &boundary_limits());
     assert_eq!(
-        minimum, SORT_FIXTURE_MINIMUM,
+        minimum, BACKWARD_COMPILATION_64,
         "sort fixture: metered minimum changed"
     );
 
-    // Everything below the minimum fails, and the failures that land
-    // inside the sort window (the units between the pre-sort cost and
-    // the post-sort cost) are typed instead of silent.
-    for shortfall in [1, SORT_AND_DEDUP_64] {
-        let error = run_with_operation_budget(
-            std::slice::from_ref(&wide),
-            &[],
-            &[],
-            &boundary_limits(),
-            minimum - shortfall,
-        )
-        .expect_err("a budget short by the sort charge must fail");
-        assert_eq!(limit_error_resource(&error), Some("operations"));
+    // `REVIEWER_SORT_BUDGET` is the reviewer's repro budget, which lands
+    // inside the sort; `minimum - 1` is the last unit of the whole run;
+    // the remaining windows are mid-sort budgets.
+    for budget in [REVIEWER_SORT_BUDGET, minimum - 1, minimum - 64, minimum / 2] {
+        let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            run_with_operation_budget(
+                std::slice::from_ref(&wide),
+                &[],
+                &[],
+                &boundary_limits(),
+                budget,
+            )
+        }));
+        let result = caught.expect("an exhausted sort budget must not panic");
+        let error = result.expect_err("an exhausted budget must be a typed error");
+        assert_eq!(
+            limit_error_resource(&error),
+            Some("operations"),
+            "budget {budget} must fail as a typed operations error"
+        );
     }
     assert!(
         run_with_operation_budget(
@@ -836,6 +844,35 @@ fn residual_traversal_is_bypassed_without_erasing_clauses() {
         with, BYPASS_MINIMUM,
         "bypass fixture: metered minimum changed (a charged traversal \
          would add one unit per attempt plus one per visited clause)"
+    );
+}
+
+#[test]
+fn gate_scan_is_metered_per_clause() {
+    // Gate 3a visits every clause: an erasing clause is inspected and
+    // dismissed, and that visit is charged before the inspection
+    // (PR #335 round 3 P2). Without residual evidence the outcome is
+    // the typed underdetermination, never a guess.
+    let positives = erasing_families(64);
+    let outcome = synthesize_inverse(&positives, &[], &[], &InverseSynthesisConfig::default())
+        .expect("synthesis reports a typed outcome");
+    assert!(
+        matches!(
+            outcome,
+            InverseSynthesisOutcome::Unknown {
+                reason: InverseUnknownReason::ResidualUnderdetermined { clause: 0 },
+            }
+        ),
+        "expected residual underdetermination, got {outcome:?}"
+    );
+
+    assert_operation_boundary(
+        &positives,
+        &[],
+        &[],
+        &boundary_limits(),
+        GATE_MINIMUM,
+        "gate 3a scan",
     );
 }
 
