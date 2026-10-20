@@ -23,7 +23,7 @@
     "@mantine/core": "^9.7.1",
     "@mantine/hooks": "^9.7.2",
     "shiki": "^4.0.2",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.2",
     "postcss": "^8.4.49",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
