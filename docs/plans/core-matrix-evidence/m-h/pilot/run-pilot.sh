@@ -6,7 +6,10 @@ set -euo pipefail
 
 MODE="${1:?stable|nightly|msrv}"
 HOST=x86_64-unknown-linux-gnu
-EVID="docs/plans/core-matrix-evidence/m-h/pilot"
+# EVID_OVERRIDE lets verification run this script against a scratch copy
+# (the R4/R5 provenance incidents: hardcoded EVID made "scratch" tests
+# silently target the real evidence tree).
+EVID="${EVID_OVERRIDE:-docs/plans/core-matrix-evidence/m-h/pilot}"
 
 case "$MODE" in
   stable)  T=stable ;;
