@@ -50,8 +50,13 @@ baseline_cargo() {
 dir_kb() { du -sk "$D07_BASELINE_TARGET_DIR" | awk '{print $1}'; }
 
 # Pre-execution cfg assertion: AVX/AVX2/FMA absent (fail-closed, exact tokens).
-rustc +"$T" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg \
-  > "$EVID/cfg-$MODE.txt"
+if ! rustc +"$T" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg \
+  > "$EVID/cfg-$MODE.txt" 2>"$EVID/cfg-$MODE.err"; then
+  echo "direct cfg acquisition FAILURE ($MODE) — aborting" >&2
+  exit 7
+fi
+[ -s "$EVID/cfg-$MODE.txt" ] || { echo "direct cfg EMPTY ($MODE) — aborting" >&2; exit 7; }
+rm -f "$EVID/cfg-$MODE.err"
 for tok in 'target_feature="avx"' 'target_feature="avx2"' 'target_feature="fma"'; do
   if grep -qF "$tok" "$EVID/cfg-$MODE.txt"; then
     echo "cfg contamination: $tok present" >&2; exit 4
