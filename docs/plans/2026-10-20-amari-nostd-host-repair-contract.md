@@ -48,7 +48,52 @@ is the authoritative site list; the archived samples are the cross-check.
 If the macro surfaces (e.g. inside `#[cfg(test)]` code), fix or gate it in
 the same bounded pass; do not expand scope beyond the three families.
 
-## Decision D1 — RESOLVED (operator, ask_user 2026-10-20): **(a) libm wiring** approved as recommended.
+## R1 correction (2026-10-20) — premises revised after review round 1
+
+The reviewer's findings, all verified empirically (reproduction + scratch
+patch on this tree):
+
+1. **error.rs S3 DROPPED**: all 5 `std::` uses sit under
+   `#[cfg(feature = "std")]` (`std::error::Error` impls at :375/:395/:416/:434)
+   — already correctly gated; they never contributed to the RED rows.
+2. **S4 libm wiring DROPPED from this contract (deferred to P-EMBED)**: in
+   host `-p amari-core` rows, num-traits' DEFAULT features unify
+   `num-traits/std` ON even under `--no-default-features`, so
+   `num_traits::Float` impls EXIST and the 15 `T: Float` bounds resolve —
+   reproduction shows the lib-check failure set is 7 `vec` + 5 `Vec` +
+   1 `std` module (verified.rs:25) + 13 downstream E0308s that are all
+   cascades of the unresolved `Vec`. **Proof**: adding `use alloc::vec;
+   use alloc::vec::Vec;` + two core-path edits (+ the S1 gf2 import)
+   compiles the phantom no-std lib row CLEAN (rc=0, only an
+   unused-`format`-import warning — `format!` count in verified.rs is 0,
+   so it is excluded). libm becomes genuinely required only where
+   num-traits must build WITHOUT std — i.e. P-EMBED targets where the std
+   crate does not exist. Recorded there, not here.
+3. **S5 RESOLVED**: `float_impl_std` is num-traits 0.2.19's internal
+   macro (its `cfg(std)` Float impl generator; present in the vendored
+   source and in w01/w02 evidence logs). The archived M-H "originates in
+   macro float_impl_std" notes were the std impls working correctly —
+   not an in-tree identifier, not a defect.
+4. **P3 bound recount**: 15 grep hits for `T: Float` = 12 method-level
+   bounds + impl-level duplicates; corrected count in S2 below. The
+   bounds themselves need NO changes.
+
+The original D1(a) decision was taken on the false libm premise; the
+re-confirmed decision below supersedes it.
+
+## Revised surface (post-R1, empirically proven)
+
+- **S1** `gf2/grassmannian.rs`: add `use alloc::vec;` (one line; siblings
+  carry it).
+- **S2** `verified.rs`: add `use alloc::vec; use alloc::vec::Vec;` (no
+  `format` — zero uses); `use std::marker::PhantomData` → `core::marker`
+  (:25); `std::f64::consts::FRAC_1_SQRT_2` → `core::f64::consts` (:1132).
+  The 12 method-level `T: Float` bounds are untouched and resolve via
+  unified `num-traits/std`. Test/doc targets in the RED rows may carry
+  additional test-module import sites — the 128-row re-run is the
+  authoritative completeness gate.
+
+## Decision D1 — RE-CONFIRMED (operator, ask_user 2026-10-20): imports-only repair; libm wiring DEFERRED to P-EMBED where num-traits must build without std. Supersedes the original (a) taken on the corrected premise.
 
 ## Decision D1 (operator, ask_user) [historical]
 
