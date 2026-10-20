@@ -19,8 +19,9 @@ tree, branch `chore/m-h-pilot`, PR #330.
    320 canonical capability rows ran through check/test/clippy/doc on both
    ordinary compilers plus the MSRV library column — 2,880 invocations with
    per-row logs, timings, and test-name manifests (F2: 0 empty manifests
-   among passing rows; stable/nightly test-name unions identical at 523 —
-   measured cross-compiler selection equivalence).
+   among passing rows; stable/nightly test-name unions identical at 524 —
+   measured cross-compiler selection equivalence; 523 under the original
+   capture before the R1 doctest-identity recapture).
 2. **192/320 rows fully green in all quadrants**: every `std` row and the
    no-`std` legacy rows. The no-`std` pipeline itself is proven working
    (rows 1–32).
@@ -66,7 +67,9 @@ executed `Cargo.lock` archived (`executed-Cargo.lock` + sha256 — the
 deterministic-reproduction claim previously could not reconstruct the
 resolution); (2) test inventories recaptured with FULL doctest identity
 (the original `awk $2` pipeline collapsed distinct doctests sharing a
-file path; unions 523 → 524, byte-identical across stable/nightly);
+file path; unions 523 → 524, byte-identical across stable/nightly; DEPS-COMPARISON.md records
+   alias≡canonical DEPENDENCY-activation identity for every alias with a
+   canonical equivalent);
 (3) runners now pin exact toolchains and assert commit-hashes
 (`toolchain-pins.txt`); (4) fail-closed effective-cfg preflight added
 (the original grep pattern was fail-open on `target_feature="avx"`;

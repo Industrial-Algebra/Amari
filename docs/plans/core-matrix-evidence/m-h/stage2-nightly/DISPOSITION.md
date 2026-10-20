@@ -13,8 +13,11 @@ test-name capture). Wall 28 m 35 s (incl. MSRV quadrant); target dir 76.6 GiB.
   (no row outside failed; no row inside passed). The compiler-independence
   prediction of the stage-1 diagnosis held exactly.
 - Passing test rows: 192; empty test-name files among them: **0**; unique
-  test-name union: **523 — identical to stable's union**, i.e. cross-compiler
-  test-selection equivalence measured, not assumed.
+  test-name union: **524 — identical to stable's union**, i.e. cross-compiler
+  test-selection equivalence measured, not assumed. (The originally captured
+  unions said 523: the R1 pipeline collapsed distinct same-file doctests;
+  post-R1 recapture with full identity yields 524, still byte-identical
+  across compilers. Superseded inventories retained, marked.)
 - Per-command wall (median/max): check 0.8/7.1 s · test 2.7/7.9 s · clippy
   0.9/2.0 s · doc 0.3/3.6 s.
 

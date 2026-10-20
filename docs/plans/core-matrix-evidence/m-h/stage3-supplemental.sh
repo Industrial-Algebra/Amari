@@ -19,6 +19,11 @@ OUT="$EVID/stage3-supplemental"
 mkdir -p "$OUT/logs"
 mh_assert_toolchain
 
+# Unconditional effective-cfg preflight (R2 fix): runs in EVERY mode.
+rustc +"$T_NAME" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg > "$EVID/cfg-$MODE-direct.txt"
+mh_assert_baseline_cfg "$EVID/cfg-$MODE-direct.txt"
+mh_effective_cfg_probe empty --no-default-features
+
 SINGLETONS="std gf2 creusot-contracts phantom-types formal-verification high-precision native-precision serde rayon serialize parallel full-precision wasm-precision"
 printf 'quadrant\trow_label\tfeat_args\tcmd\twall_s\texit\n' > "$OUT/results-$MODE.tsv"
 

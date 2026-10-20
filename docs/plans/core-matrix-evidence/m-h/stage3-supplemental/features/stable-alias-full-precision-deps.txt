@@ -1,0 +1,7 @@
+amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+approx v0.5.1
+bytemuck v1.25.2
+dashu-float v0.4.5
+num-traits v0.2.19
+rug v1.30.0
+thiserror v2.0.21

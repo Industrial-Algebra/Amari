@@ -14,6 +14,11 @@ mkdir -p "$OUT/tests" "$OUT/logs"
 D07_BASELINE_TARGET_DIR="$PWD/target/mh-s2-msrv"
 
 mh_assert_toolchain
+
+# Unconditional effective-cfg preflight (R2 fix): runs in EVERY mode.
+rustc +"$T_NAME" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg > "$EVID/cfg-$MODE-direct.txt"
+mh_assert_baseline_cfg "$EVID/cfg-$MODE-direct.txt"
+mh_effective_cfg_probe empty --no-default-features
 rustc +"$T_NAME" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg > "$EVID/cfg-stable-direct.txt"
 mh_assert_baseline_cfg "$EVID/cfg-stable-direct.txt"
 

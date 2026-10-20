@@ -3,14 +3,16 @@
 **Executed:** 2026-10-18, worktree `chore/m-h-pilot` (source tree identical to
 develop `6463630`), runner `../stage1-stable.sh` (§3.2 wrapper discipline,
 fresh target dir, `--locked`, F2 per-row test-name capture,
-failure-record-and-continue). Wall 27 m 8 s; target dir 83.8 GiB (both inside
-the pilot estimates).
+failure-record-and-continue). Wall 27 m 8 s; target dir 83.8 GiB — the pilot
+estimates validated as CONSERVATIVE (actuals at or below bracket floors).
 
 ## Result
 
 - **1,280 invocations** (320 rows × check/test/clippy/doc): **768 green, 512 RED**.
 - **192/320 rows fully green** — every `std` row and the no-`std` legacy rows
-  (1–32). Every passing row produced ≥1 test name; unique test-name union 523.
+  (1–32). Every passing row produced ≥1 test name; unique test-name union
+  523 under the original capture, **524 after the R1 doctest-identity
+  recapture** (see Retained artifacts below).
 - **128/320 rows RED in exactly the three MATRIX-05 families** (rows 33–160:
   no-`std` × {`phantom-types`, `formal-verification`, `gf2`}), all four
   commands each, all `rc=101`. Full logs in `logs/`, failures in

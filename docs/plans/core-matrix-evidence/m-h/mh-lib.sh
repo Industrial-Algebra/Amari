@@ -10,7 +10,7 @@ mh_assert_toolchain() {
   actual=$(rustc +"$T_NAME" -vV | awk '/^commit-hash:/ {print $2}')
   if [ "$actual" != "$T_HASH" ]; then
     echo "TOOLCHAIN PIN MISMATCH ($MODE): +$T_NAME is $actual, expected $T_HASH" >&2
-    return 5
+    exit 5   # hard fail regardless of caller's -e state (R2 fix)
   fi
   rustc +"$T_NAME" -vV > "$EVID/toolchain-$MODE.txt"
 }
@@ -21,7 +21,7 @@ mh_assert_baseline_cfg() {
   for tok in 'target_feature="avx"' 'target_feature="avx2"' 'target_feature="fma"'; do
     if grep -qF "$tok" "$cfg_file"; then
       echo "cfg contamination ($MODE): $tok present in $cfg_file" >&2
-      return 6
+      exit 6   # hard fail regardless of caller's -e state (R2 fix)
     fi
   done
 }

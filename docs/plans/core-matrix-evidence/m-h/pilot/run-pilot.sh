@@ -17,11 +17,18 @@ esac
 
 # Researched-compiler verification (matrix §4: hash, not date alone).
 ACTUAL_HASH=$(rustc +"$T" -vV | awk '/^commit-hash:/ {print $2}')
-EXPECTED_HASH=""
-[ "$T" = nightly ] && EXPECTED_HASH="787af2b8c80638c51a4fc8e44f84e6891f243ec7"
+case "$T" in
+  stable)  EXPECTED_HASH="88d9e12ae178fab0fb5cc050a94da85685d449ea" ;;
+  nightly) EXPECTED_HASH="787af2b8c80638c51a4fc8e44f84e6891f243ec7" ;;
+  msrv)    EXPECTED_HASH="29483883eed69d5fb4db01964cdf2af4d86e9cb2" ;;
+  *)       EXPECTED_HASH="" ;;
+esac
 if [ -n "$EXPECTED_HASH" ] && [ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]; then
-  echo "PIN MISMATCH: nightly is $ACTUAL_HASH, researched $EXPECTED_HASH" >&2
+  echo "PIN MISMATCH: $T is $ACTUAL_HASH, expected $EXPECTED_HASH" >&2
   exit 3
+fi
+if [ -z "$EXPECTED_HASH" ]; then
+  echo "unknown toolchain mode $T" >&2; exit 3
 fi
 
 D07_BASELINE_TARGET_DIR="$PWD/target/mh-pilot-$MODE"

@@ -51,7 +51,7 @@ new-dep-closure row; no cross-row parallelism assumed — matrix discipline
 is sequential rows, cargo's internal 24-core parallelism only):
 
 - **stable:** 15.8 + 319×[5.4 .. 17.9] s = **30 .. 96 min**
-- **nightly:** 16.4 + 319×[4.8 .. 18.6] s = **27 .. 100 min**
+- **nightly:** 16.4 + 319×[4.8 .. 18.8] s = **27 .. 100 min**
 - **MSRV (320 lib checks):** 2.3 + 319×[0.4 .. 4.5] s = **4 .. 24 min**
 - **Total (sequential compilers): ≈ 1 h .. 3.7 h.** Running the three
   compiler quadrants concurrently (independent target dirs) bounds it by
