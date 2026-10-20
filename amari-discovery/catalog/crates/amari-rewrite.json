@@ -14432,6 +14432,945 @@
       ]
     },
     {
+      "path": "amari_rewrite::synthesis::InverseClause",
+      "kind": "struct",
+      "signature": "pub struct InverseClause",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InverseClause",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseClause"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::backward",
+      "kind": "method",
+      "signature": "pub fn backward (& self) -> & BackwardClause",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn backward (& self) -> & BackwardClause",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseClause::backward"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::forward",
+      "kind": "method",
+      "signature": "pub fn forward (& self) -> & Rule",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn forward (& self) -> & Rule",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseClause::forward"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::is_reversible",
+      "kind": "method",
+      "signature": "pub fn is_reversible (& self) -> bool",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_reversible (& self) -> bool",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseClause::is_reversible"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::residual_schema",
+      "kind": "method",
+      "signature": "pub fn residual_schema (& self) -> & ResidualSchema",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn residual_schema (& self) -> & ResidualSchema",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseClause::residual_schema"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::reverse_rule",
+      "kind": "method",
+      "signature": "pub fn reverse_rule (& self) -> Option < & Rule >",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn reverse_rule (& self) -> Option < & Rule >",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseClause::reverse_rule"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence",
+      "kind": "struct",
+      "signature": "pub struct InverseEvidence",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InverseEvidence",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::forward_replays",
+      "kind": "method",
+      "signature": "pub fn forward_replays (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn forward_replays (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::forward_replays"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::negative_rejections",
+      "kind": "method",
+      "signature": "pub fn negative_rejections (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn negative_rejections (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::negative_rejections"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::negatives",
+      "kind": "method",
+      "signature": "pub fn negatives (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn negatives (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::negatives"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::positives",
+      "kind": "method",
+      "signature": "pub fn positives (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn positives (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::positives"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::residual_clauses",
+      "kind": "method",
+      "signature": "pub fn residual_clauses (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn residual_clauses (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::residual_clauses"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::residual_roundtrips",
+      "kind": "method",
+      "signature": "pub fn residual_roundtrips (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn residual_roundtrips (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::residual_roundtrips"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::residuals",
+      "kind": "method",
+      "signature": "pub fn residuals (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn residuals (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::residuals"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::reversible_clauses",
+      "kind": "method",
+      "signature": "pub fn reversible_clauses (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn reversible_clauses (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseEvidence::reversible_clauses"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseRefutation",
+      "kind": "enum",
+      "signature": "pub enum InverseRefutation",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ForwardReplay",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "positive",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NegativeAccepted",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "negative",
+                  "ty": "usize"
+                },
+                {
+                  "name": "clause",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ResidualRoundTrip",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "residual",
+                  "ty": "usize"
+                },
+                {
+                  "name": "clause",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ReverseReplay",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "positive",
+                  "ty": "usize"
+                },
+                {
+                  "name": "clause",
+                  "ty": "usize"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InverseRefutation",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "ForwardReplay",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "positive",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NegativeAccepted",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "negative",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "clause",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ResidualRoundTrip",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "residual",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "clause",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ReverseReplay",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "positive",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "clause",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseRefutation"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "kind": "struct",
+      "signature": "pub struct InverseSynthesisConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InverseSynthesisConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseSynthesisConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::MAX_RESIDUALS",
+      "kind": "const",
+      "signature": "pub const MAX_RESIDUALS : usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_RESIDUALS : usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseSynthesisConfig::MAX_RESIDUALS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::limits",
+      "kind": "method",
+      "signature": "pub fn limits (& self) -> & RelationLimits",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn limits (& self) -> & RelationLimits",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseSynthesisConfig::limits"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::max_residuals",
+      "kind": "method",
+      "signature": "pub fn max_residuals (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_residuals (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseSynthesisConfig::max_residuals"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (specialization : SpecializationConfig , max_residuals : usize) -> RewriteResult < Self >",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (specialization : SpecializationConfig , max_residuals : usize) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseSynthesisConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::specialization",
+      "kind": "method",
+      "signature": "pub fn specialization (& self) -> & SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn specialization (& self) -> & SpecializationConfig",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseSynthesisConfig::specialization"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisOutcome",
+      "kind": "enum",
+      "signature": "pub enum InverseSynthesisOutcome",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Candidate",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "rules",
+                  "ty": "Vec < Rule >"
+                },
+                {
+                  "name": "clauses",
+                  "ty": "Vec < InverseClause >"
+                },
+                {
+                  "name": "evidence",
+                  "ty": "InverseEvidence"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Refuted",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "witness",
+                  "ty": "InverseWitness"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Unknown",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "InverseUnknownReason"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InverseSynthesisOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Candidate",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "rules",
+                      "ty": "Vec < Rule >"
+                    },
+                    {
+                      "name": "clauses",
+                      "ty": "Vec < InverseClause >"
+                    },
+                    {
+                      "name": "evidence",
+                      "ty": "InverseEvidence"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Refuted",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "witness",
+                      "ty": "InverseWitness"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Unknown",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "InverseUnknownReason"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseSynthesisOutcome"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseUnknownReason",
+      "kind": "enum",
+      "signature": "pub enum InverseUnknownReason",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Underdetermined",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "detail",
+                  "ty": "InconclusiveReason"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ResidualUnderdetermined",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "clause",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Ambiguous",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "clause",
+                  "ty": "usize"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InverseUnknownReason",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Underdetermined",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "detail",
+                      "ty": "InconclusiveReason"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ResidualUnderdetermined",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "clause",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Ambiguous",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "clause",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseUnknownReason"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseWitness",
+      "kind": "struct",
+      "signature": "pub struct InverseWitness",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InverseWitness",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseWitness"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseWitness::refutation",
+      "kind": "method",
+      "signature": "pub fn refutation (& self) -> & InverseRefutation",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn refutation (& self) -> & InverseRefutation",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "InverseWitness::refutation"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema",
+      "kind": "struct",
+      "signature": "pub struct ResidualSchema",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct ResidualSchema",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "ResidualSchema"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::bindings",
+      "kind": "method",
+      "signature": "pub fn bindings (& self) -> & [(LogicVar , Variable)]",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn bindings (& self) -> & [(LogicVar , Variable)]",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "ResidualSchema::bindings"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::is_empty",
+      "kind": "method",
+      "signature": "pub fn is_empty (& self) -> bool",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_empty (& self) -> bool",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "ResidualSchema::is_empty"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::len",
+      "kind": "method",
+      "signature": "pub fn len (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn len (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "ResidualSchema::len"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::variables",
+      "kind": "method",
+      "signature": "pub fn variables (& self) -> impl Iterator < Item = & Variable >",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn variables (& self) -> impl Iterator < Item = & Variable >",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "ResidualSchema::variables"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::synthesis::RuleCoverage",
       "kind": "struct",
       "signature": "pub struct RuleCoverage",
@@ -14974,6 +15913,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::synthesis::refinement",
           "declaration_ident": "specialize_rules"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::synthesize_inverse",
+      "kind": "fn",
+      "signature": "pub fn synthesize_inverse (positives : & [(Term , Term)] , negatives : & [(Term , Term)] , residuals : & [(Term , Term)] , config : & InverseSynthesisConfig ,) -> RewriteResult < InverseSynthesisOutcome >",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::inverse",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn synthesize_inverse (positives : & [(Term , Term)] , negatives : & [(Term , Term)] , residuals : & [(Term , Term)] , config : & InverseSynthesisConfig ,) -> RewriteResult < InverseSynthesisOutcome >",
+          "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+          "source_module": "amari_rewrite::synthesis::inverse",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::inverse",
+          "declaration_ident": "synthesize_inverse"
         }
       ]
     },
@@ -18249,6 +19207,150 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InverseClause",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseClause"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InverseEvidence",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InverseRefutation",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseRefutation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisOutcome",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InverseUnknownReason",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseUnknownReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InverseWitness",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::ResidualSchema",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "ResidualSchema"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
       "source_ordinal": 5,
@@ -18818,6 +19920,24 @@
         "kind": "local",
         "module": "amari_rewrite::synthesis::refinement",
         "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisConfig"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -20862,6 +21982,150 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InverseClause",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseClause"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InverseEvidence",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InverseRefutation",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseRefutation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisOutcome",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InverseUnknownReason",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseUnknownReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InverseWitness",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::ResidualSchema",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "ResidualSchema"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
       "source_ordinal": 5,
@@ -21327,6 +22591,24 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
     },
     {
       "trait_path": "Default",
@@ -23070,6 +24352,150 @@
         "kind": "local",
         "module": "amari_rewrite::synthesis::refinement",
         "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseClause",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseClause"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseEvidence",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseRefutation",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseRefutation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisOutcome",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseUnknownReason",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseUnknownReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseWitness",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::ResidualSchema",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "ResidualSchema"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -26249,6 +27675,150 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseClause",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseClause"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseEvidence",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseRefutation",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseRefutation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisOutcome",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseUnknownReason",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseUnknownReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InverseWitness",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseWitness"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::ResidualSchema",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "ResidualSchema"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
       "source_ordinal": 5,
@@ -27076,6 +28646,25 @@
         "kind": "local",
         "module": "amari_rewrite::language::certificate",
         "ident": "PreimageCertificate"
+      },
+      "generics": "< 'de >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "serde::Deserialize",
+      "impl_type_path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "serde::Deserialize"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::inverse",
+        "ident": "InverseSynthesisConfig"
       },
       "generics": "< 'de >",
       "unsafe_trait": false,
@@ -31152,6 +32741,254 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::synthesis::InverseClause",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::backward",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::forward",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::is_reversible",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::residual_schema",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseClause::reverse_rule",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::forward_replays",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::negative_rejections",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::negatives",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::positives",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::residual_clauses",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::residual_roundtrips",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::residuals",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseEvidence::reversible_clauses",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseRefutation",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::MAX_RESIDUALS",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::limits",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::max_residuals",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::new",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisConfig::specialization",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseSynthesisOutcome",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 14,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseUnknownReason",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 13,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseWitness",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 10,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InverseWitness::refutation",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::bindings",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::is_empty",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::len",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::ResidualSchema::variables",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::synthesis::RuleCoverage",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
       "source_ordinal": 5,
@@ -31339,6 +33176,14 @@
       "path": "amari_rewrite::synthesis::specialize_rules",
       "source_path": "amari-rewrite/src/synthesis/refinement.rs",
       "source_ordinal": 10,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::synthesize_inverse",
+      "source_path": "amari-rewrite/src/synthesis/inverse.rs",
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
