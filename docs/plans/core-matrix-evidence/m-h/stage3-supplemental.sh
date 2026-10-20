@@ -20,7 +20,12 @@ mkdir -p "$OUT/logs"
 mh_assert_toolchain
 
 # Unconditional effective-cfg preflight (R2 fix): runs in EVERY mode.
-rustc +"$T_NAME" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg > "$EVID/cfg-$MODE-direct.txt"
+if ! rustc +"$T_NAME" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg > "$EVID/cfg-$MODE-direct.txt" 2>"$EVID/cfg-$MODE-direct.err"; then
+  echo "direct cfg acquisition FAILURE ($MODE) — aborting" >&2
+  exit 7
+fi
+[ -s "$EVID/cfg-$MODE-direct.txt" ] || { echo "direct cfg EMPTY ($MODE) — aborting" >&2; exit 7; }
+rm -f "$EVID/cfg-$MODE-direct.err"
 mh_assert_baseline_cfg "$EVID/cfg-$MODE-direct.txt"
 mh_effective_cfg_probe empty --no-default-features
 
