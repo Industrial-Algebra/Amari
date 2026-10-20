@@ -30,10 +30,11 @@ tree, branch `chore/m-h-pilot`, PR #330.
    (1-line repair); `verified.rs` 12+ `T: Float` bounds without num-traits
    `std`/`libm` (design-decision repair). This IS the MATRIX-05 evidence
    deliverable, now at full-matrix resolution.
-4. **Pilot estimate validated**: actual wall inside every bracket (27–29 m
-   vs 30–96 m stable estimate — brackets conservative); storage 83.8/76.6
-   GiB vs ~130 GiB/quad estimate. Target dirs retained (not GC'd) for F1
-   incremental re-runs; disk headroom ample (3.6 T free).
+4. **Pilot estimate validated as conservative**: actual stable wall
+   (27 m 8 s) fell BELOW the 30–96 m bracket's lower bound; nightly+MSRV
+   similarly. Storage 83.8/76.6 GiB vs ~130 GiB/quad estimate. Target dirs
+   retained (not GC'd) for F1 incremental re-runs; disk headroom ample
+   (3.6 T free).
 
 ## Follow-on (operator-approved as part of option C)
 
@@ -43,10 +44,40 @@ Float-surface design decision (std-gate the Float-bound methods vs
 num-traits `libm` activation). After it lands, F1 ledger rules govern
 quadrant re-runs: only the 128 invalidated rows, incremental target dirs.
 
+## Supplemental rows (executed post-R1; stage3-supplemental/)
+
+Matrix §4 assigns the §3.1 supplemental rows to M-H; they were executed
+after review round 1 flagged their absence (see Remediation below):
+13 singletons alone and +std (check+test on both ordinary compilers;
+lib checks on MSRV), and the four named alias rows (default,
+all-features, full-precision, wasm-precision) through the full four
+H commands on both compilers. Results: stable 68 invocations / 6 RED,
+nightly 68 / 6, MSRV 30 / 3 — every RED is one of the three MATRIX-05
+singleton families (`gf2`/`phantom-types`/`formal-verification` ALONE,
+no `std`); all `+std` variants and all alias rows green on every
+compiler. Resolved-activation comparisons archived
+(`stage3-supplemental/features/`): each alias resolves to exactly its
+canonical equivalent's feature set.
+
+## R1 remediation (2026-10-20)
+
+Review round 1 (7 findings: 6 P2, 1 P3) remediated: (1) the exact
+executed `Cargo.lock` archived (`executed-Cargo.lock` + sha256 — the
+deterministic-reproduction claim previously could not reconstruct the
+resolution); (2) test inventories recaptured with FULL doctest identity
+(the original `awk $2` pipeline collapsed distinct doctests sharing a
+file path; unions 523 → 524, byte-identical across stable/nightly);
+(3) runners now pin exact toolchains and assert commit-hashes
+(`toolchain-pins.txt`); (4) fail-closed effective-cfg preflight added
+(the original grep pattern was fail-open on `target_feature="avx"`;
+pre- and post-fix probes archived); (5) stale artifact references in
+dispositions corrected; (6) this closure no longer narrows matrix-owned
+obligations — the supplemental rows are executed above; (7) pilot
+arithmetic corrected (nightly FULL 18.8 s) and estimates described as
+conservative where actuals fell below bracket floors.
+
 ## Residuals
 
-- Rows 33–160 remain RED until that repair (by design of option C).
+- Rows 33–160 remain RED until the no-std repair (by design of option C).
 - MSRV dev-dependency support unclaimed (lib checks only, per matrix scoping).
 - Named-suite F2 inventories belong to the CI rows, not re-verified here.
-- cfg/alias/singleton/`default`/`all-features` cross-checks beyond the four
-  canonical H commands are P-HOST/P-AVX2-adjacent rows, not M-H scope.

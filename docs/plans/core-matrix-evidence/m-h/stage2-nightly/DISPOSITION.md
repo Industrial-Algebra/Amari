@@ -18,5 +18,10 @@ test-name capture). Wall 28 m 35 s (incl. MSRV quadrant); target dir 76.6 GiB.
 - Per-command wall (median/max): check 0.8/7.1 s · test 2.7/7.9 s · clippy
   0.9/2.0 s · doc 0.3/3.6 s.
 
-Full artifacts: `results.tsv`, `failures.txt`, `logs/`, `tests/`,
-`summary.txt`.
+Retained artifacts: `results.tsv` (every invocation), `failures.txt`
+(every failure), `samples/` (one log per failure family + first green row
+per command), `summary.txt`. Test inventories: `tests2-manifest.tsv` + `tests2-union.txt`
+(post-R1 full-doctest-identity recapture; the original collapsed
+inventories were superseded).
+Historical full log/test sets were never committed; see `ARCHIVE-NOTE.md`
+for the regeneration recipe.

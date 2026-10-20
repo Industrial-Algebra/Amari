@@ -15,4 +15,8 @@ across H"). Target dir 2.2 GiB.
   MSRV support remains a separate row per the matrix's own scoping (not
   implied by these lib checks).
 
-Full artifacts: `results.tsv`, `failures.txt`, `logs/`, `summary.txt`.
+Retained artifacts: `results.tsv` (every invocation), `failures.txt`
+(every failure), `samples/` (one log per failure family + first green row
+per command), `summary.txt`.
+Historical full log/test sets were never committed; see `ARCHIVE-NOTE.md`
+for the regeneration recipe.

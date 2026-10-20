@@ -44,3 +44,13 @@ complete 4-quadrant evidence including the RED families (the MATRIX-05
 deliverable); the no-std host repair opens afterward as its own bounded
 contract (gf2 one-liner + verified.rs design decision). Quadrant re-runs
 after that repair land follow the F1 ledger rules (only invalidated rows).
+
+## Retained artifacts
+
+`results.tsv` (every invocation), `failures.txt` (every failure),
+`samples/` (one log per failure family + first green row per command),
+`summary.txt`. Test inventories: `tests2-manifest.tsv` +
+`tests2-union.txt` (post-R1 full-doctest-identity recapture; the
+original collapsed inventories were superseded). Historical full log/test
+sets were never committed; see `ARCHIVE-NOTE.md` for the regeneration
+recipe.
