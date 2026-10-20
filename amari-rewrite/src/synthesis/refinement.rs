@@ -343,6 +343,27 @@ pub fn specialize_rules(
     negatives: &[(Term, Term)],
     config: &SpecializationConfig,
 ) -> RewriteResult<SpecializationOutcome> {
+    let limits = *config.limits();
+    let mut budget = RelationResources::new(&limits);
+    specialize_rules_with(positives, negatives, config, &mut budget)
+}
+
+/// Specialize under a caller-supplied budget.
+///
+/// Identical to [`specialize_rules`] except that every operation is
+/// charged to `budget` instead of a freshly opened budget. Composite
+/// entry points (inverse synthesis, Task 37) use this so one run has
+/// exactly one operations total: nested inference is never funded by
+/// a silently separate allowance. The budget is charged BEFORE the
+/// work it meters, so exhaustion is a typed
+/// [`RewriteError::RelationLimitExceeded`] at the same point it would
+/// be with a private budget, just sooner on a shared one.
+pub(crate) fn specialize_rules_with(
+    positives: &[(Term, Term)],
+    negatives: &[(Term, Term)],
+    config: &SpecializationConfig,
+    budget: &mut RelationResources,
+) -> RewriteResult<SpecializationOutcome> {
     // Revalidate the caller's config: deserialization and construction
     // are checked, but a config is a public value and the entry point
     // is the last line of defence (PR #320 round 1 P2).
@@ -354,7 +375,7 @@ pub fn specialize_rules(
     }
 
     let limits = *config.limits();
-    let mut resources = RelationResources::new(&limits);
+    let resources: &mut RelationResources = &mut *budget;
 
     // 1. Raw admission over the BORROWED inputs. Nothing below this
     // loop may sort, dedup, compare, or collect variables from an
@@ -362,13 +383,13 @@ pub fn specialize_rules(
     // aborting in a recursive clone/sort (PR #320 round 1 P1).
     for example in positives.iter().chain(negatives.iter()) {
         resources.record_operations(1)?;
-        admit_term(&example.0, &limits, &mut resources)?;
-        admit_term(&example.1, &limits, &mut resources)?;
+        admit_term(&example.0, &limits, resources)?;
+        admit_term(&example.1, &limits, resources)?;
     }
 
     // 2. Canonicalize borrowed references (charged comparisons).
-    let positives = canonical_examples(positives, &mut resources)?;
-    let negatives = canonical_examples(negatives, &mut resources)?;
+    let positives = canonical_examples(positives, resources)?;
+    let negatives = canonical_examples(negatives, resources)?;
 
     // 3. Deduped-count ceiling. The raw duplicate stream was bounded
     // by the admission and canonicalization charges above.
@@ -382,7 +403,7 @@ pub fn specialize_rules(
 
     // 4. Conflicting duplicates, with charged comparisons.
     for pair in &positives {
-        if charged_contains(&negatives, pair, &mut resources)? {
+        if charged_contains(&negatives, pair, resources)? {
             return Err(RewriteError::InvalidRule {
                 message: String::from("example pair is both positive and negative"),
             });
@@ -390,7 +411,7 @@ pub fn specialize_rules(
     }
 
     // 5. Reserve every example variable name (charged traversal).
-    let reserved = example_variables(&positives, &negatives, &mut resources)?;
+    let reserved = example_variables(&positives, &negatives, resources)?;
 
     let mut pending = BTreeSet::new();
     pending.insert((0..positives.len()).collect::<Vec<usize>>());
@@ -415,19 +436,19 @@ pub fn specialize_rules(
             config.max_candidates(),
             &mut candidates,
             &limits,
-            &mut resources,
+            resources,
         )?;
 
         let mut retained = None;
         if let Some(rule) = candidate.as_ref() {
-            if covers_partition(rule, &partition, &positives, &limits, &mut resources)?
-                && !covers_any(rule, &negatives, &limits, &mut resources)?
+            if covers_partition(rule, &partition, &positives, &limits, resources)?
+                && !covers_any(rule, &negatives, &limits, resources)?
             {
                 // Retention copies the accepted rule into the result;
                 // charge both sides per node BEFORE the clone is
                 // allocated (PR #320 round 4 P2c).
-                let _lhs_shape = admit_term(rule.lhs(), &limits, &mut resources)?;
-                let _rhs_shape = admit_term(rule.rhs(), &limits, &mut resources)?;
+                let _lhs_shape = admit_term(rule.lhs(), &limits, resources)?;
+                let _rhs_shape = admit_term(rule.rhs(), &limits, resources)?;
                 retained = Some(rule.clone());
             }
         }
@@ -441,9 +462,9 @@ pub fn specialize_rules(
             &partition,
             &positives,
             &limits,
-            &mut resources,
+            resources,
         )?;
-        match first_split(&positions, &partition, &positives, &mut resources)? {
+        match first_split(&positions, &partition, &positives, resources)? {
             Some(groups) => pending.extend(groups),
             None => {
                 let reason = if candidate.is_some() {
@@ -462,7 +483,7 @@ pub fn specialize_rules(
     {
         return Ok(SpecializationOutcome::Inconclusive { reason });
     }
-    finish_refined(resolved, &positives, &negatives, &limits, &mut resources)
+    finish_refined(resolved, &positives, &negatives, &limits, resources)
 }
 
 /// Replay every refined rule against every example and package the
@@ -518,7 +539,7 @@ fn finish_refined(
 /// clone or comparison can run. The frontier is bounded before
 /// children are enqueued, so an adversarially wide term fails typed
 /// instead of allocating the whole frontier.
-fn admit_term(
+pub(crate) fn admit_term(
     term: &Term,
     limits: &RelationLimits,
     resources: &mut RelationResources,
@@ -643,7 +664,7 @@ fn charged_contains(
 /// every structural comparison are metered; no example is cloned. The
 /// caller must have admitted the underlying terms first, so the
 /// comparisons are bounded by the validated node and depth ceilings.
-fn canonical_examples<'a>(
+pub(crate) fn canonical_examples<'a>(
     examples: &'a [(Term, Term)],
     resources: &mut RelationResources,
 ) -> RewriteResult<Vec<&'a (Term, Term)>> {
@@ -694,7 +715,7 @@ fn example_variables(
 }
 
 /// Charge one unit per visited node while collecting variables.
-fn collect_variables(
+pub(crate) fn collect_variables(
     term: &Term,
     variables: &mut BTreeSet<Variable>,
     resources: &mut RelationResources,
@@ -717,18 +738,18 @@ fn collect_variables(
 /// Ranges are verbatim example fragments, never chain-resolved, and
 /// are never cloned: replay borrows them. Lookups charge one unit and
 /// comparisons charge per visited node.
-struct Bindings<'a> {
+pub(crate) struct Bindings<'a> {
     entries: Vec<(&'a Variable, &'a Term)>,
 }
 
 impl<'a> Bindings<'a> {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             entries: Vec::new(),
         }
     }
 
-    fn get(
+    pub(crate) fn get(
         &self,
         variable: &Variable,
         resources: &mut RelationResources,
@@ -746,7 +767,7 @@ impl<'a> Bindings<'a> {
         Ok(None)
     }
 
-    fn insert(
+    pub(crate) fn insert(
         &mut self,
         variable: &'a Variable,
         term: &'a Term,
@@ -765,18 +786,34 @@ impl<'a> Bindings<'a> {
 /// borrowed, the prospective shape is accounted first (Task 34
 /// `matched_shape` doctrine), and the substituted template is then
 /// compared node by node with one-level matcher provenance.
-fn covers<'a>(
+pub(crate) fn covers<'a>(
     rule: &'a Rule,
     example: &'a (Term, Term),
     limits: &RelationLimits,
     resources: &mut RelationResources,
 ) -> RewriteResult<bool> {
+    covers_pair(rule, &example.0, &example.1, limits, resources)
+}
+
+/// Exact coverage of one example given as separate borrowed sides.
+///
+/// This is [`covers`] without the pair wrapper, so callers that hold
+/// the sides in reverse order (inverse synthesis replays the checked
+/// reverse rule against `(target, source)`) never clone to build a
+/// temporary pair.
+pub(crate) fn covers_pair<'a>(
+    rule: &'a Rule,
+    example_lhs: &'a Term,
+    example_rhs: &'a Term,
+    limits: &RelationLimits,
+    resources: &mut RelationResources,
+) -> RewriteResult<bool> {
     let mut bindings = Bindings::new();
-    if !match_pattern(rule.lhs(), &example.0, &mut bindings, resources)? {
+    if !match_pattern(rule.lhs(), example_lhs, &mut bindings, resources)? {
         return Ok(false);
     }
     applied_shape(rule.rhs(), &bindings, limits, resources)?;
-    one_level_equals(rule.rhs(), &bindings, &example.1, resources)
+    one_level_equals(rule.rhs(), &bindings, example_rhs, resources)
 }
 
 /// True when the rule replays every positive in the partition.
@@ -816,7 +853,7 @@ fn covers_any(
 /// Capture-free exactly like [`crate::trs::match_pattern`]: bindings
 /// are verbatim fragments and repeated variables compare by structure.
 /// Iterative, so matching never depends on the call stack.
-fn match_pattern<'a>(
+pub(crate) fn match_pattern<'a>(
     pattern: &'a Term,
     term: &'a Term,
     bindings: &mut Bindings<'a>,
@@ -847,7 +884,7 @@ fn match_pattern<'a>(
 
 /// Structural equality, charged per compared node pair BEFORE the
 /// comparison and iterative.
-fn charged_equal(
+pub(crate) fn charged_equal(
     left: &Term,
     right: &Term,
     resources: &mut RelationResources,
@@ -875,7 +912,7 @@ fn charged_equal(
 /// is materialized — in fact nothing is materialized — and every
 /// borrowed range is traversed with per-node charging (PR #320
 /// round 2).
-fn applied_shape(
+pub(crate) fn applied_shape(
     template: &Term,
     bindings: &Bindings<'_>,
     limits: &RelationLimits,
@@ -924,7 +961,7 @@ fn applied_shape(
 /// materializing it. Bound variables compare by structure (verbatim
 /// ranges), unbound variables must appear as themselves, and symbols
 /// compare arity and children.
-fn one_level_equals(
+pub(crate) fn one_level_equals(
     template: &Term,
     bindings: &Bindings<'_>,
     expected: &Term,
