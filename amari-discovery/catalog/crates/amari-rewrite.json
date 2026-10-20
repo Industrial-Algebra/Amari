@@ -14295,6 +14295,491 @@
       ]
     },
     {
+      "path": "amari_rewrite::synthesis::CoverageReport",
+      "kind": "struct",
+      "signature": "pub struct CoverageReport",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CoverageReport",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "CoverageReport"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::CoverageReport::negatives",
+      "kind": "method",
+      "signature": "pub fn negatives (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn negatives (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "CoverageReport::negatives"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::CoverageReport::positives",
+      "kind": "method",
+      "signature": "pub fn positives (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn positives (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "CoverageReport::positives"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::CoverageReport::rules",
+      "kind": "method",
+      "signature": "pub fn rules (& self) -> & [RuleCoverage]",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn rules (& self) -> & [RuleCoverage]",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "CoverageReport::rules"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::InconclusiveReason",
+      "kind": "enum",
+      "signature": "pub enum InconclusiveReason",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Inseparable",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Unrepresentable",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum InconclusiveReason",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Inseparable",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Unrepresentable",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "InconclusiveReason"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage",
+      "kind": "struct",
+      "signature": "pub struct RuleCoverage",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RuleCoverage",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "RuleCoverage"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage::negatives",
+      "kind": "method",
+      "signature": "pub fn negatives (& self) -> & [usize]",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn negatives (& self) -> & [usize]",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "RuleCoverage::negatives"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage::positives",
+      "kind": "method",
+      "signature": "pub fn positives (& self) -> & [usize]",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn positives (& self) -> & [usize]",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "RuleCoverage::positives"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage::rule_index",
+      "kind": "method",
+      "signature": "pub fn rule_index (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn rule_index (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "RuleCoverage::rule_index"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig",
+      "kind": "struct",
+      "signature": "pub struct SpecializationConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct SpecializationConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::MAX_CANDIDATES",
+      "kind": "const",
+      "signature": "pub const MAX_CANDIDATES : usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_CANDIDATES : usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::MAX_CANDIDATES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::MAX_EXAMPLES",
+      "kind": "const",
+      "signature": "pub const MAX_EXAMPLES : usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_EXAMPLES : usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::MAX_EXAMPLES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::MAX_PARTITIONS",
+      "kind": "const",
+      "signature": "pub const MAX_PARTITIONS : usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_PARTITIONS : usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::MAX_PARTITIONS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::limits",
+      "kind": "method",
+      "signature": "pub fn limits (& self) -> & RelationLimits",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn limits (& self) -> & RelationLimits",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::limits"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::max_candidates",
+      "kind": "method",
+      "signature": "pub fn max_candidates (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_candidates (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::max_candidates"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::max_examples",
+      "kind": "method",
+      "signature": "pub fn max_examples (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_examples (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::max_examples"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::max_partitions",
+      "kind": "method",
+      "signature": "pub fn max_partitions (& self) -> usize",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_partitions (& self) -> usize",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::max_partitions"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (max_examples : usize , max_candidates : usize , max_partitions : usize , limits : RelationLimits ,) -> RewriteResult < Self >",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (max_examples : usize , max_candidates : usize , max_partitions : usize , limits : RelationLimits ,) -> RewriteResult < Self >",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationOutcome",
+      "kind": "enum",
+      "signature": "pub enum SpecializationOutcome",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Refined",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "rules",
+                  "ty": "Vec < Rule >"
+                },
+                {
+                  "name": "coverage",
+                  "ty": "CoverageReport"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Inconclusive",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "InconclusiveReason"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum SpecializationOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Refined",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "rules",
+                      "ty": "Vec < Rule >"
+                    },
+                    {
+                      "name": "coverage",
+                      "ty": "CoverageReport"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Inconclusive",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "InconclusiveReason"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "SpecializationOutcome"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::synthesis::VarGen",
       "kind": "struct",
       "signature": "pub struct VarGen",
@@ -14470,6 +14955,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::synthesis::inference",
           "declaration_ident": "infer_rules"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::synthesis::specialize_rules",
+      "kind": "fn",
+      "signature": "pub fn specialize_rules (positives : & [(Term , Term)] , negatives : & [(Term , Term)] , config : & SpecializationConfig ,) -> RewriteResult < SpecializationOutcome >",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::synthesis::refinement",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn specialize_rules (positives : & [(Term , Term)] , negatives : & [(Term , Term)] , config : & SpecializationConfig ,) -> RewriteResult < SpecializationOutcome >",
+          "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+          "source_module": "amari_rewrite::synthesis::refinement",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::synthesis::refinement",
+          "declaration_ident": "specialize_rules"
         }
       ]
     },
@@ -17709,6 +18213,96 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "CoverageReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "RuleCoverage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::synthesis::VarGen",
       "source_path": "amari-rewrite/src/synthesis/anti_unify.rs",
       "source_ordinal": 0,
@@ -18206,6 +18800,42 @@
         "kind": "local",
         "module": "amari_rewrite::relation::digest",
         "ident": "Sha256Digest"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -20196,6 +20826,96 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "CoverageReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "RuleCoverage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::synthesis::VarGen",
       "source_path": "amari-rewrite/src/synthesis/anti_unify.rs",
       "source_ordinal": 0,
@@ -20607,6 +21327,24 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
     },
     {
       "trait_path": "Default",
@@ -22296,6 +23034,96 @@
         "kind": "local",
         "module": "amari_rewrite::rewritable",
         "ident": "Path"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "CoverageReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "RuleCoverage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationOutcome"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -25385,6 +26213,96 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::CoverageReport",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "CoverageReport"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::InconclusiveReason",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "InconclusiveReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::RuleCoverage",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "RuleCoverage"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationOutcome",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationOutcome"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::trs::Rule",
       "source_path": "amari-rewrite/src/trs/rule.rs",
       "source_ordinal": 0,
@@ -26158,6 +27076,25 @@
         "kind": "local",
         "module": "amari_rewrite::language::certificate",
         "ident": "PreimageCertificate"
+      },
+      "generics": "< 'de >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "serde::Deserialize",
+      "impl_type_path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "serde::Deserialize"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::synthesis::refinement",
+        "ident": "SpecializationConfig"
       },
       "generics": "< 'de >",
       "unsafe_trait": false,
@@ -30175,6 +31112,158 @@
       "surface_kind": "module"
     },
     {
+      "path": "amari_rewrite::synthesis::CoverageReport",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::CoverageReport::negatives",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::CoverageReport::positives",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::CoverageReport::rules",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::InconclusiveReason",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage::negatives",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage::positives",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::RuleCoverage::rule_index",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::MAX_CANDIDATES",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::MAX_EXAMPLES",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::MAX_PARTITIONS",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::limits",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::max_candidates",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::max_examples",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::max_partitions",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationConfig::new",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::synthesis::SpecializationOutcome",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 9,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::synthesis::VarGen",
       "source_path": "amari-rewrite/src/synthesis/anti_unify.rs",
       "source_ordinal": 0,
@@ -30242,6 +31331,14 @@
       "path": "amari_rewrite::synthesis::infer_rules",
       "source_path": "amari-rewrite/src/synthesis/inference.rs",
       "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::synthesis::specialize_rules",
+      "source_path": "amari-rewrite/src/synthesis/refinement.rs",
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
