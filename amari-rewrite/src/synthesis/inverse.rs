@@ -711,15 +711,16 @@ fn derive_clause(
     // A reverse rule exists only when the swap is checked: an erasing
     // forward rule would make `rhs -> lhs` invent its erased
     // variables. Never synthesize that unchecked rule.
+    //
+    // The swap is checked BY CONSTRUCTION here: the metered compilation
+    // proved RHS ⊆ LHS and the schema is empty, which is exactly
+    // LHS ⊆ RHS, so the checked constructor would only rescan both
+    // sides — an unmetered variable walk and sort we do not need. The
+    // unchecked constructor is reached solely on that proved invariant
+    // (PR #335 round 2: no unmetered scan on this path).
     let reverse = if residual.is_empty() {
         resources.record_operations(lhs_nodes.saturating_add(rhs_nodes))?;
-        let reversed = Rule::new(rule.rhs().clone(), rule.lhs().clone()).ok();
-        if reversed.is_none() {
-            return Err(RewriteError::InvalidRule {
-                message: String::from("lossless forward rule has no checked reverse"),
-            });
-        }
-        reversed
+        Some(Rule::new_unchecked(rule.rhs().clone(), rule.lhs().clone()))
     } else {
         None
     };
@@ -797,14 +798,18 @@ fn validate_residual_evidence(
     resources: &mut RelationResources,
     roundtrips: &mut usize,
 ) -> RewriteResult<ResidualVerdict> {
-    // Per-clause reverse instance keys, charged before collection.
+    // Per-clause reverse instance keys. The charge covers the capacity
+    // of the evidence vector and one visit per clause; the loop below
+    // adds the per-node and per-entry work.
     resources.record_operations(clauses.len())?;
     let mut evidence: Vec<Option<ClauseResiduals>> = Vec::with_capacity(clauses.len());
+    let mut erasing_clauses = 0usize;
     for clause in clauses {
         if clause.residual_schema().is_empty() {
             evidence.push(None);
             continue;
         }
+        erasing_clauses = erasing_clauses.saturating_add(1);
         let mut lhs_variables = BTreeSet::new();
         collect_variables(clause.forward().lhs(), &mut lhs_variables, resources)?;
         let schema = clause.residual_schema();
@@ -835,10 +840,24 @@ fn validate_residual_evidence(
         }));
     }
 
+    // Bypass: with no erasing clause, no residual can be obligated, so
+    // the traversal below would only visit clauses that are not
+    // candidates. It is skipped entirely; the scan that established
+    // this fact was charged one unit per clause above, so the bypass
+    // condition itself is metered (PR #335 round 2 P2b).
+    if erasing_clauses == 0 {
+        return Ok(ResidualVerdict::Validated);
+    }
+
     for (residual_index, example) in residuals.iter().copied().enumerate() {
+        // Charge the attempt itself: an unrelated residual still costs
+        // a visit before it can be dismissed.
+        resources.record_operations(1)?;
         let mut accepted = false;
         let mut rejected_by: Option<usize> = None;
         for (clause_index, clause) in clauses.iter().enumerate() {
+            // Charge every visited clause BEFORE inspecting it.
+            resources.record_operations(1)?;
             let Some(meter) = evidence[clause_index].as_mut() else {
                 continue;
             };
@@ -895,8 +914,11 @@ fn validate_residual_evidence(
         }
     }
 
+    // Final evidence scans: one visit per clause each, charged before
+    // the scan runs.
     // Conflicting reconstructions are reported before missing
     // evidence: both are Unknown, and clause order is canonical.
+    resources.record_operations(evidence.len())?;
     for (clause_index, meter) in evidence.iter().enumerate() {
         if let Some(meter) = meter {
             if meter.ambiguous {
@@ -906,6 +928,7 @@ fn validate_residual_evidence(
             }
         }
     }
+    resources.record_operations(evidence.len())?;
     for (clause_index, meter) in evidence.iter().enumerate() {
         if let Some(meter) = meter {
             if meter.instances.is_empty() {

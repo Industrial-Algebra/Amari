@@ -12,6 +12,7 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
+use core::cmp::Ordering;
 use core::fmt;
 
 use crate::error::{RewriteError, RewriteResult};
@@ -66,10 +67,13 @@ impl RuleId {
 
 /// Sorted, deduplicated variable names of a term.
 ///
-/// Charges one unit per visited node, one per copied name, and one per
-/// sort and dedup entry before the work runs. Returns the visited node
-/// count so callers can charge the clone they take from the same
-/// term.
+/// Charges one unit per visited node, one per copied name, one per
+/// comparison the sort performs (charged inside the comparator, so an
+/// exhausted budget aborts the sort promptly with the typed error
+/// instead of finishing it), and one per dedup comparison. The sort
+/// and dedup of `n` names are never funded by a per-entry charge
+/// (PR #335 round 2 P2a). Returns the visited node count so callers
+/// can charge the clone they take from the same term.
 fn metered_variable_names(
     term: &Term,
     resources: &mut RelationResources,
@@ -88,11 +92,44 @@ fn metered_variable_names(
             Term::Sym(_, args) => stack.extend(args.iter()),
         }
     }
+
+    // Charge each ordering comparison BEFORE it runs. Once the budget
+    // is spent the comparator reports equality (so the sort terminates
+    // promptly) and the failure is returned instead of a partial
+    // result.
+    let mut failure = None;
+    names.sort_by(|left, right| {
+        if failure.is_some() {
+            return Ordering::Equal;
+        }
+        match resources.record_operations(1) {
+            Ok(()) => left.cmp(right),
+            Err(error) => {
+                failure = Some(error);
+                Ordering::Equal
+            }
+        }
+    });
+    if let Some(error) = failure {
+        return Err(error);
+    }
+
+    // Dedup compares adjacent entries: charge every comparison too.
     resources.record_operations(names.len())?;
-    names.sort();
-    resources.record_operations(names.len())?;
-    names.dedup();
-    Ok((nodes, names))
+    let mut unique: Vec<String> = Vec::with_capacity(names.len());
+    for name in names {
+        let duplicate = match unique.last() {
+            Some(previous) => {
+                resources.record_operations(1)?;
+                previous == &name
+            }
+            None => false,
+        };
+        if !duplicate {
+            unique.push(name);
+        }
+    }
+    Ok((nodes, unique))
 }
 
 impl fmt::Display for RuleId {

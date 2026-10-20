@@ -553,17 +553,37 @@ fn assert_operation_boundary(
 /// specialized; one clause compiled (metered, including its rule
 /// digest); two forward replays; one residual round trip. A metering
 /// change must re-measure it.
-const EXACT_MINIMUM: usize = 392;
+const EXACT_MINIMUM: usize = 397;
 
 /// Exact minima for `backward_compilation_is_metered`, measured from
 /// the implementation (8 and 64 distinct variables, lossless).
-const BACKWARD_COMPILATION_8: usize = 1_316;
-const BACKWARD_COMPILATION_64: usize = 44_072;
+const BACKWARD_COMPILATION_8: usize = 1_370;
+const BACKWARD_COMPILATION_64: usize = 44_358;
 
 /// Exact minima for `residual_schema_selection_is_metered`, measured
 /// from the implementation (8 and 64 distinct variables, erasing).
-const RESIDUAL_SELECTION_8: usize = 800;
-const RESIDUAL_SELECTION_64: usize = 21_772;
+const RESIDUAL_SELECTION_8: usize = 830;
+const RESIDUAL_SELECTION_64: usize = 21_918;
+
+/// Exact minimum for `sort_comparisons_abort_with_the_typed_error`
+/// (64 distinct variable names, lossless), measured from the
+/// implementation.
+const SORT_FIXTURE_MINIMUM: usize = 44_358;
+
+/// Sort and dedup charges of that 64-name compilation, measured as the
+/// difference the per-comparison metering added to its minimum.
+const SORT_AND_DEDUP_64: usize = 286;
+
+/// Exact minima for `residual_traversal_is_metered_per_visited_clause`
+/// (64 erasing clauses, with and without 64 unrelated residuals),
+/// measured from the implementation.
+const TRAVERSAL_WITHOUT_UNRELATED: usize = 55_694;
+const TRAVERSAL_WITH_UNRELATED: usize = 66_015;
+
+/// Exact minimum for `residual_traversal_is_bypassed_without_erasing_clauses`
+/// (64 lossless clauses plus 64 unrelated residuals), measured from the
+/// implementation.
+const BYPASS_MINIMUM: usize = 20_730;
 
 fn boundary_limits() -> RelationLimits {
     RelationLimits::new(4_096, 64, 4_096, RelationLimits::MAX_OPERATIONS).unwrap()
@@ -681,6 +701,141 @@ fn residual_schema_selection_is_metered() {
         &boundary_limits(),
         RESIDUAL_SELECTION_64,
         "residual schema selection (64 variables)",
+    );
+}
+
+/// 64 lossless clauses from 64 structurally distinct constants: one
+/// ground rule per positive, none of them erasing.
+fn many_lossless_clauses(count: usize) -> Vec<(Term, Term)> {
+    (0..count)
+        .map(|index| {
+            let key = format!("c{index}");
+            (f("k", [c(&key)]), f("m", [c(&key)]))
+        })
+        .collect()
+}
+
+/// Residual examples that match no promoted clause's reverse target.
+fn unrelated_residuals(count: usize, tag: &str) -> Vec<(Term, Term)> {
+    (0..count)
+        .map(|index| {
+            let key = format!("{tag}{index}");
+            (f("zzz", [c(&key)]), f("yyy", [c(&key)]))
+        })
+        .collect()
+}
+
+#[test]
+fn sort_comparisons_abort_with_the_typed_error() {
+    // Sorting the variable names of a 64-name rule performs far more
+    // comparisons than entries; the measured minimum pins them, and a
+    // budget spent during the sort aborts promptly with the typed
+    // error instead of finishing the sort and truncating the outcome
+    // (PR #335 round 2 P2a).
+    let wide = many_variable_lossless(64);
+    let minimum =
+        minimal_operation_budget(std::slice::from_ref(&wide), &[], &[], &boundary_limits());
+    assert_eq!(
+        minimum, SORT_FIXTURE_MINIMUM,
+        "sort fixture: metered minimum changed"
+    );
+
+    // Everything below the minimum fails, and the failures that land
+    // inside the sort window (the units between the pre-sort cost and
+    // the post-sort cost) are typed instead of silent.
+    for shortfall in [1, SORT_AND_DEDUP_64] {
+        let error = run_with_operation_budget(
+            std::slice::from_ref(&wide),
+            &[],
+            &[],
+            &boundary_limits(),
+            minimum - shortfall,
+        )
+        .expect_err("a budget short by the sort charge must fail");
+        assert_eq!(limit_error_resource(&error), Some("operations"));
+    }
+    assert!(
+        run_with_operation_budget(
+            std::slice::from_ref(&wide),
+            &[],
+            &[],
+            &boundary_limits(),
+            minimum
+        )
+        .is_ok(),
+        "the measured minimum must succeed"
+    );
+}
+
+/// `count` erasing families: `p{i}(X, Y) -> out{i}(X)` each erases
+/// `Y`, and their reverse targets are disjoint.
+fn erasing_families(count: usize) -> Vec<(Term, Term)> {
+    (0..count)
+        .map(|index| {
+            (
+                f(&format!("p{index}"), [v("X"), v("Y")]),
+                f(&format!("out{index}"), [v("X")]),
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn residual_traversal_is_metered_per_visited_clause() {
+    // Every unrelated residual is offered to every erasing clause
+    // before it can be dismissed, so the traversal costs one unit per
+    // attempt plus one per visited clause. With 64 clauses and 64
+    // unrelated residuals that is 4,160 charged units; a per-residual
+    // charge could not cover the clause visits (PR #335 round 2 P2b).
+    let positives = erasing_families(64);
+    let own = positives.clone();
+    let unrelated = unrelated_residuals(64, "u");
+
+    let without = minimal_operation_budget(&positives, &[], &own, &boundary_limits());
+    let mut with_residuals = own.clone();
+    with_residuals.extend(unrelated);
+    let with = minimal_operation_budget(&positives, &[], &with_residuals, &boundary_limits());
+
+    assert_eq!(
+        without, TRAVERSAL_WITHOUT_UNRELATED,
+        "traversal fixture: metered minimum changed"
+    );
+    assert_eq!(
+        with, TRAVERSAL_WITH_UNRELATED,
+        "traversal fixture with unrelated residuals: metered minimum changed"
+    );
+    assert!(
+        with >= without + 4_000,
+        "every visited clause must be charged: without={without} with={with}"
+    );
+}
+
+#[test]
+fn residual_traversal_is_bypassed_without_erasing_clauses() {
+    // No clause carries a schema, so no residual can be obligated: the
+    // traversal is bypassed entirely and the cost of the fixture is
+    // exactly its no-residual cost plus the charged admission and
+    // canonicalization of the residual stream. The establishing clause
+    // scan is charged before the bypass (PR #335 round 2 P2b).
+    let positives = many_lossless_clauses(64);
+    let residuals = unrelated_residuals(64, "v");
+    let outcome = synthesize_inverse(
+        &positives,
+        &[],
+        &residuals,
+        &InverseSynthesisConfig::default(),
+    )
+    .expect("synthesis succeeds");
+    assert!(
+        matches!(outcome, InverseSynthesisOutcome::Candidate { .. }),
+        "lossless evidence must promote: {outcome:?}"
+    );
+
+    let with = minimal_operation_budget(&positives, &[], &residuals, &boundary_limits());
+    assert_eq!(
+        with, BYPASS_MINIMUM,
+        "bypass fixture: metered minimum changed (a charged traversal \
+         would add one unit per attempt plus one per visited clause)"
     );
 }
 
