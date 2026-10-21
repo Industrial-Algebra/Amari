@@ -79,8 +79,9 @@ fn catalog_descriptors_cover_the_preimages_probe() {
         .collect();
     assert!(ids.iter().any(|id| id == PREIMAGES));
     // Descriptor count is locked: the preimages probe extended the
-    // existing twenty, and Task 35 adds two analysis probes.
-    assert_eq!(ids.len(), 23);
+    // existing twenty, Task 35 added two analysis probes, and Task 39
+    // adds two synthesis probes.
+    assert_eq!(ids.len(), 25);
     let descriptor = catalog
         .probes()
         .iter()
