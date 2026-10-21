@@ -1,0 +1,2 @@
+amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/amari-core) default,gf2,high-precision,phantom-types,std
+[dev-dependencies]

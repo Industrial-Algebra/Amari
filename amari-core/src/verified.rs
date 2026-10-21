@@ -21,8 +21,10 @@
 //! which reject non-finite results. There is no post-hoc revalidation of
 //! an existing `Verified*` value.
 
+use alloc::vec;
+use alloc::vec::Vec;
+use core::marker::PhantomData;
 use num_traits::{Float, One, Zero};
-use std::marker::PhantomData;
 
 #[cfg(feature = "formal-verification")]
 use creusot_contracts::macros::{ensures, requires};
@@ -1129,7 +1131,7 @@ mod mrepc_r2_tests {
     /// with Euclidean norm 0.7316788639818951 — outside [0.9999, 1.0001].
     #[test]
     fn compose_subnormal_cancellation_normalizes_within_tolerance() {
-        let s = std::f64::consts::FRAC_1_SQRT_2;
+        let s = core::f64::consts::FRAC_1_SQRT_2;
         let t = 2.3e-162_f64;
         let mv_a =
             VerifiedMultivector::<f64, 2, 1, 0>::new(vec![s, 0.0, 0.0, 0.0, 0.0, s, 0.0, 0.0])
