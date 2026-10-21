@@ -1,0 +1,5 @@
+error: expected `.` after the existential variables
+ --> tests/ui/fail_relation_existential_dot.rs:6:32
+  |
+6 |     let _ = relation!(exists Y f(X) <=> g(X));
+  |                                ^
