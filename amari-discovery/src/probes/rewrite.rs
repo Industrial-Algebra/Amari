@@ -1879,6 +1879,102 @@ mod tests {
             ));
         }
     }
+
+    /// The specialize probe's output-assembly charge: one entry unit
+    /// plus every node of both sides, charged BEFORE the DTO exists.
+    /// A budget one unit short is an "output assembly" limit error that
+    /// meters nothing (PR #338 round 1 P2a).
+    #[test]
+    fn specialize_output_assembly_is_charged_and_enforced_per_node() {
+        let rule = Rule::new(
+            Term::sym("k", [Term::var("X")]),
+            Term::sym("m", [Term::var("X")]),
+        )
+        .unwrap();
+
+        // 1 entry + 2 lhs nodes + 2 rhs nodes = 5 units.
+        let exact = RelationLimits::new(64, 16, RelationLimits::MAX_CONSTRAINTS, 5).unwrap();
+        let mut budget = RelationResources::new(&exact);
+        charge_rule_output(&mut budget, &rule).unwrap();
+        assert_eq!(budget.operations(), 5);
+
+        let short = RelationLimits::new(64, 16, RelationLimits::MAX_CONSTRAINTS, 4).unwrap();
+        let mut refused = RelationResources::new(&short);
+        let error = charge_rule_output(&mut refused, &rule).unwrap_err();
+        assert!(
+            matches!(error, DiscoveryError::LimitExceeded(ref message) if message.contains("output assembly")),
+            "unexpected error: {error}"
+        );
+        assert_eq!(
+            refused.operations(),
+            0,
+            "a refused charge must not meter the units it refused"
+        );
+    }
+
+    /// The inverse-synthesis probe's output-assembly charge: rule nodes
+    /// per direction, the 64-hex backward identity, cloned erased
+    /// names, two units per residual-schema entry, and the eight
+    /// evidence counters — each charged before its value is allocated.
+    #[test]
+    fn inverse_output_assembly_is_charged_and_enforced_per_entry() {
+        // An erasing rule: `pair(X, Y) -> snd(X)` erases `Y`.
+        let rule = Rule::new(
+            Term::sym("pair", [Term::var("X"), Term::var("Y")]),
+            Term::sym("snd", [Term::var("X")]),
+        )
+        .unwrap();
+
+        // Forward rule: 1 entry + 3 lhs nodes + 2 rhs nodes = 6.
+        let exact = RelationLimits::new(64, 16, RelationLimits::MAX_CONSTRAINTS, 6).unwrap();
+        let mut budget = RelationResources::new(&exact);
+        charge_rule_output(&mut budget, &rule).unwrap();
+        assert_eq!(budget.operations(), 6);
+
+        // The identity constant must match the real digest width.
+        let digest = amari_rewrite::relation::RuleId::from_rule(&rule).to_string();
+        assert_eq!(digest.len(), 64, "RuleId is a 64-hex sha256 digest");
+        assert_eq!(SYNTHESIS_RULE_ID_UNITS, 65);
+
+        let exact_identity = RelationLimits::new(
+            64,
+            16,
+            RelationLimits::MAX_CONSTRAINTS,
+            usize::try_from(SYNTHESIS_RULE_ID_UNITS).unwrap(),
+        )
+        .unwrap();
+        let mut bounded = RelationResources::new(&exact_identity);
+        charge_output(&mut bounded, SYNTHESIS_RULE_ID_UNITS).unwrap();
+        assert_eq!(
+            bounded.operations(),
+            usize::try_from(SYNTHESIS_RULE_ID_UNITS).unwrap()
+        );
+
+        // One unit short of the identity charge is refused.
+        let tiny = RelationLimits::new(
+            64,
+            16,
+            RelationLimits::MAX_CONSTRAINTS,
+            usize::try_from(SYNTHESIS_RULE_ID_UNITS - 1).unwrap(),
+        )
+        .unwrap();
+        let mut refused = RelationResources::new(&tiny);
+        let error = charge_output(&mut refused, SYNTHESIS_RULE_ID_UNITS).unwrap_err();
+        assert!(
+            matches!(error, DiscoveryError::LimitExceeded(ref message) if message.contains("output assembly")),
+            "unexpected error: {error}"
+        );
+
+        // Two units per residual-schema entry, and one per erased name.
+        let mut schema = RelationResources::new(&exact_identity);
+        charge_output(&mut schema, 2).unwrap();
+        charge_output(&mut schema, 1).unwrap();
+        charge_output(&mut schema, INVERSE_EVIDENCE_UNITS).unwrap();
+        assert_eq!(
+            schema.operations(),
+            2 + 1 + usize::try_from(INVERSE_EVIDENCE_UNITS).unwrap()
+        );
+    }
 }
 
 /// Search ordering accepted by the backward-search probe.
@@ -4634,7 +4730,6 @@ pub struct RewriteSynthesisExample {
     Eq,
     PartialEq,
     Serialize,
-    Deserialize,
     schemars::JsonSchema,
     amari_discovery_macros::WireContract,
 )]
@@ -4659,6 +4754,57 @@ pub struct RewriteSpecializeRequest {
     pub positives: Vec<RewriteSynthesisExample>,
     /// Negative example steps no returned rule may reproduce.
     pub negatives: Option<Vec<RewriteSynthesisExample>>,
+}
+
+impl RewriteSpecializeRequest {
+    /// Construct a request through the shape check.
+    ///
+    /// Task 36/37 doctrine (PR #320 round 1 P2): a public request value
+    /// is validated at construction, on deserialization, and again at
+    /// the adapter entry point.
+    pub fn new(
+        positives: Vec<RewriteSynthesisExample>,
+        negatives: Option<Vec<RewriteSynthesisExample>>,
+    ) -> crate::DiscoveryResult<Self> {
+        let request = Self {
+            positives,
+            negatives,
+        };
+        request.validate()?;
+        Ok(request)
+    }
+
+    /// Validate the request shape this DTO owns.
+    ///
+    /// Count, node, and depth ceilings belong to the probe's limit
+    /// profile and stay with the adapter (where they surface as typed
+    /// limit errors); the shape invariant here is that a synthesis run
+    /// can never start without evidence.
+    pub fn validate(&self) -> crate::DiscoveryResult<()> {
+        if self.positives.is_empty() {
+            return Err(crate::DiscoveryError::InvalidInput(
+                "specialization requires at least one positive example".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+impl<'de> Deserialize<'de> for RewriteSpecializeRequest {
+    /// Deserialization routes through the checked constructor, so a
+    /// well-formed but invalid request (`{"positives":[]}`) is rejected
+    /// at parse time instead of reaching the adapter (Task 36
+    /// `SpecializationConfig` doctrine; PR #338 round 1 P2).
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Raw {
+            positives: Vec<RewriteSynthesisExample>,
+            negatives: Option<Vec<RewriteSynthesisExample>>,
+        }
+        let raw = <Raw as Deserialize>::deserialize(deserializer)?;
+        Self::new(raw.positives, raw.negatives).map_err(serde::de::Error::custom)
+    }
 }
 
 /// Replayed coverage of one refined rule.
@@ -4754,7 +4900,6 @@ pub struct RewriteSpecializeOutput {
     Eq,
     PartialEq,
     Serialize,
-    Deserialize,
     schemars::JsonSchema,
     amari_discovery_macros::WireContract,
 )]
@@ -4781,6 +4926,58 @@ pub struct RewriteInverseSynthesisRequest {
     pub negatives: Option<Vec<RewriteSynthesisExample>>,
     /// Residual evidence for erasing clauses' residual schemas.
     pub residuals: Option<Vec<RewriteSynthesisExample>>,
+}
+
+impl RewriteInverseSynthesisRequest {
+    /// Construct a request through the shape check.
+    ///
+    /// Task 36/37 doctrine (PR #320 round 1 P2): a public request value
+    /// is validated at construction, on deserialization, and again at
+    /// the adapter entry point.
+    pub fn new(
+        positives: Vec<RewriteSynthesisExample>,
+        negatives: Option<Vec<RewriteSynthesisExample>>,
+        residuals: Option<Vec<RewriteSynthesisExample>>,
+    ) -> crate::DiscoveryResult<Self> {
+        let request = Self {
+            positives,
+            negatives,
+            residuals,
+        };
+        request.validate()?;
+        Ok(request)
+    }
+
+    /// Validate the request shape this DTO owns.
+    ///
+    /// Count, node, and depth ceilings belong to the probe's limit
+    /// profile and stay with the adapter; the shape invariant here is
+    /// that a synthesis run can never start without evidence.
+    pub fn validate(&self) -> crate::DiscoveryResult<()> {
+        if self.positives.is_empty() {
+            return Err(crate::DiscoveryError::InvalidInput(
+                "inverse synthesis requires at least one positive example".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+impl<'de> Deserialize<'de> for RewriteInverseSynthesisRequest {
+    /// Deserialization routes through the checked constructor, so a
+    /// well-formed but invalid request is rejected at parse time
+    /// (Task 36 `SpecializationConfig` doctrine; PR #338 round 1 P2).
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Raw {
+            positives: Vec<RewriteSynthesisExample>,
+            negatives: Option<Vec<RewriteSynthesisExample>>,
+            residuals: Option<Vec<RewriteSynthesisExample>>,
+        }
+        let raw = <Raw as Deserialize>::deserialize(deserializer)?;
+        Self::new(raw.positives, raw.negatives, raw.residuals).map_err(serde::de::Error::custom)
+    }
 }
 
 /// One residual-schema binding in Cohort 2 key order.
@@ -5024,6 +5221,60 @@ fn validate_synthesis_examples(
     Ok((pairs, nodes))
 }
 
+/// Units charged for the eight evidence counters reported by the
+/// inverse-synthesis probe: one per converted count.
+#[cfg(feature = "standard-probes")]
+const INVERSE_EVIDENCE_UNITS: u64 = 8;
+
+/// One unit per hex byte of a compiled rule identity. `RuleId` is a
+/// 64-hex sha256 digest, so emitting its wire string is charged as one
+/// entry unit plus one unit per digest byte BEFORE the string exists.
+#[cfg(feature = "standard-probes")]
+const SYNTHESIS_RULE_ID_UNITS: u64 = 65;
+
+/// Count the nodes of a checked library term iteratively.
+///
+/// The walk is explicit so an adversarial term cannot exhaust the stack
+/// while being charged (Task 34 doctrine).
+#[cfg(feature = "standard-probes")]
+fn library_term_nodes(term: &Term) -> DiscoveryResult<u64> {
+    let mut nodes = 0_u64;
+    let mut stack: Vec<&Term> = vec![term];
+    while let Some(current) = stack.pop() {
+        nodes = nodes.checked_add(1).ok_or_else(|| {
+            DiscoveryError::LimitExceeded("output term node count overflow".to_owned())
+        })?;
+        if let Term::Sym(_, arguments) = current {
+            stack.extend(arguments.iter());
+        }
+    }
+    Ok(nodes)
+}
+
+/// Charge output assembly units against the probe budget BEFORE the
+/// work they meter runs (PR #338 round 1 P2a).
+#[cfg(feature = "standard-probes")]
+fn charge_output(resources: &mut RelationResources, units: u64) -> DiscoveryResult<()> {
+    resources
+        .record_operations(usize::try_from(units).unwrap_or(usize::MAX))
+        .map_err(|error| language_error("output assembly", error))
+}
+
+/// Charge the wire cost of one emitted rule: one entry unit plus every
+/// node of both sides. Charged BEFORE the rule DTO is allocated.
+#[cfg(feature = "standard-probes")]
+fn charge_rule_output(resources: &mut RelationResources, rule: &Rule) -> DiscoveryResult<()> {
+    let lhs = library_term_nodes(rule.lhs())?;
+    let rhs = library_term_nodes(rule.rhs())?;
+    let units = lhs
+        .checked_add(rhs)
+        .and_then(|nodes| nodes.checked_add(1))
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("output rule node count overflow".to_owned())
+        })?;
+    charge_output(resources, units)
+}
+
 /// Name of a bounded specialization inconclusive reason.
 #[cfg(feature = "standard-probes")]
 fn specialization_reason_name(
@@ -5184,13 +5435,12 @@ fn execute_specialize(
             ))
         })?;
     let bounds = effective_bounds(limits);
+    // Deserialization already routed through the checked constructor;
+    // revalidate here because the request is also constructible through
+    // `new` (defense in depth, PR #338 round 1 P2).
+    request.validate()?;
     let request_bytes = encoded_bytes(&request, "specialization request")?;
     enforce("request bytes", request_bytes, bounds.max_request_bytes)?;
-    if request.positives.is_empty() {
-        return Err(DiscoveryError::InvalidInput(
-            "specialization requires at least one positive example".to_owned(),
-        ));
-    }
     let (positives, positive_nodes) = validate_synthesis_examples(
         &request.positives,
         MAX_SYNTHESIS_EXAMPLES,
@@ -5215,13 +5465,26 @@ fn execute_specialize(
             output.outcome = "refined".to_owned();
             output.rule_count = Some(analysis_count(rules.len())?);
             output.rules_truncated = Some(rules.len() > MAX_SYNTHESIS_RULES);
-            output.rules = rules
-                .iter()
-                .take(MAX_SYNTHESIS_RULES)
-                .map(RewriteRule::from_rule)
-                .collect();
+            // Output assembly is adapter work: charge one entry unit
+            // plus every node of both sides BEFORE each DTO exists.
+            let mut emitted = Vec::with_capacity(rules.len().min(MAX_SYNTHESIS_RULES));
+            for rule in rules.iter().take(MAX_SYNTHESIS_RULES) {
+                charge_rule_output(&mut resources, rule)?;
+                emitted.push(RewriteRule::from_rule(rule));
+            }
+            output.rules = emitted;
             let mut entries = Vec::with_capacity(coverage.rules().len().min(MAX_SYNTHESIS_RULES));
             for entry in coverage.rules().iter().take(MAX_SYNTHESIS_RULES) {
+                // One unit for the entry, one per reported index.
+                let units = 1_u64
+                    .checked_add(entry.positives().len() as u64)
+                    .and_then(|total| total.checked_add(entry.negatives().len() as u64))
+                    .ok_or_else(|| {
+                        DiscoveryError::LimitExceeded(
+                            "output coverage entry count overflow".to_owned(),
+                        )
+                    })?;
+                charge_output(&mut resources, units)?;
                 entries.push(RewriteCoverageEntry {
                     rule_index: analysis_count(entry.rule_index())?,
                     positives: entry
@@ -5283,13 +5546,12 @@ fn execute_synthesize_inverse(
             ))
         })?;
     let bounds = effective_bounds(limits);
+    // Deserialization already routed through the checked constructor;
+    // revalidate here because the request is also constructible through
+    // `new` (defense in depth, PR #338 round 1 P2).
+    request.validate()?;
     let request_bytes = encoded_bytes(&request, "inverse synthesis request")?;
     enforce("request bytes", request_bytes, bounds.max_request_bytes)?;
-    if request.positives.is_empty() {
-        return Err(DiscoveryError::InvalidInput(
-            "inverse synthesis requires at least one positive example".to_owned(),
-        ));
-    }
     let (positives, positive_nodes) = validate_synthesis_examples(
         &request.positives,
         MAX_SYNTHESIS_EXAMPLES,
@@ -5328,11 +5590,38 @@ fn execute_synthesize_inverse(
             output.rule_count = Some(analysis_count(rules.len())?);
             output.clause_count = Some(analysis_count(clauses.len())?);
             output.clauses_truncated = Some(clauses.len() > MAX_SYNTHESIS_CLAUSES);
+            // Output assembly is adapter work: charge the forward and
+            // reverse rule nodes, the backward identity, the cloned
+            // erased names, and two units per residual-schema entry (the
+            // key and the cloned name, mirroring `ResidualSchema::derive`)
+            // BEFORE any of those values exist.
             let mut entries = Vec::with_capacity(clauses.len().min(MAX_SYNTHESIS_CLAUSES));
             for clause in clauses.iter().take(MAX_SYNTHESIS_CLAUSES) {
+                charge_rule_output(&mut resources, clause.forward())?;
+                if let Some(reverse) = clause.reverse_rule() {
+                    charge_rule_output(&mut resources, reverse)?;
+                }
+                charge_output(&mut resources, SYNTHESIS_RULE_ID_UNITS)?;
+                charge_output(
+                    &mut resources,
+                    clause.backward().erased_variables().len() as u64,
+                )?;
+                let schema_units =
+                    clause
+                        .residual_schema()
+                        .len()
+                        .checked_mul(2)
+                        .ok_or_else(|| {
+                            DiscoveryError::LimitExceeded(
+                                "output residual schema count overflow".to_owned(),
+                            )
+                        })?;
+                charge_output(&mut resources, schema_units as u64)?;
                 entries.push(inverse_clause_dto(clause)?);
             }
             output.clauses = entries;
+            // Eight reported evidence counters.
+            charge_output(&mut resources, INVERSE_EVIDENCE_UNITS)?;
             output.evidence = Some(inverse_evidence_dto(&evidence)?);
         }
         Ok(InverseSynthesisOutcome::Refuted { witness }) => {

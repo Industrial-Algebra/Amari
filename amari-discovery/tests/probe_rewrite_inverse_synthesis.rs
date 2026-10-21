@@ -464,6 +464,77 @@ fn a_pair_supplied_as_both_positive_and_negative_is_a_typed_domain_failure() {
     );
 }
 
+/// PR #338 round 1 P2b: the request DTOs validate on deserialization
+/// (Task 36 `SpecializationConfig` doctrine), so a well-formed but
+/// invalid request never reaches an adapter — and the adapter still
+/// revalidates, so a request built through `new` is checked too.
+#[test]
+fn invalid_requests_are_rejected_at_deserialization() {
+    let error = serde_json::from_value::<amari_discovery::RewriteSpecializeRequest>(
+        json!({"positives": [], "negatives": null}),
+    )
+    .expect_err("an empty positive list must not deserialize");
+    assert!(
+        error.to_string().contains("at least one positive example"),
+        "unexpected error: {error}"
+    );
+
+    let error = serde_json::from_value::<amari_discovery::RewriteInverseSynthesisRequest>(
+        json!({"positives": [], "negatives": null, "residuals": null}),
+    )
+    .expect_err("an empty positive list must not deserialize");
+    assert!(
+        error.to_string().contains("at least one positive example"),
+        "unexpected error: {error}"
+    );
+
+    // Deserialization also rejects unknown fields, matching the wire
+    // contract's `deny_unknown_fields`.
+    let error = serde_json::from_value::<amari_discovery::RewriteSpecializeRequest>(
+        json!({"positives": [], "bogus": 1}),
+    )
+    .expect_err("unknown fields must not deserialize");
+    assert!(
+        error.to_string().contains("bogus"),
+        "unexpected error: {error}"
+    );
+
+    // A well-formed request still round-trips through both entry points.
+    let request: amari_discovery::RewriteSpecializeRequest =
+        serde_json::from_value(add_zero_evidence()).unwrap();
+    assert_eq!(request.positives.len(), 2);
+    assert!(request.validate().is_ok());
+    let rebuilt = amari_discovery::RewriteSpecializeRequest::new(
+        request.positives.clone(),
+        request.negatives.clone(),
+    )
+    .unwrap();
+    assert_eq!(rebuilt, request);
+
+    let inverse: amari_discovery::RewriteInverseSynthesisRequest =
+        serde_json::from_value(json!({"positives": erasing_positives()})).unwrap();
+    assert!(inverse.residuals.is_none());
+    let rebuilt = amari_discovery::RewriteInverseSynthesisRequest::new(
+        inverse.positives.clone(),
+        None,
+        Some(inverse.positives.clone()),
+    )
+    .unwrap();
+    assert!(rebuilt.residuals.is_some());
+    assert!(
+        amari_discovery::RewriteInverseSynthesisRequest::new(Vec::new(), None, None).is_err(),
+        "the checked constructor rejects an empty positive list"
+    );
+
+    // The probe surface rejects the same request as a typed input
+    // error: deserialization is the first gate, not the only one.
+    let error = run_error(SPECIALIZE, &json!({"positives": []}));
+    assert!(
+        matches!(error, DiscoveryError::InvalidInput(ref message) if message.contains("positive")),
+        "unexpected error: {error}"
+    );
+}
+
 #[test]
 fn malformed_examples_are_typed_input_errors() {
     for probe in [SPECIALIZE, SYNTHESIZE_INVERSE] {
@@ -598,20 +669,40 @@ fn every_tightened_limit_is_enforced() {
             "{probe}: unexpected error {error}"
         );
     }
+}
 
-    // Node ceiling: a wide term exceeds the 64-node ceiling.
-    let mut wide = sym0("a");
-    for _ in 0..70 {
-        wide = sym2("g", wide, sym0("a"));
+/// A shallow WIDE term with exactly `arguments + 1` nodes at depth 2,
+/// so node-limit coverage never depends on the depth ceiling.
+fn wide_term(arguments: usize) -> Value {
+    let children: Vec<Value> = (0..arguments).map(|_| sym0("a")).collect();
+    json!({"kind": "symbol", "name": "g", "arguments": children})
+}
+
+#[test]
+fn the_node_limit_is_enforced_independently_of_depth() {
+    // 63 arguments -> 64 nodes at depth 2: exactly the ceiling.
+    let at_limit = wide_term(63);
+    // 64 arguments -> 65 nodes at depth 2: one past the ceiling.
+    let over_limit = wide_term(64);
+    for probe in [SPECIALIZE, SYNTHESIZE_INVERSE] {
+        let output = run(
+            probe,
+            &json!({"positives": [example(at_limit.clone(), sym0("b"))]}),
+        );
+        assert!(
+            output["outcome"].is_string(),
+            "{probe}: a 64-node, depth-2 term must be accepted"
+        );
+
+        let error = run_error(
+            probe,
+            &json!({"positives": [example(over_limit.clone(), sym0("b"))]}),
+        );
+        assert!(
+            matches!(error, DiscoveryError::LimitExceeded(ref message) if message.contains("nodes")),
+            "{probe}: the 65-node, depth-2 term must fail the NODE ceiling, got {error}"
+        );
     }
-    let error = run_error(
-        SPECIALIZE,
-        &json!({"positives": [example(wide, sym0("b"))]}),
-    );
-    assert!(
-        is_typed_resource_or_input_error(&error),
-        "unexpected error: {error}"
-    );
 }
 
 #[test]
@@ -648,6 +739,53 @@ fn a_tightened_iterations_budget_is_a_typed_domain_outcome() {
     }
 }
 
+/// Node count of a request exactly as the engine's bounds guard counts
+/// it (every JSON value; keys are not values).
+fn json_node_count(value: &Value) -> u64 {
+    let mut nodes = 0_u64;
+    let mut stack: Vec<&Value> = vec![value];
+    while let Some(current) = stack.pop() {
+        nodes += 1;
+        match current {
+            Value::Array(items) => stack.extend(items.iter()),
+            Value::Object(map) => stack.extend(map.values()),
+            _ => {}
+        }
+    }
+    nodes
+}
+
+/// PR #338 round 1 P2a: output assembly is adapter work and is metered
+/// per node and per entry, so the reported operations exceed the
+/// request-validation charge instead of equalling it.
+#[test]
+fn output_assembly_is_charged_per_node_and_entry() {
+    let input = json!({
+        "positives": [
+            example(sym1("k", sym0("a")), sym1("m", sym0("a"))),
+            example(sym1("k", sym0("b")), sym1("m", sym0("b"))),
+        ]
+    });
+    let nodes = json_node_count(&input);
+    // Measured boundaries for this fixture (node count 36):
+    // - specialize emits one rule `k(_I0) -> m(_I0)` (1 entry + 4 nodes
+    //   = 5) and one coverage entry (1 + 2 positives = 3) -> 8 units;
+    // - inverse emits one clause: forward rule 5, checked reverse rule
+    //   5, 64-hex backward identity 65, no erased names, no residual
+    //   schema, and 8 evidence counters -> 83 units.
+    for (probe, assembly) in [(SPECIALIZE, 8_u64), (SYNTHESIZE_INVERSE, 83_u64)] {
+        let execution = ProbeEngine::new()
+            .unwrap()
+            .execute(&probe.parse().unwrap(), &input)
+            .unwrap();
+        assert_eq!(
+            execution.resources.operations,
+            nodes + assembly,
+            "{probe}: reported operations must cover validation plus output assembly"
+        );
+    }
+}
+
 #[test]
 fn an_exhausted_operations_budget_is_a_typed_outcome_with_observations() {
     let input = json!({
@@ -656,34 +794,51 @@ fn an_exhausted_operations_budget_is_a_typed_outcome_with_observations() {
             example(sym1("k", sym0("b")), sym1("m", sym0("b"))),
         ]
     });
+    let nodes = json_node_count(&input);
     for probe in [SPECIALIZE, SYNTHESIZE_INVERSE] {
-        // Self-calibrating budget. The reported operations are the
-        // request-validation charge, and the library budget is derived
-        // from the same ceiling: one operation above the validation
-        // charge therefore exhausts INSIDE the library call, after
-        // validation has already been metered.
-        let full = ProbeEngine::new()
-            .unwrap()
-            .execute(&probe.parse().unwrap(), &input)
-            .unwrap();
+        // A budget exactly at the request-validation charge is metered
+        // without error, and the library — which opens its own budget
+        // from the same ceiling — exhausts immediately: the failure is a
+        // typed outcome that keeps the observations. One operation less
+        // fails the entry charge, which is a probe limit error instead.
+        for budget in [nodes, nodes + 1] {
+            let limits = ProbeEngineLimits {
+                max_operations: budget,
+                ..ProbeEngineLimits::default()
+            };
+            let engine = ProbeEngine::with_limits(limits).unwrap();
+            let execution = engine
+                .execute(&probe.parse().unwrap(), &input)
+                .expect("a library limit violation is a typed outcome");
+            assert_eq!(
+                execution.output["outcome"],
+                json!("error"),
+                "{probe} at budget {budget}"
+            );
+            assert!(
+                execution.output["failure_reason"]
+                    .as_str()
+                    .is_some_and(|reason| !reason.is_empty()),
+                "{probe}: failure_reason must describe the domain failure"
+            );
+            assert!(
+                execution.resources.operations > 0,
+                "{probe}: failure accounting must accompany the outcome"
+            );
+        }
+
         let limits = ProbeEngineLimits {
-            max_operations: full.resources.operations + 1,
+            max_operations: nodes - 1,
             ..ProbeEngineLimits::default()
         };
         let engine = ProbeEngine::with_limits(limits).unwrap();
-        let execution = engine
-            .execute(&probe.parse().unwrap(), &input)
-            .expect("domain failure is a typed outcome, not a probe error");
-        assert_eq!(execution.output["outcome"], json!("error"), "{probe}");
+        let error = engine.execute(&probe.parse().unwrap(), &input).unwrap_err();
         assert!(
-            execution.output["failure_reason"]
-                .as_str()
-                .is_some_and(|reason| !reason.is_empty()),
-            "{probe}: failure_reason must describe the domain failure"
-        );
-        assert!(
-            execution.resources.operations > 0,
-            "{probe}: failure accounting must accompany the outcome"
+            matches!(
+                error,
+                DiscoveryError::LimitExceeded(ref message) if message.contains("request validation")
+            ),
+            "{probe}: an exhausted entry charge is a typed limit error, got {error}"
         );
     }
 }
