@@ -74,9 +74,12 @@ patch on this tree):
    source and in w01/w02 evidence logs). The archived M-H "originates in
    macro float_impl_std" notes were the std impls working correctly —
    not an in-tree identifier, not a defect.
-4. **P3 bound recount**: 15 grep hits for `T: Float` = 12 method-level
-   bounds + impl-level duplicates; corrected count in S2 below. The
-   bounds themselves need NO changes.
+4. **P3 bound recount (R2-corrected classification)**: 15 grep hits =
+   2 free functions (`all_finite`, `rotor_tolerance`) + 13 `where`-clause
+   bounds on impl blocks (the `T: Float + Zero + One` clauses at :78/:88/
+   :305/:313/:359/:370/:405/:453/:505/:518/:681/:689/+1 are impl-level
+   `where` clauses, not method signatures — R2 advisory). The bounds
+   themselves need NO changes in any classification.
 
 The original D1(a) decision was taken on the false libm premise; the
 re-confirmed decision below supersedes it.
@@ -88,8 +91,9 @@ re-confirmed decision below supersedes it.
 - **S2** `verified.rs`: add `use alloc::vec; use alloc::vec::Vec;` (no
   `format` — zero uses); `use std::marker::PhantomData` → `core::marker`
   (:25); `std::f64::consts::FRAC_1_SQRT_2` → `core::f64::consts` (:1132).
-  The 12 method-level `T: Float` bounds are untouched and resolve via
-  unified `num-traits/std`. Test/doc targets in the RED rows may carry
+  All 15 `T: Float` bound sites (2 free functions + 13 impl-level where
+  clauses, per the R2-corrected classification) are untouched and resolve
+  via unified `num-traits/std`. Test/doc targets in the RED rows may carry
   additional test-module import sites — the 128-row re-run is the
   authoritative completeness gate.
 
@@ -119,8 +123,9 @@ discipline (hash-asserted toolchains, fail-closed cfg preflight,
 4. full 320-row sweep re-run once at the end (drift guard: the other 192
    rows must remain green — catches accidental regressions);
 5. supplemental singleton rows re-run (the three RED singletons go green);
-6. catalog regenerated from the merged superset (feature-table change →
-   manifest delta; drift gate `generated_equals_checked_in` green);
+6. catalog drift gate `generated_equals_checked_in` green with NO
+   expected delta (S4 dropped: no feature-table change, no lock change —
+   any catalog diff would be a defect, not an expectation);
 7. `std`-build regression gates: amari-core default test row, clippy
    (default + `--all-targets` + feature rows), fmt, rustdoc; root
    workspace `cargo check --locked -p amari-core` default row.
