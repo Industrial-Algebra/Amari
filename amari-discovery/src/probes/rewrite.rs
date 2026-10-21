@@ -4892,8 +4892,9 @@ fn validate_synthesis_example_list(
     enforce(kind, count, ceiling)?;
     for example in examples {
         for term in [&example.source, &example.target] {
-            // Validated while borrowed and iteratively, so an oversized
-            // term is a typed error instead of a recursive walk.
+            // Validated while borrowed, with depth-bounded recursion (the
+            // depth ceiling bounds the stack), so an oversized term is a
+            // typed error instead of a recursive conversion walk.
             let _stats = term_stats(term, MAX_SYNTHESIS_TERM_DEPTH, MAX_SYNTHESIS_TERM_NODES)?;
         }
     }
@@ -5356,9 +5357,10 @@ fn inverse_synthesis_config(
 /// Validate one example list against the probe ceilings and convert it
 /// to checked terms, returning the pairs with their total node count.
 ///
-/// Depth and node ceilings are checked iteratively over the borrowed
-/// DTOs BEFORE any recursive conversion runs, so adversarial input is a
-/// typed limit error instead of a stack abort.
+/// Depth and node ceilings are checked over the borrowed DTOs with
+/// depth-bounded recursion (the depth ceiling bounds the stack) BEFORE any
+/// recursive conversion runs, so adversarial input is a typed limit error
+/// instead of a stack abort.
 #[cfg(feature = "standard-probes")]
 fn synthesis_example_pairs(
     examples: &[RewriteSynthesisExample],
