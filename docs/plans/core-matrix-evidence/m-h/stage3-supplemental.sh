@@ -87,8 +87,11 @@ else
   baseline_cargo tree --locked -p amari-core --no-default-features --features high-precision -f "{p} {f}" --depth 0 > "$OUT/logs/$MODE-canonical-wasmp-equiv-features.txt" 2>&1
 fi
 
-FAILED=$(grep -c "^FAIL \[$MODE\]" "$OUT/failures.txt" 2>/dev/null || echo 0)
+# R1 fix: derive BOTH counts from the authoritative per-mode TSV — the
+# previous `grep -c ... || echo 0` printed 0 AND fell back to echo on
+# grep's exit-1, producing FAILED=$'0\n0' and contaminating later modes.
 TOTAL=$(tail -n +2 "$OUT/results-$MODE.tsv" | wc -l)
+FAILED=$(awk -F'\t' -v m="$MODE" '$1==m && $6!="0"' "$OUT/results-$MODE.tsv" | wc -l)
 echo "QUADRANT=$MODE TOTAL=$TOTAL FAILED=$FAILED" >> "$OUT/summary.txt"
 cat "$OUT/summary.txt"
 [ "$FAILED" -eq 0 ] || exit 1

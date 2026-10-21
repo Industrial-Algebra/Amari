@@ -41,3 +41,25 @@ remain available for future F1 re-runs.
 - P-EMBED inherits the libm question (num-traits without std on bare-metal
   targets) — separate matrix item, per the contract's deferral.
 - MSRV dev-dependency support unclaimed (lib checks only, per matrix scoping).
+
+## R1 remediation (2026-10-21)
+
+Reviewer P2: `supplemental-reverify.sh` derived FAILED via
+`grep -c ... || echo 0` — grep prints 0 AND exits 1 on no match, so the
+fallback appended a second line (`FAILED=$'0\n0'`), and the shared
+failures.txt let earlier-mode failures contaminate later summaries.
+Fixed in BOTH the nostd runner and the committed M-H stage3 script
+(the same bug existed there): counts now derive from the authoritative
+per-mode results TSV. Negative-proven with a poisoned singleton
+(rc=1, FAILED=2 reported); positive-proven clean (rc=0, 30/0).
+
+**Incident disclosure (the M-H R4-R6 lesson recurred):** the FIRST
+poison attempt targeted a literal script line that exists only inside
+the runner's loop — the sed no-op'd, so the "proof" vacuously passed;
+the SECOND attempt redirected OUT_ROOT while OUT was hardcoded, so the
+poison run wrote to the real evidence tree (interleaved rows, dirty
+logs). Evidence restored from the pre-incident commit (30/68/68 rows,
+0 failed, byte-clean); the runner now honors OUT_ROOT_OVERRIDE so
+scratch runs cannot touch the evidence tree; the final positive and
+negative proofs both ran isolated (scratch rc=0 with clean summary;
+poisoned scratch rc=1).
