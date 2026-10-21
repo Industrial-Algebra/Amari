@@ -248,9 +248,11 @@ mod tests {
                 "amari-probe:rewrite:predecessors:v1".parse().unwrap(),
                 "amari-probe:rewrite:preimages:v1".parse().unwrap(),
                 "amari-probe:rewrite:residual-replay:v1".parse().unwrap(),
+                "amari-probe:rewrite:specialize:v1".parse().unwrap(),
                 "amari-probe:rewrite:symbolic-predecessors:v1"
                     .parse()
                     .unwrap(),
+                "amari-probe:rewrite:synthesize-inverse:v1".parse().unwrap(),
                 "amari-probe:surcomplex:rational-division:v1"
                     .parse()
                     .unwrap(),

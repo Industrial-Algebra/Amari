@@ -510,3 +510,75 @@ kind = "composes_with"
 from = "amari:amari-rewrite:completion:knuth-bendix"
 to = "amari:amari-rewrite:language:preimages"
 kind = "composes_with"
+
+[[capabilities]]
+id = "amari:amari-rewrite:macros:relational-syntax"
+name = "Checked relational rewrite syntax"
+description = "Build forward/inverse rewrite clauses, existential markers, and constraint sets with a relation! macro that expands only to checked declarative constructors."
+aliases = ["relation macro", "bidirectional syntax", "existential rule syntax"]
+concepts = ["term rewriting system", "inverse rewriting", "procedural macros", "syntax"]
+crate_refs = ["amari-rewrite-macros", "amari-rewrite"]
+feature_refs = ["amari-rewrite:macros"]
+symbol_refs = ["amari_rewrite_macros::relation"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-rewrite:synthesis:specialize"
+name = "Negative-example rule specialization"
+description = "Specialize rewrite rules from positive and negative examples by splitting at discriminating positions, so every returned rule covers a positive and no supplied negative."
+aliases = ["negative-example specialization", "refinement", "discriminating-path split"]
+concepts = ["program synthesis", "term rewriting", "negative examples"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::synthesis::specialize_rules", "amari_rewrite::synthesis::SpecializationConfig", "amari_rewrite::synthesis::SpecializationOutcome", "amari_rewrite::synthesis::CoverageReport"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:specialize:v1"]
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:synthesis:inverse"
+name = "Inverse clause synthesis"
+description = "Infer checked forward rules from observed steps and derive one inverse clause per rule, with residual schemas for erasing rules and typed candidate, refutation, and unknown evidence."
+aliases = ["inverse synthesis", "bidirectional rule inference", "residual schema synthesis"]
+concepts = ["program synthesis", "term rewriting", "inverse rewriting", "bidirectional transformation"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:std"]
+symbol_refs = ["amari_rewrite::synthesis::synthesize_inverse", "amari_rewrite::synthesis::InverseSynthesisConfig", "amari_rewrite::synthesis::InverseSynthesisOutcome", "amari_rewrite::synthesis::InverseClause", "amari_rewrite::synthesis::ResidualSchema"]
+example_refs = []
+probe_refs = ["amari-probe:rewrite:synthesize-inverse:v1"]
+stability = "experimental"
+cost = "moderate"
+
+[[relations]]
+from = "amari:amari-rewrite:synthesis:infer-rule"
+to = "amari:amari-rewrite:synthesis:specialize"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:synthesis:specialize"
+to = "amari:amari-rewrite:trs:normalization"
+kind = "produces_input_for"
+
+[[relations]]
+from = "amari:amari-rewrite:synthesis:specialize"
+to = "amari:amari-rewrite:synthesis:inverse"
+kind = "produces_input_for"
+
+[[relations]]
+from = "amari:amari-rewrite:macros:relational-syntax"
+to = "amari:amari-rewrite:synthesis:inverse"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:synthesis:inverse"
+to = "amari:amari-rewrite:reversible:residual-replay"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:synthesis:inverse"
+to = "amari:amari-rewrite:inverse:predecessors"
+kind = "composes_with"

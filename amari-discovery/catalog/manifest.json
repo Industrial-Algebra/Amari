@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "77dbebc281cf4c1ad57876f48ce429841d5ae5f86931c36321e525775cfe7b7c",
+  "content_hash": "44fa7e606a98627015d6653c08be106f58468fb2628c0a1d51654f199100edd2",
   "probe_descriptors": [
     {
       "id": "amari-probe:core:geometric-product:v1",
@@ -405,6 +405,42 @@
       "capability_id": "amari:amari-rewrite:completion:knuth-bendix",
       "input_schema": "amari.discovery/probe/rewrite-completion/input/v1",
       "output_schema": "amari.discovery/probe/rewrite-completion/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:specialize:v1",
+      "capability_id": "amari:amari-rewrite:synthesis:specialize",
+      "input_schema": "amari.discovery/probe/rewrite-specialize/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-specialize/output/v1",
+      "required_features": [
+        "standard-probes"
+      ],
+      "cost": "moderate",
+      "deterministic": true,
+      "side_effects": "none",
+      "limits": {
+        "max_input_bytes": 65536,
+        "max_output_bytes": 65536,
+        "max_operations": 100000,
+        "timeout_millis": 2000
+      }
+    },
+    {
+      "id": "amari-probe:rewrite:synthesize-inverse:v1",
+      "capability_id": "amari:amari-rewrite:synthesis:inverse",
+      "input_schema": "amari.discovery/probe/rewrite-synthesize-inverse/input/v1",
+      "output_schema": "amari.discovery/probe/rewrite-synthesize-inverse/output/v1",
       "required_features": [
         "standard-probes"
       ],

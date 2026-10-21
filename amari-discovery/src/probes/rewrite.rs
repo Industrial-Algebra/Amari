@@ -26,7 +26,11 @@ use amari_rewrite::{
         TreeTransition, TrsClass,
     },
     relation::{RelationLimits, RelationResources, Sha256Digest},
-    synthesis::infer_rule,
+    synthesis::{
+        infer_rule, specialize_rules, synthesize_inverse, InverseClause, InverseEvidence,
+        InverseRefutation, InverseSynthesisConfig, InverseSynthesisOutcome, InverseUnknownReason,
+        SpecializationConfig, SpecializationOutcome,
+    },
     trs::{match_pattern, Rule, Symbol, Term, TermSystem},
     RewriteError,
 };
@@ -4556,5 +4560,849 @@ pub(super) fn completion_registration() -> DiscoveryResult<AdapterRegistration> 
         side_effects: SideEffectPolicy::None,
         network: false,
         execute: execute_completion,
+    })
+}
+
+// ---------------------------------------------------------------------
+// Cohort 7 synthesis probes (0.25 Task 39)
+// ---------------------------------------------------------------------
+
+/// Hard ceiling for one synthesis example list.
+#[cfg(feature = "standard-probes")]
+const MAX_SYNTHESIS_EXAMPLES: u64 = 32;
+/// Hard ceiling for the residual example list.
+#[cfg(feature = "standard-probes")]
+const MAX_SYNTHESIS_RESIDUALS: u64 = 32;
+/// Hard ceiling for synthesis term nodes.
+#[cfg(feature = "standard-probes")]
+const MAX_SYNTHESIS_TERM_NODES: u64 = 64;
+/// Hard ceiling for synthesis term depth.
+#[cfg(feature = "standard-probes")]
+const MAX_SYNTHESIS_TERM_DEPTH: u64 = 16;
+/// Hard ceiling for synthesis domain operations.
+#[cfg(feature = "standard-probes")]
+const MAX_SYNTHESIS_OPERATIONS: usize = 20_000;
+/// Hard ceiling for candidate rules built in one specialization run.
+#[cfg(feature = "standard-probes")]
+const MAX_SPECIALIZATION_CANDIDATES: usize = 64;
+/// Hard ceiling for positive partitions processed in one run.
+#[cfg(feature = "standard-probes")]
+const MAX_SPECIALIZATION_PARTITIONS: usize = 64;
+/// Ceiling on refined rules reported by the specialization probe.
+#[cfg(feature = "standard-probes")]
+const MAX_SYNTHESIS_RULES: usize = 8;
+/// Ceiling on inverse clauses reported by the inverse-synthesis probe.
+#[cfg(feature = "standard-probes")]
+const MAX_SYNTHESIS_CLAUSES: usize = 8;
+
+/// One observed forward rewrite step used as synthesis evidence.
+///
+/// `source` is the term before rewriting and `target` the term after
+/// it. The same pair shape carries positives (steps the rule set must
+/// reproduce), negatives (steps it must never reproduce), and
+/// residuals (observed steps that validate an erasing clause's
+/// residual schema).
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteSynthesisExample {
+    /// Term before the observed step.
+    pub source: RewriteTerm,
+    /// Term after the observed step.
+    pub target: RewriteTerm,
+}
+
+/// Typed input for bounded negative-example specialization.
+///
+/// # Limit profile
+///
+/// Each example list is capped at 32 pairs, terms at depth 16 and 64
+/// nodes, and the library budget is
+/// `RelationLimits::new(64, 16, RelationLimits::MAX_CONSTRAINTS,
+/// 20_000)` with candidate and partition ceilings of 64. The example
+/// ceiling additionally follows the caller's iterations budget, so a
+/// tightened engine budget is a typed domain-failure outcome instead
+/// of a silently widened one.
+///
+/// The probe meters its own request validation on the shared relation
+/// budget and reports that charge; the library opens its run from the
+/// same ceiling profile, so a tightened operations ceiling still
+/// bounds the library work directly (as a typed domain-failure
+/// outcome) rather than being ignored.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-specialize/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        example_count_limit = "at most 32 examples are accepted in each of positives and negatives",
+        positives_required = "at least one positive example is required",
+        term_bounds = "terms have depth at most 16 and at most 64 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes"
+    ),
+    example(
+        label = "specialize_add_zero",
+        value = "{\"positives\":[{\"source\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"0\",\"arguments\":[]},{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}]},\"target\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}}],\"negatives\":[{\"source\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"0\",\"arguments\":[]},{\"kind\":\"symbol\",\"name\":\"c\",\"arguments\":[]}]},\"target\":{\"kind\":\"symbol\",\"name\":\"c\",\"arguments\":[]}}]}"
+    )
+)]
+pub struct RewriteSpecializeRequest {
+    /// Positive example steps the refined rules must reproduce.
+    pub positives: Vec<RewriteSynthesisExample>,
+    /// Negative example steps no returned rule may reproduce.
+    pub negatives: Option<Vec<RewriteSynthesisExample>>,
+}
+
+/// Replayed coverage of one refined rule.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteCoverageEntry {
+    /// Index of the rule in the refined rule list.
+    pub rule_index: u64,
+    /// Canonical indices of covered positive examples.
+    pub positives: Vec<u64>,
+    /// Canonical indices of covered negative examples (always empty
+    /// for a refined outcome).
+    pub negatives: Vec<u64>,
+}
+
+/// Typed output of the bounded specialization probe.
+///
+/// Rule and coverage evidence is capped at eight entries;
+/// `rule_count` always reports the full count and `rules_truncated`
+/// says whether entries were withheld.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-specialize/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        bounded_rule_evidence = "at most 8 rules and coverage entries are reported; rule_count is the full count and rules_truncated reports withheld rules",
+        coverage_certified_honestly = "refined rules cover every deduped positive example and no supplied negative example",
+        inconclusive_never_claims_absence = "an inconclusive outcome reports that this bounded search did not separate the examples, never that no separating rule exists"
+    ),
+    example(
+        label = "specialize_add_zero",
+        value = "{\"outcome\":\"refined\",\"operation\":\"specialize\",\"positive_count\":1,\"negative_count\":1,\"rule_count\":1,\"rules\":[{\"lhs\":{\"kind\":\"symbol\",\"name\":\"add\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"0\",\"arguments\":[]},{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}}],\"rules_truncated\":false,\"coverage\":[{\"rule_index\":0,\"positives\":[0],\"negatives\":[]}],\"inconclusive_reason\":null,\"failure_reason\":null}"
+    )
+)]
+pub struct RewriteSpecializeOutput {
+    /// `refined` for a validated rule set, `inconclusive` when the
+    /// bounded search separated no candidate, or `error` when the
+    /// library declined within bounds (see `failure_reason`).
+    pub outcome: String,
+    /// The dispatched operation (`specialize`).
+    pub operation: String,
+    /// Number of supplied positive examples.
+    pub positive_count: u64,
+    /// Number of supplied negative examples.
+    pub negative_count: u64,
+    /// Full refined rule count.
+    pub rule_count: Option<u64>,
+    /// Bounded refined rules that cover every positive and no
+    /// negative.
+    pub rules: Vec<RewriteRule>,
+    /// Whether rules were withheld by the output ceiling.
+    pub rules_truncated: Option<bool>,
+    /// Bounded replayed coverage aligned with `rules`.
+    pub coverage: Vec<RewriteCoverageEntry>,
+    /// `inseparable` or `unrepresentable` for an inconclusive
+    /// outcome.
+    pub inconclusive_reason: Option<String>,
+    /// Library failure detail when `outcome` is `error`.
+    pub failure_reason: Option<String>,
+}
+
+/// Typed input for bounded inverse-clause synthesis.
+///
+/// # Limit profile
+///
+/// Each example list is capped at 32 pairs, terms at depth 16 and 64
+/// nodes, and the library budget is one
+/// `InverseSynthesisConfig` over `RelationLimits::new(64, 16,
+/// RelationLimits::MAX_CONSTRAINTS, 20_000)` with candidate and
+/// partition ceilings of 64 and a residual ceiling of 32. The example
+/// ceiling additionally follows the caller's iterations budget, so a
+/// tightened engine budget is a typed domain-failure outcome instead
+/// of a silently widened one.
+///
+/// The probe meters its own request validation on the shared relation
+/// budget and reports that charge; the library opens its run from the
+/// same ceiling profile, so a tightened operations ceiling still
+/// bounds the library work directly (as a typed domain-failure
+/// outcome) rather than being ignored.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[serde(deny_unknown_fields)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-synthesize-inverse/input/v1",
+    role = "input",
+    compatibility = "additive_patch",
+    constraints(
+        example_count_limit = "at most 32 examples are accepted in each of positives, negatives, and residuals",
+        positives_required = "at least one positive example is required",
+        term_bounds = "terms have depth at most 16 and at most 64 nodes",
+        term_name_bytes_limit = "variable and symbol names contain at most 256 bytes"
+    ),
+    example(
+        label = "lossless_inverse",
+        value = "{\"positives\":[{\"source\":{\"kind\":\"symbol\",\"name\":\"k\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}]},\"target\":{\"kind\":\"symbol\",\"name\":\"m\",\"arguments\":[{\"kind\":\"symbol\",\"name\":\"a\",\"arguments\":[]}]}}],\"negatives\":null,\"residuals\":null}"
+    )
+)]
+pub struct RewriteInverseSynthesisRequest {
+    /// Positive example steps the checked forward rules must replay.
+    pub positives: Vec<RewriteSynthesisExample>,
+    /// Negative example steps no checked forward rule may reproduce.
+    pub negatives: Option<Vec<RewriteSynthesisExample>>,
+    /// Residual evidence for erasing clauses' residual schemas.
+    pub residuals: Option<Vec<RewriteSynthesisExample>>,
+}
+
+/// One residual-schema binding in Cohort 2 key order.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteResidualSchemaBinding {
+    /// Schema position of the erased variable (`LogicVar(0, index)`).
+    pub key_index: u64,
+    /// The erased variable name the reverse direction must recover.
+    pub variable: String,
+}
+
+/// One promoted inverse clause.
+///
+/// `reverse` is present exactly when the reverse direction is itself a
+/// checked rule. An erasing clause carries `residual_schema` instead
+/// of an unchecked `target -> source` rule that would invent the
+/// variables the forward step erased.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteInverseClause {
+    /// The checked forward rule the clause was derived from.
+    pub forward: RewriteRule,
+    /// The checked reverse rule, absent for an erasing clause.
+    pub reverse: Option<RewriteRule>,
+    /// Stable identity of the compiled backward contract.
+    pub backward_rule_id: String,
+    /// Variables the forward direction erases, in sorted order.
+    pub erased_variables: Vec<String>,
+    /// Residual authority the reverse direction needs, in key order.
+    pub residual_schema: Vec<RewriteResidualSchemaBinding>,
+}
+
+/// Validation evidence for a promoted inverse candidate.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteInverseEvidence {
+    /// Deduped positive examples replayed forward.
+    pub positives: u64,
+    /// Deduped negative examples rejected.
+    pub negatives: u64,
+    /// Deduped residual examples supplied.
+    pub residuals: u64,
+    /// `(positive, clause)` forward replay checks.
+    pub forward_replays: u64,
+    /// `(negative, clause)` rejection checks.
+    pub negative_rejections: u64,
+    /// Residual and reverse round-trip checks performed.
+    pub residual_roundtrips: u64,
+    /// Clauses whose reverse direction is a checked rule.
+    pub reversible_clauses: u64,
+    /// Clauses carrying a non-empty residual schema.
+    pub residual_clauses: u64,
+}
+
+/// A concrete witness that refuted promotion.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteInverseRefutation {
+    /// `forward_replay`, `negative_accepted`, `residual_round_trip`,
+    /// or `reverse_replay`.
+    pub kind: String,
+    /// Canonical index of the named positive example.
+    pub positive: Option<u64>,
+    /// Canonical index of the named negative example.
+    pub negative: Option<u64>,
+    /// Canonical index of the named residual example.
+    pub residual: Option<u64>,
+    /// Index of the named clause.
+    pub clause: Option<u64>,
+}
+
+/// Why the evidence determined no candidate.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct RewriteInverseUnknown {
+    /// `underdetermined`, `residual_underdetermined`, or `ambiguous`.
+    pub kind: String,
+    /// `inseparable` or `unrepresentable` for an underdetermined
+    /// forward search.
+    pub detail: Option<String>,
+    /// Index of the unvalidated or conflicted clause.
+    pub clause: Option<u64>,
+}
+
+/// Typed output of the bounded inverse-synthesis probe.
+///
+/// Clause evidence is capped at eight entries; `clause_count` always
+/// reports the full count and `clauses_truncated` says whether
+/// entries were withheld.
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    amari_discovery_macros::WireContract,
+)]
+#[wire_contract(
+    id = "amari.discovery/probe/rewrite-synthesize-inverse/output/v1",
+    role = "output",
+    compatibility = "additive_patch",
+    constraints(
+        bounded_clause_evidence = "at most 8 clauses are reported; clause_count is the full count and clauses_truncated reports withheld clauses",
+        candidate_certified_honestly = "a candidate replays every deduped positive forward, reproduces no negative, and validates its residual and reverse evidence",
+        erased_clauses_carry_schema = "an erasing clause never carries a reverse rule; it carries the residual schema the reverse direction needs",
+        unknown_and_refuted_are_typed = "refutation names a concrete witness and an unknown reason names why the evidence determines no candidate"
+    ),
+    example(
+        label = "lossless_inverse",
+        value = "{\"outcome\":\"candidate\",\"operation\":\"synthesize_inverse\",\"positive_count\":1,\"negative_count\":0,\"residual_count\":0,\"rule_count\":1,\"clause_count\":1,\"clauses\":[{\"forward\":{\"lhs\":{\"kind\":\"symbol\",\"name\":\"k\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"_I0\"}]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"m\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"_I0\"}]}},\"reverse\":{\"lhs\":{\"kind\":\"symbol\",\"name\":\"m\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"_I0\"}]},\"rhs\":{\"kind\":\"symbol\",\"name\":\"k\",\"arguments\":[{\"kind\":\"variable\",\"name\":\"_I0\"}]}},\"backward_rule_id\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"erased_variables\":[],\"residual_schema\":[]}],\"clauses_truncated\":false,\"evidence\":{\"positives\":1,\"negatives\":0,\"residuals\":0,\"forward_replays\":1,\"negative_rejections\":0,\"residual_roundtrips\":1,\"reversible_clauses\":1,\"residual_clauses\":0},\"refutation\":null,\"unknown_reason\":null,\"failure_reason\":null}"
+    )
+)]
+pub struct RewriteInverseSynthesisOutput {
+    /// `candidate`, `refuted`, `unknown`, or `error` when the library
+    /// declined within bounds (see `failure_reason`).
+    pub outcome: String,
+    /// The dispatched operation (`synthesize_inverse`).
+    pub operation: String,
+    /// Number of supplied positive examples.
+    pub positive_count: u64,
+    /// Number of supplied negative examples.
+    pub negative_count: u64,
+    /// Number of supplied residual examples.
+    pub residual_count: u64,
+    /// Full checked forward rule count.
+    pub rule_count: Option<u64>,
+    /// Full derived clause count.
+    pub clause_count: Option<u64>,
+    /// Bounded derived clauses, aligned with the forward rule order.
+    pub clauses: Vec<RewriteInverseClause>,
+    /// Whether clauses were withheld by the output ceiling.
+    pub clauses_truncated: Option<bool>,
+    /// Validation evidence for a promoted candidate.
+    pub evidence: Option<RewriteInverseEvidence>,
+    /// The concrete witness that refuted promotion.
+    pub refutation: Option<RewriteInverseRefutation>,
+    /// Why the evidence determined no candidate.
+    pub unknown_reason: Option<RewriteInverseUnknown>,
+    /// Library failure detail when `outcome` is `error`.
+    pub failure_reason: Option<String>,
+}
+
+/// Build the shared relation budget for the synthesis probes.
+#[cfg(feature = "standard-probes")]
+fn synthesis_relation_limits(limits: &EffectiveProbeLimits) -> DiscoveryResult<RelationLimits> {
+    fn clamp(value: u64, ceiling: usize) -> usize {
+        usize::try_from(value)
+            .unwrap_or(usize::MAX)
+            .clamp(1, ceiling)
+    }
+    RelationLimits::new(
+        clamp(limits.max_nodes, MAX_SYNTHESIS_TERM_NODES as usize),
+        MAX_SYNTHESIS_TERM_DEPTH as usize,
+        RelationLimits::MAX_CONSTRAINTS,
+        clamp(limits.max_operations, MAX_SYNTHESIS_OPERATIONS),
+    )
+    .map_err(|error| DiscoveryError::InvalidInput(format!("synthesis limit profile: {error}")))
+}
+
+#[cfg(feature = "standard-probes")]
+fn synthesis_resources(limits: &EffectiveProbeLimits) -> DiscoveryResult<RelationResources> {
+    Ok(RelationResources::new(&synthesis_relation_limits(limits)?))
+}
+
+/// The example ceiling actually handed to the library: the tighter of
+/// the probe ceiling and the caller's iterations budget.
+#[cfg(feature = "standard-probes")]
+fn synthesis_example_ceiling(limits: &EffectiveProbeLimits) -> usize {
+    usize::try_from(limits.max_iterations.min(MAX_SYNTHESIS_EXAMPLES))
+        .unwrap_or(usize::MAX)
+        .max(1)
+}
+
+/// Build the checked specialization profile through the validated
+/// constructor; a zero or above-ceiling knob is rejected rather than
+/// silently widened or disabled.
+#[cfg(feature = "standard-probes")]
+fn specialization_config(limits: &EffectiveProbeLimits) -> DiscoveryResult<SpecializationConfig> {
+    SpecializationConfig::new(
+        synthesis_example_ceiling(limits),
+        MAX_SPECIALIZATION_CANDIDATES,
+        MAX_SPECIALIZATION_PARTITIONS,
+        synthesis_relation_limits(limits)?,
+    )
+    .map_err(|error| DiscoveryError::InvalidInput(format!("specialization limit profile: {error}")))
+}
+
+/// Build the checked inverse-synthesis profile through the validated
+/// constructor.
+#[cfg(feature = "standard-probes")]
+fn inverse_synthesis_config(
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<InverseSynthesisConfig> {
+    InverseSynthesisConfig::new(
+        specialization_config(limits)?,
+        usize::try_from(MAX_SYNTHESIS_RESIDUALS).unwrap_or(usize::MAX),
+    )
+    .map_err(|error| {
+        DiscoveryError::InvalidInput(format!("inverse synthesis limit profile: {error}"))
+    })
+}
+
+/// Validate one example list against the probe ceilings and convert it
+/// to checked terms, returning the pairs with their total node count.
+///
+/// Depth and node ceilings are checked iteratively over the borrowed
+/// DTOs BEFORE any recursive conversion runs, so adversarial input is a
+/// typed limit error instead of a stack abort.
+#[cfg(feature = "standard-probes")]
+fn validate_synthesis_examples(
+    examples: &[RewriteSynthesisExample],
+    ceiling: u64,
+    kind: &str,
+) -> DiscoveryResult<(Vec<(Term, Term)>, u64)> {
+    let count = u64::try_from(examples.len())
+        .map_err(|_| DiscoveryError::LimitExceeded(format!("{kind} count overflow")))?;
+    enforce(kind, count, ceiling)?;
+    let mut nodes = 0_u64;
+    let mut pairs = Vec::with_capacity(examples.len());
+    for example in examples {
+        let source = term_stats(
+            &example.source,
+            MAX_SYNTHESIS_TERM_DEPTH,
+            MAX_SYNTHESIS_TERM_NODES,
+        )?;
+        let target = term_stats(
+            &example.target,
+            MAX_SYNTHESIS_TERM_DEPTH,
+            MAX_SYNTHESIS_TERM_NODES,
+        )?;
+        for stats in [source, target] {
+            nodes = nodes.checked_add(stats.nodes).ok_or_else(|| {
+                DiscoveryError::LimitExceeded(format!("{kind} node count overflow"))
+            })?;
+        }
+        pairs.push((example.source.to_term()?, example.target.to_term()?));
+    }
+    Ok((pairs, nodes))
+}
+
+/// Name of a bounded specialization inconclusive reason.
+#[cfg(feature = "standard-probes")]
+fn specialization_reason_name(
+    reason: amari_rewrite::synthesis::InconclusiveReason,
+) -> &'static str {
+    match reason {
+        amari_rewrite::synthesis::InconclusiveReason::Inseparable => "inseparable",
+        amari_rewrite::synthesis::InconclusiveReason::Unrepresentable => "unrepresentable",
+    }
+}
+
+/// Convert one promoted clause into wire evidence.
+#[cfg(feature = "standard-probes")]
+fn inverse_clause_dto(clause: &InverseClause) -> DiscoveryResult<RewriteInverseClause> {
+    let mut residual_schema = Vec::with_capacity(clause.residual_schema().len());
+    for (key, variable) in clause.residual_schema().bindings() {
+        residual_schema.push(RewriteResidualSchemaBinding {
+            key_index: u64::from(key.index()),
+            variable: variable.as_str().to_owned(),
+        });
+    }
+    Ok(RewriteInverseClause {
+        forward: RewriteRule::from_rule(clause.forward()),
+        reverse: clause.reverse_rule().map(RewriteRule::from_rule),
+        backward_rule_id: clause.backward().rule_id().to_string(),
+        erased_variables: clause.backward().erased_variables().to_vec(),
+        residual_schema,
+    })
+}
+
+/// Convert validation evidence into wire evidence.
+#[cfg(feature = "standard-probes")]
+fn inverse_evidence_dto(evidence: &InverseEvidence) -> DiscoveryResult<RewriteInverseEvidence> {
+    Ok(RewriteInverseEvidence {
+        positives: analysis_count(evidence.positives())?,
+        negatives: analysis_count(evidence.negatives())?,
+        residuals: analysis_count(evidence.residuals())?,
+        forward_replays: analysis_count(evidence.forward_replays())?,
+        negative_rejections: analysis_count(evidence.negative_rejections())?,
+        residual_roundtrips: analysis_count(evidence.residual_roundtrips())?,
+        reversible_clauses: analysis_count(evidence.reversible_clauses())?,
+        residual_clauses: analysis_count(evidence.residual_clauses())?,
+    })
+}
+
+/// Convert a refuting witness into its typed wire form.
+#[cfg(feature = "standard-probes")]
+fn refutation_dto(refutation: &InverseRefutation) -> DiscoveryResult<RewriteInverseRefutation> {
+    let (kind, positive, negative, residual, clause) = match refutation {
+        InverseRefutation::ForwardReplay { positive } => {
+            ("forward_replay", Some(*positive), None, None, None)
+        }
+        InverseRefutation::NegativeAccepted { negative, clause } => (
+            "negative_accepted",
+            None,
+            Some(*negative),
+            None,
+            Some(*clause),
+        ),
+        InverseRefutation::ResidualRoundTrip { residual, clause } => (
+            "residual_round_trip",
+            None,
+            None,
+            Some(*residual),
+            Some(*clause),
+        ),
+        InverseRefutation::ReverseReplay { positive, clause } => {
+            ("reverse_replay", Some(*positive), None, None, Some(*clause))
+        }
+    };
+    Ok(RewriteInverseRefutation {
+        kind: kind.to_owned(),
+        positive: positive.map(analysis_count).transpose()?,
+        negative: negative.map(analysis_count).transpose()?,
+        residual: residual.map(analysis_count).transpose()?,
+        clause: clause.map(analysis_count).transpose()?,
+    })
+}
+
+/// Convert an unknown reason into its typed wire form.
+#[cfg(feature = "standard-probes")]
+fn unknown_reason_dto(reason: &InverseUnknownReason) -> DiscoveryResult<RewriteInverseUnknown> {
+    let (kind, detail, clause) = match reason {
+        InverseUnknownReason::Underdetermined { detail } => (
+            "underdetermined",
+            Some(specialization_reason_name(*detail).to_owned()),
+            None,
+        ),
+        InverseUnknownReason::ResidualUnderdetermined { clause } => {
+            ("residual_underdetermined", None, Some(*clause))
+        }
+        InverseUnknownReason::Ambiguous { clause } => ("ambiguous", None, Some(*clause)),
+    };
+    Ok(RewriteInverseUnknown {
+        kind: kind.to_owned(),
+        detail,
+        clause: clause.map(analysis_count).transpose()?,
+    })
+}
+
+/// Base output for one specialization run.
+#[cfg(feature = "standard-probes")]
+fn specialize_output_base(positive_count: u64, negative_count: u64) -> RewriteSpecializeOutput {
+    RewriteSpecializeOutput {
+        outcome: "refined".to_owned(),
+        operation: "specialize".to_owned(),
+        positive_count,
+        negative_count,
+        rule_count: None,
+        rules: Vec::new(),
+        rules_truncated: None,
+        coverage: Vec::new(),
+        inconclusive_reason: None,
+        failure_reason: None,
+    }
+}
+
+/// Base output for one inverse-synthesis run.
+#[cfg(feature = "standard-probes")]
+fn inverse_output_base(
+    positive_count: u64,
+    negative_count: u64,
+    residual_count: u64,
+) -> RewriteInverseSynthesisOutput {
+    RewriteInverseSynthesisOutput {
+        outcome: "candidate".to_owned(),
+        operation: "synthesize_inverse".to_owned(),
+        positive_count,
+        negative_count,
+        residual_count,
+        rule_count: None,
+        clause_count: None,
+        clauses: Vec::new(),
+        clauses_truncated: None,
+        evidence: None,
+        refutation: None,
+        unknown_reason: None,
+        failure_reason: None,
+    }
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_specialize(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    // Meter first: JSON bounding, DTO validation, and domain-failure
+    // paths are all accounted (PR #316 round 1).
+    let mut resources = synthesis_resources(limits)?;
+    let json_nodes = super::validate_json_bounds(input)?;
+    resources
+        .record_operations(usize::try_from(json_nodes).unwrap_or(usize::MAX))
+        .map_err(|error| language_error("request validation", error))?;
+    let request: RewriteSpecializeRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "specialization request has an invalid example shape: {error}"
+            ))
+        })?;
+    let bounds = effective_bounds(limits);
+    let request_bytes = encoded_bytes(&request, "specialization request")?;
+    enforce("request bytes", request_bytes, bounds.max_request_bytes)?;
+    if request.positives.is_empty() {
+        return Err(DiscoveryError::InvalidInput(
+            "specialization requires at least one positive example".to_owned(),
+        ));
+    }
+    let (positives, positive_nodes) = validate_synthesis_examples(
+        &request.positives,
+        MAX_SYNTHESIS_EXAMPLES,
+        "positive examples",
+    )?;
+    let (negatives, negative_nodes) = validate_synthesis_examples(
+        request.negatives.as_deref().unwrap_or(&[]),
+        MAX_SYNTHESIS_EXAMPLES,
+        "negative examples",
+    )?;
+    let input_nodes = positive_nodes.checked_add(negative_nodes).ok_or_else(|| {
+        DiscoveryError::LimitExceeded("specialization input node count overflow".to_owned())
+    })?;
+    let mut output = specialize_output_base(
+        analysis_count(positives.len())?,
+        analysis_count(negatives.len())?,
+    );
+    let config = specialization_config(limits)?;
+
+    match specialize_rules(&positives, &negatives, &config) {
+        Ok(SpecializationOutcome::Refined { rules, coverage }) => {
+            output.outcome = "refined".to_owned();
+            output.rule_count = Some(analysis_count(rules.len())?);
+            output.rules_truncated = Some(rules.len() > MAX_SYNTHESIS_RULES);
+            output.rules = rules
+                .iter()
+                .take(MAX_SYNTHESIS_RULES)
+                .map(RewriteRule::from_rule)
+                .collect();
+            let mut entries = Vec::with_capacity(coverage.rules().len().min(MAX_SYNTHESIS_RULES));
+            for entry in coverage.rules().iter().take(MAX_SYNTHESIS_RULES) {
+                entries.push(RewriteCoverageEntry {
+                    rule_index: analysis_count(entry.rule_index())?,
+                    positives: entry
+                        .positives()
+                        .iter()
+                        .map(|index| *index as u64)
+                        .collect(),
+                    negatives: entry
+                        .negatives()
+                        .iter()
+                        .map(|index| *index as u64)
+                        .collect(),
+                });
+            }
+            output.coverage = entries;
+        }
+        Ok(SpecializationOutcome::Inconclusive { reason }) => {
+            // Inconclusive reports that this bounded search separated no
+            // candidate; it never asserts that none exists.
+            output.outcome = "inconclusive".to_owned();
+            output.inconclusive_reason = Some(specialization_reason_name(reason).to_owned());
+        }
+        Err(error) => record_domain_failure(
+            &mut output.outcome,
+            &mut output.failure_reason,
+            "specialization",
+            &error,
+        ),
+    }
+
+    let _ = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations: analysis_count(resources.operations())?.max(1),
+            nodes: input_nodes,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+fn execute_synthesize_inverse(
+    input: &Value,
+    limits: &EffectiveProbeLimits,
+) -> DiscoveryResult<AdapterOutput> {
+    // Meter first: JSON bounding, DTO validation, and domain-failure
+    // paths are all accounted (PR #316 round 1).
+    let mut resources = synthesis_resources(limits)?;
+    let json_nodes = super::validate_json_bounds(input)?;
+    resources
+        .record_operations(usize::try_from(json_nodes).unwrap_or(usize::MAX))
+        .map_err(|error| language_error("request validation", error))?;
+    let request: RewriteInverseSynthesisRequest =
+        serde_json::from_value(input.clone()).map_err(|error| {
+            DiscoveryError::InvalidInput(format!(
+                "inverse synthesis request has an invalid example shape: {error}"
+            ))
+        })?;
+    let bounds = effective_bounds(limits);
+    let request_bytes = encoded_bytes(&request, "inverse synthesis request")?;
+    enforce("request bytes", request_bytes, bounds.max_request_bytes)?;
+    if request.positives.is_empty() {
+        return Err(DiscoveryError::InvalidInput(
+            "inverse synthesis requires at least one positive example".to_owned(),
+        ));
+    }
+    let (positives, positive_nodes) = validate_synthesis_examples(
+        &request.positives,
+        MAX_SYNTHESIS_EXAMPLES,
+        "positive examples",
+    )?;
+    let (negatives, negative_nodes) = validate_synthesis_examples(
+        request.negatives.as_deref().unwrap_or(&[]),
+        MAX_SYNTHESIS_EXAMPLES,
+        "negative examples",
+    )?;
+    let (residuals, residual_nodes) = validate_synthesis_examples(
+        request.residuals.as_deref().unwrap_or(&[]),
+        MAX_SYNTHESIS_RESIDUALS,
+        "residual examples",
+    )?;
+    let input_nodes = positive_nodes
+        .checked_add(negative_nodes)
+        .and_then(|total| total.checked_add(residual_nodes))
+        .ok_or_else(|| {
+            DiscoveryError::LimitExceeded("inverse synthesis input node count overflow".to_owned())
+        })?;
+    let mut output = inverse_output_base(
+        analysis_count(positives.len())?,
+        analysis_count(negatives.len())?,
+        analysis_count(residuals.len())?,
+    );
+    let config = inverse_synthesis_config(limits)?;
+
+    match synthesize_inverse(&positives, &negatives, &residuals, &config) {
+        Ok(InverseSynthesisOutcome::Candidate {
+            rules,
+            clauses,
+            evidence,
+        }) => {
+            output.outcome = "candidate".to_owned();
+            output.rule_count = Some(analysis_count(rules.len())?);
+            output.clause_count = Some(analysis_count(clauses.len())?);
+            output.clauses_truncated = Some(clauses.len() > MAX_SYNTHESIS_CLAUSES);
+            let mut entries = Vec::with_capacity(clauses.len().min(MAX_SYNTHESIS_CLAUSES));
+            for clause in clauses.iter().take(MAX_SYNTHESIS_CLAUSES) {
+                entries.push(inverse_clause_dto(clause)?);
+            }
+            output.clauses = entries;
+            output.evidence = Some(inverse_evidence_dto(&evidence)?);
+        }
+        Ok(InverseSynthesisOutcome::Refuted { witness }) => {
+            output.outcome = "refuted".to_owned();
+            output.refutation = Some(refutation_dto(witness.refutation())?);
+        }
+        Ok(InverseSynthesisOutcome::Unknown { reason }) => {
+            // Ambiguity and underdetermination are reported, never
+            // resolved by choosing a branch.
+            output.outcome = "unknown".to_owned();
+            output.unknown_reason = Some(unknown_reason_dto(&reason)?);
+        }
+        Err(error) => record_domain_failure(
+            &mut output.outcome,
+            &mut output.failure_reason,
+            "inverse synthesis",
+            &error,
+        ),
+    }
+
+    let _ = validate_encoded_output(&output, bounds)?;
+    Ok(AdapterOutput {
+        resources: ResourceObservations {
+            operations: analysis_count(resources.operations())?.max(1),
+            nodes: input_nodes,
+            iterations: 1,
+            bytes: 0,
+        },
+        output: serde_json::to_value(output)?,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn specialize_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:specialize:v1".parse()?,
+        capability_id: "amari:amari-rewrite:synthesis:specialize".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-specialize/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-specialize/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_specialize,
+    })
+}
+
+#[cfg(feature = "standard-probes")]
+pub(super) fn synthesize_inverse_registration() -> DiscoveryResult<AdapterRegistration> {
+    Ok(AdapterRegistration {
+        id: "amari-probe:rewrite:synthesize-inverse:v1".parse()?,
+        capability_id: "amari:amari-rewrite:synthesis:inverse".parse()?,
+        input_schema: "amari.discovery/probe/rewrite-synthesize-inverse/input/v1".to_owned(),
+        output_schema: "amari.discovery/probe/rewrite-synthesize-inverse/output/v1".to_owned(),
+        required_features: vec!["standard-probes".to_owned()],
+        limits: ProbeLimits {
+            max_input_bytes: 65_536,
+            max_output_bytes: 65_536,
+            max_operations: 100_000,
+            timeout_millis: 2_000,
+        },
+        deterministic: true,
+        side_effects: SideEffectPolicy::None,
+        network: false,
+        execute: execute_synthesize_inverse,
     })
 }
