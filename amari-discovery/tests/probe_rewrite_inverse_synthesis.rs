@@ -535,6 +535,216 @@ fn invalid_requests_are_rejected_at_deserialization() {
     );
 }
 
+/// A term nested `depth` levels deep.
+fn nested_term(depth: usize) -> Value {
+    let mut term = sym0("a");
+    for index in 0..depth {
+        term = sym1(&format!("f{index}"), term);
+    }
+    term
+}
+
+/// PR #338 round 2 P2a: every bound the wire contract declares is
+/// enforced by DTO validation, so direct deserialization rejects each
+/// oversized shape — and the exact-ceiling twin of each still parses.
+#[test]
+fn every_declared_bound_is_enforced_at_deserialization() {
+    let one = |source: Value| json!([example(source, sym0("b"))]);
+    let many = |count: usize| {
+        let entries: Vec<Value> = (0..count)
+            .map(|_| example(sym1("k", sym0("a")), sym1("m", sym0("a"))))
+            .collect();
+        json!(entries)
+    };
+
+    // Example count: 32 parses, 33 fails, for both request types.
+    let _: amari_discovery::RewriteSpecializeRequest =
+        serde_json::from_value(json!({"positives": many(32)})).expect("32 positives parse");
+    let error = serde_json::from_value::<amari_discovery::RewriteSpecializeRequest>(json!({
+        "positives": many(33)
+    }))
+    .expect_err("33 positives must not deserialize");
+    assert!(
+        error.to_string().contains("positive examples"),
+        "unexpected error: {error}"
+    );
+    let error = serde_json::from_value::<amari_discovery::RewriteInverseSynthesisRequest>(json!({
+        "positives": many(33)
+    }))
+    .expect_err("33 positives must not deserialize");
+    assert!(
+        error.to_string().contains("positive examples"),
+        "unexpected error: {error}"
+    );
+    let _: amari_discovery::RewriteInverseSynthesisRequest =
+        serde_json::from_value(json!({"positives": many(32)})).expect("32 positives parse");
+
+    // Residual count: 32 parses, 33 fails.
+    let residuals = many(33);
+    let error = serde_json::from_value::<amari_discovery::RewriteInverseSynthesisRequest>(json!({
+        "positives": lossless_positives(),
+        "residuals": residuals
+    }))
+    .expect_err("33 residuals must not deserialize");
+    assert!(
+        error.to_string().contains("residual examples"),
+        "unexpected error: {error}"
+    );
+
+    // Node ceiling: 64 nodes parse, 65 fail, for both request types.
+    let _: amari_discovery::RewriteSpecializeRequest =
+        serde_json::from_value(json!({"positives": one(wide_term(63))}))
+            .expect("a 64-node term parses");
+    for probe in [SPECIALIZE, SYNTHESIZE_INVERSE] {
+        let name = if probe == SPECIALIZE {
+            "RewriteSpecializeRequest"
+        } else {
+            "RewriteInverseSynthesisRequest"
+        };
+        let oversized = json!({"positives": one(wide_term(64))});
+        let rejected = match probe {
+            SPECIALIZE => serde_json::from_value::<amari_discovery::RewriteSpecializeRequest>(
+                oversized.clone(),
+            )
+            .map(|_| ())
+            .map_err(|error| error.to_string()),
+            _ => serde_json::from_value::<amari_discovery::RewriteInverseSynthesisRequest>(
+                oversized.clone(),
+            )
+            .map(|_| ())
+            .map_err(|error| error.to_string()),
+        };
+        assert!(
+            rejected
+                .expect_err(&format!("{name} must reject a 65-node term"))
+                .contains("nodes"),
+            "{name}: the node ceiling must be the reported bound"
+        );
+    }
+
+    // Name bytes: a 256-byte name parses, a 257-byte name fails.
+    let long = "x".repeat(257);
+    let error = serde_json::from_value::<amari_discovery::RewriteSpecializeRequest>(json!({
+        "positives": one(json!({"kind": "symbol", "name": long, "arguments": []}))
+    }))
+    .expect_err("a 257-byte name must not deserialize");
+    assert!(
+        error.to_string().contains("name"),
+        "unexpected error: {error}"
+    );
+    let _: amari_discovery::RewriteSpecializeRequest = serde_json::from_value(json!({
+        "positives": one(json!({"kind": "symbol", "name": "x".repeat(256), "arguments": []}))
+    }))
+    .expect("a 256-byte name parses");
+
+    // Depth: 16 levels parse, 17 fail. Depth is enforced by the same
+    // DTO validation as the other ceilings (documented in
+    // `RewriteSpecializeRequest::validate`), and the adapter re-asserts
+    // the identical bound.
+    let _: amari_discovery::RewriteSpecializeRequest =
+        serde_json::from_value(json!({"positives": one(nested_term(15))}))
+            .expect("a 16-deep term parses");
+    let error = serde_json::from_value::<amari_discovery::RewriteSpecializeRequest>(json!({
+        "positives": one(nested_term(17))
+    }))
+    .expect_err("a 17-deep term must not deserialize");
+    assert!(
+        error.to_string().contains("depth"),
+        "unexpected error: {error}"
+    );
+}
+
+/// PR #338 round 2 P2b: the inconclusive, refuted, unknown, and error
+/// arms assemble wire evidence too, so their tags are metered. Each
+/// delta below is `SYNTHESIS_REASON_UNITS` (2) plus one unit per byte
+/// of the emitted kind/detail/operation text plus one unit per
+/// populated index slot (measured values, pinned).
+#[test]
+fn non_success_output_assembly_is_charged() {
+    let variable = |name: &str| json!({"kind": "variable", "name": name});
+    let cases: [(&str, &str, Value, u64); 6] = [
+        (
+            "inconclusive",
+            SPECIALIZE,
+            json!({
+                "positives": [example(sym1("f", variable("X")), variable("X"))],
+                "negatives": [example(sym1("f", sym0("a")), sym0("a"))],
+            }),
+            // 2 + "inseparable" (11) = 13.
+            13,
+        ),
+        (
+            "error",
+            SPECIALIZE,
+            json!({
+                "positives": [example(sym2("add", sym0("0"), sym0("a")), sym0("a"))],
+                "negatives": [example(sym2("add", sym0("0"), sym0("a")), sym0("a"))],
+            }),
+            // 2 + "specialization" (14) + failure text (72) = 88. The
+            // failure text embeds the library message and its limit, so
+            // this total is fixture-specific.
+            88,
+        ),
+        (
+            "refuted",
+            SYNTHESIZE_INVERSE,
+            json!({
+                "positives": erasing_positives(),
+                "residuals": [example(sym1("h", sym0("a")), sym1("snd", sym0("a")))],
+            }),
+            // 2 + "residual_round_trip" (19) + 2 index slots = 23.
+            23,
+        ),
+        (
+            "unknown_residual",
+            SYNTHESIZE_INVERSE,
+            json!({"positives": erasing_positives()}),
+            // 2 + "residual_underdetermined" (24) + 1 clause slot = 27.
+            27,
+        ),
+        (
+            "unknown_underdetermined",
+            SYNTHESIZE_INVERSE,
+            json!({"positives": [example(variable("X"), sym1("f", variable("Y")))]}),
+            // 2 + "underdetermined" (15) + 1 detail slot + 15 bytes = 33.
+            33,
+        ),
+        (
+            "unknown_ambiguous",
+            SYNTHESIZE_INVERSE,
+            json!({
+                "positives": [
+                    example(sym2("pair", sym0("a"), sym0("b")), sym1("snd", sym0("a"))),
+                    example(sym2("pair", sym0("a"), sym0("c")), sym1("snd", sym0("a"))),
+                ],
+                "residuals": [
+                    example(sym2("pair", sym0("a"), sym0("b")), sym1("snd", sym0("a"))),
+                    example(sym2("pair", sym0("a"), sym0("c")), sym1("snd", sym0("a"))),
+                ],
+            }),
+            // 2 + "ambiguous" (9) + 1 clause slot = 12.
+            12,
+        ),
+    ];
+
+    for (label, probe, input, assembly) in cases {
+        let execution = ProbeEngine::new()
+            .unwrap()
+            .execute(&probe.parse().unwrap(), &input)
+            .unwrap();
+        assert_ne!(
+            execution.output["outcome"],
+            json!("refined"),
+            "{label}: fixture must not succeed"
+        );
+        assert_eq!(
+            execution.resources.operations,
+            json_node_count(&input) + assembly,
+            "{label}: reported operations must cover validation plus the reason tag"
+        );
+    }
+}
+
 #[test]
 fn malformed_examples_are_typed_input_errors() {
     for probe in [SPECIALIZE, SYNTHESIZE_INVERSE] {
@@ -786,59 +996,86 @@ fn output_assembly_is_charged_per_node_and_entry() {
     }
 }
 
+/// Run one probe under an operation ceiling, keeping the typed error.
+fn run_at(probe: &str, input: &Value, budget: u64) -> Result<Value, DiscoveryError> {
+    let limits = ProbeEngineLimits {
+        max_operations: budget,
+        ..ProbeEngineLimits::default()
+    };
+    ProbeEngine::with_limits(limits)
+        .unwrap()
+        .execute(&probe.parse().unwrap(), input)
+        .map(|execution| {
+            serde_json::json!({
+                "outcome": execution.output["outcome"],
+                "reason": execution.output["failure_reason"],
+                "operations": execution.resources.operations,
+            })
+        })
+}
+
 #[test]
 fn an_exhausted_operations_budget_is_a_typed_outcome_with_observations() {
-    let input = json!({
-        "positives": [
-            example(sym1("k", sym0("a")), sym1("m", sym0("a"))),
-            example(sym1("k", sym0("b")), sym1("m", sym0("b"))),
-        ]
-    });
+    // One pair supplied as both positive and negative is a library
+    // error for either probe, so the ladder below is deterministic:
+    // entry refusal, then tag refusal, then a typed outcome.
+    let pair = example(sym2("add", sym0("0"), sym0("a")), sym0("a"));
+    let input = json!({"positives": [pair.clone()], "negatives": [pair]});
     let nodes = json_node_count(&input);
-    for probe in [SPECIALIZE, SYNTHESIZE_INVERSE] {
-        // A budget exactly at the request-validation charge is metered
-        // without error, and the library — which opens its own budget
-        // from the same ceiling — exhausts immediately: the failure is a
-        // typed outcome that keeps the observations. One operation less
-        // fails the entry charge, which is a probe limit error instead.
-        for budget in [nodes, nodes + 1] {
-            let limits = ProbeEngineLimits {
-                max_operations: budget,
-                ..ProbeEngineLimits::default()
-            };
-            let engine = ProbeEngine::with_limits(limits).unwrap();
-            let execution = engine
-                .execute(&probe.parse().unwrap(), &input)
-                .expect("a library limit violation is a typed outcome");
-            assert_eq!(
-                execution.output["outcome"],
-                json!("error"),
-                "{probe} at budget {budget}"
-            );
-            assert!(
-                execution.output["failure_reason"]
-                    .as_str()
-                    .is_some_and(|reason| !reason.is_empty()),
-                "{probe}: failure_reason must describe the domain failure"
-            );
-            assert!(
-                execution.resources.operations > 0,
-                "{probe}: failure accounting must accompany the outcome"
-            );
-        }
-
-        let limits = ProbeEngineLimits {
-            max_operations: nodes - 1,
-            ..ProbeEngineLimits::default()
-        };
-        let engine = ProbeEngine::with_limits(limits).unwrap();
-        let error = engine.execute(&probe.parse().unwrap(), &input).unwrap_err();
+    // Measured tag charges for this fixture (node count 37):
+    // - specialize: 2 + "specialization" (14) + 72 bytes of failure
+    //   text = 88, so the typed outcome appears first at 125;
+    // - inverse: 2 + "inverse synthesis" (17) + 75 bytes of failure
+    //   text = 94, so it appears first at 131.
+    let expected = [(SPECIALIZE, 88_u64), (SYNTHESIZE_INVERSE, 94_u64)];
+    for (probe, tag) in expected {
+        // Below the request-validation charge the entry meter refuses the
+        // request outright: a probe limit error, not an outcome.
+        let error = run_at(probe, &input, nodes - 1).unwrap_err();
         assert!(
             matches!(
                 error,
                 DiscoveryError::LimitExceeded(ref message) if message.contains("request validation")
             ),
             "{probe}: an exhausted entry charge is a typed limit error, got {error}"
+        );
+
+        // Between the validation charge and the tag charge the failure
+        // cannot be assembled: also a limit error, named for the output.
+        let error = run_at(probe, &input, nodes).unwrap_err();
+        assert!(
+            matches!(
+                error,
+                DiscoveryError::LimitExceeded(ref message) if message.contains("output assembly")
+            ),
+            "{probe}: an exhausted tag charge is a typed limit error, got {error}"
+        );
+
+        // Once the budget covers validation plus the tag, the library
+        // failure is reported as a typed outcome that keeps the meter.
+        let execution = run_at(probe, &input, nodes + tag)
+            .unwrap_or_else(|error| panic!("{probe}: typed outcome expected, got {error}"));
+        assert_eq!(execution["outcome"], json!("error"), "{probe}");
+        assert!(
+            execution["reason"]
+                .as_str()
+                .is_some_and(|reason| !reason.is_empty()),
+            "{probe}: failure_reason must describe the domain failure"
+        );
+        assert_eq!(
+            execution["operations"],
+            json!(nodes + tag),
+            "{probe}: reported operations cover validation plus the tag"
+        );
+
+        // One unit below that boundary is the tag-charge refusal.
+        let error = run_at(probe, &input, nodes + tag - 1).unwrap_err();
+        assert!(
+            matches!(
+                error,
+                DiscoveryError::LimitExceeded(ref message) if message.contains("output assembly")
+            ),
+            "{probe}: the budget below the boundary must fail the tag charge, got {error}"
         );
     }
 }

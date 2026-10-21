@@ -41,9 +41,11 @@ use serde_json::Value;
 #[cfg(feature = "standard-probes")]
 use super::registry::{AdapterOutput, AdapterRegistration, EffectiveProbeLimits};
 #[cfg(feature = "standard-probes")]
-use crate::{DiscoveryError, DiscoveryResult, ProbeLimits, ResourceObservations, SideEffectPolicy};
+use crate::{ProbeLimits, ResourceObservations, SideEffectPolicy};
+// The shared DTO validation and its term walk compile in every build
+// profile, so these stay ungated.
+use crate::{DiscoveryError, DiscoveryResult};
 
-#[cfg(feature = "standard-probes")]
 const MAX_NAME_BYTES: usize = 256;
 #[cfg(feature = "standard-probes")]
 const MAX_TERM_DEPTH: u64 = 64;
@@ -821,7 +823,6 @@ struct RuleGrowth {
     rhs_duplicates_variable: bool,
 }
 
-#[cfg(feature = "standard-probes")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct TermStats {
     nodes: u64,
@@ -886,7 +887,6 @@ where
     })
 }
 
-#[cfg(feature = "standard-probes")]
 fn term_stats(term: &RewriteTerm, max_depth: u64, max_nodes: u64) -> DiscoveryResult<TermStats> {
     fn visit(
         term: &RewriteTerm,
@@ -1003,7 +1003,6 @@ fn encoded_bytes<T: Serialize>(value: &T, context: &str) -> DiscoveryResult<u64>
         .map_err(|_| DiscoveryError::LimitExceeded(format!("{context} byte count overflow")))
 }
 
-#[cfg(feature = "standard-probes")]
 fn validate_name(name: &str) -> DiscoveryResult<()> {
     if name.is_empty() || name.len() > MAX_NAME_BYTES {
         return Err(DiscoveryError::InvalidInput(format!(
@@ -1014,7 +1013,6 @@ fn validate_name(name: &str) -> DiscoveryResult<()> {
     Ok(())
 }
 
-#[cfg(feature = "standard-probes")]
 fn enforce(kind: &str, observed: u64, maximum: u64) -> DiscoveryResult<()> {
     if observed <= maximum {
         Ok(())
@@ -1713,6 +1711,10 @@ mod tests {
         RewriteRule { lhs, rhs }
     }
 
+    fn exact_limits(operations: usize) -> RelationLimits {
+        RelationLimits::new(64, 16, RelationLimits::MAX_CONSTRAINTS, operations).unwrap()
+    }
+
     fn bounds() -> RewriteBounds {
         RewriteBounds {
             max_request_bytes: 65_536,
@@ -1910,6 +1912,101 @@ mod tests {
             0,
             "a refused charge must not meter the units it refused"
         );
+    }
+
+    /// Non-success output assembly is metered with the same budget:
+    /// an exact budget charges, one unit short refuses with an
+    /// "output assembly" limit error and meters nothing (PR #338
+    /// round 2 P2b).
+    #[test]
+    fn non_success_output_assembly_is_charged_and_enforced() {
+        // `residual_underdetermined` carries a 24-byte kind and one
+        // clause slot: 2 + 24 + 1 = 27 units.
+        let units = SYNTHESIS_REASON_UNITS + 24 + 1;
+        assert_eq!(units, 27);
+        let exact = RelationLimits::new(
+            64,
+            16,
+            RelationLimits::MAX_CONSTRAINTS,
+            usize::try_from(units).unwrap(),
+        )
+        .unwrap();
+        let mut budget = RelationResources::new(&exact);
+        charge_reason_output(&mut budget, "residual_underdetermined", None, 1).unwrap();
+        assert_eq!(
+            budget.operations(),
+            usize::try_from(units).unwrap(),
+            "the tag charge equals its documented units"
+        );
+
+        let short = RelationLimits::new(
+            64,
+            16,
+            RelationLimits::MAX_CONSTRAINTS,
+            usize::try_from(units - 1).unwrap(),
+        )
+        .unwrap();
+        let mut refused = RelationResources::new(&short);
+        let error =
+            charge_reason_output(&mut refused, "residual_underdetermined", None, 1).unwrap_err();
+        assert!(
+            matches!(error, DiscoveryError::LimitExceeded(ref message) if message.contains("output assembly")),
+            "unexpected error: {error}"
+        );
+        assert_eq!(refused.operations(), 0);
+
+        // A detail string is charged with its own slot and bytes:
+        // 2 + "underdetermined" (15) + 1 + "unrepresentable" (15) = 33.
+        let mut detail_budget = RelationResources::new(&exact_limits(33));
+        charge_reason_output(
+            &mut detail_budget,
+            "underdetermined",
+            Some("unrepresentable"),
+            0,
+        )
+        .unwrap();
+        assert_eq!(detail_budget.operations(), 33);
+
+        // The failure recorder charges the label, the operation prefix,
+        // and the text, and only then writes the output fields.
+        let error = amari_rewrite::RewriteError::InvalidRule {
+            message: String::from("boom"),
+        };
+        let text = format!("specialization: {error}");
+        let recorded_units =
+            SYNTHESIS_REASON_UNITS + "specialization".len() as u64 + text.len() as u64;
+        let mut failure_budget = RelationResources::new(&exact_limits(recorded_units as usize));
+        let mut outcome = String::new();
+        let mut reason = None;
+        record_charged_failure(
+            &mut failure_budget,
+            &mut outcome,
+            &mut reason,
+            "specialization",
+            &error,
+        )
+        .unwrap();
+        assert_eq!(outcome, "error");
+        assert_eq!(reason.as_deref(), Some(text.as_str()));
+        assert_eq!(failure_budget.operations(), recorded_units as usize);
+
+        let mut refused_budget = RelationResources::new(&exact_limits(recorded_units as usize - 1));
+        let mut refused_outcome = String::new();
+        let mut refused_reason = None;
+        let error = record_charged_failure(
+            &mut refused_budget,
+            &mut refused_outcome,
+            &mut refused_reason,
+            "specialization",
+            &error,
+        )
+        .unwrap_err();
+        assert!(
+            matches!(error, DiscoveryError::LimitExceeded(ref message) if message.contains("output assembly")),
+            "unexpected error: {error}"
+        );
+        assert!(refused_outcome.is_empty(), "a refused tag must not write");
+        assert!(refused_reason.is_none(), "a refused tag must not write");
     }
 
     /// The inverse-synthesis probe's output-assembly charge: rule nodes
@@ -4664,16 +4761,12 @@ pub(super) fn completion_registration() -> DiscoveryResult<AdapterRegistration> 
 // ---------------------------------------------------------------------
 
 /// Hard ceiling for one synthesis example list.
-#[cfg(feature = "standard-probes")]
 const MAX_SYNTHESIS_EXAMPLES: u64 = 32;
 /// Hard ceiling for the residual example list.
-#[cfg(feature = "standard-probes")]
 const MAX_SYNTHESIS_RESIDUALS: u64 = 32;
 /// Hard ceiling for synthesis term nodes.
-#[cfg(feature = "standard-probes")]
 const MAX_SYNTHESIS_TERM_NODES: u64 = 64;
 /// Hard ceiling for synthesis term depth.
-#[cfg(feature = "standard-probes")]
 const MAX_SYNTHESIS_TERM_DEPTH: u64 = 16;
 /// Hard ceiling for synthesis domain operations.
 #[cfg(feature = "standard-probes")]
@@ -4756,12 +4849,84 @@ pub struct RewriteSpecializeRequest {
     pub negatives: Option<Vec<RewriteSynthesisExample>>,
 }
 
+/// The single source of truth for synthesis request bounds.
+///
+/// Every ceiling the synthesis probes declare in their wire contracts is
+/// enforced here: example counts per list, and per-term name bytes, node
+/// count, and depth. The checked constructors (and therefore
+/// `Deserialize`) and the probe adapters both call it, so an oversized
+/// request can neither deserialize nor reach the library, and the two
+/// paths can never disagree about a bound (PR #338 round 2 P2a).
+///
+/// Kept off the `standard-probes` feature so the DTO contract holds in
+/// every build profile.
+fn validate_synthesis_evidence(
+    operation: &str,
+    positives: &[RewriteSynthesisExample],
+    negatives: Option<&[RewriteSynthesisExample]>,
+    residuals: Option<&[RewriteSynthesisExample]>,
+) -> crate::DiscoveryResult<()> {
+    if positives.is_empty() {
+        return Err(crate::DiscoveryError::InvalidInput(format!(
+            "{operation} requires at least one positive example"
+        )));
+    }
+    validate_synthesis_example_list(positives, MAX_SYNTHESIS_EXAMPLES, "positive examples")?;
+    if let Some(negatives) = negatives {
+        validate_synthesis_example_list(negatives, MAX_SYNTHESIS_EXAMPLES, "negative examples")?;
+    }
+    if let Some(residuals) = residuals {
+        validate_synthesis_example_list(residuals, MAX_SYNTHESIS_RESIDUALS, "residual examples")?;
+    }
+    Ok(())
+}
+
+/// Validate one example list against the count and per-term ceilings.
+fn validate_synthesis_example_list(
+    examples: &[RewriteSynthesisExample],
+    ceiling: u64,
+    kind: &str,
+) -> crate::DiscoveryResult<()> {
+    let count = u64::try_from(examples.len())
+        .map_err(|_| crate::DiscoveryError::LimitExceeded(format!("{kind} count overflow")))?;
+    enforce(kind, count, ceiling)?;
+    for example in examples {
+        for term in [&example.source, &example.target] {
+            // Validated while borrowed and iteratively, so an oversized
+            // term is a typed error instead of a recursive walk.
+            let _stats = term_stats(term, MAX_SYNTHESIS_TERM_DEPTH, MAX_SYNTHESIS_TERM_NODES)?;
+        }
+    }
+    Ok(())
+}
+
+/// Unvalidated deserialization shape for
+/// [`RewriteSpecializeRequest`].
+///
+/// Shared by the DTO's `Deserialize` impl and by the probe adapter, so
+/// both parse exactly one shape and then run the same bounded
+/// validation (one source of truth).
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RewriteSpecializeRequestRaw {
+    positives: Vec<RewriteSynthesisExample>,
+    negatives: Option<Vec<RewriteSynthesisExample>>,
+}
+
+impl RewriteSpecializeRequestRaw {
+    /// Run the shared validation and build the checked request, keeping
+    /// the typed `InvalidInput`/`LimitExceeded` distinction.
+    fn into_request(self) -> crate::DiscoveryResult<RewriteSpecializeRequest> {
+        RewriteSpecializeRequest::new(self.positives, self.negatives)
+    }
+}
+
 impl RewriteSpecializeRequest {
-    /// Construct a request through the shape check.
+    /// Construct a request through the checked validation.
     ///
     /// Task 36/37 doctrine (PR #320 round 1 P2): a public request value
-    /// is validated at construction, on deserialization, and again at
-    /// the adapter entry point.
+    /// is validated at construction, on deserialization, and again by
+    /// the adapter.
     pub fn new(
         positives: Vec<RewriteSynthesisExample>,
         negatives: Option<Vec<RewriteSynthesisExample>>,
@@ -4774,36 +4939,27 @@ impl RewriteSpecializeRequest {
         Ok(request)
     }
 
-    /// Validate the request shape this DTO owns.
-    ///
-    /// Count, node, and depth ceilings belong to the probe's limit
-    /// profile and stay with the adapter (where they surface as typed
-    /// limit errors); the shape invariant here is that a synthesis run
-    /// can never start without evidence.
+    /// Validate every declared bound: at least one positive example,
+    /// at most 32 entries per list, and per-term name (256 bytes), node
+    /// (64), and depth (16) ceilings.
     pub fn validate(&self) -> crate::DiscoveryResult<()> {
-        if self.positives.is_empty() {
-            return Err(crate::DiscoveryError::InvalidInput(
-                "specialization requires at least one positive example".to_owned(),
-            ));
-        }
-        Ok(())
+        validate_synthesis_evidence(
+            "specialization",
+            &self.positives,
+            self.negatives.as_deref(),
+            None,
+        )
     }
 }
 
 impl<'de> Deserialize<'de> for RewriteSpecializeRequest {
-    /// Deserialization routes through the checked constructor, so a
-    /// well-formed but invalid request (`{"positives":[]}`) is rejected
-    /// at parse time instead of reaching the adapter (Task 36
-    /// `SpecializationConfig` doctrine; PR #338 round 1 P2).
+    /// Deserialization routes through the checked constructor, so an
+    /// oversized or empty request is rejected at parse time instead of
+    /// reaching the adapter (Task 36 `SpecializationConfig` doctrine;
+    /// PR #338 rounds 1-2).
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Raw {
-            positives: Vec<RewriteSynthesisExample>,
-            negatives: Option<Vec<RewriteSynthesisExample>>,
-        }
-        let raw = <Raw as Deserialize>::deserialize(deserializer)?;
-        Self::new(raw.positives, raw.negatives).map_err(serde::de::Error::custom)
+        let raw = <RewriteSpecializeRequestRaw as Deserialize>::deserialize(deserializer)?;
+        raw.into_request().map_err(serde::de::Error::custom)
     }
 }
 
@@ -4928,12 +5084,34 @@ pub struct RewriteInverseSynthesisRequest {
     pub residuals: Option<Vec<RewriteSynthesisExample>>,
 }
 
+/// Unvalidated deserialization shape for
+/// [`RewriteInverseSynthesisRequest`].
+///
+/// Shared by the DTO's `Deserialize` impl and by the probe adapter, so
+/// both parse exactly one shape and then run the same bounded
+/// validation (one source of truth).
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RewriteInverseSynthesisRequestRaw {
+    positives: Vec<RewriteSynthesisExample>,
+    negatives: Option<Vec<RewriteSynthesisExample>>,
+    residuals: Option<Vec<RewriteSynthesisExample>>,
+}
+
+impl RewriteInverseSynthesisRequestRaw {
+    /// Run the shared validation and build the checked request, keeping
+    /// the typed `InvalidInput`/`LimitExceeded` distinction.
+    fn into_request(self) -> crate::DiscoveryResult<RewriteInverseSynthesisRequest> {
+        RewriteInverseSynthesisRequest::new(self.positives, self.negatives, self.residuals)
+    }
+}
+
 impl RewriteInverseSynthesisRequest {
-    /// Construct a request through the shape check.
+    /// Construct a request through the checked validation.
     ///
     /// Task 36/37 doctrine (PR #320 round 1 P2): a public request value
-    /// is validated at construction, on deserialization, and again at
-    /// the adapter entry point.
+    /// is validated at construction, on deserialization, and again by
+    /// the adapter.
     pub fn new(
         positives: Vec<RewriteSynthesisExample>,
         negatives: Option<Vec<RewriteSynthesisExample>>,
@@ -4948,35 +5126,27 @@ impl RewriteInverseSynthesisRequest {
         Ok(request)
     }
 
-    /// Validate the request shape this DTO owns.
-    ///
-    /// Count, node, and depth ceilings belong to the probe's limit
-    /// profile and stay with the adapter; the shape invariant here is
-    /// that a synthesis run can never start without evidence.
+    /// Validate every declared bound: at least one positive example, at
+    /// most 32 entries per positive/negative list, at most 32 residual
+    /// entries, and per-term name (256 bytes), node (64), and depth (16)
+    /// ceilings.
     pub fn validate(&self) -> crate::DiscoveryResult<()> {
-        if self.positives.is_empty() {
-            return Err(crate::DiscoveryError::InvalidInput(
-                "inverse synthesis requires at least one positive example".to_owned(),
-            ));
-        }
-        Ok(())
+        validate_synthesis_evidence(
+            "inverse synthesis",
+            &self.positives,
+            self.negatives.as_deref(),
+            self.residuals.as_deref(),
+        )
     }
 }
 
 impl<'de> Deserialize<'de> for RewriteInverseSynthesisRequest {
-    /// Deserialization routes through the checked constructor, so a
-    /// well-formed but invalid request is rejected at parse time
-    /// (Task 36 `SpecializationConfig` doctrine; PR #338 round 1 P2).
+    /// Deserialization routes through the checked constructor, so an
+    /// oversized or empty request is rejected at parse time (Task 36
+    /// `SpecializationConfig` doctrine; PR #338 rounds 1-2).
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Raw {
-            positives: Vec<RewriteSynthesisExample>,
-            negatives: Option<Vec<RewriteSynthesisExample>>,
-            residuals: Option<Vec<RewriteSynthesisExample>>,
-        }
-        let raw = <Raw as Deserialize>::deserialize(deserializer)?;
-        Self::new(raw.positives, raw.negatives, raw.residuals).map_err(serde::de::Error::custom)
+        let raw = <RewriteInverseSynthesisRequestRaw as Deserialize>::deserialize(deserializer)?;
+        raw.into_request().map_err(serde::de::Error::custom)
     }
 }
 
@@ -5190,28 +5360,19 @@ fn inverse_synthesis_config(
 /// DTOs BEFORE any recursive conversion runs, so adversarial input is a
 /// typed limit error instead of a stack abort.
 #[cfg(feature = "standard-probes")]
-fn validate_synthesis_examples(
+fn synthesis_example_pairs(
     examples: &[RewriteSynthesisExample],
-    ceiling: u64,
     kind: &str,
 ) -> DiscoveryResult<(Vec<(Term, Term)>, u64)> {
-    let count = u64::try_from(examples.len())
-        .map_err(|_| DiscoveryError::LimitExceeded(format!("{kind} count overflow")))?;
-    enforce(kind, count, ceiling)?;
+    // The count and term ceilings already ran through the shared
+    // `validate_synthesis_evidence`; re-asserting them per term here
+    // keeps the adapter honest even if a caller builds the DTO another
+    // way, and the same walk yields the node count the probe reports.
     let mut nodes = 0_u64;
     let mut pairs = Vec::with_capacity(examples.len());
     for example in examples {
-        let source = term_stats(
-            &example.source,
-            MAX_SYNTHESIS_TERM_DEPTH,
-            MAX_SYNTHESIS_TERM_NODES,
-        )?;
-        let target = term_stats(
-            &example.target,
-            MAX_SYNTHESIS_TERM_DEPTH,
-            MAX_SYNTHESIS_TERM_NODES,
-        )?;
-        for stats in [source, target] {
+        for term in [&example.source, &example.target] {
+            let stats = term_stats(term, MAX_SYNTHESIS_TERM_DEPTH, MAX_SYNTHESIS_TERM_NODES)?;
             nodes = nodes.checked_add(stats.nodes).ok_or_else(|| {
                 DiscoveryError::LimitExceeded(format!("{kind} node count overflow"))
             })?;
@@ -5220,6 +5381,18 @@ fn validate_synthesis_examples(
     }
     Ok((pairs, nodes))
 }
+
+/// Units charged for tagging a non-success outcome: the outcome label
+/// plus one typed field slot (the reason or kind field). Further fields
+/// — a detail string, index slots, or failure text — are charged on
+/// top, per byte or per slot, by [`charge_reason_output`] and
+/// [`record_charged_failure`].
+///
+/// PR #338 round 2 P2b: the inconclusive, refuted, unknown, and error
+/// arms assemble wire evidence too, so they are metered like the
+/// success path instead of shipping free output.
+#[cfg(feature = "standard-probes")]
+const SYNTHESIS_REASON_UNITS: u64 = 2;
 
 /// Units charged for the eight evidence counters reported by the
 /// inverse-synthesis probe: one per converted count.
@@ -5258,6 +5431,72 @@ fn charge_output(resources: &mut RelationResources, units: u64) -> DiscoveryResu
     resources
         .record_operations(usize::try_from(units).unwrap_or(usize::MAX))
         .map_err(|error| language_error("output assembly", error))
+}
+
+/// Charge one tagged non-success outcome BEFORE its label, kind, and
+/// optional detail/index fields are written: one unit per byte of every
+/// string it will carry plus one unit per populated index slot.
+#[cfg(feature = "standard-probes")]
+fn charge_reason_output(
+    resources: &mut RelationResources,
+    kind: &str,
+    detail: Option<&str>,
+    indices: usize,
+) -> DiscoveryResult<()> {
+    let mut units = SYNTHESIS_REASON_UNITS + kind.len() as u64 + indices as u64;
+    if let Some(detail) = detail {
+        units = units.saturating_add(1 + detail.len() as u64);
+    }
+    charge_output(resources, units)
+}
+
+/// Wire kind and populated index slots of a refuting witness. Shared
+/// with [`refutation_dto`] so the metered shape and the emitted shape
+/// cannot diverge.
+#[cfg(feature = "standard-probes")]
+fn refutation_shape(refutation: &InverseRefutation) -> (&'static str, usize) {
+    match refutation {
+        InverseRefutation::ForwardReplay { .. } => ("forward_replay", 1),
+        InverseRefutation::NegativeAccepted { .. } => ("negative_accepted", 2),
+        InverseRefutation::ResidualRoundTrip { .. } => ("residual_round_trip", 2),
+        InverseRefutation::ReverseReplay { .. } => ("reverse_replay", 2),
+    }
+}
+
+/// Wire kind, optional detail name, and populated index slots of an
+/// unknown reason. Shared with [`unknown_reason_dto`].
+#[cfg(feature = "standard-probes")]
+fn unknown_shape(reason: &InverseUnknownReason) -> (&'static str, Option<&'static str>, usize) {
+    match reason {
+        InverseUnknownReason::Underdetermined { detail } => (
+            "underdetermined",
+            Some(specialization_reason_name(*detail)),
+            0,
+        ),
+        InverseUnknownReason::ResidualUnderdetermined { .. } => {
+            ("residual_underdetermined", None, 1)
+        }
+        InverseUnknownReason::Ambiguous { .. } => ("ambiguous", None, 1),
+    }
+}
+
+/// Record a library-domain failure as a typed outcome, metering the
+/// outcome label, the reason slot, the operation prefix, and then the
+/// failure text per byte BEFORE any of them is written into the output.
+#[cfg(feature = "standard-probes")]
+fn record_charged_failure(
+    resources: &mut RelationResources,
+    outcome: &mut String,
+    reason: &mut Option<String>,
+    operation: &str,
+    error: &RewriteError,
+) -> DiscoveryResult<()> {
+    charge_output(resources, SYNTHESIS_REASON_UNITS + operation.len() as u64)?;
+    let text = format!("{operation}: {error}");
+    charge_output(resources, text.len() as u64)?;
+    *outcome = "error".to_owned();
+    *reason = Some(text);
+    Ok(())
 }
 
 /// Charge the wire cost of one emitted rule: one entry unit plus every
@@ -5323,26 +5562,17 @@ fn inverse_evidence_dto(evidence: &InverseEvidence) -> DiscoveryResult<RewriteIn
 /// Convert a refuting witness into its typed wire form.
 #[cfg(feature = "standard-probes")]
 fn refutation_dto(refutation: &InverseRefutation) -> DiscoveryResult<RewriteInverseRefutation> {
-    let (kind, positive, negative, residual, clause) = match refutation {
-        InverseRefutation::ForwardReplay { positive } => {
-            ("forward_replay", Some(*positive), None, None, None)
+    let (kind, _slots) = refutation_shape(refutation);
+    let (positive, negative, residual, clause) = match refutation {
+        InverseRefutation::ForwardReplay { positive } => (Some(*positive), None, None, None),
+        InverseRefutation::NegativeAccepted { negative, clause } => {
+            (None, Some(*negative), None, Some(*clause))
         }
-        InverseRefutation::NegativeAccepted { negative, clause } => (
-            "negative_accepted",
-            None,
-            Some(*negative),
-            None,
-            Some(*clause),
-        ),
-        InverseRefutation::ResidualRoundTrip { residual, clause } => (
-            "residual_round_trip",
-            None,
-            None,
-            Some(*residual),
-            Some(*clause),
-        ),
+        InverseRefutation::ResidualRoundTrip { residual, clause } => {
+            (None, None, Some(*residual), Some(*clause))
+        }
         InverseRefutation::ReverseReplay { positive, clause } => {
-            ("reverse_replay", Some(*positive), None, None, Some(*clause))
+            (Some(*positive), None, None, Some(*clause))
         }
     };
     Ok(RewriteInverseRefutation {
@@ -5357,16 +5587,12 @@ fn refutation_dto(refutation: &InverseRefutation) -> DiscoveryResult<RewriteInve
 /// Convert an unknown reason into its typed wire form.
 #[cfg(feature = "standard-probes")]
 fn unknown_reason_dto(reason: &InverseUnknownReason) -> DiscoveryResult<RewriteInverseUnknown> {
-    let (kind, detail, clause) = match reason {
-        InverseUnknownReason::Underdetermined { detail } => (
-            "underdetermined",
-            Some(specialization_reason_name(*detail).to_owned()),
-            None,
-        ),
-        InverseUnknownReason::ResidualUnderdetermined { clause } => {
-            ("residual_underdetermined", None, Some(*clause))
-        }
-        InverseUnknownReason::Ambiguous { clause } => ("ambiguous", None, Some(*clause)),
+    let (kind, detail, _slots) = unknown_shape(reason);
+    let detail = detail.map(str::to_owned);
+    let clause = match reason {
+        InverseUnknownReason::Underdetermined { .. } => None,
+        InverseUnknownReason::ResidualUnderdetermined { clause }
+        | InverseUnknownReason::Ambiguous { clause } => Some(*clause),
     };
     Ok(RewriteInverseUnknown {
         kind: kind.to_owned(),
@@ -5428,27 +5654,24 @@ fn execute_specialize(
     resources
         .record_operations(usize::try_from(json_nodes).unwrap_or(usize::MAX))
         .map_err(|error| language_error("request validation", error))?;
-    let request: RewriteSpecializeRequest =
+    // Parse the shared unvalidated shape, then run the same bounded
+    // validation the DTO's `Deserialize` runs, so the typed
+    // `LimitExceeded`/`InvalidInput` distinction survives the adapter
+    // path (PR #338 round 2 P2a).
+    let raw: RewriteSpecializeRequestRaw =
         serde_json::from_value(input.clone()).map_err(|error| {
             DiscoveryError::InvalidInput(format!(
                 "specialization request has an invalid example shape: {error}"
             ))
         })?;
+    let request = raw.into_request()?;
     let bounds = effective_bounds(limits);
-    // Deserialization already routed through the checked constructor;
-    // revalidate here because the request is also constructible through
-    // `new` (defense in depth, PR #338 round 1 P2).
-    request.validate()?;
     let request_bytes = encoded_bytes(&request, "specialization request")?;
     enforce("request bytes", request_bytes, bounds.max_request_bytes)?;
-    let (positives, positive_nodes) = validate_synthesis_examples(
-        &request.positives,
-        MAX_SYNTHESIS_EXAMPLES,
-        "positive examples",
-    )?;
-    let (negatives, negative_nodes) = validate_synthesis_examples(
+    let (positives, positive_nodes) =
+        synthesis_example_pairs(&request.positives, "positive examples")?;
+    let (negatives, negative_nodes) = synthesis_example_pairs(
         request.negatives.as_deref().unwrap_or(&[]),
-        MAX_SYNTHESIS_EXAMPLES,
         "negative examples",
     )?;
     let input_nodes = positive_nodes.checked_add(negative_nodes).ok_or_else(|| {
@@ -5503,16 +5726,21 @@ fn execute_specialize(
         }
         Ok(SpecializationOutcome::Inconclusive { reason }) => {
             // Inconclusive reports that this bounded search separated no
-            // candidate; it never asserts that none exists.
+            // candidate; it never asserts that none exists. Its tag is
+            // metered BEFORE the fields are written (PR #338 round 2
+            // P2b).
+            let name = specialization_reason_name(reason);
+            charge_reason_output(&mut resources, name, None, 0)?;
             output.outcome = "inconclusive".to_owned();
-            output.inconclusive_reason = Some(specialization_reason_name(reason).to_owned());
+            output.inconclusive_reason = Some(name.to_owned());
         }
-        Err(error) => record_domain_failure(
+        Err(error) => record_charged_failure(
+            &mut resources,
             &mut output.outcome,
             &mut output.failure_reason,
             "specialization",
             &error,
-        ),
+        )?,
     }
 
     let _ = validate_encoded_output(&output, bounds)?;
@@ -5539,32 +5767,28 @@ fn execute_synthesize_inverse(
     resources
         .record_operations(usize::try_from(json_nodes).unwrap_or(usize::MAX))
         .map_err(|error| language_error("request validation", error))?;
-    let request: RewriteInverseSynthesisRequest =
+    // Parse the shared unvalidated shape, then run the same bounded
+    // validation the DTO's `Deserialize` runs, so the typed
+    // `LimitExceeded`/`InvalidInput` distinction survives the adapter
+    // path (PR #338 round 2 P2a).
+    let raw: RewriteInverseSynthesisRequestRaw =
         serde_json::from_value(input.clone()).map_err(|error| {
             DiscoveryError::InvalidInput(format!(
                 "inverse synthesis request has an invalid example shape: {error}"
             ))
         })?;
+    let request = raw.into_request()?;
     let bounds = effective_bounds(limits);
-    // Deserialization already routed through the checked constructor;
-    // revalidate here because the request is also constructible through
-    // `new` (defense in depth, PR #338 round 1 P2).
-    request.validate()?;
     let request_bytes = encoded_bytes(&request, "inverse synthesis request")?;
     enforce("request bytes", request_bytes, bounds.max_request_bytes)?;
-    let (positives, positive_nodes) = validate_synthesis_examples(
-        &request.positives,
-        MAX_SYNTHESIS_EXAMPLES,
-        "positive examples",
-    )?;
-    let (negatives, negative_nodes) = validate_synthesis_examples(
+    let (positives, positive_nodes) =
+        synthesis_example_pairs(&request.positives, "positive examples")?;
+    let (negatives, negative_nodes) = synthesis_example_pairs(
         request.negatives.as_deref().unwrap_or(&[]),
-        MAX_SYNTHESIS_EXAMPLES,
         "negative examples",
     )?;
-    let (residuals, residual_nodes) = validate_synthesis_examples(
+    let (residuals, residual_nodes) = synthesis_example_pairs(
         request.residuals.as_deref().unwrap_or(&[]),
-        MAX_SYNTHESIS_RESIDUALS,
         "residual examples",
     )?;
     let input_nodes = positive_nodes
@@ -5625,21 +5849,29 @@ fn execute_synthesize_inverse(
             output.evidence = Some(inverse_evidence_dto(&evidence)?);
         }
         Ok(InverseSynthesisOutcome::Refuted { witness }) => {
+            // The witness tag is metered before the typed fields exist
+            // (PR #338 round 2 P2b).
+            let refutation = witness.refutation();
+            let (kind, slots) = refutation_shape(refutation);
+            charge_reason_output(&mut resources, kind, None, slots)?;
             output.outcome = "refuted".to_owned();
-            output.refutation = Some(refutation_dto(witness.refutation())?);
+            output.refutation = Some(refutation_dto(refutation)?);
         }
         Ok(InverseSynthesisOutcome::Unknown { reason }) => {
             // Ambiguity and underdetermination are reported, never
-            // resolved by choosing a branch.
+            // resolved by choosing a branch; the tag is metered first.
+            let (kind, detail, slots) = unknown_shape(&reason);
+            charge_reason_output(&mut resources, kind, detail, slots)?;
             output.outcome = "unknown".to_owned();
             output.unknown_reason = Some(unknown_reason_dto(&reason)?);
         }
-        Err(error) => record_domain_failure(
+        Err(error) => record_charged_failure(
+            &mut resources,
             &mut output.outcome,
             &mut output.failure_reason,
             "inverse synthesis",
             &error,
-        ),
+        )?,
     }
 
     let _ = validate_encoded_output(&output, bounds)?;
