@@ -1,0 +1,5 @@
+error: expected at least one relation constraint after `where`
+ --> tests/ui/fail_relation_constraint_missing.rs:6:37
+  |
+6 |     let _ = relation!(f(X) <=> g(X) where);
+  |                                     ^^^^^

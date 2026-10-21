@@ -1,0 +1,5 @@
+error: `relation!` requires the bidirectional `<=>`: a lone `<=` is ambiguous between a reversed relation direction and a backward ARS step; write `relation!(lhs <=> rhs)`
+ --> tests/ui/fail_relation_reverse_arrow.rs:6:28
+  |
+6 |     let _ = relation!(f(X) <= g(X));
+  |                            ^

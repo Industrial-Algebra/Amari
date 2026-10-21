@@ -20,22 +20,25 @@
 //! `new_unchecked`. All diagnostics use single-token spans so trybuild
 //! fixtures render identically across rustc versions.
 
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{parenthesized, Error, Ident, LitStr, Token};
 
 use crate::paths::rewrite_path;
 
-enum TermSyntax {
+/// A parsed term: the shared front end of `term!`, `rule!`, and
+/// `relation!`. Variable occurrences keep their spans so relation
+/// diagnostics point at the exact token that is wrong.
+pub(crate) enum TermSyntax {
     Symbol { name: String, args: Vec<TermSyntax> },
-    Variable { name: String },
+    Variable { name: String, span: Span },
 }
 
 impl TermSyntax {
-    fn expand(&self, rewrite: &TokenStream) -> TokenStream {
+    pub(crate) fn expand(&self, rewrite: &TokenStream) -> TokenStream {
         match self {
-            TermSyntax::Variable { name } => {
+            TermSyntax::Variable { name, .. } => {
                 quote!(#rewrite::trs::Term::var(#name))
             }
             TermSyntax::Symbol { name, args } if args.is_empty() => {
@@ -47,10 +50,30 @@ impl TermSyntax {
             }
         }
     }
+
+    /// Collect variable occurrences in structural order (each
+    /// duplicate is kept: erasure checks care about names, not
+    /// counts, but spans point at every occurrence).
+    pub(crate) fn collect_variables(&self, out: &mut Vec<(String, Span)>) {
+        match self {
+            TermSyntax::Variable { name, span } => out.push((name.clone(), *span)),
+            TermSyntax::Symbol { args, .. } => {
+                for arg in args {
+                    arg.collect_variables(out);
+                }
+            }
+        }
+    }
 }
 
 fn is_variable_name(name: &str) -> bool {
     name.chars().next().is_some_and(|c| c.is_ascii_uppercase())
+}
+
+/// The `term!` variable naming rule (uppercase-leading), shared with
+/// `relation!`'s existential-marker validation.
+pub(crate) fn is_variable(name: &str) -> bool {
+    is_variable_name(name)
 }
 
 impl Parse for TermSyntax {
@@ -68,7 +91,7 @@ impl Parse for TermSyntax {
 
         if !input.peek(syn::token::Paren) {
             return Ok(if is_variable_name(&name) {
-                TermSyntax::Variable { name }
+                TermSyntax::Variable { name, span }
             } else {
                 TermSyntax::Symbol {
                     name,

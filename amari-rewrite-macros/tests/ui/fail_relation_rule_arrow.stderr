@@ -1,0 +1,5 @@
+error: `relation!` requires the bidirectional `<=>`: a lone `=>` is ambiguous between a one-directional TRS rewrite rule and an ARS rewrite step; use `rule!(lhs => rhs)` for one direction or `relation!(lhs <=> rhs)` for both
+ --> tests/ui/fail_relation_rule_arrow.rs:6:28
+  |
+6 |     let _ = relation!(f(X) => g(X));
+  |                            ^

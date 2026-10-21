@@ -24,4 +24,18 @@ fn main() {
     let built = amari_rewrite_macros::rule!(add(zero, X) => X).unwrap();
     assert_eq!(built.lhs(), &lhs);
     assert_eq!(built.rhs(), &amari_rewrite_macros::term!(X));
+
+    // relation! must resolve through the renamed crate too, in both the
+    // reversible and the erasing (clause) form.
+    let declared: rewrite_lib::RewriteResult<(
+        rewrite_lib::trs::Rule,
+        rewrite_lib::relation::BackwardClause,
+        Option<rewrite_lib::trs::Rule>,
+        rewrite_lib::relation::ConstraintSet,
+    )> = amari_rewrite_macros::relation!(exists Y. pair(X, Y) <=> X);
+    let (forward, backward, reverse, constraints) = declared.unwrap();
+    assert_eq!(forward.rhs(), &amari_rewrite_macros::term!(X));
+    assert_eq!(backward.erased_variables(), [String::from("Y")]);
+    assert!(reverse.is_none());
+    assert!(constraints.is_empty());
 }
