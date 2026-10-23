@@ -43,31 +43,48 @@ our own cfg-gated impls in error.rs:374-434).
 
 ## Surface
 
-- **S1 — dependency surgery (amari-core/Cargo.toml, 4 lines).**
-  `num-traits = { workspace = true, default-features = false }`;
-  `thiserror = { workspace = true, default-features = false }`;
-  extend `std = ["num-traits/std", "thiserror/std", …existing]`.
-  Host behavior unchanged in practice (workspace unification provides std
-  where present; explicit now where it matters); proven by S5.
+- **S1 — dependency surgery (amari-core/Cargo.toml; R1-revised shape).**
+  The drafted member-level `{ workspace = true, default-features = false }`
+  is IGNORED by Cargo (default-features belongs to the workspace
+  declaration; member-level is a warning — reviewer P1, reproduced).
+  Revision: amari-core declares the two deps DIRECTLY (bypassing
+  workspace inheritance, matching the existing precedent of
+  `rug`/`dashu-float`/`creusot-contracts` in this manifest):
+  `num-traits = { version = "0.2", default-features = false }`;
+  `thiserror = { version = "2", default-features = false }`; and
+  `std = ["num-traits/std", "thiserror/std", …existing]`.
+  Blast radius: amari-core only — every OTHER consumer's
+  `workspace = true` inheritance and defaults are untouched (the
+  workspace-level alternative would have forced explicit std wiring in
+  ~7 consumer crates). Version specs resolve to the same lock entries
+  (no lock change). Dev-dependencies keep `workspace = true` (dev-deps
+  are outside the `--lib` cross graph).
 - **S2 — phantom libm wiring (the inherited deferral).**
   `phantom-types = ["num-traits/libm"]`. Inert on host std builds
   (std impls take precedence in num-traits' cfg); provides bare-metal
   `Float` impls. No lock change (libm 0.2.16 already present).
-- **S3 — P-EMBED verification matrix.** For each of
-  {minimal, `+gf2`, `+phantom-types`, `+gf2,phantom-types`} ×
-  {stable, pinned nightly, MSRV 1.89.0}:
-  `check --lib --target thumbv7em-none-eabihf` green, plus per-combo
-  target dep-tree artifacts proving no std-requiring crate (the build
-  itself is the proof; trees archived for the record).
-- **S4 — allocator/link/board documentation + smoke link.** A no-dep
-  smoke binary in `amari-core/examples/` (feature-gated
-  `cfg(all(target_arch = "arm", target_os = "none"))`): bump allocator
+- **S3 — P-EMBED verification matrix (R1-revised: codegen, not
+  metadata).** For each of {minimal, `+gf2`, `+phantom-types`,
+  `+gf2,phantom-types`} × {stable, pinned nightly, MSRV 1.89.0}:
+  **`build --lib --target thumbv7em-none-eabihf`** green (the
+  reviewer's P2: `check` emits metadata only — "actual target library
+  compile" requires codegen), plus per-combo target dep-tree artifacts
+  (the std-free proof is the successful build itself; trees archived).
+- **S4 — allocator/link/board documentation + smoke link (R1-revised:
+  isolated consumer fixture).** `amari-core/examples/` would drag
+  DEV-DEPENDENCIES (criterion's graph) into any cross-build, failing
+  before the example source compiles (reviewer P1, reproduced). Revision:
+  an ISOLATED consumer fixture crate under the evidence tree
+  (`docs/plans/core-matrix-evidence/pembed/smoke/`) with its own manifest
+  (`[dependencies] amari-core = { path = "../../../../../amari-core",
+  default-features = false, features = ["gf2", "phantom-types"] }`) — no
+  dev-deps, no workspace membership. Contents: bump allocator
   (in-tree, ~20 lines), panic handler, constructs a `GF2Matrix` and a
-  `VerifiedRotor` (phantom path), links via rust-lld to a real ELF.
-  Documents the requirements: consumers provide a global allocator for
-  alloc-dependent APIs; `eabihf` hard-float ABI; cortex-m consumers bring
-  their own runtime/board support (amari-core is a library, not a board
-  crate). The example is `--no-default-features --features gf2,phantom-types`.
+  `VerifiedRotor` (phantom path), links via the target's default
+  rust-lld to a real ELF. Documents the requirements: consumers provide
+  a global allocator for alloc-dependent APIs; `eabihf` hard-float ABI;
+  cortex-m consumers bring their own runtime/board support (amari-core
+  is a library, not a board crate).
 - **S5 — host F1 re-run (Cargo.toml change invalidates).** Full 320-row ×
   3-quadrant H sweep on retained warm dirs (pinned-runner discipline);
   supplemental singletons+aliases; catalog regenerated WITH an expected
@@ -77,6 +94,21 @@ our own cfg-gated impls in error.rs:374-434).
   (serde), `formal-verification` (creusot) are NOT claimed target-supported
   and are not verified here; P-WASM rows unchanged; benches/docs target
   checks out of scope; no runtime behavior changes on any host row.
+
+## R1 remediation record (2026-10-23)
+
+Two P1s, both reproduced before revision: (1) member-level
+`default-features = false` under `workspace = true` is ignored by Cargo —
+S1 revised to direct declarations in amari-core (zero blast radius
+outside amari-core; workspace-level alternative would have touched ~7
+consumer crates); (2) `examples/` inherit dev-dependencies into
+cross-builds (criterion graph fails before example codegen) — S4 revised
+to an isolated consumer-fixture crate with a path dependency and no
+dev-deps. One P2: S3 upgraded from `check --lib` (metadata) to
+`build --lib` (codegen) — "actual target library compile" means code
+generation. Baseline diagnostic counts in the census table are one
+parallel-ordering snapshot; the authoritative per-combo failure source
+is dep-activation regardless of count.
 
 ## Decisions — RESOLVED (operator, ask_user 2026-10-21)
 
