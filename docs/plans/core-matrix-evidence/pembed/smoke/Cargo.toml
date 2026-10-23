@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# P-EMBED S4 smoke fixture: an ISOLATED consumer crate (own workspace
+# root via the empty [workspace] table below — required so Cargo's
+# workspace discovery does not adopt the parent) proving that a bare
+# metal consumer can link amari-core (gf2 + phantom, no std) into a
+# real ELF via the target's default rust-lld. No dev-dependencies: an
+# examples/ entry inside amari-core would drag criterion's graph into
+# the cross-build (contract R1 finding).
+[workspace]
+
+[package]
+name = "pembed-smoke"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+amari-core = { path = "../../../../../amari-core", default-features = false, features = ["gf2", "phantom-types"] }
+
+[profile.release]
+panic = "abort"

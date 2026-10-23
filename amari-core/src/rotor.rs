@@ -593,7 +593,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         if w < 0.0 {
             return Err(RotorError::BranchAmbiguous);
         }
-        Ok(Multivector::scalar(w.ln()))
+        Ok(Multivector::scalar(crate::math_dispatch::ln_f64(w)))
     }
 
     /// §2c elliptic logarithm: `R = w + B`, `B² = −β² < 0`.
@@ -615,7 +615,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
                 .ok_or(RotorError::NotALogDomain)?
                 .ln_half()
         };
-        let theta = beta.atan2(w);
+        let theta = crate::math_dispatch::atan2_f64(beta, w);
         let mut log = bivector * (theta / beta);
         log.set(0, scale);
         if log.as_slice().iter().all(|c| c.is_finite()) {
@@ -649,7 +649,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
                 // Cancellation-safe small rapidity: exact `δ = δ_num/N`
                 // (one quotient rounding) then `½·ln1p(δ)`.
                 let delta = delta_num.ratio_to_f64(&norm);
-                0.5 * delta.ln_1p()
+                0.5 * crate::math_dispatch::ln_1p_f64(delta)
             }
             _ => {
                 // `q = (w+β)²/N >= 2`: `½·ln q` with the numerator and
@@ -677,7 +677,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
             return Err(RotorError::NotALogDomain);
         }
         let mut log = bivector * (1.0 / w);
-        log.set(0, w.ln());
+        log.set(0, crate::math_dispatch::ln_f64(w));
         if log.as_slice().iter().all(|c| c.is_finite()) {
             Ok(log)
         } else {
@@ -771,7 +771,7 @@ impl<const P: usize, const Q: usize, const R: usize> Rotor<P, Q, R> {
         // silently clamp it.
         const I64_MIN_AS_F64: f64 = -9_223_372_036_854_775_808.0;
         const TWO_POW_63: f64 = 9_223_372_036_854_775_808.0;
-        if t.fract() == 0.0 && (I64_MIN_AS_F64..TWO_POW_63).contains(&t) {
+        if crate::math_dispatch::fract_f64(t) == 0.0 && (I64_MIN_AS_F64..TWO_POW_63).contains(&t) {
             return self.power_integer(t as i64);
         }
         let log_r = self.logarithm()?;
