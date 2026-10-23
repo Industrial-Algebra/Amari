@@ -10,7 +10,7 @@ bigint oracle) IS the required evidence.
 - **5/5 rows exit 0**: battery ×{default, minimal, native, all-features}
   (10/10 tests each: basis-pair matrix vs oracle, adversarial sets,
   EXPECTED-DIVERGENT class, runtime inventory) + full default suite
-  (515 tests green, ~0s increments on warm dir).
+  (522 tests green — counted from the committed default-full log; the 515 in the first draft was stale, carried from pre-#341 develop).
 - Runtime inventory: `runtime_inventory` asserts dispatcher selects
   `"avx2+fma"` and dispatch ≡ direct kernel on all 8 coefficients.
 - Runner: `avx2-gate.sh` — TOTAL override discipline (evidence AND
