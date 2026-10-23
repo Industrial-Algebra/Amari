@@ -73,11 +73,14 @@
 //!
 //! # Determinism
 //!
-//! All three input lists are canonicalized by sorting and
-//! deduplicating borrowed references, the inferred rule set is
+//! All three input lists are canonicalized into structural order and
+//! deduplicated from borrowed references, the inferred rule set is
 //! already in canonical partition order, and clauses follow the rule
-//! order. Permuting any input list therefore leaves the outcome
-//! byte-identical.
+//! order. The canonicalization charge is order independent (every
+//! unordered example pair is ranked once), so permuting any input list
+//! leaves the outcome byte-identical at ANY operation budget —
+//! including one tight enough to exhaust, which is then the same typed
+//! error for every order (PR #338 closeout P1/P2).
 //!
 //! # Limits and metering
 //!

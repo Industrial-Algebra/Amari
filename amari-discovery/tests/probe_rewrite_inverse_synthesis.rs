@@ -1161,3 +1161,93 @@ fn deep_json_input_returns_a_typed_error() {
     }
     std::mem::forget(deep);
 }
+
+// ---- Cohort 7 closeout: canonical example ordering (PR #338 review) ----
+
+/// The reviewer's documented shuffled order for the 24-example panic
+/// repro (PR #338 closeout P1).
+const CLOSEOUT_GROUND_ORDER: [usize; 24] = [
+    1, 9, 3, 14, 5, 17, 7, 11, 4, 21, 12, 13, 10, 15, 23, 19, 0, 18, 2, 6, 8, 16, 20, 22,
+];
+
+/// The operation budget of the reviewer's panic repro.
+const CLOSEOUT_CANONICAL_BUDGET: u64 = 600;
+
+#[test]
+fn closeout_canonical_exhaustion_through_the_probe_is_a_typed_outcome() {
+    // 24 ground positives in the reviewer's order reach the shared
+    // canonical example sort. The pre-fix canonicalizer fabricated
+    // comparator equality after exhaustion, which made std's sort panic
+    // process-wide instead of returning the typed operations error (PR
+    // #338 closeout P1). The probe must report the typed outcome.
+    let positives: Vec<Value> = CLOSEOUT_GROUND_ORDER
+        .iter()
+        .map(|index| example(sym0(&format!("a{index:02}")), sym0("b")))
+        .collect();
+    let input = json!({"positives": positives});
+    let limits = ProbeEngineLimits {
+        max_operations: CLOSEOUT_CANONICAL_BUDGET,
+        ..ProbeEngineLimits::default()
+    };
+    let execution = ProbeEngine::with_limits(limits)
+        .unwrap()
+        .execute(&SYNTHESIZE_INVERSE.parse().unwrap(), &input)
+        .expect("budget exhaustion is a typed outcome, not a probe failure");
+    assert_eq!(
+        execution.output["outcome"],
+        json!("error"),
+        "canonical sort exhaustion must surface as a typed domain error"
+    );
+    let reason = execution.output["failure_reason"]
+        .as_str()
+        .expect("failure_reason describes the domain failure");
+    assert!(
+        reason.contains("operations"),
+        "the failure must name the exhausted operations budget: {reason}"
+    );
+}
+
+#[test]
+fn closeout_permutation_outcomes_match_at_reviewer_budgets() {
+    // Five `f(ai) -> g(ai)` examples in the reviewer's documented order
+    // versus the shuffled order that diverged (PR #338 closeout P2):
+    // at 322 specialization refined while the shuffle errored, and at
+    // 612 inverse synthesis succeeded while the shuffle errored. Both
+    // probes must now return the same bytes at every budget around
+    // those boundaries.
+    let ordered: Vec<Value> = (0..5)
+        .map(|index| {
+            example(
+                sym1("f", sym0(&format!("a{index}"))),
+                sym1("g", sym0(&format!("a{index}"))),
+            )
+        })
+        .collect();
+    let order = [4_usize, 1, 3, 0, 2];
+    let shuffled: Vec<Value> = order.iter().map(|&index| ordered[index].clone()).collect();
+
+    for (probe, budgets) in [
+        (SPECIALIZE, [320_u64, 321, 322, 323, 336, 337, 338]),
+        (SYNTHESIZE_INVERSE, [610_u64, 611, 612, 613, 641, 642, 643]),
+    ] {
+        for budget in budgets {
+            let straight = run_at(probe, &json!({"positives": ordered}), budget);
+            let permuted = run_at(probe, &json!({"positives": shuffled}), budget);
+            match (straight, permuted) {
+                (Ok(straight), Ok(permuted)) => assert_eq!(
+                    straight, permuted,
+                    "{probe} at {budget}: successful output must not depend on input order"
+                ),
+                (Err(straight), Err(permuted)) => assert_eq!(
+                    format!("{straight:?}"),
+                    format!("{permuted:?}"),
+                    "{probe} at {budget}: typed failures must not depend on input order"
+                ),
+                (straight, permuted) => panic!(
+                    "{probe} at {budget}: caller order changed the outcome class: \
+                     {straight:?} vs {permuted:?}"
+                ),
+            }
+        }
+    }
+}

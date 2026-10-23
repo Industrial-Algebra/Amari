@@ -35,9 +35,11 @@
 //!
 //! # Specialization
 //!
-//! 1. Both example lists are canonicalized by sorting and
-//!    deduplicating borrowed references. Ordering comparisons charge
-//!    per compared node pair and no example is cloned; a pair
+//! 1. Both example lists are canonicalized into structural order and
+//!    deduplicated, all from borrowed references. The canonical order
+//!    is computed by ranking every unordered pair once, so the
+//!    comparison charge is a property of the example SET rather than
+//!    of the caller's list order; no example is cloned, and a pair
 //!    appearing as both positive and negative is a typed
 //!    [`RewriteError::InvalidRule`]. The examples ceiling counts the
 //!    deduped examples; the raw duplicate stream stays bounded by the
@@ -325,8 +327,10 @@ pub enum SpecializationOutcome {
 /// search reports [`SpecializationOutcome::Inconclusive`] or a typed
 /// limit error.
 ///
-/// Examples are canonicalized by sorting and deduplicating, so the
-/// coverage indices and the rule order do not depend on caller order.
+/// Examples are canonicalized into structural order and deduplicated,
+/// so the coverage indices and the rule order do not depend on caller
+/// order — and, because the canonicalization charge is order
+/// independent, neither does a tightened-budget outcome.
 ///
 /// # Errors
 ///
@@ -658,34 +662,73 @@ fn charged_contains(
     Ok(false)
 }
 
-/// Sort and deduplicate borrowed example references.
+/// Order and deduplicate borrowed example references.
 ///
-/// Both the boundary-bound allocation (`len` units, charged first) and
-/// every structural comparison are metered; no example is cloned. The
-/// caller must have admitted the underlying terms first, so the
-/// comparisons are bounded by the validated node and depth ceilings.
+/// Both the boundary-bound allocation (`len` units, charged first), the
+/// structural comparisons, and the placement pass are metered; no
+/// example is cloned. The caller must have admitted the underlying
+/// terms first, so the comparisons are bounded by the validated node
+/// and depth ceilings.
+///
+/// The comparison SCHEDULE is a property of the example SET, not of the
+/// caller's list order: every unordered pair of examples is compared
+/// exactly once, and an example's rank is the number of strictly
+/// smaller examples. A comparison-based sort would perform an
+/// order-dependent number of comparisons and swaps — insertion sort on
+/// the same five examples needs 4..10 comparisons — so at a tightened
+/// budget one permutation exhausted where another succeeded (322 vs
+/// 337 for specialization, 612 vs 642 for inverse synthesis at the
+/// reviewer's budgets; PR #338 closeout P2). Charging every pair once
+/// costs the same units for every order of the same set, so bounded
+/// outcomes are permutation-invariant.
+///
+/// Exhaustion anywhere in this function is the typed
+/// [`RewriteError::RelationLimitExceeded`] from the exact comparison
+/// the budget could not fund. No ordering is ever fabricated: a
+/// comparator that keeps returning equalities after exhaustion made
+/// std's sort validate a violated total order and PANIC (PR #338
+/// closeout P1), so the exhausted comparison aborts instead.
 pub(crate) fn canonical_examples<'a>(
     examples: &'a [(Term, Term)],
     resources: &mut RelationResources,
 ) -> RewriteResult<Vec<&'a (Term, Term)>> {
-    resources.record_operations(examples.len())?;
-    let mut canonical: Vec<&'a (Term, Term)> = examples.iter().collect();
-    let mut failure = None;
-    canonical.sort_by(|left, right| {
-        if failure.is_some() {
-            return Ordering::Equal;
-        }
-        match charged_pair_compare(left, right, resources) {
-            Ok(ordering) => ordering,
-            Err(error) => {
-                failure = Some(error);
-                Ordering::Equal
+    let count = examples.len();
+    resources.record_operations(count)?;
+
+    let mut ranks = vec![0usize; count];
+    for left in 0..count {
+        for right in (left + 1)..count {
+            match charged_pair_compare(&examples[left], &examples[right], resources)? {
+                Ordering::Less => ranks[right] = ranks[right].saturating_add(1),
+                Ordering::Greater => ranks[left] = ranks[left].saturating_add(1),
+                // Structurally equal examples share a rank. They are
+                // interchangeable, so their relative order cannot change
+                // the canonical content, and the dedup below collapses
+                // them to one entry.
+                Ordering::Equal => {}
             }
         }
-    });
-    if let Some(error) = failure {
-        return Err(error);
     }
+
+    // Counting placement over the content-determined ranks: one unit
+    // per placed example, charged before the pass.
+    resources.record_operations(count)?;
+    let mut starts = vec![0usize; count];
+    for rank in &ranks {
+        starts[*rank] = starts[*rank].saturating_add(1);
+    }
+    let mut offset = 0usize;
+    for start in &mut starts {
+        let size = *start;
+        *start = offset;
+        offset = offset.saturating_add(size);
+    }
+    let mut order = vec![0usize; count];
+    for (index, rank) in ranks.iter().enumerate() {
+        order[starts[*rank]] = index;
+        starts[*rank] = starts[*rank].saturating_add(1);
+    }
+    let canonical: Vec<&'a (Term, Term)> = order.iter().map(|index| &examples[*index]).collect();
 
     let mut unique: Vec<&'a (Term, Term)> = Vec::with_capacity(canonical.len());
     for pair in canonical {
