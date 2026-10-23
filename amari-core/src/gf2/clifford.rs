@@ -292,7 +292,7 @@ impl<const N: usize, const R: usize> BinaryMultivector<N, R> {
         let mut result = Self::zero();
         for i in 0..Self::BASIS_COUNT {
             let coeff = mv.get(i);
-            let rounded = coeff.round() as i64;
+            let rounded = crate::math_dispatch::round_f64(coeff) as i64;
             if rounded.rem_euclid(2) == 1 {
                 result.set(i, GF2::ONE);
             }

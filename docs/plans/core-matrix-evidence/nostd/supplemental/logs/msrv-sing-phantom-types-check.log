@@ -1,2 +1,4 @@
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/amari-core)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.32s
+   Compiling num-traits v0.2.19
+    Checking approx v0.5.1
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-pembed/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.74s

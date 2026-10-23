@@ -165,8 +165,20 @@ fn apply_zero_loss_gate_is_post_exact_quotient() {
 
     let boost_two = Rotor::<2, 1, 0>::from_bivector(&e13, 2.0).expect("bounded angle-2 boost");
     let angle_two = scalar_four.compose(&boost_two);
-    assert_eq!(angle_two.as_slice()[0], 6.172322539260975);
-    assert_eq!(angle_two.as_slice()[5], -4.7008047745752055);
+    // Absolute constants document the glibc-backed bits (std feature);
+    // std-off builds route hyperbolic construction through the P-EMBED
+    // dispatch's libm arm, which may differ by 1 ULP (see the twin note
+    // in inverse_exp_contracts::round5_hyperbolic_symbolic_vector_matches_scalar_bits).
+    let c0 = angle_two.as_slice()[0];
+    let c5 = angle_two.as_slice()[5];
+    assert!(
+        (c0 - 6.172322539260975).abs() <= f64::EPSILON * 8.0,
+        "c0 within ULPs: {c0}"
+    );
+    assert!(
+        (c5 - (-4.7008047745752055)).abs() <= f64::EPSILON * 8.0,
+        "c5 within ULPs: {c5}"
+    );
 
     let mut a = Multivector::<2, 1, 0>::zero();
     a.set(1, tiny);

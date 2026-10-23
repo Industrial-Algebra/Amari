@@ -1,0 +1,10 @@
+error[E0463]: can't find crate for `std`
+  |
+  = note: the `thumbv7em-none-eabihf` target may not support the standard library
+  = note: `std` is required by `autocfg_68ce1afc0f2c65cd_0` because it does not declare `#![no_std]`
+
+error: cannot resolve a prelude import
+
+error: aborting due to 2 previous errors
+
+For more information about this error, try `rustc --explain E0463`.

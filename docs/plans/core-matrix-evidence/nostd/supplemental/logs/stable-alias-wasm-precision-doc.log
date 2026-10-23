@@ -1,3 +1,5 @@
- Documenting amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/amari-core)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
-   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/target/mh-s3-stable/x86_64-unknown-linux-gnu/doc/amari_core/index.html
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+ Documenting amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-pembed/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.46s
+   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-pembed/target/mh-s3-stable/x86_64-unknown-linux-gnu/doc/amari_core/index.html

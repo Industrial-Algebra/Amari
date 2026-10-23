@@ -171,47 +171,47 @@ impl PrecisionFloat for f64 {
 
     #[inline]
     fn powf_precise(self, exp: Self) -> Self {
-        self.powf(exp)
+        crate::math_dispatch::powf_f64(self, exp)
     }
 
     #[inline]
     fn sin_precise(self) -> Self {
-        self.sin()
+        crate::math_dispatch::sin_f64(self)
     }
 
     #[inline]
     fn cos_precise(self) -> Self {
-        self.cos()
+        crate::math_dispatch::cos_f64(self)
     }
 
     #[inline]
     fn tan_precise(self) -> Self {
-        self.tan()
+        crate::math_dispatch::tan_f64(self)
     }
 
     #[inline]
     fn sinh_precise(self) -> Self {
-        self.sinh()
+        crate::math_dispatch::sinh_f64(self)
     }
 
     #[inline]
     fn cosh_precise(self) -> Self {
-        self.cosh()
+        crate::math_dispatch::cosh_f64(self)
     }
 
     #[inline]
     fn tanh_precise(self) -> Self {
-        self.tanh()
+        crate::math_dispatch::tanh_f64(self)
     }
 
     #[inline]
     fn ln_precise(self) -> Self {
-        self.ln()
+        crate::math_dispatch::ln_f64(self)
     }
 
     #[inline]
     fn exp_precise(self) -> Self {
-        self.exp()
+        crate::math_dispatch::exp_f64(self)
     }
 
     #[inline]
