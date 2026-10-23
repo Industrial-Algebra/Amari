@@ -53,9 +53,11 @@ pub extern "C" fn main() -> i32 {
     let eye = amari_core::gf2::GF2Matrix::identity(4);
     let _rank = eye.rank();
 
-    // Phantom path: a unit bivector rotor. 2D algebra: P=0, Q=2, R=0.
+    // Phantom path: the unit bivector rotor e1∧e2. Cl(0,2,0) has
+    // 2^2 = 4 basis blades (R1 P2: the first draft supplied two
+    // coefficients, which VerifiedMultivector::new rejects).
     use amari_core::verified::{VerifiedMultivector, VerifiedRotor};
-    let coeffs = alloc::vec![0.0f64, 1.0];
+    let coeffs = alloc::vec![0.0f64, 0.0, 0.0, 1.0];
     let mv = VerifiedMultivector::<f64, 0, 2, 0>::new(coeffs)
         .ok()
         .expect("unit bivector");
@@ -63,7 +65,7 @@ pub extern "C" fn main() -> i32 {
         .ok()
         .expect("rotor invariant");
 
-    // Touch the rotor so the link is real (compose with itself).
+    // Touch the rotor so the consumer path is real (compose with itself).
     let _ = rotor.compose(&rotor).ok().expect("composition");
     0
 }

@@ -949,8 +949,8 @@ fn round5_hyperbolic_symbolic_vector_matches_scalar_bits() {
     assert_eq!(vector, scalar, "vector channel must match scalar bits");
     let documented = 96263207714727_u64;
     assert!(
-        scalar == documented || scalar == documented + 1 || scalar == documented - 1,
-        "scalar channel within 1 ULP of the documented bits: {scalar} vs {documented}"
+        scalar.abs_diff(documented) <= 1,
+        "scalar channel bit distance > 1 from the documented bits: {scalar} vs {documented}"
     );
 }
 

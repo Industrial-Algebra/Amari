@@ -1,69 +1,69 @@
 quadrant	row_label	feat_args	cmd	wall_s	exit
-nightly	sing-std	--no-default-features --features std	check	2.6	0
-nightly	sing-std	--no-default-features --features std	test	4.7	0
+nightly	sing-std	--no-default-features --features std	check	0.7	0
+nightly	sing-std	--no-default-features --features std	test	2.8	0
 nightly	sing-std-std	--no-default-features --features std,std	check	0.1	0
-nightly	sing-std-std	--no-default-features --features std,std	test	1.2	0
-nightly	sing-gf2	--no-default-features --features gf2	check	1.0	0
-nightly	sing-gf2	--no-default-features --features gf2	test	3.4	0
-nightly	sing-std-gf2	--no-default-features --features std,gf2	check	0.9	0
-nightly	sing-std-gf2	--no-default-features --features std,gf2	test	3.2	0
-nightly	sing-creusot-contracts	--no-default-features --features creusot-contracts	check	1.4	0
-nightly	sing-creusot-contracts	--no-default-features --features creusot-contracts	test	4.6	0
+nightly	sing-std-std	--no-default-features --features std,std	test	1.1	0
+nightly	sing-gf2	--no-default-features --features gf2	check	0.8	0
+nightly	sing-gf2	--no-default-features --features gf2	test	2.9	0
+nightly	sing-std-gf2	--no-default-features --features std,gf2	check	0.8	0
+nightly	sing-std-gf2	--no-default-features --features std,gf2	test	3.0	0
+nightly	sing-creusot-contracts	--no-default-features --features creusot-contracts	check	0.8	0
+nightly	sing-creusot-contracts	--no-default-features --features creusot-contracts	test	2.7	0
 nightly	sing-std-creusot-contracts	--no-default-features --features std,creusot-contracts	check	0.7	0
-nightly	sing-std-creusot-contracts	--no-default-features --features std,creusot-contracts	test	3.1	0
-nightly	sing-phantom-types	--no-default-features --features phantom-types	check	2.4	0
-nightly	sing-phantom-types	--no-default-features --features phantom-types	test	5.7	0
+nightly	sing-std-creusot-contracts	--no-default-features --features std,creusot-contracts	test	2.9	0
+nightly	sing-phantom-types	--no-default-features --features phantom-types	check	1.5	0
+nightly	sing-phantom-types	--no-default-features --features phantom-types	test	4.0	0
 nightly	sing-std-phantom-types	--no-default-features --features std,phantom-types	check	0.8	0
 nightly	sing-std-phantom-types	--no-default-features --features std,phantom-types	test	3.0	0
-nightly	sing-formal-verification	--no-default-features --features formal-verification	check	1.4	0
-nightly	sing-formal-verification	--no-default-features --features formal-verification	test	4.6	0
+nightly	sing-formal-verification	--no-default-features --features formal-verification	check	0.7	0
+nightly	sing-formal-verification	--no-default-features --features formal-verification	test	2.8	0
 nightly	sing-std-formal-verification	--no-default-features --features std,formal-verification	check	0.8	0
-nightly	sing-std-formal-verification	--no-default-features --features std,formal-verification	test	2.8	0
-nightly	sing-high-precision	--no-default-features --features high-precision	check	0.7	0
+nightly	sing-std-formal-verification	--no-default-features --features std,formal-verification	test	2.9	0
+nightly	sing-high-precision	--no-default-features --features high-precision	check	0.8	0
 nightly	sing-high-precision	--no-default-features --features high-precision	test	2.9	0
 nightly	sing-std-high-precision	--no-default-features --features std,high-precision	check	0.7	0
-nightly	sing-std-high-precision	--no-default-features --features std,high-precision	test	2.8	0
-nightly	sing-native-precision	--no-default-features --features native-precision	check	0.7	0
+nightly	sing-std-high-precision	--no-default-features --features std,high-precision	test	3.0	0
+nightly	sing-native-precision	--no-default-features --features native-precision	check	0.8	0
 nightly	sing-native-precision	--no-default-features --features native-precision	test	2.9	0
 nightly	sing-std-native-precision	--no-default-features --features std,native-precision	check	0.7	0
-nightly	sing-std-native-precision	--no-default-features --features std,native-precision	test	2.8	0
+nightly	sing-std-native-precision	--no-default-features --features std,native-precision	test	2.7	0
 nightly	sing-serde	--no-default-features --features serde	check	0.7	0
 nightly	sing-serde	--no-default-features --features serde	test	2.8	0
 nightly	sing-std-serde	--no-default-features --features std,serde	check	0.7	0
-nightly	sing-std-serde	--no-default-features --features std,serde	test	2.8	0
+nightly	sing-std-serde	--no-default-features --features std,serde	test	2.7	0
 nightly	sing-rayon	--no-default-features --features rayon	check	0.7	0
-nightly	sing-rayon	--no-default-features --features rayon	test	2.7	0
+nightly	sing-rayon	--no-default-features --features rayon	test	2.8	0
 nightly	sing-std-rayon	--no-default-features --features std,rayon	check	0.7	0
-nightly	sing-std-rayon	--no-default-features --features std,rayon	test	2.6	0
+nightly	sing-std-rayon	--no-default-features --features std,rayon	test	2.8	0
 nightly	sing-serialize	--no-default-features --features serialize	check	0.7	0
-nightly	sing-serialize	--no-default-features --features serialize	test	2.7	0
+nightly	sing-serialize	--no-default-features --features serialize	test	2.6	0
 nightly	sing-std-serialize	--no-default-features --features std,serialize	check	0.7	0
-nightly	sing-std-serialize	--no-default-features --features std,serialize	test	2.8	0
+nightly	sing-std-serialize	--no-default-features --features std,serialize	test	2.7	0
 nightly	sing-parallel	--no-default-features --features parallel	check	0.7	0
-nightly	sing-parallel	--no-default-features --features parallel	test	2.9	0
+nightly	sing-parallel	--no-default-features --features parallel	test	2.8	0
 nightly	sing-std-parallel	--no-default-features --features std,parallel	check	0.7	0
-nightly	sing-std-parallel	--no-default-features --features std,parallel	test	2.7	0
+nightly	sing-std-parallel	--no-default-features --features std,parallel	test	2.8	0
 nightly	sing-full-precision	--no-default-features --features full-precision	check	0.7	0
-nightly	sing-full-precision	--no-default-features --features full-precision	test	2.8	0
+nightly	sing-full-precision	--no-default-features --features full-precision	test	3.0	0
 nightly	sing-std-full-precision	--no-default-features --features std,full-precision	check	0.7	0
 nightly	sing-std-full-precision	--no-default-features --features std,full-precision	test	2.9	0
 nightly	sing-wasm-precision	--no-default-features --features wasm-precision	check	0.8	0
-nightly	sing-wasm-precision	--no-default-features --features wasm-precision	test	2.9	0
+nightly	sing-wasm-precision	--no-default-features --features wasm-precision	test	2.8	0
 nightly	sing-std-wasm-precision	--no-default-features --features std,wasm-precision	check	0.7	0
-nightly	sing-std-wasm-precision	--no-default-features --features std,wasm-precision	test	2.9	0
+nightly	sing-std-wasm-precision	--no-default-features --features std,wasm-precision	test	2.8	0
 nightly	alias-default		check	0.9	0
-nightly	alias-default		test	3.2	0
+nightly	alias-default		test	3.4	0
 nightly	alias-default		clippy	1.0	0
-nightly	alias-default		doc	0.7	0
-nightly	alias-all-features	--all-features	check	1.1	0
-nightly	alias-all-features	--all-features	test	3.4	0
-nightly	alias-all-features	--all-features	clippy	1.1	0
-nightly	alias-all-features	--all-features	doc	0.4	0
+nightly	alias-default		doc	0.3	0
+nightly	alias-all-features	--all-features	check	0.9	0
+nightly	alias-all-features	--all-features	test	3.2	0
+nightly	alias-all-features	--all-features	clippy	1.0	0
+nightly	alias-all-features	--all-features	doc	0.3	0
 nightly	alias-full-precision	--no-default-features --features full-precision	check	0.1	0
 nightly	alias-full-precision	--no-default-features --features full-precision	test	1.1	0
 nightly	alias-full-precision	--no-default-features --features full-precision	clippy	0.8	0
-nightly	alias-full-precision	--no-default-features --features full-precision	doc	0.6	0
-nightly	alias-wasm-precision	--no-default-features --features wasm-precision	check	0.1	0
+nightly	alias-full-precision	--no-default-features --features full-precision	doc	0.3	0
+nightly	alias-wasm-precision	--no-default-features --features wasm-precision	check	0.2	0
 nightly	alias-wasm-precision	--no-default-features --features wasm-precision	test	1.1	0
 nightly	alias-wasm-precision	--no-default-features --features wasm-precision	clippy	0.8	0
 nightly	alias-wasm-precision	--no-default-features --features wasm-precision	doc	0.3	0

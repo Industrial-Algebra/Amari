@@ -1,9 +1,2 @@
-   Compiling num-traits v0.2.19
-    Checking plotters v0.3.7
-    Checking approx v0.5.1
-    Checking num-integer v0.1.47
-    Checking proptest v1.12.0
-    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-pembed/amari-core)
-    Checking num-bigint v0.4.8
-    Checking criterion v0.8.2
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.32s
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.46s

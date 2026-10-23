@@ -75,3 +75,26 @@ tolerances.
 - `rustc_1_9x` intermediate compilers (1.90–1.97) are outside the
   researched matrix; the dispatch's std arm requires only the std crate,
   which every hosted rustc provides.
+
+## R1 remediation (2026-10-23)
+
+Four findings, all fixed: (1) **P1 — the first ELF was hollow**: linker
+GC stripped main and every consumer path (entry 0x0, no executable
+sections; the "link" proved only that rust-lld emits files). Fix: the
+fixture's `.cargo/config.toml` sets `--entry=main`; the rebuilt ELF has
+entry `0x20779`, `.text` 0x31d8 executable bytes, and 7 retained
+`amari_core` symbols — the consumer paths are real. (2) The fixture's
+rotor supplied 2 coefficients where Cl(0,2,0) requires 4
+(`VerifiedMultivector::new` rejects the short vector); now the correct
+unit bivector `[0,0,0,1]`. (3) The absolute-constant tolerances admitted
+2 ULP (`EPSILON*8` vs 8.88e-16 spacing at that magnitude); both tests
+now assert exact ONE-bit distance via `to_bits().abs_diff`. (4) The
+sed-derived supplemental runner still pointed at the nostd tree and had
+overwritten its committed evidence (my `git add -A` baked the damage
+into this branch); restored from develop, and a standalone
+`supplemental.sh` (zero nostd references, OUT_ROOT_OVERRIDE hook) now
+records P-EMBED results in their own directory — re-run green
+68/68/30.
+
+Re-verified after remediation: default 515/0, row1 437/0, clippy, fmt;
+ELF evidence above.

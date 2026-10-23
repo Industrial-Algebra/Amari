@@ -1,2 +1,2 @@
-amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-pembed/amari-core) creusot-contracts,default,formal-verification,full-precision,gf2,high-precision,native-precision,parallel,phantom-types,rayon,serde,serialize,std,wasm-precision
+amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/amari-core) creusot-contracts,default,formal-verification,full-precision,gf2,high-precision,native-precision,parallel,phantom-types,rayon,serde,serialize,std,wasm-precision
 [dev-dependencies]
