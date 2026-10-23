@@ -14,9 +14,17 @@ esac
 # R2 fix: mh-lib writes its probe archives (toolchain dumps, effective-cfg
 # files) to $EVID — route them under OUR output tree so nothing lands in
 # the shared m-h evidence and OUT_ROOT_OVERRIDE is honored everywhere.
-EVID="${OUT_ROOT_OVERRIDE:-$OUT_ROOT}/probe"
+EVID="$OUT_ROOT/probe"
 mkdir -p "$EVID"
-D07_BASELINE_TARGET_DIR="$PWD/$DIR"
+# R4 fix: the override is TOTAL. Build artifacts too — an overridden run
+# never writes the repo's warm target dirs (they are deliberate shared
+# F1 incremental caches, reused only when NO override is set).
+if [ -n "${OUT_ROOT_OVERRIDE:-}" ]; then
+  D07_BASELINE_TARGET_DIR="$OUT_ROOT/target/$DIR"
+  mkdir -p "$D07_BASELINE_TARGET_DIR"
+else
+  D07_BASELINE_TARGET_DIR="$PWD/$DIR"
+fi
 source "$EVID_ROOT/mh-lib.sh"
 set +e
 OUT="$OUT_ROOT/supplemental"
