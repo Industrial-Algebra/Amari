@@ -9,7 +9,11 @@ case "${1:?stable|nightly|msrv}" in
   nightly) T_NAME=nightly; T_HASH=787af2b8c80638c51a4fc8e44f84e6891f243ec7; MODE=nightly; DIR=target/mh-s3-nightly ;;
   msrv)    T_NAME=1.89.0;  T_HASH=29483883eed69d5fb4db01964cdf2af4d86e9cb2; MODE=msrv;    DIR=target/mh-s3-msrv ;;
 esac
-EVID="$EVID_ROOT"
+# R2 fix: mh-lib writes its probe archives (toolchain dumps, effective-cfg
+# files) to $EVID — route them under OUR output tree so nothing lands in
+# the shared m-h evidence and OUT_ROOT_OVERRIDE is honored everywhere.
+EVID="${OUT_ROOT_OVERRIDE:-$OUT_ROOT}/probe"
+mkdir -p "$EVID"
 D07_BASELINE_TARGET_DIR="$PWD/$DIR"
 source "$EVID_ROOT/mh-lib.sh"
 set +e

@@ -98,3 +98,16 @@ records P-EMBED results in their own directory — re-run green
 
 Re-verified after remediation: default 515/0, row1 437/0, clippy, fmt;
 ELF evidence above.
+
+## R2 remediation (2026-10-23)
+
+Two P2s: (1) the R1 bit-distance fix for the rotor constants had NOT
+actually landed — HEAD still carried the EPSILON*8 form while the
+commit claimed the abs_diff edit (the commit-prose-vs-tree lesson,
+new instance; now verified IN-FILE after the edit: 3 abs_diff
+occurrences, 0 EPSILON*8, tests green both arms). (2) The supplemental
+runner routed mh-lib's probe archives (toolchain dumps, effective-cfg
+files) into the shared m-h tree and ignored OUT_ROOT_OVERRIDE for them
+— probes now write under `<out>/probe/`, isolation proven by a scratch
+run (m-h tree: 0 changes) and the real evidence regenerated green
+68/68/30.
