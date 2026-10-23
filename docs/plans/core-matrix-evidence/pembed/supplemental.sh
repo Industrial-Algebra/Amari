@@ -3,7 +3,9 @@
 # copy still pointed at the nostd tree and overwrote its evidence).
 set -uo pipefail
 EVID_ROOT="docs/plans/core-matrix-evidence/m-h"
-OUT_ROOT="docs/plans/core-matrix-evidence/pembed"
+# R3 fix: OUT_ROOT itself honors the override (the direct-cfg files
+# were the last hardcoded-path holdout).
+OUT_ROOT="${OUT_ROOT_OVERRIDE:-docs/plans/core-matrix-evidence/pembed}"
 case "${1:?stable|nightly|msrv}" in
   stable)  T_NAME=stable;  T_HASH=88d9e12ae178fab0fb5cc050a94da85685d449ea; MODE=stable;  DIR=target/mh-s3-stable ;;
   nightly) T_NAME=nightly; T_HASH=787af2b8c80638c51a4fc8e44f84e6891f243ec7; MODE=nightly; DIR=target/mh-s3-nightly ;;
@@ -17,7 +19,7 @@ mkdir -p "$EVID"
 D07_BASELINE_TARGET_DIR="$PWD/$DIR"
 source "$EVID_ROOT/mh-lib.sh"
 set +e
-OUT="${OUT_ROOT_OVERRIDE:-$OUT_ROOT}/supplemental"
+OUT="$OUT_ROOT/supplemental"
 mkdir -p "$OUT/logs"
 mh_assert_toolchain
 if ! rustc +"$T_NAME" --target "$HOST" -C target-cpu=x86-64 -C target-feature=-avx2 --print cfg > "$OUT_ROOT/cfg-$MODE-direct.txt" 2>"$OUT_ROOT/cfg-$MODE-direct.err"; then
