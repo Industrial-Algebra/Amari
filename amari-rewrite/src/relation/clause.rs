@@ -77,26 +77,33 @@ impl RuleId {
 /// ordering is ever invented, and no panic is reachable (PR #335
 /// round 3 P1).
 ///
-/// Metering lives in the sort rather than in the comparator because
-/// the comparator has no failure mode of its own: `Ord` cannot fail,
-/// so a fallible comparator would only be a way of smuggling the
-/// budget back in. Charging one unit per comparison and one per swap
-/// (which performs two moves) BEFORE the work keeps the accounting
-/// exact, and the comparison count is the sort's real count rather
-/// than a per-entry estimate.
-fn fallible_sort_by<T, F>(
+/// The sort charges one unit per comparison and one per swap (which
+/// performs two moves) BEFORE the work, so its own accounting is exact
+/// and the comparison count is the sort's real count rather than a
+/// per-entry estimate. A comparator that does further metered work
+/// receives the budget and may itself return the typed operations
+/// error; the sort then aborts at that exact comparison instead of
+/// fabricating an ordering.
+///
+/// Crate-visible so any metered ordering in this crate can reuse it
+/// instead of `slice::sort_by`. A comparison-based sort is only
+/// appropriate when its comparison count may depend on the input: the
+/// synthesis example canonicalizer needs a per-permutation-identical
+/// charge, so it ranks pairs instead (see
+/// `synthesis::refinement::canonical_examples`).
+pub(crate) fn fallible_sort_by<T, F>(
     items: &mut [T],
     resources: &mut RelationResources,
     mut compare: F,
 ) -> RewriteResult<()>
 where
-    F: FnMut(&T, &T) -> Ordering,
+    F: FnMut(&T, &T, &mut RelationResources) -> RewriteResult<Ordering>,
 {
     for index in 1..items.len() {
         let mut position = index;
         while position > 0 {
             resources.record_operations(1)?;
-            if compare(&items[position - 1], &items[position]) != Ordering::Greater {
+            if compare(&items[position - 1], &items[position], resources)? != Ordering::Greater {
                 break;
             }
             // One swap moves two elements.
@@ -141,7 +148,7 @@ fn metered_variable_names(
     // fallible, so no ordering is ever fabricated (a fabricated
     // ordering violates the total-order contract and std's sort panics
     // on it — PR #335 round 3 P1).
-    fallible_sort_by(&mut names, resources, |left, right| left.cmp(right))?;
+    fallible_sort_by(&mut names, resources, |left, right, _| Ok(left.cmp(right)))?;
 
     // Dedup compares adjacent entries: charge every comparison too.
     resources.record_operations(names.len())?;

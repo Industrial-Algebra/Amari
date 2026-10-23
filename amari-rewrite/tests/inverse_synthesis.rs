@@ -547,44 +547,60 @@ fn assert_operation_boundary(
     );
 }
 
+// All measured minima below were re-measured after the Cohort 7
+// closeout fix made example canonicalization permutation-invariant (PR
+// #338 P1/P2): the canonicalizer now ranks every unordered example
+// pair once (an order-independent charge) instead of running a
+// comparison sort. Fixtures of two examples or fewer are unchanged
+// (one pair, one comparison); larger fixtures move because the all-pairs
+// rank charge is not the sort's comparison count. A metering change
+// must re-measure them.
+
 /// Exact end-to-end operation minimum of
 /// `residual_roundtrip_fixture_is_metered_end_to_end`, measured from
 /// the implementation: two positives admitted, canonicalized, and
 /// specialized; one clause compiled (metered, including its rule
 /// digest); two forward replays; one residual round trip. A metering
-/// change must re-measure it.
-const EXACT_MINIMUM: usize = 399;
+/// change must re-measure it. Pre-Cohort 7 value: 399.
+const EXACT_MINIMUM: usize = 405;
 
 /// Exact minima for `backward_compilation_is_metered`, measured from
 /// the implementation (8 and 64 distinct variables, lossless).
-const BACKWARD_COMPILATION_8: usize = 1_427;
-const BACKWARD_COMPILATION_64: usize = 50_903;
+/// Pre-Cohort 7 values: 1,427 and 50,903.
+const BACKWARD_COMPILATION_8: usize = 1_429;
+const BACKWARD_COMPILATION_64: usize = 50_905;
 
 /// Exact minima for `residual_schema_selection_is_metered`, measured
 /// from the implementation (8 and 64 distinct variables, erasing).
-const RESIDUAL_SELECTION_8: usize = 859;
-const RESIDUAL_SELECTION_64: usize = 25_191;
+/// Pre-Cohort 7 values: 859 and 25,191.
+const RESIDUAL_SELECTION_8: usize = 862;
+const RESIDUAL_SELECTION_64: usize = 25_194;
 
 /// Exact minima for `residual_traversal_is_metered_per_visited_clause`
 /// (64 erasing clauses, with and without 64 unrelated residuals),
-/// measured from the implementation.
-const TRAVERSAL_WITHOUT_UNRELATED: usize = 55_822;
-const TRAVERSAL_WITH_UNRELATED: usize = 66_143;
+/// measured from the implementation. Pre-Cohort 7 values: 55,822 and
+/// 66,143; the all-pairs rank charge dominates the 64-residual
+/// canonicalization.
+const TRAVERSAL_WITHOUT_UNRELATED: usize = 66_706;
+const TRAVERSAL_WITH_UNRELATED: usize = 89_841;
 
 /// The budget of the reviewer's sort-panic repro (PR #335 round 3 P1).
 const REVIEWER_SORT_BUDGET: usize = 14_375;
 
 /// Exact minimum for `gate_scan_is_metered_per_clause` (64 erasing
 /// clauses, no residual evidence), measured from the implementation.
-/// The pre-fix value was 48,252; isolating the two round-3 changes
-/// gives 48,316 with the gate visit charge alone (64 clause visits) and
-/// 48,380 with the fallible-sort path for these 64 two-name rules.
-const GATE_MINIMUM: usize = 48_380;
+/// The Task 37 pre-fix value was 48,252; isolating the two PR #335
+/// round-3 changes gave 48,316 with the gate visit charge alone (64
+/// clause visits) and 48,380 with the fallible-sort path for these 64
+/// two-name rules. The Cohort 7 closeout re-measurement (all-pairs rank
+/// canonicalization of the 64 examples) is 55,636.
+const GATE_MINIMUM: usize = 55_636;
 
 /// Exact minimum for `residual_traversal_is_bypassed_without_erasing_clauses`
 /// (64 lossless clauses plus 64 unrelated residuals), measured from the
-/// implementation.
-const BYPASS_MINIMUM: usize = 20_731;
+/// implementation. Pre-Cohort 7 value: 20,731; the all-pairs rank charge
+/// for the 128 canonicalized examples accounts for the increase.
+const BYPASS_MINIMUM: usize = 36_961;
 
 fn boundary_limits() -> RelationLimits {
     RelationLimits::new(4_096, 64, 4_096, RelationLimits::MAX_OPERATIONS).unwrap()
@@ -923,4 +939,157 @@ fn residual_evidence_meters_every_visited_node() {
         run_with_operation_budget(&positives, &[], &wide, &boundary_limits(), wide_minimum - 1)
             .expect_err("one operation short must fail");
     assert_eq!(limit_error_resource(&error), Some("operations"));
+}
+
+// ---- Cohort 7 closeout: canonical example ordering (PR #338 review) ----
+
+/// The reviewer's documented shuffled order for the 24-example panic
+/// repro (PR #338 closeout P1): positive ground pairs `aNN -> b`, no
+/// negatives, no residuals.
+const CLOSEOUT_GROUND_ORDER: [usize; 24] = [
+    1, 9, 3, 14, 5, 17, 7, 11, 4, 21, 12, 13, 10, 15, 23, 19, 0, 18, 2, 6, 8, 16, 20, 22,
+];
+
+/// The operation budget of the reviewer's panic repro, which lands
+/// inside the canonical example sort.
+const CLOSEOUT_CANONICAL_BUDGET: usize = 600;
+
+/// The budget of the reviewer's outer canonicalization repro.
+const CLOSEOUT_OUTER_CANONICAL_BUDGET: usize = 128;
+
+/// The 24 positive ground pairs of the closeout panic repro.
+fn closeout_ground_examples() -> Vec<(Term, Term)> {
+    CLOSEOUT_GROUND_ORDER
+        .iter()
+        .map(|index| (c(&format!("a{index:02}")), c("b")))
+        .collect()
+}
+
+#[test]
+fn canonical_example_exhaustion_is_typed_not_panicking() {
+    // The example canonicalizer once returned a fabricated
+    // `Ordering::Equal` after its first metering error. std's sort
+    // validates the total-order contract for lists this long and
+    // PANICS on it, so budget exhaustion became a process abort inside
+    // the inverse probe instead of the typed operations error (PR #338
+    // closeout P1). Every sampled window is caught and asserted.
+    let positives = closeout_ground_examples();
+    let minimum = minimal_operation_budget(&positives, &[], &[], &boundary_limits());
+    assert!(
+        minimum > CLOSEOUT_CANONICAL_BUDGET,
+        "the closeout fixture must exhaust at the reviewer's budget: minimum={minimum}"
+    );
+
+    for budget in [
+        CLOSEOUT_CANONICAL_BUDGET,
+        CLOSEOUT_OUTER_CANONICAL_BUDGET,
+        minimum - 1,
+        minimum / 2,
+    ] {
+        let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            run_with_operation_budget(&positives, &[], &[], &boundary_limits(), budget)
+        }));
+        let result = caught.expect("an exhausted canonical sort budget must not panic");
+        let error = result.expect_err("an exhausted budget must be a typed error");
+        assert_eq!(
+            limit_error_resource(&error),
+            Some("operations"),
+            "budget {budget} must fail as a typed operations error"
+        );
+    }
+    assert!(
+        run_with_operation_budget(&positives, &[], &[], &boundary_limits(), minimum).is_ok(),
+        "the measured minimum must succeed"
+    );
+}
+
+/// The five `f(ai) -> g(ai)` examples of the reviewer's permutation
+/// repro (PR #338 closeout P2) in every sampled caller order.
+fn closeout_permutations() -> Vec<Vec<(Term, Term)>> {
+    let positives: Vec<(Term, Term)> = (0..5)
+        .map(|index| {
+            (
+                f("f", [c(&format!("a{index}"))]),
+                f("g", [c(&format!("a{index}"))]),
+            )
+        })
+        .collect();
+
+    // The two documented orders, then three deterministic shuffles.
+    let mut orders = vec![vec![0_usize, 1, 2, 3, 4], vec![4, 1, 3, 0, 2]];
+    let mut state = 0x9e37_79b9_7f4a_7c15_u64;
+    for _ in 0..3 {
+        let mut order: Vec<usize> = (0..5).collect();
+        for index in (1..5).rev() {
+            state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            order.swap(index, (state as usize) % (index + 1));
+        }
+        orders.push(order);
+    }
+
+    orders
+        .iter()
+        .map(|order| {
+            order
+                .iter()
+                .map(|&index| positives[index].clone())
+                .collect()
+        })
+        .collect()
+}
+
+#[test]
+fn permutation_outcomes_match_at_every_tightened_budget() {
+    // Canonicalization is the only input-order-dependent stage of the
+    // pipeline, so under a tightened budget every permutation of the
+    // same example set must reach the SAME outcome class: all refine
+    // with identical output, or all fail with the same typed error. A
+    // comparison-based canonical sort charges an input-order-dependent
+    // number of comparisons, so one order exhausted where another
+    // succeeded — 322 vs 337 for specialization and 612 vs 642 for
+    // inverse synthesis in the reviewer's repro (PR #338 closeout P2).
+    // The canonicalization charge must therefore be a property of the
+    // example SET, not of the caller's list order.
+    let permutations = closeout_permutations();
+    let mut minima = Vec::new();
+    for permutation in &permutations {
+        minima.push(minimal_operation_budget(
+            permutation,
+            &[],
+            &[],
+            &boundary_limits(),
+        ));
+    }
+    assert!(
+        minima.windows(2).all(|pair| pair[0] == pair[1]),
+        "every permutation must need the same minimum budget: {minima:?}"
+    );
+
+    // Sweep the whole window that contains the reviewer's boundaries
+    // (322 and 337 specialization, 612 and 612+30 inverse) so success
+    // and typed-failure bands are both exercised at every budget.
+    for budget in 1..=700 {
+        let mut baseline: Option<String> = None;
+        for permutation in &permutations {
+            let fingerprint = match run_with_operation_budget(
+                permutation,
+                &[],
+                &[],
+                &boundary_limits(),
+                budget,
+            ) {
+                Ok(outcome) => format!("ok:{outcome:?}"),
+                Err(error) => format!("err:{error:?}"),
+            };
+            match &baseline {
+                Some(expected) => assert_eq!(
+                    &fingerprint, expected,
+                    "budget {budget}: outcome depends on caller order"
+                ),
+                None => baseline = Some(fingerprint),
+            }
+        }
+    }
 }

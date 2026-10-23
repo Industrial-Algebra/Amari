@@ -704,6 +704,11 @@ fn minimal_operation_budget(
 }
 
 /// Assert the one-remaining-operation boundary at one bulk site.
+///
+/// Every minimum below is an exact end-to-end count. The Cohort 7
+/// closeout re-measured all of them after example canonicalization
+/// became an order-independent all-pairs rank pass instead of a
+/// comparison sort (PR #338 P1/P2).
 fn assert_operation_boundary(
     positives: &[(Term, Term)],
     negatives: &[(Term, Term)],
@@ -730,8 +735,8 @@ fn equality_meters_every_compared_node() {
     let narrow = wide_term(2);
     let positives = vec![(wide.clone(), c("a")), (wide, c("b"))];
     let narrow_positives = vec![(narrow.clone(), c("a")), (narrow, c("b"))];
-    assert_operation_boundary(&positives, &[], &boundary_limits(), 127_029, "equality");
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 127_029 / 2);
+    assert_operation_boundary(&positives, &[], &boundary_limits(), 127_031, "equality");
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 127_031 / 2);
 }
 
 #[test]
@@ -747,18 +752,21 @@ fn binding_traversal_meters_every_borrowed_node() {
         &positives,
         &negatives,
         &boundary_limits(),
-        16_436,
+        16_438,
         "binding",
     );
     assert!(
-        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 16_436 / 2
+        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 16_438 / 2
     );
 }
 
 #[test]
 fn canonicalization_meters_every_comparison_node() {
     // Two identical wide examples force a full structural comparison
-    // while sorting and again while deduplicating.
+    // while ranking and again while deduplicating. The rank pass
+    // charges one unit per example for the borrowed-reference
+    // allocation and one per placed example, which is where the extra
+    // two units over the pre-Cohort 7 minimum come from.
     let wide = wide_term(4_095);
     let narrow = wide_term(2);
     let positives = vec![(wide.clone(), c("a")), (wide, c("a"))];
@@ -767,10 +775,10 @@ fn canonicalization_meters_every_comparison_node() {
         &positives,
         &[],
         &boundary_limits(),
-        45_077,
+        45_079,
         "canonicalization",
     );
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 45_077 / 2);
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 45_079 / 2);
 }
 
 #[test]
@@ -785,10 +793,10 @@ fn candidate_construction_meters_clones_and_validation() {
         &positives,
         &[],
         &boundary_limits(),
-        32_782,
+        32_783,
         "candidate construction",
     );
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 32_782 / 2);
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 32_783 / 2);
 }
 
 #[test]
@@ -812,12 +820,12 @@ fn splitting_meters_every_compared_subtree_node() {
         &positives,
         &negatives,
         &boundary_limits(),
-        114_651,
+        114_654,
         "splitting",
     );
     assert!(
         minimal_operation_budget(&narrow_positives, &narrow_negatives, &boundary_limits())
-            < 114_651 / 2
+            < 114_654 / 2
     );
 }
 
@@ -899,11 +907,11 @@ fn fresh_name_attempts_charge_per_attempt() {
         &positives,
         &negatives,
         &boundary_limits(),
-        12_392,
+        12_395,
         "fresh names",
     );
     assert!(
-        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 12_392 / 2
+        minimal_operation_budget(&positives, &narrow_negatives, &boundary_limits()) < 12_395 / 2
     );
 }
 
@@ -930,10 +938,10 @@ fn disagreement_key_comparisons_charge_per_node() {
         &positives,
         &[],
         &boundary_limits(),
-        98_041,
+        98_043,
         "disagreement keys",
     );
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 98_041 / 2);
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 98_043 / 2);
 }
 
 #[test]
@@ -944,6 +952,6 @@ fn retention_clone_charges_per_node() {
     let narrow = wide_term(2);
     let positives = vec![(wide.clone(), wide)];
     let narrow_positives = vec![(narrow.clone(), narrow)];
-    assert_operation_boundary(&positives, &[], &boundary_limits(), 73_732, "retention");
-    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 73_732 / 2);
+    assert_operation_boundary(&positives, &[], &boundary_limits(), 73_733, "retention");
+    assert!(minimal_operation_budget(&narrow_positives, &[], &boundary_limits()) < 73_733 / 2);
 }
