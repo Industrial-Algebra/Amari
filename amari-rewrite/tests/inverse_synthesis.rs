@@ -551,10 +551,11 @@ fn assert_operation_boundary(
 // closeout fix made example canonicalization permutation-invariant (PR
 // #338 P1/P2): the canonicalizer now ranks every unordered example
 // pair once (an order-independent charge) instead of running a
-// comparison sort. Fixtures of two examples or fewer are unchanged
-// (one pair, one comparison); larger fixtures move because the all-pairs
-// rank charge is not the sort's comparison count. A metering change
-// must re-measure them.
+// comparison sort. Small fixtures move slightly too (the rank's
+// per-example placement charge, e.g. EXACT_MINIMUM 399 → 405);
+// larger fixtures move materially because the all-pairs rank charge
+// is not the sort's comparison count. A metering change must
+// re-measure them.
 
 /// Exact end-to-end operation minimum of
 /// `residual_roundtrip_fixture_is_metered_end_to_end`, measured from
