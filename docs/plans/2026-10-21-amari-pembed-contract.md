@@ -95,6 +95,45 @@ our own cfg-gated impls in error.rs:374-434).
   and are not verified here; P-WASM rows unchanged; benches/docs target
   checks out of scope; no runtime behavior changes on any host row.
 
+## R2 remediation record (2026-10-23) — scope expansion, honestly earned
+
+Reviewer P1 (reproduced on this worktree with the exact S1/S2 edits,
+then reverted): after dep surgery, **29–30 in-tree errors surface across
+ALL FOUR rows** — the transcendental float methods (`f64::powf/sin/cos/
+tan/sinh/cosh/tanh/exp/ln/log/ln_1p/sqrt/atan/round/fract/powi` and the
+f32 mirrors) are **std-only**; `core` floats lack them on this target.
+Site census (minimal row): `precision.rs` 9 (the `*_precise` trait-impl
+methods), `rotor.rs` 5, `exact_square.rs` 5, `lib.rs` 9 (macro-expanded
+float calls); `gf2/clifford.rs` +1 on gf2 rows. My original census never
+reached these: dep activation aborted compilation before in-tree
+codegen. **Census lesson: measure to codegen depth.**
+
+Reviewer P2 (verified): a fixture crate nested under the workspace
+directory without its own `[workspace]` table fails Cargo's workspace
+discovery. Fix: the fixture manifest carries an empty `[workspace]`
+table (its own root — standard isolated-crate pattern).
+
+### Revised surface
+
+- **S1 (extends): dependency surgery + unconditional `libm = "0.2"`.**
+  The direct-declaration shape stands; ADD `libm = "0.2"` as an
+  unconditional amari-core dependency with this written justification
+  (fleet rule): target-side float dispatch (S2b); same lock version
+  0.2.16 already present via num-traits' optional edge (zero new
+  resolution); fully inert on host std builds (cfg-gated use).
+- **S2 unchanged** (`phantom-types = ["num-traits/libm"]` — num-traits'
+  OWN Float impls; separate from our direct libm use).
+- **S2b (new): target-compatible math dispatch.** A small internal
+  module `math_dispatch` exposing per-function free fns with
+  `#[cfg(feature = "std")]` → the inherent methods (bit-identical to
+  today's behavior on host — the std arm compiles to exactly the
+  current calls) and `#[cfg(not(feature = "std"))]` → `libm::`
+  equivalents (`pow→powf/powi`, `ln→log`, `ln_1p`, `fract` via
+  `x - trunc(x)` where libm lacks it). All ~29 census sites routed
+  through the dispatch; the 12-row S3 build matrix + S5 host sweep are
+  the completeness and behavior-preservation gates.
+- **S4 (extends): fixture manifest gains an empty `[workspace]` table.**
+
 ## R1 remediation record (2026-10-23)
 
 Two P1s, both reproduced before revision: (1) member-level
