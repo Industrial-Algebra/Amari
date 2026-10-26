@@ -48,12 +48,35 @@
   **bit-identically across a clean replay** (fresh target+lock): 1
   coma artifact, set sha256 `8d03a32b…` both runs.
 - **amari-core surface (via carrier fixture, isolated workspace)**:
-  translation **FAILS deterministically** — rc 101, 7 logic-mode type
-  errors both runs, identical error sets. Families: plain-Rust methods
-  called in specs (`is_scalar`, `is_even_grade`, `grade`, `dimension`
-  — must be `#[logic]` fns), `T - T` (generic arithmetic has no logic
-  impl), Result-in-spec mismatches. The matrix C1 warning is thereby
-  DEMONSTRATED on the real surface: 23 annotations are dummy-path-only.
+  translation **FAILS deterministically** — rc 101, **18 errors** both
+  runs, identical error sets (R1 P3 correction: the first writeup said
+  7; that counted only `error[...]` type errors). Complete breakdown:
+  - 10 × `cannot find attribute ensures in this scope` (parser/import:
+    attribute resolution fails under cfg(creusot) in modules importing
+    via `creusot_contracts::macros::…` paths)
+  - 1 × `unexpected token, expected ]` (pearlite parse of a spec body)
+  - 4 × E0599 plain-Rust methods in specs (`is_scalar`,
+    `is_even_grade`, `grade`, `dimension` — must be `#[logic]` fns)
+  - 3 × E0277 logic typing (`T: OrdLogic` bound missing; `T - T` and
+    `_ - T` have no logic impl — the generic numeric model is absent)
+  The matrix C1 warning is thereby DEMONSTRATED on the real surface:
+  23 annotations are dummy-path-only.
 - Consequence recorded for C4-full: annotation repair (logic functions,
-  snapshots, numeric model) is a prerequisite — the §7 BLOCKED status
-  now has a concrete, evidenced reason.
+  attribute/prelude import strategy, OrdLogic/numeric model for T) is a
+  prerequisite — the §7 BLOCKED status now has a concrete, evidenced
+  reason.
+
+## Replayable evidence (R1 P2 completion)
+
+- `conformance/` — the S6 fixtures (source + manifest + lock),
+  scratch-run by `c3-gate.sh` (outcome-parsed, fail-closed both ways;
+  scratch name sanitized — creusot rejects dotted project names).
+- `c3-gate.sh` output: `conformance-prove.log` (full prove log with
+  per-goal ✔/✘), `conformance-summary.txt`.
+- `c4-smoke/` — carrier source + .gitignore; run logs
+  `c4-smoke-run1.log` / `c4-smoke-replay.log` (identical 18-error
+  sets, deterministic).
+- `conformance-coma-manifest.txt` — sha256 of every generated coma
+  artifact from a clean run (the bit-identical replay evidence).
+- `tool-versions.txt`, `cargo-creusot-help.txt`, `why3-config.txt`,
+  `prover-versions.txt` — complete tool identities (R1 P2).

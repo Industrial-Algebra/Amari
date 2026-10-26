@@ -21,12 +21,44 @@ fn cargo_target_deps() -> PathBuf {
                 .unwrap()
                 .join("target")
         });
-    let deps = target.join("debug").join("deps");
-    assert!(
-        deps.exists(),
-        "deps dir not found at {deps:?} — build first"
+    // Cargo's layout depends on invocation (R1 P2): an explicit
+    // --target places artifacts under target/<triple>/<profile>/deps;
+    // without it, target/<profile>/deps. Probe both layouts and both
+    // common profiles; the first containing an amari_core rlib wins.
+    let candidates = [
+        target.join("debug").join("deps"),
+        target.join("release").join("deps"),
+    ];
+    let mut tried: Vec<PathBuf> = candidates.to_vec();
+    if let Ok(rd) = std::fs::read_dir(&target) {
+        let subs: Vec<PathBuf> = rd
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
+            .filter(|p| p.is_dir())
+            .filter(|p| {
+                p.file_name()
+                    .and_then(|n| n.to_str())
+                    .is_some_and(|n| n.contains('-') && n != "debug" && n != "release")
+            })
+            .flat_map(|p| [p.join("debug").join("deps"), p.join("release").join("deps")])
+            .collect();
+        tried.extend(subs);
+    }
+    for deps in &tried {
+        let has_rlib = std::fs::read_dir(deps).is_ok_and(|rd| {
+            rd.filter_map(|e| e.ok()).any(|e| {
+                e.file_name()
+                    .to_str()
+                    .is_some_and(|n| n.starts_with("libamari_core-") && n.ends_with(".rlib"))
+            })
+        });
+        if has_rlib {
+            return deps.clone();
+        }
+    }
+    panic!(
+        "no libamari_core rlib under any probed layout of {target:?} (tried {tried:?}) — build first"
     );
-    deps
 }
 
 fn amari_core_rlib(deps: &PathBuf) -> PathBuf {
