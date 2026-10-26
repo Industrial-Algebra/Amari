@@ -1,0 +1,19 @@
+# Smoke ELF evidence (regenerable: cargo +stable build --release --target
+# thumbv7em-none-eabihf in this fixture directory; ~3 KB of rust-lld output).
+# Build artifacts themselves are NOT archived (doctrine: no build outputs
+# in git) — the assertions below were captured from the built artifact.
+sha256(binary): 90647dd712b92fb0134644f8c332e6fd1cbaa3f3888da760c7308319a84166bf
+  Class:                             ELF32
+  Machine:                           ARM
+  Entry point address:               0x20779
+# executable sections:
+  [ 2] .rodata           PROGBITS        00010114 000114 000584 00 AMS  0   0  4
+  [ 3] .text             PROGBITS        00020698 000698 0031d8 00  AX  0   0  8
+# retained amari_core symbols:
+    25: 00000000     0 FILE    LOCAL  DEFAULT  ABS amari_core.3b453[...]
+    40: 00000000     0 FILE    LOCAL  DEFAULT  ABS amari_core.3b453[...]
+    45: 00000000     0 FILE    LOCAL  DEFAULT  ABS amari_core.3b453[...]
+    46: 00000000     0 FILE    LOCAL  DEFAULT  ABS amari_core.3b453[...]
+    47: 00000000     0 FILE    LOCAL  DEFAULT  ABS amari_core.3b453[...]
+    48: 00000000     0 FILE    LOCAL  DEFAULT  ABS amari_core.3b453[...]
+    49: 00000000     0 FILE    LOCAL  DEFAULT  ABS amari_core.3b453[...]
