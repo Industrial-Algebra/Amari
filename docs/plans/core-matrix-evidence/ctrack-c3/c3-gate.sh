@@ -20,9 +20,13 @@ prove_once() { # workdir logfile
       || { echo "TOOL-ERROR: cargo creusot init" >&2; return 7; }
     cargo creusot prove >> "$LOG" 2>&1
     local RC=$?
-    # classify: expected failure = exactly the unproved-file report
-    if [ $RC -ne 0 ] && ! grep -q "Error: 1 unproved file" "$LOG"; then
-      echo "TOOL-ERROR: prove failed unexpectedly (rc=$RC, not the unproved-file path)" >&2
+    # R3 P2-2: the expected failure is EXACTLY rc 1 AND the marker AND
+    # the terminal why3find-failure line — any other status (e.g. a
+    # fatal 139 after valid-looking output) is a tool error.
+    local TERMINAL_OK=0
+    tail -1 "$LOG" | grep -q "Error: 'why3find prove' failed" && TERMINAL_OK=1
+    if [ "$RC" -ne 1 ] || ! grep -q "Error: 1 unproved file" "$LOG" || [ "$TERMINAL_OK" -ne 1 ]; then
+      echo "TOOL-ERROR: prove did not fail the expected way (rc=$RC, marker/terminal mismatch)" >&2
       return 7
     fi
     # complete outcome validation (fresh log only — grep cannot see history)
@@ -55,6 +59,10 @@ for RUN in run1 run2; do
   prove_once "$W" "$OUT_ROOT/conformance-prove-$RUN.log"; RC=$?
   [ $RC -eq 0 ] || exit $RC
   ( cd "$W" && find . -name '*.coma' -exec sha256sum {} \; | sort ) > "$OUT_ROOT/conformance-manifest-$RUN.txt"
+  # R3 P2-3: nonempty translation inventory REQUIRED before comparison —
+  # expected: both contracted functions' coma files (>= 2).
+  N=$(wc -l < "$OUT_ROOT/conformance-manifest-$RUN.txt")
+  [ "$N" -ge 2 ] || { echo "FATAL: run $RUN produced $N coma artifacts (expected >= 2) — empty inventories cannot establish reproducibility" >&2; exit 7; }
   echo "$(normalized_digest "$W")" > "$OUT_ROOT/conformance-digest-$RUN.txt"
 done
 if [ "$(cat "$OUT_ROOT/conformance-digest-run1.txt")" = "$(cat "$OUT_ROOT/conformance-digest-run2.txt")" ]; then

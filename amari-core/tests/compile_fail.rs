@@ -14,56 +14,66 @@
 use std::path::PathBuf;
 use std::process::Command;
 
-fn cargo_target_deps() -> PathBuf {
-    let target = std::env::var_os("CARGO_TARGET_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .parent()
-                .unwrap()
-                .join("target")
-        });
-    // Cargo's layout depends on invocation (R1 P2): an explicit
-    // --target places artifacts under target/<triple>/<profile>/deps;
-    // without it, target/<profile>/deps. Probe both layouts and both
-    // common profiles; the first containing an amari_core rlib wins.
-    let candidates = [
-        target.join("debug").join("deps"),
-        target.join("release").join("deps"),
-    ];
-    let mut tried: Vec<PathBuf> = candidates.to_vec();
-    if let Ok(rd) = std::fs::read_dir(&target) {
-        let subs: Vec<PathBuf> = rd
-            .filter_map(|e| e.ok())
-            .map(|e| e.path())
-            .filter(|p| p.is_dir())
-            .filter(|p| {
-                p.file_name()
-                    .and_then(|n| n.to_str())
-                    .is_some_and(|n| n.contains('-') && n != "debug" && n != "release")
-            })
-            .flat_map(|p| [p.join("debug").join("deps"), p.join("release").join("deps")])
-            .collect();
-        tried.extend(subs);
-    }
-    for deps in &tried {
-        let has_rlib = std::fs::read_dir(deps).is_ok_and(|rd| {
-            rd.filter_map(|e| e.ok()).any(|e| {
-                e.file_name()
-                    .to_str()
-                    .is_some_and(|n| n.starts_with("libamari_core-") && n.ends_with(".rlib"))
-            })
-        });
-        if has_rlib {
-            return deps.clone();
+fn host_deps_dir(deps: &std::path::Path) -> PathBuf {
+    // R2 P2-1: proc-macros and build scripts are HOST artifacts even in
+    // explicit-target builds. R3: the host path must derive from the
+    // SAME target root as the running test binary (<root>/debug/deps),
+    // NOT the default worktree target — stale libamari_core rmeta/rlib
+    // artifacts from differently-featured builds there poison extern
+    // resolution (observed E0463 despite a valid --extern path).
+    // Layout: <root>/<triple>/debug/deps (explicit target) or
+    // <root>/debug/deps (plain — already the host dir).
+    let debug_dir = deps.parent().expect("parent of deps is <profile>");
+    let profile = debug_dir.file_name().and_then(|n| n.to_str()).unwrap_or("");
+    if profile == "debug" || profile == "release" {
+        let maybe_triple = debug_dir
+            .parent()
+            .and_then(|p| p.file_name())
+            .and_then(|n| n.to_str());
+        match maybe_triple {
+            Some(t) if t.contains('-') => {
+                // explicit-target layout: <root>/<triple>/<profile>/deps
+                let root = debug_dir
+                    .parent()
+                    .expect("triple dir")
+                    .parent()
+                    .expect("root");
+                root.join("debug").join("deps")
+            }
+            _ => deps.to_path_buf(), // plain layout: deps IS the host deps dir
         }
+    } else {
+        deps.to_path_buf()
     }
-    panic!(
-        "no libamari_core rlib under any probed layout of {target:?} (tried {tried:?}) — build first"
-    );
 }
 
-fn amari_core_rlib(deps: &PathBuf) -> PathBuf {
+fn cargo_target_deps() -> PathBuf {
+    // R3 P2-1: anchor to the RUNNING TEST BINARY's own directory — it
+    // sits next to the exact rlib this test was linked against, in
+    // whichever layout cargo used (<dir>/debug/deps plain, or
+    // <dir>/<triple>/debug/deps under explicit --target; release
+    // likewise). Layout probing selected STALE artifacts from earlier
+    // differently-featured builds sharing the target dir (E0432).
+    let deps = std::env::current_exe()
+        .expect("current_exe")
+        .parent()
+        .expect("deps dir of the test binary")
+        .to_path_buf();
+    let has_rlib = std::fs::read_dir(&deps).is_ok_and(|rd| {
+        rd.filter_map(|e| e.ok()).any(|e| {
+            e.file_name()
+                .to_str()
+                .is_some_and(|n| n.starts_with("libamari_core-") && n.ends_with(".rlib"))
+        })
+    });
+    assert!(
+        has_rlib,
+        "no libamari_core rlib beside the test binary at {deps:?} — build first"
+    );
+    deps
+}
+
+fn amari_core_rlib(deps: &std::path::Path) -> PathBuf {
     // Newest libamari_core-*.rlib (single build of this workspace crate).
     let mut best: Option<(std::time::SystemTime, PathBuf)> = None;
     for entry in std::fs::read_dir(deps).expect("read deps") {
@@ -89,6 +99,7 @@ fn amari_core_rlib(deps: &PathBuf) -> PathBuf {
 fn static_rejection_cases() {
     let deps = cargo_target_deps();
     let rlib = amari_core_rlib(&deps);
+    let host_deps = host_deps_dir(&deps);
     let rustc = std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into());
     let cases_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/compile-fail");
     let mut cases = vec![];
@@ -119,21 +130,15 @@ fn static_rejection_cases() {
             .map(|t| t.split('|').map(|s| s.trim().to_string()).collect())
             .unwrap_or_default();
 
-        // R2 P2-1: proc-macros and build scripts are HOST artifacts even
-        // in explicit-target builds — supply the host deps path alongside
-        // the target deps path (E0463 otherwise: thiserror's macro .so
-        // lives in the host debug/deps, not the triple's).
-        let host_deps = {
-            let t = std::env::var_os("CARGO_TARGET_DIR")
-                .map(PathBuf::from)
-                .unwrap_or_else(|| {
-                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                        .parent()
-                        .unwrap()
-                        .join("target")
-                });
-            t.join("debug").join("deps")
-        };
+        eprintln!("DEBUG rustc={rustc} rlib={rlib:?}");
+        std::fs::write(
+            "/tmp/testchild-env.txt",
+            std::env::vars()
+                .map(|(k, v)| format!("{k}={v}"))
+                .collect::<Vec<_>>()
+                .join("\n"),
+        )
+        .unwrap();
         let out = Command::new(&rustc)
             .arg("--edition=2024")
             .arg("--crate-type=bin")
