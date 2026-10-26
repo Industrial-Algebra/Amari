@@ -382,6 +382,33 @@ four-form vocabulary cannot express (it covers existing promises only).
 **D-B. Proof track (MATRIX-02 et al.).**
 *Immediate contract repair (recommended first step either way):* fix or remove the unsound `ensures(result >= T::zero())` dot contract and stop proof-implying wording NOW (M-REP-A) — this does not require Creusot. *Then, retained proof scope (default):* C3 toolchain conformance + C4 discharged obligations per §7 before 1.0. *Alternative:* descope — remove formal-verification claims from the advertised surface (feature documented as annotation-compatibility only) and drop C3/C4 to post-1.0 research; requires the same public disclosure discipline. MATRIX-02's contract repair is NOT optional under any branch; only the proof obligation is.
 
+### Addendum (2026-10-23): M-TGT closes — P-EMBED merged, P-AVX2 executed, P-WASM closure green
+
+- **P-EMBED** (contract #340 conv R3; implementation #342, loop conv R5,
+  merged): three-arm `math_dispatch` (hosted+std = inherent bit-identical;
+  hosted-no-std = libm; `target_os="none"` = libm) over 30 routed sites;
+  direct `default-features=false` dependency surgery; 12/12 thumbv7em
+  codegen builds; real linked smoke ELF (entry 0x20779, .text 0x31d8,
+  retained amari_core symbols); host matrix fully green through the
+  dispatch (1,280/0 stable + nightly, 320/0 msrv, supplemental green).
+  Disposition: **RETAIN (retain-and-execute satisfied)**.
+- **P-AVX2** (gate #343, conv R1): 5/5 rows green on develop `9986e89`
+  (battery ×4 configs + full default suite under `+avx2,+fma`; runtime
+  inventory asserts dispatcher selects `avx2+fma`, dispatch ≡ direct
+  kernel). Disposition: **RETAIN (retain-and-execute satisfied)**.
+  Evidence: `core-matrix-evidence/p-avx2/`.
+- **P-WASM** (closure executed green, 11/11 rows): compile support for
+  the full portable closure on wasm32-unknown-unknown at codegen depth,
+  on post-#342 develop (through the new dispatch). Claim (ii) runtime
+  coverage unchanged (binding configuration only). **D-A-bis: NOT now**
+  — compile closure + binding runtime as the verified surface; extension
+  deferred until a consumer requires it. Evidence:
+  `core-matrix-evidence/p-wasm/`.
+
+All three D-A targets are independently RETAIN-and-executed. With this
+addendum, M-TGT's rows are discharged; remaining pre-1.0 gates are the
+C2–C4 proof track (§7) per D-B.
+
 ## 9. Fresh observed results and limits
 
 > **2026-10-14 refresh on `354945a`:** the counts below are the ORIGINAL

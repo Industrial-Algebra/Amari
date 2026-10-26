@@ -1,0 +1,12 @@
+config	feat_args	exit
+default		0
+minimal	--no-default-features	0
+std	--no-default-features --features std	0
+high-precision	--no-default-features --features high-precision	0
+wasm-alias	--no-default-features --features wasm-precision	0
+phantom	--no-default-features --features phantom-types	0
+gf2	--no-default-features --features gf2	0
+serialize	--no-default-features --features std,serialize	0
+formal-compat	--no-default-features --features formal-verification	0
+combo-std-phantom-gf2	--no-default-features --features std,phantom-types,gf2	0
+combo-portable-full	--no-default-features --features std,phantom-types,high-precision,gf2,serialize	0
