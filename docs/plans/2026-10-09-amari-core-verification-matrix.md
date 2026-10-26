@@ -408,7 +408,7 @@ four-form vocabulary cannot express (it covers existing promises only).
   unchanged (binding configuration only). **D-A-bis: NOT now** — compile
   closure + binding runtime as the verified surface; extension deferred
   until a consumer requires it. Evidence: `core-matrix-evidence/p-wasm/`
-  (closure.txt carries the 96-set computation).
+  (closure.txt + compute-closure.py carry the 160-set computation).
 
 All three D-A targets are independently RETAIN-and-executed. With this
 addendum, M-TGT's rows are discharged; remaining pre-1.0 gates are the

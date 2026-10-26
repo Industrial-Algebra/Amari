@@ -46,6 +46,7 @@ truncated/empty/missing closure input exits 7 with ZERO cargo
 invocations, proven by sentinel-cargo negative tests; the expected
 160-row inventory is asserted both before the run and from the
 executed rows). Pinned toolchain in toolchain.txt, `--locked`.
-Artifacts: results.tsv (160 rows), closure.txt, 4 sample logs
-(minimal / creusot-contracts-only / maximal / first),
+Artifacts: results.tsv (160 rows), closure.txt, 3 sample logs
+(set-1 minimal / set-2 creusot-contracts-only / set-160 maximal;
+the 96-era samples carried stale closure numbering and were dropped),
 dropped-logs.sha256 manifest, ARCHIVE-NOTE.md.
