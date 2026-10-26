@@ -1,1 +1,1 @@
-P-WASM COMPILE CLOSURE: rows=96 failed=0
+P-WASM COMPILE CLOSURE: rows=160 failed=0

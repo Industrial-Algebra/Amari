@@ -2,18 +2,21 @@
 
 Matrix §5, claim (i) only: **COMPILE SUPPORT** for the full portable
 closure on `wasm32-unknown-unknown` — library CODEGEN (`build --lib`;
-check is metadata-only per the P-EMBED lesson). **96/96 canonical
-activation sets** (R1 remediation: the first draft ran 11
-representative rows — §5's "including" list was exemplary, not the
-boundary). The closure is computed from the manifest implication
-edges over the 7-dimension portable feature space
-{std, phantom-types, high-precision, gf2, serialize, parallel,
-formal-verification}: 128 subsets dedup under closure to 96 canonical
-sets (the 32 formal-verification-without-phantom subsets collapse
-into their closures); aliases are not separate dimensions
-(wasm-precision ≡ high-precision); native-precision/full-precision
-excluded (rug native-only by design). Every row incl. minimal,
-serialize+parallel rows, and formal-compat. develop `957f223`
+check is metadata-only per the P-EMBED lesson). **160/160 canonical
+capability sets** (R1: the first draft ran 11 representative rows;
+R2: the 7-dim/96-set remediation still missed the 64
+creusot-contracts-without-formal-verification states — the manifest
+has no `dep:` prefix there, so cargo exposes an implicit CLI-addressable
+feature activating the annotations crate alone). The space is
+8-dimensional: {std, phantom-types, high-precision, gf2, serialize,
+parallel, formal-verification, creusot-contracts}; closure edge
+formal-verification → {creusot-contracts, phantom-types}; 2^8 = 256
+subsets dedup to 160 canonical closed sets (compute-closure.py,
+manifest-drift-checked). serde/rayon are normalized aliases of
+serialize/parallel; wasm-precision ≡ high-precision;
+native-precision/full-precision excluded (rug native-only). Rows
+include minimal, creusot-contracts-only (builds green — the state R1
+missed), serialize+parallel, formal-compat, and the maximal set. develop `957f223`
 (post-#342): every row builds through the new three-arm
 `math_dispatch` — **std rows take the inherent arm; std-off rows take
 the libm arm** (design-intended; R1 IR-confirmed; the libm seam
@@ -37,6 +40,12 @@ promise.
 
 ## Regeneration
 
-`wasm-gate.sh` (committed; TOTAL override honors evidence AND build
-artifacts), pinned toolchain in toolchain.txt, `--locked` against the
-worktree lock. 11 logs retained (small enough not to need slimming).
+`wasm-gate.sh` + `compute-closure.py` (committed; TOTAL override honors
+evidence AND build artifacts; **fail-closed input validation** —
+truncated/empty/missing closure input exits 7 with ZERO cargo
+invocations, proven by sentinel-cargo negative tests; the expected
+160-row inventory is asserted both before the run and from the
+executed rows). Pinned toolchain in toolchain.txt, `--locked`.
+Artifacts: results.tsv (160 rows), closure.txt, 4 sample logs
+(minimal / creusot-contracts-only / maximal / first),
+dropped-logs.sha256 manifest, ARCHIVE-NOTE.md.

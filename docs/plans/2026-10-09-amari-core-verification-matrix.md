@@ -397,9 +397,11 @@ four-form vocabulary cannot express (it covers existing promises only).
   inventory asserts dispatcher selects `avx2+fma`, dispatch ≡ direct
   kernel). Disposition: **RETAIN (retain-and-execute satisfied)**.
   Evidence: `core-matrix-evidence/p-avx2/`.
-- **P-WASM** (closure executed green, 96/96 canonical activation sets —
-  the exhaustive portable closure computed from manifest implications,
-  R1-corrected from the first draft's 11 representative rows): compile
+- **P-WASM** (closure executed green, **160/160 canonical capability sets** —
+  the exhaustive portable closure over the 8-dimension space incl.
+  the implicit creusot-contracts capability (no dep: prefix → 64
+  C-without-fv states R1's 96-set space missed); compute-closure.py
+  manifest-drift-checked; gate fail-closed on inventory mismatch): compile
   support on wasm32-unknown-unknown at codegen depth, on post-#342
   develop through the new dispatch (std rows inherent arm; std-off rows
   libm arm — design-intended, IR-confirmed). Claim (ii) runtime coverage
