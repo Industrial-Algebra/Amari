@@ -25,10 +25,16 @@ C3 (toolchain conformance), C4 (proofs). D-B's immediate contract repair
 `VerifiedMultivector<T,P,Q,R>` and `KVector<T,K,P,Q,R>` are branded by
 them (PhantomData fields, lines 85/310); `VerifiedRotor<T,P,Q,R>` (505).
 Cross-signature/grade/dim operations are therefore TYPE ERRORS at
-compile time. **Zero compile-fail tests exist**: no `trybuild` dev-dep,
-no `tests/compile-fail/`, no rustc-direct negative harness anywhere in
-the workspace. The only "examples" of rejection are prose in doc
-comments — inventory, not tests (matrix C2 language).
+compile time (R1 scratch-verified: all six S1 families fail with
+E0308/E0277; positive control compiles). **Zero compile-fail tests
+exist for the verified-core boundaries** — no harness, no negative
+cases anywhere in amari-core. NOT zero workspace-wide (R1 census
+correction): `amari-rewrite-macros` carries its own trybuild UI suite
+(`tests/ui.rs`, 22 `compile_fail` cases — a different boundary: macro
+diagnostics) and its dev-deps include `trybuild = "1"` (so D1's
+"zero new dependencies" is precise only at the amari-core manifest
+level; the crate already exists elsewhere in the workspace — decision
+unchanged, context corrected).
 
 **C2 surface — dynamic.** Runtime rejection exists and is partially
 tested: `VerifiedMultivector::new` (length, finiteness),
@@ -36,11 +42,15 @@ tested: `VerifiedMultivector::new` (length, finiteness),
 documented as the accepted set), `compose`/`apply_to_multivector`
 (Result paths). Error-path coverage lives in
 `inverse_exp_contracts.rs` and `rotor_error_privacy_s1.rs` (grep
-`expect_err|is_err`); no dedicated ingress-rejection suite.
+`expect_err|is_err`), PLUS constructor-rejection unit tests inside
+`verified.rs` itself (R1 census correction — the draft said only the
+two integration files); no dedicated ingress-rejection suite.
 
 **C3 surface.** Nothing installed: no `cargo-creusot` binary, no
 `nightly-2025-11-13` toolchain. `verified_contracts.rs` is 250 lines,
-25 `requires`/`ensures` obligations, compiled today only through the
+**23 anchored `#[requires]`/`#[ensures]` obligations** (R1 count
+correction; the draft's 25 was an unanchored grep including doc-text
+mentions), compiled today only through the
 dummy path (contracts/proc-macros 0.8.0 outside `cfg(creusot)` — a
 green build proves NOTHING about translation, per matrix C1 note).
 
@@ -90,9 +100,11 @@ green build proves NOTHING about translation, per matrix C1 note).
   nightly-2025-11-13` (pinned), upstream Creusot v0.8.0 via the
   official tag-specific procedure (release artifact install, NOT
   floating `cargo install --git`). Capture the full version tuple:
-  release source hash, `cargo creusot version`, rustc commit, Why3,
-  why3find, solver versions and configuration — recorded as
-  OBSERVED at bootstrap, never invented (matrix C3).
+  release source hash, `cargo creusot version`, rustc commit, **the
+  resolved prelude identity and configuration** (matrix §7/C3 names it
+  explicitly; R1 P3 — the draft's tuple omitted it), Why3, why3find,
+  solver versions and configuration — recorded as OBSERVED at
+  bootstrap, never invented (matrix C3).
 - **S6** Conformance gate, both directions:
   - **positive:** a nontrivial supported proof fixture (a small
     verified function with a real postcondition) that TRANSLATES and
@@ -128,17 +140,23 @@ recorded verbatim in the session log):
 
 ### C4 smoke (D4 amendment — translation only, NO proving claims)
 
-- **S8** After C3's conformance gate passes: one `cargo creusot`
-  translation run over
-  `--no-default-features --features std,formal-verification` (the
-  matrix §7 proposed command form, to be validated against actual
-  v0.8.0 CLI semantics during S5). Deliverables: nonempty generated
-  obligation set tied to source/lock/tool hashes; translation
-  artifact archived (slim: hashes + counts + sample, not bulk).
-  **Claims wording: "translation is nonempty and reproducible" —
-  nothing is proved, discharged, or verified by this step.** Full C4
-  (obligation inventory, trusted assumptions, numeric model,
-  discharged proofs, replay) is the follow-up contract.
+- **S8** After C3's conformance gate passes: the translation smoke
+  runs TWICE — the initial translation, then a **clean replay** (fresh
+  target/output directory, same pinned tuple and lock) with a DEFINED
+  comparison: the obligation inventory (per-item identifiers or
+  counts + content hashes of generated artifacts) must be equal
+  across both runs. One run demonstrates nonemptiness only (R1
+  correction); reproducibility is an evidenced result, not a word.
+  Over `--no-default-features --features std,formal-verification`
+  (matrix §7's proposed command form, to be validated against actual
+  v0.8.0 CLI semantics during S5). Deliverables: nonempty obligation
+  set tied to source/lock/tool hashes + the two-run comparison;
+  translation artifacts archived slim (hashes + counts + sample, not
+  bulk). **Claims wording: "translation is nonempty and reproduces
+  bit-comparably across a clean replay" — nothing is proved,
+  discharged, or verified by this step.** Full C4 (obligation
+  inventory, trusted assumptions, numeric model, discharged proofs,
+  replay) is the follow-up contract.
 
 ## 5. Verification matrix (implementation PR)
 
