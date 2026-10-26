@@ -21,7 +21,7 @@
     "@justinelliottcobb/amari-wasm": "latest",
     "@mantine/code-highlight": "^9.4.1",
     "@mantine/core": "^9.7.1",
-    "@mantine/hooks": "^9.7.2",
+    "@mantine/hooks": "^9.7.3",
     "shiki": "^4.0.2",
     "@vitejs/plugin-react": "^6.1.2",
     "postcss": "^8.4.49",
@@ -50,7 +50,7 @@
     "globals": "^17.7.0",
     "jsdom": "^27.3.0",
     "netlify-cli": "^27.14.2",
-    "vitest": "^4.1.8"
+    "vitest": "^5.0.5"
   },
   "engines": {
     "node": ">=20.0.0"

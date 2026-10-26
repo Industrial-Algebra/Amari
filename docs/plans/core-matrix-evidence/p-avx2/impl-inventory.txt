@@ -1,0 +1,1 @@
+dispatcher selection: avx2+fma (asserted by simd_rows::runtime_inventory; dispatch == direct kernel for all 8 coefficients)

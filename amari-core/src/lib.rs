@@ -38,6 +38,7 @@ pub(crate) use exact_square::exact_x2;
 
 #[cfg(feature = "gf2")]
 pub mod gf2;
+mod math_dispatch;
 
 #[allow(dead_code)]
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -93,7 +94,7 @@ pub use cayley::CayleyTable;
 /// ratio is `0` when `new_norm` underflows, which is still a genuine collapse.
 fn squaring_is_collapse(previous_norm: f64, new_norm: f64) -> bool {
     previous_norm > 1073741824.0 // 2^30
-        && new_norm / previous_norm < previous_norm * 2f64.powi(-62)
+        && new_norm / previous_norm < previous_norm * crate::math_dispatch::powi_f64(2.0f64, -62)
 }
 
 /// Symbolic decomposition of the scalar exponential: `exp(s) = m · 2^E`
@@ -135,9 +136,9 @@ fn symbolic_exp_scale(s: f64) -> (f64, i64) {
     }
     // Nearest integer to `s / ln2`, and the accurately reduced argument
     // `r = s - E·ln2` (`|r| <= ln2/2` to within the estimate's rounding).
-    let exponent = estimate.round();
+    let exponent = crate::math_dispatch::round_f64(estimate);
     let reduced = (s - exponent * LN2_HI) - exponent * LN2_LO;
-    (reduced.exp(), exponent as i64)
+    (crate::math_dispatch::exp_f64(reduced), exponent as i64)
 }
 
 /// A multivector in a Clifford algebra Cl(P,Q,R)
@@ -954,7 +955,7 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
 
         // 2. Exact pure scalar: every non-scalar coefficient is exactly zero.
         if self.as_slice()[1..].iter().all(|&c| c == 0.0) {
-            let value = self.as_slice()[0].exp();
+            let value = crate::math_dispatch::exp_f64(self.as_slice()[0]);
             if value.is_finite() {
                 return Ok(Self::scalar(value));
             }
@@ -1087,15 +1088,18 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
         } else if sign < 0 {
             // Circular: cos(angle) + (sin(angle)/angle)·x; cos/sin are bounded
             // for a finite angle (a non-finite angle is unrepresentable).
-            (angle.cos(), angle.sin() / angle)
+            (
+                crate::math_dispatch::cos_f64(angle),
+                crate::math_dispatch::sin_f64(angle) / angle,
+            )
         } else {
             // Hyperbolic: cosh(angle) + (sinh(angle)/angle)·x. cosh/sinh may
             // overflow even when `e^s · cosh(a)` is finite, so in that regime
             // the scale is composed symbolically with the two exponential terms
             // `e^{s+a}` and `e^{s-a}` (a closed-form failure if the dominant
             // term is itself non-representable).
-            let cosh = angle.cosh();
-            let sinhc = angle.sinh() / angle;
+            let cosh = crate::math_dispatch::cosh_f64(angle);
+            let sinhc = crate::math_dispatch::sinh_f64(angle) / angle;
             if !cosh.is_finite() || !sinhc.is_finite() {
                 let result = self.exp_hyperbolic_symbolic(scalar, angle);
                 return if result.as_slice().iter().all(|c| c.is_finite()) {
@@ -1237,8 +1241,8 @@ impl<const P: usize, const Q: usize, const R: usize> Multivector<P, Q, R> {
             0usize
         } else {
             // `log2(2·norm)` without forming `2·norm`, which may overflow.
-            let l = norm.log2() + 1.0;
-            l.ceil().max(0.0) as usize
+            let l = crate::math_dispatch::log2_f64(norm) + 1.0;
+            crate::math_dispatch::ceil_f64(l).max(0.0) as usize
         };
 
         let mut scaled = self.scale_down(k);
