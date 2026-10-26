@@ -1,0 +1,11 @@
+## cargo creusot
+Usage: creusot-rustc [RUSTC_OPTIONS] -- [OPTIONS]
+
+## why3
+Why3 platform, version 1.8.2+git
+## why3find
+why3find v1.2.0+dev
+## rustc
+rustc 1.93.0-nightly (01867557c 2025-11-12)
+binary: rustc
+commit-hash: 01867557cd7dbe256a031a7b8e28d05daecd75ab
