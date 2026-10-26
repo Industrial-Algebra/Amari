@@ -2,15 +2,24 @@
 
 Matrix §5, claim (i) only: **COMPILE SUPPORT** for the full portable
 closure on `wasm32-unknown-unknown` — library CODEGEN (`build --lib`;
-check is metadata-only per the P-EMBED lesson). 11/11 rows exit 0:
-default, minimal, std, high-precision, wasm-alias (≡ high-precision),
-phantom, gf2, serialize, formal-compat (creusot-contracts annotations
-compile), combo-std-phantom-gf2, combo-portable-full (the maximal
-portable set: everything except native-precision, which is
-native-only by design). develop `957f223` (post-#342 — every row
-builds through the new three-arm `math_dispatch`; wasm is hosted+std
-→ the inherent arm, no libm seam on this target), stable pinned
-`88d9e12ae…`, `--locked`.
+check is metadata-only per the P-EMBED lesson). **96/96 canonical
+activation sets** (R1 remediation: the first draft ran 11
+representative rows — §5's "including" list was exemplary, not the
+boundary). The closure is computed from the manifest implication
+edges over the 7-dimension portable feature space
+{std, phantom-types, high-precision, gf2, serialize, parallel,
+formal-verification}: 128 subsets dedup under closure to 96 canonical
+sets (the 32 formal-verification-without-phantom subsets collapse
+into their closures); aliases are not separate dimensions
+(wasm-precision ≡ high-precision); native-precision/full-precision
+excluded (rug native-only by design). Every row incl. minimal,
+serialize+parallel rows, and formal-compat. develop `957f223`
+(post-#342): every row builds through the new three-arm
+`math_dispatch` — **std rows take the inherent arm; std-off rows take
+the libm arm** (design-intended; R1 IR-confirmed; the libm seam
+exists on this target for std-off configs and libm is pure Rust, so
+it builds — the original SUMMARY's "no libm seam on this target" was
+wrong and is withdrawn). Stable pinned `88d9e12ae…`, `--locked`.
 
 ## Claim (ii) — RUNTIME COVERAGE (unchanged, not re-claimed)
 

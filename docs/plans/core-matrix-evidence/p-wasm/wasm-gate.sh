@@ -8,6 +8,7 @@ set -uo pipefail
 OUT_ROOT="${OUT_ROOT_OVERRIDE:-docs/plans/core-matrix-evidence/p-wasm}"
 T_NAME=stable
 mkdir -p "$OUT_ROOT/logs"
+cp docs/plans/core-matrix-evidence/p-wasm/closure.txt "$OUT_ROOT/closure.txt" 2>/dev/null || true
 if [ -n "${OUT_ROOT_OVERRIDE:-}" ]; then TARGET_DIR="$OUT_ROOT/target"; else TARGET_DIR="$PWD/target/wasm-gate"; fi
 mkdir -p "$TARGET_DIR"
 rustc +$T_NAME -vV > "$OUT_ROOT/toolchain.txt" 2>&1 || exit 7
@@ -25,17 +26,18 @@ row() { # label feat_args
   printf '%s\t%s\t%s\n' "$L" "$F" "$RC" >> "$OUT_ROOT/results.tsv"
   [ $RC -ne 0 ] && echo "FAIL $L" >> "$OUT_ROOT/failures.txt"
 }
-row default ''
-row minimal '--no-default-features'
-row std '--no-default-features --features std'
-row high-precision '--no-default-features --features high-precision'
-row wasm-alias '--no-default-features --features wasm-precision'
-row phantom '--no-default-features --features phantom-types'
-row gf2 '--no-default-features --features gf2'
-row serialize '--no-default-features --features std,serialize'
-row formal-compat '--no-default-features --features formal-verification'
-row combo-std-phantom-gf2 '--no-default-features --features std,phantom-types,gf2'
-row combo-portable-full '--no-default-features --features std,phantom-types,high-precision,gf2,serialize'
+# R1 remediation: the EXHAUSTIVE portable closure, not representative
+# picks — 96 canonical activation sets computed from the manifest
+# implication edges (closure.txt; M-H closure-map discipline). Aliases
+# are not separate dimensions; native-precision/full-precision excluded
+# (rug is native-only by design).
+while IFS=$'\t' read -r IDX FEATS; do
+  if [ "$FEATS" = '(minimal)' ]; then
+    row "set-$IDX-minimal" '--no-default-features'
+  else
+    row "set-$IDX" "--no-default-features --features $FEATS"
+  fi
+done < <(cat "${CLOSURE_SRC:-$OUT_ROOT/closure.txt}") 
 TOTAL=$(tail -n +2 "$OUT_ROOT/results.tsv" | wc -l)
 FAILED=$(tail -n +2 "$OUT_ROOT/results.tsv" | awk -F'\t' '$3!="0"' | wc -l)
 echo "P-WASM COMPILE CLOSURE: rows=$TOTAL failed=$FAILED" | tee "$OUT_ROOT/summary.txt"

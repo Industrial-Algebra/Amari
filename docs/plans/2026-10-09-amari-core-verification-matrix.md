@@ -397,13 +397,16 @@ four-form vocabulary cannot express (it covers existing promises only).
   inventory asserts dispatcher selects `avx2+fma`, dispatch ≡ direct
   kernel). Disposition: **RETAIN (retain-and-execute satisfied)**.
   Evidence: `core-matrix-evidence/p-avx2/`.
-- **P-WASM** (closure executed green, 11/11 rows): compile support for
-  the full portable closure on wasm32-unknown-unknown at codegen depth,
-  on post-#342 develop (through the new dispatch). Claim (ii) runtime
-  coverage unchanged (binding configuration only). **D-A-bis: NOT now**
-  — compile closure + binding runtime as the verified surface; extension
-  deferred until a consumer requires it. Evidence:
-  `core-matrix-evidence/p-wasm/`.
+- **P-WASM** (closure executed green, 96/96 canonical activation sets —
+  the exhaustive portable closure computed from manifest implications,
+  R1-corrected from the first draft's 11 representative rows): compile
+  support on wasm32-unknown-unknown at codegen depth, on post-#342
+  develop through the new dispatch (std rows inherent arm; std-off rows
+  libm arm — design-intended, IR-confirmed). Claim (ii) runtime coverage
+  unchanged (binding configuration only). **D-A-bis: NOT now** — compile
+  closure + binding runtime as the verified surface; extension deferred
+  until a consumer requires it. Evidence: `core-matrix-evidence/p-wasm/`
+  (closure.txt carries the 96-set computation).
 
 All three D-A targets are independently RETAIN-and-executed. With this
 addendum, M-TGT's rows are discharged; remaining pre-1.0 gates are the
