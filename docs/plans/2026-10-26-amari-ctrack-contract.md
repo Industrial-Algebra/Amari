@@ -68,6 +68,14 @@ green build proves NOTHING about translation, per matrix C1 note).
   unrelated compile error — the harness records the actual message and
   asserts the boundary name appears (exact-token, fail-closed grep
   discipline).
+- **S2b Remedy direction (operator standing preference, 2026-10-26):
+  richer substrate.** If any S1 case does NOT fail to compile today
+  (e.g. cross-type mixing compiles via inference, or a From/Into path
+  silently converts), the remedy is to ADD the static boundary —
+  stronger typing, sealed traits, removing accidental conversion
+  impls — not to narrow the promise. An Amari with more options and
+  paths means MORE static guarantees where the type system can carry
+  them, never fewer.
 - **S3** Dynamic rejection suite, recorded SEPARATELY (matrix C2):
   dedicated `tests/ingress_rejection.rs` covering every documented
   `Err` string of the three ingress constructors plus compose/apply
