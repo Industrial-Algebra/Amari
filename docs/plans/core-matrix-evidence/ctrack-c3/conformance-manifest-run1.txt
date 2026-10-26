@@ -1,0 +1,2 @@
+6b6b74635dbc6089fe3c416a403baf469986cac7324ae751755be07774c743d1  ./verif/creusot_conf_rlib/wrong_successor.coma
+cdefe5e249cccb02158c027c5be73a1ef4d1fa361ecd9d233f50e1a711db1c96  ./verif/creusot_conf_rlib/sum_to.coma

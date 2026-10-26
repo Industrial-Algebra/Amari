@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![cfg(feature = "phantom-types")]
+
 //! C2 dynamic rejection suite (contract #350, S3) — every documented
 //! runtime `Err` of the verified-core ingress surface, recorded
 //! SEPARATELY from the static (compile-fail) rejections. The unit-norm

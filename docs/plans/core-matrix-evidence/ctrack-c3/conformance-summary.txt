@@ -1,1 +1,1 @@
-C3 CONFORMANCE: positive PROVED (1), negative UNPROVED and tool-failed (rc=1)
+C3 CONFORMANCE: both runs green; PATH-NORMALIZED digests IDENTICAL across clean replays in distinct directories (raw .coma bytes embed scratch paths — nondeterminism source disclosed)

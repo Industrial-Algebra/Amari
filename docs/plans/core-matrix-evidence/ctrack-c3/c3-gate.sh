@@ -1,27 +1,65 @@
 #!/usr/bin/env bash
-# C3 conformance gate (contract #350 S6): runs cargo creusot prove on
-# the committed fixtures and parses OBLIGATION OUTCOMES:
-#   sum_to must show >=1 proved goal and NO unproved goal;
-#   wrong_successor must show an UNPROVED goal (the tool must fail it).
-# A green exit with an unproved positive goal, or an all-proved
-# negative, is a GATE FAILURE (exit 1). Missing outcomes: exit 7.
+# C3 conformance gate (contract #350 S6), R2-hardened:
+#   - FRESH log every run (no historical-outcome reads: the log is
+#     truncated before prove; grep sees only this run's output);
+#   - COMPLETE outcome sets: sum_to must have >=1 proved goal AND NO
+#     unproved goal; wrong_successor must have an unproved goal;
+#   - ERROR CLASSIFICATION: prove rc!=0 must be the EXPECTED 'unproved
+#     file' failure — any other tool error is exit 7, not a pass;
+#   - TWO clean runs; both coma manifests archived and compared.
 set -uo pipefail
 OUT_ROOT="$(realpath -m "${OUT_ROOT_OVERRIDE:-docs/plans/core-matrix-evidence/ctrack-c3}")"
 EVID_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$OUT_ROOT"
 BASE=$(mktemp -d); trap 'rm -rf "$BASE"' EXIT
-WORK="$BASE/c3_conf_scratch"   # creusot validates project dir names: no dots
-mkdir -p "$WORK"
-cp -r "$EVID_SRC/conformance/." "$WORK/"
-cd "$WORK"
-export PATH="$HOME/.local/share/creusot/bin:$PATH"
-cargo creusot init >> "$OUT_ROOT/conformance-prove.log" 2>&1 \
-  || { echo "FATAL: cargo creusot init failed in scratch fixture" >&2; exit 7; }
-cargo creusot prove >> "$OUT_ROOT/conformance-prove.log" 2>&1
-RC=$?
-POS_PROVED=$(grep -c 'sum_to: ✔' "$OUT_ROOT/conformance-prove.log" || true)
-NEG_UNPROVED=$(grep -c 'vc_wrong_successor: ✘' "$OUT_ROOT/conformance-prove.log" || true)
-[ "$POS_PROVED" -ge 1 ] || { echo "FATAL: positive fixture not proved (or outcome line absent)" >&2; exit 7; }
-[ "$NEG_UNPROVED" -ge 1 ] || { echo "FATAL: negative fixture not shown unproved (or outcome line absent)" >&2; exit 7; }
-[ "$RC" -ne 0 ] || { echo "GATE FAILURE: prove exited 0 despite an unproved false postcondition" >&2; exit 1; }
-echo "C3 CONFORMANCE: positive PROVED ($POS_PROVED), negative UNPROVED and tool-failed (rc=$RC)" | tee "$OUT_ROOT/conformance-summary.txt"
+
+prove_once() { # workdir logfile
+  local W="$1" LOG="$2"
+  ( cd "$W" && export PATH="$HOME/.local/share/creusot/bin:$PATH"
+    cargo creusot init > "$LOG" 2>&1 \
+      || { echo "TOOL-ERROR: cargo creusot init" >&2; return 7; }
+    cargo creusot prove >> "$LOG" 2>&1
+    local RC=$?
+    # classify: expected failure = exactly the unproved-file report
+    if [ $RC -ne 0 ] && ! grep -q "Error: 1 unproved file" "$LOG"; then
+      echo "TOOL-ERROR: prove failed unexpectedly (rc=$RC, not the unproved-file path)" >&2
+      return 7
+    fi
+    # complete outcome validation (fresh log only — grep cannot see history)
+    local POS_OK POS_BAD NEG_BAD
+    POS_OK=$(grep -c 'sum_to: ✔' "$LOG" || true)
+    POS_BAD=$(grep -c 'sum_to: ✘' "$LOG" || true)
+    NEG_BAD=$(grep -c 'vc_wrong_successor: ✘' "$LOG" || true)
+    [ "$POS_OK" -ge 1 ] || { echo "FATAL: positive fixture not proved" >&2; return 7; }
+    [ "$POS_BAD" -eq 0 ] || { echo "GATE FAILURE: positive fixture has unproved goals" >&2; return 1; }
+    [ "$NEG_BAD" -ge 1 ] || { echo "FATAL: negative fixture not shown unproved" >&2; return 7; }
+    [ $RC -ne 0 ] || { echo "GATE FAILURE: prove exited 0 despite the false postcondition" >&2; return 1; }
+    return 0 )
+}
+
+# R2 finding: .coma artifacts embed ABSOLUTE scratch paths — raw hashes
+# differ across directories (the earlier same-dir 'bit-identical' claim
+# held only path-invariantly; PROVENANCE corrected). Reproducibility is
+# compared on PATH-NORMALIZED content digests; raw manifests are still
+# archived per run for inspection.
+normalized_digest() { # workdir
+  local W="$1"
+  ( cd "$W" && find . -name '*.coma' | sort | while read -r F; do
+      sed "s|$W||g" "$F" | sha256sum | awk -v f="$F" '{print $1"  "f}'
+    done ) | sha256sum | awk '{print $1}'
+}
+for RUN in run1 run2; do
+  W="$BASE/c3_conf_${RUN}"; mkdir -p "$W"
+  cp -r "$EVID_SRC/conformance/." "$W/"
+  [ -f "$EVID_SRC/conformance/Cargo.lock" ] && cp "$EVID_SRC/conformance/Cargo.lock" "$W/Cargo.lock"
+  prove_once "$W" "$OUT_ROOT/conformance-prove-$RUN.log"; RC=$?
+  [ $RC -eq 0 ] || exit $RC
+  ( cd "$W" && find . -name '*.coma' -exec sha256sum {} \; | sort ) > "$OUT_ROOT/conformance-manifest-$RUN.txt"
+  echo "$(normalized_digest "$W")" > "$OUT_ROOT/conformance-digest-$RUN.txt"
+done
+if [ "$(cat "$OUT_ROOT/conformance-digest-run1.txt")" = "$(cat "$OUT_ROOT/conformance-digest-run2.txt")" ]; then
+  echo "C3 CONFORMANCE: both runs green; PATH-NORMALIZED digests IDENTICAL across clean replays in distinct directories (raw .coma bytes embed scratch paths — nondeterminism source disclosed)" \
+    | tee "$OUT_ROOT/conformance-summary.txt"
+else
+  echo "GATE FAILURE: path-normalized clean-replay digests differ" >&2; exit 1
+fi

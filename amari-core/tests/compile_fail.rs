@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![cfg(feature = "phantom-types")]
+
 //! C2 static-rejection harness (rustc-direct — operator decision D1,
 //! contract #350). Compiles each `tests/compile-fail/*.rs` case with the
 //! same pinned rustc that built this test, asserting:
@@ -117,6 +119,21 @@ fn static_rejection_cases() {
             .map(|t| t.split('|').map(|s| s.trim().to_string()).collect())
             .unwrap_or_default();
 
+        // R2 P2-1: proc-macros and build scripts are HOST artifacts even
+        // in explicit-target builds — supply the host deps path alongside
+        // the target deps path (E0463 otherwise: thiserror's macro .so
+        // lives in the host debug/deps, not the triple's).
+        let host_deps = {
+            let t = std::env::var_os("CARGO_TARGET_DIR")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| {
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                        .parent()
+                        .unwrap()
+                        .join("target")
+                });
+            t.join("debug").join("deps")
+        };
         let out = Command::new(&rustc)
             .arg("--edition=2024")
             .arg("--crate-type=bin")
@@ -126,6 +143,8 @@ fn static_rejection_cases() {
             .arg(format!("amari_core={}", rlib.display()))
             .arg("-L")
             .arg(format!("dependency={}", deps.display()))
+            .arg("-L")
+            .arg(format!("dependency={}", host_deps.display()))
             .arg(case)
             .output()
             .expect("run rustc");

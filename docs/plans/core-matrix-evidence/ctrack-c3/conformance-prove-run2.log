@@ -1,0 +1,24 @@
+   Compiling autocfg v1.5.1
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling libc v0.2.191
+   Compiling unicode-ident v1.0.27
+   Compiling getrandom v0.4.3
+   Compiling cfg-if v1.0.5
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.119
+    Checking num-integer v0.1.47
+    Checking num-bigint v0.4.8
+   Compiling uuid v1.28.0
+    Checking num-rational v0.4.2
+   Compiling pearlite-syn v0.8.0
+   Compiling creusot-contracts-proc v0.8.0
+    Checking creusot-contracts v0.8.0
+    Checking creusot-conf v0.1.0 (/tmp/tmp.CAqs8ItHcZ/c3_conf_run2)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.22s
+Library verif.creusot_conf_rlib.sum_to: ✔ (1)
+Goal Coma.vc_wrong_successor: ✘
+  vc_wrong_successor
+Library verif.creusot_conf_rlib.wrong_successor: ✘
+Error: 1 unproved file
+Error: 'why3find prove' failed

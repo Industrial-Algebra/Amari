@@ -45,8 +45,12 @@
 
 ## S8 translation smoke — honest split
 - **Toolchain-level**: the conformance fixture translates NONEMPTY and
-  **bit-identically across a clean replay** (fresh target+lock): 1
-  coma artifact, set sha256 `8d03a32b…` both runs.
+  reproduces **path-normalized bit-identically across clean replays**
+  (R2 correction of the first draft's 'bit-identical': that held only
+  for same-directory replays, because .coma artifacts embed absolute
+  scratch paths; across distinct directories the raw bytes differ by
+  those paths alone — c3-gate.sh compares normalized digests, raw
+  manifests archived per run).
 - **amari-core surface (via carrier fixture, isolated workspace)**:
   translation **FAILS deterministically** — rc 101, **18 errors** both
   runs, identical error sets (R1 P3 correction: the first writeup said
