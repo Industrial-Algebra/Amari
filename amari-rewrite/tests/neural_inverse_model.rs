@@ -574,6 +574,103 @@ fn encoder_charges_the_recorded_path_length() {
     }
 }
 
+#[test]
+fn encoder_rejects_a_wide_term_from_its_arity_alone() {
+    // PR #353 round 2 P2: a node ceiling of 1 with a ~million-child root used
+    // to be discovered only after a million-frame frontier was materialized.
+    // The rejection is derivable from the child count, and the reported
+    // count proves it was: the unfixed path could never report more than 2.
+    // 999,000 children stay inside the operation budget (1,000,000), so the
+    // node ceiling is the one that fires.
+    let wide = Term::sym("f", (0..999_000).map(|_| Term::constant("a")));
+    let constraints = ConstraintSet::new();
+    let provenance = step_provenance(&Term::constant("a"), Path::root());
+    let limits = RelationLimits::new(1, 64, 4_096, 1_000_000).expect("tightened limits");
+    let encoder = FeatureEncoder::new(limits);
+    match encoder.encode(&candidate(&wide, &constraints, &provenance)) {
+        Err(NeuralError::LimitExceeded {
+            resource,
+            value,
+            limit,
+        }) => {
+            assert_eq!(resource, "term nodes");
+            assert_eq!(limit, 1);
+            assert_eq!(
+                value, 999_001,
+                "the rejection must come from the arity, not from a later visit"
+            );
+        }
+        other => panic!("expected a typed arity-derived node-limit error, got {other:?}"),
+    }
+}
+
+#[test]
+fn encoder_bounds_the_frontier_by_the_operation_budget_too() {
+    // The same wide term under an operation budget of one: the frontier can
+    // never exceed what the remaining budget could pay for.
+    let wide = Term::sym("f", (0..1_000_000).map(|_| Term::constant("a")));
+    let constraints = ConstraintSet::new();
+    let provenance = step_provenance(&Term::constant("a"), Path::root());
+    let limits = RelationLimits::new(4_096, 64, 4_096, 1).expect("tightened limits");
+    let encoder = FeatureEncoder::new(limits);
+    match encoder.encode(&candidate(&wide, &constraints, &provenance)) {
+        Err(NeuralError::BudgetExhausted { resource, limit }) => {
+            assert_eq!(resource, "operations");
+            assert_eq!(limit, 1);
+        }
+        other => panic!("expected a typed budget error, got {other:?}"),
+    }
+}
+
+#[test]
+fn encoder_rejects_an_oversized_identifier_before_copying_it() {
+    // PR #353 round 2 P2: a 16 MB symbol name used to be copied into the
+    // stats before anything checked it. The ceiling applies to the borrowed
+    // name.
+    let ceiling = FeatureEncoder::MAX_IDENTIFIER_BYTES;
+    let constraints = ConstraintSet::new();
+    let provenance = step_provenance(&Term::constant("a"), Path::root());
+
+    let oversized = "x".repeat(16_000_000);
+    let term = Term::constant(oversized);
+    match FeatureEncoder::default().encode(&candidate(&term, &constraints, &provenance)) {
+        Err(NeuralError::LimitExceeded {
+            resource,
+            value,
+            limit,
+        }) => {
+            assert_eq!(resource, "identifier bytes");
+            assert_eq!(value, 16_000_000);
+            assert_eq!(limit, ceiling);
+        }
+        other => panic!("expected a typed identifier-length error, got {other:?}"),
+    }
+
+    let variable = Term::var("y".repeat(16_000_000));
+    assert!(matches!(
+        FeatureEncoder::default().encode(&candidate(&variable, &constraints, &provenance)),
+        Err(NeuralError::LimitExceeded {
+            resource: "identifier bytes",
+            ..
+        })
+    ));
+
+    // The ceiling is inclusive, and one byte past it is rejected.
+    let at_ceiling = Term::constant("z".repeat(ceiling));
+    assert!(FeatureEncoder::default()
+        .encode(&candidate(&at_ceiling, &constraints, &provenance))
+        .is_ok());
+    let past_ceiling = Term::constant("z".repeat(ceiling + 1));
+    assert!(matches!(
+        FeatureEncoder::default().encode(&candidate(&past_ceiling, &constraints, &provenance)),
+        Err(NeuralError::LimitExceeded {
+            resource: "identifier bytes",
+            value,
+            limit,
+        }) if value == ceiling + 1 && limit == ceiling
+    ));
+}
+
 // ── ranker configuration and tensor shapes ─────────────────────────
 
 #[test]

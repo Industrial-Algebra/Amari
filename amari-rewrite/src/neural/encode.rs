@@ -29,6 +29,13 @@
 //!   past admission (PR #353 round 1 P2a). The recorded step position is
 //!   caller-supplied too, so walking it is metered as well.
 //!
+//!   Admission charges *before* it works: a node's child count is checked
+//!   against the remaining node and operation room before any child frame is
+//!   enqueued, and an identifier's byte length is checked on the borrowed
+//!   `str` before it is copied. A frontier is therefore never larger than
+//!   the remaining budget, and a name is never copied before it is
+//!   admissible (PR #353 round 2 P2).
+//!
 //! Encoding is also the module's admission gate: [`MlpRanker::rank`] and
 //! [`MlpRanker::score_candidate`] run it before deriving the canonical
 //! digest, because the digest clones the term and `Term::clone` recurses.
@@ -429,6 +436,16 @@ pub struct FeatureEncoder {
 }
 
 impl FeatureEncoder {
+    /// Hard ceiling on one identifier's byte length.
+    ///
+    /// Symbol and variable names are identifiers, not payload: the encoder
+    /// copies each name it visits (for distinct counting and variable
+    /// overlap), so an unbounded name is an unbounded copy. The ceiling is
+    /// checked on the borrowed `str` *before* anything is allocated. 256
+    /// bytes is over an order of magnitude above every name in the
+    /// ecosystem's encodings, and it bounds per-name admission cost.
+    pub const MAX_IDENTIFIER_BYTES: usize = 256;
+
     /// Encode under caller-tightened relation limits.
     pub fn new(limits: RelationLimits) -> Self {
         Self { limits }
@@ -592,14 +609,19 @@ impl FeatureEncoder {
             stats.depth = stats.depth.max(depth);
             match node {
                 Term::Var(variable) => {
+                    // The borrowed name is checked before it is copied.
+                    let name = variable.as_str();
+                    Self::check_identifier(name)?;
                     stats.leaves += 1;
                     stats.var_occurrences += 1;
                     stats.var_depth_sum += depth;
                     stats.var_max_depth = stats.var_max_depth.max(depth);
                     stats.var_depth_hist[depth_bucket(depth)] += 1;
-                    stats.var_names.push(variable.as_str().into());
+                    stats.var_names.push(name.into());
                 }
                 Term::Sym(symbol, args) => {
+                    let name = symbol.as_str();
+                    Self::check_identifier(name)?;
                     stats.symbol_nodes += 1;
                     stats.arity_sum += args.len();
                     stats.max_arity = stats.max_arity.max(args.len());
@@ -610,8 +632,10 @@ impl FeatureEncoder {
                     if args.is_empty() {
                         stats.leaves += 1;
                     }
-                    stats.name_len_sum += symbol.as_str().len();
-                    stats.symbol_names.push(symbol.as_str().into());
+                    stats.name_len_sum += name.len();
+                    stats.symbol_names.push(name.into());
+                    // The frontier is bounded BEFORE it is materialized.
+                    self.reserve_children(args.len(), stats.nodes, resources)?;
                     for arg in args.iter().rev() {
                         stack.push((arg, depth + 1));
                     }
@@ -706,9 +730,14 @@ impl FeatureEncoder {
             }
             stats.depth = stats.depth.max(depth);
             match node {
-                Term::Var(variable) => stats.var_names.push(variable.as_str().into()),
+                Term::Var(variable) => {
+                    let name = variable.as_str();
+                    Self::check_identifier(name)?;
+                    stats.var_names.push(name.into());
+                }
                 Term::Sym(_, args) => {
                     stats.symbol_nodes += 1;
+                    self.reserve_children(args.len(), stats.nodes, resources)?;
                     for arg in args.iter().rev() {
                         stack.push((arg, depth + 1));
                     }
@@ -752,6 +781,13 @@ impl FeatureEncoder {
         while let Some((current, depth)) = stack.pop() {
             charge(resources, self.limits.max_operations())?;
             stats.nodes += 1;
+            if stats.nodes > self.limits.max_term_nodes() {
+                return Err(NeuralError::LimitExceeded {
+                    resource: "term nodes",
+                    value: stats.nodes,
+                    limit: self.limits.max_term_nodes(),
+                });
+            }
             if depth > self.limits.max_term_depth() {
                 return Err(NeuralError::LimitExceeded {
                     resource: "term depth",
@@ -761,12 +797,84 @@ impl FeatureEncoder {
             }
             stats.depth = stats.depth.max(depth);
             if let Term::Sym(_, args) = current {
+                self.reserve_children(args.len(), stats.nodes, resources)?;
                 for arg in args.iter().rev() {
                     stack.push((arg, depth + 1));
                 }
             }
         }
         Ok(stats)
+    }
+}
+
+impl FeatureEncoder {
+    /// Reject an identifier longer than [`Self::MAX_IDENTIFIER_BYTES`].
+    ///
+    /// Checked on the borrowed `str` — the ceiling exists to bound the copy
+    /// the caller would otherwise pay for, so it must not allocate (or
+    /// hash) first (PR #353 round 2 P2).
+    fn check_identifier(name: &str) -> Result<(), NeuralError> {
+        if name.len() > Self::MAX_IDENTIFIER_BYTES {
+            return Err(NeuralError::LimitExceeded {
+                resource: "identifier bytes",
+                value: name.len(),
+                limit: Self::MAX_IDENTIFIER_BYTES,
+            });
+        }
+        Ok(())
+    }
+
+    /// Refuse to enqueue more children than the remaining budgets can pay
+    /// for, *before* enqueueing any of them.
+    ///
+    /// Every enqueued child costs one operation and one node visit, so a
+    /// frontier wider than the remaining allowance could only ever be
+    /// rejected after it had already been materialized — the charge would
+    /// land, but the allocation would have happened. Checking the child
+    /// count first keeps the frontier inside `min(node room, operation
+    /// room)`: at most one ceiling's worth of frames, never the input's
+    /// arity (PR #353 round 2 P2).
+    ///
+    /// The operation budget is checked first, mirroring [`charge`]: the
+    /// counter that would refuse the visit is the operation charge, so the
+    /// pre-check answers exactly as the walk would have.
+    ///
+    /// # Errors
+    ///
+    /// [`NeuralError::BudgetExhausted`] when the arity alone proves the
+    /// operation budget cannot pay for it, [`NeuralError::LimitExceeded`]
+    /// when it proves the node ceiling will be exceeded.
+    fn reserve_children(
+        &self,
+        count: usize,
+        visited: usize,
+        resources: &RelationResources,
+    ) -> Result<(), NeuralError> {
+        let operation_room = self
+            .limits
+            .max_operations()
+            .saturating_sub(resources.operations());
+        if count > operation_room {
+            return Err(NeuralError::BudgetExhausted {
+                resource: "operations",
+                limit: self.limits.max_operations(),
+            });
+        }
+        // The walk errors on the visit that would take the count past the
+        // ceiling, so `ceiling + 1 - visited` children may still be queued.
+        let node_room = self
+            .limits
+            .max_term_nodes()
+            .saturating_add(1)
+            .saturating_sub(visited);
+        if count > node_room {
+            return Err(NeuralError::LimitExceeded {
+                resource: "term nodes",
+                value: visited.saturating_add(count),
+                limit: self.limits.max_term_nodes(),
+            });
+        }
+        Ok(())
     }
 }
 

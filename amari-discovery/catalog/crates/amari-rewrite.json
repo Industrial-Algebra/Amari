@@ -9997,6 +9997,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::FeatureEncoder::MAX_IDENTIFIER_BYTES",
+      "kind": "const",
+      "signature": "pub const MAX_IDENTIFIER_BYTES : usize",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_IDENTIFIER_BYTES : usize",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureEncoder::MAX_IDENTIFIER_BYTES"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::FeatureEncoder::encode",
       "kind": "method",
       "signature": "pub fn encode (& self , candidate : & CandidateInput < '_ >) -> Result < FeatureVector , NeuralError >",
@@ -24583,7 +24602,7 @@
       "trait_path": "Default",
       "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 14,
       "trait_endpoint": {
         "kind": "external",
         "path": "Default"
@@ -33719,9 +33738,17 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::neural::FeatureEncoder::MAX_IDENTIFIER_BYTES",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
       "path": "amari_rewrite::neural::FeatureEncoder::encode",
       "source_path": "amari-rewrite/src/neural/encode.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -33729,7 +33756,7 @@
     {
       "path": "amari_rewrite::neural::FeatureEncoder::limits",
       "source_path": "amari-rewrite/src/neural/encode.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -33737,7 +33764,7 @@
     {
       "path": "amari_rewrite::neural::FeatureEncoder::new",
       "source_path": "amari-rewrite/src/neural/encode.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
