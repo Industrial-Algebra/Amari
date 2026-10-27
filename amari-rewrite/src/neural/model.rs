@@ -90,14 +90,21 @@ pub struct RankerWeights {
 }
 
 impl RankerWeights {
-    /// Hard ceiling on one weight's magnitude.
+    /// Absolute ceiling on one weight's magnitude.
     ///
-    /// With features in `[0, 1]`, at most 64 inputs, eight hidden layers of
-    /// width 256, and this bound, every hidden pre-activation stays below
-    /// `2^60` — far inside `f32`'s range — so no forward pass can overflow
-    /// to infinity. It is generous for real weights (which live around
-    /// `1e-3 .. 1e1`) and it makes the non-finiteness argument arithmetic
-    /// rather than hopeful.
+    /// This is a ceiling, never the effective bound: the bound a given
+    /// architecture can carry is
+    /// [`RankerConfig::max_weight_magnitude`], which composes the layer
+    /// widths into an activation bound and is always `<= this` value (PR
+    /// #353 round 1 P1b — a fixed ceiling cannot hold eight 256-wide layers
+    /// finite, because each of them multiplies the activation by
+    /// `256 * M`).
+    ///
+    /// It stays meaningful for two reasons: it caps the architectures whose
+    /// derived bound would otherwise be absurdly loose (`1e6` is already
+    /// three orders of magnitude above real weights, which live around
+    /// `1e-2 .. 1e1`), and it is the single number the derived formula
+    /// saturates at, so "no weight above 1e6, ever" remains true.
     pub const MAX_ABSOLUTE_WEIGHT: f32 = 1_000_000.0;
 
     /// Digest frame for [`Self::digest`].
@@ -120,6 +127,7 @@ impl RankerWeights {
         tensors: &[(&str, &[f32])],
     ) -> Result<Self, NeuralError> {
         let expected = config.expected_tensors();
+        let magnitude_bound = config.max_weight_magnitude();
         for (name, _) in tensors {
             if !expected.iter().any(|(known, _)| known == name) {
                 return Err(NeuralError::InvalidWeights {
@@ -157,13 +165,13 @@ impl RankerWeights {
                         message: format!("tensor `{name}` element {index} is not finite"),
                     });
                 }
-                if value.abs() > Self::MAX_ABSOLUTE_WEIGHT {
+                if value.abs() > magnitude_bound {
                     return Err(NeuralError::InvalidWeights {
                         message: format!(
-                            "tensor `{name}` element {index} is {} in magnitude, above the \
-                             ceiling of {}",
+                            "tensor `{name}` element {index} is {} in magnitude, above this \
+                             architecture's bound of {magnitude_bound} (weights {:?})",
                             value.abs(),
-                            Self::MAX_ABSOLUTE_WEIGHT
+                            config.hidden_widths()
                         ),
                     });
                 }
@@ -325,20 +333,29 @@ impl MlpRanker {
         encoder: &FeatureEncoder,
         candidate: &CandidateInput<'_>,
     ) -> Result<RankedCandidate, NeuralError> {
-        let features = encoder.encode(candidate)?;
-        let score = self.score_features(&features)?;
+        let prepared = self.prepare(encoder, candidate)?;
+        let score = self.score_features(&prepared.features)?;
         Ok(RankedCandidate {
-            digest: canonical_digest(candidate),
-            features,
+            digest: prepared.digest,
+            features: prepared.features,
             score,
         })
     }
 
     /// Encode, canonically order, and score a batch of candidates.
     ///
-    /// The returned order is `(score ascending, canonical digest
-    /// ascending)`; equal digests (duplicate states) keep their canonical
-    /// relative order, and duplicates are not collapsed.
+    /// The returned order is `(score ascending, content key ascending)`.
+    /// The content key starts with the canonical state digest, so distinct
+    /// states order by digest; candidates for the same state are separated
+    /// by their provenance and search context, which are exactly the
+    /// differences the feature vector encodes. The resulting ranking is
+    /// therefore a function of the candidates' content: permuting the
+    /// request cannot change it, and duplicates are not collapsed.
+    ///
+    /// Admission precedes canonicalization: each candidate is encoded
+    /// (bounded, iterative) before its digest is derived (which clones the
+    /// term), so an over-large term returns a typed limit error rather than
+    /// aborting inside `Term::clone`.
     ///
     /// # Errors
     ///
@@ -360,41 +377,72 @@ impl MlpRanker {
         if candidates.is_empty() {
             return Ok(Vec::new());
         }
-        let mut prepared: Vec<(Sha256Digest, FeatureVector)> = Vec::with_capacity(candidates.len());
+        let mut prepared: Vec<Prepared> = Vec::with_capacity(candidates.len());
         for candidate in candidates {
-            prepared.push((canonical_digest(candidate), encoder.encode(candidate)?));
+            prepared.push(self.prepare(encoder, candidate)?);
         }
         // Canonicalize before batching: the batch is a pure throughput
         // device, so its row order must not be the request's.
-        prepared.sort_by(|left, right| left.0.as_bytes().cmp(right.0.as_bytes()));
+        prepared.sort_by(|left, right| left.key.cmp(&right.key));
 
         let mut batch = Vec::with_capacity(prepared.len() * CANDIDATE_FEATURE_WIDTH);
-        for (_, features) in &prepared {
-            batch.extend_from_slice(features.lanes());
+        for prepared in &prepared {
+            batch.extend_from_slice(prepared.features.lanes());
         }
         let scores = self.forward(&batch, prepared.len())?;
 
-        let mut ranked: Vec<RankedCandidate> = prepared
-            .into_iter()
-            .zip(scores)
-            .map(|((digest, features), score)| RankedCandidate {
-                digest,
-                features,
-                score,
-            })
-            .collect();
-        if ranked.iter().any(|ranked| !ranked.score.is_finite()) {
+        let mut scored: Vec<(Prepared, f32)> = prepared.into_iter().zip(scores).collect();
+        if scored.iter().any(|(_, score)| !score.is_finite()) {
             return Err(NeuralError::NonFiniteScore { stage: "head" });
         }
-        ranked.sort_by(|left, right| {
-            left.score
-                .total_cmp(&right.score)
-                .then_with(|| left.digest.as_bytes().cmp(right.digest.as_bytes()))
+        // Total order: score, then the candidate's content key. Two
+        // candidates can tie only if every input the ranker observed is
+        // identical, in which case any order is the same order.
+        scored.sort_by(|left, right| {
+            left.1
+                .total_cmp(&right.1)
+                .then_with(|| left.0.key.cmp(&right.0.key))
         });
-        Ok(ranked)
+        Ok(scored
+            .into_iter()
+            .map(|(prepared, score)| RankedCandidate {
+                digest: prepared.digest,
+                features: prepared.features,
+                score,
+            })
+            .collect())
+    }
+
+    /// Admit, encode, and identify one candidate.
+    ///
+    /// The order is contractual, not incidental: [`FeatureEncoder::encode`]
+    /// is the bounded, fully iterative admission pass, and everything after
+    /// it is safe only because admission succeeded. The canonical digest
+    /// clones the term (`SymbolicState::new`) and canonicalization walks it
+    /// recursively, so deriving the identity first would let an over-large
+    /// term abort the process inside `Term::clone` instead of returning a
+    /// typed limit error (PR #353 round 1 P1a).
+    fn prepare(
+        &self,
+        encoder: &FeatureEncoder,
+        candidate: &CandidateInput<'_>,
+    ) -> Result<Prepared, NeuralError> {
+        let features = encoder.encode(candidate)?;
+        let digest = canonical_digest(candidate);
+        let key = content_key(candidate, digest);
+        Ok(Prepared {
+            key,
+            digest,
+            features,
+        })
     }
 
     /// The forward pass over `rows` feature rows of width 64.
+    ///
+    /// Every stage's magnitude is bounded by the derivation behind
+    /// [`RankerConfig::max_weight_magnitude`], which is what makes
+    /// [`NeuralError::BackendRejected`] a defence-in-depth branch rather
+    /// than an expected path.
     fn forward(&self, features: &[f32], rows: usize) -> Result<Vec<f32>, NeuralError> {
         let mut activations = features.to_vec();
         let mut width = RankerConfig::FEATURE_WIDTH as usize;
@@ -480,9 +528,62 @@ impl DifferentiableRule<Vec<f32>> for MlpRanker {
     }
 }
 
+/// One admitted candidate: its ordering key, canonical identity, and
+/// features.
+struct Prepared {
+    /// Deterministic content key: the total order's tie-break.
+    key: Vec<u8>,
+    /// Joint alpha-canonical state identity.
+    digest: Sha256Digest,
+    /// The frozen schema's feature vector.
+    features: FeatureVector,
+}
+
 /// The joint alpha-canonical identity the ranking is keyed by.
+///
+/// Only call this on an admitted candidate: it clones the term, and
+/// `Term::clone` recurses, so an over-large term must already have been
+/// rejected by the encoder (see [`MlpRanker::prepare`]).
 fn canonical_digest(candidate: &CandidateInput<'_>) -> Sha256Digest {
     SymbolicState::new(candidate.term.clone(), candidate.constraints.clone()).canonical_digest()
+}
+
+/// The deterministic content key that breaks every remaining tie.
+///
+/// The state digest identifies the canonical state, but two candidates for
+/// the same state can differ in search context (depth, branch factor,
+/// growth, existentials, rule priority) and in provenance (rule, position,
+/// scope, target/predecessor hashes). Those differences are observable —
+/// they are exactly what the search-context and position lanes encode — so
+/// the total order must cover them. With this key the returned ranking is a
+/// function of the candidates' content alone; permuting the request cannot
+/// change it (PR #353 round 1 P2b).
+///
+/// The key starts with the state digest, so distinct states keep the
+/// documented digest-ascending order among equal scores.
+fn content_key(candidate: &CandidateInput<'_>, digest: Sha256Digest) -> Vec<u8> {
+    let mut key = Vec::with_capacity(160);
+    key.extend_from_slice(digest.as_bytes());
+    let provenance = candidate.provenance;
+    key.extend_from_slice(provenance.rule_id.digest().as_bytes());
+    let position = provenance.position.as_slice();
+    let position_len = u32::try_from(position.len()).unwrap_or(u32::MAX);
+    key.extend_from_slice(&position_len.to_le_bytes());
+    for index in position {
+        key.extend_from_slice(&(*index as u64).to_le_bytes());
+    }
+    key.extend_from_slice(&provenance.scope.to_le_bytes());
+    key.extend_from_slice(provenance.target_hash.as_bytes());
+    key.extend_from_slice(provenance.predecessor_hash.as_bytes());
+    let context = candidate.context;
+    key.extend_from_slice(&context.depth.to_le_bytes());
+    key.extend_from_slice(&context.branch_factor.to_le_bytes());
+    key.push(u8::from(context.cycle));
+    key.extend_from_slice(&context.term_growth.to_le_bytes());
+    key.extend_from_slice(&context.constraint_growth.to_le_bytes());
+    key.extend_from_slice(&(context.existentials as u64).to_le_bytes());
+    key.extend_from_slice(&context.rule_priority.to_le_bytes());
+    key
 }
 
 /// Tensor values by canonical name (already validated present).

@@ -23,7 +23,15 @@
 //! - **Bounded and metered.** The input sizes are enforced against the
 //!   caller-tightenable [`RelationLimits`] (term nodes, term depth,
 //!   constraints) *and* charged against its operation budget, because the
-//!   encoder is reachable on unvalidated search output.
+//!   encoder is reachable on unvalidated search output. Constraint sides
+//!   are terms and owe the same per-term node and depth ceilings as the
+//!   state term — otherwise a constraint could smuggle an over-large term
+//!   past admission (PR #353 round 1 P2a). The recorded step position is
+//!   caller-supplied too, so walking it is metered as well.
+//!
+//! Encoding is also the module's admission gate: [`MlpRanker::rank`] and
+//! [`MlpRanker::score_candidate`] run it before deriving the canonical
+//! digest, because the digest clones the term and `Term::clone` recurses.
 //!
 //! ## The lane table (64 lanes, every range `[0, 1]`)
 //!
@@ -667,6 +675,11 @@ impl FeatureEncoder {
     }
 
     /// Count one constraint side's nodes, depth, symbols, and variables.
+    ///
+    /// A constraint side is a term, so it owes the same node and depth
+    /// ceilings as the state term: an unbounded side would let a
+    /// constraint smuggle an over-large term past admission (PR #353 round
+    /// 1 P2a).
     fn side_stats(
         &self,
         side: &Term,
@@ -677,6 +690,13 @@ impl FeatureEncoder {
         while let Some((node, depth)) = stack.pop() {
             charge(resources, self.limits.max_operations())?;
             stats.nodes += 1;
+            if stats.nodes > self.limits.max_term_nodes() {
+                return Err(NeuralError::LimitExceeded {
+                    resource: "term nodes",
+                    value: stats.nodes,
+                    limit: self.limits.max_term_nodes(),
+                });
+            }
             if depth > self.limits.max_term_depth() {
                 return Err(NeuralError::LimitExceeded {
                     resource: "term depth",

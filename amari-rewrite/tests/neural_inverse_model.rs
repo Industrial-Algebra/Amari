@@ -945,6 +945,168 @@ fn ranker_rejects_a_batch_above_the_ceiling() {
 }
 
 #[test]
+fn ranker_rejects_an_oversized_term_before_canonicalizing_it() {
+    // PR #353 round 1 P1a: the canonical digest is computed from a CLONED
+    // term, and `Term::clone` recurses. Admission therefore has to happen
+    // first: a 100,000-deep term must come back as a typed limit error
+    // instead of aborting the process in `clone`.
+    let mut deep = Term::constant("a");
+    for _ in 0..100_000 {
+        deep = Term::sym("f", [deep]);
+    }
+    let ranker = constant_ranker(&[2]);
+    let encoder = FeatureEncoder::default();
+    let constraints = ConstraintSet::new();
+    let shallow = Term::constant("a");
+    let provenance = step_provenance(&shallow, Path::root());
+
+    let outcome = ranker.rank(&encoder, &[candidate(&deep, &constraints, &provenance)]);
+
+    // The deep-drop discipline: dropping a 100,000-deep term recurses too,
+    // so the fixture is leaked before any assertion can panic (an unwind
+    // would drop it and abort the process, hiding the real failure).
+    let observed = match &outcome {
+        Err(NeuralError::LimitExceeded {
+            resource,
+            value,
+            limit,
+        }) => Some((*resource, *value, *limit)),
+        Err(_) => None,
+        Ok(_) => None,
+    };
+    std::mem::forget(deep);
+
+    let (resource, value, limit) = observed.expect("expected a typed admission error, no abort");
+    assert_eq!(resource, "term depth");
+    assert_eq!(value, RelationLimits::MAX_TERM_DEPTH + 1);
+    assert_eq!(limit, RelationLimits::MAX_TERM_DEPTH);
+}
+
+#[test]
+fn ranker_derives_a_weight_bound_from_the_architecture() {
+    // PR #353 round 1 P1b: a fixed 1e6 weight ceiling cannot keep eight
+    // 256-wide layers finite (each layer multiplies the activation by
+    // 256 x 1e6). The bound has to come from the architecture.
+    let deep = config(&[256; 8]);
+    let shipped = config(&[256]);
+    assert!(
+        deep.max_weight_magnitude() < RankerWeights::MAX_ABSOLUTE_WEIGHT,
+        "an eight-layer ranker must derive a bound below the absolute ceiling"
+    );
+    assert_eq!(
+        shipped.max_weight_magnitude(),
+        RankerWeights::MAX_ABSOLUTE_WEIGHT,
+        "the shipped architecture is bounded by the absolute ceiling"
+    );
+
+    // The derived bound is achievable: weights at exactly that magnitude
+    // score finitely through eight layers.
+    let bound = deep.max_weight_magnitude();
+    let mut tensors = zero_tensors(&deep);
+    for (_, values) in &mut tensors {
+        values.fill(bound);
+    }
+    let ranker = ranker(&deep, tensors);
+    let features = FeatureVector::new([1.0f32; CANDIDATE_FEATURE_WIDTH]).expect("in range");
+    let score = ranker
+        .score_features(&features)
+        .expect("the derived bound keeps the forward pass finite");
+    assert!(score.is_finite());
+
+    // And the reproduction: 1e6 weights on that architecture must either
+    // be rejected at validation or score finitely - never a backend
+    // rejection mid-forward.
+    let mut oversized = zero_tensors(&deep);
+    for (_, values) in &mut oversized {
+        values.fill(RankerWeights::MAX_ABSOLUTE_WEIGHT);
+    }
+    match RankerWeights::from_tensors(&deep, &borrow_tensors(&oversized)) {
+        Err(NeuralError::InvalidWeights { message }) => {
+            assert!(
+                message.contains("magnitude"),
+                "the rejection must name the magnitude: {message}"
+            );
+        }
+        Ok(weights) => {
+            let ranker = MlpRanker::new(deep.clone(), weights).expect("shapes agree");
+            let score = ranker
+                .score_features(&features)
+                .expect("admitted weights must score finitely");
+            assert!(score.is_finite());
+        }
+        Err(other) => panic!("expected a magnitude rejection or admission, got {other:?}"),
+    }
+}
+
+#[test]
+fn encoder_enforces_the_node_ceiling_on_constraint_sides() {
+    // PR #353 round 1 P2a: a constraint side is a term, so it owes the same
+    // node ceiling as the state term.
+    let term = Term::constant("a");
+    let mut constraints = ConstraintSet::new();
+    constraints.insert(TermConstraint::Equal(
+        Term::sym("f", [Term::constant("b"), Term::constant("c")]),
+        Term::constant("d"),
+    ));
+    let provenance = step_provenance(&term, Path::root());
+    let limits = RelationLimits::new(1, 64, 4_096, 1_000_000).expect("tightened limits");
+    let encoder = FeatureEncoder::new(limits);
+    match encoder.encode(&candidate(&term, &constraints, &provenance)) {
+        Err(NeuralError::LimitExceeded {
+            resource,
+            value,
+            limit,
+        }) => {
+            assert_eq!(resource, "term nodes");
+            assert_eq!(limit, 1);
+            assert!(value > limit, "the side node count must exceed the limit");
+        }
+        other => panic!("expected a typed side node-limit error, got {other:?}"),
+    }
+}
+
+#[test]
+fn ranker_ties_are_permutation_invariant_beyond_the_state_digest() {
+    // PR #353 round 1 P2b: two candidates for the same state at different
+    // search depths tie on both score and canonical digest, so the state
+    // digest alone cannot order them - and request order must not either.
+    let ranker = constant_ranker(&[2]);
+    let encoder = FeatureEncoder::default();
+    let term = Term::sym("f", [Term::constant("a")]);
+    let constraints = ConstraintSet::new();
+    let provenance = step_provenance(&term, Path::root());
+    let at = |depth: u64| {
+        CandidateInput::new(
+            &term,
+            &constraints,
+            &provenance,
+            SearchContext::new(depth, 3, false, 0, 0, 0, 0),
+        )
+    };
+    let forward = ranker
+        .rank(&encoder, &[at(3), at(1), at(2)])
+        .expect("batch scores");
+    let reversed = ranker
+        .rank(&encoder, &[at(2), at(1), at(3)])
+        .expect("batch scores");
+
+    let depth_lane = FeatureSchemaV1::lane_index("search.depth").expect("documented lane");
+    let depths = |ranked: &[RankedCandidate]| {
+        ranked
+            .iter()
+            .map(|candidate| candidate.features().lanes()[depth_lane])
+            .collect::<Vec<_>>()
+    };
+    assert!(forward.iter().all(|candidate| candidate.score() == 0.0));
+    assert_eq!(depths(&forward), depths(&reversed));
+    assert_eq!(
+        depths(&forward),
+        vec![1.0 / 64.0, 2.0 / 64.0, 3.0 / 64.0],
+        "tied candidates order by their encoded content, not request order"
+    );
+}
+
+#[test]
 fn ranker_accepts_an_empty_batch() {
     let ranker = constant_ranker(&[2]);
     let encoder = FeatureEncoder::default();

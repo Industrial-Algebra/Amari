@@ -11044,6 +11044,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::RankerConfig::SAFE_ACTIVATION_MAGNITUDE",
+      "kind": "const",
+      "signature": "pub const SAFE_ACTIVATION_MAGNITUDE : f64",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const SAFE_ACTIVATION_MAGNITUDE : f64",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::SAFE_ACTIVATION_MAGNITUDE"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::RankerConfig::activation",
       "kind": "method",
       "signature": "pub fn activation (& self) -> Activation",
@@ -11154,6 +11173,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::neural::config",
           "declaration_ident": "RankerConfig::hidden_widths"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::max_weight_magnitude",
+      "kind": "method",
+      "signature": "pub fn max_weight_magnitude (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_weight_magnitude (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::max_weight_magnitude"
         }
       ]
     },
@@ -34009,23 +34047,15 @@
       "surface_kind": "inherent_const"
     },
     {
+      "path": "amari_rewrite::neural::RankerConfig::SAFE_ACTIVATION_MAGNITUDE",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
       "path": "amari_rewrite::neural::RankerConfig::activation",
-      "source_path": "amari-rewrite/src/neural/config.rs",
-      "source_ordinal": 9,
-      "gate": "feature(\"neural\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_rewrite::neural::RankerConfig::digest",
-      "source_path": "amari-rewrite/src/neural/config.rs",
-      "source_ordinal": 12,
-      "gate": "feature(\"neural\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_rewrite::neural::RankerConfig::expected_tensors",
       "source_path": "amari-rewrite/src/neural/config.rs",
       "source_ordinal": 10,
       "gate": "feature(\"neural\")",
@@ -34033,15 +34063,23 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_rewrite::neural::RankerConfig::from_spec",
+      "path": "amari_rewrite::neural::RankerConfig::digest",
       "source_path": "amari-rewrite/src/neural/config.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 14,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_rewrite::neural::RankerConfig::from_spec_json",
+      "path": "amari_rewrite::neural::RankerConfig::expected_tensors",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::from_spec",
       "source_path": "amari-rewrite/src/neural/config.rs",
       "source_ordinal": 6,
       "gate": "feature(\"neural\")",
@@ -34049,15 +34087,7 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_rewrite::neural::RankerConfig::hidden_widths",
-      "source_path": "amari-rewrite/src/neural/config.rs",
-      "source_ordinal": 8,
-      "gate": "feature(\"neural\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_rewrite::neural::RankerConfig::spec",
+      "path": "amari_rewrite::neural::RankerConfig::from_spec_json",
       "source_path": "amari-rewrite/src/neural/config.rs",
       "source_ordinal": 7,
       "gate": "feature(\"neural\")",
@@ -34065,9 +34095,33 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::neural::RankerConfig::hidden_widths",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::max_weight_magnitude",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 13,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::spec",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::neural::RankerConfig::tensor_elements",
       "source_path": "amari-rewrite/src/neural/config.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 12,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"

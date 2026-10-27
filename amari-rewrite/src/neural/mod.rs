@@ -37,18 +37,32 @@
 //!   a strict ascending `k` loop in f32, so a batch of `n` rows produces
 //!   the same bits per row as scoring that row alone,
 //! - the batch is canonicalized before scoring and the result is sorted by
-//!   `(score, canonical digest)`, so tie order never depends on request
-//!   order.
+//!   `(score, content key)`, where the key encodes the state digest and the
+//!   candidate's provenance and search context, so the ranking is a
+//!   function of content alone and no permutation of the request can change
+//!   it.
+//!
+//! ## Admission before canonicalization
+//!
+//! [`FeatureEncoder::encode`] is the admission gate: it is bounded, fully
+//! iterative, and runs *before* anything that clones or canonicalizes the
+//! term. That order is contractual — the canonical digest clones the term,
+//! and `Term::clone` recurses, so an over-large term must be rejected by
+//! the encoder before the digest is derived (PR #353 round 1 P1a).
 //!
 //! ## Non-finite values are impossible by construction, and rejected anyway
 //!
-//! Features are ratios in `[0, 1]`; weights are validated finite and
-//! bounded by [`RankerWeights::MAX_ABSOLUTE_WEIGHT`]. With an input width
-//! of 64, at most eight hidden layers of width 256 and that weight bound,
-//! every partial dot product stays far below `f32::MAX`, so no
-//! intermediate can overflow. Both layers are checked regardless — the
-//! encoder refuses out-of-range lanes and the ranker refuses a non-finite
-//! score — because a bound argued for only in a comment is not a contract.
+//! Features are ratios in `[0, 1]`. Weights are validated finite and
+//! bounded by [`RankerConfig::max_weight_magnitude`], which composes the
+//! architecture's widths into an activation bound: for weights and biases
+//! bounded by `M`, each layer multiplies the previous bound by
+//! `width * M` and adds `M`, so the derived bound is the largest `M` whose
+//! composed bound stays inside a fixed safety headroom below `f32::MAX`.
+//! It is a per-architecture bound, not a global constant — eight 256-wide
+//! layers can carry far smaller weights than one (PR #353 round 1 P1b). The
+//! encoder still refuses out-of-range lanes and the ranker still refuses a
+//! non-finite score, because a bound argued for only in a comment is not a
+//! contract.
 //!
 //! ## Errors
 //!
