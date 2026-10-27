@@ -694,7 +694,15 @@ mod tests {
         // A relative PATH entry must not yield a relative candidate: the
         // spawned worker changes cwd before exec, so a relative interpreter
         // path would resolve against the wrong directory (R1 P2 regression).
-        let tmp = std::env::temp_dir().join("amari-supervisor-relative-path-test");
+        // Unique per execution: a fixed path made two concurrent runs
+        // collide with ETXTBSY (one process executing the shim while the
+        // other truncates it). Atomic counter + pid.
+        static EXECUTION: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let unique = EXECUTION.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let tmp = std::env::temp_dir().join(format!(
+            "amari-supervisor-relpath-{}-{unique}",
+            std::process::id()
+        ));
         std::fs::create_dir_all(&tmp).unwrap();
         let shim = tmp.join("python3");
         #[cfg(unix)]
