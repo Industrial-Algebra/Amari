@@ -424,9 +424,42 @@ impl TestWorkerLauncher {
 }
 
 #[cfg(test)]
+fn resolve_python3() -> DiscoveryResult<std::path::PathBuf> {
+    // `spawn_restricted` clears the child environment before exec, which
+    // removes PATH and makes a relative program name unresolvable. Resolve
+    // the interpreter against the CURRENT environment's PATH first and hand
+    // spawn an absolute path.
+    let path = std::env::var_os("PATH").unwrap_or_default();
+    for dir in std::env::split_paths(&path) {
+        let candidate = dir.join("python3");
+        let is_executable = candidate
+            .metadata()
+            .map(|meta| {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    meta.permissions().mode() & 0o111 != 0
+                }
+                #[cfg(not(unix))]
+                {
+                    meta.is_file()
+                }
+            })
+            .unwrap_or(false);
+        if is_executable {
+            return Ok(candidate);
+        }
+    }
+    Err(crate::DiscoveryError::Io(std::io::Error::new(
+        std::io::ErrorKind::NotFound,
+        "python3 not found on PATH (required by probe supervisor tests)",
+    )))
+}
+
+#[cfg(test)]
 impl WorkerLauncher for TestWorkerLauncher {
     fn command(&self) -> DiscoveryResult<Command> {
-        let mut command = Command::new("python3");
+        let mut command = Command::new(resolve_python3()?);
         command
             .arg(&self.fixture)
             .arg(&self.mode)
@@ -532,9 +565,18 @@ mod tests {
         assert_eq!(context["argv"], serde_json::json!(["context"]));
         assert_eq!(context["cwd"], neutral.to_string_lossy().as_ref());
         let environment = context["environment"].as_object().unwrap();
+        // The invariant under test is that NO project context survives the
+        // restricted launch. The two permitted entries are interpreter-side
+        // only: CPython's process-local locale normalization (LC_CTYPE) and
+        // PYTHONNOUSERSITE, which CPython/wrapper distributions (pyenv,
+        // mise, nix) set to isolate the user site-packages dir. Neither can
+        // carry project state.
+        const INTERPRETER_SIDE_VARS: [&str; 2] = ["LC_CTYPE", "PYTHONNOUSERSITE"];
         assert!(
-            environment.keys().all(|key| key == "LC_CTYPE"),
-            "only CPython's process-local locale normalization is permitted: {environment:?}"
+            environment
+                .keys()
+                .all(|key| INTERPRETER_SIDE_VARS.contains(&key.as_str())),
+            "only interpreter-side variables are permitted: {environment:?}"
         );
         let encoded = serde_json::to_string(&context).unwrap();
         assert!(!encoded.contains(PROJECT_POISON));
