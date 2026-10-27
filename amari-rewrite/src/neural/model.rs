@@ -602,25 +602,13 @@ fn content_key(candidate: &CandidateInput<'_>, digest: Sha256Digest) -> Vec<u8> 
     key
 }
 
-/// Byte cap on a caller-supplied name quoted into a diagnostic.
+/// Render a caller-supplied tensor name for a diagnostic.
 ///
-/// A rejection message must never copy an unbounded input: quoting a 16 MB
-/// tensor name verbatim would allocate 16 MB to say "unknown tensor". The
-/// cap truncates on a UTF-8 boundary and always states the real length, so
-/// the message stays recognisable and bounded (PR #353 round 3 P2b).
-const MAX_DIAGNOSTIC_NAME_BYTES: usize = 64;
-
-/// Render a caller-supplied tensor name for a diagnostic: bounded, lossy
-/// beyond [`MAX_DIAGNOSTIC_NAME_BYTES`], and always length-stamped.
+/// Reuses the module-wide bounded-excerpt discipline: a 16 MB name is
+/// truncated on a UTF-8 boundary and length-stamped, never quoted whole
+/// (PR #353 round 3 P2b).
 fn render_tensor_name(name: &str) -> String {
-    if name.len() <= MAX_DIAGNOSTIC_NAME_BYTES {
-        return name.to_string();
-    }
-    let mut end = MAX_DIAGNOSTIC_NAME_BYTES;
-    while !name.is_char_boundary(end) {
-        end -= 1;
-    }
-    format!("{}... ({} bytes)", &name[..end], name.len())
+    crate::neural::bounded_excerpt(name)
 }
 
 /// Tensor values by canonical name (already validated present).

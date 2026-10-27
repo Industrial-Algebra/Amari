@@ -802,6 +802,116 @@ fn ranker_config_reports_the_shipped_tensor_shapes() {
 }
 
 #[test]
+fn ranker_config_rejects_an_oversized_spec_document_before_parsing() {
+    // PR #353 round 4 P2a: the parse path had no bounded admission, so a
+    // 16 MB document was handed to the parser and the failure quoted it.
+    let oversized = format!(r#"{{"model_type":"{}"}}"#, "q".repeat(16_000_000));
+    match RankerConfig::from_spec_json(&oversized) {
+        Err(NeuralError::LimitExceeded {
+            resource,
+            value,
+            limit,
+        }) => {
+            assert_eq!(resource, "spec json bytes");
+            assert_eq!(value, oversized.len());
+            assert_eq!(limit, RankerConfig::MAX_SPEC_JSON_BYTES);
+        }
+        other => panic!("expected the document-length rejection, got {other:?}"),
+    }
+
+    // The ceiling is inclusive, and padding with JSON whitespace is legal.
+    let spec = spec_json(RankerConfig::FEATURE_WIDTH, &[2], "relu");
+    let at_ceiling = format!(
+        "{spec}{}",
+        " ".repeat(RankerConfig::MAX_SPEC_JSON_BYTES - spec.len())
+    );
+    assert_eq!(at_ceiling.len(), RankerConfig::MAX_SPEC_JSON_BYTES);
+    assert!(RankerConfig::from_spec_json(&at_ceiling).is_ok());
+    let over = format!("{at_ceiling} ");
+    assert!(matches!(
+        RankerConfig::from_spec_json(&over),
+        Err(NeuralError::LimitExceeded {
+            resource: "spec json bytes",
+            ..
+        })
+    ));
+}
+
+#[test]
+fn a_parse_error_keeps_its_diagnostic_bounded() {
+    // Under the ceiling the parser may quote its input; the rejection must
+    // still stay a diagnostic, not a copy of the document.
+    let document = format!("{{\"model_type\":\"{}\"", "q".repeat(32_000));
+    let error =
+        RankerConfig::from_spec_json(&document).expect_err("truncated document is rejected");
+    assert!(matches!(error, NeuralError::InvalidConfig { .. }));
+    let rendered = error.to_string();
+    assert!(
+        rendered.len() < 1024,
+        "the parse diagnostic must stay bounded, got {} bytes",
+        rendered.len()
+    );
+}
+
+/// Deserialized limits are validated limits (PR #353 round 4 P2b).
+#[cfg(feature = "serialize")]
+#[test]
+fn deserialized_limits_cannot_exceed_the_hard_ceilings() {
+    // The derived `Deserialize` wrote the private fields directly, so a
+    // document could raise ceilings that `RelationLimits::new` refuses.
+    let raised = r#"{"max_term_nodes":20000,"max_term_depth":10001,"max_constraints":4096,"max_operations":1000000}"#;
+    assert!(
+        serde_json::from_str::<RelationLimits>(raised).is_err(),
+        "deserialization must enforce the same ceilings as new()"
+    );
+
+    let zeroed = r#"{"max_term_nodes":0,"max_term_depth":64,"max_constraints":4096,"max_operations":1000000}"#;
+    assert!(
+        serde_json::from_str::<RelationLimits>(zeroed).is_err(),
+        "a zero limit disables the bound and must be refused"
+    );
+
+    // A valid limits value round-trips unchanged.
+    let default = RelationLimits::default();
+    let json = serde_json::to_string(&default).expect("limits serialize");
+    let parsed: RelationLimits = serde_json::from_str(&json).expect("valid limits deserialize");
+    assert_eq!(parsed, default);
+}
+
+/// A deserialized 10,001-deep term is rejected at the hard ceiling.
+#[cfg(feature = "serialize")]
+#[test]
+fn a_deep_term_is_rejected_under_deserialized_limits() {
+    let limits: RelationLimits =
+        serde_json::from_str(r#"{"max_term_nodes":4096,"max_term_depth":64,"max_constraints":4096,"max_operations":1000000}"#)
+            .expect("the shipped profile is admissible");
+
+    // Deep-drop discipline: a 10,001-deep term must never be dropped, so it
+    // is leaked instead of unwound.
+    let mut deep = Term::constant("a");
+    for _ in 0..10_000 {
+        deep = Term::sym("f", [deep]);
+    }
+    let constraints = ConstraintSet::new();
+    let provenance = step_provenance(&Term::constant("a"), Path::root());
+    let outcome = FeatureEncoder::new(limits).encode(&candidate(&deep, &constraints, &provenance));
+    std::mem::forget(deep);
+
+    match outcome {
+        Err(NeuralError::LimitExceeded {
+            resource,
+            limit,
+            value,
+        }) => {
+            assert_eq!(resource, "term depth");
+            assert_eq!(limit, RelationLimits::MAX_TERM_DEPTH);
+            assert!(value > RelationLimits::MAX_TERM_DEPTH);
+        }
+        other => panic!("expected the depth rejection, got {other:?}"),
+    }
+}
+
+#[test]
 fn ranker_config_rejects_a_non_schema_input_width() {
     let error = RankerConfig::from_spec_json(&spec_json(32, &[256], "relu"))
         .expect_err("input width must match the frozen schema");

@@ -75,6 +75,28 @@ mod config;
 mod encode;
 mod model;
 
+/// Byte cap on caller-supplied text quoted into a diagnostic.
+///
+/// A rejection must never copy an unbounded input: quoting a 16 MB tensor
+/// name or a 16 MB spec fragment verbatim would allocate that much to say
+/// "rejected". Diagnostics therefore render a bounded excerpt — truncated
+/// on a UTF-8 boundary and length-stamped — while the rejection itself is
+/// carried by the typed error (PR #353 rounds 3 P2b and 4 P2a).
+pub(crate) const MAX_DIAGNOSTIC_EXCERPT_BYTES: usize = 64;
+
+/// Render caller-supplied text for a diagnostic: bounded and lossy beyond
+/// [`MAX_DIAGNOSTIC_EXCERPT_BYTES`], always length-stamped when truncated.
+pub(crate) fn bounded_excerpt(text: &str) -> String {
+    if text.len() <= MAX_DIAGNOSTIC_EXCERPT_BYTES {
+        return text.to_string();
+    }
+    let mut end = MAX_DIAGNOSTIC_EXCERPT_BYTES;
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}... ({} bytes)", &text[..end], text.len())
+}
+
 pub use config::RankerConfig;
 pub use encode::{
     CandidateInput, FeatureEncoder, FeatureSchemaV1, FeatureVector, Lane, SearchContext,

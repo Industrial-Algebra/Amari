@@ -302,6 +302,69 @@ fn a_million_duplicate_tensor_names_are_rejected_without_collecting_them() {
     );
 }
 
+#[cfg(feature = "serialize")]
+#[test]
+fn a_deep_term_under_deserialized_limits_is_rejected_at_the_hard_ceiling() {
+    let guard = exclusive();
+    // PR #353 round 4 P2b: a deserialized limits value could raise the depth
+    // ceiling to 10,001 and the walk admitted the term. Deep-drop
+    // discipline: the fixture is leaked, never unwound.
+    let limits: RelationLimits = serde_json::from_str(
+        r#"{"max_term_nodes":4096,"max_term_depth":64,"max_constraints":4096,"max_operations":1000000}"#,
+    )
+    .expect("the shipped profile is admissible");
+    let mut deep = Term::constant("a");
+    for _ in 0..10_000 {
+        deep = Term::sym("f", [deep]);
+    }
+    let constraints = ConstraintSet::new();
+    let provenance = provenance();
+    let encoder = FeatureEncoder::new(limits);
+    let (outcome, allocated) = allocated_during(&guard, || {
+        encoder.encode(&candidate(&deep, &constraints, &provenance))
+    });
+    std::mem::forget(deep);
+
+    assert!(
+        matches!(
+            outcome,
+            Err(NeuralError::LimitExceeded {
+                resource: "term depth",
+                limit: 64,
+                ..
+            })
+        ),
+        "expected the hard depth ceiling, got {outcome:?}"
+    );
+    assert!(
+        allocated < ALLOCATION_CEILING,
+        "the depth rejection allocated {allocated} bytes"
+    );
+}
+
+#[test]
+fn an_oversized_spec_document_is_rejected_before_parsing() {
+    let guard = exclusive();
+    // PR #353 round 4 P2a: the 16 MB document reached the parser, which
+    // allocated 80 MB and quoted the input back in a 16 MB diagnostic.
+    let document = format!(r#"{{"model_type":"{}"}}"#, "q".repeat(16_000_000));
+    let (outcome, allocated) = allocated_during(&guard, || RankerConfig::from_spec_json(&document));
+    assert!(
+        matches!(
+            outcome,
+            Err(NeuralError::LimitExceeded {
+                resource: "spec json bytes",
+                ..
+            })
+        ),
+        "expected the document-length rejection, got {outcome:?}"
+    );
+    assert!(
+        allocated < DIAGNOSTIC_ALLOCATION_CEILING,
+        "the rejection allocated {allocated} bytes before parsing"
+    );
+}
+
 #[test]
 fn a_hundred_thousand_layer_spec_is_rejected_before_tensor_metadata() {
     let guard = exclusive();

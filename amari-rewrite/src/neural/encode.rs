@@ -456,8 +456,15 @@ impl FeatureEncoder {
     pub const MAX_IDENTIFIER_BYTES: usize = 256;
 
     /// Encode under caller-tightened relation limits.
+    ///
+    /// The limits are clamped to the hard ceilings here, so no limits value
+    /// — deserialized, hand-built, or from a future decoder — can give this
+    /// encoder more authority than [`RelationLimits`] grants (PR #353 round
+    /// 4 P2b defence in depth).
     pub fn new(limits: RelationLimits) -> Self {
-        Self { limits }
+        Self {
+            limits: limits.clamped(),
+        }
     }
 
     /// The limits this encoder enforces.

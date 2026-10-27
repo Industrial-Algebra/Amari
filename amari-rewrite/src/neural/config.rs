@@ -40,6 +40,12 @@ use crate::relation::Sha256Digest;
 /// Katakuri's parser already bounds the grammar; this type re-validates the
 /// Amari-specific ceilings because [`MlpSpec`]'s fields are public and a
 /// hand-built spec never went through the parser.
+///
+/// The type deliberately implements no `Deserialize`. Decoding an [`MlpSpec`]
+/// and passing it to [`RankerConfig::from_spec`] is the only path into a
+/// ranker, so a decoded specification is validated exactly like a parsed one
+/// (the same rule [`crate::relation::RelationLimits`] now follows on the
+/// wire; PR #353 round 4 P2b).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RankerConfig {
     spec: MlpSpec,
@@ -57,6 +63,15 @@ impl RankerConfig {
 
     /// Hard ceiling on the derived parameter count (design resource table).
     pub const MAX_TENSOR_ELEMENTS: u64 = 16_777_216;
+
+    /// Hard ceiling on a ranker spec document, in bytes.
+    ///
+    /// A valid `ia-mlp` document is a few hundred bytes; 64 KiB leaves room
+    /// for formatting and future fields while refusing the documents that
+    /// make parsing itself the attack. The ceiling is checked on the
+    /// borrowed `str` *before* the parser runs, so an oversized document is
+    /// never handed to it (PR #353 round 4 P2a).
+    pub const MAX_SPEC_JSON_BYTES: usize = 65_536;
 
     /// Digest frame for [`Self::digest`].
     pub const FRAME: &'static str = "amari.neural.ranker-spec/v1";
@@ -145,13 +160,35 @@ impl RankerConfig {
 
     /// Parse and validate an `ia-mlp` spec JSON document.
     ///
+    /// The document is admitted by length first ([`Self::MAX_SPEC_JSON_BYTES`]):
+    /// the parser only ever runs on a bounded input, so neither parsing nor
+    /// the parse diagnostic can copy an unbounded document.
+    ///
     /// # Errors
     ///
-    /// [`NeuralError::InvalidConfig`] on a Katakuri parse rejection (with
-    /// Katakuri's field-level detail) or on any Amari ceiling violation.
+    /// [`NeuralError::LimitExceeded`] when the document exceeds
+    /// [`Self::MAX_SPEC_JSON_BYTES`], and [`NeuralError::InvalidConfig`] on a
+    /// Katakuri parse rejection (with Katakuri's field-level detail, rendered
+    /// as a bounded excerpt) or on any Amari ceiling violation.
     pub fn from_spec_json(json: &str) -> Result<Self, NeuralError> {
+        // Admission precedes parsing: the document length is checked on the
+        // borrowed `str`, before the parser allocates anything for it, and
+        // the rejection reports the ceiling rather than the input
+        // (PR #353 round 4 P2a).
+        if json.len() > Self::MAX_SPEC_JSON_BYTES {
+            return Err(NeuralError::LimitExceeded {
+                resource: "spec json bytes",
+                value: json.len(),
+                limit: Self::MAX_SPEC_JSON_BYTES,
+            });
+        }
         let spec = MlpSpec::from_json(json).map_err(|error| NeuralError::InvalidConfig {
-            message: format!("rank spec rejected: {error}"),
+            // A parse error may quote the document; the excerpt keeps the
+            // diagnostic bounded even under the ceiling.
+            message: format!(
+                "rank spec rejected: {}",
+                crate::neural::bounded_excerpt(&error.to_string())
+            ),
         })?;
         Self::from_spec(spec)
     }
