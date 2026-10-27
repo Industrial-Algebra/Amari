@@ -1,0 +1,27 @@
+=== npm ci (fresh) ===
+npm error For a full report see:
+npm error /home/lucien/.npm/_logs/2026-10-27T01_13_12_257Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /home/lucien/.npm/_logs/2026-10-27T01_13_12_257Z-debug-0.log
+=== npm run build ===
+> amari-examples-suite@0.24.1 build
+> vite build
+
+sh: line 1: vite: command not found
+=== typecheck (tsc / TypeScript 6) ===
+vite.config.ts(8,29): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+vitest.config.ts(4,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+vitest.config.ts(28,67): error TS2304: Cannot find name '__dirname'.
+vitest.config.ts(29,76): error TS2304: Cannot find name '__dirname'.
+vitest.config.ts(30,53): error TS2304: Cannot find name '__dirname'.
+typecheck exit: 0
+=== lint (eslint 10) ===
+  80:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 83 problems (0 errors, 83 warnings)
+
+lint exit: 0
+typecheck TRUE exit: 2
+lint TRUE exit: 0
+build TRUE exit: 0
+29
