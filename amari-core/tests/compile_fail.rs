@@ -29,12 +29,20 @@ impl ScratchDir {
                 .map(|d| d.as_nanos())
                 .unwrap_or(0)
         ));
-        std::fs::create_dir(&p).unwrap_or_else(|e| panic!("create {tag} scratch: {e}"));
+        // R7 P2: atomic owner-private creation — DirBuilderExt::mode
+        // applies 0o700 IN the mkdir syscall; create-then-chmod leaves a
+        // 755 exposure window.
         #[cfg(unix)]
         {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o700))
-                .unwrap_or_else(|e| panic!("chmod 700 {tag} scratch: {e}"));
+            use std::os::unix::fs::DirBuilderExt;
+            std::fs::DirBuilder::new()
+                .mode(0o700)
+                .create(&p)
+                .unwrap_or_else(|e| panic!("create {tag} scratch (0700): {e}"));
+        }
+        #[cfg(not(unix))]
+        {
+            std::fs::create_dir(&p).unwrap_or_else(|e| panic!("create {tag} scratch: {e}"));
         }
         ScratchDir(p)
     }
