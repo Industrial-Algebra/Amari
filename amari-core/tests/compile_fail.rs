@@ -73,33 +73,65 @@ fn cargo_target_deps() -> PathBuf {
     deps
 }
 
-fn amari_core_rlib(deps: &std::path::Path) -> PathBuf {
-    // Newest libamari_core-*.rlib (single build of this workspace crate).
-    let mut best: Option<(std::time::SystemTime, PathBuf)> = None;
-    for entry in std::fs::read_dir(deps).expect("read deps") {
-        let p = entry.expect("entry").path();
-        let name = p.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        if name.starts_with("libamari_core-") && name.ends_with(".rlib") {
-            let mtime = std::fs::metadata(&p).and_then(|m| m.modified()).ok();
-            if best
-                .as_ref()
-                .is_none_or(|(t, _)| mtime.is_some_and(|m| m > *t))
-            {
-                if let Some(m) = mtime {
-                    best = Some((m, p));
-                }
-            }
+fn amari_core_rlib(deps: &std::path::Path, host_deps: &std::path::Path) -> PathBuf {
+    // R4 P2: select by CAPABILITY, not mtimes (cached alternating builds
+    // leave stale-newest rlibs). The rlib we need is exactly the one
+    // that provides the feature-complete surface this suite exercises
+    // (amari_core::verified requires phantom-types): probe-compile a
+    // minimal user with each candidate; the first that compiles wins.
+    // Falls back loudly if none does.
+    let rustc = std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into());
+    let mut candidates: Vec<PathBuf> = std::fs::read_dir(deps)
+        .expect("read deps")
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| {
+            p.file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.starts_with("libamari_core-") && n.ends_with(".rlib"))
+        })
+        .collect();
+    candidates.sort_by_key(|p| std::fs::metadata(p).and_then(|m| m.modified()).ok());
+    candidates.reverse(); // newest first as a tiebreak heuristic only
+    let probe = std::env::temp_dir().join("c2-rlib-probe.rs");
+    std::fs::write(
+        &probe,
+        "// capability probe: verified requires phantom-types\nfn main() {\n    let _ = amari_core::verified::VerifiedMultivector::<f64, 3, 0, 0>::scalar;\n}\n",
+    )
+    .expect("write probe");
+    for cand in &candidates {
+        let ok = Command::new(&rustc)
+            .arg("--edition=2024")
+            .arg("--crate-type=bin")
+            .arg("--emit=metadata")
+            .arg("-o")
+            .arg(std::env::temp_dir().join("c2-rlib-probe.meta"))
+            .arg("--extern")
+            .arg(format!("amari_core={}", cand.display()))
+            .arg("-L")
+            .arg(format!("dependency={}", deps.display()))
+            .arg("-L")
+            .arg(format!("dependency={}", host_deps.display()))
+            .arg(&probe)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false);
+        if ok {
+            let _ = std::fs::remove_file(std::env::temp_dir().join("c2-rlib-probe.meta"));
+            return cand.clone();
         }
     }
-    best.map(|(_, p)| p)
-        .unwrap_or_else(|| panic!("libamari_core-*.rlib not found in {deps:?}"))
+    panic!(
+        "no candidate rlib in {deps:?} provides the phantom-types surface ({} candidates probed)",
+        candidates.len()
+    );
 }
 
 #[test]
 fn static_rejection_cases() {
     let deps = cargo_target_deps();
-    let rlib = amari_core_rlib(&deps);
     let host_deps = host_deps_dir(&deps);
+    let rlib = amari_core_rlib(&deps, &host_deps);
     let rustc = std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into());
     let cases_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/compile-fail");
     let mut cases = vec![];
@@ -130,15 +162,6 @@ fn static_rejection_cases() {
             .map(|t| t.split('|').map(|s| s.trim().to_string()).collect())
             .unwrap_or_default();
 
-        eprintln!("DEBUG rustc={rustc} rlib={rlib:?}");
-        std::fs::write(
-            "/tmp/testchild-env.txt",
-            std::env::vars()
-                .map(|(k, v)| format!("{k}={v}"))
-                .collect::<Vec<_>>()
-                .join("\n"),
-        )
-        .unwrap();
         let out = Command::new(&rustc)
             .arg("--edition=2024")
             .arg("--crate-type=bin")

@@ -1,2 +1,2 @@
-4624479df431b3885382d05f68f73cd037991e3df66cfe1ee87f2204d0190324  ./verif/creusot_conf_rlib/wrong_successor.coma
-fefdb4e9056f3652ea539f25de8f6eb5a35b2b1989e9625214c4f5663d77dc39  ./verif/creusot_conf_rlib/sum_to.coma
+7474de2ea2536bad9f0b087e2d85a86c6ee6a14e9b2766b543517f795315a0f5  ./verif/creusot_conf_rlib/wrong_successor.coma
+824a996aa2c8c3c605c2bcc3ab75b5388d0e60f52a2b210f8669700e8d767aba  ./verif/creusot_conf_rlib/sum_to.coma

@@ -25,8 +25,14 @@ prove_once() { # workdir logfile
     # fatal 139 after valid-looking output) is a tool error.
     local TERMINAL_OK=0
     tail -1 "$LOG" | grep -q "Error: 'why3find prove' failed" && TERMINAL_OK=1
-    if [ "$RC" -ne 1 ] || ! grep -q "Error: 1 unproved file" "$LOG" || [ "$TERMINAL_OK" -ne 1 ]; then
-      echo "TOOL-ERROR: prove did not fail the expected way (rc=$RC, marker/terminal mismatch)" >&2
+    # R4 P2: expected-error EXCLUSIVITY — the log must contain exactly the
+    # two expected error lines and NO additional fatal/panic tool noise.
+    local ERR_COUNT EXTRA_FATAL
+    ERR_COUNT=$(grep -c '^Error:' "$LOG" || true)
+    EXTRA_FATAL=$(grep -ciE 'fatal|panic|segmentation|stack overflow' "$LOG" || true)
+    if [ "$RC" -ne 1 ] || ! grep -q "Error: 1 unproved file" "$LOG" || [ "$TERMINAL_OK" -ne 1 ] \
+       || [ "$ERR_COUNT" -ne 2 ] || [ "$EXTRA_FATAL" -ne 0 ]; then
+      echo "TOOL-ERROR: prove did not fail the expected-and-ONLY way (rc=$RC, errors=$ERR_COUNT, extra-fatal=$EXTRA_FATAL)" >&2
       return 7
     fi
     # complete outcome validation (fresh log only — grep cannot see history)
