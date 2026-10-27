@@ -73,7 +73,7 @@ Rust row unaffected (Cargo.lock identical v0.24.1→develop; matrix green).
 
 Repairs: PR #354 (discovery supervisor interpreter, 24 tests green)
 and PR #355 (examples-suite lattice: pins aligned, pages migrated to
-amari-wasm 0.24.1 per-signature API, full suite 24 files / 116 tests,
+amari-wasm 0.24.1 per-signature API, committed suite 12 files / 58 tests,
 tsc 0 errors, eslint 0 errors — clean npm ci, deterministic twice).
 
 LESSON: verify against the branch's OWN worktree, never a shared checkout

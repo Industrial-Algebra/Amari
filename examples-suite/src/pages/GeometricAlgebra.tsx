@@ -290,9 +290,9 @@ console.log("e03² =", e03.geometricProduct(e03).getCoefficient(0)); // +1`,
       description: "All-negative signature produces the quaternion subalgebra (v0.23.0+)",
       category: "v0.23.0",
       code: `// Cl(0,3,0): all basis vectors square to -1 (quaternion algebra)
-const i = amari.WasmMultivector300.basisVector(0);
-const j = amari.WasmMultivector300.basisVector(1);
-const k = amari.WasmMultivector300.basisVector(2);
+const i = amari.WasmMultivector030.basisVector(0);
+const j = amari.WasmMultivector030.basisVector(1);
+const k = amari.WasmMultivector030.basisVector(2);
 
 // i² = j² = k² = -1
 console.log("i² =", i.geometricProduct(i).getCoefficient(0)); // -1
@@ -303,9 +303,9 @@ console.log("k² =", k.geometricProduct(k).getCoefficient(0)); // -1
 const ij = i.geometricProduct(j);
 console.log("i*j = k?", ij.getCoefficient(4)); // k component`,
       onRun: runExample(() => {
-        const i = amari!.WasmMultivector300.basisVector(0);
-        const j = amari!.WasmMultivector300.basisVector(1);
-        const k = amari!.WasmMultivector300.basisVector(2);
+        const i = amari!.WasmMultivector030.basisVector(0);
+        const j = amari!.WasmMultivector030.basisVector(1);
+        const k = amari!.WasmMultivector030.basisVector(2);
 
         const iSq = i.geometricProduct(i).getCoefficient(0);
         const jSq = j.geometricProduct(j).getCoefficient(0);
