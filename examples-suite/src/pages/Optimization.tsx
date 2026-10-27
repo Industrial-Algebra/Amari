@@ -117,7 +117,7 @@ console.log("Pareto front:", result.paretoFront);
         const f2 = (x: number) => (x - 2) ** 2;
 
         // Sample points along Pareto front
-        const paretoPoints = [];
+        const paretoPoints: { x: number; f1: number; f2: number }[] = [];
         for (let i = 0; i <= 10; i++) {
           const x = i * 0.2;  // x from 0 to 2
           paretoPoints.push({
@@ -352,7 +352,7 @@ console.log("Optimal point:", result.point);
         let x = [0, 0];
         let lambda = 0;
         const rho = 1;
-        const history = [];
+        const history: { x: number[]; f: number; constraint: number }[] = [];
 
         for (let outer = 0; outer < 10; outer++) {
           // Minimize augmented Lagrangian (gradient descent)

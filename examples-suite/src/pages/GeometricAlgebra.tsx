@@ -39,7 +39,7 @@ export function GeometricAlgebra() {
       code: `// Create a 3D Euclidean multivector from coefficients
 // [scalar, e1, e2, e3, e12, e13, e23, e123]
 const coeffs = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
-const mv = amari.WasmMultivector.fromCoefficients(coeffs);
+const mv = amari.WasmMultivector030.fromCoefficients(coeffs);
 
 // Access individual components
 const scalar = mv.getCoefficient(0);
@@ -51,7 +51,7 @@ console.log("e1 component:", e1);
 console.log("Grade 1 coefficients:", grade1.getCoefficients());`,
       onRun: runExample(() => {
         const coeffs = new Float64Array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
-        const mv = amari!.WasmMultivector.fromCoefficients(coeffs);
+        const mv = amari!.WasmMultivector030.fromCoefficients(coeffs);
 
         const scalar = mv.getCoefficient(0);
         const e1 = mv.getCoefficient(1);
@@ -75,8 +75,8 @@ console.log("Grade 1 coefficients:", grade1.getCoefficients());`,
       description: "Compute the geometric product of two multivectors",
       category: "Operations",
       code: `// Create two basis vectors
-const v1 = amari.WasmMultivector.basisVector(0); // e1
-const v2 = amari.WasmMultivector.basisVector(1); // e2
+const v1 = amari.WasmMultivector030.basisVector(0); // e1
+const v2 = amari.WasmMultivector030.basisVector(1); // e2
 
 // Geometric product: e1 * e2 = e1∧e2 (bivector)
 const product = v1.geometricProduct(v2);
@@ -86,8 +86,8 @@ console.log("v2 coefficients:", v2.getCoefficients());
 console.log("Product coefficients:", product.getCoefficients());
 console.log("e12 component:", product.getCoefficient(4));`,
       onRun: runExample(() => {
-        const v1 = amari!.WasmMultivector.basisVector(0);
-        const v2 = amari!.WasmMultivector.basisVector(1);
+        const v1 = amari!.WasmMultivector030.basisVector(0);
+        const v2 = amari!.WasmMultivector030.basisVector(1);
         const product = v1.geometricProduct(v2);
 
         const v1Coeffs = v1.getCoefficients();
@@ -114,16 +114,16 @@ console.log("e12 component:", product.getCoefficient(4));`,
       description: "Create a rotor and use it to rotate a vector",
       category: "Applications",
       code: `// Create a vector to rotate (e1)
-const vector = amari.WasmMultivector.basisVector(0);
+const vector = amari.WasmMultivector030.basisVector(0);
 
 // Create bivector for rotation plane (e1∧e2)
-const e1 = amari.WasmMultivector.basisVector(0);
-const e2 = amari.WasmMultivector.basisVector(1);
+const e1 = amari.WasmMultivector030.basisVector(0);
+const e2 = amari.WasmMultivector030.basisVector(1);
 const bivector = e1.outerProduct(e2);
 
 // Create rotor for 90-degree rotation
 const angle = Math.PI / 2; // 90 degrees
-const rotor = amari.WasmRotor.fromBivector(bivector, angle);
+const rotor = amari.WasmRotor030.fromBivector(bivector, angle);
 
 // Apply rotation
 const rotated = rotor.apply(vector);
@@ -131,12 +131,12 @@ const rotated = rotor.apply(vector);
 console.log("Original vector:", vector.getCoefficients());
 console.log("Rotated vector:", rotated.getCoefficients());`,
       onRun: runExample(() => {
-        const vector = amari!.WasmMultivector.basisVector(0);
-        const e1 = amari!.WasmMultivector.basisVector(0);
-        const e2 = amari!.WasmMultivector.basisVector(1);
+        const vector = amari!.WasmMultivector030.basisVector(0);
+        const e1 = amari!.WasmMultivector030.basisVector(0);
+        const e2 = amari!.WasmMultivector030.basisVector(1);
         const bivector = e1.outerProduct(e2);
         const angle = Math.PI / 2;
-        const rotor = amari!.WasmRotor.fromBivector(bivector, angle);
+        const rotor = amari!.WasmRotor030.fromBivector(bivector, angle);
         const rotated = rotor.apply(vector);
 
         const originalCoeffs = vector.getCoefficients();
@@ -165,8 +165,8 @@ console.log("Rotated vector:", rotated.getCoefficients());`,
 const coeffs1 = [0.0, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0.0]; // 1e1 + 2e2 + 3e3
 const coeffs2 = [0.0, 4.0, 5.0, 6.0, 0.0, 0.0, 0.0, 0.0]; // 4e1 + 5e2 + 6e3
 
-const v1 = amari.WasmMultivector.fromCoefficients(coeffs1);
-const v2 = amari.WasmMultivector.fromCoefficients(coeffs2);
+const v1 = amari.WasmMultivector030.fromCoefficients(coeffs1);
+const v2 = amari.WasmMultivector030.fromCoefficients(coeffs2);
 
 // Inner product (dot product for vectors)
 const inner = v1.innerProduct(v2);
@@ -183,8 +183,8 @@ console.log("Outer product:", outer.getCoefficients());`,
         const coeffs1 = new Float64Array([0.0, 1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 0.0]);
         const coeffs2 = new Float64Array([0.0, 4.0, 5.0, 6.0, 0.0, 0.0, 0.0, 0.0]);
 
-        const v1 = amari!.WasmMultivector.fromCoefficients(coeffs1);
-        const v2 = amari!.WasmMultivector.fromCoefficients(coeffs2);
+        const v1 = amari!.WasmMultivector030.fromCoefficients(coeffs1);
+        const v2 = amari!.WasmMultivector030.fromCoefficients(coeffs2);
         const inner = v1.innerProduct(v2);
         const innerScalar = inner.getCoefficient(0);
         const outer = v1.outerProduct(v2);
