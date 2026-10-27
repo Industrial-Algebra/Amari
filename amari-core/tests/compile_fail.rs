@@ -14,6 +14,41 @@
 use std::path::PathBuf;
 use std::process::Command;
 
+/// R6 P2: owner-private RAII scratch. Mode 0o700 (not the default
+/// 0755), removed by Drop — which also runs during unwinding, so
+/// induced panics cannot leak the directory.
+struct ScratchDir(PathBuf);
+
+impl ScratchDir {
+    fn new(tag: &str) -> Self {
+        let p = std::env::temp_dir().join(format!(
+            "c2-cf-{tag}-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        std::fs::create_dir(&p).unwrap_or_else(|e| panic!("create {tag} scratch: {e}"));
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o700))
+                .unwrap_or_else(|e| panic!("chmod 700 {tag} scratch: {e}"));
+        }
+        ScratchDir(p)
+    }
+    fn path(&self) -> &std::path::Path {
+        &self.0
+    }
+}
+
+impl Drop for ScratchDir {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
 fn host_deps_dir(deps: &std::path::Path) -> PathBuf {
     // R2 P2-1: proc-macros and build scripts are HOST artifacts even in
     // explicit-target builds. R3: the host path must derive from the
@@ -93,20 +128,9 @@ fn amari_core_rlib(deps: &std::path::Path, host_deps: &std::path::Path) -> PathB
         .collect();
     candidates.sort_by_key(|p| std::fs::metadata(p).and_then(|m| m.modified()).ok());
     candidates.reverse(); // newest first as a tiebreak heuristic only
-                          // R5 P2: uniquely allocated PRIVATE scratch (fixed temp paths follow
-                          // preexisting symlinks — a scratch sentinel was overwritten through
-                          // one). No fixed-name writes anywhere in this suite.
-    let scratch = std::env::temp_dir().join(format!(
-        "c2-cf-probe-{}-{}",
-        std::process::id(),
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0)
-    ));
-    std::fs::create_dir(&scratch).expect("create private scratch");
-    let probe = scratch.join("probe.rs");
-    let probe_meta = scratch.join("probe.meta");
+    let scratch = ScratchDir::new("probe");
+    let probe = scratch.path().join("probe.rs");
+    let probe_meta = scratch.path().join("probe.meta");
     std::fs::write(
         &probe,
         "// capability probe: verified requires phantom-types\nfn main() {\n    let _ = amari_core::verified::VerifiedMultivector::<f64, 3, 0, 0>::scalar;\n}\n",
@@ -130,11 +154,9 @@ fn amari_core_rlib(deps: &std::path::Path, host_deps: &std::path::Path) -> PathB
             .map(|o| o.status.success())
             .unwrap_or(false);
         if ok {
-            let _ = std::fs::remove_dir_all(&scratch);
-            return cand.clone();
+            return cand.clone(); // scratch removed by Drop
         }
     }
-    let _ = std::fs::remove_dir_all(&scratch);
     panic!(
         "no candidate rlib in {deps:?} provides the phantom-types surface ({} candidates probed)",
         candidates.len()
@@ -148,16 +170,7 @@ fn static_rejection_cases() {
     let rlib = amari_core_rlib(&deps, &host_deps);
     let rustc = std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into());
     let cases_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/compile-fail");
-    // R5 P2: private per-run output dir — no fixed-name writes.
-    let out_dir = std::env::temp_dir().join(format!(
-        "c2-cf-out-{}-{}",
-        std::process::id(),
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0)
-    ));
-    std::fs::create_dir(&out_dir).expect("create private out dir");
+    let out_dir = ScratchDir::new("out");
     let mut cases = vec![];
     for entry in std::fs::read_dir(&cases_dir).expect("compile-fail dir") {
         let p = entry.expect("entry").path();
@@ -190,7 +203,7 @@ fn static_rejection_cases() {
             .arg("--edition=2024")
             .arg("--crate-type=bin")
             .arg("-o")
-            .arg(out_dir.join("reject-bin"))
+            .arg(out_dir.path().join("reject-bin"))
             .arg("--extern")
             .arg(format!("amari_core={}", rlib.display()))
             .arg("-L")
