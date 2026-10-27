@@ -7,6 +7,12 @@
 //! Limits are validated before allocation, recursion, or search, and
 //! [`RelationResources`] enforces them at runtime.
 
+// The wire-form decoders below build their rejection messages, and this
+// crate is `no_std` when `std` is off: the macro must be imported from
+// `alloc` (PR #353 round 5 P1).
+#[cfg(feature = "serialize")]
+use alloc::format;
+
 use crate::error::{RewriteError, RewriteResult};
 
 /// Caller-tightenable limits for constrained relation evaluation.
