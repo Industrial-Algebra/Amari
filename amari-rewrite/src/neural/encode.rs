@@ -29,12 +29,21 @@
 //!   past admission (PR #353 round 1 P2a). The recorded step position is
 //!   caller-supplied too, so walking it is metered as well.
 //!
-//!   Admission charges *before* it works: a node's child count is checked
+//!   Admission charges *before* it works, and every walk that admits a term
+//!   applies the same identifier ceiling — the state term, each constraint
+//!   side, and the resolved step subterm. A node's child count is checked
 //!   against the remaining node and operation room before any child frame is
 //!   enqueued, and an identifier's byte length is checked on the borrowed
 //!   `str` before it is copied. A frontier is therefore never larger than
 //!   the remaining budget, and a name is never copied before it is
 //!   admissible (PR #353 round 2 P2).
+//!
+//!   When an input violates more than one ceiling, the one reported depends
+//!   on where it is noticed: arity-derived rejections run before the
+//!   children are visited, so they can pre-empt a per-node (depth)
+//!   rejection. Precedence is conservative and deliberately unspecified —
+//!   the guarantee is that such an input is rejected and that the ceiling
+//!   named is one it violates (PR #353 round 3 P3).
 //!
 //! Encoding is also the module's admission gate: [`MlpRanker::rank`] and
 //! [`MlpRanker::score_candidate`] run it before deriving the canonical
@@ -735,7 +744,12 @@ impl FeatureEncoder {
                     Self::check_identifier(name)?;
                     stats.var_names.push(name.into());
                 }
-                Term::Sym(_, args) => {
+                Term::Sym(symbol, args) => {
+                    // Symbols are checked here too: a side's symbol name is
+                    // copied by the canonical digest, so admitting it here
+                    // would move the copy past admission (PR #353 round 3
+                    // P2a).
+                    Self::check_identifier(symbol.as_str())?;
                     stats.symbol_nodes += 1;
                     self.reserve_children(args.len(), stats.nodes, resources)?;
                     for arg in args.iter().rev() {
@@ -796,10 +810,17 @@ impl FeatureEncoder {
                 });
             }
             stats.depth = stats.depth.max(depth);
-            if let Term::Sym(_, args) = current {
-                self.reserve_children(args.len(), stats.nodes, resources)?;
-                for arg in args.iter().rev() {
-                    stack.push((arg, depth + 1));
+            match current {
+                // This walk admits a subtree on its own, so it checks the
+                // same identifiers: no admission path may leave an
+                // over-long name for a later copy (PR #353 round 3 P2a).
+                Term::Var(variable) => Self::check_identifier(variable.as_str())?,
+                Term::Sym(symbol, args) => {
+                    Self::check_identifier(symbol.as_str())?;
+                    self.reserve_children(args.len(), stats.nodes, resources)?;
+                    for arg in args.iter().rev() {
+                        stack.push((arg, depth + 1));
+                    }
                 }
             }
         }
@@ -835,9 +856,15 @@ impl FeatureEncoder {
     /// room)`: at most one ceiling's worth of frames, never the input's
     /// arity (PR #353 round 2 P2).
     ///
-    /// The operation budget is checked first, mirroring [`charge`]: the
-    /// counter that would refuse the visit is the operation charge, so the
-    /// pre-check answers exactly as the walk would have.
+    /// The operation budget is checked first, so a rejection derived from
+    /// the arity names the budget. That is *conservative* precedence, not a
+    /// mirror of the walk: when an input violates more than one ceiling,
+    /// which one is reported depends on where it is noticed, and the
+    /// arity-derived answer arrives before the children are visited (a
+    /// depth violation is only observable on the visit). Either error is
+    /// correct — the contract is "rejected, naming a violated ceiling",
+    /// never "accepted", and never "the ceiling the walk would have hit
+    /// first" (PR #353 round 3 P3).
     ///
     /// # Errors
     ///

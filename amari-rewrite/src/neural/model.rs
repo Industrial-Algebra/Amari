@@ -128,38 +128,54 @@ impl RankerWeights {
     ) -> Result<Self, NeuralError> {
         let expected = config.expected_tensors();
         let magnitude_bound = config.max_weight_magnitude();
+        // Reject an unknown name on first sight, rendering a bounded form of
+        // the caller's name: a diagnostic must never copy an unbounded input
+        // (PR #353 round 3 P2b).
         for (name, _) in tensors {
             if !expected.iter().any(|(known, _)| known == name) {
                 return Err(NeuralError::InvalidWeights {
-                    message: format!("unknown tensor `{name}` for this ranker spec"),
+                    message: format!(
+                        "unknown tensor `{}` for this ranker spec",
+                        render_tensor_name(name)
+                    ),
                 });
             }
         }
         let mut found: Vec<(&str, &[f32])> = Vec::with_capacity(expected.len());
         for (name, shape) in &expected {
-            let matches: Vec<&[f32]> = tensors
-                .iter()
-                .filter(|(other, _)| other == name)
-                .map(|(_, values)| *values)
-                .collect();
-            if matches.len() != 1 {
+            // Count occurrences without collecting them: a million duplicate
+            // names must cost a counter, not a vector (PR #353 round 3 P2b).
+            let mut count = 0usize;
+            let mut occurrence: Option<&[f32]> = None;
+            for (other, values) in tensors {
+                if other != name {
+                    continue;
+                }
+                count += 1;
+                if count == 1 {
+                    occurrence = Some(values);
+                }
+            }
+            if count != 1 {
                 return Err(NeuralError::InvalidWeights {
-                    message: format!(
-                        "tensor `{name}` must appear exactly once, found {}",
-                        matches.len()
-                    ),
+                    message: format!("tensor `{name}` must appear exactly once, found {count}"),
                 });
             }
+            let Some(values) = occurrence else {
+                return Err(NeuralError::InvalidWeights {
+                    message: format!("tensor `{name}` is missing"),
+                });
+            };
             let elements: usize = shape.iter().product();
-            if matches[0].len() != elements {
+            if values.len() != elements {
                 return Err(NeuralError::InvalidWeights {
                     message: format!(
                         "tensor `{name}` declares {elements} elements (shape {shape:?}), got {}",
-                        matches[0].len()
+                        values.len()
                     ),
                 });
             }
-            for (index, value) in matches[0].iter().enumerate() {
+            for (index, value) in values.iter().enumerate() {
                 if !value.is_finite() {
                     return Err(NeuralError::InvalidWeights {
                         message: format!("tensor `{name}` element {index} is not finite"),
@@ -176,7 +192,7 @@ impl RankerWeights {
                     });
                 }
             }
-            found.push((name.as_str(), matches[0]));
+            found.push((name.as_str(), values));
         }
 
         let mut layers = Vec::with_capacity(config.spec().hidden.len());
@@ -584,6 +600,27 @@ fn content_key(candidate: &CandidateInput<'_>, digest: Sha256Digest) -> Vec<u8> 
     key.extend_from_slice(&(context.existentials as u64).to_le_bytes());
     key.extend_from_slice(&context.rule_priority.to_le_bytes());
     key
+}
+
+/// Byte cap on a caller-supplied name quoted into a diagnostic.
+///
+/// A rejection message must never copy an unbounded input: quoting a 16 MB
+/// tensor name verbatim would allocate 16 MB to say "unknown tensor". The
+/// cap truncates on a UTF-8 boundary and always states the real length, so
+/// the message stays recognisable and bounded (PR #353 round 3 P2b).
+const MAX_DIAGNOSTIC_NAME_BYTES: usize = 64;
+
+/// Render a caller-supplied tensor name for a diagnostic: bounded, lossy
+/// beyond [`MAX_DIAGNOSTIC_NAME_BYTES`], and always length-stamped.
+fn render_tensor_name(name: &str) -> String {
+    if name.len() <= MAX_DIAGNOSTIC_NAME_BYTES {
+        return name.to_string();
+    }
+    let mut end = MAX_DIAGNOSTIC_NAME_BYTES;
+    while !name.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}... ({} bytes)", &name[..end], name.len())
 }
 
 /// Tensor values by canonical name (already validated present).

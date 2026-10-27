@@ -671,6 +671,95 @@ fn encoder_rejects_an_oversized_identifier_before_copying_it() {
     ));
 }
 
+#[test]
+fn encoder_rejects_an_oversized_constraint_side_identifier() {
+    // PR #353 round 3 P2a: the side walk checked variable names only, so a
+    // 16 MB symbol name inside a constraint passed admission — and the
+    // canonical digest then copied it repeatedly.
+    let term = Term::constant("a");
+    let mut constraints = ConstraintSet::new();
+    constraints.insert(TermConstraint::Equal(
+        Term::constant("z".repeat(16_000_000)),
+        Term::constant("b"),
+    ));
+    let provenance = step_provenance(&term, Path::root());
+    let encoder = FeatureEncoder::default();
+    let outcome = encoder.encode(&candidate(&term, &constraints, &provenance));
+    match outcome {
+        Err(NeuralError::LimitExceeded {
+            resource,
+            value,
+            limit,
+        }) => {
+            assert_eq!(resource, "identifier bytes");
+            assert_eq!(value, 16_000_000);
+            assert_eq!(limit, FeatureEncoder::MAX_IDENTIFIER_BYTES);
+        }
+        other => panic!("expected a typed identifier-length error, got {other:?}"),
+    }
+
+    // And through the ranker, where the digest used to run afterwards.
+    let ranker = constant_ranker(&[2]);
+    assert!(matches!(
+        ranker.rank(&encoder, &[candidate(&term, &constraints, &provenance)]),
+        Err(NeuralError::LimitExceeded {
+            resource: "identifier bytes",
+            ..
+        })
+    ));
+}
+
+#[test]
+fn ranker_weights_bound_the_diagnostic_for_an_unknown_tensor_name() {
+    // PR #353 round 3 P2b: the rejection message quoted the caller's name
+    // verbatim, so a 16 MB name allocated 16 MB to say "unknown".
+    let config = config(&[2]);
+    let name = "q".repeat(16_000_000);
+    let error = RankerWeights::from_tensors(&config, &[(&name, &[])])
+        .expect_err("an unknown tensor name is rejected");
+    assert!(matches!(error, NeuralError::InvalidWeights { .. }));
+    let rendered = error.to_string();
+    assert!(
+        rendered.len() < 512,
+        "the diagnostic must stay bounded, got {} bytes",
+        rendered.len()
+    );
+    assert!(
+        rendered.contains("16000000 bytes"),
+        "the diagnostic must still state the real length: {rendered}"
+    );
+    assert!(
+        rendered.contains("qqqq"),
+        "the diagnostic must still show a recognisable prefix: {rendered}"
+    );
+}
+
+#[test]
+fn encoder_reports_a_conservative_ceiling_when_two_are_violated() {
+    // PR #353 round 3 P3: with depth 1 and an operation budget of 2, the
+    // arity-derived pre-check reports the budget while the walk would have
+    // reported the depth. Either is correct — the contract is "rejected, one
+    // of the violated ceilings named", not "the same ceiling the walk would
+    // have hit first".
+    let term = Term::sym(
+        "f",
+        [
+            Term::constant("a"),
+            Term::constant("b"),
+            Term::constant("c"),
+        ],
+    );
+    let constraints = ConstraintSet::new();
+    let provenance = step_provenance(&term, Path::root());
+    let limits = RelationLimits::new(4_096, 1, 4_096, 2).expect("tightened limits");
+    let encoder = FeatureEncoder::new(limits);
+    match encoder.encode(&candidate(&term, &constraints, &provenance)) {
+        Err(NeuralError::BudgetExhausted { resource, .. }) => assert_eq!(resource, "operations"),
+        Err(NeuralError::LimitExceeded { resource, .. }) => assert_eq!(resource, "term depth"),
+        other => panic!("expected a typed rejection naming a violated ceiling, got {other:?}"),
+    }
+}
+
 // ── ranker configuration and tensor shapes ─────────────────────────
 
 #[test]

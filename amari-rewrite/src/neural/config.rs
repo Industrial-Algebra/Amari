@@ -90,21 +90,24 @@ impl RankerConfig {
             });
         }
         let candidate = Self { spec };
-        let elements = candidate.tensor_elements();
-        if elements > Self::MAX_TENSOR_ELEMENTS {
-            return Err(NeuralError::InvalidConfig {
-                message: format!(
-                    "the spec derives {elements} tensor elements, above the ceiling of {}",
-                    Self::MAX_TENSOR_ELEMENTS
-                ),
-            });
-        }
+        // The layer count is checked before any per-tensor metadata is
+        // derived: a hand-built 100,000-layer spec must cost a comparison,
+        // not one tensor name per layer (PR #353 round 3 P2c).
         if candidate.spec.hidden.len() > Self::MAX_HIDDEN_LAYERS {
             return Err(NeuralError::InvalidConfig {
                 message: format!(
                     "{} hidden layers, above the ceiling of {}",
                     candidate.spec.hidden.len(),
                     Self::MAX_HIDDEN_LAYERS
+                ),
+            });
+        }
+        let elements = candidate.tensor_elements();
+        if elements > Self::MAX_TENSOR_ELEMENTS {
+            return Err(NeuralError::InvalidConfig {
+                message: format!(
+                    "the spec derives {elements} tensor elements, above the ceiling of {}",
+                    Self::MAX_TENSOR_ELEMENTS
                 ),
             });
         }
@@ -175,14 +178,23 @@ impl RankerConfig {
 
     /// Total parameter count derived from the expected tensor shapes.
     pub fn tensor_elements(&self) -> u64 {
-        self.expected_tensors()
-            .iter()
-            .map(|(_, shape)| {
-                shape
-                    .iter()
-                    .fold(1u64, |product, &dim| product.saturating_mul(dim as u64))
-            })
-            .fold(0u64, |total, elements| total.saturating_add(elements))
+        // Summed straight from the shapes: folding over
+        // [`expected_tensors`](Self::expected_tensors) would allocate two
+        // names per layer, which is exactly the work a rejection must not
+        // do (PR #353 round 3 P2c).
+        let mut total = 0u64;
+        let mut input_width = u64::from(self.spec.input_width);
+        for layer in &self.spec.hidden {
+            let width = u64::from(layer.width);
+            total = total
+                .saturating_add(width.saturating_mul(input_width))
+                .saturating_add(width);
+            input_width = width;
+        }
+        let head_width = u64::from(self.spec.head.width);
+        total
+            .saturating_add(head_width.saturating_mul(input_width))
+            .saturating_add(head_width)
     }
 
     /// The largest weight magnitude this architecture can carry while
