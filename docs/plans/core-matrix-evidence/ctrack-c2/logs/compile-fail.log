@@ -1,0 +1,14 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/compile_fail.rs (target/c2-gate/debug/deps/compile_fail-7bcc56d63600df3d)
+
+running 1 test
+REJECTED case1_cross_signature_multivector.rs [1] with 2 token(s)
+REJECTED case2_cross_signature_rotor_compose.rs [1] with 2 token(s)
+REJECTED case3_kvector_grade_mismatch.rs [1] with 2 token(s)
+REJECTED case4_rotor_apply_across_signature.rs [1] with 2 token(s)
+REJECTED case5_vector_cross_dimension.rs [1] with 2 token(s)
+REJECTED case6_cross_type_mixing.rs [1] with 3 token(s)
+test static_rejection_cases ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+

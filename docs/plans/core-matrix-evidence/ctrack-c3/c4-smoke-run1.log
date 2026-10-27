@@ -1,0 +1,257 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling libm v0.2.16
+   Compiling autocfg v1.5.1
+   Compiling libc v0.2.191
+   Compiling getrandom v0.4.3
+   Compiling cfg-if v1.0.5
+   Compiling thiserror v2.0.21
+    Checking bytemuck v1.25.2
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.119
+   Compiling syn v3.0.9
+    Checking num-integer v0.1.47
+    Checking approx v0.5.1
+    Checking num-bigint v0.4.8
+   Compiling uuid v1.28.0
+   Compiling thiserror-impl v2.0.21
+    Checking num-rational v0.4.2
+   Compiling pearlite-syn v0.8.0
+   Compiling creusot-contracts-proc v0.8.0
+    Checking creusot-contracts v0.8.0
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core)
+warning: ignoring -C extra-filename flag due to -o flag
+
+error: unexpected token, expected `]`
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:177:47
+    |
+177 |         ensures(result == (self.coefficients[1..].iter().all(|c| c.is_zero()))))]
+    |                                               ^
+
+error: cannot find attribute `ensures` in this scope
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:31:3
+   |
+31 | #[ensures(result.is_ok() ==>
+   |   ^^^^^^^
+   |
+help: consider importing one of these attribute macros
+   |
+ 6 + use core::contracts::ensures;
+   |
+ 6 + use creusot_contracts::prelude::ensures;
+   |
+
+error: cannot find attribute `ensures` in this scope
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:33:3
+   |
+33 | #[ensures(result.is_ok() ==> forall(|i: usize|
+   |   ^^^^^^^
+   |
+help: consider importing one of these attribute macros
+   |
+ 6 + use core::contracts::ensures;
+   |
+ 6 + use creusot_contracts::prelude::ensures;
+   |
+
+error: cannot find attribute `ensures` in this scope
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:70:3
+   |
+70 | #[ensures(result.is_ok() ==>
+   |   ^^^^^^^
+   |
+help: consider importing one of these attribute macros
+   |
+ 6 + use core::contracts::ensures;
+   |
+ 6 + use creusot_contracts::prelude::ensures;
+   |
+
+error: cannot find attribute `ensures` in this scope
+  --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:72:3
+   |
+72 | #[ensures(result.is_ok() ==> forall(|i: usize|
+   |   ^^^^^^^
+   |
+help: consider importing one of these attribute macros
+   |
+ 6 + use core::contracts::ensures;
+   |
+ 6 + use creusot_contracts::prelude::ensures;
+   |
+
+error: cannot find attribute `ensures` in this scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:124:3
+    |
+124 | #[ensures(result <= P + Q + R)]
+    |   ^^^^^^^
+    |
+help: consider importing one of these attribute macros
+    |
+  6 + use core::contracts::ensures;
+    |
+  6 + use creusot_contracts::prelude::ensures;
+    |
+
+error: cannot find attribute `ensures` in this scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:137:3
+    |
+137 | #[ensures(result.is_ok() ==>
+    |   ^^^^^^^
+    |
+help: consider importing one of these attribute macros
+    |
+  6 + use core::contracts::ensures;
+    |
+  6 + use creusot_contracts::prelude::ensures;
+    |
+
+error: cannot find attribute `ensures` in this scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:139:3
+    |
+139 | #[ensures(result.is_ok() ==> forall(|i: usize|
+    |   ^^^^^^^
+    |
+help: consider importing one of these attribute macros
+    |
+  6 + use core::contracts::ensures;
+    |
+  6 + use creusot_contracts::prelude::ensures;
+    |
+
+error: cannot find attribute `ensures` in this scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:162:3
+    |
+162 | #[ensures(result.is_ok() ==>
+    |   ^^^^^^^
+    |
+help: consider importing one of these attribute macros
+    |
+  6 + use core::contracts::ensures;
+    |
+  6 + use creusot_contracts::prelude::ensures;
+    |
+
+error: cannot find attribute `ensures` in this scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:164:3
+    |
+164 | #[ensures(result.is_ok() ==> forall(|i: usize|
+    |   ^^^^^^^
+    |
+help: consider importing one of these attribute macros
+    |
+  6 + use core::contracts::ensures;
+    |
+  6 + use creusot_contracts::prelude::ensures;
+    |
+
+error: cannot find attribute `ensures` in this scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified_contracts.rs:186:3
+    |
+186 | #[ensures(result.is_ok() ==> (
+    |   ^^^^^^^
+    |
+help: consider importing one of these attribute macros
+    |
+  6 + use core::contracts::ensures;
+    |
+  6 + use creusot_contracts::prelude::ensures;
+    |
+
+error[E0599]: no method named `is_scalar` found for struct `verified::VerifiedMultivector<T, P, Q, R>` in the current scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:135:52
+    |
+ 78 | pub struct VerifiedMultivector<T, const P: usize, const Q: usize, const R: usize>
+    | --------------------------------------------------------------------------------- method `is_scalar` not found for this struct
+...
+135 |         ensures(result.is_ok() ==> result.unwrap().is_scalar()),
+    |                                                    ^^^^^^^^^ method not found in `verified::VerifiedMultivector<T, P, Q, R>`
+
+error[E0599]: no method named `grade` found for enum `std::result::Result<T, E>` in the current scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:160:24
+    |
+160 |         ensures(result.grade() == 1))]
+    |                        ^^^^^ method not found in `std::result::Result<verified::VerifiedMultivector<T, P, Q, R>, &'static str>`
+    |
+note: the method `grade` exists on the type `verified::VerifiedMultivector<T, P, Q, R>`
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:185:5
+    |
+185 |     pub fn grade(&self) -> usize {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: consider using `Result::expect` to unwrap the `verified::VerifiedMultivector<T, P, Q, R>` value, panicking if the value is a `Result::Err`
+    |
+160 |         ensures(result.expect("REASON").grade() == 1))]
+    |                       +++++++++++++++++
+
+error[E0277]: Cannot subtract `_` from `T` in logic
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:553:19
+    |
+553 |         requires((Self::compute_norm(&mv) - T::one()).abs() < rotor_tolerance::<T>()),
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^-----------
+    |                   |
+    |                   no implementation for `T - _` in logic
+    |                   required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `creusot_contracts::logic::ops::SubLogic<Rhs>`:
+              creusot_contracts::logic::Int
+              i128
+              i16
+              i32
+              i64
+              i8
+              isize
+              u128
+            and 5 others
+
+error[E0277]: Cannot subtract `T` from `T` in logic
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:553:18
+    |
+553 |         requires((Self::compute_norm(&mv) - T::one()).abs() < rotor_tolerance::<T>()),
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no implementation for `T - T` in logic
+    |
+help: consider further restricting type parameter `T` with trait `SubLogic`
+    |
+520 |     T: Float + Zero + One + creusot_contracts::logic::ops::SubLogic,
+    |                           +++++++++++++++++++++++++++++++++++++++++
+
+error[E0599]: no method named `is_even_grade` found for struct `verified::VerifiedMultivector<T, P, Q, R>` in the current scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:551:21
+    |
+ 78 | pub struct VerifiedMultivector<T, const P: usize, const Q: usize, const R: usize>
+    | --------------------------------------------------------------------------------- method `is_even_grade` not found for this struct
+...
+551 |         requires(mv.is_even_grade()),
+    |                     ^^^^^^^^^^^^^ method not found in `verified::VerifiedMultivector<T, P, Q, R>`
+
+error[E0599]: no method named `dimension` found for enum `std::result::Result<T, E>` in the current scope
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:702:24
+    |
+702 |         ensures(result.dimension() == D))]
+    |                        ^^^^^^^^^ method not found in `std::result::Result<verified::Vector<T, D>, &'static str>`
+    |
+note: the method `dimension` exists on the type `verified::Vector<T, D>`
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:718:5
+    |
+718 |     pub const fn dimension(&self) -> usize {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: consider using `Result::expect` to unwrap the `verified::Vector<T, D>` value, panicking if the value is a `Result::Err`
+    |
+702 |         ensures(result.expect("REASON").dimension() == D))]
+    |                       +++++++++++++++++
+
+error[E0277]: the trait bound `T: creusot_contracts::logic::OrdLogic` is not satisfied
+   --> /home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core/src/verified.rs:765:36
+    |
+765 |         ensures(result.is_ok() ==> result.unwrap() >= T::zero()),
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `creusot_contracts::logic::OrdLogic` is not implemented for `T`
+    |
+help: consider further restricting type parameter `T` with trait `OrdLogic`
+    |
+691 |     T: Float + Zero + One + creusot_contracts::logic::OrdLogic,
+    |                           ++++++++++++++++++++++++++++++++++++
+
+Some errors have detailed explanations: E0277, E0599.
+For more information about an error, try `rustc --explain E0277`.
+warning: `amari-core` (lib) generated 1 warning
+error: could not compile `amari-core` (lib) due to 18 previous errors; 1 warning emitted

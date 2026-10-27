@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/ingress_rejection.rs (target/c2-gate/debug/deps/ingress_rejection-d32ebefd7a0037db)
+
+running 11 tests
+test basis_vector_rejects_out_of_range ... ok
+test rotor_new_rejects_odd_grade ... ok
+test compose_reports_degenerate_instead_of_dividing_by_zero ... ok
+test multivector_new_rejects_wrong_length ... ok
+test multivector_new_rejects_nonfinite ... ok
+test rotor_nonfinite_check_is_defensive_depth ... ok
+test scalar_ingress_rejects_nonfinite ... ok
+test rotor_unit_norm_band_edges ... ok
+test verified_self_dot_rejects_nonfinite ... ok
+test vector_new_rejects_nonfinite ... ok
+test vector_new_rejects_wrong_length ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

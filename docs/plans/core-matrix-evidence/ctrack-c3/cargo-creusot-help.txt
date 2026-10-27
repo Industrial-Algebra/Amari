@@ -1,0 +1,88 @@
+Usage: creusot-rustc [RUSTC_OPTIONS] -- [OPTIONS]
+
+Commands:
+  doc        Generates the documentation, including specs, logical functions, etc
+  prove      Run prover on translated files
+  new        Create new project in a sub-directory
+  init       Create new project in current directory
+  clean      Clean dangling files in verif/
+  why3       Run Why3
+  why3-conf  Regenerate `why3.conf`
+  version    Show version information of Creusot and its dependencies
+  help       Print this message or the help of the given subcommand(s)
+
+Arguments:
+  [CARGO_FLAGS]...
+          Additional flags to pass to the underlying cargo invocation
+
+Options:
+      --span-mode <SPAN_MODE>
+          Determines how to format the spans in generated code to loading in Why3.
+          
+          [Relative] is better if the generated code is meant to be checked into VCS.
+          [Absolute] means the files can easily be moved around your system and still work.
+          [None] provides the clearest diffs.
+          NB: spans pointing to the Rust standard library are thrown away in [Relative] mode,
+          while they are kept in [Absolute] mode.
+          
+          [default: absolute]
+          [possible values: relative, absolute, off]
+
+      --spans-relative-to <SPANS_RELATIVE_TO>
+          Directory with respect to which (relative) spans should be relative to. Necessary when using --stdout with relative spans, not needed otherwise
+
+      --export-metadata <EXPORT_METADATA>
+          Tell creusot to disable metadata exports
+          
+          [default: true]
+          [possible values: true, false]
+
+      --stdout
+          Print to stdout
+
+      --output-file <OUTPUT_FILE>
+          Print to a file
+          
+          [env: OUTPUT_FILE=]
+
+      --output-dir <OUTPUT_DIR>
+          [env: OUTPUT_DIR=]
+
+      --check
+          Disable output
+
+      --monolithic
+          Output the generated code in a single file in output_dir
+
+      --creusot-extern <EXTERN_PATHS>
+          Specify locations of metadata for external crates. The format is the same as rustc's `--extern` flag
+
+      --simple-triggers <SIMPLE_TRIGGERS>
+          Use `result` as the trigger of definition and specification axioms of logic/ghost functions
+          
+          [default: false]
+          [possible values: true, false]
+
+      --erasure-check [<ERASURE_CHECK>]
+          Enable `#[erasure]` checking across crates
+
+          Possible values:
+          - no:    Disable `#[erasure]` checks
+          - warn:  Output `#[erasure]` check failures as warnings
+          - error: Output `#[erasure]` check failures as errors
+          
+          [default: warn]
+
+      --erasure-check-dir <ERASURE_CHECK_DIR>
+          Directory where cross-crate information for `#[erasure]` checks is stored
+
+      --no-check-version
+          Allow mismatching creusot-contracts versions (use at your own risk!)
+
+      --creusot-rustc <PATH>
+          Path to creusot-rustc (for testing and for Nix)
+          
+          [env: CREUSOT_RUSTC=]
+
+  -h, --help
+          Print help (see a summary with '-h')
