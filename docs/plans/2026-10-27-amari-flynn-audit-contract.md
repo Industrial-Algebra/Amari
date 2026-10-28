@@ -148,9 +148,15 @@ decision needed (keep-deprecated vs remove; breaking changes acceptable).
   semantics (sat → Inconclusive, refine-or-unproven). R1-added —
   per-builder GUARANTEE CLASSES, stated in the module docs and enforced by
   per-builder controls: (a) `hoeffding_obligation` is fully
-  solver-checkable (all variables constrained to literals; negated goal;
-  unsat ⇔ the bound holds) — control pair: parameters where the bound holds
-  (unsat) and parameters where it fails (sat); (b) `expected_value_obligation`
+  solver-checkable (all variables constrained to literals; negated goal);
+  verdict semantics DEPEND ON EMISSION MODE (R3-corrected): exact-rational
+  emission → unsat iff the bound holds; certified-enclosure emission →
+  sufficient-proof per D2 (unsat ⟹ holds; sat tri-stated by the enclosure
+  position). Control pairs per mode: exact mode — parameters where the
+  bound holds (unsat) and where it fails (sat); enclosure mode — an
+  enclosure that decides (unsat), one that proves failure (sat, lower
+  bound above δ → Violated), and one that straddles (sat, straddle →
+  Inconclusive); (b) `expected_value_obligation`
   declares `sample_mean` but never constrains it — as emitted it is NOT
   checkable; either constrain it (caller-supplied observed mean enclosure)
   or document it as a documentation artifact; (c) `pre/post obligation`s
@@ -201,11 +207,15 @@ karpal-verify's own re-export semantics (consumer impact handled in §5).
   directed rational lower/upper bounds for transcendental terms (interval
   arithmetic with outward rounding), assert the conservative branch. Proof
   semantics (R2-corrected): `unsat` is a SUFFICIENT proof that the original
-  real inequality holds (sound); `sat` is NOT a refutation — it means the
-  enclosure straddles the threshold (e.g. true bound 0.2707 holds against
-  δ=0.28, yet a valid enclosure [0.27, 0.30] fails the conservative
-  upper-bound check) and the result is Inconclusive: refine the enclosure
-  or report unproven. Never `unsat ⇔ holds`. (b) Symbolic structure
+  real inequality holds (sound); `sat` is NOT a refutation and has TWO
+  causes (R3-corrected): (i) the enclosure straddles the threshold — e.g.
+  true bound 0.2707 holds against δ=0.28, yet a valid enclosure [0.27, 0.30]
+  fails the conservative upper-bound check — result Inconclusive: refine
+  the enclosure or report unproven; (ii) the inequality GENUINELY fails,
+  certifiable when the enclosure's LOWER bound already exceeds δ — result
+  Violated. The verdict is tri-state: unsat ⟹ Verified (sound), sat with
+  enclosure entirely above δ ⟹ Violated, sat with straddle ⟹ Inconclusive.
+  Never `unsat ⇔ holds`. (b) Symbolic structure
   with rational interval enclosures bracketing exp in-script. (c) Both:
   default (a) certified-enclosure emission, optional symbolic mode (b),
   plus an explicitly labeled "rounded computation" convenience mode that
