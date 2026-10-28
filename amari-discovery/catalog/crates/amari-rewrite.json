@@ -42,6 +42,8 @@
     {
       "name": "neural",
       "enables": [
+        "dep:borsalino-tensor",
+        "dep:katakuri",
         "std"
       ]
     },
@@ -87,6 +89,21 @@
       "kind": "normal",
       "version": "0.24.1",
       "path": "amari-rewrite-macros",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "borsalino-tensor",
+      "package": "borsalino-tensor",
+      "kind": "normal",
+      "optional": true,
+      "default_features": true
+    },
+    {
+      "alias": "katakuri",
+      "package": "katakuri",
+      "kind": "normal",
+      "version": "0.2.0",
       "optional": true,
       "default_features": true
     },
@@ -9740,6 +9757,105 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::CANDIDATE_FEATURE_WIDTH",
+      "kind": "const",
+      "signature": "pub const CANDIDATE_FEATURE_WIDTH : usize",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const CANDIDATE_FEATURE_WIDTH : usize",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "CANDIDATE_FEATURE_WIDTH"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::CandidateInput",
+      "kind": "struct",
+      "signature": "pub struct CandidateInput < 'a >",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "term",
+            "ty": "& 'a Term"
+          },
+          {
+            "label": "constraints",
+            "ty": "& 'a ConstraintSet"
+          },
+          {
+            "label": "provenance",
+            "ty": "& 'a BackwardProvenance"
+          },
+          {
+            "label": "context",
+            "ty": "SearchContext"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct CandidateInput < 'a >",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "term",
+                "ty": "& 'a Term"
+              },
+              {
+                "label": "constraints",
+                "ty": "& 'a ConstraintSet"
+              },
+              {
+                "label": "provenance",
+                "ty": "& 'a BackwardProvenance"
+              },
+              {
+                "label": "context",
+                "ty": "SearchContext"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "CandidateInput"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::CandidateInput::new",
+      "kind": "method",
+      "signature": "pub fn new (term : & 'a Term , constraints : & 'a ConstraintSet , provenance : & 'a BackwardProvenance , context : SearchContext ,) -> Self",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (term : & 'a Term , constraints : & 'a ConstraintSet , provenance : & 'a BackwardProvenance , context : SearchContext ,) -> Self",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "CandidateInput::new"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::DifferentiableRule",
       "kind": "trait",
       "signature": "pub trait DifferentiableRule < State >",
@@ -9850,6 +9966,1534 @@
           "is_reexport": false,
           "declaration_module": "amari_rewrite::neural",
           "declaration_ident": "DifferentiableRule::loss"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder",
+      "kind": "struct",
+      "signature": "pub struct FeatureEncoder",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct FeatureEncoder",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureEncoder"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::MAX_IDENTIFIER_BYTES",
+      "kind": "const",
+      "signature": "pub const MAX_IDENTIFIER_BYTES : usize",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_IDENTIFIER_BYTES : usize",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureEncoder::MAX_IDENTIFIER_BYTES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::encode",
+      "kind": "method",
+      "signature": "pub fn encode (& self , candidate : & CandidateInput < '_ >) -> Result < FeatureVector , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn encode (& self , candidate : & CandidateInput < '_ >) -> Result < FeatureVector , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureEncoder::encode"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::limits",
+      "kind": "method",
+      "signature": "pub fn limits (& self) -> & RelationLimits",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn limits (& self) -> & RelationLimits",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureEncoder::limits"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::new",
+      "kind": "method",
+      "signature": "pub fn new (limits : RelationLimits) -> Self",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (limits : RelationLimits) -> Self",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureEncoder::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1",
+      "kind": "struct",
+      "signature": "pub struct FeatureSchemaV1",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct FeatureSchemaV1",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::FRAME",
+      "kind": "const",
+      "signature": "pub const FRAME : & 'static str",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const FRAME : & 'static str",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::LANES",
+      "kind": "const",
+      "signature": "pub const LANES : [Lane ; CANDIDATE_FEATURE_WIDTH]",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const LANES : [Lane ; CANDIDATE_FEATURE_WIDTH]",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::LANES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::PINNED_DIGEST",
+      "kind": "const",
+      "signature": "pub const PINNED_DIGEST : & 'static str",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const PINNED_DIGEST : & 'static str",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::PINNED_DIGEST"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::VERSION",
+      "kind": "const",
+      "signature": "pub const VERSION : u32",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const VERSION : u32",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::VERSION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::WIDTH",
+      "kind": "const",
+      "signature": "pub const WIDTH : usize",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const WIDTH : usize",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::WIDTH"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::digest",
+      "kind": "method",
+      "signature": "pub fn digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::lane",
+      "kind": "method",
+      "signature": "pub fn lane (index : usize) -> Option < Lane >",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn lane (index : usize) -> Option < Lane >",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::lane"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::lane_index",
+      "kind": "method",
+      "signature": "pub fn lane_index (name : & str) -> Option < usize >",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn lane_index (name : & str) -> Option < usize >",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::lane_index"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::version",
+      "kind": "method",
+      "signature": "pub fn version (& self) -> u32",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn version (& self) -> u32",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::version"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::width",
+      "kind": "method",
+      "signature": "pub fn width (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn width (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureSchemaV1::width"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector",
+      "kind": "struct",
+      "signature": "pub struct FeatureVector",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct FeatureVector",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureVector"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::is_empty",
+      "kind": "method",
+      "signature": "pub fn is_empty (& self) -> bool",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_empty (& self) -> bool",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureVector::is_empty"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::lane",
+      "kind": "method",
+      "signature": "pub fn lane (& self , index : usize) -> Option < f32 >",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn lane (& self , index : usize) -> Option < f32 >",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureVector::lane"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::lanes",
+      "kind": "method",
+      "signature": "pub fn lanes (& self) -> & [f32 ; CANDIDATE_FEATURE_WIDTH]",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn lanes (& self) -> & [f32 ; CANDIDATE_FEATURE_WIDTH]",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureVector::lanes"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::len",
+      "kind": "method",
+      "signature": "pub fn len (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn len (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureVector::len"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::new",
+      "kind": "method",
+      "signature": "pub fn new (lanes : [f32 ; CANDIDATE_FEATURE_WIDTH]) -> Result < Self , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (lanes : [f32 ; CANDIDATE_FEATURE_WIDTH]) -> Result < Self , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "FeatureVector::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::Lane",
+      "kind": "struct",
+      "signature": "pub struct Lane",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "name",
+            "ty": "& 'static str"
+          },
+          {
+            "label": "formula",
+            "ty": "& 'static str"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct Lane",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "name",
+                "ty": "& 'static str"
+              },
+              {
+                "label": "formula",
+                "ty": "& 'static str"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "Lane"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::Lane::new",
+      "kind": "method",
+      "signature": "pub const fn new (name : & 'static str , formula : & 'static str) -> Self",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn new (name : & 'static str , formula : & 'static str) -> Self",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "Lane::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MAX_RANKED_CANDIDATES",
+      "kind": "const",
+      "signature": "pub const MAX_RANKED_CANDIDATES : usize",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_RANKED_CANDIDATES : usize",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MAX_RANKED_CANDIDATES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker",
+      "kind": "struct",
+      "signature": "pub struct MlpRanker",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct MlpRanker",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MlpRanker"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::config",
+      "kind": "method",
+      "signature": "pub fn config (& self) -> & RankerConfig",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn config (& self) -> & RankerConfig",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MlpRanker::config"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::new",
+      "kind": "method",
+      "signature": "pub fn new (config : RankerConfig , weights : RankerWeights) -> Result < Self , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (config : RankerConfig , weights : RankerWeights) -> Result < Self , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MlpRanker::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::rank",
+      "kind": "method",
+      "signature": "pub fn rank (& self , encoder : & FeatureEncoder , candidates : & [CandidateInput < '_ >] ,) -> Result < Vec < RankedCandidate > , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn rank (& self , encoder : & FeatureEncoder , candidates : & [CandidateInput < '_ >] ,) -> Result < Vec < RankedCandidate > , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MlpRanker::rank"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::score_candidate",
+      "kind": "method",
+      "signature": "pub fn score_candidate (& self , encoder : & FeatureEncoder , candidate : & CandidateInput < '_ > ,) -> Result < RankedCandidate , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn score_candidate (& self , encoder : & FeatureEncoder , candidate : & CandidateInput < '_ > ,) -> Result < RankedCandidate , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MlpRanker::score_candidate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::score_features",
+      "kind": "method",
+      "signature": "pub fn score_features (& self , features : & FeatureVector) -> Result < f32 , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn score_features (& self , features : & FeatureVector) -> Result < f32 , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MlpRanker::score_features"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::weights",
+      "kind": "method",
+      "signature": "pub fn weights (& self) -> & RankerWeights",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn weights (& self) -> & RankerWeights",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "MlpRanker::weights"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralError",
+      "kind": "enum",
+      "signature": "pub enum NeuralError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LimitExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "value",
+                  "ty": "usize"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BudgetExhausted",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "InvalidConfig",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "message",
+                  "ty": "String"
+                }
+              ]
+            }
+          },
+          {
+            "name": "InvalidWeights",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "message",
+                  "ty": "String"
+                }
+              ]
+            }
+          },
+          {
+            "name": "InvalidFeatures",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "message",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BackendRejected",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "stage",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NonFiniteScore",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "stage",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/mod.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::neural",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum NeuralError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "LimitExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "value",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "BudgetExhausted",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "InvalidConfig",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "InvalidWeights",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "String"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "InvalidFeatures",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "message",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "BackendRejected",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonFiniteScore",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/mod.rs",
+          "source_module": "amari_rewrite::neural",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::neural",
+          "declaration_ident": "NeuralError"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate",
+      "kind": "struct",
+      "signature": "pub struct RankedCandidate",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RankedCandidate",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankedCandidate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate::canonical_digest",
+      "kind": "method",
+      "signature": "pub fn canonical_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn canonical_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankedCandidate::canonical_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate::features",
+      "kind": "method",
+      "signature": "pub fn features (& self) -> & FeatureVector",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn features (& self) -> & FeatureVector",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankedCandidate::features"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate::score",
+      "kind": "method",
+      "signature": "pub fn score (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn score (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankedCandidate::score"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig",
+      "kind": "struct",
+      "signature": "pub struct RankerConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RankerConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::FEATURE_WIDTH",
+      "kind": "const",
+      "signature": "pub const FEATURE_WIDTH : u32",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const FEATURE_WIDTH : u32",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::FEATURE_WIDTH"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::FRAME",
+      "kind": "const",
+      "signature": "pub const FRAME : & 'static str",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const FRAME : & 'static str",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_HIDDEN_LAYERS",
+      "kind": "const",
+      "signature": "pub const MAX_HIDDEN_LAYERS : usize",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_HIDDEN_LAYERS : usize",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::MAX_HIDDEN_LAYERS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_HIDDEN_WIDTH",
+      "kind": "const",
+      "signature": "pub const MAX_HIDDEN_WIDTH : u32",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_HIDDEN_WIDTH : u32",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::MAX_HIDDEN_WIDTH"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_SPEC_JSON_BYTES",
+      "kind": "const",
+      "signature": "pub const MAX_SPEC_JSON_BYTES : usize",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_SPEC_JSON_BYTES : usize",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::MAX_SPEC_JSON_BYTES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_TENSOR_ELEMENTS",
+      "kind": "const",
+      "signature": "pub const MAX_TENSOR_ELEMENTS : u64",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_TENSOR_ELEMENTS : u64",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::MAX_TENSOR_ELEMENTS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::SAFE_ACTIVATION_MAGNITUDE",
+      "kind": "const",
+      "signature": "pub const SAFE_ACTIVATION_MAGNITUDE : f64",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const SAFE_ACTIVATION_MAGNITUDE : f64",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::SAFE_ACTIVATION_MAGNITUDE"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::activation",
+      "kind": "method",
+      "signature": "pub fn activation (& self) -> Activation",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn activation (& self) -> Activation",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::activation"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::digest",
+      "kind": "method",
+      "signature": "pub fn digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::expected_tensors",
+      "kind": "method",
+      "signature": "pub fn expected_tensors (& self) -> Vec < (String , Vec < usize >) >",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn expected_tensors (& self) -> Vec < (String , Vec < usize >) >",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::expected_tensors"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::from_spec",
+      "kind": "method",
+      "signature": "pub fn from_spec (spec : MlpSpec) -> Result < Self , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_spec (spec : MlpSpec) -> Result < Self , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::from_spec"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::from_spec_json",
+      "kind": "method",
+      "signature": "pub fn from_spec_json (json : & str) -> Result < Self , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_spec_json (json : & str) -> Result < Self , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::from_spec_json"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::hidden_widths",
+      "kind": "method",
+      "signature": "pub fn hidden_widths (& self) -> Vec < u32 >",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn hidden_widths (& self) -> Vec < u32 >",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::hidden_widths"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::max_weight_magnitude",
+      "kind": "method",
+      "signature": "pub fn max_weight_magnitude (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_weight_magnitude (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::max_weight_magnitude"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::spec",
+      "kind": "method",
+      "signature": "pub fn spec (& self) -> & MlpSpec",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn spec (& self) -> & MlpSpec",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::spec"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::tensor_elements",
+      "kind": "method",
+      "signature": "pub fn tensor_elements (& self) -> u64",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn tensor_elements (& self) -> u64",
+          "source_path": "amari-rewrite/src/neural/config.rs",
+          "source_module": "amari_rewrite::neural::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::config",
+          "declaration_ident": "RankerConfig::tensor_elements"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights",
+      "kind": "struct",
+      "signature": "pub struct RankerWeights",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RankerWeights",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankerWeights"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::FRAME",
+      "kind": "const",
+      "signature": "pub const FRAME : & 'static str",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const FRAME : & 'static str",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankerWeights::FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::MAX_ABSOLUTE_WEIGHT",
+      "kind": "const",
+      "signature": "pub const MAX_ABSOLUTE_WEIGHT : f32",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_ABSOLUTE_WEIGHT : f32",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankerWeights::MAX_ABSOLUTE_WEIGHT"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::digest",
+      "kind": "method",
+      "signature": "pub fn digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankerWeights::digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::element_count",
+      "kind": "method",
+      "signature": "pub fn element_count (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn element_count (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankerWeights::element_count"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::from_tensors",
+      "kind": "method",
+      "signature": "pub fn from_tensors (config : & RankerConfig , tensors : & [(& str , & [f32])] ,) -> Result < Self , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::model",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_tensors (config : & RankerConfig , tensors : & [(& str , & [f32])] ,) -> Result < Self , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/model.rs",
+          "source_module": "amari_rewrite::neural::model",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::model",
+          "declaration_ident": "RankerWeights::from_tensors"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::SearchContext",
+      "kind": "struct",
+      "signature": "pub struct SearchContext",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "depth",
+            "ty": "u64"
+          },
+          {
+            "label": "branch_factor",
+            "ty": "u64"
+          },
+          {
+            "label": "cycle",
+            "ty": "bool"
+          },
+          {
+            "label": "term_growth",
+            "ty": "i64"
+          },
+          {
+            "label": "constraint_growth",
+            "ty": "u64"
+          },
+          {
+            "label": "existentials",
+            "ty": "usize"
+          },
+          {
+            "label": "rule_priority",
+            "ty": "u64"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct SearchContext",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "depth",
+                "ty": "u64"
+              },
+              {
+                "label": "branch_factor",
+                "ty": "u64"
+              },
+              {
+                "label": "cycle",
+                "ty": "bool"
+              },
+              {
+                "label": "term_growth",
+                "ty": "i64"
+              },
+              {
+                "label": "constraint_growth",
+                "ty": "u64"
+              },
+              {
+                "label": "existentials",
+                "ty": "usize"
+              },
+              {
+                "label": "rule_priority",
+                "ty": "u64"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "SearchContext"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::SearchContext::new",
+      "kind": "method",
+      "signature": "pub fn new (depth : u64 , branch_factor : u64 , cycle : bool , term_growth : i64 , constraint_growth : u64 , existentials : usize , rule_priority : u64 ,) -> Self",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (depth : u64 , branch_factor : u64 , cycle : bool , term_growth : i64 , constraint_growth : u64 , existentials : usize , rule_priority : u64 ,) -> Self",
+          "source_path": "amari-rewrite/src/neural/encode.rs",
+          "source_module": "amari_rewrite::neural::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::encode",
+          "declaration_ident": "SearchContext::new"
         }
       ]
     },
@@ -16997,7 +18641,7 @@
     {
       "export_path": "amari_rewrite::neural::DifferentiableRule",
       "source_path": "amari-rewrite/src/neural/mod.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "local",
         "module": "amari_rewrite::neural",
@@ -18649,6 +20293,205 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::CandidateInput",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "CandidateInput"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureEncoder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureSchemaV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::FeatureVector",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureVector"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::Lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "Lane"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::MlpRanker",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "MlpRanker"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::NeuralError",
+      "source_path": "amari-rewrite/src/neural/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural",
+        "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::RankedCandidate",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "RankedCandidate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::RankerConfig",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::config",
+        "ident": "RankerConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::RankerWeights",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "RankerWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::SearchContext",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::prelude::Path",
       "source_path": "amari-rewrite/src/rewritable.rs",
       "source_ordinal": 0,
@@ -19812,6 +21655,133 @@
         "kind": "local",
         "module": "amari_rewrite::network",
         "ident": "RewriteGraphSummary"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::CandidateInput",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "CandidateInput"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureEncoder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureSchemaV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::FeatureVector",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureVector"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::Lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "Lane"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::RankedCandidate",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "RankedCandidate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::SearchContext",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "SearchContext"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -21460,6 +23430,205 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::CandidateInput",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "CandidateInput"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureEncoder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureSchemaV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::FeatureVector",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureVector"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::Lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "Lane"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::MlpRanker",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "MlpRanker"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::NeuralError",
+      "source_path": "amari-rewrite/src/neural/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural",
+        "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::RankedCandidate",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "RankedCandidate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::RankerConfig",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::config",
+        "ident": "RankerConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::RankerWeights",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "RankerWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::SearchContext",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::prelude::Path",
       "source_path": "amari-rewrite/src/rewritable.rs",
       "source_ordinal": 0,
@@ -22447,6 +24616,60 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureEncoder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureSchemaV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::neural::SearchContext",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
     },
     {
       "trait_path": "Default",
@@ -23819,6 +26042,96 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureSchemaV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::Lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "Lane"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::NeuralError",
+      "source_path": "amari-rewrite/src/neural/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural",
+        "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::RankerConfig",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::config",
+        "ident": "RankerConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::SearchContext",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::prelude::Path",
       "source_path": "amari-rewrite/src/rewritable.rs",
       "source_ordinal": 0,
@@ -24694,6 +27007,24 @@
         "kind": "local",
         "module": "amari_rewrite::error",
         "ident": "RewriteError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_rewrite::neural::NeuralError",
+      "source_path": "amari-rewrite/src/neural/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural",
+        "ident": "NeuralError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -27135,6 +29466,168 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureSchemaV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::FeatureVector",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "FeatureVector"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::Lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "Lane"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::MlpRanker",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "MlpRanker"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::NeuralError",
+      "source_path": "amari-rewrite/src/neural/mod.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural",
+        "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::RankedCandidate",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "RankedCandidate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::RankerConfig",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::config",
+        "ident": "RankerConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::RankerWeights",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "RankerWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::SearchContext",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::encode",
+        "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::prelude::Path",
       "source_path": "amari-rewrite/src/rewritable.rs",
       "source_ordinal": 0,
@@ -28414,6 +30907,25 @@
       "is_derived": false
     },
     {
+      "trait_path": "amari_rewrite::neural::DifferentiableRule",
+      "impl_type_path": "amari_rewrite::neural::MlpRanker",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural",
+        "ident": "DifferentiableRule"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::model",
+        "ident": "MlpRanker"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
       "trait_path": "amari_rewrite::rewritable::Rewritable",
       "impl_type_path": "amari_rewrite::prelude::Term",
       "source_path": "amari-rewrite/src/trs/term.rs",
@@ -28646,6 +31158,44 @@
         "kind": "local",
         "module": "amari_rewrite::language::certificate",
         "ident": "PreimageCertificate"
+      },
+      "generics": "< 'de >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "serde::Deserialize",
+      "impl_type_path": "amari_rewrite::relation::RelationLimits",
+      "source_path": "amari-rewrite/src/relation/limits.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "serde::Deserialize"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::relation::limits",
+        "ident": "RelationLimits"
+      },
+      "generics": "< 'de >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "serde::Deserialize",
+      "impl_type_path": "amari_rewrite::relation::RelationResources",
+      "source_path": "amari-rewrite/src/relation/limits.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "serde::Deserialize"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::relation::limits",
+        "ident": "RelationResources"
       },
       "generics": "< 'de >",
       "unsafe_trait": false,
@@ -31165,9 +33715,33 @@
       "surface_kind": "module"
     },
     {
+      "path": "amari_rewrite::neural::CANDIDATE_FEATURE_WIDTH",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::CandidateInput",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::CandidateInput::new",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::neural::DifferentiableRule",
       "source_path": "amari-rewrite/src/neural/mod.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 3,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -31211,6 +33785,502 @@
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::MAX_IDENTIFIER_BYTES",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::encode",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::limits",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureEncoder::new",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::FRAME",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::LANES",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::PINNED_DIGEST",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::VERSION",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::WIDTH",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::digest",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::lane_index",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::version",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureSchemaV1::width",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::is_empty",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::lanes",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::len",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::FeatureVector::new",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::Lane",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::Lane::new",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::MAX_RANKED_CANDIDATES",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::config",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::new",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::rank",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::score_candidate",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::score_features",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::MlpRanker::weights",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralError",
+      "source_path": "amari-rewrite/src/neural/mod.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate::canonical_digest",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate::features",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankedCandidate::score",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::FEATURE_WIDTH",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::FRAME",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_HIDDEN_LAYERS",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_HIDDEN_WIDTH",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_SPEC_JSON_BYTES",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::MAX_TENSOR_ELEMENTS",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::SAFE_ACTIVATION_MAGNITUDE",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::activation",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::digest",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 15,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::expected_tensors",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 12,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::from_spec",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::from_spec_json",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::hidden_widths",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::max_weight_magnitude",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 14,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::spec",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerConfig::tensor_elements",
+      "source_path": "amari-rewrite/src/neural/config.rs",
+      "source_ordinal": 13,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::FRAME",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::MAX_ABSOLUTE_WEIGHT",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::digest",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::element_count",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerWeights::from_tensors",
+      "source_path": "amari-rewrite/src/neural/model.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::SearchContext",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::SearchContext::new",
+      "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_rewrite::prelude",
@@ -32159,7 +35229,7 @@
     {
       "path": "amari_rewrite::relation::RelationLimits::max_constraints",
       "source_path": "amari-rewrite/src/relation/limits.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -32167,7 +35237,7 @@
     {
       "path": "amari_rewrite::relation::RelationLimits::max_operations",
       "source_path": "amari-rewrite/src/relation/limits.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -32175,7 +35245,7 @@
     {
       "path": "amari_rewrite::relation::RelationLimits::max_term_depth",
       "source_path": "amari-rewrite/src/relation/limits.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -32183,7 +35253,7 @@
     {
       "path": "amari_rewrite::relation::RelationLimits::max_term_nodes",
       "source_path": "amari-rewrite/src/relation/limits.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
