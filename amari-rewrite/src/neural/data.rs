@@ -27,6 +27,17 @@
 //! never fabricates a negative set. Duplicate candidates collapse by
 //! canonical digest.
 //!
+//! The order of those two steps is load-bearing. Two distinct rules can
+//! derive the *same* state (for example `f(X) -> X` and `f(a) -> a` from
+//! `a`), so provenance — not the state digest — is the only thing that
+//! identifies the transition the search actually took. The chosen transition
+//! is therefore located in the **full** re-derived candidate set, before any
+//! duplicate collapses; deduplication then applies to the negatives, with the
+//! chosen state admitted once. The same full set is what the search saw, so
+//! the feature context's candidate-count lanes (the branch factor) are
+//! reconstructed from it *before* deduplication: the example records the
+//! branching the engine faced, not the size of the surviving negative list.
+//!
 //! ## Determinism
 //!
 //! The dataset is a pure function of `(trace set, config, FeatureSchemaV1
@@ -37,20 +48,28 @@
 //!
 //! ## Bounded admission
 //!
-//! Admission runs before verification: the trace count, the per-trace step
-//! count, and every recorded term's node count and depth are checked
-//! against [`RelationLimits`] with a bounded iterative walk *before*
-//! [`ReplayCertificate::verify`] replays (which clones terms). No unbounded
-//! allocation or recursion can be reached from an untrusted trace.
+//! Admission runs before verification and before any digest, over the
+//! **whole** certificate: the trace count, the per-trace step count, both
+//! certified query terms, both derivation halves (forward steps, backward
+//! steps, both meeting terms, and the unifier), every residual constraint
+//! side, and every substitution range. Every embedded term's node count and
+//! depth are checked against [`RelationLimits`], and every identifier —
+//! symbol and variable name alike — against
+//! [`FeatureEncoder::MAX_IDENTIFIER_BYTES`], all with a bounded iterative
+//! walk, *before* [`ReplayCertificate::verify`] replays (which hashes and
+//! clones terms). No unbounded allocation or recursion can be reached from
+//! an untrusted trace, and nothing is hashed or cloned before it is admitted.
 
 use crate::inverse::{
-    GuidanceMode, ReplayCertificate, ReplayDerivation, ReplayQuery, SymbolicPredecessor,
+    query_hash, ForwardStep, GuidanceMode, ReplayCertificate, ReplayDerivation, ReplayQuery,
+    SymbolicPredecessor,
 };
 use crate::neural::encode::{CandidateInput, FeatureEncoder, FeatureVector, SearchContext};
 use crate::neural::model::{canonical_digest, content_key};
 use crate::neural::{FeatureSchemaV1, NeuralError};
-use crate::relation::{RelationLimits, RuleId, Sha256Digest};
-use crate::trs::{Term, TermSystem};
+use crate::relation::{ConstraintSet, RelationLimits, RuleId, Sha256Digest, TermConstraint};
+use crate::trs::{Substitution, Term, TermSystem};
+use crate::Path;
 
 /// Schema version of the dataset manifest, bumped only by a deliberate
 /// incompatible change to the manifest layout.
@@ -373,8 +392,12 @@ impl DatasetBuilder {
         let mut trace_digests: Vec<Sha256Digest> = Vec::with_capacity(traces.len());
 
         for certificate in traces {
-            // Admission precedes verification: cheap bounded checks run
-            // before `verify` clones any term.
+            // Admission precedes verification: every embedded term,
+            // constraint side, substitution range, and identifier of the
+            // whole certificate is bounded before `verify` hashes or clones
+            // anything.
+            admit_certificate(certificate, &self.config.relation_limits())?;
+
             let (root, steps) = trace_steps(certificate);
             if steps.is_empty() {
                 return Err(NeuralError::EmptyTrace);
@@ -385,10 +408,6 @@ impl DatasetBuilder {
                     value: steps.len(),
                     limit: self.config.max_steps_per_trace(),
                 });
-            }
-            check_term_bounded(root, &self.config.relation_limits())?;
-            for step in steps {
-                check_term_bounded(&step.term, &self.config.relation_limits())?;
             }
 
             let authority = match &certificate.guidance {
@@ -477,21 +496,18 @@ impl DatasetBuilder {
             )
             .map_err(map_derive_error)?;
 
-            // Collapse duplicate candidates by canonical predecessor digest.
-            let mut deduped: Vec<SymbolicPredecessor> = Vec::with_capacity(candidates.len());
-            let mut seen: Vec<Sha256Digest> = Vec::with_capacity(candidates.len());
-            for candidate in candidates {
-                let digest =
-                    Sha256Digest::canonical_term("amari.relation.term/v1", &candidate.term);
-                if seen.contains(&digest) {
-                    continue;
-                }
-                seen.push(digest);
-                deduped.push(candidate);
-            }
+            // The branch factor is the branching the search actually faced,
+            // so it is read from the full candidate set — duplicates
+            // included — before any collapse (PR #357 round 1 P1c).
+            let branch_factor = candidates.len() as u64;
 
-            let branch_factor = deduped.len() as u64;
-            let Some(chosen_index) = deduped
+            // Locate the chosen transition by provenance in the full set,
+            // BEFORE digest deduplication: two distinct rules can derive the
+            // same state, and the state digest cannot tell those transitions
+            // apart. Collapsing first would discard the very representative
+            // the trace recorded and turn a valid certificate into a
+            // spurious TraceDrift (PR #357 round 1 P1b).
+            let Some(chosen_index) = candidates
                 .iter()
                 .position(|candidate| candidate.provenance == chosen.provenance)
             else {
@@ -500,7 +516,7 @@ impl DatasetBuilder {
 
             // Admission before identity: the chosen candidate is encoded
             // (bounded, iterative) before its digest clones the term.
-            let chosen_candidate = &deduped[chosen_index];
+            let chosen_candidate = &candidates[chosen_index];
             let chosen_input = CandidateInput::new(
                 &chosen_candidate.term,
                 &chosen_candidate.constraints,
@@ -510,7 +526,14 @@ impl DatasetBuilder {
             let chosen_features = self.encoder.encode(&chosen_input)?;
             let chosen_digest = canonical_digest(&chosen_input);
 
-            for (candidate_index, negative) in deduped.iter().enumerate() {
+            // Deduplicate the negatives by canonical state digest. The
+            // chosen state is admitted once: a candidate that reproduces it
+            // from a different rule is the same state, not a distinct
+            // valid-but-unchosen candidate.
+            let mut seen: Vec<Sha256Digest> = Vec::with_capacity(candidates.len());
+            seen.push(chosen_digest);
+
+            for (candidate_index, negative) in candidates.iter().enumerate() {
                 if candidate_index == chosen_index {
                     continue;
                 }
@@ -520,8 +543,12 @@ impl DatasetBuilder {
                     &negative.provenance,
                     self.context(system, state_term, negative, index, branch_factor),
                 );
-                let negative_features = self.encoder.encode(&negative_input)?;
                 let negative_digest = canonical_digest(&negative_input);
+                if seen.contains(&negative_digest) {
+                    continue;
+                }
+                seen.push(negative_digest);
+                let negative_features = self.encoder.encode(&negative_input)?;
                 let key = example_key(
                     authority,
                     (index + 1) as u64,
@@ -546,7 +573,8 @@ impl DatasetBuilder {
 
     /// Reconstruct the per-candidate search context the guidance layer
     /// computed, except `cycle` (unobservable from a trace alone, so
-    /// uniformly `false`).
+    /// uniformly `false`). `branch_factor` is the size of the full
+    /// re-derived candidate set, counted before negative deduplication.
     fn context(
         &self,
         system: &TermSystem,
@@ -594,9 +622,130 @@ fn trace_steps(certificate: &ReplayCertificate) -> (&Term, &[SymbolicPredecessor
     }
 }
 
-/// Bounded, iterative admission walk over a term: node count and depth are
-/// checked against the limits before anything clones or recurses over the
-/// term.
+/// Admit every field of one certificate against the configured limits.
+///
+/// Admission is the *whole* certificate, not just the reconstructed root:
+/// both query terms, both derivation halves, every embedded term (constraint
+/// sides and substitution ranges included), every position, and every
+/// identifier. It is a bounded, iterative walk that never clones or hashes
+/// the content it is judging, so nothing unadmitted reaches
+/// [`ReplayCertificate::verify`] (PR #357 round 1 P1a).
+fn admit_certificate(
+    certificate: &ReplayCertificate,
+    limits: &RelationLimits,
+) -> Result<(), NeuralError> {
+    check_query_bounded(&certificate.query, limits)?;
+    match &certificate.derivation {
+        ReplayDerivation::Backward(derivation) => check_steps_bounded(&derivation.steps, limits),
+        ReplayDerivation::Bidirectional(derivation) => {
+            for step in &derivation.forward_steps {
+                check_path_bounded(&step.position, limits)?;
+            }
+            check_steps_bounded(&derivation.backward_steps, limits)?;
+            check_term_bounded(&derivation.meeting_forward, limits)?;
+            check_term_bounded(&derivation.meeting_backward, limits)?;
+            check_substitution_bounded(&derivation.unifier, limits)
+        }
+    }
+}
+
+/// Admit both terms of the certified statement.
+fn check_query_bounded(query: &ReplayQuery, limits: &RelationLimits) -> Result<(), NeuralError> {
+    let (source, goal) = match query {
+        ReplayQuery::Backward { target, goal } => (target, goal),
+        ReplayQuery::Bidirectional { source, goal } => (source, goal),
+    };
+    check_term_bounded(source, limits)?;
+    check_term_bounded(goal, limits)
+}
+
+/// Admit one derivation half: every step's term, position, residual
+/// constraints, and unifying substitution.
+fn check_steps_bounded(
+    steps: &[SymbolicPredecessor],
+    limits: &RelationLimits,
+) -> Result<(), NeuralError> {
+    for step in steps {
+        check_term_bounded(&step.term, limits)?;
+        check_path_bounded(&step.provenance.position, limits)?;
+        check_constraints_bounded(&step.constraints, limits)?;
+        check_substitution_bounded(&step.substitution, limits)?;
+    }
+    Ok(())
+}
+
+/// Admit a residual constraint set: the count against the constraint
+/// ceiling, and both sides of every constraint as terms.
+fn check_constraints_bounded(
+    constraints: &ConstraintSet,
+    limits: &RelationLimits,
+) -> Result<(), NeuralError> {
+    if constraints.len() > limits.max_constraints() {
+        return Err(NeuralError::LimitExceeded {
+            resource: "constraints",
+            value: constraints.len(),
+            limit: limits.max_constraints(),
+        });
+    }
+    for constraint in constraints.constraints() {
+        let (left, right) = match constraint {
+            TermConstraint::Equal(left, right) | TermConstraint::NotEqual(left, right) => {
+                (left, right)
+            }
+        };
+        check_term_bounded(left, limits)?;
+        check_term_bounded(right, limits)?;
+    }
+    Ok(())
+}
+
+/// Admit a substitution: every bound name and every range term. `BTreeMap`
+/// iteration order makes the walk deterministic.
+fn check_substitution_bounded(
+    substitution: &Substitution,
+    limits: &RelationLimits,
+) -> Result<(), NeuralError> {
+    for (variable, term) in substitution.iter() {
+        check_identifier(variable.as_str())?;
+        check_term_bounded(term, limits)?;
+    }
+    Ok(())
+}
+
+/// Admit a rewrite position. A path through a term of depth `d` has at most
+/// `d - 1` indices, so a path longer than `max_term_depth` names a subterm no
+/// admitted state could contain.
+fn check_path_bounded(position: &Path, limits: &RelationLimits) -> Result<(), NeuralError> {
+    let depth = position.as_slice().len();
+    if depth > limits.max_term_depth() {
+        return Err(NeuralError::LimitExceeded {
+            resource: "term depth",
+            value: depth,
+            limit: limits.max_term_depth(),
+        });
+    }
+    Ok(())
+}
+
+/// Reject an identifier longer than [`FeatureEncoder::MAX_IDENTIFIER_BYTES`].
+///
+/// Task 40's doctrine applies here unchanged: a name is checked on the
+/// borrowed `str`, before admission hashes it (the certificate's query and
+/// trace digests encode every name) or copies it.
+fn check_identifier(name: &str) -> Result<(), NeuralError> {
+    if name.len() > FeatureEncoder::MAX_IDENTIFIER_BYTES {
+        return Err(NeuralError::LimitExceeded {
+            resource: "identifier bytes",
+            value: name.len(),
+            limit: FeatureEncoder::MAX_IDENTIFIER_BYTES,
+        });
+    }
+    Ok(())
+}
+
+/// Bounded, iterative admission walk over a term: node count, depth, and
+/// every identifier are checked against the limits before anything clones or
+/// recurses over the term.
 fn check_term_bounded(term: &Term, limits: &RelationLimits) -> Result<(), NeuralError> {
     let max_nodes = limits.max_term_nodes();
     let max_depth = limits.max_term_depth();
@@ -618,16 +767,20 @@ fn check_term_bounded(term: &Term, limits: &RelationLimits) -> Result<(), Neural
                 limit: max_depth,
             });
         }
-        if let Term::Sym(_, args) = node {
-            if args.len() > max_nodes.saturating_sub(nodes) {
-                return Err(NeuralError::LimitExceeded {
-                    resource: "term nodes",
-                    value: nodes.saturating_add(args.len()),
-                    limit: max_nodes,
-                });
-            }
-            for arg in args.iter().rev() {
-                stack.push((arg, depth + 1));
+        match node {
+            Term::Var(variable) => check_identifier(variable.as_str())?,
+            Term::Sym(symbol, args) => {
+                check_identifier(symbol.as_str())?;
+                if args.len() > max_nodes.saturating_sub(nodes) {
+                    return Err(NeuralError::LimitExceeded {
+                        resource: "term nodes",
+                        value: nodes.saturating_add(args.len()),
+                        limit: max_nodes,
+                    });
+                }
+                for arg in args.iter().rev() {
+                    stack.push((arg, depth + 1));
+                }
             }
         }
     }
@@ -684,14 +837,24 @@ fn example_key(
     key
 }
 
-/// Canonical per-trace digest: the authority tag, the derivation kind, and
-/// every backward step's provenance, in trace order.
+/// Canonical per-trace digest: the authority tag, the *whole* certified
+/// statement (the query, both terms), and the derivation — every forward
+/// step, every backward step, both meeting terms, and the unifier.
+///
+/// The query belongs in the identity: two traces over the same backward
+/// chain but different certified goals are different claims about the
+/// system, and a digest that ignored the goal would let either stand in for
+/// the other (PR #357 round 1 P2). The forward half is covered for the same
+/// reason a bidirectional derivation is not just its backward steps. Every
+/// field here has already been admitted, so hashing cannot be reached with
+/// unbounded content.
 fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
     let mut payload = Vec::new();
     match certificate.guidance {
         GuidanceMode::CompleteWithinLimits => payload.push(0x00),
         GuidanceMode::HeuristicPruning { .. } => payload.push(0x01),
     }
+    payload.extend_from_slice(query_hash(&certificate.query).as_bytes());
     match &certificate.derivation {
         ReplayDerivation::Backward(derivation) => {
             payload.push(0x00);
@@ -701,9 +864,15 @@ fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
         }
         ReplayDerivation::Bidirectional(derivation) => {
             payload.push(0x01);
+            for step in &derivation.forward_steps {
+                encode_forward_step(&mut payload, step);
+            }
             for step in &derivation.backward_steps {
                 encode_step(&mut payload, step);
             }
+            payload.extend_from_slice(term_digest(&derivation.meeting_forward).as_bytes());
+            payload.extend_from_slice(term_digest(&derivation.meeting_backward).as_bytes());
+            encode_substitution(&mut payload, &derivation.unifier);
         }
     }
     Sha256Digest::framed("amari.neural.trace/v1", &payload)
@@ -714,11 +883,37 @@ fn encode_step(payload: &mut Vec<u8>, step: &SymbolicPredecessor) {
     payload.extend_from_slice(step.provenance.target_hash.as_bytes());
     payload.extend_from_slice(step.provenance.predecessor_hash.as_bytes());
     payload.extend_from_slice(&step.provenance.scope.to_le_bytes());
-    let position = step.provenance.position.as_slice();
+    encode_path(payload, &step.provenance.position);
+}
+
+fn encode_forward_step(payload: &mut Vec<u8>, step: &ForwardStep) {
+    payload.extend_from_slice(step.rule_id.digest().as_bytes());
+    payload.extend_from_slice(step.source_hash.as_bytes());
+    payload.extend_from_slice(step.result_hash.as_bytes());
+    encode_path(payload, &step.position);
+}
+
+fn encode_path(payload: &mut Vec<u8>, path: &Path) {
+    let position = path.as_slice();
     payload.extend_from_slice(&(position.len() as u32).to_le_bytes());
     for index in position {
         payload.extend_from_slice(&(*index as u64).to_le_bytes());
     }
+}
+
+fn encode_substitution(payload: &mut Vec<u8>, substitution: &Substitution) {
+    for (variable, term) in substitution.iter() {
+        let name = variable.as_str().as_bytes();
+        payload.extend_from_slice(&(name.len() as u32).to_le_bytes());
+        payload.extend_from_slice(name);
+        payload.extend_from_slice(term_digest(term).as_bytes());
+    }
+}
+
+/// Canonical identity of one term (the same domain the engine's term
+/// digests use).
+fn term_digest(term: &Term) -> Sha256Digest {
+    Sha256Digest::canonical_term("amari.relation.term/v1", term)
 }
 
 /// Deterministic seeded sub-sampling: a partial Fisher–Yates shuffle over

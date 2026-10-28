@@ -513,3 +513,141 @@ fn a_deeply_nested_trace_is_rejected_before_materializing() {
         "expected the bounded depth rejection, got {result:?}"
     );
 }
+
+// ── PR #357 round 1 regression contracts ────────────────────────────
+
+/// A one-step certificate whose recorded step is the engine's `chosen`-th
+/// predecessor of `target` — the fixture that lets a test pin one specific
+/// candidate (including a duplicate state produced by a distinct rule).
+fn one_step(system: &TermSystem, target: Term, goal: Term, chosen: usize) -> ReplayCertificate {
+    let candidates = amari_rewrite::inverse::symbolic_predecessors(
+        system,
+        &target,
+        &RelationLimits::default(),
+        1,
+    )
+    .expect("predecessors");
+    let outcome = BackwardExplorer::new(system, InverseSearchConfig::default())
+        .search(&target, &goal, SearchMode::BreadthFirst)
+        .expect("search succeeds");
+    let BackwardSearchOutcome::Witness(mut derivation) = outcome else {
+        panic!("expected a witness");
+    };
+    derivation.steps = vec![candidates[chosen].clone()];
+    ReplayCertificate::issue(
+        system,
+        ReplayQuery::Backward { target, goal },
+        ReplayDerivation::Backward(derivation),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        ResourceObservation {
+            states: 3,
+            transitions: 3,
+            retained_bytes: 256,
+            operations: 4,
+        },
+    )
+}
+
+#[test]
+fn an_oversized_query_identifier_is_rejected_before_verification() {
+    // P1a: a 1 MiB variable name in the certified goal must be rejected by
+    // admission — before verification hashes or clones the query. Admission
+    // covers every certificate field, not only the derivation terms.
+    let (system, certificate) = backward_witness();
+    let mut query = certificate.query.clone();
+    if let ReplayQuery::Backward { ref mut goal, .. } = query {
+        *goal = Term::var("V".repeat(1_048_576));
+    }
+    let oversized = ReplayCertificate::issue(
+        &system,
+        query,
+        certificate.derivation.clone(),
+        certificate.config,
+        certificate.guidance.clone(),
+        certificate.resources,
+    );
+
+    let result = builder().build(&system, &[oversized]);
+    assert!(
+        matches!(result, Err(NeuralError::LimitExceeded { .. })),
+        "oversized identifier must be rejected before verification hashes/clones query, got {result:?}"
+    );
+}
+
+#[test]
+fn the_chosen_transition_survives_digest_deduplication() {
+    // P1b: `f(X) -> X` and `f(a) -> a` both derive the state `f(a)` from
+    // `a`. Choosing the second predecessor records the second rule's
+    // provenance; locating the chosen transition must happen BEFORE the
+    // duplicate states collapse, or the survivor's provenance disagrees and
+    // a valid certificate is misreported as TraceDrift.
+    let system = sys(vec![
+        Rule::new(parse("f(X)"), parse("X")).expect("checked"),
+        Rule::new(parse("f(a)"), parse("a")).expect("checked"),
+        Rule::new(parse("g(X)"), parse("X")).expect("checked"),
+    ]);
+    let certificate = one_step(&system, parse("a"), parse("f(a)"), 1);
+    certificate.verify(&system).expect("fixture must verify");
+
+    let result = builder().build(&system, &[certificate]);
+    assert!(
+        result.is_ok(),
+        "valid rederived chosen should survive dedup, got {result:?}"
+    );
+}
+
+#[test]
+fn branch_factor_reflects_the_pre_dedup_candidate_set() {
+    // P1c: the search saw four candidates (two of them duplicates by
+    // state); the branch-factor lane must encode the branching the engine
+    // actually faced, not the post-dedup negative count.
+    let system = sys(vec![
+        Rule::new(parse("f(X)"), parse("X")).expect("checked"),
+        Rule::new(parse("f(a)"), parse("a")).expect("checked"),
+        Rule::new(parse("g(X)"), parse("X")).expect("checked"),
+        Rule::new(parse("g(a)"), parse("a")).expect("checked"),
+    ]);
+    let certificate = one_step(&system, parse("a"), parse("f(a)"), 0);
+    let dataset = builder().build(&system, &[certificate]).expect("build");
+    let lane = amari_rewrite::neural::FeatureSchemaV1::lane_index("search.branch_factor")
+        .expect("the branch-factor lane is part of the frozen schema");
+    let observed = dataset.examples()[0]
+        .chosen()
+        .lane(lane)
+        .expect("lane in range");
+
+    assert_eq!(
+        observed,
+        3.0_f32 / 17.0,
+        "live ranker sees four candidates before dedup"
+    );
+}
+
+#[test]
+fn trace_digest_covers_the_certified_query() {
+    // P2: two certificates over the same derivation but different certified
+    // goals are different statements, so their trace identities must differ.
+    let (system, certificate) = backward_witness();
+    let mut query = certificate.query.clone();
+    if let ReplayQuery::Backward { ref mut goal, .. } = query {
+        *goal = parse("Anything");
+    }
+    let other = ReplayCertificate::issue(
+        &system,
+        query,
+        certificate.derivation.clone(),
+        certificate.config,
+        certificate.guidance.clone(),
+        certificate.resources,
+    );
+    other.verify(&system).expect("fixture must verify");
+
+    let baseline = builder().build(&system, &[certificate]).expect("build");
+    let changed = builder().build(&system, &[other]).expect("build");
+    assert_ne!(
+        baseline.manifest().trace_digests(),
+        changed.manifest().trace_digests(),
+        "different certified query should have different trace identity"
+    );
+}
