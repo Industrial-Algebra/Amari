@@ -7822,21 +7822,21 @@
       ]
     },
     {
-      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_bound",
+      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_at_least",
       "kind": "method",
-      "signature": "pub fn verify_probability_bound (& self , success_probability : f64 , bound : f64) -> String",
+      "signature": "pub fn verify_probability_at_least (& self , success_probability : f64 , bound : f64) -> String",
       "source_path": "amari-wasm/src/flynn.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::flynn",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn verify_probability_bound (& self , success_probability : f64 , bound : f64) -> String",
+          "signature": "pub fn verify_probability_at_least (& self , success_probability : f64 , bound : f64) -> String",
           "source_path": "amari-wasm/src/flynn.rs",
           "source_module": "amari_wasm::flynn",
           "is_reexport": false,
           "declaration_module": "amari_wasm::flynn",
-          "declaration_ident": "WasmMonteCarloVerifier::verify_probability_bound"
+          "declaration_ident": "WasmMonteCarloVerifier::verify_probability_at_least"
         }
       ]
     },
@@ -28213,7 +28213,7 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_bound",
+      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_at_least",
       "source_path": "amari-wasm/src/flynn.rs",
       "source_ordinal": 2,
       "gate": "always",
