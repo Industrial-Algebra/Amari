@@ -1,6 +1,8 @@
 # Amari Flynn Audit & Remediation Contract — 0.25.0 inclusion
 
-**Status:** DRAFT for operator decisions
+**Status:** DECIDED (operator, 2026-10-27/28) — D1(c), D2(c) as R1-amended
+(certified-enclosure default), D3(b), D4(a), D5(a), D6(a). Implementation
+may proceed on this document.
 **Date:** 2026-10-27
 **Scope:** `amari-flynn` 1,509 src LOC + `amari-flynn-macros` 526 LOC (leaf crates; deps: macros only)
 **Operator decision (2026-10-27):** pulled forward from programme Phase B into 0.25.0.
