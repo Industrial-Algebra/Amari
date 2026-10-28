@@ -15,11 +15,9 @@
 use amari_rewrite::inverse::{
     BackwardExplorer, BackwardProvenance, BackwardSearchOutcome, BidirectionalDerivation,
     ForwardStep, GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayDerivation,
-    ReplayQuery, ResourceObservation, SearchMode, SymbolicPredecessor,
+    ReplayQuery, ResourceObservation, SearchMode, SymbolicPredecessor, SymbolicState,
 };
-use amari_rewrite::neural::{
-    Dataset, DatasetBuilder, DatasetConfig, LabelAuthority, NeuralError,
-};
+use amari_rewrite::neural::{DatasetBuilder, DatasetConfig, LabelAuthority, NeuralError};
 use amari_rewrite::relation::{
     ConstraintSet, RelationLimits, RelationResources, RuleId, Sha256Digest,
 };
@@ -62,6 +60,12 @@ fn sys(rules: Vec<Rule>) -> TermSystem {
 
 fn canonical(text: &str) -> Sha256Digest {
     Sha256Digest::canonical_term("amari.relation.term/v1", &parse(text))
+}
+
+/// The joint alpha-canonical state digest — the identity Task 40's
+/// candidate ranking keys on.
+fn state_digest(text: &str) -> Sha256Digest {
+    SymbolicState::new(parse(text), ConstraintSet::new()).canonical_digest()
 }
 
 fn builder() -> DatasetBuilder {
@@ -176,15 +180,16 @@ fn backward_trace_yields_proof_positive_pairs_with_unchosen_negatives() {
         assert_eq!(example.authority(), LabelAuthority::ProofPositive);
         assert_ne!(example.chosen_digest(), example.unchosen_digest());
     }
-    // The root expansion `a -> {add(a,zero), h(a)}` chose `add(a, zero)`,
-    // leaving `h(a)` unchosen.
+    // The root expansion `a -> {add(a,zero), h(a)}` chose `h(a)` (the
+    // lower-growth candidate is expanded first), leaving `add(a, zero)`
+    // unchosen.
     let root = dataset
         .examples()
         .iter()
         .find(|example| example.target_distance() == 1)
         .expect("a root-round example");
-    assert_eq!(root.chosen_digest(), canonical("add(a, zero)"));
-    assert_eq!(root.unchosen_digest(), canonical("h(a)"));
+    assert_eq!(root.chosen_digest(), state_digest("h(a)"));
+    assert_eq!(root.unchosen_digest(), state_digest("add(a, zero)"));
 }
 
 #[test]
@@ -201,12 +206,12 @@ fn bidirectional_trace_yields_examples_from_its_backward_half() {
         .map(|example| example.unchosen_digest())
         .collect();
     unchosen.sort();
-    let mut expected = vec![canonical("f(f(a))"), canonical("f(g(a))")];
+    let mut expected = vec![state_digest("f(f(a))"), state_digest("f(g(a))")];
     expected.sort();
     assert_eq!(unchosen, expected);
     for example in dataset.examples() {
         assert_eq!(example.authority(), LabelAuthority::ProofPositive);
-        assert_eq!(example.chosen_digest(), canonical("g(f(a))"));
+        assert_eq!(example.chosen_digest(), state_digest("g(f(a))"));
     }
 }
 
@@ -219,8 +224,14 @@ fn target_distance_records_the_round_depth() {
         .iter()
         .map(|example| example.target_distance())
         .collect();
-    assert!(distances.contains(&1), "root round is depth 1, got {distances:?}");
-    assert!(distances.contains(&2), "second round is depth 2, got {distances:?}");
+    assert!(
+        distances.contains(&1),
+        "root round is depth 1, got {distances:?}"
+    );
+    assert!(
+        distances.contains(&2),
+        "second round is depth 2, got {distances:?}"
+    );
 }
 
 #[test]
@@ -261,7 +272,7 @@ fn duplicate_candidates_collapse_by_digest() {
     assert_eq!(dataset.len(), 1, "the duplicate `g(a)` must collapse");
     assert_eq!(
         dataset.examples()[0].unchosen_digest(),
-        canonical("f(a)"),
+        state_digest("f(a)"),
         "the lone surviving unchosen candidate is `f(a)`"
     );
 }
@@ -270,10 +281,16 @@ fn duplicate_candidates_collapse_by_digest() {
 fn explicit_seed_sampling_is_deterministic_and_recorded() {
     let (system, certificate) = backward_witness();
     // A one-example ceiling over a two-example trace forces sub-sampling.
-    let config = DatasetConfig::new(1, 16, 64, false, Some(7), RelationLimits::default())
-        .expect("config");
-    let first = DatasetBuilder::new(config).build(&system, &[certificate]).expect("build");
-    let second = DatasetBuilder::new(config).build(&system, &[certificate]).expect("build");
+    let config =
+        DatasetConfig::new(1, 16, 64, false, Some(7), RelationLimits::default()).expect("config");
+    let first = DatasetBuilder::new(config)
+        .expect("builder")
+        .build(&system, std::slice::from_ref(&certificate))
+        .expect("build");
+    let second = DatasetBuilder::new(config)
+        .expect("builder")
+        .build(&system, std::slice::from_ref(&certificate))
+        .expect("build");
     assert_eq!(first, second, "sub-sampling must be deterministic");
     assert_eq!(first.len(), 1);
     assert_eq!(first.manifest().seed(), Some(7), "the seed is recorded");
@@ -290,7 +307,10 @@ fn empty_trace_is_rejected() {
     let BackwardSearchOutcome::Witness(derivation) = outcome else {
         panic!("expected zero-step witness");
     };
-    assert!(derivation.steps.is_empty(), "fixture must be a zero-step witness");
+    assert!(
+        derivation.steps.is_empty(),
+        "fixture must be a zero-step witness"
+    );
     let certificate = ReplayCertificate::issue(
         &system,
         ReplayQuery::Backward { target, goal },
@@ -329,9 +349,10 @@ fn approximate_trace_is_labeled_heuristic_guidance_when_allowed() {
     approximate.guidance = GuidanceMode::HeuristicPruning { beam_width: 1 };
     approximate.guidance_hash = amari_rewrite::inverse::guidance_hash(&approximate.guidance);
 
-    let config = DatasetConfig::new(100, 16, 64, true, None, RelationLimits::default())
-        .expect("config");
+    let config =
+        DatasetConfig::new(100, 16, 64, true, None, RelationLimits::default()).expect("config");
     let dataset = DatasetBuilder::new(config)
+        .expect("builder")
         .build(&system, &[approximate])
         .expect("build");
     assert!(!dataset.is_empty());
@@ -346,22 +367,32 @@ fn approximate_trace_is_labeled_heuristic_guidance_when_allowed() {
 #[test]
 fn trace_ceiling_is_a_typed_limit() {
     let (system, certificate) = backward_witness();
-    let config = DatasetConfig::new(100, 1, 64, false, None, RelationLimits::default())
-        .expect("config");
+    let config =
+        DatasetConfig::new(100, 1, 64, false, None, RelationLimits::default()).expect("config");
     assert!(matches!(
-        DatasetBuilder::new(config).build(&system, &[certificate.clone(), certificate]),
-        Err(NeuralError::LimitExceeded { resource: "traces", .. })
+        DatasetBuilder::new(config)
+            .expect("builder")
+            .build(&system, &[certificate.clone(), certificate]),
+        Err(NeuralError::LimitExceeded {
+            resource: "traces",
+            ..
+        })
     ));
 }
 
 #[test]
 fn example_ceiling_without_seed_is_a_typed_limit() {
     let (system, certificate) = backward_witness();
-    let config = DatasetConfig::new(1, 16, 64, false, None, RelationLimits::default())
-        .expect("config");
+    let config =
+        DatasetConfig::new(1, 16, 64, false, None, RelationLimits::default()).expect("config");
     assert!(matches!(
-        DatasetBuilder::new(config).build(&system, &[certificate]),
-        Err(NeuralError::LimitExceeded { resource: "examples", .. })
+        DatasetBuilder::new(config)
+            .expect("builder")
+            .build(&system, &[certificate]),
+        Err(NeuralError::LimitExceeded {
+            resource: "examples",
+            ..
+        })
     ));
 }
 
@@ -420,7 +451,10 @@ fn trace_drift_is_rejected() {
         }
         ReplayDerivation::Bidirectional(_) => unreachable!(),
     }
-    assert!(drifted.verify(&system).is_ok(), "verify replays provenance only");
+    assert!(
+        drifted.verify(&system).is_ok(),
+        "verify replays provenance only"
+    );
     assert!(matches!(
         builder().build(&system, &[drifted]),
         Err(NeuralError::TraceDrift)
@@ -448,23 +482,26 @@ fn manifest_records_schema_version_digest_counts_and_trace_digests() {
 fn a_deeply_nested_trace_is_rejected_before_materializing() {
     // A deeply nested predecessor term deserialized into a certificate
     // must be rejected by the bounded admission walk before `Term::clone`
-    // recurses. Deep-drop discipline: the fixture is leaked, never unwound.
+    // recurses. The fixture is moved into the trace (no clone, which would
+    // recurse) and the whole trace is leaked (never unwound).
+    let (system, certificate) = backward_witness();
+    let json = serde_json::to_string(&certificate).expect("serialize");
+    let mut restored: ReplayCertificate = serde_json::from_str(&json).expect("deserialize");
+
     let mut deep = Term::constant("a");
     for _ in 0..10_000 {
         deep = Term::sym("f", [deep]);
     }
-    let (system, certificate) = backward_witness();
-    let json = serde_json::to_string(&certificate).expect("serialize");
-    let mut restored: ReplayCertificate = serde_json::from_str(&json).expect("deserialize");
     match &mut restored.derivation {
         ReplayDerivation::Backward(derivation) => {
-            derivation.steps[0].term = deep.clone();
+            let _ = std::mem::replace(&mut derivation.steps[0].term, deep);
         }
         ReplayDerivation::Bidirectional(_) => unreachable!(),
     }
-    std::mem::forget(deep);
 
-    let result = builder().build(&system, &[restored]);
+    let result = builder().build(&system, std::slice::from_ref(&restored));
+    std::mem::forget(restored);
+
     assert!(
         matches!(
             result,
