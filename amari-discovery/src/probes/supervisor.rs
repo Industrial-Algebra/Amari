@@ -424,9 +424,54 @@ impl TestWorkerLauncher {
 }
 
 #[cfg(test)]
+fn resolve_python3_in(path_value: &std::ffi::OsStr) -> DiscoveryResult<std::path::PathBuf> {
+    // `spawn_restricted` clears the child environment before exec (removing
+    // PATH) and sets a neutral working directory — so a relative program name
+    // OR a candidate built from a relative PATH entry would resolve against
+    // the wrong basis after the spawn. Resolve against the CURRENT
+    // environment: absolutize each PATH entry against the parent's cwd, then
+    // hand spawn an absolute path.
+    let parent_cwd = std::env::current_dir()?;
+    for dir in std::env::split_paths(path_value) {
+        let dir = if dir.is_absolute() {
+            dir
+        } else {
+            parent_cwd.join(dir)
+        };
+        let candidate = dir.join("python3");
+        let is_executable = candidate
+            .metadata()
+            .map(|meta| {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    meta.permissions().mode() & 0o111 != 0
+                }
+                #[cfg(not(unix))]
+                {
+                    meta.is_file()
+                }
+            })
+            .unwrap_or(false);
+        if is_executable {
+            return Ok(candidate);
+        }
+    }
+    Err(crate::DiscoveryError::Io(std::io::Error::new(
+        std::io::ErrorKind::NotFound,
+        "python3 not found on PATH (required by probe supervisor tests)",
+    )))
+}
+
+#[cfg(test)]
+fn resolve_python3() -> DiscoveryResult<std::path::PathBuf> {
+    resolve_python3_in(&std::env::var_os("PATH").unwrap_or_default())
+}
+
+#[cfg(test)]
 impl WorkerLauncher for TestWorkerLauncher {
     fn command(&self) -> DiscoveryResult<Command> {
-        let mut command = Command::new("python3");
+        let mut command = Command::new(resolve_python3()?);
         command
             .arg(&self.fixture)
             .arg(&self.mode)
@@ -532,9 +577,18 @@ mod tests {
         assert_eq!(context["argv"], serde_json::json!(["context"]));
         assert_eq!(context["cwd"], neutral.to_string_lossy().as_ref());
         let environment = context["environment"].as_object().unwrap();
+        // The invariant under test is that NO project context survives the
+        // restricted launch. The two permitted entries are interpreter-side
+        // only: CPython's process-local locale normalization (LC_CTYPE) and
+        // PYTHONNOUSERSITE, which CPython/wrapper distributions (pyenv,
+        // mise, nix) set to isolate the user site-packages dir. Neither can
+        // carry project state.
+        const INTERPRETER_SIDE_VARS: [&str; 2] = ["LC_CTYPE", "PYTHONNOUSERSITE"];
         assert!(
-            environment.keys().all(|key| key == "LC_CTYPE"),
-            "only CPython's process-local locale normalization is permitted: {environment:?}"
+            environment
+                .keys()
+                .all(|key| INTERPRETER_SIDE_VARS.contains(&key.as_str())),
+            "only interpreter-side variables are permitted: {environment:?}"
         );
         let encoded = serde_json::to_string(&context).unwrap();
         assert!(!encoded.contains(PROJECT_POISON));
@@ -633,6 +687,87 @@ mod tests {
             matches!(error, crate::DiscoveryError::LimitExceeded(message) if message.contains("stderr"))
         );
         assert!(started.elapsed() < Duration::from_secs(5));
+    }
+
+    #[test]
+    fn resolve_python3_never_returns_a_relative_path() {
+        // A relative PATH entry must not yield a relative candidate: the
+        // spawned worker changes cwd before exec, so a relative interpreter
+        // path would resolve against the wrong directory (R1 P2 regression).
+        // Unique per execution: a fixed path made two concurrent runs
+        // collide with ETXTBSY (one process executing the shim while the
+        // other truncates it). Atomic counter + pid.
+        static EXECUTION: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let unique = EXECUTION.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let tmp = std::env::temp_dir().join(format!(
+            "amari-supervisor-relpath-{}-{unique}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&tmp).unwrap();
+        let shim = tmp.join("python3");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::write(&shim, "#!/bin/sh\nexit 0\n").unwrap();
+            std::fs::set_permissions(&shim, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        #[cfg(not(unix))]
+        std::fs::write(&shim, b"").unwrap();
+
+        // PATH containing ONLY a relative entry that reaches `tmp` from the
+        // CURRENT cwd (this is exactly the R1 reproduction shape).
+        let cwd = std::env::current_dir().unwrap();
+        let relative = pathdiff_of(&cwd, &tmp);
+        let path_value = std::ffi::OsString::from(relative);
+        let resolved = resolve_python3_in(&path_value).expect("relative PATH entry must resolve");
+        assert!(
+            resolved.is_absolute(),
+            "resolved interpreter must be absolute, got {resolved:?}"
+        );
+        assert!(
+            resolved.ends_with("python3"),
+            "resolved to the shim: {resolved:?}"
+        );
+
+        // End-to-end under spawn_restricted's exact conditions: cleared
+        // environment AND a different cwd. A relative candidate fails here;
+        // the absolutized one must execute.
+        #[cfg(unix)]
+        {
+            let neutral = neutral_working_directory();
+            let status = std::process::Command::new(&resolved)
+                .arg("-c")
+                .arg("exit 0")
+                .env_clear()
+                .current_dir(&neutral)
+                .status()
+                .expect("spawn absolutized interpreter");
+            assert!(status.success());
+        }
+        std::fs::remove_dir_all(&tmp).ok();
+    }
+
+    /// Relative path from `from` to `to` ("./a/b"), used to build relative
+    /// PATH entries in tests without global env mutation.
+    fn pathdiff_of(from: &Path, to: &Path) -> PathBuf {
+        // Both are absolute here (cwd and temp_dir); walk common ancestors.
+        let from_iter: Vec<_> = from.components().collect();
+        let to_vec: Vec<_> = to.components().collect();
+        let mut common = 0;
+        while common < from_iter.len()
+            && common < to_vec.len()
+            && from_iter[common] == to_vec[common]
+        {
+            common += 1;
+        }
+        let mut result = PathBuf::from(".");
+        for _ in common..from_iter.len() {
+            result.push("..");
+        }
+        for component in &to_vec[common..] {
+            result.push(component.as_os_str());
+        }
+        result
     }
 
     #[test]
