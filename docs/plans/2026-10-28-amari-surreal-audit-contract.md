@@ -266,9 +266,17 @@ constructors.
   extreme rationals; comparisons total).
 - `short_birthday` (S7): document saturation in doc comment (values with
   `|value| > u32::MAX` saturate; unreachable under normal use).
-- **Consumer migration (in-repo):** `amari-wasm/src/surreal.rs`
-  `WasmDyadic::new` switches to `try_new` mapping the error to `JsValue`
-  (no JS-triggerable panic).
+- **Consumer migration (in-repo, R5-complete inventory):**
+  `amari-wasm/src/surreal.rs` `WasmDyadic::new` switches to `try_new`
+  mapping the error to `JsValue`; **`WasmDyadic::mul` and
+  `WasmShortSurreal::mul` become `Result<_, JsValue>`** — squaring two
+  valid exponent-MAX dyadics produces exponent 2·MAX, which under the
+  bounded Rust operator panics and would surface as a JS trap (R5: the
+  earlier inventory covered only the epsilon bridge). `add`/`sub`/`neg`
+  on Dyadic/Short do not grow exponents (max/identity) and stay
+  infallible; `checked_div`/`checked_reciprocal` bridges already return
+  `Result`. Boundary regressions: square an exponent-MAX `WasmDyadic`
+  and `WasmShortSurreal` → JS error, not trap.
 
 ### U3 — unit + oracle suite (S8, D3a)
 
