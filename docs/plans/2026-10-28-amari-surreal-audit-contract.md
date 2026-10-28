@@ -113,6 +113,14 @@ Corrupts value, ordering (`ε^-1 > 1` silently lost), and division
 downstream. The guard must require a single constant term:
 `valuation() == Some(0) && degree() == Some(0)`.
 
+**R2: the same degree-only defect sits in `is_one()`** — a Laurent
+polynomial `1 + ε^-1` has `degree() == Some(0)` and term(0) == 1, so
+`is_one()` returns true. `is_one` gates `EpsilonRational`'s `Display`
+(`if self.denom.is_one()`), so a denominator `1 + ε^-1` renders as the
+bare numerator — Laurent denominators display incorrectly. Fix is the
+same single-term guard: `valuation() == Some(0) && degree() == Some(0)
+&& terms[0] == 1`.
+
 ### S4 (P3) — `from_coefficients` index truncation
 
 `k as i32` for coefficient vectors longer than `i32::MAX` silently wraps
@@ -191,6 +199,21 @@ constructors.
   errors/panics at the crossing multiplication instead of wrapping. The
   u32 `saturating_add` in `Dyadic::Mul` is deleted (replaced by the
   checked path).
+- **R2: checked functions never panic.** `checked_reciprocal`,
+  `checked_div`, and the internal `from_ratio` route through the FALLIBLE
+  construction path and propagate `ExponentOverflow` as `Err` — the
+  panicking surface is exactly `Dyadic::new` (documented convenience
+  wrapper) and the infallible `std::ops` impls; no `Result`-returning
+  function may reach a panic on any input.
+- **R2: `RationalSurreal` overflow posture, stated explicitly.** The
+  `BigRational`-backed layer is arbitrary-precision: addition,
+  subtraction, multiplication, `checked_div`, `checked_reciprocal`, and
+  all comparisons are exact and total — numeric wrap is impossible by
+  representation. The only checked error is `DivisionByZero`.
+  Intermediates (lcm/cross-multiplication) allocate proportionally to
+  operand size; no exponent-style bound applies because the type has no
+  exponent representation. Unit tests assert the posture (exact ops on
+  extreme rationals; comparisons total).
 - `short_birthday` (S7): document saturation in doc comment (values with
   `|value| > u32::MAX` saturate; unreachable under normal use).
 - **Consumer migration (in-repo):** `amari-wasm/src/surreal.rs`
@@ -208,17 +231,22 @@ constructors.
 
 ### U4 — epsilon fixes + P3 sweep (S9, S2, S5, S6; D1–D4)
 
-- **S9 (P1): `normalize()` scalar-fold guard** requires a single constant
-  term (`valuation() == Some(0) && degree() == Some(0)`), not
-  `degree() == Some(0)`. Regressions: `ε^-1 + 1` stays `ε^-1 + 1`;
-  `ε^-2 + ε^-1 + 1` stays; `(ε^-1) + 1 > 1` orders Greater; scalar fold
+- **S9 (P1): single-constant-term guards in BOTH `normalize()`'s
+  scalar fold and `is_one()`** — `valuation() == Some(0) && degree() ==
+  Some(0)` (+ term == 1 for `is_one`). Regressions: `ε^-1 + 1` stays
+  `ε^-1 + 1`; `ε^-2 + ε^-1 + 1` stays; `(ε^-1) + 1 > 1` orders Greater;
+  a denominator `1 + ε^-1` renders `(...) / (1 + ε^-1)` (not bare
+  numerator); `is_one()` false for `1 + ε^-1`, true for `1`; scalar fold
   still fires for genuine constants (`6/3 → 2`, existing tests).
 - Exponent bound in `monomial`/`from_coefficients` (U2).
-- **Wasm epsilon constructors (R1 P2):** `WasmEpsilonPolynomial` /
-  `WasmEpsilonRational` JS-facing constructors in `amari-wasm/src/surreal.rs`
-  switch to the fallible constructors, mapping `ExponentOverflow` (and
-  `DivisionByZero`) to `JsValue` errors — arbitrary JS exponents must not
-  reach panicking paths.
+- **Wasm epsilon constructors (R1 P2, name corrected R2):** the actual
+  JS exponent entry point is `WasmExperimentalEpsilonRational::monomial(coeff,
+  exponent: i32)` in `amari-wasm/src/surreal.rs` — currently infallible
+  with an arbitrary JS-supplied i32. It becomes fallible, mapping
+  `ExponentOverflow` to a `JsValue` error; `checked_reciprocal` /
+  `checked_div` / `compare` re-verified to keep mapping all
+  `SurrealError`s to `JsValue`. No JS-reachable panic paths remain in the
+  epsilon bridge.
 - Display: negative coefficients render `− c·ε^e` (leading) /
   ` − c·ε^e` (subsequent), not ` + -c·ε`.
 - `RationalSurreal` type docs gain the "exact rational scalar, not itself a
