@@ -117,15 +117,17 @@ confidence semantics. Also `base10_parse::<f64>().unwrap_or(0.0)` can write a
 false 0.0 into generated docs.
 
 ### F11 (P3) — SMT float literals are inexact / can be syntactically invalid
-`format!("{}", value)` emits shortest-roundtrip decimals with two genuine
-defects (R1-corrected; the draft's "scientific notation" claim was false —
-Display prints `1e20_f64` as the full integer `100000000000000000000`):
-(1) exactness — 0.1 prints "0.1", an exact SMT decimal that is a DIFFERENT
-number than the Rust f64 0.1000000000000000055…; (2) literal typing —
-integers ≥ 1 print WITHOUT a decimal point, which SMT-LIB2 parses as Sort
-Int, type-mismatching Real declarations (e.g. `(= bound 100000000000000000000)`
-against a Real variable). Sound emission needs exact rational form
-(`/ numerator denominator`) — never Display roundtripping.
+`format!("{}", value)` emits shortest-roundtrip decimals with ONE genuine
+defect (R2-corrected; both the draft's "scientific notation" claim and the
+R1 "Int-vs-Real literal typing" claim were false — Display prints
+`1e20_f64` as the full integer `100000000000000000000`, and Z3 accepts
+integer numerals as Real values under QF_NRA, verified by solver): the
+emitted decimal is an EXACT SMT value that is a DIFFERENT number than the
+Rust f64 — 0.1 prints "0.1", which denotes exactly 1/10, not the f64
+0.1000000000000000055511151231257827…. The script then reasons about a
+different real than the one computed. Sound emission needs exact rational
+form (`/ numerator denominator` of the f64's true binary value) — never
+Display roundtripping.
 
 ### F12 (P3) — why3 backend is a deprecated string stub
 Returns a placeholder string; `#[deprecated]` since 0.19.0. Disposition
@@ -141,7 +143,9 @@ decision needed (keep-deprecated vs remove; breaking changes acceptable).
 - **U2 — Solver-validated SMT emission (F2, F11).** Emit only QF_NRA-valid
   scripts (D2 strategy); tests invoke z3 (4.15.3, from the C3 install) on
   generated scripts and assert the parsed verdict — both directions
-  (obligation that holds → unsat; obligation that fails → sat). R1-added —
+  (obligation that holds → unsat; obligation that fails → sat), with
+  enclosure-mode results interpreted per the R2-corrected sufficient-proof
+  semantics (sat → Inconclusive, refine-or-unproven). R1-added —
   per-builder GUARANTEE CLASSES, stated in the module docs and enforced by
   per-builder controls: (a) `hoeffding_obligation` is fully
   solver-checkable (all variables constrained to literals; negated goal;
@@ -150,13 +154,16 @@ decision needed (keep-deprecated vs remove; breaking changes acceptable).
   declares `sample_mean` but never constrains it — as emitted it is NOT
   checkable; either constrain it (caller-supplied observed mean enclosure)
   or document it as a documentation artifact; (c) `pre/post obligation`s
-  leave `p_condition` unconstrained except [0,1] and the negated goal, so
-  unsat ⇔ bound > 1 — VACUOUS as checkable proofs; they are structured
-  documentation unless the caller adds system assertions; the builders take
-  an optional `system_assertions` parameter (richer substrate) so a
-  meaningful control pair exists: same obligation with and without
-  caller-supplied probability enclosures → sat vs unsat. Tests pin each
-  builder's class with its control pair.
+  leave `p_condition` constrained only to [0,1] plus the negated goal
+  `(not (>= p_condition bound))`; since p_condition ≥ 0 always, this is
+  unsat iff bound ≤ 0 and sat otherwise (R2-corrected; solver-verified:
+  bound 0 → unsat, bound 2 → sat) — VACUOUS as checkable proofs for any
+  meaningful bound; they are structured documentation unless the caller
+  adds system assertions; the builders take an optional
+  `system_assertions` parameter (richer substrate) so a meaningful control
+  pair exists: same obligation with and without caller-supplied probability
+  enclosures → sat vs unsat. Tests pin each builder's class with boundary
+  controls (pre/post at bound 0 → unsat, bound 1 → sat).
 - **U3 — Statistical corrections (F3, F4, F5, F6).** Invert the crate's own
   `hoeffding_bound` for the epsilon; z-score handling per D3; chernoff
   validity domain enforced + documented; constructor asserts with
@@ -192,8 +199,13 @@ karpal-verify's own re-export semantics (consumer impact handled in §5).
   while the true value is ≈ 5.153e−869 > 0; rationalizing that zero could
   prove a false bound. Sound options: (a) **Certified enclosures** — compute
   directed rational lower/upper bounds for transcendental terms (interval
-  arithmetic with outward rounding), assert the conservative branch; the
-  emitted script then proves a WEAKER but TRUE bound. (b) Symbolic structure
+  arithmetic with outward rounding), assert the conservative branch. Proof
+  semantics (R2-corrected): `unsat` is a SUFFICIENT proof that the original
+  real inequality holds (sound); `sat` is NOT a refutation — it means the
+  enclosure straddles the threshold (e.g. true bound 0.2707 holds against
+  δ=0.28, yet a valid enclosure [0.27, 0.30] fails the conservative
+  upper-bound check) and the result is Inconclusive: refine the enclosure
+  or report unproven. Never `unsat ⇔ holds`. (b) Symbolic structure
   with rational interval enclosures bracketing exp in-script. (c) Both:
   default (a) certified-enclosure emission, optional symbolic mode (b),
   plus an explicitly labeled "rounded computation" convenience mode that
