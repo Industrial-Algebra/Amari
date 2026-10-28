@@ -246,7 +246,9 @@ fn extract_binding_shape(input: &ItemFn) -> (proc_macro2::TokenStream, proc_macr
 /// ```
 ///
 /// - `condition`: Boolean expression that should hold for outputs
-/// - `probability_bound`: Maximum probability the condition is violated (0.0 to 1.0)
+/// - `probability_bound`: MINIMUM probability the condition HOLDS
+///   (hold frame; 0.0 to 1.0). For the violation frame use
+///   [`prob_violation_at_most`].
 ///
 /// # Example
 ///

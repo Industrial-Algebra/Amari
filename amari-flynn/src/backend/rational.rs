@@ -219,6 +219,12 @@ impl Rational {
         Rational { num, den }
     }
 
+    /// Less-or-equal (cross-multiplied).
+    pub(crate) fn le_rat(&self, other: &Rational) -> bool {
+        let c = self.num.mul(&other.den).cmp(&other.num.mul(&self.den));
+        c != core::cmp::Ordering::Greater
+    }
+
     /// Compare against another rational (cross-multiplied).
     pub(crate) fn lt(&self, other: &Rational) -> bool {
         self.num.mul(&other.den).cmp(&other.num.mul(&self.den)) == core::cmp::Ordering::Less
@@ -295,6 +301,14 @@ impl Enclosure {
     /// alternating Taylor partial sums (for `0 <= y`, `e^{-y}` lies
     /// between consecutive partial sums and `|remainder| <= next term`),
     /// then squares the interval `s` times.
+    /// Rigorous small-tail cutoff (R2 P2): for x >= 2^12, e^{-x} <
+    /// 3^{-4096} < 10^{-1955} < 10^{-500}, and 10^{-500} is below the
+    /// smallest POSITIVE f64 (5e-324 subnormal), so [0, 10^{-500}]
+    /// decides every representable delta comparison WITHOUT constructing
+    /// the ~10^9-digit denominators the true value would require.
+    const SMALL_TAIL_CUTOFF: u64 = 4096;
+    const SMALL_TAIL_BOUND_ZEROES: usize = 500;
+
     pub(crate) fn exp_neg(x: &Rational) -> Self {
         if x.num.cmp(&BigUint::from_u64(0)) == core::cmp::Ordering::Equal {
             // e^0 = 1 exactly.
@@ -303,6 +317,22 @@ impl Enclosure {
                 lo: one.clone(),
                 hi: one,
             };
+        }
+        // x >= 4096 (cross-multiplied against 1): the small-tail bound.
+        let cutoff = Rational::from_u64(Self::SMALL_TAIL_CUTOFF);
+        if cutoff.le_rat(x) {
+            let zero = Rational::from_u64(0);
+            let hi = Rational {
+                num: BigUint::from_u64(1),
+                den: {
+                    let mut d = BigUint::from_u64(1);
+                    for _ in 0..Self::SMALL_TAIL_BOUND_ZEROES {
+                        d = d.mul_small(10);
+                    }
+                    d
+                },
+            };
+            return Enclosure { lo: zero, hi };
         }
         // Halve x until below 1/4 (compare via x < 1/4, i.e. 4*num < den).
         let quarter = Rational {
@@ -604,6 +634,28 @@ mod tests {
             },
         };
         assert!(e.hi.lt(&tiny), "enclosure must be tiny");
+    }
+
+    #[test]
+    fn extreme_tail_cutoff_is_fast_decisive_and_rigorous() {
+        // R2 P2 anchor: x = 2*(2^32+1)*0.25 ~ 2.1e9 previously needed a
+        // billion-digit denominator (30s+ timeout); the cutoff returns
+        // [0, 10^-500] instantly — below every positive f64 delta.
+        let start = std::time::Instant::now();
+        let eps_r = Rational::from_f64_exact(0.5);
+        let x = eps_r.mul(&eps_r).mul_small(2).mul_u64(4_294_967_297);
+        let e = Enclosure::exp_neg(&x).times_two();
+        assert!(start.elapsed().as_millis() < 500, "must be fast");
+        // Rigor: hi = 2 * 10^-500 < 5e-324 (smallest positive f64).
+        let hi_f64: f64 = e.hi.num.to_decimal().parse::<f64>().unwrap()
+            / e.hi.den.to_decimal().parse::<f64>().unwrap();
+        assert_eq!(hi_f64, 0.0); // underflows — strictly below every positive f64
+        let zero = Rational::from_u64(0);
+        assert!(
+            zero.le_rat(&e.lo)
+                || zero.lt(&e.lo)
+                || e.lo.num.cmp(&BigUint::from_u64(0)) == core::cmp::Ordering::Equal
+        );
     }
 
     #[test]

@@ -94,8 +94,15 @@ pub fn confidence_z_score(confidence: f64) -> f64 {
             return z;
         }
     }
-    let central = 0.5 * (1.0 + confidence);
-    acklam_inverse_normal(central)
+    // STABLE lower-tail inversion (R2 P1): computing (1 + c) / 2 first
+    // loses the tail to rounding — for the largest f64 confidence below
+    // 1.0, 1 + c rounds UP to exactly 2.0 (ties-to-even), the central
+    // mass becomes 1.0, and ln(1 - 1) = -inf yields a NaN z-score (and a
+    // zero sample size). Alpha = (1 - c) / 2 is exact by construction;
+    // z = -Phi^{-1}(alpha) is the same two-sided quantile with no
+    // cancellation anywhere.
+    let alpha = 0.5 * (1.0 - confidence);
+    -acklam_inverse_normal(alpha)
 }
 
 /// Acklam's rational approximation to the inverse normal CDF.
@@ -215,6 +222,23 @@ mod tests {
         let a = confidence_z_score(0.98);
         let b = confidence_z_score(0.979_9);
         assert!((a - b).abs() < 6e-3); // ~38x z/c slope near 0.98
+    }
+
+    #[test]
+    fn extreme_confidence_is_finite_and_useful() {
+        // R2 P1 anchor: the largest f64 confidence below 1.0 previously
+        // produced NaN (1 + c rounded to 2.0) and a zero sample size.
+        let c = 0.999_999_999_999_999_9_f64; // largest f64 < 1.0
+        assert!(c < 1.0);
+        let z = confidence_z_score(c);
+        assert!(z.is_finite(), "z must be finite, got {z}");
+        assert!(z > 8.0, "extreme-confidence z should be large, got {z}");
+        let n = sample_size_for_precision(0.01, c);
+        assert!(n > 100_000, "sample size must be huge, got {n}");
+        // Interval at extreme confidence still widens monotonically.
+        let (_, hi_max) = confidence_interval(50, 100, c);
+        let (_, hi_99) = confidence_interval(50, 100, 0.99);
+        assert!(hi_max > hi_99);
     }
 
     #[test]
