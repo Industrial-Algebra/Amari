@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 //! Integration tests for the SMT-LIB2 backend.
 
 use amari_flynn::backend::smt::{
@@ -107,7 +109,9 @@ fn test_monte_carlo_bridge_concentration() {
     // With n=10000 and epsilon=0.1, Hoeffding bound = 2*exp(-200) ≈ 0
     // This should easily verify
     let ob = hoeffding_obligation("mc_bridge", 10000, 0.1, 0.05);
-    let result = ob.verify_with_monte_carlo(10000);
+    // Concentration obligations are self-checks (no system predicate).
+    let result =
+        ob.verify_with_monte_carlo(|| unreachable!("not sampled for concentration"), 10000);
     assert_eq!(result, VerificationResult::Verified);
 }
 
@@ -115,7 +119,8 @@ fn test_monte_carlo_bridge_concentration() {
 fn test_monte_carlo_bridge_expected_value() {
     // With n=10000 and epsilon=0.1, tail_prob is tiny -> Verified
     let ob = expected_value_obligation("mc_ev", 5.0, 0.1, 10000);
-    let result = ob.verify_with_monte_carlo(10000);
+    let result =
+        ob.verify_with_monte_carlo(|| unreachable!("not sampled for expected value"), 10000);
     assert_eq!(result, VerificationResult::Verified);
 }
 

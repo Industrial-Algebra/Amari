@@ -5,5 +5,7 @@
 //! - [`why3`]: Legacy Why3 placeholder (deprecated in favor of `smt`)
 
 pub mod monte_carlo;
+#[cfg(feature = "std")]
+mod rational;
+#[cfg(feature = "std")]
 pub mod smt;
-pub mod why3;

@@ -12,6 +12,7 @@ categories = ["mathematics", "science", "development-tools"]
 
 [dependencies]
 amari-flynn-macros = { workspace = true }
+libm = "0.2"
 rand = { workspace = true }
 rand_distr = { workspace = true }
 
@@ -22,7 +23,11 @@ proptest = "1.0"
 
 [features]
 default = ["std"]
-std = []
+std = ["alloc"]
+alloc = []
+# Solver round-trip tests: require a z3 binary on PATH or at
+# ~/.local/share/creusot/bin/z3 (audit contract U2, matrix point 4).
+z3-tests = []
 # geometric = ["amari"]  # TODO: Re-enable when geometric integration is implemented
 
 # Benchmark will be added later
