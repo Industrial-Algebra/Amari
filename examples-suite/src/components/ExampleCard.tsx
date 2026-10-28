@@ -1,6 +1,7 @@
 import { Card, Title, Text, Button, Badge, Group, Stack, Box } from "@mantine/core";
 import { CodeHighlight } from "@mantine/code-highlight";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { safeExecute, globalPerformanceMonitor } from "../utils/safeExecution";
 import { ErrorBoundary } from "./ErrorBoundary";
 
@@ -11,6 +12,7 @@ interface ExampleCardProps {
   result?: string;
   onRun?: () => Promise<string>;
   category?: string;
+  badge?: ReactNode;
   timeout?: number;
   retries?: number;
 }
@@ -22,6 +24,7 @@ export function ExampleCard({
   result: initialResult,
   onRun,
   category,
+  badge,
   timeout = 10000,
   retries = 1
 }: ExampleCardProps) {
@@ -80,6 +83,7 @@ export function ExampleCard({
                     {category}
                   </Badge>
                 )}
+                {badge}
                 {performanceInfo && (
                   <Badge variant="light" color="green" size="sm">
                     {performanceInfo}
