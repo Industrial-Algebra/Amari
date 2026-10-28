@@ -69,12 +69,15 @@ the crate's own `statistical::bounds::hoeffding_bound` gives the correct form
 to invert. Also `MonteCarloVerifier::new(0)` → 0/0 = NaN → silently
 `Inconclusive` (undocumented degenerate).
 
-### F4 (P2) — confidence_z_score silently substitutes 1.960 for any
-non-tabulated confidence
-Three z-values (90/95/99%) with ±0.01 windows; everything else — 0.80, 0.999,
-even 0.5 — silently gets the 95% z. A caller requesting a 99.9% interval
-receives a 95% interval labeled 99.9%. In a verification library this is a
-false-guarantee defect (here in the UNSOUND direction).
+### F4 (P2) — confidence_z_score: window misclassification AND silent 1.960
+substitution
+Three z-values (90/95/99%) with ±0.01 windows; everything else — 0.80,
+even 0.5 — silently gets the 95% z. Two distinct defects (R1-corrected):
+(1) the ±0.01 windows MISCLASSIFY nearby levels — 0.999 requests the 99.9%
+interval and receive the 99% one (|0.999−0.99| < 0.01); (2) the fallback
+substitutes 1.960 for everything else. A caller receives a weaker interval
+than requested, labeled with the requested level: a false-guarantee defect
+in the UNSOUND direction.
 
 ### F5 (P2) — chernoff_bound: wrong formula domain, silently
 Implements P ≤ exp(−μδ²/3), the additive-Chernoff form valid for δ ∈ (0,1],
@@ -112,10 +115,15 @@ confidence semantics. Also `base10_parse::<f64>().unwrap_or(0.0)` can write a
 false 0.0 into generated docs.
 
 ### F11 (P3) — SMT float literals are inexact / can be syntactically invalid
-`format!("{}", value)` gives shortest-roundtrip Rust decimals: 0.1 → "0.1"
-(an EXACT decimal in SMT — a different number than the Rust f64), and large
-magnitudes produce scientific notation (`1e20`) which is invalid SMT-LIB2
-real syntax. Sound encodings need exact emission (fraction or full expansion).
+`format!("{}", value)` emits shortest-roundtrip decimals with two genuine
+defects (R1-corrected; the draft's "scientific notation" claim was false —
+Display prints `1e20_f64` as the full integer `100000000000000000000`):
+(1) exactness — 0.1 prints "0.1", an exact SMT decimal that is a DIFFERENT
+number than the Rust f64 0.1000000000000000055…; (2) literal typing —
+integers ≥ 1 print WITHOUT a decimal point, which SMT-LIB2 parses as Sort
+Int, type-mismatching Real declarations (e.g. `(= bound 100000000000000000000)`
+against a Real variable). Sound emission needs exact rational form
+(`/ numerator denominator`) — never Display roundtripping.
 
 ### F12 (P3) — why3 backend is a deprecated string stub
 Returns a placeholder string; `#[deprecated]` since 0.19.0. Disposition
@@ -131,7 +139,22 @@ decision needed (keep-deprecated vs remove; breaking changes acceptable).
 - **U2 — Solver-validated SMT emission (F2, F11).** Emit only QF_NRA-valid
   scripts (D2 strategy); tests invoke z3 (4.15.3, from the C3 install) on
   generated scripts and assert the parsed verdict — both directions
-  (obligation that holds → unsat; obligation that fails → sat).
+  (obligation that holds → unsat; obligation that fails → sat). R1-added —
+  per-builder GUARANTEE CLASSES, stated in the module docs and enforced by
+  per-builder controls: (a) `hoeffding_obligation` is fully
+  solver-checkable (all variables constrained to literals; negated goal;
+  unsat ⇔ the bound holds) — control pair: parameters where the bound holds
+  (unsat) and parameters where it fails (sat); (b) `expected_value_obligation`
+  declares `sample_mean` but never constrains it — as emitted it is NOT
+  checkable; either constrain it (caller-supplied observed mean enclosure)
+  or document it as a documentation artifact; (c) `pre/post obligation`s
+  leave `p_condition` unconstrained except [0,1] and the negated goal, so
+  unsat ⇔ bound > 1 — VACUOUS as checkable proofs; they are structured
+  documentation unless the caller adds system assertions; the builders take
+  an optional `system_assertions` parameter (richer substrate) so a
+  meaningful control pair exists: same obligation with and without
+  caller-supplied probability enclosures → sat vs unsat. Tests pin each
+  builder's class with its control pair.
 - **U3 — Statistical corrections (F3, F4, F5, F6).** Invert the crate's own
   `hoeffding_bound` for the epsilon; z-score handling per D3; chernoff
   validity domain enforced + documented; constructor asserts with
@@ -139,7 +162,16 @@ decision needed (keep-deprecated vs remove; breaking changes acceptable).
 - **U4 — no_std truth (F7).** Repair to compile (alloc-gated contracts) or
   remove the claim — D4.
 - **U5 — Reproducibility & sample semantics (F8, F9, F10).** rng-injection
-  API alignment (D5) + documented Prob semantics on samples.
+  API alignment (D5) + documented Prob semantics on samples. F10 acceptance
+  criteria (R1-added): (i) the generated expected-value helper must COMPILE
+  for non-ident expressions — bind the call result to a fresh identifier
+  (`let result = #fn_call;`) and evaluate `#expression` in scope (no
+  `let <expr> = value` pattern-binding); (ii) the mean check gains explicit
+  semantics: either a documented smoke check (fixed threshold, labeled as
+  such) or a confidence-interval verdict — implementer documents which and
+  the generated doc string matches; (iii) `unwrap_or(0.0)` in generated doc
+  strings is removed — parse failures surface at macro expansion, not as a
+  silent 0.0 in documentation.
 - **U6 — Disposition of why3 (F12) per D6.**
 
 Out of scope: the `geometric` feature (TODO already), new distributions,
@@ -153,11 +185,19 @@ karpal-verify's own re-export semantics (consumer impact handled in §5).
   probability δ, but verify P(¬cond) ≤ δ (what today's attribute docs
   describe). (c) Both: two explicit APIs, macros take a named form.
   Recommendation: (c) — richer substrate, no silent reinterpretation.
-- **D2 — SMT validity strategy.** (a) Host-side evaluation: compute
-  transcendental values in Rust f64, emit exact rational literals and pure
-  polynomial assertions (fully QF_NRA). (b) Interval enclosure: assert
-  rational lower/upper bounds bracketing exp and keep symbolic structure.
-  (c) Both: default (a), optional symbolic mode (b). Recommendation: (c).
+- **D2 — SMT validity strategy (R1-P1 amended).** Host-side f64 evaluation
+  is NOT sound for real-valued proofs: 2·exp(−2000) rounds to 0.0 in f64
+  while the true value is ≈ 5.153e−869 > 0; rationalizing that zero could
+  prove a false bound. Sound options: (a) **Certified enclosures** — compute
+  directed rational lower/upper bounds for transcendental terms (interval
+  arithmetic with outward rounding), assert the conservative branch; the
+  emitted script then proves a WEAKER but TRUE bound. (b) Symbolic structure
+  with rational interval enclosures bracketing exp in-script. (c) Both:
+  default (a) certified-enclosure emission, optional symbolic mode (b),
+  plus an explicitly labeled "rounded computation" convenience mode that
+  documents it is NOT a proof. Recommendation: (c) as amended — operator
+  approved (c); the default inside (c) changes from roundtrip-decimal to
+  certified enclosure (soundness amendment, flagged for operator).
 - **D3 — z-scores.** (a) Exact table for {0.90, 0.95, 0.98, 0.99, 0.995,
   0.999} + panic/assert outside the table (explicit contract). (b) Proper
   inverse-normal approximation with documented error bound (Acklam-class).
@@ -177,10 +217,16 @@ karpal-verify's own re-export semantics (consumer impact handled in §5).
 
 karpal-verify (feature `amari`): re-exports the three macros (semantics
 change under U1 propagates — its tests will surface any encoded inversion
-there too), and wraps all four obligation builders (U2 changes emitted
-scripts; its golden files, if any, update). Per doctrine, compatibility is
-not a constraint; changes disclosed with migration notes in the crate
-CHANGELOG entry.
+there too), wraps all four obligation builders (U2 changes emitted scripts),
+and — R1-corrected — `verify_rare_event` passes VIOLATION predicates
+directly to the verifier, i.e. the one call-site whose shape is correct
+under the CURRENT inverted API (violation-predicate + P(pred) ≤ δ is the
+right form for violation bounds). Under D1(c) this maps to
+`verify_violation_bound`; U1 must include BEHAVIORAL MIGRATION TESTS in the
+consumer surface: an always-false violation predicate must verify, an
+always-true violation predicate must fail, pinning the frame before and
+after the re-orientation. Per doctrine, compatibility is not a constraint;
+changes disclosed with migration notes in the crate CHANGELOG entry.
 
 ## 6. Verification matrix (implementation gate)
 
