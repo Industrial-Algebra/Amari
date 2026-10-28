@@ -199,12 +199,44 @@ constructors.
   errors/panics at the crossing multiplication instead of wrapping. The
   u32 `saturating_add` in `Dyadic::Mul` is deleted (replaced by the
   checked path).
+- **R3: two-tier exponent enforcement (bound = representation invariant,
+  not computation invariant).** Boundary probes show `EpsilonRational`
+  checked division and comparison cross-products naturally reach transient
+  exponents of 2·MAX_EXPONENT = 2^21 (e.g. reciprocal of a minimum
+  exponent −2^20 denominator, then multiplication; or the cross-product
+  N1·D2 in `Ord`). Design:
+  (i) **internal transient primitives** (polynomial mul used by
+  `Ord`/`PartialEq`/cross-products) perform plain checked-i32 exponent
+  arithmetic with NO bound enforcement — transients are never stored and
+  stay far inside i32 range (≤ 2^22 for double cross-products);
+  (ii) **public constructors and public ops** enforce MAX_EXPONENT on
+  their OUTPUT: `Mul`/`checked_mul`, `checked_div`, `checked_reciprocal`,
+  `Add` (Add cannot grow exponents, verified) — the checked variants
+  propagate `ExponentOverflow` as `Err`, the infallible ops panic with
+  the message;
+  (iii) **totality preserved**: `Ord`, `PartialEq`, `Display`, and `sign`
+  use only transient primitives — they never panic on any input
+  (comparisons of two bound-max Laurent polynomials ordering correctly is
+  a regression test);
+  (iv) **WASM propagation**: the epsilon bridge's `checked_div`,
+  `checked_reciprocal`, and `compare` map `ExponentOverflow` to `JsValue`
+  errors (compare keeps a total non-panicking path per (iii); the bridge
+  surfaces comparison as a string result).
 - **R2: checked functions never panic.** `checked_reciprocal`,
   `checked_div`, and the internal `from_ratio` route through the FALLIBLE
   construction path and propagate `ExponentOverflow` as `Err` — the
   panicking surface is exactly `Dyadic::new` (documented convenience
   wrapper) and the infallible `std::ops` impls; no `Result`-returning
   function may reach a panic on any input.
+- **R3: `to_short_if_dyadic` degrades, never panics.** A valid
+  `RationalSurreal` such as `1 / 2^(MAX_EXPONENT+1)` is dyadic but its
+  exponent exceeds the bounded dyadic layer; the conversion returns
+  `None` (documented: "not representable in the bounded dyadic layer")
+  instead of reaching the panicking `Dyadic::new`. Regression:
+  `from_ratio(1, 2^1_048_577)` → `to_short_if_dyadic() == None`;
+  `from_ratio(1, 2^20)` (exponent = MAX_EXPONENT) → `Some`. The WASM
+  caller of `to_short_if_dyadic` keeps its existing Option→JS mapping
+  (null), which now cannot panic.
 - **R2: `RationalSurreal` overflow posture, stated explicitly.** The
   `BigRational`-backed layer is arbitrary-precision: addition,
   subtraction, multiplication, `checked_div`, `checked_reciprocal`, and
@@ -270,6 +302,13 @@ constructors.
 - S9 regression suite: negative-exponent additions preserve terms; ordering
   with `ε^-1` vs constants is Greater; repeated-square exponent-overflow
   regression from the bound errors/panics honestly (no wrap in release).
+- Exponent-bound boundary probes (R3): comparison of two bound-max
+  Laurent polynomials (transient 2^21 cross-products) orders correctly
+  without panic; `checked_div`/`checked_reciprocal` whose result would
+  store exponent 2^21 return `Err(ExponentOverflow)`;
+  `to_short_if_dyadic` at exponent MAX_EXPONENT+1 returns `None`;
+  wasm epsilon `checked_div` boundary returns a JS error, `compare`
+  never panics.
 
 ## 6. Out of scope
 
