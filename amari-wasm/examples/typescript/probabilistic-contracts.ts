@@ -122,12 +122,12 @@ async function runProbabilisticContractsExample() {
   const est30 = verifier.estimateProbability(10000, 0.3);
   console.log(`   P(success) = 0.3 estimate: ${est30[0].toFixed(3)} [${est30[1].toFixed(3)}, ${est30[2].toFixed(3)}]`);
 
-  // Verify bounds
-  const bound1 = verifier.verifyProbabilityBound(0.3, 0.5);
-  console.log(`   P(0.3) <= 0.5: ${bound1}`);
+  // Verify bounds (hold frame: P(success) >= bound)
+  const bound1 = verifier.verifyProbabilityAtLeast(0.8, 0.5);
+  console.log(`   P(0.8) >= 0.5: ${bound1}`); // Verified
 
-  const bound2 = verifier.verifyProbabilityBound(0.8, 0.5);
-  console.log(`   P(0.8) <= 0.5: ${bound2}`);
+  const bound2 = verifier.verifyProbabilityAtLeast(0.3, 0.5);
+  console.log(`   P(0.3) >= 0.5: ${bound2}`); // Violated
 
   // ========================================================================
   // 6. Probabilistic Values
@@ -210,10 +210,13 @@ async function runProbabilisticContractsExample() {
   const legendaryEvent = new WasmRareEvent(0.02, "legendary_drop");
   console.log(`   Legendary drop classified as: ${legendaryEvent.classify(0.05)}`);
 
-  // Verify drop rate bounds with Monte Carlo
+  // Verify drop rate guarantees with Monte Carlo (hold frame)
   const dropVerifier = new WasmMonteCarloVerifier(50000);
-  const legendaryBound = dropVerifier.verifyProbabilityBound(0.02, 0.05);
-  console.log(`   P(legendary) <= 5%: ${legendaryBound}`);
+  const atLeastOnePct = dropVerifier.verifyProbabilityAtLeast(0.02, 0.01);
+  console.log(`   P(legendary) >= 1%: ${atLeastOnePct}`); // Verified
+
+  const atLeastTenPct = dropVerifier.verifyProbabilityAtLeast(0.02, 0.1);
+  console.log(`   P(legendary) >= 10%: ${atLeastTenPct}`); // Violated
 
   // ========================================================================
   // Clean up WASM memory
