@@ -169,7 +169,7 @@ impl<T> Default for ProbabilityDensity<T> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod tests {
     use super::*;
 

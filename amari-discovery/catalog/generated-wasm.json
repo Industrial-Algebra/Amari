@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_hash": "d9487f0fdc2055eb5a6f45505db8f1ac212a51396e36eb5af6bc52a90361e93c",
+  "source_hash": "a3f9b4a244fb36306e3024682ee538c49f77eec33ee2958c6a67c9dfb0a2c484",
   "description": "153 classes, 30 functions, 2 enums, 1 interfaces, 2 type aliases",
   "classes": [
     {
@@ -4103,8 +4103,8 @@
           "is_static": false
         },
         {
-          "name": "verifyProbabilityBound",
-          "doc": "Verify that P(success) <= bound using Monte Carlo sampling\n\nRuns Bernoulli trials with the given success probability and checks\nwhether the estimated probability is within the bound.\nReturns \"Verified\", \"Violated\", or \"Inconclusive\".",
+          "name": "verifyProbabilityAtLeast",
+          "doc": "Verify that P(success) >= bound using Monte Carlo sampling\n\nRuns Bernoulli trials with the given success probability and checks\nthe hold frame: whether P(success) is at least the bound.\nReturns \"Verified\", \"Violated\", or \"Inconclusive\".",
           "signature": "(success_probability: number, bound: number): string",
           "is_static": false
         }
@@ -7432,7 +7432,7 @@
         },
         {
           "name": "verifyWithMonteCarlo",
-          "doc": "Verify this obligation statistically using Monte Carlo sampling\n\nReturns \"Verified\", \"Violated\", or \"Inconclusive\"",
+          "doc": "Verify this obligation statistically using Monte Carlo sampling\n\nSimulates the obligation's hold event (true with the probability\ncaptured at construction) and checks P(hold) >= that probability.\nReturns \"Verified\", \"Violated\", or \"Inconclusive\"",
           "signature": "(samples: number): string",
           "is_static": false
         }
@@ -12077,8 +12077,8 @@
           "type_signature": "readonly wasmmontecarloverifier_new: (a: number) => number"
         },
         {
-          "name": "wasmmontecarloverifier_verifyProbabilityBound",
-          "type_signature": "readonly wasmmontecarloverifier_verifyProbabilityBound: (a: number, b: number, c: number) => [number, number]"
+          "name": "wasmmontecarloverifier_verifyProbabilityAtLeast",
+          "type_signature": "readonly wasmmontecarloverifier_verifyProbabilityAtLeast: (a: number, b: number, c: number) => [number, number]"
         },
         {
           "name": "wasmmorsecomplex_checkWeakMorseInequalities",
