@@ -96,6 +96,23 @@ corrupting valuation, sign, and ordering.
   allocations per operation (DoS-amplifiable through `amari-wasm`'s
   JS-supplied `Dyadic::new(numerator, exponent)`).
 
+### S9 (P1, R1) — `normalize()` collapses negative-exponent terms
+
+Found by contract review R1 and independently reproduced:
+`EpsilonRational` addition followed by `normalize()` uses
+`self.numer.degree() == Some(0)` — the **largest** exponent — as its
+"both parts are scalar constants" test. A polynomial with terms at
+exponents −1 and 0 has `degree() == Some(0)` but is NOT constant, and
+the scalar-folding branch drops every term except exponent 0:
+
+```text
+ε^-1 + 1  →  1        (verified: terms collapse to {0: 1})
+```
+
+Corrupts value, ordering (`ε^-1 > 1` silently lost), and division
+downstream. The guard must require a single constant term:
+`valuation() == Some(0) && degree() == Some(0)`.
+
 ### S4 (P3) — `from_coefficients` index truncation
 
 `k as i32` for coefficient vectors longer than `i32::MAX` silently wraps
@@ -138,7 +155,7 @@ constructors.
 | # | Question | Decision |
 |---|---|---|
 | D1 | S1 fix shape | **(a) Correct selection + oracles** — e=0: closest-to-zero fitting integer (0 if it fits; ties impossible: if both −1 and 1 fit, 0 fits); semi-finite: `{L|}`→0 when L<0 else `floor(L)+1`, `{|R}`→0 when R>0 else `ceil(R)−1`; keep the (provably correct) e≥1 scan; oracle table incl. negative/zero-spanning cuts + `from_game`/`to_game_in` roundtrip properties. |
-| D2 | S2+S3 safety policy | **(a) Constructor bound + checked ops** — documented exponent bound (`MAX_EXPONENT = 1 << 20`) enforced at constructors via new `SurrealError::ExponentOverflow`; bound inputs make all arithmetic exponents trivially safe (`≤ 2^21`), killing wrap, saturation, and the allocation DoS in one invariant. |
+| D2 | S2+S3 safety policy | **(a) Constructor bound + checked ops — AMENDED R1** — constructor bound (`MAX_EXPONENT = 1 << 20`) via new `SurrealError::ExponentOverflow`, PLUS **output-bound enforcement in every arithmetic op**: exponent growth uses `checked_add` against `MAX_EXPONENT`; `checked_mul` (Result-returning) added for programmatic use; the infallible `Mul` ops delegate and panic with a clear `ExponentOverflow` message (honest, documented). R1 showed constructor bounds alone do not survive compounding — eleven repeated squares from `2^20` reach the i32 wrap in release; addition is safe by `max(e1,e2)` (no growth), multiplication is the growth path and is now checked. Kills wrap, saturation, and the allocation DoS on every path. |
 | D3 | S8 test program | **(a) Unit + oracle suite** — in-crate `#[cfg(test)]` units for dyadic/rational/short plus the simplicity oracle table and roundtrip properties. |
 | D4 | epsilon feature status | **(a) Fix in place, keep experimental** — S2 fix under the existing gate; no graduation, no API expansion. |
 
@@ -165,9 +182,15 @@ constructors.
   panicking convenience wrapper (documented) delegating to `try_new`.
 - `EpsilonPolynomial::monomial` / `from_coefficients` validate exponents
   against the same bound; `from_coefficients` asserts `k <= i32::MAX` (S4).
-- With bounded inputs, `Mul`/`Add` exponents cannot overflow (≤ 2^21 <
-  2^31) — replace `saturating_add` with plain `+` under the documented
-  invariant.
+- **Output-bound enforcement (D2a as amended):** `Dyadic::checked_mul` and
+  `EpsilonPolynomial::checked_mul` return
+  `Result<Self, SurrealError::ExponentOverflow>` when the output exponent
+  would exceed `MAX_EXPONENT`; the infallible `Mul` impls delegate and
+  panic with that message. `Add` needs no check (`max(e1,e2)` cannot grow
+  past the input bound). Regression test: repeated squaring from the bound
+  errors/panics at the crossing multiplication instead of wrapping. The
+  u32 `saturating_add` in `Dyadic::Mul` is deleted (replaced by the
+  checked path).
 - `short_birthday` (S7): document saturation in doc comment (values with
   `|value| > u32::MAX` saturate; unreachable under normal use).
 - **Consumer migration (in-repo):** `amari-wasm/src/surreal.rs`
@@ -183,15 +206,26 @@ constructors.
 - The U1 oracle table and roundtrip properties live as in-crate units
   exercising the public API.
 
-### U4 — epsilon fix + P3 sweep (S2, S5, S6; D4a)
+### U4 — epsilon fixes + P3 sweep (S9, S2, S5, S6; D1–D4)
 
+- **S9 (P1): `normalize()` scalar-fold guard** requires a single constant
+  term (`valuation() == Some(0) && degree() == Some(0)`), not
+  `degree() == Some(0)`. Regressions: `ε^-1 + 1` stays `ε^-1 + 1`;
+  `ε^-2 + ε^-1 + 1` stays; `(ε^-1) + 1 > 1` orders Greater; scalar fold
+  still fires for genuine constants (`6/3 → 2`, existing tests).
 - Exponent bound in `monomial`/`from_coefficients` (U2).
+- **Wasm epsilon constructors (R1 P2):** `WasmEpsilonPolynomial` /
+  `WasmEpsilonRational` JS-facing constructors in `amari-wasm/src/surreal.rs`
+  switch to the fallible constructors, mapping `ExponentOverflow` (and
+  `DivisionByZero`) to `JsValue` errors — arbitrary JS exponents must not
+  reach panicking paths.
 - Display: negative coefficients render `− c·ε^e` (leading) /
   ` − c·ε^e` (subsequent), not ` + -c·ε`.
 - `RationalSurreal` type docs gain the "exact rational scalar, not itself a
   surreal number of the implemented layer" note (S6).
 - Everything under the existing `experimental-epsilon` gate; feature name
-  unchanged.
+  unchanged. Negative-exponent support is preserved (bounds are
+  symmetric on |exponent|; the R1 reviewer's framing).
 
 ## 5. Verification matrix
 
@@ -205,6 +239,9 @@ constructors.
 - Consumer smoke: `cargo +1.98.0 test -p amari-wasm` (surreal bridge),
   `cargo +1.98.0 check -p amari-surcomplex -p amari-discovery`.
 - MSRV 1.89 build of the crate in all feature states.
+- S9 regression suite: negative-exponent additions preserve terms; ordering
+  with `ε^-1` vs constants is Greater; repeated-square exponent-overflow
+  regression from the bound errors/panics honestly (no wrap in release).
 
 ## 6. Out of scope
 
@@ -222,7 +259,10 @@ constructors.
 - S1 counterexamples derived by hand against the simplicity theorem and
   verified against the committed implementation's control flow.
 - Decisions D1–D4 recorded via `ask_user` 2026-10-28 (all recommended
-  options).
+  options); D2 amended R1 (constructor bound alone does not survive
+  compounding — output-bound enforcement added).
+- S9 added in contract review R1 (reviewer-found; independently
+  reproduced in-worktree: `ε^-1 + 1 = 1`, terms collapse to `{0: 1}`).
 - Programme context: `docs/plans/2026-10-27-amari-1.0-sibling-audit-programme.md`
   (Phase B: surreal; pull-forward into 0.25.0 by operator directive,
   following the flynn precedent).
