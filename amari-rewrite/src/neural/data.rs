@@ -49,16 +49,20 @@
 //! ## Bounded admission
 //!
 //! Admission runs before verification and before any digest, over the
-//! **whole** certificate: the trace count, the per-trace step count, both
-//! certified query terms, both derivation halves (forward steps, backward
-//! steps, both meeting terms, and the unifier), every residual constraint
-//! side, and every substitution range. Every embedded term's node count and
-//! depth are checked against [`RelationLimits`], and every identifier —
-//! symbol and variable name alike — against
-//! [`FeatureEncoder::MAX_IDENTIFIER_BYTES`], all with a bounded iterative
-//! walk, *before* [`ReplayCertificate::verify`] replays (which hashes and
-//! clones terms). No unbounded allocation or recursion can be reached from
-//! an untrusted trace, and nothing is hashed or cloned before it is admitted.
+//! **whole** certificate: the trace count, the step counts of *both*
+//! derivation halves (forward and backward), both certified query terms,
+//! every step (including both meeting terms and the unifier), every residual
+//! constraint side, and every substitution range together with its
+//! transitive resolution chain. Every embedded term's node count and depth
+//! are checked against [`RelationLimits`], and every identifier — symbol and
+//! variable name alike — against [`FeatureEncoder::MAX_IDENTIFIER_BYTES`],
+//! all with a bounded iterative walk, *before* [`ReplayCertificate::verify`]
+//! replays (which hashes and clones terms, and resolves substitution chains
+//! recursively). No unbounded allocation or recursion can be reached from
+//! an untrusted trace, and nothing is hashed or cloned before it is
+//! admitted.
+
+use alloc::collections::BTreeMap;
 
 use crate::inverse::{
     query_hash, ForwardStep, GuidanceMode, ReplayCertificate, ReplayDerivation, ReplayQuery,
@@ -68,7 +72,7 @@ use crate::neural::encode::{CandidateInput, FeatureEncoder, FeatureVector, Searc
 use crate::neural::model::{canonical_digest, content_key};
 use crate::neural::{FeatureSchemaV1, NeuralError};
 use crate::relation::{ConstraintSet, RelationLimits, RuleId, Sha256Digest, TermConstraint};
-use crate::trs::{Substitution, Term, TermSystem};
+use crate::trs::{Substitution, Term, TermSystem, Variable};
 use crate::Path;
 
 /// Schema version of the dataset manifest, bumped only by a deliberate
@@ -396,7 +400,11 @@ impl DatasetBuilder {
             // constraint side, substitution range, and identifier of the
             // whole certificate is bounded before `verify` hashes or clones
             // anything.
-            admit_certificate(certificate, &self.config.relation_limits())?;
+            admit_certificate(
+                certificate,
+                &self.config.relation_limits(),
+                self.config.max_steps_per_trace(),
+            )?;
 
             let (root, steps) = trace_steps(certificate);
             if steps.is_empty() {
@@ -507,6 +515,14 @@ impl DatasetBuilder {
             // apart. Collapsing first would discard the very representative
             // the trace recorded and turn a valid certificate into a
             // spurious TraceDrift (PR #357 round 1 P1b).
+            //
+            // Matching is modulo alpha-equivalence: alpha-equivalent rules
+            // share one stable `RuleId`, and their freshened candidates share
+            // one provenance while differing only in erased variable names.
+            // The silent pick of the first match is sound because those
+            // candidates encode to identical features and search context;
+            // the `alpha_equivalent_candidates_are_feature_and_context_equivalent`
+            // contract pins that equivalence (PR #357 round 2 P3).
             let Some(chosen_index) = candidates
                 .iter()
                 .position(|candidate| candidate.provenance == chosen.provenance)
@@ -633,8 +649,21 @@ fn trace_steps(certificate: &ReplayCertificate) -> (&Term, &[SymbolicPredecessor
 fn admit_certificate(
     certificate: &ReplayCertificate,
     limits: &RelationLimits,
+    max_steps: usize,
 ) -> Result<(), NeuralError> {
     check_query_bounded(&certificate.query, limits)?;
+    // Both derivation halves are counted before their steps are walked, so
+    // the step ceiling bounds admission work itself as well as replay
+    // (PR #357 round 2 P1b).
+    let (backward_steps, forward_steps) = match &certificate.derivation {
+        ReplayDerivation::Backward(derivation) => (derivation.steps.len(), 0),
+        ReplayDerivation::Bidirectional(derivation) => (
+            derivation.backward_steps.len(),
+            derivation.forward_steps.len(),
+        ),
+    };
+    check_step_count(backward_steps, max_steps, "trace steps")?;
+    check_step_count(forward_steps, max_steps, "forward steps")?;
     match &certificate.derivation {
         ReplayDerivation::Backward(derivation) => check_steps_bounded(&derivation.steps, limits),
         ReplayDerivation::Bidirectional(derivation) => {
@@ -647,6 +676,18 @@ fn admit_certificate(
             check_substitution_bounded(&derivation.unifier, limits)
         }
     }
+}
+
+/// Admit one derivation half's step count before its steps are walked.
+fn check_step_count(count: usize, limit: usize, resource: &'static str) -> Result<(), NeuralError> {
+    if count > limit {
+        return Err(NeuralError::LimitExceeded {
+            resource,
+            value: count,
+            limit,
+        });
+    }
+    Ok(())
 }
 
 /// Admit both terms of the certified statement.
@@ -699,17 +740,112 @@ fn check_constraints_bounded(
     Ok(())
 }
 
-/// Admit a substitution: every bound name and every range term. `BTreeMap`
-/// iteration order makes the walk deterministic.
+/// Admit a substitution: every bound name and every range term, the entry
+/// count, and the longest transitive chain of variable-to-variable bindings
+/// reachable through it. `BTreeMap` iteration order makes the walk
+/// deterministic.
+///
+/// The entry ceiling reuses the term-node ceiling: a substitution is a map of
+/// bounded ranges, so its cardinality is held to the same admitted size.
+///
+/// The chain bound is load-bearing: replay resolves a bound variable by
+/// recursion (`Substitution::apply`), so a certificate can smuggle unbounded
+/// stack depth through the unifier with individually tiny ranges
+/// (`V0 -> V1 -> ... -> Vn -> a`). Counting entries alone does not bound that
+/// depth, and walking it recursively to measure it would reproduce the bug,
+/// so the chain is measured iteratively and memoized.
 fn check_substitution_bounded(
     substitution: &Substitution,
     limits: &RelationLimits,
 ) -> Result<(), NeuralError> {
+    if substitution.len() > limits.max_term_nodes() {
+        return Err(NeuralError::LimitExceeded {
+            resource: "substitution entries",
+            value: substitution.len(),
+            limit: limits.max_term_nodes(),
+        });
+    }
     for (variable, term) in substitution.iter() {
         check_identifier(variable.as_str())?;
         check_term_bounded(term, limits)?;
     }
+    check_substitution_chain_depth(substitution, limits)
+}
+
+/// Bound the longest transitive variable chain through a substitution.
+///
+/// The walk is iterative and memoized, so admission cost stays linear in the
+/// entry count however deep a hostile chain is. A range need not be a bare
+/// variable to extend a chain: `V0 -> f(V1)` resolves `V0` to `f(V1)` and then
+/// recurses into `V1`, so the graph edges are the *bound variables occurring
+/// in* each range, not just bare-variable ranges. The depth is the number of
+/// variable resolutions on the longest path, with a repeated variable ending
+/// the path (replay leaves it in place at cycle detection).
+///
+/// The ceiling is the admitted term-depth ceiling: unification produces
+/// idempotent substitutions (no chains at all), so a chain longer than any
+/// admitted term walk cannot come from a real search and is rejected as
+/// hostile. Together with the per-range term-depth ceiling, this bounds the
+/// recursion `Substitution::apply` performs during replay.
+fn check_substitution_chain_depth(
+    substitution: &Substitution,
+    limits: &RelationLimits,
+) -> Result<(), NeuralError> {
+    let ceiling = limits.max_term_depth();
+    let mut resolved: BTreeMap<Variable, usize> = BTreeMap::new();
+    for (start, range) in substitution.iter() {
+        if resolved.contains_key(start) {
+            continue;
+        }
+        let mut stack: Vec<(Variable, Vec<Variable>, usize)> = Vec::new();
+        stack.push((start.clone(), bound_variables(substitution, range), 0));
+        while !stack.is_empty() {
+            let frame = stack.len() - 1;
+            if stack[frame].2 < stack[frame].1.len() {
+                let child = stack[frame].1[stack[frame].2].clone();
+                stack[frame].2 += 1;
+                if resolved.contains_key(&child) {
+                    continue;
+                }
+                if stack.iter().any(|(open, _, _)| *open == child) {
+                    // A cycle resolves to its fixed point in replay: the
+                    // repeated variable is left in place, not followed again.
+                    continue;
+                }
+                let child_range = substitution.get_var(&child).expect("bound variable");
+                stack.push((child, bound_variables(substitution, child_range), 0));
+                continue;
+            }
+            let tail = stack[frame]
+                .1
+                .iter()
+                .map(|child| resolved.get(child).copied().unwrap_or(0))
+                .max()
+                .unwrap_or(0);
+            let depth = tail.saturating_add(1);
+            if depth > ceiling {
+                return Err(NeuralError::LimitExceeded {
+                    resource: "substitution chain depth",
+                    value: depth,
+                    limit: ceiling,
+                });
+            }
+            let (node, _, _) = stack.pop().expect("non-empty stack");
+            resolved.insert(node, depth);
+        }
+    }
     Ok(())
+}
+
+/// The bound variables occurring in a substitution range: the edges of the
+/// resolution graph. Names that are not bound by this substitution resolve to
+/// themselves and end a path.
+fn bound_variables(substitution: &Substitution, range: &Term) -> Vec<Variable> {
+    range
+        .variables()
+        .into_iter()
+        .filter(|variable| substitution.get_var(variable).is_some())
+        .collect()
 }
 
 /// Admit a rewrite position. A path through a term of depth `d` has at most
@@ -839,15 +975,21 @@ fn example_key(
 
 /// Canonical per-trace digest: the authority tag, the *whole* certified
 /// statement (the query, both terms), and the derivation — every forward
-/// step, every backward step, both meeting terms, and the unifier.
+/// step, every backward step (including its term, substitution,
+/// constraints, existentials, and provenance), both meeting terms, and the
+/// unifier.
 ///
 /// The query belongs in the identity: two traces over the same backward
 /// chain but different certified goals are different claims about the
 /// system, and a digest that ignored the goal would let either stand in for
 /// the other (PR #357 round 1 P2). The forward half is covered for the same
-/// reason a bidirectional derivation is not just its backward steps. Every
-/// field here has already been admitted, so hashing cannot be reached with
-/// unbounded content.
+/// reason a bidirectional derivation is not just its backward steps. Step
+/// payloads are covered because the documented identity scope is the full
+/// derivation, not only the transition provenance: two certificates that
+/// replay to the same statement through different recorded substitutions,
+/// constraints, or existentials are different training evidence (PR #357
+/// round 2 P2). Every field here has already been admitted, so hashing
+/// cannot be reached with unbounded content.
 fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
     let mut payload = Vec::new();
     match certificate.guidance {
@@ -884,13 +1026,33 @@ fn encode_step(payload: &mut Vec<u8>, step: &SymbolicPredecessor) {
     payload.extend_from_slice(step.provenance.predecessor_hash.as_bytes());
     payload.extend_from_slice(&step.provenance.scope.to_le_bytes());
     encode_path(payload, &step.provenance.position);
+    // The step's own payload, not just the transition identity: the term it
+    // derived, its unifying substitution (in `BTreeMap` order), its residual
+    // constraints (canonical, order-preserving), and its existentials.
+    payload.extend_from_slice(term_digest(&step.term).as_bytes());
+    encode_substitution(payload, &step.substitution);
+    encode_constraints(payload, &step.constraints);
+    payload.extend_from_slice(&(step.existentials.len() as u32).to_le_bytes());
+    for existential in &step.existentials {
+        payload.extend_from_slice(&existential.scope().to_le_bytes());
+        payload.extend_from_slice(&existential.index().to_le_bytes());
+    }
 }
 
+/// Forward-step audit: `ForwardStep` carries no terms of its own, so its
+/// complete identity is the rule, the position, and both engine term hashes.
 fn encode_forward_step(payload: &mut Vec<u8>, step: &ForwardStep) {
     payload.extend_from_slice(step.rule_id.digest().as_bytes());
     payload.extend_from_slice(step.source_hash.as_bytes());
     payload.extend_from_slice(step.result_hash.as_bytes());
     encode_path(payload, &step.position);
+}
+
+fn encode_constraints(payload: &mut Vec<u8>, constraints: &ConstraintSet) {
+    payload.extend_from_slice(&(constraints.len() as u32).to_le_bytes());
+    for constraint in constraints.constraints() {
+        payload.extend_from_slice(constraint.canonical_digest().as_bytes());
+    }
 }
 
 fn encode_path(payload: &mut Vec<u8>, path: &Path) {

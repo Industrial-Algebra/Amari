@@ -17,9 +17,12 @@ use amari_rewrite::inverse::{
     ForwardStep, GuidanceMode, InverseSearchConfig, ReplayCertificate, ReplayDerivation,
     ReplayQuery, ResourceObservation, SearchMode, SymbolicPredecessor, SymbolicState,
 };
-use amari_rewrite::neural::{DatasetBuilder, DatasetConfig, LabelAuthority, NeuralError};
+use amari_rewrite::neural::{
+    CandidateInput, DatasetBuilder, DatasetConfig, LabelAuthority, NeuralError, SearchContext,
+};
 use amari_rewrite::relation::{
-    ConstraintSet, RelationLimits, RelationResources, RuleId, Sha256Digest,
+    ConstraintSet, LogicVar, RelationLimits, RelationResources, RuleId, Sha256Digest,
+    TermConstraint,
 };
 use amari_rewrite::trs::{Rule, Substitution, Term, TermSystem};
 use amari_rewrite::Path;
@@ -649,5 +652,366 @@ fn trace_digest_covers_the_certified_query() {
         baseline.manifest().trace_digests(),
         changed.manifest().trace_digests(),
         "different certified query should have different trace identity"
+    );
+}
+
+// ── PR #357 round 2 regression contracts ────────────────────────────
+
+/// A one-step certificate whose recorded leaf is the engine's variable
+/// predecessor of `a` under `f(X) -> a`. The last step term is only used
+/// for goal unification during replay, and it is not a state of any
+/// later round, so it can be replaced with another admissible instance.
+fn variable_leaf_certificate() -> (TermSystem, ReplayCertificate) {
+    let system = sys(vec![Rule::new(parse("f(X)"), parse("a")).expect("checked")]);
+    let target = parse("a");
+    let goal = Term::var("Goal");
+    let candidates = amari_rewrite::inverse::symbolic_predecessors(
+        &system,
+        &target,
+        &RelationLimits::default(),
+        1,
+    )
+    .expect("predecessors");
+    let outcome = BackwardExplorer::new(&system, InverseSearchConfig::default())
+        .search(&target, &goal, SearchMode::BreadthFirst)
+        .expect("search succeeds");
+    let BackwardSearchOutcome::Witness(mut derivation) = outcome else {
+        panic!("expected a witness");
+    };
+    derivation.steps = vec![candidates[0].clone()];
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Backward { target, goal },
+        ReplayDerivation::Backward(derivation),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        ResourceObservation {
+            states: 2,
+            transitions: 1,
+            retained_bytes: 128,
+            operations: 2,
+        },
+    );
+    certificate.verify(&system).expect("fixture must verify");
+    (system, certificate)
+}
+
+/// Build the baseline and one mutated certificate, returning both trace
+/// digest lists. The mutation must itself be replay-valid: a digest test
+/// that changes the certified statement would only exercise `verify`.
+fn mutated_trace_digests(
+    system: &TermSystem,
+    baseline: &ReplayCertificate,
+    mutate: impl FnOnce(&mut ReplayDerivation),
+) -> (Vec<Sha256Digest>, Vec<Sha256Digest>) {
+    let mut changed = baseline.clone();
+    mutate(&mut changed.derivation);
+    changed
+        .verify(system)
+        .expect("the mutated fixture must still replay");
+    let baseline = builder()
+        .build(system, std::slice::from_ref(baseline))
+        .expect("baseline build")
+        .manifest()
+        .trace_digests()
+        .to_vec();
+    let changed = builder()
+        .build(system, std::slice::from_ref(&changed))
+        .expect("changed build")
+        .manifest()
+        .trace_digests()
+        .to_vec();
+    (baseline, changed)
+}
+
+#[test]
+fn unifier_transitive_chain_is_bounded_before_replay() {
+    // P1a: `V0 -> V1 -> ... -> V20000 -> a` has individually tiny ranges and
+    // a tiny entry ceiling violation only detectable by counting, but replay's
+    // recursive resolution would walk all 20,001 links. Admission must reject
+    // it typed before `verify` can recurse. The fixture is leaked because a
+    // pre-fix run aborts the stack (deep-drop discipline).
+    let (system, mut certificate) = bidirectional_witness();
+    if let ReplayDerivation::Bidirectional(derivation) = &mut certificate.derivation {
+        derivation.meeting_backward = parse("g(f(V0))");
+        for index in 0..20_000 {
+            derivation
+                .unifier
+                .insert(format!("V{index}"), Term::var(format!("V{}", index + 1)));
+        }
+        derivation.unifier.insert("V20000", parse("a"));
+    }
+    let result = builder().build(&system, std::slice::from_ref(&certificate));
+    std::mem::forget(certificate);
+    assert!(
+        matches!(
+            result,
+            Err(NeuralError::LimitExceeded {
+                resource: "substitution entries",
+                ..
+            })
+        ),
+        "a 20,001-entry unifier must be rejected at admission, got {result:?}"
+    );
+}
+
+#[test]
+fn unifier_chain_depth_is_bounded_independently_of_entry_count() {
+    // P1a: the entry ceiling alone is not enough. 129 entries is below the
+    // 4,096 admission ceiling, but the transitive chain is 128 links deep —
+    // longer than any admitted term-depth walk. Admission must bound the
+    // chain itself, iteratively, with a typed limit naming the resource.
+    let (system, mut certificate) = bidirectional_witness();
+    if let ReplayDerivation::Bidirectional(derivation) = &mut certificate.derivation {
+        derivation.meeting_backward = parse("g(f(V0))");
+        for index in 0..128 {
+            derivation
+                .unifier
+                .insert(format!("V{index}"), Term::var(format!("V{}", index + 1)));
+        }
+        derivation.unifier.insert("V128", parse("a"));
+    }
+    let result = builder().build(&system, std::slice::from_ref(&certificate));
+    assert!(
+        matches!(
+            result,
+            Err(NeuralError::LimitExceeded {
+                resource: "substitution chain depth",
+                ..
+            })
+        ),
+        "a 128-link unifier chain must be rejected at admission, got {result:?}"
+    );
+}
+
+#[test]
+fn unifier_chain_through_term_structure_is_bounded() {
+    // P1a: a range need not be a bare variable to extend a chain.
+    // `V0 -> f(V1) -> f(f(V2)) -> ...` resolves 128 variables even though
+    // every individual range is a tiny two-node term, so the bound must
+    // follow bound variables *inside* ranges, not only bare-variable ranges.
+    let (system, mut certificate) = bidirectional_witness();
+    if let ReplayDerivation::Bidirectional(derivation) = &mut certificate.derivation {
+        derivation.meeting_backward = parse("g(f(V0))");
+        for index in 0..128 {
+            derivation.unifier.insert(
+                format!("V{index}"),
+                Term::sym("f", [Term::var(format!("V{}", index + 1))]),
+            );
+        }
+        derivation.unifier.insert("V128", parse("a"));
+    }
+    let result = builder().build(&system, std::slice::from_ref(&certificate));
+    assert!(
+        matches!(
+            result,
+            Err(NeuralError::LimitExceeded {
+                resource: "substitution chain depth",
+                ..
+            })
+        ),
+        "a 128-link chain through range structure must be rejected, got {result:?}"
+    );
+}
+
+#[test]
+fn forward_derivation_half_is_held_to_the_step_ceiling() {
+    // P1b: the step ceiling used to apply only to the backward half. 65,537
+    // identity forward steps replay fine and were admitted; both halves must
+    // be counted at admission, and the forward count must name its resource.
+    let (system, mut certificate) = bidirectional_witness();
+    let mut rules = system.rules().to_vec();
+    rules.push(Rule::new(parse("g(X)"), parse("g(X)")).expect("checked"));
+    let system = sys(rules);
+    let identity = RuleId::from_rule(&system.rules()[2]);
+    if let ReplayDerivation::Bidirectional(derivation) = &mut certificate.derivation {
+        derivation.forward_steps = vec![
+            ForwardStep {
+                rule_id: identity,
+                position: Path::root(),
+                source_hash: canonical("g(f(a))"),
+                result_hash: canonical("g(f(a))"),
+            };
+            65_537
+        ];
+    }
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Bidirectional {
+            source: parse("g(f(a))"),
+            goal: parse("f(a)"),
+        },
+        certificate.derivation,
+        certificate.config,
+        certificate.guidance,
+        certificate.resources,
+    );
+    let result = builder().build(&system, &[certificate]);
+    assert!(
+        matches!(
+            result,
+            Err(NeuralError::LimitExceeded {
+                resource: "forward steps",
+                ..
+            })
+        ),
+        "65,537 forward steps must hit the trace-step ceiling, got {result:?}"
+    );
+}
+
+#[test]
+fn trace_digest_covers_backward_step_payloads() {
+    // P2: the documented identity scope is "query + full derivation". A
+    // mutable derivation field that replay ignores (substitution, residual
+    // constraints, existentials) must still change the trace digest.
+    let (system, baseline) = backward_witness();
+
+    let (base, changed) = mutated_trace_digests(&system, &baseline, |derivation| {
+        let ReplayDerivation::Backward(backward) = derivation else {
+            panic!("backward fixture");
+        };
+        backward.steps[0]
+            .substitution
+            .insert("Unused", parse("different"));
+    });
+    assert_ne!(
+        base, changed,
+        "a backward step's substitution must enter the trace identity (P2)"
+    );
+
+    let (base, changed) = mutated_trace_digests(&system, &baseline, |derivation| {
+        let ReplayDerivation::Backward(backward) = derivation else {
+            panic!("backward fixture");
+        };
+        backward.steps[0]
+            .constraints
+            .insert(TermConstraint::Equal(parse("a"), parse("b")));
+    });
+    assert_ne!(
+        base, changed,
+        "a backward step's constraints must enter the trace identity (P2)"
+    );
+
+    let (base, changed) = mutated_trace_digests(&system, &baseline, |derivation| {
+        let ReplayDerivation::Backward(backward) = derivation else {
+            panic!("backward fixture");
+        };
+        backward.steps[0].existentials.push(LogicVar::new(0, 7));
+    });
+    assert_ne!(
+        base, changed,
+        "a backward step's existentials must enter the trace identity (P2)"
+    );
+}
+
+#[test]
+fn trace_digest_covers_the_backward_step_term() {
+    // P2: the step term itself is part of the recorded derivation. Two
+    // replay-valid instances of the same rule (`f(?v)` and `f(h(a))` both
+    // replay `a -> f(..)`) must not share a trace identity.
+    let (system, baseline) = variable_leaf_certificate();
+    let (base, changed) = mutated_trace_digests(&system, &baseline, |derivation| {
+        let ReplayDerivation::Backward(backward) = derivation else {
+            panic!("backward fixture");
+        };
+        backward.steps[0].term = parse("f(h(a))");
+    });
+    assert_ne!(
+        base, changed,
+        "a backward step's term must enter the trace identity (P2)"
+    );
+}
+
+#[test]
+fn trace_digest_covers_forward_step_payloads() {
+    // P2 forward audit: every `ForwardStep` field is identity-bearing, and
+    // the engine hashes are the only record of the rewritten terms. Mutating
+    // one that replay does not consult must still change the digest.
+    let (system, baseline) = bidirectional_witness();
+    let (base, changed) = mutated_trace_digests(&system, &baseline, |derivation| {
+        let ReplayDerivation::Bidirectional(bidirectional) = derivation else {
+            panic!("bidirectional fixture");
+        };
+        bidirectional.forward_steps[0].result_hash = canonical("changed");
+    });
+    assert_ne!(
+        base, changed,
+        "a forward step's result hash must enter the trace identity (P2)"
+    );
+}
+
+#[test]
+fn alpha_equivalent_candidates_are_feature_and_context_equivalent() {
+    // P3: `f(X,Y) -> X` and `f(A,B) -> A` are alpha-equivalent rules, so
+    // they share one stable `RuleId` and one `BackwardProvenance`; the
+    // candidates differ only in freshly erased variable names. Chosen
+    // matching is therefore modulo alpha-equivalence. The silent pick of the
+    // first matching candidate is sound only because alpha-equivalent
+    // candidates encode to identical features and context — assert exactly
+    // that, so the equivalence is a checked guarantee, not an assumption.
+    let system = sys(vec![
+        Rule::new(parse("f(X,Y)"), parse("X")).expect("checked"),
+        Rule::new(parse("f(A,B)"), parse("A")).expect("checked"),
+        Rule::new(parse("g(X)"), parse("X")).expect("checked"),
+    ]);
+    let candidates = amari_rewrite::inverse::symbolic_predecessors(
+        &system,
+        &parse("a"),
+        &RelationLimits::default(),
+        1,
+    )
+    .expect("predecessors");
+    assert_ne!(
+        candidates[0].term, candidates[1].term,
+        "alpha-equivalent candidates must differ in fresh names"
+    );
+    assert_eq!(
+        candidates[0].provenance, candidates[1].provenance,
+        "alpha-equivalent candidates share provenance"
+    );
+
+    // Encode the two candidates under one identical context: the frozen
+    // feature vector must not depend on the fresh erased-variable names.
+    let encoder = *builder().encoder();
+    let context = SearchContext::new(
+        1,
+        candidates.len() as u64,
+        false,
+        0,
+        0,
+        candidates[0].existentials.len(),
+        0,
+    );
+    let first_features = encoder
+        .encode(&CandidateInput::new(
+            &candidates[0].term,
+            &candidates[0].constraints,
+            &candidates[0].provenance,
+            context,
+        ))
+        .expect("first candidate encodes");
+    let second_features = encoder
+        .encode(&CandidateInput::new(
+            &candidates[1].term,
+            &candidates[1].constraints,
+            &candidates[1].provenance,
+            context,
+        ))
+        .expect("second candidate encodes");
+    assert_eq!(
+        first_features, second_features,
+        "alpha-equivalent candidates must encode to identical features"
+    );
+
+    let first = one_step(&system, parse("a"), candidates[0].term.clone(), 0);
+    let second = one_step(&system, parse("a"), candidates[1].term.clone(), 1);
+    first.verify(&system).expect("first fixture verifies");
+    second.verify(&system).expect("second fixture verifies");
+    let first = builder().build(&system, &[first]).expect("first build");
+    let second = builder().build(&system, &[second]).expect("second build");
+    assert_eq!(
+        first.examples(),
+        second.examples(),
+        "alpha-equivalent chosen candidates must featurize identically"
     );
 }
