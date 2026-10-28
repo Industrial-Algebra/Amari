@@ -303,7 +303,7 @@ impl Enclosure {
     /// then squares the interval `s` times.
     /// Rigorous small-tail cutoff (R2 P2, proof corrected R3): e > 2, so
     /// for x >= 4096, e^{-x} <= e^{-4096} < 2^{-4096} = 10^{-4096*log10(2)}
-    /// = 10^{-1232.9...} < 10^{-500}; and 10^{-500} is below the smallest
+    /// = 10^{-1233.018862...} < 10^{-500}; and 10^{-500} is below the smallest
     /// POSITIVE f64 (5e-324 subnormal), so [0, 10^{-500}] decides every
     /// representable delta comparison WITHOUT constructing the ~10^9-digit
     /// denominators the true value would require. (The R2 chain wrongly
