@@ -301,11 +301,14 @@ impl Enclosure {
     /// alternating Taylor partial sums (for `0 <= y`, `e^{-y}` lies
     /// between consecutive partial sums and `|remainder| <= next term`),
     /// then squares the interval `s` times.
-    /// Rigorous small-tail cutoff (R2 P2): for x >= 2^12, e^{-x} <
-    /// 3^{-4096} < 10^{-1955} < 10^{-500}, and 10^{-500} is below the
-    /// smallest POSITIVE f64 (5e-324 subnormal), so [0, 10^{-500}]
-    /// decides every representable delta comparison WITHOUT constructing
-    /// the ~10^9-digit denominators the true value would require.
+    /// Rigorous small-tail cutoff (R2 P2, proof corrected R3): e > 2, so
+    /// for x >= 4096, e^{-x} <= e^{-4096} < 2^{-4096} = 10^{-4096*log10(2)}
+    /// = 10^{-1232.9...} < 10^{-500}; and 10^{-500} is below the smallest
+    /// POSITIVE f64 (5e-324 subnormal), so [0, 10^{-500}] decides every
+    /// representable delta comparison WITHOUT constructing the ~10^9-digit
+    /// denominators the true value would require. (The R2 chain wrongly
+    /// used e < 3, which bounds e^{-4096} from ABOVE — 3^{-4096} is
+    /// SMALLER than e^{-4096}, not larger.)
     const SMALL_TAIL_CUTOFF: u64 = 4096;
     const SMALL_TAIL_BOUND_ZEROES: usize = 500;
 

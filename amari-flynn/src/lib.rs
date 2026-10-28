@@ -66,7 +66,7 @@
 //! ## Roadmap
 //!
 //! - **SMT-LIB2 Backend**: solver-valid proof obligations in QF_NRA with
-//!   certified rational enclosures. See [`backend::smt`] (std builds).
+//!   certified rational enclosures (see backend::smt; std builds).
 //! - **Creusot Support**: Rust-native formal verification (future)
 //!
 //! ## The ISO Philosophy
