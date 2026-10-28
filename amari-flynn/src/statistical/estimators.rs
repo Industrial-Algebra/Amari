@@ -84,16 +84,18 @@ pub fn confidence_z_score(confidence: f64) -> f64 {
         confidence > 0.0 && confidence < 1.0,
         "confidence must be in (0, 1), got {confidence}"
     );
-    // Exact table is only sensible within float equality tolerance; the
-    // approximation is accurate far below any practical difference anyway,
-    // so exactness applies only on precise matches.
+    // TWO-SIDED coverage quantile throughout (consistent with the Wilson
+    // interval and the exact table): z satisfies P(-z <= Z <= z) =
+    // confidence, i.e. z = Phi^{-1}((1 + confidence) / 2). The historical
+    // Acklam path returned the ONE-SIDED quantile Phi^{-1}(confidence),
+    // so 0.8 gave 0.8416 instead of 1.2816 (R1 P1).
     for &(level, z) in EXACT_Z_TABLE {
         if confidence == level {
             return z;
         }
     }
-    let alpha = confidence; // P(Z <= z) = confidence
-    acklam_inverse_normal(alpha)
+    let central = 0.5 * (1.0 + confidence);
+    acklam_inverse_normal(central)
 }
 
 /// Acklam's rational approximation to the inverse normal CDF.
@@ -194,16 +196,25 @@ mod tests {
 
     #[test]
     fn z_scores_approximate_untabulated_levels_accurately() {
-        // 0.98 -> 2.3263478740408408 (tabulated); 0.975 -> ~1.959964
-        // (the true two-sided 95% quantile, distinct from 0.95's 1.9599640
-        // one-sided value only in the fourth decimal for this CDF).
+        // TWO-SIDED coverage: z = Phi^{-1}((1 + c) / 2).
+        // 0.80 -> Phi^{-1}(0.90) = 1.2815515655446004
+        let z80 = confidence_z_score(0.8);
+        assert!((z80 - 1.281_551_565_544_600_4).abs() < 1e-9, "got {z80}");
+        // 0.975 -> Phi^{-1}(0.9875) = 2.241402727...
         let z975 = confidence_z_score(0.975);
-        assert!((z975 - 1.959_963_984_540_054).abs() < 1e-6, "got {z975}");
-        // 0.9999 -> ~3.719016485
+        assert!((z975 - 2.241_402_73).abs() < 1e-6, "got {z975}");
+        // 0.9999 -> Phi^{-1}(0.99995) = 3.890591885...
         let z9999 = confidence_z_score(0.9999);
-        assert!((z9999 - 3.719_016_485).abs() < 1e-6, "got {z9999}");
-        // 0.5 -> 0 exactly (center of the distribution)
-        assert!(confidence_z_score(0.5).abs() < 1e-9);
+        assert!((z9999 - 3.890_591_88).abs() < 1e-6, "got {z9999}");
+        // 0.5 -> Phi^{-1}(0.75) = 0.6744897501960817 (interval no longer
+        // collapses — the historical one-sided path gave 0.0).
+        let z50 = confidence_z_score(0.5);
+        assert!((z50 - 0.674_489_750_196_081_7).abs() < 1e-9, "got {z50}");
+        // Continuity across the table edge: 0.98 (tabulated 2.3263...) and
+        // 0.9799 (approximated) must nearly agree.
+        let a = confidence_z_score(0.98);
+        let b = confidence_z_score(0.979_9);
+        assert!((a - b).abs() < 6e-3); // ~38x z/c slope near 0.98
     }
 
     #[test]

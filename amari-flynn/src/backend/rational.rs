@@ -55,6 +55,26 @@ impl BigUint {
         BigUint(out)
     }
 
+    /// Multiply by a u64 exactly (splits into 32-bit halves; callers
+    /// previously truncated `n as u32`, silently corrupting certified
+    /// bounds for n > u32::MAX — R1 P2).
+    pub(crate) fn mul_u64(&self, k: u64) -> Self {
+        let lo = (k & 0xffff_ffff) as u32;
+        let hi = (k >> 32) as u32;
+        let mut r = self.mul_small(lo);
+        if hi > 0 {
+            // self * hi * 2^32
+            let r2 = self.mul_small(hi);
+            // r2 << 32: 32 doublings (cheap relative to schoolbook costs).
+            let mut shifted = r2;
+            for _ in 0..32 {
+                shifted = shifted.mul_small(2);
+            }
+            r = add_big(&r, &shifted);
+        }
+        r
+    }
+
     /// Schoolbook multiplication.
     pub(crate) fn mul(&self, other: &BigUint) -> BigUint {
         let a: Vec<u8> = self.0.iter().rev().copied().collect();
@@ -165,6 +185,14 @@ impl Rational {
         Rational { num, den }
     }
 
+    /// Multiply by a u64 exactly.
+    pub(crate) fn mul_u64(&self, k: u64) -> Self {
+        Rational {
+            num: self.num.mul_u64(k),
+            den: self.den.clone(),
+        }
+    }
+
     /// Multiply by a u32.
     pub(crate) fn mul_small(&self, k: u32) -> Self {
         Rational {
@@ -226,7 +254,7 @@ fn div2(x: &BigUint) -> BigUint {
     BigUint(out)
 }
 
-fn add_big(a: &BigUint, b: &BigUint) -> BigUint {
+pub(crate) fn add_big(a: &BigUint, b: &BigUint) -> BigUint {
     let (long, short): (&Vec<u8>, &Vec<u8>) = if a.0.len() >= b.0.len() {
         (&a.0, &b.0)
     } else {
@@ -576,6 +604,14 @@ mod tests {
             },
         };
         assert!(e.hi.lt(&tiny), "enclosure must be tiny");
+    }
+
+    #[test]
+    fn mul_u64_preserves_large_counts() {
+        // R1 P2 anchor: n = 2^32 + 1 must NOT truncate to 1.
+        let r = Rational::from_u64(1).mul_u64(4_294_967_297);
+        // 2^32 + 1 = 4294967297
+        assert_eq!(r.num.to_decimal(), "4294967297");
     }
 
     #[test]

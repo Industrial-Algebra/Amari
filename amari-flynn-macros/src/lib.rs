@@ -112,7 +112,9 @@ fn extract_multi_params(
 /// ```
 ///
 /// - `condition`: Boolean expression that should hold for inputs
-/// - `probability_bound`: Maximum probability the condition is violated (0.0 to 1.0)
+/// - `probability_bound`: MINIMUM probability the condition HOLDS
+///   (hold frame; 0.0 to 1.0). For the violation frame use
+///   [`prob_violation_at_most`].
 ///
 /// # Example
 ///
@@ -420,6 +422,91 @@ fn extract_call_shape(
 ///     x - y
 /// }
 /// ```
+/// Probabilistic violation bound (the named violation frame, D1(c)).
+///
+/// # Syntax
+///
+/// ```ignore
+/// #[prob_violation_at_most(violation_condition, delta)]
+/// ```
+///
+/// - `violation_condition`: Boolean expression that is TRUE when the BAD
+///   event occurs
+/// - `delta`: maximum allowed probability of the violation (0.0 to 1.0)
+///
+/// The generated test helper verifies `P(violation) <= delta` via
+/// `MonteCarloVerifier::verify_violation_bound`.
+#[proc_macro_attribute]
+pub fn prob_violation_at_most(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as ItemFn);
+
+    let parsed = if attr.is_empty() {
+        None
+    } else {
+        match syn::parse::<ProbabilisticAttr>(attr.clone()) {
+            Ok(parsed) => Some(parsed),
+            Err(err) => return err.to_compile_error().into(),
+        }
+    };
+
+    let fn_name = &input.sig.ident;
+    let verify_fn_name = syn::Ident::new(
+        &format!("verify_{}_violation_bound", fn_name),
+        fn_name.span(),
+    );
+
+    let (doc_string, verification_helper) = match &parsed {
+        None => (
+            "Probabilistic violation bound: contract not yet specified".to_string(),
+            quote! {},
+        ),
+        Some(parsed_attr) => {
+            let condition = &parsed_attr.condition;
+            let bound = parsed_attr
+                .bound
+                .base10_parse::<f64>()
+                .expect("delta literal must be a valid f64");
+            let doc_string = format!(
+                "Probabilistic violation bound: `{}` with P <= {bound} (violation frame)",
+                quote!(#condition)
+            );
+            let (param_type, param_bindings) = extract_binding_shape(&input);
+            let helper = quote! {
+                #[cfg(test)]
+                #[doc = concat!("Verification helper for ", stringify!(#fn_name), " violation bound (P(violation) <= ", stringify!(#bound), ")")]
+                #[allow(dead_code)]
+                fn #verify_fn_name<F>(
+                    input_generator: F,
+                    samples: usize,
+                ) -> amari_flynn::contracts::VerificationResult
+                where
+                    F: Fn() -> #param_type,
+                {
+                    let verifier = amari_flynn::backend::monte_carlo::MonteCarloVerifier::new(samples);
+                    verifier.verify_violation_bound(
+                        || {
+                            let inputs = input_generator();
+                            #param_bindings
+                            #condition
+                        },
+                        #bound,
+                    )
+                }
+            };
+            (doc_string, helper)
+        }
+    };
+
+    let output = quote! {
+        #[doc = #doc_string]
+        #input
+
+        #verification_helper
+    };
+
+    output.into()
+}
+
 #[proc_macro_attribute]
 pub fn ensures_expected(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);

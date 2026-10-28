@@ -239,14 +239,26 @@ impl SmtProofObligation {
 
     /// Constrain `sample_mean` to an observed enclosure (audit U2: makes
     /// expected-value obligations checkable).
+    ///
+    /// # Panics
+    ///
+    /// Panics if the endpoints are not finite or not ordered
+    /// (`lower <= upper`) — reversed enclosures would create inconsistent
+    /// assumptions (R1 P2).
     pub fn observe_mean(&mut self, lower: f64, upper: f64) {
-        let lo = Rational::from_f64_exact(lower);
-        let hi = Rational::from_f64_exact(upper);
+        assert!(
+            lower.is_finite() && upper.is_finite(),
+            "endpoints must be finite"
+        );
+        assert!(
+            lower <= upper,
+            "enclosure must be ordered: got [{lower}, {upper}]"
+        );
         self.add_assertion(
             format!(
                 "(and (>= sample_mean {}) (<= sample_mean {}))",
-                lo.to_smt_literal(),
-                hi.to_smt_literal()
+                signed_rational_literal(lower),
+                signed_rational_literal(upper)
             ),
             Some(format!("observed mean enclosure [{lower}, {upper}]")),
         );
@@ -342,6 +354,13 @@ impl SmtProofObligation {
 
 /// Exact SMT-LIB2 literal for a finite f64 (its true rational value).
 fn exact_literal(value: f64) -> String {
+    signed_rational_literal(value)
+}
+
+/// Exact signed literal: negatives use the `(- x)` form; positives (and
+/// zero) emit directly.
+fn signed_rational_literal(value: f64) -> String {
+    assert!(value.is_finite(), "value must be finite: {value}");
     if value < 0.0 {
         format!("(- {})", Rational::from_f64_exact(-value).to_smt_literal())
     } else {
@@ -384,6 +403,14 @@ pub fn hoeffding_obligation_with_mode(
     assert!(n >= 1, "n must be at least 1");
     assert!(epsilon > 0.0, "epsilon must be positive");
     assert!(delta > 0.0 && delta <= 1.0, "delta must be in (0, 1]");
+    // Exact emission of exp is impossible in QF_NRA by definition: an
+    // Exact request for this transcendental obligation is DOWNGRADED to
+    // the certified enclosure and recorded as such (never labeled "unsat
+    // iff" while emitting enclosures — R1 P2).
+    let effective_mode = match mode {
+        EmissionMode::Exact => EmissionMode::CertifiedEnclosure,
+        other => other,
+    };
     let mut ob = SmtProofObligation::with_mode(
         &name,
         format!("Hoeffding bound: P(|X_bar - mu| > {epsilon}) <= {delta} with n={n} samples"),
@@ -391,12 +418,22 @@ pub fn hoeffding_obligation_with_mode(
             samples: n,
             epsilon,
         },
-        mode,
+        effective_mode,
     );
+    if effective_mode != mode {
+        ob.add_assertion(
+            "true".to_string(),
+            Some(
+                "EXACT MODE UNAVAILABLE for transcendental bounds in QF_NRA; \
+                 certified enclosure emitted instead (sufficient-proof semantics)."
+                    .to_string(),
+            ),
+        );
+    }
 
-    // Exact rational for x = 2*n*epsilon^2.
+    // Exact rational for x = 2*n*epsilon^2 (full usize — never `as u32`).
     let eps_r = Rational::from_f64_exact(epsilon);
-    let x = eps_r.mul(&eps_r).mul_small(2).mul_small(n as u32);
+    let x = eps_r.mul(&eps_r).mul_small(2).mul_u64(n as u64);
     // Certified enclosure of 2*exp(-x).
     let enclosure = Enclosure::exp_neg(&x).times_two();
 
@@ -531,7 +568,10 @@ pub fn expected_value_obligation(
         Some("Deviation tolerance".to_string()),
     );
     ob.add_assertion(
-        format!("(= n {}.0)", samples),
+        format!(
+            "(= n {})",
+            Rational::from_u64(samples as u64).to_smt_literal()
+        ),
         Some("Sample count".to_string()),
     );
     ob.add_assertion(
@@ -543,9 +583,10 @@ pub fn expected_value_obligation(
         Some("Positive sample count".to_string()),
     );
 
-    // Certified enclosure of the Hoeffding tail at (n, epsilon).
+    // Certified enclosure of the Hoeffding tail at (n, epsilon)
+    // (full usize — never `as u32`).
     let eps_r = Rational::from_f64_exact(epsilon);
-    let x = eps_r.mul(&eps_r).mul_small(2).mul_small(samples as u32);
+    let x = eps_r.mul(&eps_r).mul_small(2).mul_u64(samples as u64);
     let enclosure = Enclosure::exp_neg(&x).times_two();
     ob.add_assertion(
         format!(
@@ -556,18 +597,16 @@ pub fn expected_value_obligation(
         Some("Tail probability via CERTIFIED Hoeffding enclosure".to_string()),
     );
 
+    // Negated goal: the PROPERTY is |sample_mean - mu| <= epsilon
+    // (encoded as two linear constraints; abs is not in QF_NRA). The
+    // historical builder ASSERTED (= sample_mean mu) as a placeholder —
+    // a false assumption that proved violated properties (R1 P1).
     ob.add_assertion(
-        "(not (< tail_prob 0.05))".to_string(),
-        Some("Negated goal: tail probability < 5%".to_string()),
-    );
-    ob.add_assertion(
-        "(= sample_mean mu)".to_string(),
-        Some(
-            "PLACEHOLDER constraint: sample_mean is unconstrained by the builder; \
-             call observe_mean() to supply the observed enclosure and make this \
-             obligation checkable."
-                .to_string(),
+        format!(
+            "(not (and (<= sample_mean (+ mu {eps})) (>= sample_mean (- mu {eps}))))",
+            eps = signed_rational_literal(epsilon)
         ),
+        Some("Negated goal: |sample_mean - mu| <= epsilon (call observe_mean to constrain sample_mean)".to_string()),
     );
 
     ob
@@ -634,14 +673,34 @@ mod tests {
     }
 
     #[test]
-    fn expected_value_documents_unconstrained_mean() {
+    fn expected_value_proves_the_mean_deviation_property() {
+        // No (= sample_mean mu) assumption (R1 P1): the property is
+        // |sample_mean - mu| <= epsilon, and sample_mean is unconstrained
+        // until observe_mean.
         let ob = expected_value_obligation("ev", 5.0, 0.1, 10000);
         let script = ob.to_smtlib2();
-        assert!(script.contains("PLACEHOLDER constraint"));
+        assert!(!script.contains("(= sample_mean mu)"));
+        assert!(script.contains("|sample_mean - mu| <= epsilon"));
         assert!(!script.contains("(exp"));
-        let mut ob2 = expected_value_obligation("ev2", 5.0, 0.1, 10000);
-        ob2.observe_mean(4.95, 5.05);
-        assert!(ob2.to_smtlib2().contains("sample_mean"));
+        // Observations are signed and validated.
+        let mut neg = expected_value_obligation("ev3", -5.0, 0.1, 10000);
+        neg.observe_mean(-5.05, -4.95);
+        assert!(neg.to_smtlib2().contains("(- "));
+        assert!(std::panic::catch_unwind(|| {
+            let mut bad = expected_value_obligation("ev4", 5.0, 0.1, 10);
+            bad.observe_mean(1.0, -1.0)
+        })
+        .is_err());
+    }
+
+    #[test]
+    fn exact_mode_downgrade_is_recorded_not_claimed() {
+        // R1 P2: requesting Exact for a transcendental obligation must not
+        // emit enclosures under an "unsat iff" header — the effective mode
+        // is recorded as CertifiedEnclosure with an explicit note.
+        let ob = hoeffding_obligation_with_mode("x", 1000, 0.1, 0.05, EmissionMode::Exact);
+        assert_eq!(ob.mode, EmissionMode::CertifiedEnclosure);
+        assert!(ob.to_smtlib2().contains("EXACT MODE UNAVAILABLE"));
     }
 
     #[test]

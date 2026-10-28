@@ -205,3 +205,29 @@ fn test_ensures_expected_two_params_verification_helper() {
     );
     assert!(result, "Expected value of symmetric_diff should be ~0.0");
 }
+
+use amari_flynn::prob_violation_at_most;
+
+#[prob_violation_at_most(x < 0.0, 0.05)]
+#[allow(dead_code)]
+fn safe_sqrt(x: f64) -> f64 {
+    if x < 0.0 {
+        0.0
+    } else {
+        x.sqrt()
+    }
+}
+
+#[test]
+fn test_prob_violation_at_most_helper() {
+    // Named violation frame (D1(c)): an input generator that never
+    // violates must verify; one that always violates must fail.
+    assert_eq!(
+        verify_safe_sqrt_violation_bound(|| 4.0, 4000),
+        VerificationResult::Verified
+    );
+    assert_eq!(
+        verify_safe_sqrt_violation_bound(|| -4.0, 4000),
+        VerificationResult::Violated
+    );
+}

@@ -56,6 +56,7 @@
 //! // Track rare events
 //! let miracle_shot = RareEvent::<()>::new(0.001, "critical_hit");
 //! # }
+//! ```
 //!
 //! ## Future Integration with Amari
 //!
