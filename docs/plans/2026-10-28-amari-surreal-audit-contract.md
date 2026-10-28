@@ -178,6 +178,13 @@ constructors.
 - Oracle table test: the four counterexample cuts above plus canonical
   positives (`{0|1}`→1/2, `{1|2}`→3/2, `{−1|1}`→0, `{−2|−1}`→−3/2,
   `{1/2|3/4}`→5/8, adjacent-dyadic worst cases at the `max_e+1` bound).
+- **Boundary (R4): the found candidate constructs through the fallible
+  path** — a cut whose simplest value needs exponent `MAX_EXPONENT+1`
+  (adjacent dyadics at the representation bound) returns
+  `Err(ExponentOverflow)` from `simplest_between`, never a panic (it is
+  a `Result`-returning function). The `floor/ceil_scaled_numer` probes
+  are transient arithmetic and stay unbounded internally. Regression:
+  `{m/2^MAX | (m+1)/2^MAX}` → `Err(ExponentOverflow)`.
 - Roundtrip property: for a table of user-built games (negative options
   included), `from_game` then `to_game_in` then `from_game` yields the same
   dyadic value.
@@ -211,17 +218,26 @@ constructors.
   stay far inside i32 range (≤ 2^22 for double cross-products);
   (ii) **public constructors and public ops** enforce MAX_EXPONENT on
   their OUTPUT: `Mul`/`checked_mul`, `checked_div`, `checked_reciprocal`,
-  `Add` (Add cannot grow exponents, verified) — the checked variants
-  propagate `ExponentOverflow` as `Err`, the infallible ops panic with
-  the message;
+  and **`EpsilonRational` `Add`/`Sub`** (R4 correction: polynomial Add is
+  union-of-terms and cannot grow exponents, but RATIONAL Add/Sub
+  cross-multiply denominators, so the output can reach exponent 2·MAX —
+  the earlier "Add cannot grow exponents, verified" claim applied to the
+  wrong type) — the checked variants propagate `ExponentOverflow` as
+  `Err`, the infallible ops panic with the message. `EpsilonPolynomial`
+  `Add` needs no check (union of bounded terms);
   (iii) **totality preserved**: `Ord`, `PartialEq`, `Display`, and `sign`
   use only transient primitives — they never panic on any input
   (comparisons of two bound-max Laurent polynomials ordering correctly is
   a regression test);
-  (iv) **WASM propagation**: the epsilon bridge's `checked_div`,
-  `checked_reciprocal`, and `compare` map `ExponentOverflow` to `JsValue`
-  errors (compare keeps a total non-panicking path per (iii); the bridge
-  surfaces comparison as a string result).
+  (iv) **WASM propagation (R4 extended)**: the epsilon bridge's
+  `checked_div`, `checked_reciprocal`, and `compare` map
+  `ExponentOverflow` to `JsValue` errors (compare keeps a total
+  non-panicking path per (iii)); and the bridge's previously-infallible
+  `add`/`sub`/`mul` — which would otherwise surface the documented Rust
+  operator panic as a JS trap — become `Result<Self, JsValue>` mapping
+  `ExponentOverflow` (JS signature change; disclosed in the PR —
+  compatibility is not a constraint). No JS-reachable panic or trap
+  remains in the epsilon bridge.
 - **R2: checked functions never panic.** `checked_reciprocal`,
   `checked_div`, and the internal `from_ratio` route through the FALLIBLE
   construction path and propagate `ExponentOverflow` as `Err` — the
@@ -234,7 +250,9 @@ constructors.
   `None` (documented: "not representable in the bounded dyadic layer")
   instead of reaching the panicking `Dyadic::new`. Regression:
   `from_ratio(1, 2^1_048_577)` → `to_short_if_dyadic() == None`;
-  `from_ratio(1, 2^20)` (exponent = MAX_EXPONENT) → `Some`. The WASM
+  `from_ratio(1, 2^1_048_576)` (denominator 2^MAX_EXPONENT, i.e.
+  exponent exactly MAX_EXPONENT — the R4 correction: an earlier draft
+  wrote `2^20`, which is exponent 20) → `Some`. The WASM
   caller of `to_short_if_dyadic` keeps its existing Option→JS mapping
   (null), which now cannot panic.
 - **R2: `RationalSurreal` overflow posture, stated explicitly.** The
