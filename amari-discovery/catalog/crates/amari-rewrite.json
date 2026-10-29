@@ -14551,6 +14551,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::relation::ConstraintSet::canonical_digest",
+      "kind": "method",
+      "signature": "pub fn canonical_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/relation/constraints.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::relation::constraints",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn canonical_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/relation/constraints.rs",
+          "source_module": "amari_rewrite::relation::constraints",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::relation::constraints",
+          "declaration_ident": "ConstraintSet::canonical_digest"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::relation::ConstraintSet::constraints",
       "kind": "method",
       "signature": "pub fn constraints (& self) -> & [TermConstraint]",
@@ -36584,6 +36603,14 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::relation::ConstraintSet::canonical_digest",
+      "source_path": "amari-rewrite/src/relation/constraints.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::relation::ConstraintSet::constraints",
       "source_path": "amari-rewrite/src/relation/constraints.rs",
       "source_ordinal": 2,
@@ -36602,7 +36629,7 @@
     {
       "path": "amari_rewrite::relation::ConstraintSet::is_empty",
       "source_path": "amari-rewrite/src/relation/constraints.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -36626,7 +36653,7 @@
     {
       "path": "amari_rewrite::relation::ConstraintSet::normalize",
       "source_path": "amari-rewrite/src/relation/constraints.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"

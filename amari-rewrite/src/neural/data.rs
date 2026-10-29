@@ -51,18 +51,20 @@
 //! Admission runs before verification and before any digest, over the
 //! **whole** certificate: the trace count, the step counts of *both*
 //! derivation halves (forward and backward), both certified query terms,
-//! every step (including both meeting terms and the unifier), every residual
-//! constraint side, and every substitution range together with its
-//! transitive resolution chain. Every embedded term's node count and depth
-//! are checked against [`RelationLimits`], and every identifier — symbol and
-//! variable name alike — against [`FeatureEncoder::MAX_IDENTIFIER_BYTES`],
-//! all with a bounded iterative walk, *before* [`ReplayCertificate::verify`]
+//! every step (including both meeting terms, the unifier, and the
+//! existential vector), every residual constraint side, and every
+//! substitution range together with its transitive resolution chain *and*
+//! the expanded structure resolving it composes. Every embedded term's node
+//! count and depth are checked against [`RelationLimits`], and every
+//! identifier — symbol and variable name alike — against
+//! [`FeatureEncoder::MAX_IDENTIFIER_BYTES`], all with a bounded iterative
+//! walk, *before* [`ReplayCertificate::verify`]
 //! replays (which hashes and clones terms, and resolves substitution chains
 //! recursively). No unbounded allocation or recursion can be reached from
 //! an untrusted trace, and nothing is hashed or cloned before it is
 //! admitted.
 
-use alloc::collections::BTreeMap;
+use alloc::collections::{BTreeMap, BTreeSet};
 
 use crate::inverse::{
     query_hash, ForwardStep, GuidanceMode, ReplayCertificate, ReplayDerivation, ReplayQuery,
@@ -71,7 +73,9 @@ use crate::inverse::{
 use crate::neural::encode::{CandidateInput, FeatureEncoder, FeatureVector, SearchContext};
 use crate::neural::model::{canonical_digest, content_key};
 use crate::neural::{FeatureSchemaV1, NeuralError};
-use crate::relation::{ConstraintSet, RelationLimits, RuleId, Sha256Digest, TermConstraint};
+use crate::relation::{
+    ConstraintSet, LogicVar, RelationLimits, RuleId, Sha256Digest, TermConstraint,
+};
 use crate::trs::{Substitution, Term, TermSystem, Variable};
 use crate::Path;
 
@@ -710,7 +714,31 @@ fn check_steps_bounded(
         check_term_bounded(&step.term, limits)?;
         check_path_bounded(&step.provenance.position, limits)?;
         check_constraints_bounded(&step.constraints, limits)?;
+        check_existentials_bounded(&step.existentials, limits)?;
         check_substitution_bounded(&step.substitution, limits)?;
+    }
+    Ok(())
+}
+
+/// Admit a step's existential vector.
+///
+/// Existentials are a per-step auxiliary set exactly like the residual
+/// constraints, and the per-step constraint ceiling (`RelationLimits`) is the
+/// ceiling that fits: real steps carry a handful (one per erased LHS
+/// variable), while replay ignores the vector and the trace digest would hash
+/// it whole. A million-entry vector is therefore an unbounded payload that
+/// reached both, so it is rejected at admission with the resource named
+/// (PR #357 round 3 P2b).
+fn check_existentials_bounded(
+    existentials: &[LogicVar],
+    limits: &RelationLimits,
+) -> Result<(), NeuralError> {
+    if existentials.len() > limits.max_constraints() {
+        return Err(NeuralError::LimitExceeded {
+            resource: "existentials",
+            value: existentials.len(),
+            limit: limits.max_constraints(),
+        });
     }
     Ok(())
 }
@@ -741,9 +769,9 @@ fn check_constraints_bounded(
 }
 
 /// Admit a substitution: every bound name and every range term, the entry
-/// count, and the longest transitive chain of variable-to-variable bindings
-/// reachable through it. `BTreeMap` iteration order makes the walk
-/// deterministic.
+/// count, the longest transitive chain of variable-to-variable bindings
+/// reachable through it, and the *expanded* structure the resolution
+/// produces. `BTreeMap` iteration order makes every walk deterministic.
 ///
 /// The entry ceiling reuses the term-node ceiling: a substitution is a map of
 /// bounded ranges, so its cardinality is held to the same admitted size.
@@ -754,6 +782,11 @@ fn check_constraints_bounded(
 /// (`V0 -> V1 -> ... -> Vn -> a`). Counting entries alone does not bound that
 /// depth, and walking it recursively to measure it would reproduce the bug,
 /// so the chain is measured iteratively and memoized.
+///
+/// The chain bound is still not sufficient on its own: many short chains
+/// compose. [`check_substitution_expansion_bounded`] bounds the composed
+/// result — the depth and node count of the term each variable actually
+/// resolves to — which is the structure replay recurses over.
 fn check_substitution_bounded(
     substitution: &Substitution,
     limits: &RelationLimits,
@@ -769,7 +802,8 @@ fn check_substitution_bounded(
         check_identifier(variable.as_str())?;
         check_term_bounded(term, limits)?;
     }
-    check_substitution_chain_depth(substitution, limits)
+    check_substitution_chain_depth(substitution, limits)?;
+    check_substitution_expansion_bounded(substitution, limits)
 }
 
 /// Bound the longest transitive variable chain through a substitution.
@@ -785,8 +819,10 @@ fn check_substitution_bounded(
 /// The ceiling is the admitted term-depth ceiling: unification produces
 /// idempotent substitutions (no chains at all), so a chain longer than any
 /// admitted term walk cannot come from a real search and is rejected as
-/// hostile. Together with the per-range term-depth ceiling, this bounds the
-/// recursion `Substitution::apply` performs during replay.
+/// hostile. This bound names chain abuse precisely, but it does not bound the
+/// recursion `Substitution::apply` performs during replay: short chains
+/// compose (PR #357 round 3 P1). [`check_substitution_expansion_bounded`] is
+/// the bound over the composed result.
 fn check_substitution_chain_depth(
     substitution: &Substitution,
     limits: &RelationLimits,
@@ -835,6 +871,98 @@ fn check_substitution_chain_depth(
         }
     }
     Ok(())
+}
+
+/// Bound the *expanded* structure a substitution resolves to.
+///
+/// The chain ceiling and the per-range ceilings are each necessary but
+/// neither is sufficient. Sixty-four ranges of sixty-three `f` wrappers each
+/// are within the per-range term depth, and their variable chain is exactly
+/// the chain ceiling, yet resolving the first variable composes to a term of
+/// depth ~3,970. Replay resolves ranges recursively
+/// (`Substitution::apply`), so the composition — not the parts — is the
+/// structure whose size has to be bounded before recursion (PR #357 round 3
+/// P1).
+///
+/// The walk mirrors `apply` exactly: a bound variable occurrence is replaced
+/// by its resolved range at the same depth, and a variable already being
+/// resolved (a cycle) is left in place, matching the fixed-point rule in
+/// `apply_guarded`. Two deliberate differences keep it safe as a judge:
+/// it is iterative (one explicit frame stack, so hostile depth cannot recurse)
+/// and it stops at the first ceiling breach, so its cost is bounded by the
+/// node ceiling rather than by what the substitution claims. An expanding
+/// variable occurrence is counted as one node in addition to its range, which
+/// over-counts what resolution produces: the node bound is conservative.
+///
+/// Ceilings: the expanded term must satisfy the admitted term ceilings
+/// (nodes and depth), because that term is what replay substitutes into the
+/// meeting terms and what the encoder later walks. A substitution whose
+/// resolution exceeds them cannot come from a real search, whose resolved
+/// ranges are subterms of admitted states.
+fn check_substitution_expansion_bounded(
+    substitution: &Substitution,
+    limits: &RelationLimits,
+) -> Result<(), NeuralError> {
+    let max_nodes = limits.max_term_nodes();
+    let max_depth = limits.max_term_depth();
+    for (_, range) in substitution.iter() {
+        let mut visiting: BTreeSet<Variable> = BTreeSet::new();
+        let mut nodes = 0usize;
+        let mut stack: Vec<Frame<'_>> = Vec::from([Frame::Enter(range, 1)]);
+        while let Some(frame) = stack.pop() {
+            let (node, depth) = match frame {
+                // The expansion of a variable is complete once its frames
+                // have popped, so it leaves the cycle set here.
+                Frame::Exit(variable) => {
+                    visiting.remove(&variable);
+                    continue;
+                }
+                Frame::Enter(node, depth) => (node, depth),
+            };
+            nodes += 1;
+            if nodes > max_nodes {
+                return Err(NeuralError::LimitExceeded {
+                    resource: "expanded substitution nodes",
+                    value: nodes,
+                    limit: max_nodes,
+                });
+            }
+            if depth > max_depth {
+                return Err(NeuralError::LimitExceeded {
+                    resource: "expanded substitution depth",
+                    value: depth,
+                    limit: max_depth,
+                });
+            }
+            match node {
+                Term::Var(variable) => {
+                    if visiting.contains(variable) {
+                        // A cycle resolves to its fixed point: the variable
+                        // is left in place, exactly as `apply` does.
+                        continue;
+                    }
+                    if let Some(bound) = substitution.get_var(variable) {
+                        visiting.insert(variable.clone());
+                        stack.push(Frame::Exit(variable.clone()));
+                        stack.push(Frame::Enter(bound, depth));
+                    }
+                }
+                Term::Sym(_, args) => {
+                    for arg in args.iter().rev() {
+                        stack.push(Frame::Enter(arg, depth + 1));
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// One frame of the expansion walk: a node at its depth, or the end of one
+/// variable's expansion (which releases it from the cycle set).
+enum Frame<'a> {
+    Enter(&'a Term, usize),
+    Exit(Variable),
 }
 
 /// The bound variables occurring in a substitution range: the edges of the
@@ -1049,10 +1177,12 @@ fn encode_forward_step(payload: &mut Vec<u8>, step: &ForwardStep) {
 }
 
 fn encode_constraints(payload: &mut Vec<u8>, constraints: &ConstraintSet) {
-    payload.extend_from_slice(&(constraints.len() as u32).to_le_bytes());
-    for constraint in constraints.constraints() {
-        payload.extend_from_slice(constraint.canonical_digest().as_bytes());
-    }
+    // One digest over the WHOLE set, not per-constraint digests: a constraint
+    // is hashed under the set's shared variable-renaming environment, so
+    // variable co-occurrence across constraints is part of the identity. Per-
+    // constraint digests restart renumbering at zero, which made
+    // `{X != a, X != b}` and `{X != a, Y != b}` collide (PR #357 round 3 P2a).
+    payload.extend_from_slice(constraints.canonical_digest().as_bytes());
 }
 
 fn encode_path(payload: &mut Vec<u8>, path: &Path) {

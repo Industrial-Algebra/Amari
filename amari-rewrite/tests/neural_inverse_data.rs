@@ -815,6 +815,184 @@ fn unifier_chain_through_term_structure_is_bounded() {
 }
 
 #[test]
+fn unifier_expanded_depth_is_bounded_across_composed_ranges() {
+    // P1 (round 3): the per-range depth ceiling and the chain ceiling are
+    // each necessary but neither is sufficient. Here every range is a
+    // 63-wrapper `f(...(V{i+1}))` term (depth 64, admitted) and the chain is
+    // 64 links (admitted), yet resolving `V0` transitively *expands* to a
+    // term of depth ~3970. Replay's recursive application walks that depth
+    // and aborts the stack, so admission must bound the EXPANDED structure —
+    // the depth after transitively resolving each variable through the
+    // unifier — iteratively, before recursion. The fixture is leaked because
+    // a pre-fix run aborts (deep-drop discipline).
+    let (system, mut certificate) = bidirectional_witness();
+    if let ReplayDerivation::Bidirectional(derivation) = &mut certificate.derivation {
+        derivation.meeting_backward = parse("g(f(V0))");
+        for index in 0..63 {
+            let mut range = Term::var(format!("V{}", index + 1));
+            for _ in 0..63 {
+                range = Term::sym("f", [range]);
+            }
+            derivation.unifier.insert(format!("V{index}"), range);
+        }
+        derivation.unifier.insert("V63", parse("a"));
+    }
+    let result = builder().build(&system, std::slice::from_ref(&certificate));
+    std::mem::forget(certificate);
+    assert!(
+        matches!(
+            result,
+            Err(NeuralError::LimitExceeded {
+                resource: "expanded substitution depth",
+                ..
+            })
+        ),
+        "composed expansion depth (~3970) must be rejected at admission, got {result:?}"
+    );
+}
+
+#[test]
+fn unifier_expanded_nodes_are_bounded_across_composed_ranges() {
+    // P1 (round 3), node half: eight ranges of `h(V{i+1}, V{i+1}, V{i+1},
+    // V{i+1})` are four nodes each with depth 2, and the chain is nine links —
+    // all admitted. Expansion is multiplicative: `V0` resolves to 4^8 = 65,536
+    // nodes at depth 9. The expanded NODE count must be bounded too, not only
+    // the depth.
+    let (system, mut certificate) = bidirectional_witness();
+    if let ReplayDerivation::Bidirectional(derivation) = &mut certificate.derivation {
+        derivation.meeting_backward = parse("g(f(V0))");
+        for index in 0..8 {
+            let next = Term::var(format!("V{}", index + 1));
+            derivation.unifier.insert(
+                format!("V{index}"),
+                Term::sym("h", [next.clone(), next.clone(), next.clone(), next]),
+            );
+        }
+        derivation.unifier.insert("V8", parse("a"));
+    }
+    let result = builder().build(&system, std::slice::from_ref(&certificate));
+    assert!(
+        matches!(
+            result,
+            Err(NeuralError::LimitExceeded {
+                resource: "expanded substitution nodes",
+                ..
+            })
+        ),
+        "a 65,536-node composed expansion must be rejected at admission, got {result:?}"
+    );
+}
+
+#[test]
+fn residual_constraint_digest_preserves_variable_sharing() {
+    // P2a (round 3): hashing each constraint independently renumbers its
+    // variables from zero, so `{X != a, X != b}` and `{X != a, Y != b}` —
+    // genuinely different residual sets — hashed identically. The constraint
+    // set is one identity scope: encoding every constraint under a SHARED
+    // variable-renaming environment preserves co-occurrence.
+    let (system, baseline) = backward_witness();
+    let with_constraints = |pairs: [(&str, &str); 2]| {
+        let mut certificate = baseline.clone();
+        if let ReplayDerivation::Backward(derivation) = &mut certificate.derivation {
+            derivation.steps[0].constraints = ConstraintSet::new();
+            for (left, right) in pairs {
+                derivation.steps[0]
+                    .constraints
+                    .insert(TermConstraint::NotEqual(parse(left), parse(right)));
+            }
+        }
+        certificate
+            .verify(&system)
+            .expect("constraints do not affect replay");
+        certificate
+    };
+    let shared = with_constraints([("X", "a"), ("X", "b")]);
+    let distinct = with_constraints([("X", "a"), ("Y", "b")]);
+    let shared_digests = builder()
+        .build(&system, std::slice::from_ref(&shared))
+        .expect("shared-variable build")
+        .manifest()
+        .trace_digests()
+        .to_vec();
+    let distinct_digests = builder()
+        .build(&system, std::slice::from_ref(&distinct))
+        .expect("distinct-variable build")
+        .manifest()
+        .trace_digests()
+        .to_vec();
+    assert_ne!(
+        shared_digests, distinct_digests,
+        "a set whose second constraint reuses the first constraint's variable is not \
+         alpha-equivalent to one that does not (P2a)"
+    );
+}
+
+#[test]
+fn alpha_equivalent_constraint_sets_share_a_trace_digest() {
+    // P2a settled invariant: the fix must keep the alpha-invariance that the
+    // residual identity promises. `{X != a, X != b}` and `{W != a, W != b}`
+    // are the same set up to variable renaming, so they share one digest.
+    let (system, baseline) = backward_witness();
+    let renamed = |variable: &str| {
+        let mut certificate = baseline.clone();
+        if let ReplayDerivation::Backward(derivation) = &mut certificate.derivation {
+            derivation.steps[0].constraints = ConstraintSet::new();
+            for side in ["a", "b"] {
+                derivation.steps[0]
+                    .constraints
+                    .insert(TermConstraint::NotEqual(parse(variable), parse(side)));
+            }
+        }
+        certificate
+            .verify(&system)
+            .expect("constraints do not affect replay");
+        certificate
+    };
+    let first = builder()
+        .build(&system, std::slice::from_ref(&renamed("X")))
+        .expect("X build")
+        .manifest()
+        .trace_digests()
+        .to_vec();
+    let second = builder()
+        .build(&system, std::slice::from_ref(&renamed("W")))
+        .expect("W build")
+        .manifest()
+        .trace_digests()
+        .to_vec();
+    assert_eq!(
+        first, second,
+        "alpha-equivalent residual constraint sets must share a trace digest"
+    );
+}
+
+#[test]
+fn existential_vectors_are_held_to_an_admission_ceiling() {
+    // P2b (round 3): a step's existential vector is admitted like every other
+    // auxiliary payload — bounded by the per-step constraint ceiling at
+    // admission, before verification or hashing. A million-entry vector used
+    // to be accepted and hashed whole.
+    let (system, mut certificate) = backward_witness();
+    if let ReplayDerivation::Backward(derivation) = &mut certificate.derivation {
+        derivation.steps[0].existentials = (0..1_000_000)
+            .map(|index| LogicVar::new(1, index))
+            .collect();
+    }
+    let result = builder().build(&system, std::slice::from_ref(&certificate));
+    assert!(
+        matches!(
+            result,
+            Err(NeuralError::LimitExceeded {
+                resource: "existentials",
+                value: 1_000_000,
+                limit: RelationLimits::MAX_CONSTRAINTS,
+            })
+        ),
+        "a 1,000,000-entry existential vector must be rejected at admission, got {result:?}"
+    );
+}
+
+#[test]
 fn forward_derivation_half_is_held_to_the_step_ceiling() {
     // P1b: the step ceiling used to apply only to the backward half. 65,537
     // identity forward steps replay fine and were admitted; both halves must
