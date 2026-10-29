@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 107 dependency edges",
-  "content_hash": "f3510f38e5178cff57cd2edc41cce4475dd83dcf46d0552746513ca49b158fc6",
+  "content_hash": "2b9930fb1c846c2f03016d32317b315367ee1f76aedf0b30f7568098b9eda2c9",
   "probe_descriptors": [
     {
       "id": "amari-probe:core:geometric-product:v1",
@@ -457,7 +457,7 @@
   ],
   "wasm_surface": {
     "path": "amari-discovery/catalog/generated-wasm.json",
-    "source_hash": "7487b5c8190ff6d963c6556237c592d057689898f370ecca26fad4a17402dfc7",
+    "source_hash": "f65d7b4e460dd777598b7ded11392fe2c0a826f6d284d0c0910e3015d66c3f0e",
     "class_count": 153,
     "function_count": 30,
     "enum_count": 2,
@@ -1084,7 +1084,7 @@
   ],
   "totals": {
     "crates": 28,
-    "items": 11359,
+    "items": 11362,
     "dependency_edges": 107
   }
 }

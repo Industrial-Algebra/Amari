@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_hash": "7487b5c8190ff6d963c6556237c592d057689898f370ecca26fad4a17402dfc7",
+  "source_hash": "f65d7b4e460dd777598b7ded11392fe2c0a826f6d284d0c0910e3015d66c3f0e",
   "description": "153 classes, 30 functions, 2 enums, 1 interfaces, 2 type aliases",
   "classes": [
     {
@@ -2203,7 +2203,7 @@
       "methods": [
         {
           "name": "add",
-          "doc": "Add two epsilon rationals.",
+          "doc": "Add two epsilon rationals.\n\nErrors when the result leaves the representable bound (checked\narithmetic — never a trap).",
           "signature": "(rhs: WasmExperimentalEpsilonRational): WasmExperimentalEpsilonRational",
           "is_static": false
         },
@@ -2233,7 +2233,7 @@
         },
         {
           "name": "mul",
-          "doc": "Multiply two epsilon rationals.",
+          "doc": "Multiply two epsilon rationals.\n\nErrors when the result leaves the representable bound.",
           "signature": "(rhs: WasmExperimentalEpsilonRational): WasmExperimentalEpsilonRational",
           "is_static": false
         },
@@ -2245,7 +2245,7 @@
         },
         {
           "name": "sub",
-          "doc": "Subtract two epsilon rationals.",
+          "doc": "Subtract two epsilon rationals.\n\nErrors when the result leaves the representable bound.",
           "signature": "(rhs: WasmExperimentalEpsilonRational): WasmExperimentalEpsilonRational",
           "is_static": false
         }
@@ -10986,7 +10986,7 @@
         },
         {
           "name": "wasmexperimentalepsilonrational_add",
-          "type_signature": "readonly wasmexperimentalepsilonrational_add: (a: number, b: number) => number"
+          "type_signature": "readonly wasmexperimentalepsilonrational_add: (a: number, b: number) => [number, number, number]"
         },
         {
           "name": "wasmexperimentalepsilonrational_checkedDiv",
@@ -11018,7 +11018,7 @@
         },
         {
           "name": "wasmexperimentalepsilonrational_mul",
-          "type_signature": "readonly wasmexperimentalepsilonrational_mul: (a: number, b: number) => number"
+          "type_signature": "readonly wasmexperimentalepsilonrational_mul: (a: number, b: number) => [number, number, number]"
         },
         {
           "name": "wasmexperimentalepsilonrational_neg",
@@ -11030,7 +11030,7 @@
         },
         {
           "name": "wasmexperimentalepsilonrational_sub",
-          "type_signature": "readonly wasmexperimentalepsilonrational_sub: (a: number, b: number) => number"
+          "type_signature": "readonly wasmexperimentalepsilonrational_sub: (a: number, b: number) => [number, number, number]"
         },
         {
           "name": "wasmexperimentalepsilonrational_zero",

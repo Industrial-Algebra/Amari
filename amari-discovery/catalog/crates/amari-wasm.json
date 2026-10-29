@@ -20942,14 +20942,14 @@
     {
       "path": "amari_wasm::surreal::WasmExperimentalEpsilonRational::add",
       "kind": "method",
-      "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+      "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+          "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -21094,14 +21094,14 @@
     {
       "path": "amari_wasm::surreal::WasmExperimentalEpsilonRational::mul",
       "kind": "method",
-      "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+      "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+          "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -21151,14 +21151,14 @@
     {
       "path": "amari_wasm::surreal::WasmExperimentalEpsilonRational::sub",
       "kind": "method",
-      "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+      "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+          "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,

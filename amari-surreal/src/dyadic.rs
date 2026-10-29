@@ -216,12 +216,20 @@ impl Dyadic {
             denom /= gcd;
         }
 
-        let exponent =
-            Self::power_of_two_exponent(&denom).ok_or(SurrealError::NonDyadicQuotient)?;
-        Self::try_new(numer, exponent)
+        let exponent_wide =
+            Self::power_of_two_exponent_wide(&denom).ok_or(SurrealError::NonDyadicQuotient)?;
+        if exponent_wide > u64::from(MAX_EXPONENT) {
+            return Err(SurrealError::ExponentOverflow {
+                requested: u32::MAX, // full-width exponent; saturating report
+                bound: MAX_EXPONENT,
+            });
+        }
+        Self::try_new(numer, exponent_wide as u32)
     }
 
-    fn power_of_two_exponent(value: &BigInt) -> Option<u32> {
+    /// Power-of-two exponent as FULL-WIDTH u64 (no u32 narrowing: a
+    /// denominator 2^4294967296 must not corrupt values by wrapping).
+    fn power_of_two_exponent_wide(value: &BigInt) -> Option<u64> {
         if value.is_zero() || value.is_negative() {
             return None;
         }
@@ -234,7 +242,7 @@ impl Dyadic {
         match value.trailing_zeros() {
             Some(tz) => {
                 let shifted = value >> tz;
-                (shifted == BigInt::one()).then_some(tz as u32)
+                (shifted == BigInt::one()).then_some(tz)
             }
             None => None,
         }
@@ -418,6 +426,19 @@ mod tests {
         assert!(matches!(err, SurrealError::ExponentOverflow { .. }));
         // One below double-crosses only at the pair's sum.
         assert_eq!(d(1, 10).checked_mul(&d(1, 10)).unwrap(), d(1, 20));
+    }
+
+    #[test]
+    fn full_width_exponents_never_corrupt() {
+        // R1 P1-3 repro: denominator 2^4294967296 previously NARROWED
+        // (tz as u32 wrapped to 0) and returned 1 instead of erroring.
+        let huge = BigInt::from(1) << 4_294_967_296usize;
+        // from_integer(2^2^32).checked_reciprocal() must NOT be Ok(1).
+        let d = Dyadic::from_integer(huge.clone());
+        assert!(matches!(
+            d.checked_reciprocal(),
+            Err(SurrealError::ExponentOverflow { .. })
+        ));
     }
 
     #[test]

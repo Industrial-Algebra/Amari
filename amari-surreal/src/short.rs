@@ -208,35 +208,55 @@ impl ShortSurreal {
         Self::to_game_cached(&self.value, arena, &mut cache)
     }
 
+    /// Iterative (worklist) option traversal: no Rust recursion in the
+    /// surreal layer. NOTE: `NumericGame::from_game` delegates to
+    /// `amari-cgt`'s `is_numeric`, whose own option recursion bounds
+    /// reverse conversion depth for VERY deep games — that recursion
+    /// lives in amari-cgt and is recorded as a cross-crate boundary for
+    /// the cgt audit.
     fn from_game_cached(
         arena: &mut GameArena,
         game: GameId,
         cache: &mut HashMap<GameId, ShortSurreal>,
     ) -> Result<Self> {
-        if let Some(value) = cache.get(&game) {
-            return Ok(value.clone());
+        let mut stack = vec![game];
+        while let Some(current) = stack.pop() {
+            if cache.contains_key(&current) {
+                continue;
+            }
+
+            NumericGame::from_game(arena, current)?;
+
+            let left_ids = arena.left_options(current)?.to_vec();
+            let right_ids = arena.right_options(current)?.to_vec();
+
+            let mut pending = Vec::new();
+            for option in left_ids.iter().chain(right_ids.iter()) {
+                if !cache.contains_key(option) {
+                    pending.push(*option);
+                }
+            }
+
+            if pending.is_empty() {
+                let mut left_values = Vec::with_capacity(left_ids.len());
+                for option in left_ids {
+                    left_values.push(cache[&option].clone());
+                }
+                let mut right_values = Vec::with_capacity(right_ids.len());
+                for option in right_ids {
+                    right_values.push(cache[&option].clone());
+                }
+                let mut value = Self::simplest_between(&left_values, &right_values)?;
+                value.birthday = arena.birthday(current)?;
+                value.provenance = Some(current);
+                cache.insert(current, value);
+            } else {
+                stack.push(current);
+                stack.extend(pending);
+            }
         }
 
-        NumericGame::from_game(arena, game)?;
-
-        let left_ids = arena.left_options(game)?.to_vec();
-        let right_ids = arena.right_options(game)?.to_vec();
-
-        let mut left_values = Vec::with_capacity(left_ids.len());
-        for option in left_ids {
-            left_values.push(Self::from_game_cached(arena, option, cache)?);
-        }
-
-        let mut right_values = Vec::with_capacity(right_ids.len());
-        for option in right_ids {
-            right_values.push(Self::from_game_cached(arena, option, cache)?);
-        }
-
-        let mut value = Self::simplest_between(&left_values, &right_values)?;
-        value.birthday = arena.birthday(game)?;
-        value.provenance = Some(game);
-        cache.insert(game, value.clone());
-        Ok(value)
+        Ok(cache[&game].clone())
     }
 
     fn floor_scaled_numer(value: &Dyadic, exponent: u32) -> BigInt {
@@ -259,6 +279,13 @@ impl ShortSurreal {
         }
     }
 
+    /// Work budget for game reconstruction (fully ITERATIVE — no Rust
+    /// recursion anywhere; a worklist builds the canonical form
+    /// bottom-up). Values needing more arena games than this fail with
+    /// [`SurrealError::ReconstructionBudgetExceeded`] — honest error,
+    /// never a stack overflow.
+    pub const MAX_RECONSTRUCTION_NODES: u32 = 1 << 20;
+
     fn to_game_cached(
         value: &Dyadic,
         arena: &mut GameArena,
@@ -268,28 +295,74 @@ impl ShortSurreal {
             return Ok(*game);
         }
 
-        let game = if value.is_zero() {
-            arena.zero()
-        } else if value.exponent() == 0 {
-            if value.is_positive() {
-                let predecessor = Dyadic::from_integer(value.numer().clone() - BigInt::one());
-                let predecessor = Self::to_game_cached(&predecessor, arena, cache)?;
-                arena.from_options([predecessor], [])?
-            } else {
-                let successor = Dyadic::from_integer(value.numer().clone() + BigInt::one());
-                let successor = Self::to_game_cached(&successor, arena, cache)?;
-                arena.from_options([], [successor])?
-            }
-        } else {
-            let left = Dyadic::new(value.numer().clone() - BigInt::one(), value.exponent());
-            let right = Dyadic::new(value.numer().clone() + BigInt::one(), value.exponent());
-            let left = Self::to_game_cached(&left, arena, cache)?;
-            let right = Self::to_game_cached(&right, arena, cache)?;
-            arena.from_options([left], [right])?
-        };
+        let mut budget = Self::MAX_RECONSTRUCTION_NODES;
+        let mut stack = vec![value.clone()];
 
-        cache.insert(value.clone(), game);
-        Ok(game)
+        while let Some(current) = stack.pop() {
+            if cache.contains_key(&current) {
+                continue;
+            }
+
+            budget = budget
+                .checked_sub(1)
+                .ok_or(SurrealError::ReconstructionBudgetExceeded {
+                    visited: Self::MAX_RECONSTRUCTION_NODES,
+                    budget: Self::MAX_RECONSTRUCTION_NODES,
+                })?;
+
+            let game = if current.is_zero() {
+                arena.zero()
+            } else if current.exponent() == 0 {
+                // ITERATIVE integer chain: {n-1|} for n > 0, {|n+1} for
+                // n < 0 — a loop, not recursion (the R1 stack-overflow
+                // repro was fromInteger(100000)).
+                let target = current.numer().clone();
+                let one = BigInt::one();
+                let positive = current.is_positive();
+                let mut game = arena.zero();
+                let mut k = BigInt::from(0);
+                while if positive { k < target } else { k > target } {
+                    if positive {
+                        k += &one;
+                        game = arena.from_options([game], [])?;
+                    } else {
+                        k -= &one;
+                        game = arena.from_options([], [game])?;
+                    }
+                    budget = budget.checked_sub(1).ok_or(
+                        SurrealError::ReconstructionBudgetExceeded {
+                            visited: Self::MAX_RECONSTRUCTION_NODES,
+                            budget: Self::MAX_RECONSTRUCTION_NODES,
+                        },
+                    )?;
+                    cache.insert(Dyadic::from_integer(k.clone()), game);
+                }
+                game
+            } else {
+                // Fractional: needs both same-scale neighbors (which
+                // NORMALIZE to the coarser scale). Defer until cached.
+                let left = Dyadic::new(current.numer().clone() - BigInt::one(), current.exponent());
+                let right =
+                    Dyadic::new(current.numer().clone() + BigInt::one(), current.exponent());
+                match (cache.get(&left), cache.get(&right)) {
+                    (Some(l), Some(r)) => arena.from_options([*l], [*r])?,
+                    _ => {
+                        stack.push(current);
+                        if !cache.contains_key(&left) {
+                            stack.push(left);
+                        }
+                        if !cache.contains_key(&right) {
+                            stack.push(right);
+                        }
+                        continue;
+                    }
+                }
+            };
+
+            cache.insert(current, game);
+        }
+
+        Ok(cache[value])
     }
 }
 
@@ -447,6 +520,44 @@ mod tests {
         let neg_cut = arena.from_options([neg_three], [one]).unwrap();
         let val = ShortSurreal::from_game(&mut arena, neg_cut).unwrap();
         assert_eq!(value(&val), "0");
+    }
+
+    #[test]
+    fn large_integer_reconstruction_is_iterative_not_recursive() {
+        // R1 P1-4 repro: fromInteger(100000).toGameIn previously
+        // overflowed the stack (recursion depth 100k); the integer
+        // chain is now a LOOP. Roundtrip at a moderate magnitude
+        // (reverse conversion recurses inside amari-cgt's is_numeric —
+        // cross-crate boundary recorded for the cgt audit).
+        let mut arena = GameArena::new();
+        let big = ShortSurreal::from_integer(100_000);
+        let game = big.to_game_in(&mut arena).unwrap();
+        assert!(arena.birthday(game).is_ok());
+        let moderate = ShortSurreal::from_integer(2_000);
+        let game = moderate.to_game_in(&mut arena).unwrap();
+        let back = ShortSurreal::from_game(&mut arena, game).unwrap();
+        assert_eq!(back.to_dyadic(), moderate.to_dyadic());
+    }
+
+    #[test]
+    fn deep_fractional_reconstruction_errors_honestly() {
+        // Worklist reconstruction: 1/2^9000 SUCCEEDS (9001 nodes, well
+        // under the 2^20 budget) — no stack anywhere; and a value whose
+        // chain exceeds the node budget errors honestly instead of
+        // looping or overflowing (1/2^MAX needs MAX+1 nodes).
+        let mut arena = GameArena::new();
+        // to_game builds iteratively: 1/2^9000 succeeds with no stack
+        // involvement. (No reverse roundtrip here: from_game validates
+        // via amari-cgt's is_numeric, whose option RECURSION bounds the
+        // reverse direction — cross-crate boundary for the cgt audit.)
+        let deep_ok = ShortSurreal::from_dyadic(Dyadic::new(1, 9_000));
+        let game = deep_ok.to_game_in(&mut arena).unwrap();
+        assert!(arena.birthday(game).is_ok());
+        let too_deep = ShortSurreal::from_dyadic(Dyadic::new(1, crate::dyadic::MAX_EXPONENT));
+        assert!(matches!(
+            too_deep.to_game_in(&mut arena),
+            Err(SurrealError::ReconstructionBudgetExceeded { .. })
+        ));
     }
 
     #[test]

@@ -152,6 +152,10 @@ impl EpsilonPolynomial {
                     k <= i32::MAX as usize,
                     "coefficient index {k} exceeds i32 exponent range"
                 );
+                assert!(
+                    k <= MAX_EPSILON_EXPONENT.unsigned_abs() as usize,
+                    "coefficient index {k} exceeds MAX_EPSILON_EXPONENT"
+                );
                 terms.insert(EpsilonExponent(k as i32), coeff);
             }
         }
@@ -984,6 +988,17 @@ mod tests {
             tiny_denom.checked_add(&tiny_denom.clone()).unwrap_err(),
             SurrealError::ExponentOverflow { .. }
         ));
+    }
+
+    #[test]
+    fn coefficient_vectors_enforce_the_bound() {
+        // R1 P2 repro: a 1048578-slot vector with its last coefficient
+        // set previously bypassed the bound (degree 1048577).
+        let mut coeffs = vec![RationalSurreal::zero(); MAX_EPSILON_EXPONENT as usize + 2];
+        let last = coeffs.len() - 1;
+        coeffs[last] = RationalSurreal::one();
+        let result = std::panic::catch_unwind(move || EpsilonPolynomial::from_coefficients(coeffs));
+        assert!(result.is_err(), "out-of-bound index must panic, not store");
     }
 
     #[test]

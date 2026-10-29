@@ -36,4 +36,11 @@ pub enum SurrealError {
     /// the bound.
     #[error("exponent {requested} exceeds the representable bound {bound}")]
     ExponentOverflow { requested: u32, bound: u32 },
+
+    /// Returned when game reconstruction would exceed its work budget.
+    /// Reconstruction is fully iterative (worklist — no Rust
+    /// recursion); values whose canonical form needs more than
+    /// `MAX_RECONSTRUCTION_NODES` arena games fail honestly.
+    #[error("reconstruction work {visited} exceeds the budget {budget}")]
+    ReconstructionBudgetExceeded { visited: u32, budget: u32 },
 }

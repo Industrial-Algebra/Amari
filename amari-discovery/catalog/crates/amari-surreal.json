@@ -1560,6 +1560,25 @@
       ]
     },
     {
+      "path": "amari_surreal::ShortSurreal::MAX_RECONSTRUCTION_NODES",
+      "kind": "const",
+      "signature": "pub const MAX_RECONSTRUCTION_NODES : u32",
+      "source_path": "amari-surreal/src/short.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::short",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_RECONSTRUCTION_NODES : u32",
+          "source_path": "amari-surreal/src/short.rs",
+          "source_module": "amari_surreal::short",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::short",
+          "declaration_ident": "ShortSurreal::MAX_RECONSTRUCTION_NODES"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::ShortSurreal::abs",
       "kind": "method",
       "signature": "pub fn abs (& self) -> Self",
@@ -1921,6 +1940,22 @@
                 }
               ]
             }
+          },
+          {
+            "name": "ReconstructionBudgetExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "visited",
+                  "ty": "u32"
+                },
+                {
+                  "name": "budget",
+                  "ty": "u32"
+                }
+              ]
+            }
           }
         ]
       },
@@ -1981,6 +2016,22 @@
                     },
                     {
                       "name": "bound",
+                      "ty": "u32"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ReconstructionBudgetExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "visited",
+                      "ty": "u32"
+                    },
+                    {
+                      "name": "budget",
                       "ty": "u32"
                     }
                   ]
@@ -3160,6 +3211,22 @@
                 }
               ]
             }
+          },
+          {
+            "name": "ReconstructionBudgetExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "visited",
+                  "ty": "u32"
+                },
+                {
+                  "name": "budget",
+                  "ty": "u32"
+                }
+              ]
+            }
           }
         ]
       },
@@ -3220,6 +3287,22 @@
                     },
                     {
                       "name": "bound",
+                      "ty": "u32"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ReconstructionBudgetExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "visited",
+                      "ty": "u32"
+                    },
+                    {
+                      "name": "budget",
                       "ty": "u32"
                     }
                   ]
@@ -4755,6 +4838,25 @@
       ]
     },
     {
+      "path": "amari_surreal::prelude::ShortSurreal::MAX_RECONSTRUCTION_NODES",
+      "kind": "const",
+      "signature": "pub const MAX_RECONSTRUCTION_NODES : u32",
+      "source_path": "amari-surreal/src/short.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::short",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_RECONSTRUCTION_NODES : u32",
+          "source_path": "amari-surreal/src/short.rs",
+          "source_module": "amari_surreal::short",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::short",
+          "declaration_ident": "ShortSurreal::MAX_RECONSTRUCTION_NODES"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::prelude::ShortSurreal::abs",
       "kind": "method",
       "signature": "pub fn abs (& self) -> Self",
@@ -5116,6 +5218,22 @@
                 }
               ]
             }
+          },
+          {
+            "name": "ReconstructionBudgetExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "visited",
+                  "ty": "u32"
+                },
+                {
+                  "name": "budget",
+                  "ty": "u32"
+                }
+              ]
+            }
           }
         ]
       },
@@ -5176,6 +5294,22 @@
                     },
                     {
                       "name": "bound",
+                      "ty": "u32"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ReconstructionBudgetExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "visited",
+                      "ty": "u32"
+                    },
+                    {
+                      "name": "budget",
                       "ty": "u32"
                     }
                   ]
@@ -5508,6 +5642,25 @@
           "is_reexport": false,
           "declaration_module": "amari_surreal::short",
           "declaration_ident": "ShortSurreal"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::short::ShortSurreal::MAX_RECONSTRUCTION_NODES",
+      "kind": "const",
+      "signature": "pub const MAX_RECONSTRUCTION_NODES : u32",
+      "source_path": "amari-surreal/src/short.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::short",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_RECONSTRUCTION_NODES : u32",
+          "source_path": "amari-surreal/src/short.rs",
+          "source_module": "amari_surreal::short",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::short",
+          "declaration_ident": "ShortSurreal::MAX_RECONSTRUCTION_NODES"
         }
       ]
     },
@@ -10166,6 +10319,14 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_surreal::ShortSurreal::MAX_RECONSTRUCTION_NODES",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 19,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_const"
+    },
+    {
       "path": "amari_surreal::ShortSurreal::abs",
       "source_path": "amari-surreal/src/short.rs",
       "source_ordinal": 9,
@@ -11414,6 +11575,14 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_surreal::prelude::ShortSurreal::MAX_RECONSTRUCTION_NODES",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 19,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_const"
+    },
+    {
       "path": "amari_surreal::prelude::ShortSurreal::abs",
       "source_path": "amari-surreal/src/short.rs",
       "source_ordinal": 9,
@@ -11692,6 +11861,14 @@
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surreal::short::ShortSurreal::MAX_RECONSTRUCTION_NODES",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 19,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_const"
     },
     {
       "path": "amari_surreal::short::ShortSurreal::abs",

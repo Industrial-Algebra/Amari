@@ -156,15 +156,17 @@ impl RationalSurreal {
         let Some(tz) = denom.trailing_zeros() else {
             return None; // zero denominator cannot occur in BigRational
         };
-        let exponent = tz as u32;
         if (denom >> tz) != BigInt::from(1) {
             return None;
         }
         // Degrade, never panic: a dyadic whose exponent exceeds the
-        // bounded dyadic layer is not representable there.
-        if exponent > crate::dyadic::MAX_EXPONENT {
+        // bounded dyadic layer is not representable there. Compare at
+        // FULL WIDTH first — `tz as u32` would wrap for 2^4294967296
+        // and corrupt the value (R1: returned Some(1)).
+        if tz > u64::from(crate::dyadic::MAX_EXPONENT) {
             return None;
         }
+        let exponent = tz as u32;
         Some(ShortSurreal::from_dyadic(Dyadic::new(
             self.value.numer().clone(),
             exponent,
@@ -286,6 +288,15 @@ mod tests {
             RationalSurreal::from_ratio(1, BigInt::from(1) << crate::dyadic::MAX_EXPONENT as usize)
                 .unwrap();
         assert!(at_bound.to_short_if_dyadic().is_some());
+    }
+
+    #[test]
+    fn full_width_exponent_degrades_to_none() {
+        // R1 P1-3 repro: from_ratio(1, 2^4294967296) previously
+        // returned Some(1) via u32 narrowing.
+        let huge = BigInt::from(1) << 4_294_967_296usize;
+        let r = RationalSurreal::from_ratio(1, huge).unwrap();
+        assert!(r.to_short_if_dyadic().is_none());
     }
 
     #[test]

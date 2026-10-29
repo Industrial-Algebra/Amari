@@ -584,24 +584,40 @@ impl WasmExperimentalEpsilonRational {
     }
 
     /// Add two epsilon rationals.
-    pub fn add(&self, rhs: &WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational {
-        WasmExperimentalEpsilonRational {
-            inner: self.inner.clone() + rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result leaves the representable bound (checked
+    /// arithmetic — never a trap).
+    pub fn add(
+        &self,
+        rhs: &WasmExperimentalEpsilonRational,
+    ) -> Result<WasmExperimentalEpsilonRational, JsValue> {
+        Ok(WasmExperimentalEpsilonRational {
+            inner: self.inner.checked_add(&rhs.inner).map_err(surreal_error)?,
+        })
     }
 
     /// Subtract two epsilon rationals.
-    pub fn sub(&self, rhs: &WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational {
-        WasmExperimentalEpsilonRational {
-            inner: self.inner.clone() - rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result leaves the representable bound.
+    pub fn sub(
+        &self,
+        rhs: &WasmExperimentalEpsilonRational,
+    ) -> Result<WasmExperimentalEpsilonRational, JsValue> {
+        Ok(WasmExperimentalEpsilonRational {
+            inner: self.inner.checked_sub(&rhs.inner).map_err(surreal_error)?,
+        })
     }
 
     /// Multiply two epsilon rationals.
-    pub fn mul(&self, rhs: &WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational {
-        WasmExperimentalEpsilonRational {
-            inner: self.inner.clone() * rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result leaves the representable bound.
+    pub fn mul(
+        &self,
+        rhs: &WasmExperimentalEpsilonRational,
+    ) -> Result<WasmExperimentalEpsilonRational, JsValue> {
+        Ok(WasmExperimentalEpsilonRational {
+            inner: self.inner.checked_mul(&rhs.inner).map_err(surreal_error)?,
+        })
     }
 
     /// Negate the value.
@@ -797,7 +813,7 @@ mod tests {
     #[test]
     fn epsilon_squared_lt_epsilon() {
         let eps = WasmExperimentalEpsilonRational::epsilon();
-        let eps_sq = eps.mul(&eps);
+        let eps_sq = eps.mul(&eps).unwrap();
         // ε² < ε (since ε → 0⁺)
         assert_eq!(eps_sq.compare(&eps), "less");
     }
@@ -820,11 +836,11 @@ mod tests {
         let zero = WasmExperimentalEpsilonRational::zero();
 
         // 1 + ε > 1 (since ε > 0)
-        let sum = one.add(&eps);
+        let sum = one.add(&eps).unwrap();
         assert_eq!(sum.compare(&one), "greater");
 
         // 1 - ε < 1
-        let diff = one.sub(&eps);
+        let diff = one.sub(&eps).unwrap();
         assert_eq!(diff.compare(&one), "less");
         // 1 - ε > 0
         assert_eq!(diff.compare(&zero), "greater");
@@ -834,7 +850,7 @@ mod tests {
         assert_eq!(neg.compare(&zero), "less");
 
         // (1 + ε) + (-ε) == 1
-        let recomposed = sum.add(&neg);
+        let recomposed = sum.add(&neg).unwrap();
         assert_eq!(recomposed.compare(&one), "equal");
     }
 
