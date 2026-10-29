@@ -1193,3 +1193,180 @@ fn alpha_equivalent_candidates_are_feature_and_context_equivalent() {
         "alpha-equivalent chosen candidates must featurize identically"
     );
 }
+
+// ── PR #357 round 4 regression contracts ────────────────────────────
+
+/// Trace digests for one certificate through the full dataset pipeline.
+fn trace_digests_of(system: &TermSystem, certificate: &ReplayCertificate) -> Vec<Sha256Digest> {
+    builder()
+        .build(system, std::slice::from_ref(certificate))
+        .expect("build")
+        .manifest()
+        .trace_digests()
+        .to_vec()
+}
+
+/// The two-variable-carrier system: from `a`, `f(X,Y,Z) -> X` derives
+/// `f(a,U,V)` and `g(X) -> X` derives `g(a)`, so the chosen one-step
+/// backward transition carries a term with two distinct variable positions
+/// and a third unchosen negative.
+fn association_system() -> TermSystem {
+    sys(vec![
+        Rule::new(parse("f(X,Y,Z)"), parse("X")).expect("checked"),
+        Rule::new(parse("g(X)"), parse("X")).expect("checked"),
+    ])
+}
+
+/// The step term is `f(a,U,V)`; residual constraints are replaced by the
+/// single disequality `arguments[index] != b`.
+fn residual_on_argument(system: &TermSystem, index: usize) -> ReplayCertificate {
+    let mut certificate = one_step(system, parse("a"), parse("f(a,U,V)"), 0);
+    let ReplayDerivation::Backward(derivation) = &mut certificate.derivation else {
+        panic!("backward fixture");
+    };
+    let Term::Sym(_, arguments) = &derivation.steps[0].term else {
+        panic!("the step term is an application");
+    };
+    let variable = arguments[index].clone();
+    derivation.steps[0].constraints = ConstraintSet::new();
+    derivation.steps[0]
+        .constraints
+        .insert(TermConstraint::NotEqual(variable, parse("b")));
+    certificate
+        .verify(system)
+        .expect("residual constraints do not affect replay");
+    certificate
+}
+
+#[test]
+fn step_term_and_residual_constraints_share_one_renaming_environment() {
+    // P2a (round 4): the residual set used to be hashed in its own renaming
+    // environment, so a step `(f(a,U,V), U != b)` and the step
+    // `(f(a,U,V), V != b)` — different residuals over the same term — hashed
+    // identically. Which variable of the term a residual mentions is part of
+    // the step identity, so the term and its residuals are encoded under ONE
+    // shared renaming environment.
+    let system = association_system();
+    let on_first = trace_digests_of(&system, &residual_on_argument(&system, 1));
+    let on_second = trace_digests_of(&system, &residual_on_argument(&system, 2));
+    assert_ne!(
+        on_first, on_second,
+        "a residual naming the term's first variable is not the same step as one \
+         naming its second (P2a round 4)"
+    );
+}
+
+#[test]
+fn step_substitution_ranges_share_one_renaming_environment() {
+    // P2b (round 4): ranges were digested independently, so two ranges that
+    // mention the SAME variable and two ranges that mention different
+    // variables hashed identically — the sharing structure of a substitution
+    // is part of its identity. Domains and ranges were also hashed as
+    // literals, which lost alpha-invariance. One shared environment per step
+    // fixes both.
+    let (system, baseline) = backward_witness();
+    let with_ranges = |second_range: &str| {
+        let mut certificate = baseline.clone();
+        let ReplayDerivation::Backward(derivation) = &mut certificate.derivation else {
+            panic!("backward fixture");
+        };
+        derivation.steps[0]
+            .substitution
+            .insert("Unused1", Term::var("XX"));
+        derivation.steps[0]
+            .substitution
+            .insert("Unused2", Term::var(second_range));
+        certificate
+            .verify(&system)
+            .expect("a substitution does not affect replay");
+        certificate
+    };
+    let shared = trace_digests_of(&system, &with_ranges("XX"));
+    let distinct = trace_digests_of(&system, &with_ranges("YY"));
+    assert_ne!(
+        shared, distinct,
+        "`{{U1 -> XX, U2 -> XX}}` and `{{U1 -> XX, U2 -> YY}}` are different \
+         substitutions (P2b round 4)"
+    );
+}
+
+#[test]
+fn step_substitution_and_term_share_one_renaming_environment() {
+    // Same family as P2a/P2b: a range that mentions one of the step term's
+    // variables is not interchangeable with one that mentions another. If the
+    // substitution kept its own environment the term/substitution association
+    // would be invisible.
+    let system = association_system();
+    let with_range_on = |index: usize| {
+        let mut certificate = residual_on_argument(&system, 1);
+        let ReplayDerivation::Backward(derivation) = &mut certificate.derivation else {
+            panic!("backward fixture");
+        };
+        let Term::Sym(_, arguments) = &derivation.steps[0].term else {
+            panic!("the step term is an application");
+        };
+        let variable = arguments[index].clone();
+        derivation.steps[0].substitution.insert("Extra", variable);
+        certificate
+            .verify(&system)
+            .expect("a substitution does not affect replay");
+        certificate
+    };
+    let on_first = trace_digests_of(&system, &with_range_on(1));
+    let on_second = trace_digests_of(&system, &with_range_on(2));
+    assert_ne!(
+        on_first, on_second,
+        "a substitution range naming the term's first variable is not the same \
+         step as one naming its second (round 4 family)"
+    );
+}
+
+#[test]
+fn alpha_equivalent_steps_share_a_trace_digest() {
+    // The settled invariant, reasserted against the joint per-step
+    // environment: consistently renaming every variable of a step — the term's
+    // variables, the substitution's domains AND range variables, and a
+    // residual's variable — must not change the step identity. The rename is
+    // chosen so that `BTreeMap` order changes (`A1,B1,C1` becomes
+    // `A2,B2,Z1`), which is why the substitution's entry order cannot be the
+    // name order alone: equal-shape runs are enumerated and the smallest
+    // encoding wins.
+    let system = association_system();
+    let build = |variables: [&str; 2], names: [&str; 6]| {
+        let [first, second] = variables;
+        let mut certificate = one_step(
+            &system,
+            parse("a"),
+            parse(&format!("f(a,{first},{second})")),
+            0,
+        );
+        let ReplayDerivation::Backward(derivation) = &mut certificate.derivation else {
+            panic!("backward fixture");
+        };
+        let [domain_a, domain_b, domain_c, shared, distinct, residual] = names;
+        derivation.steps[0]
+            .substitution
+            .insert(domain_a, Term::var(shared));
+        derivation.steps[0]
+            .substitution
+            .insert(domain_b, Term::var(shared));
+        derivation.steps[0]
+            .substitution
+            .insert(domain_c, Term::var(distinct));
+        derivation.steps[0].constraints = ConstraintSet::new();
+        derivation.steps[0]
+            .constraints
+            .insert(TermConstraint::NotEqual(Term::var(residual), parse("b")));
+        certificate
+            .verify(&system)
+            .expect("the renamed fixture must still replay");
+        certificate
+    };
+    let first = build(["U", "V"], ["A1", "B1", "C1", "XX", "YY", "P"]);
+    let second = build(["U2", "V2"], ["Z1", "A2", "B2", "PP", "QQ", "Q"]);
+    assert_eq!(
+        trace_digests_of(&system, &first),
+        trace_digests_of(&system, &second),
+        "alpha-equivalent steps must share a trace digest"
+    );
+}

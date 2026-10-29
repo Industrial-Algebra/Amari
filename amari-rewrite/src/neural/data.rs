@@ -73,6 +73,7 @@ use crate::inverse::{
 use crate::neural::encode::{CandidateInput, FeatureEncoder, FeatureVector, SearchContext};
 use crate::neural::model::{canonical_digest, content_key};
 use crate::neural::{FeatureSchemaV1, NeuralError};
+use crate::relation::digest::encode_term;
 use crate::relation::{
     ConstraintSet, LogicVar, RelationLimits, RuleId, Sha256Digest, TermConstraint,
 };
@@ -1101,6 +1102,17 @@ fn example_key(
     key
 }
 
+/// Frame for one backward step's complete identity (see [`encode_step`]).
+const STEP_FRAME: &str = "amari.neural.step/v1";
+
+/// Frame for a bidirectional derivation's meeting pair and unifier.
+const MEETING_FRAME: &str = "amari.neural.meeting/v1";
+
+/// Ceiling on the entry arrangements enumerated while canonicalizing a
+/// substitution whose entries have indistinguishable shapes (mirrors the
+/// state-digest cap in `crate::inverse`).
+const MAX_SUBSTITUTION_ARRANGEMENTS: u64 = 720;
+
 /// Canonical per-trace digest: the authority tag, the *whole* certified
 /// statement (the query, both terms), and the derivation — every forward
 /// step, every backward step (including its term, substitution,
@@ -1118,6 +1130,12 @@ fn example_key(
 /// constraints, or existentials are different training evidence (PR #357
 /// round 2 P2). Every field here has already been admitted, so hashing
 /// cannot be reached with unbounded content.
+///
+/// Variable identity is scoped per step: each step is encoded under ONE
+/// renaming environment shared by its term, substitution, and residuals, so
+/// which variable of the term a residual or a range mentions — and whether
+/// two ranges mention the same variable — is part of the identity (PR #357
+/// round 4). The bidirectional tail is one scope for the same reason.
 fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
     let mut payload = Vec::new();
     match certificate.guidance {
@@ -1140,31 +1158,57 @@ fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
             for step in &derivation.backward_steps {
                 encode_step(&mut payload, step);
             }
-            payload.extend_from_slice(term_digest(&derivation.meeting_forward).as_bytes());
-            payload.extend_from_slice(term_digest(&derivation.meeting_backward).as_bytes());
-            encode_substitution(&mut payload, &derivation.unifier);
+            // One identity scope for the meeting pair and the unifier: a
+            // unifier range may mention a meeting-term variable, so the two
+            // terms and the substitution are encoded under a shared renaming
+            // environment (PR #357 round 4, same family as the per-step env).
+            let mut encoding = Vec::new();
+            let mut variables = Vec::new();
+            encode_term(&derivation.meeting_forward, &mut variables, &mut encoding);
+            encode_term(&derivation.meeting_backward, &mut variables, &mut encoding);
+            encode_substitution(&mut encoding, &derivation.unifier, &mut variables);
+            payload.extend_from_slice(Sha256Digest::framed(MEETING_FRAME, &encoding).as_bytes());
         }
     }
     Sha256Digest::framed("amari.neural.trace/v1", &payload)
 }
 
+/// One backward step's identity, encoded under ONE variable-renaming
+/// environment.
+///
+/// A step is a single identity scope, not a bag of independently hashed
+/// fields: the term it derived, its unifying substitution, its residual
+/// constraints, and its existentials are encoded under a common `variables`
+/// environment, so a variable keeps one index across all of them. Encoding
+/// the fields separately made two kinds of identity invisible: which variable
+/// of the term a residual names (`(f(a,U,V), U != b)` vs `(f(a,U,V), V != b)`,
+/// PR #357 round 4 P2a), and whether two substitution ranges name the same
+/// variable (`{U1 -> XX, U2 -> XX}` vs `{U1 -> XX, U2 -> YY}`, round 4 P2b).
+///
+/// The environment is built by canonical traversal — the term's variables
+/// first (preorder), then the substitution's, then the residuals' — never from
+/// hash-map iteration order, and never from variable names: names only ever
+/// select an index. Alpha-equivalent steps therefore encode identically.
 fn encode_step(payload: &mut Vec<u8>, step: &SymbolicPredecessor) {
-    payload.extend_from_slice(step.provenance.rule_id.digest().as_bytes());
-    payload.extend_from_slice(step.provenance.target_hash.as_bytes());
-    payload.extend_from_slice(step.provenance.predecessor_hash.as_bytes());
-    payload.extend_from_slice(&step.provenance.scope.to_le_bytes());
-    encode_path(payload, &step.provenance.position);
+    let mut encoding = Vec::new();
+    encoding.extend_from_slice(step.provenance.rule_id.digest().as_bytes());
+    encoding.extend_from_slice(step.provenance.target_hash.as_bytes());
+    encoding.extend_from_slice(step.provenance.predecessor_hash.as_bytes());
+    encoding.extend_from_slice(&step.provenance.scope.to_le_bytes());
+    encode_path(&mut encoding, &step.provenance.position);
     // The step's own payload, not just the transition identity: the term it
-    // derived, its unifying substitution (in `BTreeMap` order), its residual
-    // constraints (canonical, order-preserving), and its existentials.
-    payload.extend_from_slice(term_digest(&step.term).as_bytes());
-    encode_substitution(payload, &step.substitution);
-    encode_constraints(payload, &step.constraints);
-    payload.extend_from_slice(&(step.existentials.len() as u32).to_le_bytes());
+    // derived, its unifying substitution, its residual constraints, and its
+    // existentials — all under one shared renaming environment.
+    let mut variables: Vec<String> = Vec::new();
+    encode_term(&step.term, &mut variables, &mut encoding);
+    encode_substitution(&mut encoding, &step.substitution, &mut variables);
+    encode_constraints(&mut encoding, &step.constraints, &mut variables);
+    encoding.extend_from_slice(&(step.existentials.len() as u32).to_le_bytes());
     for existential in &step.existentials {
-        payload.extend_from_slice(&existential.scope().to_le_bytes());
-        payload.extend_from_slice(&existential.index().to_le_bytes());
+        encoding.extend_from_slice(&existential.scope().to_le_bytes());
+        encoding.extend_from_slice(&existential.index().to_le_bytes());
     }
+    payload.extend_from_slice(Sha256Digest::framed(STEP_FRAME, &encoding).as_bytes());
 }
 
 /// Forward-step audit: `ForwardStep` carries no terms of its own, so its
@@ -1176,13 +1220,27 @@ fn encode_forward_step(payload: &mut Vec<u8>, step: &ForwardStep) {
     encode_path(payload, &step.position);
 }
 
-fn encode_constraints(payload: &mut Vec<u8>, constraints: &ConstraintSet) {
-    // One digest over the WHOLE set, not per-constraint digests: a constraint
-    // is hashed under the set's shared variable-renaming environment, so
-    // variable co-occurrence across constraints is part of the identity. Per-
-    // constraint digests restart renumbering at zero, which made
-    // `{X != a, X != b}` and `{X != a, Y != b}` collide (PR #357 round 3 P2a).
-    payload.extend_from_slice(constraints.canonical_digest().as_bytes());
+fn encode_constraints(
+    payload: &mut Vec<u8>,
+    constraints: &ConstraintSet,
+    variables: &mut Vec<String>,
+) {
+    // One encoding over the WHOLE set (order-preserving, as recorded), under
+    // the STEP's renaming environment — the term's and the substitution's
+    // environment, not a fresh one. Per-constraint digests restart renumbering
+    // at zero, which made `{X != a, X != b}` and `{X != a, Y != b}` collide
+    // (PR #357 round 3 P2a); a set-scoped but term-independent environment
+    // left the term/residual association invisible (round 4 P2a).
+    payload.extend_from_slice(&(constraints.len() as u32).to_le_bytes());
+    for constraint in constraints.constraints() {
+        let (tag, left, right) = match constraint {
+            TermConstraint::Equal(left, right) => (0x10u8, left, right),
+            TermConstraint::NotEqual(left, right) => (0x11u8, left, right),
+        };
+        payload.push(tag);
+        encode_term(left, variables, payload);
+        encode_term(right, variables, payload);
+    }
 }
 
 fn encode_path(payload: &mut Vec<u8>, path: &Path) {
@@ -1193,19 +1251,176 @@ fn encode_path(payload: &mut Vec<u8>, path: &Path) {
     }
 }
 
-fn encode_substitution(payload: &mut Vec<u8>, substitution: &Substitution) {
-    for (variable, term) in substitution.iter() {
-        let name = variable.as_str().as_bytes();
-        payload.extend_from_slice(&(name.len() as u32).to_le_bytes());
-        payload.extend_from_slice(name);
-        payload.extend_from_slice(term_digest(term).as_bytes());
+/// Canonical encoding of a substitution under the caller's shared renaming
+/// environment.
+///
+/// Domains and ranges are encoded with `variables`, the environment that
+/// already holds the step's term variables, so a range naming the same
+/// variable as another range — or as the term — is identified with it, and a
+/// domain is a variable index rather than a literal name (PR #357 round 4
+/// P2b).
+///
+/// `BTreeMap` iteration order is by variable name, which is not
+/// alpha-invariant, so entries are shape-keyed (variables erased), stably
+/// sorted by that key, and each maximal run of equal keys — whose relative
+/// order a sort cannot decide — is enumerated exhaustively (capped at
+/// [`MAX_SUBSTITUTION_ARRANGEMENTS`] total). The lexicographically smallest
+/// encoding wins and its environment evolution is committed. Beyond the cap
+/// the shape-sorted baseline order is used: still deterministic and still
+/// sharing-preserving, only possibly missing an alpha-equivalent dedup — a
+/// missed dedup can never become a false equality, because two steps are
+/// equal only when their encodings are identical.
+fn encode_substitution(
+    payload: &mut Vec<u8>,
+    substitution: &Substitution,
+    variables: &mut Vec<String>,
+) {
+    let mut decorated: Vec<(Vec<u8>, (&Variable, &Term))> = substitution
+        .iter()
+        .map(|entry| (substitution_entry_shape_key(entry.1), entry))
+        .collect();
+    decorated.sort_by(|left, right| left.0.cmp(&right.0));
+    // Group maximal runs of equal shape keys.
+    let mut runs: Vec<core::ops::Range<usize>> = Vec::new();
+    let mut start = 0;
+    for index in 1..=decorated.len() {
+        if index == decorated.len() || decorated[index].0 != decorated[start].0 {
+            runs.push(start..index);
+            start = index;
+        }
+    }
+    // Total arrangement count (product of run factorials), capped.
+    let mut arrangements: u64 = 1;
+    for run in &runs {
+        let size = (run.end - run.start) as u64;
+        let mut factorial: u64 = 1;
+        for factor in 2..=size {
+            factorial = factorial.saturating_mul(factor);
+        }
+        arrangements = arrangements.saturating_mul(factorial);
+        if arrangements > MAX_SUBSTITUTION_ARRANGEMENTS {
+            break;
+        }
+    }
+    let mut best: Option<(Vec<u8>, Vec<String>)> = None;
+    if arrangements <= MAX_SUBSTITUTION_ARRANGEMENTS && !runs.is_empty() {
+        let run_permutations: Vec<Vec<Vec<usize>>> = runs
+            .iter()
+            .map(|run| permutations(run.end - run.start))
+            .collect();
+        let mut odometer = vec![0usize; runs.len()];
+        'arrangements: loop {
+            let mut trial_variables = variables.clone();
+            let mut trial = Vec::new();
+            trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
+            for (slot, run) in runs.iter().enumerate() {
+                for &local in &run_permutations[slot][odometer[slot]] {
+                    let (_, (variable, term)) = &decorated[run.start + local];
+                    encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
+                }
+            }
+            if best.as_ref().is_none_or(|current| trial < current.0) {
+                best = Some((trial, trial_variables));
+            }
+            // Advance the odometer; overflow at slot 0 ends the enumeration.
+            let mut slot = runs.len();
+            while slot > 0 {
+                slot -= 1;
+                odometer[slot] += 1;
+                if odometer[slot] < run_permutations[slot].len() {
+                    break;
+                }
+                odometer[slot] = 0;
+                if slot == 0 {
+                    break 'arrangements;
+                }
+            }
+        }
+    }
+    let (blob, resolved) = match best {
+        Some(best) => best,
+        None => {
+            // Fallback (only reachable above the enumeration cap): the
+            // shape-sorted baseline order.
+            let mut trial_variables = variables.clone();
+            let mut trial = Vec::new();
+            trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
+            for (_, (variable, term)) in &decorated {
+                encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
+            }
+            (trial, trial_variables)
+        }
+    };
+    *variables = resolved;
+    payload.extend_from_slice(&(blob.len() as u32).to_le_bytes());
+    payload.extend_from_slice(&blob);
+}
+
+/// One substitution entry: the bound variable as a renaming index (not its
+/// name) and the range under the same environment.
+fn encode_substitution_entry(
+    out: &mut Vec<u8>,
+    variables: &mut Vec<String>,
+    variable: &Variable,
+    term: &Term,
+) {
+    out.push(0x20);
+    encode_term(&Term::var(variable.as_str()), variables, out);
+    encode_term(term, variables, out);
+}
+
+/// Wildcard shape key for a substitution entry: the range's structure with
+/// every variable erased, so the key is invariant under alpha-renaming.
+fn substitution_entry_shape_key(term: &Term) -> Vec<u8> {
+    let mut key = Vec::new();
+    encode_shape(term, &mut key);
+    key
+}
+
+/// Variable-erased structural encoding (the same scheme as the state
+/// digest's constraint shape keys).
+fn encode_shape(term: &Term, out: &mut Vec<u8>) {
+    use alloc::string::ToString;
+    match term {
+        Term::Var(_) => {
+            out.push(0x00);
+            out.extend_from_slice(&0u32.to_le_bytes());
+        }
+        Term::Sym(symbol, args) => {
+            out.push(0x01);
+            let name = symbol.to_string();
+            out.extend_from_slice(&(args.len() as u32).to_le_bytes());
+            out.extend_from_slice(&(name.len() as u32).to_le_bytes());
+            out.extend_from_slice(name.as_bytes());
+            for arg in args {
+                encode_shape(arg, out);
+            }
+        }
     }
 }
 
-/// Canonical identity of one term (the same domain the engine's term
-/// digests use).
-fn term_digest(term: &Term) -> Sha256Digest {
-    Sha256Digest::canonical_term("amari.relation.term/v1", term)
+/// All permutations of `0..size`, in lexicographic order.
+fn permutations(size: usize) -> Vec<Vec<usize>> {
+    let mut result = Vec::new();
+    let mut current: Vec<usize> = (0..size).collect();
+    loop {
+        result.push(current.clone());
+        let mut pivot = None;
+        for index in (0..current.len().saturating_sub(1)).rev() {
+            if current[index] < current[index + 1] {
+                pivot = Some(index);
+                break;
+            }
+        }
+        let Some(pivot) = pivot else { break };
+        let mut successor = current.len() - 1;
+        while current[successor] <= current[pivot] {
+            successor -= 1;
+        }
+        current.swap(pivot, successor);
+        current[pivot + 1..].reverse();
+    }
+    result
 }
 
 /// Deterministic seeded sub-sampling: a partial Fisher–Yates shuffle over
