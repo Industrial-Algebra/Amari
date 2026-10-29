@@ -1113,6 +1113,22 @@ const MEETING_FRAME: &str = "amari.neural.meeting/v1";
 /// state-digest cap in `crate::inverse`).
 const MAX_SUBSTITUTION_ARRANGEMENTS: u64 = 720;
 
+/// Ceiling on the bytes materialized while resolving equal-shape substitution
+/// ties on the whole step payload: the candidates are encoded one at a time and
+/// the enumeration stops once this budget is spent, falling back to the
+/// shape-sorted baseline arrangement.
+///
+/// Admission bounds each field of a step, not the product of arrangements by
+/// the payload they are compared over: a maximally admitted step (thousands of
+/// residuals over thousand-node terms) times 720 arrangements could otherwise
+/// materialize gigabytes from one untrusted trace. A realistic step encodes in
+/// kilobytes, so a full enumeration of the 720-arrangement cap fits easily;
+/// above the budget the baseline order is used — still deterministic and still
+/// sharing-preserving, only possibly missing an alpha-equivalent dedup, which
+/// can never become a false equality (two steps are equal only when their
+/// encodings are identical).
+const MAX_TIE_RESOLUTION_BYTES: u64 = 4 * 1024 * 1024;
+
 /// Canonical per-trace digest: the authority tag, the *whole* certified
 /// statement (the query, both terms), and the derivation — every forward
 /// step, every backward step (including its term, substitution,
@@ -1132,10 +1148,18 @@ const MAX_SUBSTITUTION_ARRANGEMENTS: u64 = 720;
 /// cannot be reached with unbounded content.
 ///
 /// Variable identity is scoped per step: each step is encoded under ONE
-/// renaming environment shared by its term, substitution, and residuals, so
-/// which variable of the term a residual or a range mentions — and whether
-/// two ranges mention the same variable — is part of the identity (PR #357
-/// round 4). The bidirectional tail is one scope for the same reason.
+/// renaming environment shared by its term, substitution, residuals, and
+/// existentials, so which variable of the term a residual, a range, or an
+/// existential mentions — and whether two ranges mention the same variable —
+/// is part of the identity (PR #357 round 4, extended in round 5). The
+/// bidirectional tail is one scope for the same reason.
+///
+/// The canonical encoding of a step is the **minimum over equal-shape tie
+/// arrangements of the entire framed payload** — not of the substitution
+/// segment alone. A tie in the substitution encoding does not imply a tie in
+/// the environment it commits, and that environment governs the residuals and
+/// existentials that follow, so the choice is resolved on the whole payload
+/// (PR #357 round 5 P2b).
 fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
     let mut payload = Vec::new();
     match certificate.guidance {
@@ -1162,12 +1186,15 @@ fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
             // unifier range may mention a meeting-term variable, so the two
             // terms and the substitution are encoded under a shared renaming
             // environment (PR #357 round 4, same family as the per-step env).
-            let mut encoding = Vec::new();
+            // The unifier ends the payload, so the whole-payload tie rule
+            // degenerates to the smallest unifier encoding here.
+            let mut prefix = Vec::new();
             let mut variables = Vec::new();
-            encode_term(&derivation.meeting_forward, &mut variables, &mut encoding);
-            encode_term(&derivation.meeting_backward, &mut variables, &mut encoding);
-            encode_substitution(&mut encoding, &derivation.unifier, &mut variables);
-            payload.extend_from_slice(Sha256Digest::framed(MEETING_FRAME, &encoding).as_bytes());
+            encode_term(&derivation.meeting_forward, &mut variables, &mut prefix);
+            encode_term(&derivation.meeting_backward, &mut variables, &mut prefix);
+            let candidates = substitution_candidates(&derivation.unifier, &variables);
+            let digest = framed_minimum(MEETING_FRAME, &prefix, candidates, |_, _| {});
+            payload.extend_from_slice(digest.as_bytes());
         }
     }
     Sha256Digest::framed("amari.neural.trace/v1", &payload)
@@ -1186,29 +1213,62 @@ fn trace_digest(certificate: &ReplayCertificate) -> Sha256Digest {
 /// variable (`{U1 -> XX, U2 -> XX}` vs `{U1 -> XX, U2 -> YY}`, round 4 P2b).
 ///
 /// The environment is built by canonical traversal — the term's variables
-/// first (preorder), then the substitution's, then the residuals' — never from
-/// hash-map iteration order, and never from variable names: names only ever
-/// select an index. Alpha-equivalent steps therefore encode identically.
+/// first (preorder), then the substitution's, then the residuals', then the
+/// existential references — never from hash-map iteration order, and never
+/// from variable names: names only ever select an index. Alpha-equivalent
+/// steps therefore encode identically.
 fn encode_step(payload: &mut Vec<u8>, step: &SymbolicPredecessor) {
-    let mut encoding = Vec::new();
-    encoding.extend_from_slice(step.provenance.rule_id.digest().as_bytes());
-    encoding.extend_from_slice(step.provenance.target_hash.as_bytes());
-    encoding.extend_from_slice(step.provenance.predecessor_hash.as_bytes());
-    encoding.extend_from_slice(&step.provenance.scope.to_le_bytes());
-    encode_path(&mut encoding, &step.provenance.position);
+    let mut prefix = Vec::new();
+    prefix.extend_from_slice(step.provenance.rule_id.digest().as_bytes());
+    prefix.extend_from_slice(step.provenance.target_hash.as_bytes());
+    prefix.extend_from_slice(step.provenance.predecessor_hash.as_bytes());
+    prefix.extend_from_slice(&step.provenance.scope.to_le_bytes());
+    encode_path(&mut prefix, &step.provenance.position);
     // The step's own payload, not just the transition identity: the term it
     // derived, its unifying substitution, its residual constraints, and its
     // existentials — all under one shared renaming environment.
     let mut variables: Vec<String> = Vec::new();
-    encode_term(&step.term, &mut variables, &mut encoding);
-    encode_substitution(&mut encoding, &step.substitution, &mut variables);
-    encode_constraints(&mut encoding, &step.constraints, &mut variables);
-    encoding.extend_from_slice(&(step.existentials.len() as u32).to_le_bytes());
-    for existential in &step.existentials {
-        encoding.extend_from_slice(&existential.scope().to_le_bytes());
-        encoding.extend_from_slice(&existential.index().to_le_bytes());
+    encode_term(&step.term, &mut variables, &mut prefix);
+    // Equal-shape ties in the substitution are resolved on the ENTIRE framed
+    // payload: the candidate environments are carried into the residual and
+    // existential encoding, and the arrangement whose whole step encoding is
+    // smallest wins (PR #357 round 5 P2b).
+    let candidates = substitution_candidates(&step.substitution, &variables);
+    let digest = framed_minimum(STEP_FRAME, &prefix, candidates, |out, vars| {
+        encode_constraints(out, &step.constraints, vars);
+        encode_existentials(out, &step.existentials, vars);
+    });
+    payload.extend_from_slice(digest.as_bytes());
+}
+
+/// Existential logic variables, encoded as variable *references* through the
+/// shared environment rather than as their `(scope, index)` names.
+///
+/// An existential is a reference to a variable in the step's scope — the very
+/// variable the term writes as `?s.i` — so its identity is the index the
+/// shared environment assigns that variable. Encoding the raw pair left the
+/// association between the recorded existential and the term's variable
+/// positions invisible: swapping two variable arguments of `f(a,?1.1,?1.2)`
+/// yields an alpha-equivalent term (identical term encoding) and an unchanged
+/// existential list, so "`?1.1` is the existential of `f(a,?1.1,?1.2)`" and
+/// "`?1.1` is the existential of `f(a,?1.2,?1.1)`" hashed the same, though the
+/// existential names a different argument (PR #357 round 5 P2a).
+///
+/// The vector order is the freshener's allocation order (sorted LHS variable
+/// names) and is encoded as recorded; alpha-equivalent steps list it in the
+/// same order, so the order costs no alpha-invariance.
+fn encode_existentials(
+    payload: &mut Vec<u8>,
+    existentials: &[LogicVar],
+    variables: &mut Vec<String>,
+) {
+    use alloc::string::ToString;
+    payload.extend_from_slice(&(existentials.len() as u32).to_le_bytes());
+    for existential in existentials {
+        // The display form is exactly how the freshener names this variable
+        // inside terms, so the lookup resolves to the term's index.
+        encode_term(&Term::var(existential.to_string()), variables, payload);
     }
-    payload.extend_from_slice(Sha256Digest::framed(STEP_FRAME, &encoding).as_bytes());
 }
 
 /// Forward-step audit: `ForwardStep` carries no terms of its own, so its
@@ -1251,8 +1311,9 @@ fn encode_path(payload: &mut Vec<u8>, path: &Path) {
     }
 }
 
-/// Canonical encoding of a substitution under the caller's shared renaming
-/// environment.
+/// Candidate encodings of a substitution under the caller's shared renaming
+/// environment: one `(entry encoding, environment after it)` pair per
+/// equal-shape tie arrangement, never empty.
 ///
 /// Domains and ranges are encoded with `variables`, the environment that
 /// already holds the step's term variables, so a range naming the same
@@ -1264,17 +1325,19 @@ fn encode_path(payload: &mut Vec<u8>, path: &Path) {
 /// alpha-invariant, so entries are shape-keyed (variables erased), stably
 /// sorted by that key, and each maximal run of equal keys — whose relative
 /// order a sort cannot decide — is enumerated exhaustively (capped at
-/// [`MAX_SUBSTITUTION_ARRANGEMENTS`] total). The lexicographically smallest
-/// encoding wins and its environment evolution is committed. Beyond the cap
-/// the shape-sorted baseline order is used: still deterministic and still
-/// sharing-preserving, only possibly missing an alpha-equivalent dedup — a
-/// missed dedup can never become a false equality, because two steps are
-/// equal only when their encodings are identical.
-fn encode_substitution(
-    payload: &mut Vec<u8>,
+/// [`MAX_SUBSTITUTION_ARRANGEMENTS`] total). All arrangements are returned
+/// rather than the one with the smallest entry encoding: two arrangements can
+/// encode the same bytes yet resolve the environment differently, and it is
+/// the caller — which knows what is encoded after the substitution — that
+/// picks the canonical one. Beyond the cap only the shape-sorted baseline
+/// order is returned: still deterministic and still sharing-preserving, only
+/// possibly missing an alpha-equivalent dedup — a missed dedup can never
+/// become a false equality, because two steps are equal only when their
+/// encodings are identical.
+fn substitution_candidates(
     substitution: &Substitution,
-    variables: &mut Vec<String>,
-) {
+    variables: &[String],
+) -> Vec<(Vec<u8>, Vec<String>)> {
     let mut decorated: Vec<(Vec<u8>, (&Variable, &Term))> = substitution
         .iter()
         .map(|entry| (substitution_entry_shape_key(entry.1), entry))
@@ -1302,15 +1365,15 @@ fn encode_substitution(
             break;
         }
     }
-    let mut best: Option<(Vec<u8>, Vec<String>)> = None;
     if arrangements <= MAX_SUBSTITUTION_ARRANGEMENTS && !runs.is_empty() {
         let run_permutations: Vec<Vec<Vec<usize>>> = runs
             .iter()
             .map(|run| permutations(run.end - run.start))
             .collect();
+        let mut candidates = Vec::new();
         let mut odometer = vec![0usize; runs.len()];
         'arrangements: loop {
-            let mut trial_variables = variables.clone();
+            let mut trial_variables = variables.to_vec();
             let mut trial = Vec::new();
             trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
             for (slot, run) in runs.iter().enumerate() {
@@ -1319,9 +1382,7 @@ fn encode_substitution(
                     encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
                 }
             }
-            if best.as_ref().is_none_or(|current| trial < current.0) {
-                best = Some((trial, trial_variables));
-            }
+            candidates.push((trial, trial_variables));
             // Advance the odometer; overflow at slot 0 ends the enumeration.
             let mut slot = runs.len();
             while slot > 0 {
@@ -1336,24 +1397,70 @@ fn encode_substitution(
                 }
             }
         }
-    }
-    let (blob, resolved) = match best {
-        Some(best) => best,
-        None => {
-            // Fallback (only reachable above the enumeration cap): the
-            // shape-sorted baseline order.
-            let mut trial_variables = variables.clone();
-            let mut trial = Vec::new();
-            trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
-            for (_, (variable, term)) in &decorated {
-                encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
-            }
-            (trial, trial_variables)
+        candidates
+    } else {
+        // Baseline order: the shape-sorted one (the only candidate for an
+        // empty substitution and above the enumeration cap).
+        let mut trial_variables = variables.to_vec();
+        let mut trial = Vec::new();
+        trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
+        for (_, (variable, term)) in &decorated {
+            encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
         }
+        vec![(trial, trial_variables)]
+    }
+}
+
+/// Digest of a framed payload, minimized over the substitution's equal-shape
+/// tie arrangements.
+///
+/// The canonicalization criterion of this family: the arrangement chosen is
+/// the one minimizing the **entire framed payload** — the caller's `prefix`
+/// (provenance and term, identical across arrangements), the arrangement's
+/// entry encoding, and the caller's `tail` encoded under that arrangement's
+/// committed environment (residuals and existentials for a step, nothing for
+/// the meeting tail). Minimizing the substitution segment alone was wrong: an
+/// arrangement tie in the entries says nothing about the environment the two
+/// arrangements commit, so `{AA -> a, ZZ -> a}` with the residual `AA != b`
+/// committed one environment while its alpha-equivalent residual `ZZ != b`
+/// committed another and the two alpha-equivalent steps hashed differently
+/// (PR #357 round 5 P2b).
+///
+/// The enumeration is metered against [`MAX_TIE_RESOLUTION_BYTES`]; over
+/// budget, the shape-sorted baseline arrangement (candidate zero) is used.
+fn framed_minimum(
+    frame: &str,
+    prefix: &[u8],
+    candidates: Vec<(Vec<u8>, Vec<String>)>,
+    tail: impl Fn(&mut Vec<u8>, &mut Vec<String>),
+) -> Sha256Digest {
+    let encode_candidate = |(blob, resolved): &(Vec<u8>, Vec<String>)| {
+        let mut encoding = Vec::with_capacity(prefix.len() + blob.len() + 32);
+        encoding.extend_from_slice(prefix);
+        encoding.extend_from_slice(&(blob.len() as u32).to_le_bytes());
+        encoding.extend_from_slice(blob);
+        let mut variables = resolved.clone();
+        tail(&mut encoding, &mut variables);
+        encoding
     };
-    *variables = resolved;
-    payload.extend_from_slice(&(blob.len() as u32).to_le_bytes());
-    payload.extend_from_slice(&blob);
+    let mut best: Option<Vec<u8>> = None;
+    let mut spent: u64 = 0;
+    for candidate in &candidates {
+        let encoding = encode_candidate(candidate);
+        spent = spent.saturating_add(encoding.len() as u64);
+        if spent > MAX_TIE_RESOLUTION_BYTES {
+            best = None;
+            break;
+        }
+        if best.as_ref().is_none_or(|current| encoding < *current) {
+            best = Some(encoding);
+        }
+    }
+    let encoding = match best {
+        Some(encoding) => encoding,
+        None => encode_candidate(&candidates[0]),
+    };
+    Sha256Digest::framed(frame, &encoding)
 }
 
 /// One substitution entry: the bound variable as a renaming index (not its

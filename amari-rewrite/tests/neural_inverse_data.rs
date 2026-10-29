@@ -1370,3 +1370,83 @@ fn alpha_equivalent_steps_share_a_trace_digest() {
         "alpha-equivalent steps must share a trace digest"
     );
 }
+
+// ── PR #357 round 5 regression contracts ────────────────────────────
+
+/// The two-variable-carrier step from [`association_system`]: its term is
+/// `f(a,?1.1,?1.2)` with `?1.1` recorded as the existential.
+fn existential_step(system: &TermSystem, swap_arguments: bool) -> ReplayCertificate {
+    let mut certificate = one_step(system, parse("a"), parse("f(a,B,C)"), 0);
+    let ReplayDerivation::Backward(derivation) = &mut certificate.derivation else {
+        panic!("backward fixture");
+    };
+    derivation.steps[0].substitution = Substitution::new();
+    derivation.steps[0].constraints = ConstraintSet::new();
+    derivation.steps[0].existentials.truncate(1);
+    if swap_arguments {
+        let Term::Sym(_, arguments) = &mut derivation.steps[0].term else {
+            panic!("the step term is an application");
+        };
+        arguments.swap(1, 2);
+    }
+    certificate
+        .verify(system)
+        .expect("existentials and variable order do not affect replay");
+    certificate
+}
+
+#[test]
+fn existentials_are_references_through_the_shared_environment() {
+    // P2a (round 5): existentials used to be encoded as their `(scope,
+    // index)` names, outside the shared environment, so swapping two
+    // variable arguments — an alpha-equivalent TERM — left a step whose
+    // existential list still names `?1.1`, and both hashed identically. The
+    // two steps are different claims: the existential names a different
+    // argument. Routing existential references through the same per-step
+    // environment makes which argument is existential part of the identity.
+    let system = association_system();
+    let unswapped = trace_digests_of(&system, &existential_step(&system, false));
+    let swapped = trace_digests_of(&system, &existential_step(&system, true));
+    assert_ne!(
+        unswapped, swapped,
+        "an existential naming the second argument is not the same step as one \
+         naming the third (P2a round 5)"
+    );
+}
+
+#[test]
+fn equal_shape_ties_are_resolved_on_the_whole_step_payload() {
+    // P2b (round 5): `{AA -> a, ZZ -> a}` has two equal-shape substitution
+    // entries, so two arrangements exist and their entry encodings are
+    // byte-identical — but they commit different environments. Choosing the
+    // arrangement by the substitution segment alone left the ENVIRONMENT
+    // alpha-dependent: `AA != b` and `ZZ != b` are alpha-equivalent residuals
+    // over alpha-equivalent steps, yet the committed environments differed and
+    // so did the digests. The tie is now resolved on the entire framed step
+    // payload, so the arrangement follows the residual that consumes the
+    // environment.
+    let (system, baseline) = backward_witness();
+    let with_residual = |variable: &str| {
+        let mut certificate = baseline.clone();
+        let ReplayDerivation::Backward(derivation) = &mut certificate.derivation else {
+            panic!("backward fixture");
+        };
+        derivation.steps[0].substitution = Substitution::new();
+        derivation.steps[0].substitution.insert("AA", parse("a"));
+        derivation.steps[0].substitution.insert("ZZ", parse("a"));
+        derivation.steps[0].constraints = ConstraintSet::new();
+        derivation.steps[0]
+            .constraints
+            .insert(TermConstraint::NotEqual(Term::var(variable), parse("b")));
+        certificate
+            .verify(&system)
+            .expect("a substitution and a residual do not affect replay");
+        certificate
+    };
+    assert_eq!(
+        trace_digests_of(&system, &with_residual("AA")),
+        trace_digests_of(&system, &with_residual("ZZ")),
+        "`{{AA -> a, ZZ -> a}}` with `AA != b` and `ZZ != b` are \
+         alpha-equivalent steps (P2b round 5)"
+    );
+}
