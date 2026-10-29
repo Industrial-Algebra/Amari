@@ -209,6 +209,25 @@
       ]
     },
     {
+      "path": "amari_surreal::Dyadic::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self >",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::dyadic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self >",
+          "source_path": "amari-surreal/src/dyadic.rs",
+          "source_module": "amari_surreal::dyadic",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::dyadic",
+          "declaration_ident": "Dyadic::checked_mul"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::Dyadic::checked_reciprocal",
       "kind": "method",
       "signature": "pub fn checked_reciprocal (& self) -> Result < Self >",
@@ -437,6 +456,25 @@
       ]
     },
     {
+      "path": "amari_surreal::Dyadic::try_new",
+      "kind": "method",
+      "signature": "pub fn try_new < N > (numer : N , exponent : u32) -> Result < Self > where N : Into < BigInt > ,",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::dyadic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_new < N > (numer : N , exponent : u32) -> Result < Self > where N : Into < BigInt > ,",
+          "source_path": "amari-surreal/src/dyadic.rs",
+          "source_module": "amari_surreal::dyadic",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::dyadic",
+          "declaration_ident": "Dyadic::try_new"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::Dyadic::zero",
       "kind": "method",
       "signature": "pub fn zero () -> Self",
@@ -479,6 +517,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonPolynomial"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::EpsilonPolynomial::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::checked_mul"
         }
       ]
     },
@@ -555,6 +612,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonPolynomial::from_scalar"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::EpsilonPolynomial::is_constant",
+      "kind": "method",
+      "signature": "pub fn is_constant (& self) -> bool",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_constant (& self) -> bool",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::is_constant"
         }
       ]
     },
@@ -673,6 +749,25 @@
       ]
     },
     {
+      "path": "amari_surreal::EpsilonPolynomial::try_monomial",
+      "kind": "method",
+      "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::try_monomial"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::EpsilonPolynomial::valuation",
       "kind": "method",
       "signature": "pub fn valuation (& self) -> Option < i32 >",
@@ -738,6 +833,25 @@
       ]
     },
     {
+      "path": "amari_surreal::EpsilonRational::checked_add",
+      "kind": "method",
+      "signature": "pub fn checked_add (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_add (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_add"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::EpsilonRational::checked_div",
       "kind": "method",
       "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self , SurrealError >",
@@ -757,6 +871,25 @@
       ]
     },
     {
+      "path": "amari_surreal::EpsilonRational::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_mul"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::EpsilonRational::checked_reciprocal",
       "kind": "method",
       "signature": "pub fn checked_reciprocal (& self) -> Result < Self , SurrealError >",
@@ -772,6 +905,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonRational::checked_reciprocal"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::EpsilonRational::checked_sub",
+      "kind": "method",
+      "signature": "pub fn checked_sub (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_sub (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_sub"
         }
       ]
     },
@@ -943,6 +1095,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonRational::one"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::EpsilonRational::try_monomial",
+      "kind": "method",
+      "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::try_monomial"
         }
       ]
     },
@@ -1734,6 +1905,22 @@
             "data": {
               "kind": "unit"
             }
+          },
+          {
+            "name": "ExponentOverflow",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "requested",
+                  "ty": "u32"
+                },
+                {
+                  "name": "bound",
+                  "ty": "u32"
+                }
+              ]
+            }
           }
         ]
       },
@@ -1781,6 +1968,22 @@
                 "name": "NonDyadicQuotient",
                 "data": {
                   "kind": "unit"
+                }
+              },
+              {
+                "name": "ExponentOverflow",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "requested",
+                      "ty": "u32"
+                    },
+                    {
+                      "name": "bound",
+                      "ty": "u32"
+                    }
+                  ]
                 }
               }
             ]
@@ -1874,6 +2077,25 @@
           "is_reexport": false,
           "declaration_module": "amari_surreal::dyadic",
           "declaration_ident": "Dyadic::checked_div"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::dyadic::Dyadic::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self >",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::dyadic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self >",
+          "source_path": "amari-surreal/src/dyadic.rs",
+          "source_module": "amari_surreal::dyadic",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::dyadic",
+          "declaration_ident": "Dyadic::checked_mul"
         }
       ]
     },
@@ -2106,6 +2328,25 @@
       ]
     },
     {
+      "path": "amari_surreal::dyadic::Dyadic::try_new",
+      "kind": "method",
+      "signature": "pub fn try_new < N > (numer : N , exponent : u32) -> Result < Self > where N : Into < BigInt > ,",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::dyadic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_new < N > (numer : N , exponent : u32) -> Result < Self > where N : Into < BigInt > ,",
+          "source_path": "amari-surreal/src/dyadic.rs",
+          "source_module": "amari_surreal::dyadic",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::dyadic",
+          "declaration_ident": "Dyadic::try_new"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::dyadic::Dyadic::zero",
       "kind": "method",
       "signature": "pub fn zero () -> Self",
@@ -2121,6 +2362,25 @@
           "is_reexport": false,
           "declaration_module": "amari_surreal::dyadic",
           "declaration_ident": "Dyadic::zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::dyadic::MAX_EXPONENT",
+      "kind": "const",
+      "signature": "pub const MAX_EXPONENT : u32",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::dyadic",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_EXPONENT : u32",
+          "source_path": "amari-surreal/src/dyadic.rs",
+          "source_module": "amari_surreal::dyadic",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::dyadic",
+          "declaration_ident": "MAX_EXPONENT"
         }
       ]
     },
@@ -2185,6 +2445,25 @@
           "is_reexport": false,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonPolynomial"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonPolynomial::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::checked_mul"
         }
       ]
     },
@@ -2261,6 +2540,25 @@
           "is_reexport": false,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonPolynomial::from_scalar"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonPolynomial::is_constant",
+      "kind": "method",
+      "signature": "pub fn is_constant (& self) -> bool",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_constant (& self) -> bool",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::is_constant"
         }
       ]
     },
@@ -2379,6 +2677,25 @@
       ]
     },
     {
+      "path": "amari_surreal::epsilon::EpsilonPolynomial::try_monomial",
+      "kind": "method",
+      "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::try_monomial"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::epsilon::EpsilonPolynomial::valuation",
       "kind": "method",
       "signature": "pub fn valuation (& self) -> Option < i32 >",
@@ -2444,6 +2761,25 @@
       ]
     },
     {
+      "path": "amari_surreal::epsilon::EpsilonRational::checked_add",
+      "kind": "method",
+      "signature": "pub fn checked_add (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_add (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_add"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::epsilon::EpsilonRational::checked_div",
       "kind": "method",
       "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self , SurrealError >",
@@ -2463,6 +2799,25 @@
       ]
     },
     {
+      "path": "amari_surreal::epsilon::EpsilonRational::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_mul"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::epsilon::EpsilonRational::checked_reciprocal",
       "kind": "method",
       "signature": "pub fn checked_reciprocal (& self) -> Result < Self , SurrealError >",
@@ -2478,6 +2833,25 @@
           "is_reexport": false,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonRational::checked_reciprocal"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonRational::checked_sub",
+      "kind": "method",
+      "signature": "pub fn checked_sub (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_sub (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_sub"
         }
       ]
     },
@@ -2653,6 +3027,25 @@
       ]
     },
     {
+      "path": "amari_surreal::epsilon::EpsilonRational::try_monomial",
+      "kind": "method",
+      "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::try_monomial"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::epsilon::EpsilonRational::zero",
       "kind": "method",
       "signature": "pub fn zero () -> Self",
@@ -2668,6 +3061,25 @@
           "is_reexport": false,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonRational::zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::epsilon::MAX_EPSILON_EXPONENT",
+      "kind": "const",
+      "signature": "pub const MAX_EPSILON_EXPONENT : i32",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": false,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_EPSILON_EXPONENT : i32",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": false,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "MAX_EPSILON_EXPONENT"
         }
       ]
     },
@@ -2732,6 +3144,22 @@
             "data": {
               "kind": "unit"
             }
+          },
+          {
+            "name": "ExponentOverflow",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "requested",
+                  "ty": "u32"
+                },
+                {
+                  "name": "bound",
+                  "ty": "u32"
+                }
+              ]
+            }
           }
         ]
       },
@@ -2779,6 +3207,22 @@
                 "name": "NonDyadicQuotient",
                 "data": {
                   "kind": "unit"
+                }
+              },
+              {
+                "name": "ExponentOverflow",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "requested",
+                      "ty": "u32"
+                    },
+                    {
+                      "name": "bound",
+                      "ty": "u32"
+                    }
+                  ]
                 }
               }
             ]
@@ -2956,6 +3400,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::dyadic",
           "declaration_ident": "Dyadic::checked_div"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::prelude::Dyadic::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self >",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::dyadic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self >",
+          "source_path": "amari-surreal/src/dyadic.rs",
+          "source_module": "amari_surreal::dyadic",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::dyadic",
+          "declaration_ident": "Dyadic::checked_mul"
         }
       ]
     },
@@ -3188,6 +3651,25 @@
       ]
     },
     {
+      "path": "amari_surreal::prelude::Dyadic::try_new",
+      "kind": "method",
+      "signature": "pub fn try_new < N > (numer : N , exponent : u32) -> Result < Self > where N : Into < BigInt > ,",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::dyadic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_new < N > (numer : N , exponent : u32) -> Result < Self > where N : Into < BigInt > ,",
+          "source_path": "amari-surreal/src/dyadic.rs",
+          "source_module": "amari_surreal::dyadic",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::dyadic",
+          "declaration_ident": "Dyadic::try_new"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::prelude::Dyadic::zero",
       "kind": "method",
       "signature": "pub fn zero () -> Self",
@@ -3230,6 +3712,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonPolynomial"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonPolynomial::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::checked_mul"
         }
       ]
     },
@@ -3306,6 +3807,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonPolynomial::from_scalar"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonPolynomial::is_constant",
+      "kind": "method",
+      "signature": "pub fn is_constant (& self) -> bool",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_constant (& self) -> bool",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::is_constant"
         }
       ]
     },
@@ -3424,6 +3944,25 @@
       ]
     },
     {
+      "path": "amari_surreal::prelude::EpsilonPolynomial::try_monomial",
+      "kind": "method",
+      "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonPolynomial::try_monomial"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::prelude::EpsilonPolynomial::valuation",
       "kind": "method",
       "signature": "pub fn valuation (& self) -> Option < i32 >",
@@ -3489,6 +4028,25 @@
       ]
     },
     {
+      "path": "amari_surreal::prelude::EpsilonRational::checked_add",
+      "kind": "method",
+      "signature": "pub fn checked_add (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_add (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_add"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::prelude::EpsilonRational::checked_div",
       "kind": "method",
       "signature": "pub fn checked_div (& self , rhs : & Self) -> Result < Self , SurrealError >",
@@ -3508,6 +4066,25 @@
       ]
     },
     {
+      "path": "amari_surreal::prelude::EpsilonRational::checked_mul",
+      "kind": "method",
+      "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_mul (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_mul"
+        }
+      ]
+    },
+    {
       "path": "amari_surreal::prelude::EpsilonRational::checked_reciprocal",
       "kind": "method",
       "signature": "pub fn checked_reciprocal (& self) -> Result < Self , SurrealError >",
@@ -3523,6 +4100,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonRational::checked_reciprocal"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonRational::checked_sub",
+      "kind": "method",
+      "signature": "pub fn checked_sub (& self , rhs : & Self) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn checked_sub (& self , rhs : & Self) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::checked_sub"
         }
       ]
     },
@@ -3694,6 +4290,25 @@
           "is_reexport": true,
           "declaration_module": "amari_surreal::epsilon",
           "declaration_ident": "EpsilonRational::one"
+        }
+      ]
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonRational::try_monomial",
+      "kind": "method",
+      "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "is_reexport": true,
+      "source_module": "amari_surreal::epsilon",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn try_monomial (coeff : RationalSurreal , exp : i32) -> Result < Self , SurrealError >",
+          "source_path": "amari-surreal/src/epsilon.rs",
+          "source_module": "amari_surreal::epsilon",
+          "is_reexport": true,
+          "declaration_module": "amari_surreal::epsilon",
+          "declaration_ident": "EpsilonRational::try_monomial"
         }
       ]
     },
@@ -4485,6 +5100,22 @@
             "data": {
               "kind": "unit"
             }
+          },
+          {
+            "name": "ExponentOverflow",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "requested",
+                  "ty": "u32"
+                },
+                {
+                  "name": "bound",
+                  "ty": "u32"
+                }
+              ]
+            }
           }
         ]
       },
@@ -4532,6 +5163,22 @@
                 "name": "NonDyadicQuotient",
                 "data": {
                   "kind": "unit"
+                }
+              },
+              {
+                "name": "ExponentOverflow",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "requested",
+                      "ty": "u32"
+                    },
+                    {
+                      "name": "bound",
+                      "ty": "u32"
+                    }
+                  ]
                 }
               }
             ]
@@ -5174,7 +5821,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5192,7 +5839,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5210,7 +5857,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5264,7 +5911,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5282,7 +5929,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5300,7 +5947,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5318,7 +5965,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5336,7 +5983,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5354,7 +6001,7 @@
       "trait_path": "Add",
       "impl_type_path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Add"
@@ -5444,7 +6091,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5462,7 +6109,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5480,7 +6127,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5570,7 +6217,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5588,7 +6235,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5606,7 +6253,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5624,7 +6271,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5678,7 +6325,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5696,7 +6343,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5714,7 +6361,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -5858,7 +6505,7 @@
       "trait_path": "Copy",
       "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Copy"
@@ -5912,7 +6559,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -5930,7 +6577,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -5948,7 +6595,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6038,7 +6685,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6056,7 +6703,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6074,7 +6721,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6092,7 +6739,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6146,7 +6793,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6164,7 +6811,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6182,7 +6829,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -6308,7 +6955,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6326,7 +6973,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6344,7 +6991,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 23,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6434,7 +7081,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6452,7 +7099,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6470,7 +7117,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6488,7 +7135,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 23,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6542,7 +7189,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6560,7 +7207,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6578,7 +7225,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 23,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -6758,7 +7405,7 @@
       "trait_path": "Hash",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Hash"
@@ -6830,7 +7477,7 @@
       "trait_path": "Hash",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Hash"
@@ -6848,7 +7495,7 @@
       "trait_path": "Hash",
       "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Hash"
@@ -6884,7 +7531,7 @@
       "trait_path": "Hash",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "trait_endpoint": {
         "kind": "external",
         "path": "Hash"
@@ -6992,7 +7639,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7010,7 +7657,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7028,7 +7675,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7082,7 +7729,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7100,7 +7747,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7118,7 +7765,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7136,7 +7783,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7154,7 +7801,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7172,7 +7819,7 @@
       "trait_path": "Mul",
       "impl_type_path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Mul"
@@ -7262,7 +7909,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7280,7 +7927,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 10,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7298,7 +7945,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 21,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7352,7 +7999,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7370,7 +8017,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 10,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7388,7 +8035,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 21,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7406,7 +8053,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 9,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7424,7 +8071,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 10,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7442,7 +8089,7 @@
       "trait_path": "Neg",
       "impl_type_path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 21,
       "trait_endpoint": {
         "kind": "external",
         "path": "Neg"
@@ -7532,7 +8179,7 @@
       "trait_path": "Ord",
       "impl_type_path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Ord"
@@ -7550,7 +8197,7 @@
       "trait_path": "Ord",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 20,
+      "source_ordinal": 25,
       "trait_endpoint": {
         "kind": "external",
         "path": "Ord"
@@ -7604,7 +8251,7 @@
       "trait_path": "Ord",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Ord"
@@ -7622,7 +8269,7 @@
       "trait_path": "Ord",
       "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "trait_endpoint": {
         "kind": "external",
         "path": "Ord"
@@ -7640,7 +8287,7 @@
       "trait_path": "Ord",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 20,
+      "source_ordinal": 25,
       "trait_endpoint": {
         "kind": "external",
         "path": "Ord"
@@ -7658,135 +8305,135 @@
       "trait_path": "Ord",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Ord"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Ord",
+      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 25,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Ord"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Ord",
+      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Ord"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Ord",
+      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Ord"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Ord",
+      "impl_type_path": "amari_surreal::rational::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Ord"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Ord",
+      "impl_type_path": "amari_surreal::short::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Ord"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::EpsilonPolynomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
-        "path": "Ord"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Ord",
-      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 20,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Ord"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Ord",
-      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 6,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Ord"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Ord",
-      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 6,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Ord"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Ord",
-      "impl_type_path": "amari_surreal::rational::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 6,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Ord"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Ord",
-      "impl_type_path": "amari_surreal::short::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 6,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Ord"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::EpsilonPolynomial",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
-      "trait_endpoint": {
-        "kind": "external",
         "path": "PartialEq"
       },
       "impl_type_endpoint": {
@@ -7800,909 +8447,909 @@
     },
     {
       "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 17,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::NumericGame",
-      "source_path": "amari-surreal/src/numeric.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::numeric",
-        "ident": "NumericGame"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::SurrealError",
-      "source_path": "amari-surreal/src/error.rs",
-      "source_ordinal": 1,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::error",
-        "ident": "SurrealError"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::dyadic::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonExponent"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonPolynomial"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 17,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::error::SurrealError",
-      "source_path": "amari-surreal/src/error.rs",
-      "source_ordinal": 1,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::error",
-        "ident": "SurrealError"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::numeric::NumericGame",
-      "source_path": "amari-surreal/src/numeric.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::numeric",
-        "ident": "NumericGame"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::prelude::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonPolynomial"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 17,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::prelude::NumericGame",
-      "source_path": "amari-surreal/src/numeric.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::numeric",
-        "ident": "NumericGame"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::prelude::SurrealError",
-      "source_path": "amari-surreal/src/error.rs",
-      "source_ordinal": 1,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::error",
-        "ident": "SurrealError"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::rational::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialEq",
-      "impl_type_path": "amari_surreal::short::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialEq"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 19,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::dyadic::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonExponent"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 19,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::prelude::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 19,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::rational::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "PartialOrd",
-      "impl_type_path": "amari_surreal::short::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "PartialOrd"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::EpsilonPolynomial",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonPolynomial"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 14,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::dyadic::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonPolynomial"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 14,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::prelude::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonPolynomial"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 14,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonRational"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::rational::RationalSurreal",
-      "source_path": "amari-surreal/src/rational.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::rational",
-        "ident": "RationalSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Sub",
-      "impl_type_path": "amari_surreal::short::ShortSurreal",
-      "source_path": "amari-surreal/src/short.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Sub"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::short",
-        "ident": "ShortSurreal"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "fmt::Display",
-      "impl_type_path": "amari_surreal::Dyadic",
-      "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "fmt::Display"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::dyadic",
-        "ident": "Dyadic"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "fmt::Display",
-      "impl_type_path": "amari_surreal::EpsilonPolynomial",
-      "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 8,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "fmt::Display"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_surreal::epsilon",
-        "ident": "EpsilonPolynomial"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "fmt::Display",
       "impl_type_path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::NumericGame",
+      "source_path": "amari-surreal/src/numeric.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::numeric",
+        "ident": "NumericGame"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::SurrealError",
+      "source_path": "amari-surreal/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::error",
+        "ident": "SurrealError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::dyadic::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonExponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonPolynomial"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::error::SurrealError",
+      "source_path": "amari-surreal/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::error",
+        "ident": "SurrealError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::numeric::NumericGame",
+      "source_path": "amari-surreal/src/numeric.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::numeric",
+        "ident": "NumericGame"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::prelude::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonPolynomial"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::prelude::NumericGame",
+      "source_path": "amari-surreal/src/numeric.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::numeric",
+        "ident": "NumericGame"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::prelude::SurrealError",
+      "source_path": "amari-surreal/src/error.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::error",
+        "ident": "SurrealError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::rational::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_surreal::short::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::dyadic::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::epsilon::EpsilonExponent",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonExponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::prelude::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::rational::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "PartialOrd",
+      "impl_type_path": "amari_surreal::short::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::EpsilonPolynomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonPolynomial"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::dyadic::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonPolynomial"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::prelude::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonPolynomial"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::prelude::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonRational"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::prelude::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::prelude::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::rational::RationalSurreal",
+      "source_path": "amari-surreal/src/rational.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::rational",
+        "ident": "RationalSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Sub",
+      "impl_type_path": "amari_surreal::short::ShortSurreal",
+      "source_path": "amari-surreal/src/short.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Sub"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::short",
+        "ident": "ShortSurreal"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_surreal::Dyadic",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::dyadic",
+        "ident": "Dyadic"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_surreal::EpsilonPolynomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_surreal::epsilon",
+        "ident": "EpsilonPolynomial"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_surreal::EpsilonRational",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 27,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -8756,7 +9403,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 10,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -8774,7 +9421,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 11,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -8792,7 +9439,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 27,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -8810,7 +9457,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 10,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -8828,7 +9475,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 11,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -8846,7 +9493,7 @@
       "trait_path": "fmt::Display",
       "impl_type_path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 27,
       "trait_endpoint": {
         "kind": "external",
         "path": "fmt::Display"
@@ -8937,7 +9584,7 @@
     {
       "path": "amari_surreal::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -8945,7 +9592,7 @@
     {
       "path": "amari_surreal::Dyadic::abs",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -8953,7 +9600,7 @@
     {
       "path": "amari_surreal::Dyadic::ceil_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -8961,7 +9608,15 @@
     {
       "path": "amari_surreal::Dyadic::checked_div",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 13,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::Dyadic::checked_mul",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 0,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -8969,7 +9624,7 @@
     {
       "path": "amari_surreal::Dyadic::checked_reciprocal",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -8977,7 +9632,7 @@
     {
       "path": "amari_surreal::Dyadic::exponent",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -8985,7 +9640,7 @@
     {
       "path": "amari_surreal::Dyadic::floor_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -8993,7 +9648,7 @@
     {
       "path": "amari_surreal::Dyadic::from_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9001,7 +9656,7 @@
     {
       "path": "amari_surreal::Dyadic::is_negative",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9009,7 +9664,7 @@
     {
       "path": "amari_surreal::Dyadic::is_positive",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9017,7 +9672,7 @@
     {
       "path": "amari_surreal::Dyadic::is_zero",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9033,7 +9688,7 @@
     {
       "path": "amari_surreal::Dyadic::normalize",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9041,7 +9696,7 @@
     {
       "path": "amari_surreal::Dyadic::numer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9049,7 +9704,7 @@
     {
       "path": "amari_surreal::Dyadic::one",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9057,7 +9712,15 @@
     {
       "path": "amari_surreal::Dyadic::short_birthday",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 16,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::Dyadic::try_new",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9065,7 +9728,7 @@
     {
       "path": "amari_surreal::Dyadic::zero",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9073,10 +9736,18 @@
     {
       "path": "amari_surreal::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surreal::EpsilonPolynomial::checked_mul",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::EpsilonPolynomial::degree",
@@ -9097,13 +9768,21 @@
     {
       "path": "amari_surreal::EpsilonPolynomial::from_coefficients",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::EpsilonPolynomial::from_scalar",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 5,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::EpsilonPolynomial::is_constant",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 4,
       "gate": "all(feature(\"experimental-epsilon\"))",
@@ -9145,7 +9824,7 @@
     {
       "path": "amari_surreal::EpsilonPolynomial::sign_epsilon",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9153,7 +9832,15 @@
     {
       "path": "amari_surreal::EpsilonPolynomial::terms",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::EpsilonPolynomial::try_monomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 4,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9177,10 +9864,18 @@
     {
       "path": "amari_surreal::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surreal::EpsilonRational::checked_add",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 0,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::EpsilonRational::checked_div",
@@ -9191,9 +9886,25 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_surreal::EpsilonRational::checked_mul",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_surreal::EpsilonRational::checked_reciprocal",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 0,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::EpsilonRational::checked_sub",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 1,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9217,7 +9928,7 @@
     {
       "path": "amari_surreal::EpsilonRational::from_parts",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9225,7 +9936,7 @@
     {
       "path": "amari_surreal::EpsilonRational::from_polynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9233,7 +9944,7 @@
     {
       "path": "amari_surreal::EpsilonRational::from_scalar",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9266,6 +9977,14 @@
       "path": "amari_surreal::EpsilonRational::one",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 1,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::EpsilonRational::try_monomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 4,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9593,7 +10312,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -9601,7 +10320,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::abs",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9609,7 +10328,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::ceil_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9617,7 +10336,15 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::checked_div",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 13,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::dyadic::Dyadic::checked_mul",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 0,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9625,7 +10352,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::checked_reciprocal",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9633,7 +10360,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::exponent",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9641,7 +10368,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::floor_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9649,7 +10376,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::from_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9657,7 +10384,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::is_negative",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9665,7 +10392,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::is_positive",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9673,7 +10400,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::is_zero",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9689,7 +10416,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::normalize",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9697,7 +10424,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::numer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9705,7 +10432,7 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::one",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9713,7 +10440,15 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::short_birthday",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 16,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::dyadic::Dyadic::try_new",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -9721,10 +10456,18 @@
     {
       "path": "amari_surreal::dyadic::Dyadic::zero",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::dyadic::MAX_EXPONENT",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_surreal::epsilon",
@@ -9737,7 +10480,7 @@
     {
       "path": "amari_surreal::epsilon::EpsilonExponent",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 2,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -9745,10 +10488,18 @@
     {
       "path": "amari_surreal::epsilon::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonPolynomial::checked_mul",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::epsilon::EpsilonPolynomial::degree",
@@ -9769,13 +10520,21 @@
     {
       "path": "amari_surreal::epsilon::EpsilonPolynomial::from_coefficients",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::epsilon::EpsilonPolynomial::from_scalar",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonPolynomial::is_constant",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 4,
       "gate": "feature(\"experimental-epsilon\")",
@@ -9817,7 +10576,7 @@
     {
       "path": "amari_surreal::epsilon::EpsilonPolynomial::sign_epsilon",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9825,7 +10584,15 @@
     {
       "path": "amari_surreal::epsilon::EpsilonPolynomial::terms",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonPolynomial::try_monomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 4,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9849,10 +10616,18 @@
     {
       "path": "amari_surreal::epsilon::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonRational::checked_add",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::epsilon::EpsilonRational::checked_div",
@@ -9863,9 +10638,25 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_surreal::epsilon::EpsilonRational::checked_mul",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_surreal::epsilon::EpsilonRational::checked_reciprocal",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 0,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::epsilon::EpsilonRational::checked_sub",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 1,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9889,7 +10680,7 @@
     {
       "path": "amari_surreal::epsilon::EpsilonRational::from_parts",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9897,7 +10688,7 @@
     {
       "path": "amari_surreal::epsilon::EpsilonRational::from_polynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9905,7 +10696,7 @@
     {
       "path": "amari_surreal::epsilon::EpsilonRational::from_scalar",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -9943,12 +10734,28 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_surreal::epsilon::EpsilonRational::try_monomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_surreal::epsilon::EpsilonRational::zero",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 0,
       "gate": "feature(\"experimental-epsilon\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::epsilon::MAX_EPSILON_EXPONENT",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"experimental-epsilon\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_surreal::error",
@@ -10025,7 +10832,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -10033,7 +10840,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::abs",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10041,7 +10848,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::ceil_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10049,7 +10856,15 @@
     {
       "path": "amari_surreal::prelude::Dyadic::checked_div",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 13,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::prelude::Dyadic::checked_mul",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 0,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10057,7 +10872,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::checked_reciprocal",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10065,7 +10880,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::exponent",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10073,7 +10888,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::floor_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10081,7 +10896,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::from_integer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10089,7 +10904,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::is_negative",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10097,7 +10912,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::is_positive",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10105,7 +10920,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::is_zero",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10121,7 +10936,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::normalize",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10129,7 +10944,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::numer",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10137,7 +10952,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::one",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10145,7 +10960,15 @@
     {
       "path": "amari_surreal::prelude::Dyadic::short_birthday",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 16,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::prelude::Dyadic::try_new",
+      "source_path": "amari-surreal/src/dyadic.rs",
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10153,7 +10976,7 @@
     {
       "path": "amari_surreal::prelude::Dyadic::zero",
       "source_path": "amari-surreal/src/dyadic.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -10161,10 +10984,18 @@
     {
       "path": "amari_surreal::prelude::EpsilonPolynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonPolynomial::checked_mul",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::prelude::EpsilonPolynomial::degree",
@@ -10185,13 +11016,21 @@
     {
       "path": "amari_surreal::prelude::EpsilonPolynomial::from_coefficients",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::prelude::EpsilonPolynomial::from_scalar",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 5,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonPolynomial::is_constant",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 4,
       "gate": "all(feature(\"experimental-epsilon\"))",
@@ -10233,7 +11072,7 @@
     {
       "path": "amari_surreal::prelude::EpsilonPolynomial::sign_epsilon",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -10241,7 +11080,15 @@
     {
       "path": "amari_surreal::prelude::EpsilonPolynomial::terms",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonPolynomial::try_monomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 4,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -10265,10 +11112,18 @@
     {
       "path": "amari_surreal::prelude::EpsilonRational",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 12,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonRational::checked_add",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 0,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_surreal::prelude::EpsilonRational::checked_div",
@@ -10279,9 +11134,25 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_surreal::prelude::EpsilonRational::checked_mul",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_surreal::prelude::EpsilonRational::checked_reciprocal",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 0,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonRational::checked_sub",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 1,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -10305,7 +11176,7 @@
     {
       "path": "amari_surreal::prelude::EpsilonRational::from_parts",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -10313,7 +11184,7 @@
     {
       "path": "amari_surreal::prelude::EpsilonRational::from_polynomial",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -10321,7 +11192,7 @@
     {
       "path": "amari_surreal::prelude::EpsilonRational::from_scalar",
       "source_path": "amari-surreal/src/epsilon.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -10354,6 +11225,14 @@
       "path": "amari_surreal::prelude::EpsilonRational::one",
       "source_path": "amari-surreal/src/epsilon.rs",
       "source_ordinal": 1,
+      "gate": "all(feature(\"experimental-epsilon\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_surreal::prelude::EpsilonRational::try_monomial",
+      "source_path": "amari-surreal/src/epsilon.rs",
+      "source_ordinal": 4,
       "gate": "all(feature(\"experimental-epsilon\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"

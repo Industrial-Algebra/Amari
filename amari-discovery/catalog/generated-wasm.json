@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_hash": "a3f9b4a244fb36306e3024682ee538c49f77eec33ee2958c6a67c9dfb0a2c484",
+  "source_hash": "7487b5c8190ff6d963c6556237c592d057689898f370ecca26fad4a17402dfc7",
   "description": "153 classes, 30 functions, 2 enums, 1 interfaces, 2 type aliases",
   "classes": [
     {
@@ -2069,7 +2069,7 @@
         },
         {
           "name": "mul",
-          "doc": "Multiply two dyadics exactly.",
+          "doc": "Multiply two dyadics exactly.\n\nErrors when the result exponent exceeds the representable bound\n(e.g. squaring a bound-maximum dyadic).",
           "signature": "(rhs: WasmDyadic): WasmDyadic",
           "is_static": false
         },
@@ -2265,7 +2265,7 @@
         },
         {
           "name": "monomial",
-          "doc": "A monomial rational function `coeff · ε^exp / 1`.\n\nWASM boundary note: `exponent` is currently exposed as a 32-bit signed\ninteger, matching the experimental Rust exponent representation.",
+          "doc": "A monomial rational function `coeff · ε^exp / 1`.\n\nWASM boundary note: `exponent` is currently exposed as a 32-bit signed\ninteger, matching the experimental Rust exponent representation.\nA monomial rational function `coeff · ε^exp / 1`.\n\nErrors when `|exponent|` exceeds the representable bound.",
           "signature": "(coeff: WasmRationalSurreal, exponent: number): WasmExperimentalEpsilonRational",
           "is_static": true
         },
@@ -7173,7 +7173,7 @@
         },
         {
           "name": "mul",
-          "doc": "Multiply two short surreals exactly.",
+          "doc": "Multiply two short surreals exactly.\n\nErrors when the result exponent exceeds the representable bound.",
           "signature": "(rhs: WasmShortSurreal): WasmShortSurreal",
           "is_static": false
         },
@@ -10918,7 +10918,7 @@
         },
         {
           "name": "wasmdyadic_mul",
-          "type_signature": "readonly wasmdyadic_mul: (a: number, b: number) => number"
+          "type_signature": "readonly wasmdyadic_mul: (a: number, b: number) => [number, number, number]"
         },
         {
           "name": "wasmdyadic_neg",
@@ -10926,7 +10926,7 @@
         },
         {
           "name": "wasmdyadic_new",
-          "type_signature": "readonly wasmdyadic_new: (a: number, b: number) => number"
+          "type_signature": "readonly wasmdyadic_new: (a: number, b: number) => [number, number, number]"
         },
         {
           "name": "wasmdyadic_numeratorString",
@@ -11014,7 +11014,7 @@
         },
         {
           "name": "wasmexperimentalepsilonrational_monomial",
-          "type_signature": "readonly wasmexperimentalepsilonrational_monomial: (a: number, b: number) => number"
+          "type_signature": "readonly wasmexperimentalepsilonrational_monomial: (a: number, b: number) => [number, number, number]"
         },
         {
           "name": "wasmexperimentalepsilonrational_mul",
@@ -13858,7 +13858,7 @@
         },
         {
           "name": "wasmshortsurreal_mul",
-          "type_signature": "readonly wasmshortsurreal_mul: (a: number, b: number) => number"
+          "type_signature": "readonly wasmshortsurreal_mul: (a: number, b: number) => [number, number, number]"
         },
         {
           "name": "wasmshortsurreal_neg",

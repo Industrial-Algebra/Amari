@@ -26,4 +26,14 @@ pub enum SurrealError {
     /// Returned when an exact quotient leaves the dyadic short-surreal layer.
     #[error("quotient is not dyadic in the short-surreal layer")]
     NonDyadicQuotient,
+
+    /// Returned when an exponent exceeds the representable dyadic bound.
+    ///
+    /// The dyadic and epsilon layers enforce `MAX_EXPONENT = 1 << 20` as a
+    /// representation invariant: stored values must have exponents within
+    /// the bound. Comparison and equality operate on unbounded transients
+    /// and stay total; only construction of NEW stored values enforces
+    /// the bound.
+    #[error("exponent {requested} exceeds the representable bound {bound}")]
+    ExponentOverflow { requested: u32, bound: u32 },
 }

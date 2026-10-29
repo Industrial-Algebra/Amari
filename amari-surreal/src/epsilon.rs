@@ -22,6 +22,23 @@
 
 use crate::error::SurrealError;
 use crate::rational::RationalSurreal;
+
+/// Maximum |exponent| for stored epsilon terms (2^20) — the
+/// representation invariant of the epsilon layer (symmetric in the
+/// exponent sign; negative exponents are Laurent terms and stay
+/// supported). Comparisons and cross-products use unbounded transients;
+/// construction of stored values enforces the bound.
+pub const MAX_EPSILON_EXPONENT: i32 = 1 << 20;
+
+fn check_exponent(exp: i32) -> Result<(), SurrealError> {
+    if exp.unsigned_abs() > MAX_EPSILON_EXPONENT.unsigned_abs() {
+        return Err(SurrealError::ExponentOverflow {
+            requested: exp.unsigned_abs(),
+            bound: MAX_EPSILON_EXPONENT.unsigned_abs(),
+        });
+    }
+    Ok(())
+}
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::fmt;
@@ -88,15 +105,26 @@ impl EpsilonPolynomial {
     /// A single monomial `coeff · ε^exp`.
     ///
     /// Returns the zero polynomial when `coeff` is zero.
+    ///
+    /// # Panics
+    ///
+    /// Panics when `|exp| > MAX_EPSILON_EXPONENT` (representation
+    /// bound). Use [`EpsilonPolynomial::try_monomial`] for the fallible
+    /// path.
     #[must_use]
     pub fn monomial(coeff: RationalSurreal, exp: i32) -> Self {
+        Self::try_monomial(coeff, exp).expect("exponent exceeds MAX_EPSILON_EXPONENT")
+    }
+
+    /// Fallible monomial constructor enforcing the representation bound.
+    pub fn try_monomial(coeff: RationalSurreal, exp: i32) -> Result<Self, SurrealError> {
         if coeff.is_zero() {
-            Self::zero()
-        } else {
-            let mut terms = BTreeMap::new();
-            terms.insert(EpsilonExponent(exp), coeff);
-            Self { terms }
+            return Ok(Self::zero());
         }
+        check_exponent(exp)?;
+        let mut terms = BTreeMap::new();
+        terms.insert(EpsilonExponent(exp), coeff);
+        Ok(Self { terms })
     }
 
     /// Build a polynomial from a scalar (constant term).
@@ -120,6 +148,10 @@ impl EpsilonPolynomial {
         let mut terms = BTreeMap::new();
         for (k, coeff) in coeffs.into_iter().enumerate() {
             if !coeff.is_zero() {
+                assert!(
+                    k <= i32::MAX as usize,
+                    "coefficient index {k} exceeds i32 exponent range"
+                );
                 terms.insert(EpsilonExponent(k as i32), coeff);
             }
         }
@@ -151,10 +183,19 @@ impl EpsilonPolynomial {
     }
 
     /// Whether the polynomial is the constant `1`.
+    ///
+    /// Requires a SINGLE constant term (S9): a Laurent polynomial such
+    /// as `1 + ε^-1` has `degree() == Some(0)` and term(0) == 1 but is
+    /// not the constant one.
     #[must_use]
     pub fn is_one(&self) -> bool {
-        matches!(self.degree(), Some(0))
-            && self.terms.get(&EpsilonExponent(0)) == Some(&RationalSurreal::one())
+        self.is_constant() && self.terms.get(&EpsilonExponent(0)) == Some(&RationalSurreal::one())
+    }
+
+    /// Whether the polynomial is a single constant term.
+    #[must_use]
+    pub fn is_constant(&self) -> bool {
+        self.valuation() == Some(0) && self.degree() == Some(0)
     }
 
     /// Sign of the polynomial as `ε → 0⁺`.
@@ -198,14 +239,21 @@ impl Sub for EpsilonPolynomial {
     }
 }
 
-impl Mul for EpsilonPolynomial {
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
+impl EpsilonPolynomial {
+    /// TRANSIENT multiplication: no representation bound is enforced on
+    /// the output (used by `Ord`/`PartialEq` cross-products and by the
+    /// checked constructors, which enforce the bound themselves before
+    /// returning). Exponent addition uses `checked_add` so even
+    /// transients can never wrap i32 (double cross-products stay ≤ 2^22,
+    /// far inside the range).
+    fn mul_transient(&self, rhs: &Self) -> Self {
         let mut terms: BTreeMap<EpsilonExponent, RationalSurreal> = BTreeMap::new();
         for (&exp_a, coeff_a) in &self.terms {
             for (&exp_b, coeff_b) in &rhs.terms {
-                let exp = EpsilonExponent(exp_a.0 + exp_b.0);
+                let exp =
+                    EpsilonExponent(exp_a.0.checked_add(exp_b.0).expect(
+                        "transient exponent sum exceeds i32 (impossible from bounded inputs)",
+                    ));
                 let prod = coeff_a.clone() * coeff_b.clone();
                 let entry = terms.entry(exp).or_insert_with(RationalSurreal::zero);
                 *entry = entry.clone() + prod;
@@ -213,6 +261,42 @@ impl Mul for EpsilonPolynomial {
         }
         terms.retain(|_, v| !v.is_zero());
         Self { terms }
+    }
+
+    /// Whether any stored term exceeds the representation bound.
+    fn within_bound(&self) -> bool {
+        self.terms
+            .keys()
+            .all(|e| e.0.unsigned_abs() <= MAX_EPSILON_EXPONENT.unsigned_abs())
+    }
+
+    /// Checked multiplication: enforces the representation bound on the
+    /// OUTPUT. Addition is union-of-terms and cannot grow exponents;
+    /// multiplication is the growth path.
+    pub fn checked_mul(&self, rhs: &Self) -> Result<Self, SurrealError> {
+        let product = self.mul_transient(rhs);
+        if product.within_bound() {
+            Ok(product)
+        } else {
+            Err(SurrealError::ExponentOverflow {
+                requested: (MAX_EPSILON_EXPONENT as u32) + 1,
+                bound: MAX_EPSILON_EXPONENT as u32,
+            })
+        }
+    }
+}
+
+impl Mul for EpsilonPolynomial {
+    type Output = Self;
+
+    /// # Panics
+    ///
+    /// Panics when the result has any term beyond
+    /// `MAX_EPSILON_EXPONENT` (documented honest panic; see
+    /// [`EpsilonPolynomial::checked_mul`]).
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.checked_mul(&rhs)
+            .expect("exponent exceeds MAX_EPSILON_EXPONENT")
     }
 }
 
@@ -234,14 +318,22 @@ impl fmt::Display for EpsilonPolynomial {
         }
         let mut first = true;
         for (exp, coeff) in &self.terms {
-            if !first {
+            let negative = coeff.is_negative();
+            let magnitude = coeff.clone().abs();
+            if first {
+                if negative {
+                    write!(f, "-")?;
+                }
+            } else if negative {
+                write!(f, " - ")?;
+            } else {
                 write!(f, " + ")?;
             }
             first = false;
             match exp.0 {
-                0 => write!(f, "{coeff}")?,
-                1 => write!(f, "{coeff}·ε")?,
-                e => write!(f, "{coeff}·ε^{e}")?,
+                0 => write!(f, "{magnitude}")?,
+                1 => write!(f, "{magnitude}·ε")?,
+                e => write!(f, "{magnitude}·ε^{e}")?,
             }
         }
         Ok(())
@@ -292,12 +384,25 @@ impl EpsilonRational {
     }
 
     /// A monomial rational function `coeff · ε^exp / 1`.
+    ///
+    /// # Panics
+    ///
+    /// Panics when `|exp| > MAX_EPSILON_EXPONENT`. Use
+    /// [`EpsilonRational::try_monomial`] for the fallible path.
     #[must_use]
     pub fn monomial(coeff: RationalSurreal, exp: i32) -> Self {
         Self {
             numer: EpsilonPolynomial::monomial(coeff, exp),
             denom: EpsilonPolynomial::one(),
         }
+    }
+
+    /// Fallible monomial constructor enforcing the representation bound.
+    pub fn try_monomial(coeff: RationalSurreal, exp: i32) -> Result<Self, SurrealError> {
+        Ok(Self {
+            numer: EpsilonPolynomial::try_monomial(coeff, exp)?,
+            denom: EpsilonPolynomial::one(),
+        })
     }
 
     /// Build from a scalar constant: `scalar / 1`.
@@ -369,11 +474,18 @@ impl EpsilonRational {
         if self.is_zero() {
             return Err(SurrealError::DivisionByZero);
         }
-        Ok(Self {
+        let value = Self {
             numer: self.denom.clone(),
             denom: self.numer.clone(),
         }
-        .normalize())
+        .normalize();
+        if !value.numer.within_bound() || !value.denom.within_bound() {
+            return Err(SurrealError::ExponentOverflow {
+                requested: (MAX_EPSILON_EXPONENT as u32) + 1,
+                bound: MAX_EPSILON_EXPONENT as u32,
+            });
+        }
+        Ok(value)
     }
 
     /// Checked division `self / rhs`.
@@ -381,18 +493,52 @@ impl EpsilonRational {
     /// Returns `SurrealError::DivisionByZero` when `rhs` is zero.
     pub fn checked_div(&self, rhs: &Self) -> Result<Self, SurrealError> {
         let recip = rhs.checked_reciprocal()?;
-        Ok(self.clone() * recip)
+        // TRANSIENT cross-multiplication, then bound the stored result.
+        let numer = self.numer.mul_transient(&recip.numer);
+        let denom = self.denom.mul_transient(&recip.denom);
+        let value = Self { numer, denom }.normalize();
+        if !value.numer.within_bound() || !value.denom.within_bound() {
+            return Err(SurrealError::ExponentOverflow {
+                requested: (MAX_EPSILON_EXPONENT as u32) + 1,
+                bound: MAX_EPSILON_EXPONENT as u32,
+            });
+        }
+        Ok(value)
+    }
+}
+
+impl EpsilonRational {
+    fn checked_add_impl(&self, rhs: &Self) -> Result<Self, SurrealError> {
+        // N1/D1 + N2/D2 = (N1*D2 + N2*D1) / (D1*D2) — denominator
+        // cross-products GROW exponents (R4): compute as transients,
+        // then enforce the bound on the stored result.
+        let numer = self
+            .numer
+            .mul_transient(&rhs.denom)
+            .add(rhs.numer.clone().mul_transient(&self.denom));
+        let denom = self.denom.mul_transient(&rhs.denom);
+        let value = Self { numer, denom }.normalize();
+        if !value.numer.within_bound() || !value.denom.within_bound() {
+            return Err(SurrealError::ExponentOverflow {
+                requested: (MAX_EPSILON_EXPONENT as u32) + 1,
+                bound: MAX_EPSILON_EXPONENT as u32,
+            });
+        }
+        Ok(value)
     }
 }
 
 impl Add for EpsilonRational {
     type Output = Self;
 
+    /// # Panics
+    ///
+    /// Panics when the result leaves the representation bound (the
+    /// denominator cross-product grows exponents; see
+    /// [`EpsilonRational::checked_add`]).
     fn add(self, rhs: Self) -> Self::Output {
-        // N1/D1 + N2/D2 = (N1*D2 + N2*D1) / (D1*D2)
-        let numer = self.numer.clone() * rhs.denom.clone() + rhs.numer.clone() * self.denom.clone();
-        let denom = self.denom * rhs.denom;
-        Self { numer, denom }.normalize()
+        self.checked_add(&rhs)
+            .expect("exponent exceeds MAX_EPSILON_EXPONENT")
     }
 }
 
@@ -414,6 +560,34 @@ impl Mul for EpsilonRational {
     }
 }
 
+impl EpsilonRational {
+    /// Checked addition enforcing the representation bound on the
+    /// output (denominator cross-products can grow exponents).
+    pub fn checked_add(&self, rhs: &Self) -> Result<Self, SurrealError> {
+        self.checked_add_impl(rhs)
+    }
+
+    /// Checked subtraction (additive inverse of checked addition).
+    pub fn checked_sub(&self, rhs: &Self) -> Result<Self, SurrealError> {
+        self.checked_add_impl(&(-rhs.clone()))
+    }
+
+    /// Checked multiplication enforcing the representation bound.
+    pub fn checked_mul(&self, rhs: &Self) -> Result<Self, SurrealError> {
+        let value = Self {
+            numer: self.numer.mul_transient(&rhs.numer),
+            denom: self.denom.mul_transient(&rhs.denom),
+        }
+        .normalize();
+        if !value.numer.within_bound() || !value.denom.within_bound() {
+            return Err(SurrealError::ExponentOverflow {
+                requested: (MAX_EPSILON_EXPONENT as u32) + 1,
+                bound: MAX_EPSILON_EXPONENT as u32,
+            });
+        }
+        Ok(value)
+    }
+}
 impl Neg for EpsilonRational {
     type Output = Self;
 
@@ -444,9 +618,10 @@ impl Neg for EpsilonRational {
 
 impl PartialEq for EpsilonRational {
     fn eq(&self, other: &Self) -> bool {
-        // N₁/D₁ == N₂/D₂  ⇔  N₁·D₂ == N₂·D₁
-        let left = self.numer.clone() * other.denom.clone();
-        let right = other.numer.clone() * self.denom.clone();
+        // N₁/D₁ == N₂/D₂  ⇔  N₁·D₂ == N₂·D₁ — TRANSIENT cross-products,
+        // no representation bound, never panics (totality by design).
+        let left = self.numer.mul_transient(&other.denom);
+        let right = other.numer.mul_transient(&self.denom);
         left == right
     }
 }
@@ -469,8 +644,10 @@ impl Ord for EpsilonRational {
         // coefficients are positive, therefore D1*D2 also has a
         // positive leading coefficient and the sign of the difference
         // is exactly the sign of the numerator polynomial.
-        let diff_num =
-            self.numer.clone() * other.denom.clone() - other.numer.clone() * self.denom.clone();
+        let diff_num = self
+            .numer
+            .mul_transient(&other.denom)
+            .sub(other.numer.mul_transient(&self.denom));
         diff_num.sign_epsilon().unwrap_or(Ordering::Equal)
     }
 }
@@ -505,7 +682,7 @@ impl EpsilonRational {
         //   coefficient.
         // - The denominator is known nonzero from the constructor guard,
         //   so `checked_div` on a nonzero denominator succeeds.
-        if self.numer.degree() == Some(0) && self.denom.degree() == Some(0) {
+        if self.numer.is_constant() && self.denom.is_constant() {
             let num_val = self.numer.terms().get(&EpsilonExponent(0)).unwrap();
             let den_val = self.denom.terms().get(&EpsilonExponent(0)).unwrap();
             let scalar = num_val
@@ -723,5 +900,103 @@ mod tests {
     fn zero_denom_rejected() {
         let r = EpsilonRational::from_parts(EpsilonPolynomial::one(), EpsilonPolynomial::zero());
         assert!(r.is_err());
+    }
+
+    // -- S9 regressions (R1/R2): Laurent terms survive arithmetic --------
+
+    #[test]
+    fn negative_exponent_plus_one_is_not_collapsed() {
+        // ε^-1 + 1 must stay ε^-1 + 1 (was collapsed to 1).
+        let eps_inv = EpsilonRational::monomial(RationalSurreal::one(), -1);
+        let sum = eps_inv + EpsilonRational::one();
+        assert_ne!(sum, EpsilonRational::one());
+        assert_ne!(sum, EpsilonRational::monomial(RationalSurreal::one(), -1));
+        // Ordering: ε^-1 + 1 > 1 (an infinite-ish positive part).
+        assert!(sum > EpsilonRational::one());
+        // Deeper: ε^-2 + ε^-1 + 1 keeps all three terms.
+        let deep = EpsilonRational::monomial(RationalSurreal::one(), -2)
+            + EpsilonRational::monomial(RationalSurreal::one(), -1)
+            + EpsilonRational::one();
+        assert!(deep > sum && sum > EpsilonRational::one());
+    }
+
+    #[test]
+    fn is_one_requires_a_single_constant_term() {
+        // 1 + ε^-1 is Laurent with degree 0 but NOT the constant one.
+        let laurent = EpsilonPolynomial::monomial(RationalSurreal::one(), -1)
+            + EpsilonPolynomial::from_scalar(RationalSurreal::one());
+        assert_eq!(laurent.degree(), Some(0)); // the old guard's blind spot
+        assert!(!laurent.is_one());
+        assert!(!laurent.is_constant());
+        assert!(EpsilonPolynomial::one().is_one());
+        assert!(EpsilonPolynomial::from_scalar(RationalSurreal::from_integer(5)).is_constant());
+        // Display: a Laurent denominator renders as a fraction, not bare.
+        let r = EpsilonRational::from_parts(
+            EpsilonPolynomial::from_scalar(RationalSurreal::one()),
+            laurent,
+        )
+        .unwrap();
+        let text = r.to_string();
+        assert!(
+            text.contains('/'),
+            "Laurent denominator must display as a fraction: {text}"
+        );
+    }
+
+    // -- exponent-bound boundary probes (R3/R4) ---------------------------
+
+    #[test]
+    fn checked_ops_error_at_the_bound_and_never_panic() {
+        let bound = MAX_EPSILON_EXPONENT;
+        // Constructor bound.
+        assert!(EpsilonPolynomial::try_monomial(RationalSurreal::one(), bound + 1).is_err());
+        assert!(EpsilonRational::try_monomial(RationalSurreal::one(), -(bound + 1)).is_err());
+        // Repeated squaring crosses the bound honestly.
+        let at_bound = EpsilonPolynomial::monomial(RationalSurreal::one(), bound / 2);
+        let mut acc = at_bound.clone();
+        let mut crossed = false;
+        for _ in 0..3 {
+            match acc.checked_mul(&at_bound) {
+                Ok(next) => acc = next,
+                Err(SurrealError::ExponentOverflow { .. }) => {
+                    crossed = true;
+                    break;
+                }
+                Err(_) => panic!("wrong error"),
+            }
+        }
+        assert!(crossed, "squaring from bound/2 must cross the bound");
+        // Rational layer: checked_add / checked_div propagate.
+        let big = EpsilonRational::monomial(RationalSurreal::one(), bound);
+        let recip = big.checked_reciprocal().unwrap(); // ε^-bound
+        assert!(matches!(
+            recip.checked_mul(&recip.clone()).unwrap_err(), // ε^-(2·bound)
+            SurrealError::ExponentOverflow { .. }
+        ));
+        // Rational Add grows via DENOMINATOR cross-products (R4):
+        // 1/ε^-(M/2+1) + itself has denominator ε^-(M+2) — out of bound.
+        let tiny_denom = EpsilonRational::from_parts(
+            EpsilonPolynomial::from_scalar(RationalSurreal::one()),
+            EpsilonPolynomial::monomial(RationalSurreal::one(), -(bound / 2 + 1)),
+        )
+        .unwrap();
+        assert!(matches!(
+            tiny_denom.checked_add(&tiny_denom.clone()).unwrap_err(),
+            SurrealError::ExponentOverflow { .. }
+        ));
+    }
+
+    #[test]
+    fn comparisons_stay_total_at_the_boundary() {
+        let bound = MAX_EPSILON_EXPONENT;
+        // Transient cross-products reach 2·bound; Ord never panics.
+        let a = EpsilonRational::monomial(RationalSurreal::one(), bound);
+        let b = EpsilonRational::monomial(RationalSurreal::from_integer(2), bound);
+        let c = EpsilonRational::monomial(RationalSurreal::one(), -(bound / 2));
+        assert!(a < b);
+        assert!(a < c); // ε^-bound/2 dominates ε^bound
+        let laurent = EpsilonRational::monomial(RationalSurreal::one(), -1);
+        assert!(laurent > EpsilonRational::one());
+        assert_eq!(a.cmp(&a), Ordering::Equal);
     }
 }

@@ -2,15 +2,19 @@ use crate::dyadic::Dyadic;
 use crate::error::SurrealError;
 use crate::short::ShortSurreal;
 use num_bigint::BigInt;
-use num_integer::Integer;
 use num_rational::BigRational;
-use num_traits::{One, Signed, Zero};
+use num_traits::{Signed, Zero};
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Neg, Sub};
 
 /// Exact rational number backed by `num_rational::BigRational`.
+///
+/// NOTE: this is an exact rational SCALAR, not itself a surreal number
+/// of the layer this crate implements (short surreals are dyadic;
+/// `1/3` is not a short surreal). It exists as the coefficient field
+/// for the surcomplex layer and the epsilon layer.
 ///
 /// `RationalSurreal` provides an exact rational scalar field for the
 /// surcomplex layer (v0.23+). It augments the existing dyadic
@@ -146,13 +150,19 @@ impl RationalSurreal {
     #[must_use]
     pub fn to_short_if_dyadic(&self) -> Option<ShortSurreal> {
         let denom = self.value.denom();
-        let mut d = denom.clone();
-        let mut exponent: u32 = 0;
-        while d.is_even() {
-            d >>= 1;
-            exponent += 1;
+        // Denominator is a power of two iff exactly one bit set; the
+        // exponent is the trailing-zero count (O(bits), not one shift
+        // per power of two).
+        let Some(tz) = denom.trailing_zeros() else {
+            return None; // zero denominator cannot occur in BigRational
+        };
+        let exponent = tz as u32;
+        if (denom >> tz) != BigInt::from(1) {
+            return None;
         }
-        if !d.is_one() {
+        // Degrade, never panic: a dyadic whose exponent exceeds the
+        // bounded dyadic layer is not representable there.
+        if exponent > crate::dyadic::MAX_EXPONENT {
             return None;
         }
         Some(ShortSurreal::from_dyadic(Dyadic::new(
@@ -229,5 +239,66 @@ impl Neg for RationalSurreal {
 impl fmt::Display for RationalSurreal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn r<N: Into<BigInt>, D: Into<BigInt>>(n: N, d: D) -> RationalSurreal {
+        RationalSurreal::from_ratio(n, d).unwrap()
+    }
+
+    #[test]
+    fn zero_denominator_rejected() {
+        assert!(matches!(
+            RationalSurreal::from_ratio(1, 0).unwrap_err(),
+            SurrealError::DivisionByZero
+        ));
+    }
+
+    #[test]
+    fn to_short_if_dyadic_both_ways() {
+        assert_eq!(
+            r(1, 2).to_short_if_dyadic().map(|s| s.to_dyadic()),
+            Some(Dyadic::new(1, 1))
+        );
+        assert_eq!(
+            r(3, 4).to_short_if_dyadic().map(|s| s.to_dyadic()),
+            Some(Dyadic::new(3, 2))
+        );
+        assert!(r(1, 3).to_short_if_dyadic().is_none());
+        assert!(r(2, 6)
+            .to_short_if_dyadic()
+            .map(|s| s.to_dyadic())
+            .is_none());
+    }
+
+    #[test]
+    fn to_short_degrades_at_the_bound() {
+        // Denominator 2^(MAX+1): dyadic but not representable.
+        let denom = BigInt::from(1) << (crate::dyadic::MAX_EXPONENT as usize + 1);
+        let over = RationalSurreal::from_ratio(1, denom).unwrap();
+        assert!(over.to_short_if_dyadic().is_none());
+        // Denominator exactly 2^MAX: representable at the boundary.
+        let at_bound =
+            RationalSurreal::from_ratio(1, BigInt::from(1) << crate::dyadic::MAX_EXPONENT as usize)
+                .unwrap();
+        assert!(at_bound.to_short_if_dyadic().is_some());
+    }
+
+    #[test]
+    fn arithmetic_posture_is_exact_and_total() {
+        // Arbitrary-precision: no wrap by representation.
+        let big = r(i64::MAX, 1);
+        let sum = big.clone() + big.clone();
+        assert_eq!(sum, r(2 * (i64::MAX as i128), 1).abs());
+        // Comparisons total on extreme values.
+        assert!(r(i64::MIN, 1) < r(1, i64::MAX));
+        assert!(r(-1, i64::MAX) < r(0, 1));
+        // Division errors only on zero.
+        assert!(r(1, 3).checked_div(&r(0, 1)).is_err());
+        assert!(r(1, 3).checked_div(&r(1, 3)).unwrap() == r(1, 1));
     }
 }

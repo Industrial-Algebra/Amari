@@ -106,6 +106,16 @@ impl ShortSurreal {
     }
 
     /// Returns the simplest short surreal between the given finite bounds.
+    ///
+    /// By the Simplicity Theorem (Conway) the value of `{L|R}` is the
+    /// minimal-birthday number strictly greater than all `L` and strictly
+    /// less than all `R`: among fitting integers, the one closest to zero
+    /// (zero itself whenever the interval crosses zero); otherwise the
+    /// unique dyadic lattice point at the coarsest fitting scale.
+    ///
+    /// Never panics: construction routes through [`Dyadic::try_new`], so
+    /// a simplest value needing an exponent beyond the representation
+    /// bound returns [`SurrealError::ExponentOverflow`].
     pub fn simplest_between(left: &[ShortSurreal], right: &[ShortSurreal]) -> Result<Self> {
         let left_bound = left.iter().map(|value| value.to_dyadic()).max();
         let right_bound = right.iter().map(|value| value.to_dyadic()).min();
@@ -113,30 +123,65 @@ impl ShortSurreal {
         let value = match (left_bound, right_bound) {
             (None, None) => Dyadic::zero(),
             (Some(left), None) => {
-                let next_integer = left.floor_integer() + BigInt::one();
-                Dyadic::from_integer(next_integer)
+                // Simplest number > left: 0 whenever left < 0 (birthday
+                // 0); otherwise the smallest integer strictly above left.
+                if left.is_negative() {
+                    Dyadic::zero()
+                } else {
+                    let next_integer = left.floor_integer() + BigInt::one();
+                    Dyadic::from_integer(next_integer)
+                }
             }
             (None, Some(right)) => {
-                let previous_integer = right.ceil_integer() - BigInt::one();
-                Dyadic::from_integer(previous_integer)
+                // Simplest number < right: 0 whenever right > 0.
+                if right.is_positive() {
+                    Dyadic::zero()
+                } else {
+                    let previous_integer = right.ceil_integer() - BigInt::one();
+                    Dyadic::from_integer(previous_integer)
+                }
             }
             (Some(left), Some(right)) => {
                 if left >= right {
                     return Err(SurrealError::InvalidCut);
                 }
 
-                let max_exponent = left.exponent().max(right.exponent()) + 1;
-                let mut found = None;
-                for exponent in 0..=max_exponent {
-                    let candidate = Self::floor_scaled_numer(&left, exponent) + BigInt::one();
-                    let right_ceiling = Self::ceil_scaled_numer(&right, exponent);
-                    if candidate < right_ceiling {
-                        found = Some(Dyadic::new(candidate, exponent));
-                        break;
+                // Integer scale: the fitting integers are
+                // floor(left)+1 ..= ceil(right)-1. The simplest is the
+                // one CLOSEST TO ZERO (zero whenever it fits — ties
+                // between -k and k are impossible: if both fit, 0 fits).
+                let int_low = left.floor_integer() + BigInt::one();
+                let int_high = right.ceil_integer() - BigInt::one();
+                if int_low <= int_high {
+                    if int_low <= BigInt::from(0) && BigInt::from(0) <= int_high {
+                        Dyadic::zero()
+                    } else if int_high < BigInt::from(0) {
+                        Dyadic::from_integer(int_high)
+                    } else {
+                        Dyadic::from_integer(int_low)
                     }
-                }
+                } else {
+                    // No integer fits: scan scales e >= 1. Within the
+                    // enclosing integer cell the birthday of a dyadic is
+                    // e + const, so the coarsest fitting scale carries
+                    // the minimal birthday, and its fitting point is the
+                    // unique ODD lattice point above left (an even one
+                    // would be a coarser-scale point that would have fit
+                    // earlier) — uniqueness per scale, minimality by scan
+                    // order.
+                    let max_exponent = left.exponent().max(right.exponent()) + 1;
+                    let mut found = None;
+                    for exponent in 1..=max_exponent {
+                        let candidate = Self::floor_scaled_numer(&left, exponent) + BigInt::one();
+                        let right_ceiling = Self::ceil_scaled_numer(&right, exponent);
+                        if candidate < right_ceiling {
+                            found = Some(Dyadic::try_new(candidate, exponent)?);
+                            break;
+                        }
+                    }
 
-                found.ok_or(SurrealError::InvalidCut)?
+                    found.ok_or(SurrealError::InvalidCut)?
+                }
             }
         };
 
@@ -309,5 +354,113 @@ impl Neg for ShortSurreal {
 impl fmt::Display for ShortSurreal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cut(l: &[i64], r: &[i64]) -> Result<ShortSurreal> {
+        let left: Vec<ShortSurreal> = l.iter().map(|&n| ShortSurreal::from_integer(n)).collect();
+        let right: Vec<ShortSurreal> = r.iter().map(|&n| ShortSurreal::from_integer(n)).collect();
+        ShortSurreal::simplest_between(&left, &right)
+    }
+
+    fn cut_dyadic(left: Dyadic, right: Dyadic) -> Result<ShortSurreal> {
+        let l = vec![ShortSurreal::from_dyadic(left)];
+        let r = vec![ShortSurreal::from_dyadic(right)];
+        ShortSurreal::simplest_between(&l, &r)
+    }
+
+    fn value(s: &ShortSurreal) -> String {
+        s.to_dyadic().to_string()
+    }
+
+    #[test]
+    fn simplest_oracle_table() {
+        // S1 counterexamples (the four cuts the old code got wrong).
+        assert_eq!(
+            value(&cut_dyadic(Dyadic::new(-7, 1), Dyadic::new(-3, 1)).unwrap()),
+            "-2"
+        ); // {−3.5|−1.5}
+        assert_eq!(value(&cut(&[-3], &[1]).unwrap()), "0"); // {−3|1}
+        assert_eq!(value(&cut(&[-2], &[-1]).unwrap()), "-3/2");
+        // Semi-finite: simplest above −3.5 is 0, below 1.5 is 0.
+        assert_eq!(value(&cut(&[-7], &[]).unwrap()), "0"); // left only
+        assert_eq!(value(&cut(&[3], &[]).unwrap()), "4");
+        assert_eq!(value(&cut(&[], &[1]).unwrap()), "0"); // right only: below 1 is 0
+        assert_eq!(value(&cut(&[], &[-2]).unwrap()), "-3");
+        // Canonical positives.
+        assert_eq!(value(&cut(&[0], &[1]).unwrap()), "1/2");
+        assert_eq!(value(&cut(&[1], &[2]).unwrap()), "3/2");
+        assert_eq!(value(&cut(&[-1], &[1]).unwrap()), "0");
+        // Fractions: {1/2|3/4} = 5/8; {0|1/2} = 1/4.
+        assert_eq!(
+            value(&cut_dyadic(Dyadic::new(1, 1), Dyadic::new(3, 2)).unwrap()),
+            "5/8"
+        );
+        assert_eq!(
+            value(&cut_dyadic(Dyadic::zero(), Dyadic::new(1, 1)).unwrap()),
+            "1/4"
+        );
+        // Interval spanning zero with integers on both sides.
+        assert_eq!(value(&cut(&[-5], &[3]).unwrap()), "0");
+        assert_eq!(value(&cut(&[-5], &[-3]).unwrap()), "-4");
+        assert_eq!(value(&cut(&[3], &[5]).unwrap()), "4");
+    }
+
+    #[test]
+    fn invalid_cut_rejected() {
+        assert!(matches!(
+            cut(&[1], &[0]).unwrap_err(),
+            SurrealError::InvalidCut
+        ));
+        assert!(matches!(
+            cut(&[1], &[1]).unwrap_err(),
+            SurrealError::InvalidCut
+        ));
+    }
+
+    #[test]
+    fn from_game_roundtrip_preserves_value() {
+        let mut arena = GameArena::new();
+        let zero = arena.zero();
+        let one = arena.one().unwrap();
+        // {0|1} = 1/2; {-1|1} = 0 (the S1 shape).
+        let half = arena.from_options([zero], [one]).unwrap();
+        let neg_one = arena.from_options([], [zero]).unwrap();
+        let mid = arena.from_options([neg_one], [one]).unwrap();
+        let three = arena.from_options([one, one], []).unwrap(); // dominated options
+        let games = [half, mid, three];
+        for game in games {
+            let s = ShortSurreal::from_game(&mut arena, game).unwrap();
+            let rebuilt = s.to_game_in(&mut arena).unwrap();
+            let s2 = ShortSurreal::from_game(&mut arena, rebuilt).unwrap();
+            assert_eq!(s.to_dyadic(), s2.to_dyadic());
+        }
+        // Negative-cut user-built game: {−3|1} has value 0.
+        let neg_three = {
+            let n2 = arena.from_options([], [neg_one]).unwrap();
+            arena.from_options([], [n2]).unwrap()
+        };
+        let neg_cut = arena.from_options([neg_three], [one]).unwrap();
+        let val = ShortSurreal::from_game(&mut arena, neg_cut).unwrap();
+        assert_eq!(value(&val), "0");
+    }
+
+    #[test]
+    fn simplest_boundary_errors_beyond_the_bound() {
+        // Adjacent dyadics at the representation bound: their simplest
+        // value needs exponent MAX+1.
+        let lo = Dyadic::new(1, crate::dyadic::MAX_EXPONENT);
+        let hi = Dyadic::new(1, crate::dyadic::MAX_EXPONENT)
+            + Dyadic::new(1, crate::dyadic::MAX_EXPONENT);
+        // 1/2^M and 2/2^M = 1/2^(M-1): simplest between is 3/2^(M+1) —
+        // exponent M+1 > bound.
+        assert!(matches!(
+            cut_dyadic(lo, hi).unwrap_err(),
+            SurrealError::ExponentOverflow { .. }
+        ));
     }
 }
