@@ -1311,8 +1311,8 @@ fn encode_path(payload: &mut Vec<u8>, path: &Path) {
     }
 }
 
-/// Candidate encodings of a substitution under the caller's shared renaming
-/// environment: one `(entry encoding, environment after it)` pair per
+/// Lazily enumerated encodings of a substitution under the caller's shared
+/// renaming environment: one `(entry encoding, environment after it)` pair per
 /// equal-shape tie arrangement, never empty.
 ///
 /// Domains and ranges are encoded with `variables`, the environment that
@@ -1325,20 +1325,24 @@ fn encode_path(payload: &mut Vec<u8>, path: &Path) {
 /// alpha-invariant, so entries are shape-keyed (variables erased), stably
 /// sorted by that key, and each maximal run of equal keys — whose relative
 /// order a sort cannot decide — is enumerated exhaustively (capped at
-/// [`MAX_SUBSTITUTION_ARRANGEMENTS`] total). All arrangements are returned
-/// rather than the one with the smallest entry encoding: two arrangements can
-/// encode the same bytes yet resolve the environment differently, and it is
-/// the caller — which knows what is encoded after the substitution — that
-/// picks the canonical one. Beyond the cap only the shape-sorted baseline
-/// order is returned: still deterministic and still sharing-preserving, only
-/// possibly missing an alpha-equivalent dedup — a missed dedup can never
-/// become a false equality, because two steps are equal only when their
-/// encodings are identical.
-fn substitution_candidates(
-    substitution: &Substitution,
-    variables: &[String],
-) -> Vec<(Vec<u8>, Vec<String>)> {
-    let mut decorated: Vec<(Vec<u8>, (&Variable, &Term))> = substitution
+/// [`MAX_SUBSTITUTION_ARRANGEMENTS`] total). The arrangements are produced
+/// **one at a time**: the caller compares each against the running minimum and
+/// drops the loser immediately, so peak memory is a constant number of
+/// candidate encodings (the baseline and the running minimum), not the product
+/// of arrangements by the payload they are compared over (PR #357 round 6 P2). Every arrangement is still yielded rather than only
+/// the one with the smallest entry encoding: two arrangements can encode the
+/// same bytes yet resolve the environment differently, and it is the caller —
+/// which knows what is encoded after the substitution — that picks the
+/// canonical one. Beyond the cap only the shape-sorted baseline order is
+/// yielded: still deterministic and still sharing-preserving, only possibly
+/// missing an alpha-equivalent dedup — a missed dedup can never become a false
+/// equality, because two steps are equal only when their encodings are
+/// identical.
+fn substitution_candidates<'a>(
+    substitution: &'a Substitution,
+    variables: &'a [String],
+) -> impl Iterator<Item = (Vec<u8>, Vec<String>)> + 'a {
+    let mut decorated: Vec<(Vec<u8>, (&'a Variable, &'a Term))> = substitution
         .iter()
         .map(|entry| (substitution_entry_shape_key(entry.1), entry))
         .collect();
@@ -1365,24 +1369,32 @@ fn substitution_candidates(
             break;
         }
     }
-    if arrangements <= MAX_SUBSTITUTION_ARRANGEMENTS && !runs.is_empty() {
-        let run_permutations: Vec<Vec<Vec<usize>>> = runs
-            .iter()
+    let enumerate = arrangements <= MAX_SUBSTITUTION_ARRANGEMENTS && !runs.is_empty();
+    // Only the per-run permutation tables are materialized: their total size
+    // is bounded by the arrangement product the cap above already checked.
+    let run_permutations: Vec<Vec<Vec<usize>>> = if enumerate {
+        runs.iter()
             .map(|run| permutations(run.end - run.start))
-            .collect();
-        let mut candidates = Vec::new();
-        let mut odometer = vec![0usize; runs.len()];
-        'arrangements: loop {
-            let mut trial_variables = variables.to_vec();
-            let mut trial = Vec::new();
-            trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let mut odometer = vec![0usize; runs.len()];
+    let mut done = false;
+    core::iter::from_fn(move || {
+        if done {
+            return None;
+        }
+        let mut trial_variables = variables.to_vec();
+        let mut trial = Vec::new();
+        trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
+        if enumerate {
             for (slot, run) in runs.iter().enumerate() {
                 for &local in &run_permutations[slot][odometer[slot]] {
                     let (_, (variable, term)) = &decorated[run.start + local];
                     encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
                 }
             }
-            candidates.push((trial, trial_variables));
             // Advance the odometer; overflow at slot 0 ends the enumeration.
             let mut slot = runs.len();
             while slot > 0 {
@@ -1393,22 +1405,19 @@ fn substitution_candidates(
                 }
                 odometer[slot] = 0;
                 if slot == 0 {
-                    break 'arrangements;
+                    done = true;
                 }
             }
+        } else {
+            // Baseline order: the shape-sorted one (the only candidate for an
+            // empty substitution and above the enumeration cap).
+            for (_, (variable, term)) in &decorated {
+                encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
+            }
+            done = true;
         }
-        candidates
-    } else {
-        // Baseline order: the shape-sorted one (the only candidate for an
-        // empty substitution and above the enumeration cap).
-        let mut trial_variables = variables.to_vec();
-        let mut trial = Vec::new();
-        trial.extend_from_slice(&(decorated.len() as u32).to_le_bytes());
-        for (_, (variable, term)) in &decorated {
-            encode_substitution_entry(&mut trial, &mut trial_variables, variable, term);
-        }
-        vec![(trial, trial_variables)]
-    }
+        Some((trial, trial_variables))
+    })
 }
 
 /// Digest of a framed payload, minimized over the substitution's equal-shape
@@ -1426,27 +1435,41 @@ fn substitution_candidates(
 /// committed another and the two alpha-equivalent steps hashed differently
 /// (PR #357 round 5 P2b).
 ///
+/// Candidates are consumed lazily and metered as they are generated: each
+/// arrangement is encoded once, compared against the running minimum, and
+/// dropped if it loses, so neither the arrangement list nor the candidate
+/// encodings are ever held all at once. The budget therefore gates generation
+/// itself, not merely the final selection (PR #357 round 6 P2) — before the
+/// fix, all up to 720 arrangements were materialized before the 4 MiB meter
+/// applied, so a maximally admitted substitution could allocate gigabytes
+/// from one untrusted trace. Only the baseline encoding (candidate zero, kept
+/// for fallback) and the current minimum survive.
+///
 /// The enumeration is metered against [`MAX_TIE_RESOLUTION_BYTES`]; over
 /// budget, the shape-sorted baseline arrangement (candidate zero) is used.
 fn framed_minimum(
     frame: &str,
     prefix: &[u8],
-    candidates: Vec<(Vec<u8>, Vec<String>)>,
+    candidates: impl Iterator<Item = (Vec<u8>, Vec<String>)>,
     tail: impl Fn(&mut Vec<u8>, &mut Vec<String>),
 ) -> Sha256Digest {
-    let encode_candidate = |(blob, resolved): &(Vec<u8>, Vec<String>)| {
+    let encode_candidate = |(blob, resolved): (Vec<u8>, Vec<String>)| {
         let mut encoding = Vec::with_capacity(prefix.len() + blob.len() + 32);
         encoding.extend_from_slice(prefix);
         encoding.extend_from_slice(&(blob.len() as u32).to_le_bytes());
-        encoding.extend_from_slice(blob);
-        let mut variables = resolved.clone();
+        encoding.extend_from_slice(&blob);
+        let mut variables = resolved;
         tail(&mut encoding, &mut variables);
         encoding
     };
     let mut best: Option<Vec<u8>> = None;
+    let mut baseline: Option<Vec<u8>> = None;
     let mut spent: u64 = 0;
-    for candidate in &candidates {
+    for candidate in candidates {
         let encoding = encode_candidate(candidate);
+        if baseline.is_none() {
+            baseline = Some(encoding.clone());
+        }
         spent = spent.saturating_add(encoding.len() as u64);
         if spent > MAX_TIE_RESOLUTION_BYTES {
             best = None;
@@ -1458,7 +1481,7 @@ fn framed_minimum(
     }
     let encoding = match best {
         Some(encoding) => encoding,
-        None => encode_candidate(&candidates[0]),
+        None => baseline.expect("tie enumeration always yields the baseline arrangement"),
     };
     Sha256Digest::framed(frame, &encoding)
 }
