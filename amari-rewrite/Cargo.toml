@@ -39,7 +39,7 @@ amari-rewrite-macros = { workspace = true, optional = true }
 # 0.25.0 release, because git dependencies block `cargo publish`.
 katakuri = { version = "0.2.0", optional = true }
 borsalino-tensor = { git = "https://github.com/Industrial-Algebra/Borsalino.git", branch = "develop", optional = true }
-z3 = { version = "=0.20.2", default-features = false, features = ["vendored"], optional = true }
+z3 = { version = "=0.22.0", default-features = false, features = ["vendored"], optional = true }
 
 [features]
 default = ["std"]
