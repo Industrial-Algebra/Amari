@@ -26,8 +26,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, MutexGuard};
 
 use amari_rewrite::neural::{
-    seeded_weights, train, train_from_seed, ExampleOrder, FeatureVector, RankerConfig,
-    TrainConfig, TrainingError, TrainingExample, CANDIDATE_FEATURE_WIDTH,
+    seeded_weights, train, train_from_seed, ExampleOrder, FeatureVector, RankerConfig, TrainConfig,
+    TrainingError, TrainingExample, CANDIDATE_FEATURE_WIDTH,
 };
 
 /// Allocation calls seen by the counter, cumulative.
@@ -85,10 +85,7 @@ fn exclusive() -> MutexGuard<'static, ()> {
 /// `(allocation calls, bytes)` the global allocator handed out while `body`
 /// ran. The caller holds [`exclusive`], so nothing else in the process can
 /// allocate inside the window.
-fn measured<T>(
-    _guard: &MutexGuard<'static, ()>,
-    body: impl FnOnce() -> T,
-) -> (T, usize, usize) {
+fn measured<T>(_guard: &MutexGuard<'static, ()>, body: impl FnOnce() -> T) -> (T, usize, usize) {
     let calls_before = ALLOCATIONS.load(Ordering::Relaxed);
     let bytes_before = ALLOCATED.load(Ordering::Relaxed);
     let value = body();
@@ -156,9 +153,7 @@ fn a_rejected_corpus_allocates_nothing_on_either_entry_point() {
 
     // Direct `train` is the reference: it admits from scalars and never sizes
     // a buffer it will not use.
-    let (direct, calls, bytes) = measured(&guard, || {
-        train(&config, &init, &settings, &oversized)
-    });
+    let (direct, calls, bytes) = measured(&guard, || train(&config, &init, &settings, &oversized));
     assert!(matches!(
         direct,
         Err(TrainingError::LimitExceeded {
@@ -174,9 +169,8 @@ fn a_rejected_corpus_allocates_nothing_on_either_entry_point() {
 
     // `train_from_seed` must reject on the same scalars *before* it
     // materializes the seeded initialization (PR #367 round 1 P2a).
-    let (from_seed, calls, bytes) = measured(&guard, || {
-        train_from_seed(&config, &settings, &oversized)
-    });
+    let (from_seed, calls, bytes) =
+        measured(&guard, || train_from_seed(&config, &settings, &oversized));
     assert!(matches!(
         from_seed,
         Err(TrainingError::LimitExceeded {
@@ -202,8 +196,7 @@ fn an_empty_corpus_allocates_nothing_on_either_entry_point() {
     assert_eq!(direct, Err(TrainingError::EmptyDataset));
     assert_eq!(calls, 0, "an empty corpus must be refused from its length");
 
-    let (from_seed, calls, _) =
-        measured(&guard, || train_from_seed(&config, &settings, &[]));
+    let (from_seed, calls, _) = measured(&guard, || train_from_seed(&config, &settings, &[]));
     assert_eq!(from_seed, Err(TrainingError::EmptyDataset));
     assert_eq!(calls, 0, "an empty corpus must be refused from its length");
 }
@@ -218,8 +211,7 @@ fn a_successful_run_does_allocate_so_the_counter_is_wired() {
     // The positive control: a training run sizes parameter, gradient, cache,
     // optimizer, and order buffers, so a zero reading above cannot be an
     // artifact of a counter that never fires.
-    let (outcome, calls, bytes) =
-        measured(&guard, || train_from_seed(&config, &settings, &corpus));
+    let (outcome, calls, bytes) = measured(&guard, || train_from_seed(&config, &settings, &corpus));
     outcome.expect("the fixture trains");
     assert!(
         calls > 0 && bytes > 0,
