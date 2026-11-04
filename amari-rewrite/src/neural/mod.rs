@@ -72,6 +72,7 @@
 //! ever reaches a caller.
 
 mod config;
+mod data;
 mod encode;
 mod model;
 
@@ -98,6 +99,10 @@ pub(crate) fn bounded_excerpt(text: &str) -> String {
 }
 
 pub use config::RankerConfig;
+pub use data::{
+    Dataset, DatasetBuilder, DatasetConfig, DatasetManifest, LabelAuthority, PairwiseExample,
+    DATASET_MANIFEST_SCHEMA_VERSION,
+};
 pub use encode::{
     CandidateInput, FeatureEncoder, FeatureSchemaV1, FeatureVector, Lane, SearchContext,
     CANDIDATE_FEATURE_WIDTH,
@@ -163,6 +168,26 @@ pub enum NeuralError {
         /// The forward-pass stage that produced it.
         stage: &'static str,
     },
+    /// A replayed trace contained no derivation steps, so nothing could be
+    /// derived from it.
+    #[error("trace produced no derivation steps")]
+    EmptyTrace,
+    /// A replayed trace did not verify against the supplied system.
+    #[error("trace verification failed")]
+    TraceVerificationFailed,
+    /// The trace's chosen transition was not among the engine's re-derived
+    /// valid candidates (trace/engine drift). A negative set is never
+    /// fabricated from a drifted trace.
+    #[error("trace drift: the chosen transition is not among the re-derived valid candidates")]
+    TraceDrift,
+    /// An approximate trace was rejected because the dataset configuration
+    /// does not admit approximate evidence.
+    #[error("approximate trace rejected: approximate admission is disabled")]
+    ApproximateTraceRejected,
+    /// Re-deriving a replayed state's candidates failed. Sanitized: no
+    /// backend or relation detail is propagated.
+    #[error("trace re-derivation failed")]
+    TraceRederivation,
 }
 
 /// A differentiable or learned rewrite rule over a state representation.

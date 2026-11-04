@@ -9856,6 +9856,627 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::DATASET_MANIFEST_SCHEMA_VERSION",
+      "kind": "const",
+      "signature": "pub const DATASET_MANIFEST_SCHEMA_VERSION : u32",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DATASET_MANIFEST_SCHEMA_VERSION : u32",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DATASET_MANIFEST_SCHEMA_VERSION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset",
+      "kind": "struct",
+      "signature": "pub struct Dataset",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct Dataset",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "Dataset"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::examples",
+      "kind": "method",
+      "signature": "pub fn examples (& self) -> & [PairwiseExample]",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn examples (& self) -> & [PairwiseExample]",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "Dataset::examples"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::is_empty",
+      "kind": "method",
+      "signature": "pub fn is_empty (& self) -> bool",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_empty (& self) -> bool",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "Dataset::is_empty"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::len",
+      "kind": "method",
+      "signature": "pub fn len (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn len (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "Dataset::len"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::manifest",
+      "kind": "method",
+      "signature": "pub fn manifest (& self) -> & DatasetManifest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn manifest (& self) -> & DatasetManifest",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "Dataset::manifest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder",
+      "kind": "struct",
+      "signature": "pub struct DatasetBuilder",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DatasetBuilder",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetBuilder"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::build",
+      "kind": "method",
+      "signature": "pub fn build (& self , system : & TermSystem , traces : & [ReplayCertificate] ,) -> Result < Dataset , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn build (& self , system : & TermSystem , traces : & [ReplayCertificate] ,) -> Result < Dataset , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetBuilder::build"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::config",
+      "kind": "method",
+      "signature": "pub fn config (& self) -> & DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn config (& self) -> & DatasetConfig",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetBuilder::config"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::encoder",
+      "kind": "method",
+      "signature": "pub fn encoder (& self) -> & FeatureEncoder",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn encoder (& self) -> & FeatureEncoder",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetBuilder::encoder"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::feature_schema_digest",
+      "kind": "method",
+      "signature": "pub fn feature_schema_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn feature_schema_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetBuilder::feature_schema_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::new",
+      "kind": "method",
+      "signature": "pub fn new (config : DatasetConfig) -> Result < Self , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (config : DatasetConfig) -> Result < Self , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetBuilder::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig",
+      "kind": "struct",
+      "signature": "pub struct DatasetConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DatasetConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::MAX_EXAMPLES",
+      "kind": "const",
+      "signature": "pub const MAX_EXAMPLES : usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_EXAMPLES : usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::MAX_EXAMPLES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::MAX_STEPS_PER_TRACE",
+      "kind": "const",
+      "signature": "pub const MAX_STEPS_PER_TRACE : usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_STEPS_PER_TRACE : usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::MAX_STEPS_PER_TRACE"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::MAX_TRACES",
+      "kind": "const",
+      "signature": "pub const MAX_TRACES : usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_TRACES : usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::MAX_TRACES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::allow_approximate",
+      "kind": "method",
+      "signature": "pub fn allow_approximate (& self) -> bool",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn allow_approximate (& self) -> bool",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::allow_approximate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::max_examples",
+      "kind": "method",
+      "signature": "pub fn max_examples (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_examples (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::max_examples"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::max_steps_per_trace",
+      "kind": "method",
+      "signature": "pub fn max_steps_per_trace (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_steps_per_trace (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::max_steps_per_trace"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::max_traces",
+      "kind": "method",
+      "signature": "pub fn max_traces (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_traces (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::max_traces"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (max_examples : usize , max_traces : usize , max_steps_per_trace : usize , allow_approximate : bool , seed : Option < u64 > , relation_limits : RelationLimits ,) -> Result < Self , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (max_examples : usize , max_traces : usize , max_steps_per_trace : usize , allow_approximate : bool , seed : Option < u64 > , relation_limits : RelationLimits ,) -> Result < Self , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::relation_limits",
+      "kind": "method",
+      "signature": "pub fn relation_limits (& self) -> RelationLimits",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn relation_limits (& self) -> RelationLimits",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::relation_limits"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::seed",
+      "kind": "method",
+      "signature": "pub fn seed (& self) -> Option < u64 >",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn seed (& self) -> Option < u64 >",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::seed"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::validate",
+      "kind": "method",
+      "signature": "pub fn validate (& self) -> Result < () , NeuralError >",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn validate (& self) -> Result < () , NeuralError >",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetConfig::validate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest",
+      "kind": "struct",
+      "signature": "pub struct DatasetManifest",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct DatasetManifest",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetManifest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::feature_schema_digest",
+      "kind": "method",
+      "signature": "pub fn feature_schema_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn feature_schema_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetManifest::feature_schema_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::heuristic_guidance",
+      "kind": "method",
+      "signature": "pub fn heuristic_guidance (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn heuristic_guidance (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetManifest::heuristic_guidance"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::proof_positive",
+      "kind": "method",
+      "signature": "pub fn proof_positive (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn proof_positive (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetManifest::proof_positive"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::schema_version",
+      "kind": "method",
+      "signature": "pub fn schema_version (& self) -> u32",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn schema_version (& self) -> u32",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetManifest::schema_version"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::seed",
+      "kind": "method",
+      "signature": "pub fn seed (& self) -> Option < u64 >",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn seed (& self) -> Option < u64 >",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetManifest::seed"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::trace_digests",
+      "kind": "method",
+      "signature": "pub fn trace_digests (& self) -> & [Sha256Digest]",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn trace_digests (& self) -> & [Sha256Digest]",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "DatasetManifest::trace_digests"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::DifferentiableRule",
       "kind": "trait",
       "signature": "pub trait DifferentiableRule < State >",
@@ -10412,6 +11033,59 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::LabelAuthority",
+      "kind": "enum",
+      "signature": "pub enum LabelAuthority",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ProofPositive",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "HeuristicGuidance",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum LabelAuthority",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "ProofPositive",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "HeuristicGuidance",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "LabelAuthority"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::Lane",
       "kind": "struct",
       "signature": "pub struct Lane",
@@ -10737,6 +11411,36 @@
                 }
               ]
             }
+          },
+          {
+            "name": "EmptyTrace",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "TraceVerificationFailed",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "TraceDrift",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "ApproximateTraceRejected",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "TraceRederivation",
+            "data": {
+              "kind": "unit"
+            }
           }
         ]
       },
@@ -10845,6 +11549,36 @@
                     }
                   ]
                 }
+              },
+              {
+                "name": "EmptyTrace",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "TraceVerificationFailed",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "TraceDrift",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "ApproximateTraceRejected",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "TraceRederivation",
+                "data": {
+                  "kind": "unit"
+                }
               }
             ]
           },
@@ -10853,6 +11587,147 @@
           "is_reexport": false,
           "declaration_module": "amari_rewrite::neural",
           "declaration_ident": "NeuralError"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample",
+      "kind": "struct",
+      "signature": "pub struct PairwiseExample",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct PairwiseExample",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "PairwiseExample"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::authority",
+      "kind": "method",
+      "signature": "pub fn authority (& self) -> LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn authority (& self) -> LabelAuthority",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "PairwiseExample::authority"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::chosen",
+      "kind": "method",
+      "signature": "pub fn chosen (& self) -> & FeatureVector",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn chosen (& self) -> & FeatureVector",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "PairwiseExample::chosen"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::chosen_digest",
+      "kind": "method",
+      "signature": "pub fn chosen_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn chosen_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "PairwiseExample::chosen_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::target_distance",
+      "kind": "method",
+      "signature": "pub fn target_distance (& self) -> u64",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn target_distance (& self) -> u64",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "PairwiseExample::target_distance"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::unchosen",
+      "kind": "method",
+      "signature": "pub fn unchosen (& self) -> & FeatureVector",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn unchosen (& self) -> & FeatureVector",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "PairwiseExample::unchosen"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::unchosen_digest",
+      "kind": "method",
+      "signature": "pub fn unchosen_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::data",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn unchosen_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/data.rs",
+          "source_module": "amari_rewrite::neural::data",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::data",
+          "declaration_ident": "PairwiseExample::unchosen_digest"
         }
       ]
     },
@@ -13672,6 +14547,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::relation::constraints",
           "declaration_ident": "ConstraintSet"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::relation::ConstraintSet::canonical_digest",
+      "kind": "method",
+      "signature": "pub fn canonical_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/relation/constraints.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::relation::constraints",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn canonical_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/relation/constraints.rs",
+          "source_module": "amari_rewrite::relation::constraints",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::relation::constraints",
+          "declaration_ident": "ConstraintSet::canonical_digest"
         }
       ]
     },
@@ -20312,6 +21206,78 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::Dataset",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "Dataset"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::DatasetBuilder",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetBuilder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::DatasetManifest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetManifest"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 11,
@@ -20366,6 +21332,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "LabelAuthority"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::Lane",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 1,
@@ -20413,6 +21397,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural",
         "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::PairwiseExample",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "PairwiseExample"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -21681,6 +22683,42 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::DatasetBuilder",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetBuilder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 11,
@@ -21728,6 +22766,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "FeatureVector"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "LabelAuthority"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -23449,6 +24505,78 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::Dataset",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "Dataset"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::DatasetBuilder",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetBuilder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::DatasetManifest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetManifest"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 11,
@@ -23503,6 +24631,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "LabelAuthority"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::Lane",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 1,
@@ -23550,6 +24696,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural",
         "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::PairwiseExample",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "PairwiseExample"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -24612,6 +25776,24 @@
         "kind": "local",
         "module": "amari_rewrite::language::limits",
         "ident": "TreeAutomatonLimits"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::neural::DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetConfig"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -26042,6 +27224,42 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::DatasetManifest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetManifest"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 3,
@@ -26053,6 +27271,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "FeatureSchemaV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "LabelAuthority"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -27460,6 +28696,24 @@
         "kind": "local",
         "module": "amari_rewrite::language::classify",
         "ident": "TrsClass"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Hash",
+      "impl_type_path": "amari_rewrite::neural::LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Hash"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "LabelAuthority"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -29466,6 +30720,60 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::Dataset",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "Dataset"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::DatasetManifest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "DatasetManifest"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 3,
@@ -29495,6 +30803,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "FeatureVector"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "LabelAuthority"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -29549,6 +30875,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural",
         "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::PairwiseExample",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::data",
+        "ident": "PairwiseExample"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -33739,6 +35083,254 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::neural::DATASET_MANIFEST_SCHEMA_VERSION",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::examples",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::is_empty",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::len",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::Dataset::manifest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::build",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::config",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::encoder",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::feature_schema_digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetBuilder::new",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::MAX_EXAMPLES",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::MAX_STEPS_PER_TRACE",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::MAX_TRACES",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::allow_approximate",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::max_examples",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::max_steps_per_trace",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::max_traces",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::new",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::relation_limits",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::seed",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetConfig::validate",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::feature_schema_digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::heuristic_guidance",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::proof_positive",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::schema_version",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::seed",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::DatasetManifest::trace_digests",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::neural::DifferentiableRule",
       "source_path": "amari-rewrite/src/neural/mod.rs",
       "source_ordinal": 3,
@@ -33963,6 +35555,14 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::neural::LabelAuthority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::neural::Lane",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 1,
@@ -34049,6 +35649,62 @@
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::authority",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::chosen",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::chosen_digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::target_distance",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::unchosen",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::PairwiseExample::unchosen_digest",
+      "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_rewrite::neural::RankedCandidate",
@@ -34947,6 +36603,14 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::relation::ConstraintSet::canonical_digest",
+      "source_path": "amari-rewrite/src/relation/constraints.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::relation::ConstraintSet::constraints",
       "source_path": "amari-rewrite/src/relation/constraints.rs",
       "source_ordinal": 2,
@@ -34965,7 +36629,7 @@
     {
       "path": "amari_rewrite::relation::ConstraintSet::is_empty",
       "source_path": "amari-rewrite/src/relation/constraints.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -34989,7 +36653,7 @@
     {
       "path": "amari_rewrite::relation::ConstraintSet::normalize",
       "source_path": "amari-rewrite/src/relation/constraints.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
