@@ -969,20 +969,9 @@ pub fn train(
     examples: &[TrainingExample],
 ) -> Result<TrainingOutcome, TrainingError> {
     // Admission first: scalars only, no allocation.
-    config.validate()?;
-    if examples.is_empty() {
-        return Err(TrainingError::EmptyDataset);
-    }
-    if examples.len() > TrainConfig::MAX_TRAIN_EXAMPLES {
-        return Err(TrainingError::LimitExceeded {
-            resource: "training examples",
-            value: examples.len(),
-            limit: TrainConfig::MAX_TRAIN_EXAMPLES,
-        });
-    }
-    // Parameter counts are bounded by the architecture spec, which
-    // `RankerConfig::from_spec` already validated, and `init`'s shapes are
-    // checked against it here before any buffer is sized.
+    admit(arch, config, examples.len())?;
+    // `init`'s shapes are checked against the architecture here, before any
+    // buffer is sized from them.
     let mut parameters = parameters_from(init, arch)?;
     let bound = arch.max_weight_magnitude();
     let order = example_order(config, examples.len());
@@ -1025,8 +1014,12 @@ pub fn train(
 /// Train from a seeded initialization.
 ///
 /// Equivalent to `train(arch, &seeded_weights(arch, config.seed())?, config,
-/// examples)`; the convenience exists so a fully seeded run never has two
-/// seeds to keep in sync.
+/// examples)`, except for *when* the run is admitted: the shared scalar
+/// admission gate runs before the seed materializes a single parameter buffer,
+/// so a rejected corpus
+/// costs a comparison rather than a discarded initialization (PR #367 round 1
+/// P2a). The convenience also keeps a fully seeded run from having two seeds
+/// to hold in sync.
 ///
 /// # Errors
 ///
@@ -1036,8 +1029,56 @@ pub fn train_from_seed(
     config: &TrainConfig,
     examples: &[TrainingExample],
 ) -> Result<TrainingOutcome, TrainingError> {
+    // Admission precedes initialization: the ceilings decide whether the
+    // buffers are worth building at all. `train` re-admits (scalars only)
+    // because it must be safe when a caller reaches it directly.
+    admit(arch, config, examples.len())?;
     let init = seeded_weights(arch, config.seed())?;
     train(arch, &init, config, examples)
+}
+
+/// The shared scalar admission gate for every training entry point.
+///
+/// Every check here is a comparison on a length, a count, or a ceiling: it
+/// allocates nothing, so running it first is what makes "a rejected run costs
+/// a comparison, not a buffer" true for both [`train`] and
+/// [`train_from_seed`] (PR #367 round 1 P2a). The architecture's parameter
+/// count is re-checked even though [`RankerConfig::from_spec`] already
+/// rejected anything above the ceiling: this gate is the one place a reader
+/// can see that every size a run will allocate has been bounded before it is
+/// allocated from.
+///
+/// # Errors
+///
+/// [`TrainingError::InvalidConfig`] for an unusable configuration,
+/// [`TrainingError::LimitExceeded`] when the step budget, the example count,
+/// or the architecture's parameter count exceeds its ceiling, and
+/// [`TrainingError::EmptyDataset`] for no examples.
+fn admit(
+    arch: &RankerConfig,
+    config: &TrainConfig,
+    example_count: usize,
+) -> Result<(), TrainingError> {
+    config.validate()?;
+    if example_count == 0 {
+        return Err(TrainingError::EmptyDataset);
+    }
+    if example_count > TrainConfig::MAX_TRAIN_EXAMPLES {
+        return Err(TrainingError::LimitExceeded {
+            resource: "training examples",
+            value: example_count,
+            limit: TrainConfig::MAX_TRAIN_EXAMPLES,
+        });
+    }
+    let parameters = arch.tensor_elements();
+    if parameters > RankerConfig::MAX_TENSOR_ELEMENTS {
+        return Err(TrainingError::LimitExceeded {
+            resource: "ranker parameters",
+            value: usize::try_from(parameters).unwrap_or(usize::MAX),
+            limit: usize::try_from(RankerConfig::MAX_TENSOR_ELEMENTS).unwrap_or(usize::MAX),
+        });
+    }
+    Ok(())
 }
 
 // ── internals ───────────────────────────────────────────────────────
