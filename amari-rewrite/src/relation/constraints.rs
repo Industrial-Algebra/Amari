@@ -114,6 +114,41 @@ impl ConstraintSet {
         self.constraints.len()
     }
 
+    /// Canonical alpha-invariant digest of the WHOLE set.
+    ///
+    /// Every constraint is encoded under one variable-renaming environment
+    /// shared across the set, so variables are renumbered by first structural
+    /// occurrence over the whole set (preorder, in set order) and
+    /// co-occurrence relationships are part of the identity. Per-constraint
+    /// digests cannot express the identity of a *set*: each restarts
+    /// renumbering at zero, so `{X != a, X != b}` and `{X != a, Y != b}` —
+    /// different sets, because only the first shares one variable across its
+    /// two constraints — hashed identically (PR #357 round 3 P2a).
+    ///
+    /// Alpha-equivalent sets still share a digest: a consistently renamed set
+    /// produces the same index sequence. The frame is distinct from the
+    /// single-constraint frame, so a set digest never stands in for one.
+    pub fn canonical_digest(&self) -> Sha256Digest {
+        let mut variables = Vec::new();
+        let mut encoding = Vec::new();
+        encoding.extend_from_slice(&(self.constraints.len() as u32).to_le_bytes());
+        for constraint in &self.constraints {
+            match constraint {
+                TermConstraint::Equal(left, right) => {
+                    encoding.push(0x10);
+                    crate::relation::digest::encode_term(left, &mut variables, &mut encoding);
+                    crate::relation::digest::encode_term(right, &mut variables, &mut encoding);
+                }
+                TermConstraint::NotEqual(left, right) => {
+                    encoding.push(0x11);
+                    crate::relation::digest::encode_term(left, &mut variables, &mut encoding);
+                    crate::relation::digest::encode_term(right, &mut variables, &mut encoding);
+                }
+            }
+        }
+        Sha256Digest::framed("amari.relation.constraints/v1", &encoding)
+    }
+
     /// True when empty.
     pub fn is_empty(&self) -> bool {
         self.constraints.is_empty()
