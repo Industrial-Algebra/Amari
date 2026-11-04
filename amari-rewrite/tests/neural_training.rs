@@ -459,6 +459,17 @@ fn the_hand_derived_gradient_matches_a_central_difference() {
         let out = canonical_index / in_width;
         let input = canonical_index % in_width;
 
+        // PR #367 round 1 P2b: a gradient check is only evidence at a *live*
+        // coordinate. The chosen example must feed this weight's input lane and
+        // the hinge's derivative with respect to it must be non-zero, otherwise
+        // the comparison below proves nothing (a zero derivative matches a zero
+        // finite difference).
+        assert!(
+            example.chosen().lanes()[input] != 0.0,
+            "{name}[{canonical_index}]: input lane {input} is zero in the chosen \
+             example, so this coordinate is dead and unusable as a probe"
+        );
+
         let analytic = if name == "head.weight" {
             evaluation.gradients().head().weights()[canonical_index]
         } else {
@@ -476,6 +487,11 @@ fn the_hand_derived_gradient_matches_a_central_difference() {
         let down = pairwise_hinge(&config, &perturbed(-step), margin, &example)
             .expect("hinge evaluation")
             .loss();
+        assert!(
+            analytic != 0.0,
+            "{name}[{canonical_index}]: the analytic derivative is zero, so this \
+             coordinate cannot distinguish a correct gradient from a missing one"
+        );
         let numeric = (up - down) / (2.0 * step);
         let tolerance = 2e-2 * analytic.abs().max(1.0);
         assert!(
