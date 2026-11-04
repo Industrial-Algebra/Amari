@@ -9757,6 +9757,147 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::ADAMW_MOMENT_SUFFIX",
+      "kind": "const",
+      "signature": "pub const ADAMW_MOMENT_SUFFIX : & str",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ADAMW_MOMENT_SUFFIX : & str",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "ADAMW_MOMENT_SUFFIX"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::ADAMW_NAMING_STATUS",
+      "kind": "const",
+      "signature": "pub const ADAMW_NAMING_STATUS : & str",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ADAMW_NAMING_STATUS : & str",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "ADAMW_NAMING_STATUS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::ADAMW_VELOCITY_SUFFIX",
+      "kind": "const",
+      "signature": "pub const ADAMW_VELOCITY_SUFFIX : & str",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ADAMW_VELOCITY_SUFFIX : & str",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "ADAMW_VELOCITY_SUFFIX"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState",
+      "kind": "struct",
+      "signature": "pub struct AdamWState",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct AdamWState",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "AdamWState"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState::optimizer_state_entries",
+      "kind": "method",
+      "signature": "pub fn optimizer_state_entries (& self) -> Vec < OptimizerStateEntry >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn optimizer_state_entries (& self) -> Vec < OptimizerStateEntry >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "AdamWState::optimizer_state_entries"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState::step",
+      "kind": "method",
+      "signature": "pub fn step (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn step (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "AdamWState::step"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState::tracked_elements",
+      "kind": "method",
+      "signature": "pub fn tracked_elements (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn tracked_elements (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "AdamWState::tracked_elements"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::CANDIDATE_FEATURE_WIDTH",
       "kind": "const",
       "signature": "pub const CANDIDATE_FEATURE_WIDTH : usize",
@@ -9871,6 +10012,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::neural::data",
           "declaration_ident": "DATASET_MANIFEST_SCHEMA_VERSION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::DEFAULT_MARGIN",
+      "kind": "const",
+      "signature": "pub const DEFAULT_MARGIN : f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DEFAULT_MARGIN : f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "DEFAULT_MARGIN"
         }
       ]
     },
@@ -10591,6 +10751,59 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::ExampleOrder",
+      "kind": "enum",
+      "signature": "pub enum ExampleOrder",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Canonical",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "SeededPermutation",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum ExampleOrder",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Canonical",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "SeededPermutation",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "ExampleOrder"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::FeatureEncoder",
       "kind": "struct",
       "signature": "pub struct FeatureEncoder",
@@ -11033,6 +11246,90 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::HingeEvaluation",
+      "kind": "struct",
+      "signature": "pub struct HingeEvaluation",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HingeEvaluation",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "HingeEvaluation"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::HingeEvaluation::gradients",
+      "kind": "method",
+      "signature": "pub fn gradients (& self) -> & RankerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn gradients (& self) -> & RankerGradients",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "HingeEvaluation::gradients"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::HingeEvaluation::loss",
+      "kind": "method",
+      "signature": "pub fn loss (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn loss (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "HingeEvaluation::loss"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::INIT_SCALE",
+      "kind": "const",
+      "signature": "pub const INIT_SCALE : f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const INIT_SCALE : f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "INIT_SCALE"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::LabelAuthority",
       "kind": "enum",
       "signature": "pub enum LabelAuthority",
@@ -11146,6 +11443,90 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::neural::encode",
           "declaration_ident": "Lane::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients",
+      "kind": "struct",
+      "signature": "pub struct LayerGradients",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct LayerGradients",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "LayerGradients"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients::biases",
+      "kind": "method",
+      "signature": "pub fn biases (& self) -> & [f32]",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn biases (& self) -> & [f32]",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "LayerGradients::biases"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients::shape",
+      "kind": "method",
+      "signature": "pub fn shape (& self) -> (usize , usize)",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn shape (& self) -> (usize , usize)",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "LayerGradients::shape"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients::weights",
+      "kind": "method",
+      "signature": "pub fn weights (& self) -> & [f32]",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn weights (& self) -> & [f32]",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "LayerGradients::weights"
         }
       ]
     },
@@ -11591,6 +11972,90 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::ORDER_STREAM_SALT",
+      "kind": "const",
+      "signature": "pub const ORDER_STREAM_SALT : u64",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ORDER_STREAM_SALT : u64",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "ORDER_STREAM_SALT"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::OptimizerStateEntry",
+      "kind": "struct",
+      "signature": "pub struct OptimizerStateEntry",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct OptimizerStateEntry",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "OptimizerStateEntry"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::OptimizerStateEntry::name",
+      "kind": "method",
+      "signature": "pub fn name (& self) -> & str",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn name (& self) -> & str",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "OptimizerStateEntry::name"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::OptimizerStateEntry::values",
+      "kind": "method",
+      "signature": "pub fn values (& self) -> & [f32]",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn values (& self) -> & [f32]",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "OptimizerStateEntry::values"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::PairwiseExample",
       "kind": "struct",
       "signature": "pub struct PairwiseExample",
@@ -11728,6 +12193,47 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::neural::data",
           "declaration_ident": "PairwiseExample::unchosen_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::PartialReason",
+      "kind": "enum",
+      "signature": "pub enum PartialReason",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "StepBudgetExhausted",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum PartialReason",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "StepBudgetExhausted",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "PartialReason"
         }
       ]
     },
@@ -12147,6 +12653,90 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::RankerGradients",
+      "kind": "struct",
+      "signature": "pub struct RankerGradients",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RankerGradients",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "RankerGradients"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerGradients::element_count",
+      "kind": "method",
+      "signature": "pub fn element_count (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn element_count (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "RankerGradients::element_count"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerGradients::head",
+      "kind": "method",
+      "signature": "pub fn head (& self) -> & LayerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn head (& self) -> & LayerGradients",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "RankerGradients::head"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::RankerGradients::layers",
+      "kind": "method",
+      "signature": "pub fn layers (& self) -> & [LayerGradients]",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn layers (& self) -> & [LayerGradients]",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "RankerGradients::layers"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::RankerWeights",
       "kind": "struct",
       "signature": "pub struct RankerWeights",
@@ -12369,6 +12959,920 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::neural::encode",
           "declaration_ident": "SearchContext::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig",
+      "kind": "struct",
+      "signature": "pub struct TrainConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TrainConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::MAX_STEPS",
+      "kind": "const",
+      "signature": "pub const MAX_STEPS : usize",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_STEPS : usize",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::MAX_STEPS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::MAX_TRAIN_EXAMPLES",
+      "kind": "const",
+      "signature": "pub const MAX_TRAIN_EXAMPLES : usize",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_TRAIN_EXAMPLES : usize",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::MAX_TRAIN_EXAMPLES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::beta1",
+      "kind": "method",
+      "signature": "pub fn beta1 (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn beta1 (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::beta1"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::beta2",
+      "kind": "method",
+      "signature": "pub fn beta2 (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn beta2 (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::beta2"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::defaults",
+      "kind": "method",
+      "signature": "pub fn defaults () -> Self",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn defaults () -> Self",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::defaults"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::epsilon",
+      "kind": "method",
+      "signature": "pub fn epsilon (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn epsilon (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::epsilon"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::learning_rate",
+      "kind": "method",
+      "signature": "pub fn learning_rate (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn learning_rate (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::learning_rate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::margin",
+      "kind": "method",
+      "signature": "pub fn margin (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn margin (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::margin"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::max_steps",
+      "kind": "method",
+      "signature": "pub fn max_steps (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_steps (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::max_steps"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (learning_rate : f32 , beta1 : f32 , beta2 : f32 , epsilon : f32 , weight_decay : f32 , margin : f32 , max_steps : usize , seed : u64 , order : ExampleOrder ,) -> Result < Self , TrainingError >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (learning_rate : f32 , beta1 : f32 , beta2 : f32 , epsilon : f32 , weight_decay : f32 , margin : f32 , max_steps : usize , seed : u64 , order : ExampleOrder ,) -> Result < Self , TrainingError >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::order",
+      "kind": "method",
+      "signature": "pub fn order (& self) -> ExampleOrder",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn order (& self) -> ExampleOrder",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::order"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::seed",
+      "kind": "method",
+      "signature": "pub fn seed (& self) -> u64",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn seed (& self) -> u64",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::seed"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::validate",
+      "kind": "method",
+      "signature": "pub fn validate (& self) -> Result < () , TrainingError >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn validate (& self) -> Result < () , TrainingError >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::validate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::weight_decay",
+      "kind": "method",
+      "signature": "pub fn weight_decay (& self) -> f32",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn weight_decay (& self) -> f32",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainConfig::weight_decay"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingError",
+      "kind": "enum",
+      "signature": "pub enum TrainingError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InvalidConfig",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "field",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "message",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "LimitExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "value",
+                  "ty": "usize"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NonFinite",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "step",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ParameterOutOfBounds",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "step",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "EmptyDataset",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "MismatchedWeights",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum TrainingError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "InvalidConfig",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "field",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "message",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "LimitExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "value",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonFinite",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "step",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ParameterOutOfBounds",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "step",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "EmptyDataset",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "MismatchedWeights",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingError"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample",
+      "kind": "struct",
+      "signature": "pub struct TrainingExample",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TrainingExample",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingExample"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::chosen",
+      "kind": "method",
+      "signature": "pub fn chosen (& self) -> & FeatureVector",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn chosen (& self) -> & FeatureVector",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingExample::chosen"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::from_pairwise",
+      "kind": "method",
+      "signature": "pub fn from_pairwise (example : & PairwiseExample) -> Self",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_pairwise (example : & PairwiseExample) -> Self",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingExample::from_pairwise"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::new",
+      "kind": "method",
+      "signature": "pub fn new (chosen : FeatureVector , unchosen : FeatureVector) -> Self",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (chosen : FeatureVector , unchosen : FeatureVector) -> Self",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingExample::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::unchosen",
+      "kind": "method",
+      "signature": "pub fn unchosen (& self) -> & FeatureVector",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn unchosen (& self) -> & FeatureVector",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingExample::unchosen"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome",
+      "kind": "enum",
+      "signature": "pub enum TrainingOutcome",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Completed",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "steps_run",
+                  "ty": "usize"
+                },
+                {
+                  "name": "parameters",
+                  "ty": "RankerWeights"
+                },
+                {
+                  "name": "optimizer",
+                  "ty": "AdamWState"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Partial",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "PartialReason"
+                },
+                {
+                  "name": "steps_run",
+                  "ty": "usize"
+                },
+                {
+                  "name": "parameters",
+                  "ty": "RankerWeights"
+                },
+                {
+                  "name": "optimizer",
+                  "ty": "AdamWState"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum TrainingOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Completed",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "steps_run",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "parameters",
+                      "ty": "RankerWeights"
+                    },
+                    {
+                      "name": "optimizer",
+                      "ty": "AdamWState"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Partial",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "PartialReason"
+                    },
+                    {
+                      "name": "steps_run",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "parameters",
+                      "ty": "RankerWeights"
+                    },
+                    {
+                      "name": "optimizer",
+                      "ty": "AdamWState"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingOutcome"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::is_complete",
+      "kind": "method",
+      "signature": "pub fn is_complete (& self) -> bool",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_complete (& self) -> bool",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingOutcome::is_complete"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::is_replayable",
+      "kind": "method",
+      "signature": "pub fn is_replayable (& self) -> bool",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_replayable (& self) -> bool",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingOutcome::is_replayable"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::optimizer_state",
+      "kind": "method",
+      "signature": "pub fn optimizer_state (& self) -> & AdamWState",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn optimizer_state (& self) -> & AdamWState",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingOutcome::optimizer_state"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::parameters",
+      "kind": "method",
+      "signature": "pub fn parameters (& self) -> & RankerWeights",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn parameters (& self) -> & RankerWeights",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingOutcome::parameters"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::partial_reason",
+      "kind": "method",
+      "signature": "pub fn partial_reason (& self) -> Option < PartialReason >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn partial_reason (& self) -> Option < PartialReason >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingOutcome::partial_reason"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::steps_run",
+      "kind": "method",
+      "signature": "pub fn steps_run (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn steps_run (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "TrainingOutcome::steps_run"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::corpus_from_dataset",
+      "kind": "fn",
+      "signature": "pub fn corpus_from_dataset (dataset : & Dataset) -> Vec < TrainingExample >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn corpus_from_dataset (dataset : & Dataset) -> Vec < TrainingExample >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "corpus_from_dataset"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::example_order",
+      "kind": "fn",
+      "signature": "pub fn example_order (config : & TrainConfig , len : usize) -> Vec < usize >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn example_order (config : & TrainConfig , len : usize) -> Vec < usize >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "example_order"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::pairwise_hinge",
+      "kind": "fn",
+      "signature": "pub fn pairwise_hinge (arch : & RankerConfig , weights : & RankerWeights , margin : f32 , example : & TrainingExample ,) -> Result < HingeEvaluation , TrainingError >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn pairwise_hinge (arch : & RankerConfig , weights : & RankerWeights , margin : f32 , example : & TrainingExample ,) -> Result < HingeEvaluation , TrainingError >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "pairwise_hinge"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::seeded_weights",
+      "kind": "fn",
+      "signature": "pub fn seeded_weights (arch : & RankerConfig , seed : u64) -> Result < RankerWeights , TrainingError >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn seeded_weights (arch : & RankerConfig , seed : u64) -> Result < RankerWeights , TrainingError >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "seeded_weights"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::train",
+      "kind": "fn",
+      "signature": "pub fn train (arch : & RankerConfig , init : & RankerWeights , config : & TrainConfig , examples : & [TrainingExample] ,) -> Result < TrainingOutcome , TrainingError >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn train (arch : & RankerConfig , init : & RankerWeights , config : & TrainConfig , examples : & [TrainingExample] ,) -> Result < TrainingOutcome , TrainingError >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "train"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::train_from_seed",
+      "kind": "fn",
+      "signature": "pub fn train_from_seed (arch : & RankerConfig , config : & TrainConfig , examples : & [TrainingExample] ,) -> Result < TrainingOutcome , TrainingError >",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::train",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn train_from_seed (arch : & RankerConfig , config : & TrainConfig , examples : & [TrainingExample] ,) -> Result < TrainingOutcome , TrainingError >",
+          "source_path": "amari-rewrite/src/neural/train.rs",
+          "source_module": "amari_rewrite::neural::train",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::train",
+          "declaration_ident": "train_from_seed"
         }
       ]
     },
@@ -21187,6 +22691,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::AdamWState",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 30,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "AdamWState"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::CandidateInput",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 9,
@@ -21278,6 +22800,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::ExampleOrder",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "ExampleOrder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 11,
@@ -21332,6 +22872,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::HingeEvaluation",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "HingeEvaluation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::LabelAuthority",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 1,
@@ -21361,6 +22919,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "Lane"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::LayerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 15,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "LayerGradients"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -21404,6 +22980,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::OptimizerStateEntry",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 25,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "OptimizerStateEntry"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::PairwiseExample",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 5,
@@ -21415,6 +23009,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::data",
         "ident": "PairwiseExample"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::PartialReason",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "PartialReason"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -21458,6 +23070,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::RankerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 17,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "RankerGradients"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::RankerWeights",
       "source_path": "amari-rewrite/src/neural/model.rs",
       "source_ordinal": 2,
@@ -21487,6 +23117,78 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::TrainConfig",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::TrainingError",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::TrainingExample",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingExample"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::TrainingOutcome",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingOutcome"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -22719,6 +24421,24 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::ExampleOrder",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "ExampleOrder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 11,
@@ -22809,6 +24529,24 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::PartialReason",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "PartialReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::neural::RankedCandidate",
       "source_path": "amari-rewrite/src/neural/model.rs",
       "source_ordinal": 4,
@@ -22838,6 +24576,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::TrainingExample",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingExample"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -24486,6 +26242,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::AdamWState",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 30,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "AdamWState"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::CandidateInput",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 9,
@@ -24577,6 +26351,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::ExampleOrder",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "ExampleOrder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 11,
@@ -24631,6 +26423,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::HingeEvaluation",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "HingeEvaluation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::LabelAuthority",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 1,
@@ -24660,6 +26470,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "Lane"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::LayerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 15,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "LayerGradients"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -24703,6 +26531,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::OptimizerStateEntry",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 25,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "OptimizerStateEntry"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::PairwiseExample",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 5,
@@ -24714,6 +26560,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::data",
         "ident": "PairwiseExample"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::PartialReason",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "PartialReason"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -24757,6 +26621,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::RankerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 17,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "RankerGradients"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::RankerWeights",
       "source_path": "amari-rewrite/src/neural/model.rs",
       "source_ordinal": 2,
@@ -24786,6 +26668,78 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::TrainConfig",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::TrainingError",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::TrainingExample",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingExample"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::TrainingOutcome",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingOutcome"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -25852,6 +27806,24 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::neural::TrainConfig",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
     },
     {
       "trait_path": "Default",
@@ -27260,6 +29232,24 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::ExampleOrder",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "ExampleOrder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 3,
@@ -27332,6 +29322,24 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::PartialReason",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "PartialReason"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::neural::RankerConfig",
       "source_path": "amari-rewrite/src/neural/config.rs",
       "source_ordinal": 0,
@@ -27361,6 +29369,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::TrainingError",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -28261,6 +30287,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural",
         "ident": "NeuralError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Error",
+      "impl_type_path": "amari_rewrite::neural::TrainingError",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -30720,6 +32764,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::AdamWState",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 30,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "AdamWState"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::Dataset",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 9,
@@ -30774,6 +32836,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::ExampleOrder",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "ExampleOrder"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::FeatureSchemaV1",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 3,
@@ -30803,6 +32883,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "FeatureVector"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::HingeEvaluation",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "HingeEvaluation"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -30846,6 +32944,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::LayerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 15,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "LayerGradients"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::MlpRanker",
       "source_path": "amari-rewrite/src/neural/model.rs",
       "source_ordinal": 6,
@@ -30882,6 +32998,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::OptimizerStateEntry",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 25,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "OptimizerStateEntry"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::PairwiseExample",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 5,
@@ -30893,6 +33027,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::data",
         "ident": "PairwiseExample"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::PartialReason",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "PartialReason"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -30936,6 +33088,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::RankerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 17,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "RankerGradients"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::RankerWeights",
       "source_path": "amari-rewrite/src/neural/model.rs",
       "source_ordinal": 2,
@@ -30965,6 +33135,78 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::TrainConfig",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::TrainingError",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::TrainingExample",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingExample"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::TrainingOutcome",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::train",
+        "ident": "TrainingOutcome"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -35059,6 +37301,62 @@
       "surface_kind": "module"
     },
     {
+      "path": "amari_rewrite::neural::ADAMW_MOMENT_SUFFIX",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::ADAMW_NAMING_STATUS",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::ADAMW_VELOCITY_SUFFIX",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 30,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState::optimizer_state_entries",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState::step",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::AdamWState::tracked_elements",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::neural::CANDIDATE_FEATURE_WIDTH",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 0,
@@ -35085,6 +37383,14 @@
     {
       "path": "amari_rewrite::neural::DATASET_MANIFEST_SCHEMA_VERSION",
       "source_path": "amari-rewrite/src/neural/data.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::DEFAULT_MARGIN",
+      "source_path": "amari-rewrite/src/neural/train.rs",
       "source_ordinal": 0,
       "gate": "feature(\"neural\")",
       "status": "disabled",
@@ -35379,6 +37685,14 @@
       "surface_kind": "trait_method"
     },
     {
+      "path": "amari_rewrite::neural::ExampleOrder",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::neural::FeatureEncoder",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 11,
@@ -35555,6 +37869,38 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::neural::HingeEvaluation",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 19,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::HingeEvaluation::gradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::HingeEvaluation::loss",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::INIT_SCALE",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::neural::LabelAuthority",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 1,
@@ -35573,6 +37919,38 @@
     {
       "path": "amari_rewrite::neural::Lane::new",
       "source_path": "amari-rewrite/src/neural/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 15,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients::biases",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients::shape",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::LayerGradients::weights",
+      "source_path": "amari-rewrite/src/neural/train.rs",
       "source_ordinal": 0,
       "gate": "feature(\"neural\")",
       "status": "disabled",
@@ -35651,6 +38029,38 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::neural::ORDER_STREAM_SALT",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::OptimizerStateEntry",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 25,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::OptimizerStateEntry::name",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::OptimizerStateEntry::values",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::neural::PairwiseExample",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 5,
@@ -35705,6 +38115,14 @@
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::PartialReason",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 24,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_rewrite::neural::RankedCandidate",
@@ -35875,6 +38293,38 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::neural::RankerGradients",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 17,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerGradients::element_count",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerGradients::head",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::RankerGradients::layers",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::neural::RankerWeights",
       "source_path": "amari-rewrite/src/neural/model.rs",
       "source_ordinal": 2,
@@ -35937,6 +38387,278 @@
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::MAX_STEPS",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::MAX_TRAIN_EXAMPLES",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::beta1",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::beta2",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::defaults",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::epsilon",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::learning_rate",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::margin",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::max_steps",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::new",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::order",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 13,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::seed",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 12,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::validate",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainConfig::weight_decay",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingError",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 12,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::chosen",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::from_pairwise",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::new",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingExample::unchosen",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 22,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::is_complete",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::is_replayable",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::optimizer_state",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::parameters",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::partial_reason",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::TrainingOutcome::steps_run",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::corpus_from_dataset",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 14,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::example_order",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 35,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::pairwise_hinge",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 21,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::seeded_weights",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 34,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::train",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 36,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::train_from_seed",
+      "source_path": "amari-rewrite/src/neural/train.rs",
+      "source_ordinal": 37,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_rewrite::prelude",
