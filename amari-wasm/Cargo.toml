@@ -15,9 +15,22 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # Core WASM dependencies
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-js-sys = "0.3"
+#
+# TOOLCHAIN PIN — these versions are exact on purpose.  Cargo.lock is
+# gitignored, so every checkout (and every CI run) resolves fresh; a caret
+# range would silently pick up a newer wasm-bindgen and change the emitted
+# TypeScript surface (e.g. wasm-bindgen 0.2.130 widened slice parameters from
+# `Float64Array` to `Float64Array | number[]`), which desynchronizes
+# amari-discovery/catalog/generated-wasm.json from the committed artifact.
+#
+# Bumping any of these is a DELIBERATE change: bump the versions here AND the
+# WASM_BINDGEN_VERSION / WASM_PACK_VERSION pair in .github/workflows/ci.yml,
+# then regenerate BOTH amari-discovery/catalog/generated-wasm.json and
+# amari-discovery/catalog/manifest.json (the manifest embeds the surface
+# source_hash) in the same PR.
+wasm-bindgen = "=0.2.130"
+wasm-bindgen-futures = "=0.4.80"
+js-sys = "=0.3.107"
 serde = { workspace = true }
 serde-wasm-bindgen = "0.6"
 nalgebra = { workspace = true }
@@ -53,7 +66,8 @@ num-rational = "0.4"
 console_error_panic_hook = "0.1"
 
 [dependencies.web-sys]
-version = "0.3"
+# Pinned with wasm-bindgen above (0.2.130 pairs with web-sys 0.3.107).
+version = "=0.3.107"
 features = [
     "console",
     "Performance",
@@ -61,7 +75,8 @@ features = [
 ]
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3"
+# Pinned with wasm-bindgen above (0.2.130 pairs with wasm-bindgen-test 0.3.80).
+wasm-bindgen-test = "=0.3.80"
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-O4"]
