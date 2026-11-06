@@ -216,7 +216,7 @@
       "alias": "js-sys",
       "package": "js-sys",
       "kind": "normal",
-      "version": "0.3",
+      "version": "=0.3.107",
       "optional": false,
       "default_features": true
     },
@@ -259,7 +259,7 @@
       "alias": "wasm-bindgen",
       "package": "wasm-bindgen",
       "kind": "normal",
-      "version": "0.2",
+      "version": "=0.2.130",
       "optional": false,
       "default_features": true
     },
@@ -267,7 +267,7 @@
       "alias": "wasm-bindgen-futures",
       "package": "wasm-bindgen-futures",
       "kind": "normal",
-      "version": "0.4",
+      "version": "=0.4.80",
       "optional": false,
       "default_features": true
     },
@@ -275,7 +275,7 @@
       "alias": "web-sys",
       "package": "web-sys",
       "kind": "normal",
-      "version": "0.3",
+      "version": "=0.3.107",
       "optional": false,
       "default_features": true,
       "features": [
@@ -288,7 +288,7 @@
       "alias": "wasm-bindgen-test",
       "package": "wasm-bindgen-test",
       "kind": "development",
-      "version": "0.3",
+      "version": "=0.3.80",
       "optional": false,
       "default_features": true
     }
