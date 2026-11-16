@@ -286,8 +286,8 @@ impl<T: Float> TropicalMatrix<T> {
     /// Diagonal elements are tropical one (0), off-diagonal are tropical zero (-∞)
     pub fn identity(size: usize) -> Self {
         let mut matrix = Self::new(size, size);
-        for i in 0..size {
-            matrix.data[i][i] = TropicalNumber::one();
+        for (i, row) in matrix.data.iter_mut().enumerate().take(size) {
+            row[i] = TropicalNumber::one();
         }
         matrix
     }

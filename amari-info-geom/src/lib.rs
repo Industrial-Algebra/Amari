@@ -176,9 +176,9 @@ impl FisherInformationMatrix {
         let mut eigenvals = Vec::new();
 
         // For diagonal matrices, eigenvalues are the diagonal elements
-        for i in 0..self.matrix.len() {
-            if i < self.matrix[i].len() {
-                eigenvals.push(self.matrix[i][i]);
+        for (i, row) in self.matrix.iter().enumerate() {
+            if let Some(&value) = row.get(i) {
+                eigenvals.push(value);
             }
         }
 
