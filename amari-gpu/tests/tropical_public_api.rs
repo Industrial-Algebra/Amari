@@ -41,8 +41,8 @@ fn cpu_attention_scores(logits: &TropicalMatrix<f32>) -> TropicalMatrix<f32> {
     let mut scores = TropicalMatrix::new(logits.rows, logits.cols);
     for i in 0..logits.rows {
         let mut row_max = f32::NEG_INFINITY;
-        for j in 0..logits.cols {
-            row_max = row_max.max(logits.data[i][j].value());
+        for value in logits.data[i].iter().take(logits.cols) {
+            row_max = row_max.max(value.value());
         }
         for j in 0..logits.cols {
             let score = if logits.data[i][j].value() == row_max {
