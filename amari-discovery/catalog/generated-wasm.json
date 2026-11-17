@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_hash": "a3f9b4a244fb36306e3024682ee538c49f77eec33ee2958c6a67c9dfb0a2c484",
+  "source_hash": "1759bbb9fbbe0457a053e85b003dc599f904ebebfe1e94cb13672e90d52e477e",
   "description": "153 classes, 30 functions, 2 enums, 1 interfaces, 2 type aliases",
   "classes": [
     {
@@ -13,19 +13,19 @@
         {
           "name": "evaluatePolynomial",
           "doc": "Create a dual number and evaluate a polynomial",
-          "signature": "(x: number, coefficients: Float64Array): WasmDualNumber",
+          "signature": "(x: number, coefficients: Float64Array | number[]): WasmDualNumber",
           "is_static": true
         },
         {
           "name": "linearLayer",
           "doc": "Linear layer forward pass (y = Wx + b) with automatic gradients",
-          "signature": "(inputs: Float64Array, weights: Float64Array, bias: Float64Array, input_size: number, output_size: number): Float64Array",
+          "signature": "(inputs: Float64Array | number[], weights: Float64Array | number[], bias: Float64Array | number[], input_size: number, output_size: number): Float64Array",
           "is_static": true
         },
         {
           "name": "meanSquaredError",
           "doc": "Compute mean squared error with automatic gradients",
-          "signature": "(predictions: Float64Array, targets: Float64Array): WasmDualNumber",
+          "signature": "(predictions: Float64Array | number[], targets: Float64Array | number[]): WasmDualNumber",
           "is_static": true
         },
         {
@@ -49,19 +49,19 @@
         {
           "name": "batchEvolve",
           "doc": "Evolve multiple CA systems in parallel",
-          "signature": "(grids: Float64Array, grid_width: number, grid_height: number, num_grids: number, generations: number): Float64Array",
+          "signature": "(grids: Float64Array | number[], grid_width: number, grid_height: number, num_grids: number, generations: number): Float64Array",
           "is_static": true
         },
         {
           "name": "batchFitness",
           "doc": "Batch fitness evaluation for inverse design",
-          "signature": "(candidates: Float64Array, target: Float64Array, candidate_count: number, grid_width: number, grid_height: number): Float64Array",
+          "signature": "(candidates: Float64Array | number[], target: Float64Array | number[], candidate_count: number, grid_width: number, grid_height: number): Float64Array",
           "is_static": true
         },
         {
           "name": "batchStabilityCheck",
           "doc": "Batch assembly stability check",
-          "signature": "(assemblies: Float64Array, assembly_count: number, components_per_assembly: number): Uint8Array",
+          "signature": "(assemblies: Float64Array | number[], assembly_count: number, components_per_assembly: number): Uint8Array",
           "is_static": true
         }
       ],
@@ -97,7 +97,7 @@
         {
           "name": "validateGrid",
           "doc": "Validate grid dimensions and format",
-          "signature": "(grid: Float64Array, width: number, height: number): boolean",
+          "signature": "(grid: Float64Array | number[], width: number, height: number): boolean",
           "is_static": true
         }
       ],
@@ -115,13 +115,13 @@
         {
           "name": "batchAdd",
           "doc": "Batch addition (independent of signature).",
-          "signature": "(a_batch: Float64Array, b_batch: Float64Array): Float64Array",
+          "signature": "(a_batch: Float64Array | number[], b_batch: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "batchGeometricProduct",
           "doc": "Batch geometric product — generic signature.",
-          "signature": "(p: number, q: number, r: number, a_batch: Float64Array, b_batch: Float64Array): Float64Array",
+          "signature": "(p: number, q: number, r: number, a_batch: Float64Array | number[], b_batch: Float64Array | number[]): Float64Array",
           "is_static": true
         }
       ],
@@ -139,19 +139,19 @@
         {
           "name": "batchPolynomial",
           "doc": "Batch evaluate polynomial with derivatives",
-          "signature": "(x_values: Float64Array, coefficients: Float64Array): Float64Array",
+          "signature": "(x_values: Float64Array | number[], coefficients: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "computeJacobian",
           "doc": "Compute Jacobian matrix for vector function",
-          "signature": "(input_values: Float64Array, function_name: string): Float64Array",
+          "signature": "(input_values: Float64Array | number[], function_name: string): Float64Array",
           "is_static": true
         },
         {
           "name": "matrixMultiply",
           "doc": "Matrix multiplication with automatic gradients",
-          "signature": "(a: Float64Array, b: Float64Array, a_rows: number, a_cols: number, b_rows: number, b_cols: number): Float64Array",
+          "signature": "(a: Float64Array | number[], b: Float64Array | number[], a_rows: number, a_cols: number, b_rows: number, b_cols: number): Float64Array",
           "is_static": true
         }
       ],
@@ -169,13 +169,13 @@
         {
           "name": "bezoutBatch",
           "doc": "Compute multiple Bézout intersections in batch",
-          "signature": "(projective_space: WasmProjectiveSpace, degrees1: Int32Array, degrees2: Int32Array): Float64Array",
+          "signature": "(projective_space: WasmProjectiveSpace, degrees1: Int32Array | number[], degrees2: Int32Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "binomialBatch",
           "doc": "Compute multiple binomial coefficients in batch",
-          "signature": "(n_values: Uint32Array, k_values: Uint32Array): Float64Array",
+          "signature": "(n_values: Uint32Array | number[], k_values: Uint32Array | number[]): Float64Array",
           "is_static": true
         },
         {
@@ -229,7 +229,7 @@
         {
           "name": "validatePartition",
           "doc": "Validate partition for Schubert calculus",
-          "signature": "(partition: Uint32Array, k: number, n: number): boolean",
+          "signature": "(partition: Uint32Array | number[], k: number, n: number): boolean",
           "is_static": true
         }
       ],
@@ -247,25 +247,25 @@
         {
           "name": "batchDistance",
           "doc": "Batch distance computation (optimized for similarity search)",
-          "signature": "(query_logits: Float64Array, corpus_batch: Float64Array, corpus_size: number): Float64Array",
+          "signature": "(query_logits: Float64Array | number[], corpus_batch: Float64Array | number[], corpus_size: number): Float64Array",
           "is_static": true
         },
         {
           "name": "batchEvaluate",
           "doc": "Batch evaluation of multiple TDC pairs (optimized for WASM)",
-          "signature": "(tdc_a_batch: Float64Array, tdc_b_batch: Float64Array, batch_size: number): Float64Array",
+          "signature": "(tdc_a_batch: Float64Array | number[], tdc_b_batch: Float64Array | number[], batch_size: number): Float64Array",
           "is_static": true
         },
         {
           "name": "batchSensitivity",
           "doc": "Batch sensitivity analysis for gradient-based optimization\n\nNote: Using simplified implementation based on gradient norms",
-          "signature": "(tdc_batch: Float64Array, batch_size: number): Float64Array",
+          "signature": "(tdc_batch: Float64Array | number[], batch_size: number): Float64Array",
           "is_static": true
         },
         {
           "name": "batchTropicalAttention",
           "doc": "Batch tropical attention across multiple queries",
-          "signature": "(queries: Float64Array, keys: Float64Array, values: Float64Array, query_dim: number): Float64Array",
+          "signature": "(queries: Float64Array | number[], keys: Float64Array | number[], values: Float64Array | number[], query_dim: number): Float64Array",
           "is_static": true
         },
         {
@@ -295,25 +295,25 @@
         {
           "name": "normalizeLogits",
           "doc": "Normalize logits to prevent overflow",
-          "signature": "(logits: Float64Array): Float64Array",
+          "signature": "(logits: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "softmaxToTropical",
           "doc": "Convert softmax probabilities to tropical representation\n\nNote: Direct conversion helpers are not in v0.12.0, using manual implementation",
-          "signature": "(probs: Float64Array): Float64Array",
+          "signature": "(probs: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "tropicalToSoftmax",
           "doc": "Convert tropical numbers back to softmax probabilities\n\nNote: Direct conversion helpers are not in v0.12.0, using manual implementation",
-          "signature": "(tropical_values: Float64Array): Float64Array",
+          "signature": "(tropical_values: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "validateLogits",
           "doc": "Validate logits for numerical stability",
-          "signature": "(logits: Float64Array): boolean",
+          "signature": "(logits: Float64Array | number[]): boolean",
           "is_static": true
         }
       ],
@@ -343,19 +343,19 @@
         {
           "name": "schubertCellPoints",
           "doc": "Number of F_q-rational points of a Schubert cell C_λ.",
-          "signature": "(partition: Uint32Array, q: bigint): number",
+          "signature": "(partition: Uint32Array | number[], q: bigint): number",
           "is_static": true
         },
         {
           "name": "schubertPoincarePolynomial",
           "doc": "Poincaré polynomial of a Schubert variety X_λ in Gr(k, n).",
-          "signature": "(partition: Uint32Array, k: number, n: number): Float64Array",
+          "signature": "(partition: Uint32Array | number[], k: number, n: number): Float64Array",
           "is_static": true
         },
         {
           "name": "schubertVarietyPoints",
           "doc": "Number of F_q-rational points of a Schubert variety X_λ in Gr(k, n).",
-          "signature": "(partition: Uint32Array, k: number, n: number, q: bigint): number",
+          "signature": "(partition: Uint32Array | number[], k: number, n: number, q: bigint): number",
           "is_static": true
         }
       ],
@@ -397,7 +397,7 @@
         {
           "name": "schubertCellSize",
           "doc": "Size of a Schubert cell given its partition: 2^|λ|.",
-          "signature": "(partition: Uint32Array): bigint",
+          "signature": "(partition: Uint32Array | number[]): bigint",
           "is_static": true
         }
       ],
@@ -433,7 +433,7 @@
         {
           "name": "schubertKlPolynomial",
           "doc": "KL polynomial for a Schubert variety in Gr(k, n).",
-          "signature": "(partition: Uint32Array, k: number, n: number): Float64Array",
+          "signature": "(partition: Uint32Array | number[], k: number, n: number): Float64Array",
           "is_static": true
         },
         {
@@ -523,25 +523,25 @@
         {
           "name": "crossEntropy",
           "doc": "Compute cross-entropy between two distributions",
-          "signature": "(p: Float64Array, q: Float64Array): number",
+          "signature": "(p: Float64Array | number[], q: Float64Array | number[]): number",
           "is_static": true
         },
         {
           "name": "entropy",
           "doc": "Compute entropy of a probability distribution",
-          "signature": "(p: Float64Array): number",
+          "signature": "(p: Float64Array | number[]): number",
           "is_static": true
         },
         {
           "name": "mutualInformation",
           "doc": "Compute mutual information between two discrete distributions",
-          "signature": "(joint: Float64Array, marginal_x: Float64Array, marginal_y: Float64Array, dim_x: number): number",
+          "signature": "(joint: Float64Array | number[], marginal_x: Float64Array | number[], marginal_y: Float64Array | number[], dim_x: number): number",
           "is_static": true
         },
         {
           "name": "normalize",
           "doc": "Normalize array to probability distribution",
-          "signature": "(values: Float64Array): Float64Array",
+          "signature": "(values: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
@@ -553,7 +553,7 @@
         {
           "name": "softmax",
           "doc": "Convert log probabilities to probabilities",
-          "signature": "(logits: Float64Array): Float64Array",
+          "signature": "(logits: Float64Array | number[]): Float64Array",
           "is_static": true
         }
       ],
@@ -595,25 +595,25 @@
         {
           "name": "batchActivation",
           "doc": "Batch apply activation function with gradients",
-          "signature": "(inputs: Float64Array, activation: string): Float64Array",
+          "signature": "(inputs: Float64Array | number[], activation: string): Float64Array",
           "is_static": true
         },
         {
           "name": "crossEntropyLoss",
           "doc": "Compute cross-entropy loss with automatic gradients",
-          "signature": "(predictions: Float64Array, targets: Float64Array): WasmDualNumber",
+          "signature": "(predictions: Float64Array | number[], targets: Float64Array | number[]): WasmDualNumber",
           "is_static": true
         },
         {
           "name": "gradientDescentStep",
           "doc": "Gradient descent step",
-          "signature": "(parameters: Float64Array, gradients: Float64Array, learning_rate: number): Float64Array",
+          "signature": "(parameters: Float64Array | number[], gradients: Float64Array | number[], learning_rate: number): Float64Array",
           "is_static": true
         },
         {
           "name": "softmax",
           "doc": "Compute softmax with automatic gradients",
-          "signature": "(inputs: Float64Array): Float64Array",
+          "signature": "(inputs: Float64Array | number[]): Float64Array",
           "is_static": true
         }
       ],
@@ -678,25 +678,25 @@
         {
           "name": "curl",
           "doc": "Compute curl of a 3D vector field at a point\n\n∇×F = [∂Fz/∂y - ∂Fy/∂z, ∂Fx/∂z - ∂Fz/∂x, ∂Fy/∂x - ∂Fx/∂y]\n\n# Arguments\n\n* `field` - 3D vector field\n* `point` - Evaluation point [x, y, z]\n\n# Returns\n\nCurl vector [cx, cy, cz]",
-          "signature": "(field: VectorField, point: Float64Array): Float64Array",
+          "signature": "(field: VectorField, point: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "divergence",
           "doc": "Compute divergence of a vector field at a point\n\n∇·F = ∂Fx/∂x + ∂Fy/∂y + ∂Fz/∂z\n\n# Arguments\n\n* `field` - Vector field\n* `point` - Evaluation point\n\n# Returns\n\nDivergence (scalar)",
-          "signature": "(field: VectorField, point: Float64Array): number",
+          "signature": "(field: VectorField, point: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "gradient",
           "doc": "Compute gradient of a scalar field at a point\n\n∇f = [∂f/∂x, ∂f/∂y, ∂f/∂z]\n\n# Arguments\n\n* `field` - Scalar field\n* `point` - Evaluation point\n\n# Returns\n\nGradient vector\n\n# JavaScript Example\n\n```javascript\nconst field = ScalarField.fromFunction2D((x, y) => x*x + y*y);\nconst derivative = new NumericalDerivative();\nconst grad = derivative.gradient(field, [1.0, 2.0]); // Returns [2.0, 4.0]\n```",
-          "signature": "(field: ScalarField, point: Float64Array): Float64Array",
+          "signature": "(field: ScalarField, point: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "laplacian",
           "doc": "Compute Laplacian of a scalar field at a point\n\n∇²f = ∂²f/∂x² + ∂²f/∂y² + ∂²f/∂z²\n\n# Arguments\n\n* `field` - Scalar field\n* `point` - Evaluation point\n\n# Returns\n\nLaplacian (scalar)",
-          "signature": "(field: ScalarField, point: Float64Array): number",
+          "signature": "(field: ScalarField, point: Float64Array | number[]): number",
           "is_static": false
         }
       ],
@@ -715,25 +715,25 @@
         {
           "name": "batchNormalize",
           "doc": "Batch normalize vectors for efficiency.",
-          "signature": "(vectors: Float64Array, vector_size: number): Float64Array",
+          "signature": "(vectors: Float64Array | number[], vector_size: number): Float64Array",
           "is_static": true
         },
         {
           "name": "fastGeometricProduct",
           "doc": "Fast geometric product for hot paths — generic signature.",
-          "signature": "(p: number, q: number, r: number, lhs: Float64Array, rhs: Float64Array): Float64Array",
+          "signature": "(p: number, q: number, r: number, lhs: Float64Array | number[], rhs: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "vectorCrossProduct",
           "doc": "Optimized vector cross product for 3D space.",
-          "signature": "(v1: Float64Array, v2: Float64Array): Float64Array",
+          "signature": "(v1: Float64Array | number[], v2: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "vectorDotProduct",
           "doc": "Optimized vector dot product.",
-          "signature": "(v1: Float64Array, v2: Float64Array): number",
+          "signature": "(v1: Float64Array | number[], v2: Float64Array | number[]): number",
           "is_static": true
         }
       ],
@@ -750,31 +750,31 @@
         {
           "name": "christoffel",
           "doc": "Compute Christoffel symbol Γ^k_ij at a point\n\n# Arguments\n\n* `k` - Upper index\n* `i` - First lower index\n* `j` - Second lower index\n* `coords` - Coordinates",
-          "signature": "(k: number, i: number, j: number, coords: Float64Array): number",
+          "signature": "(k: number, i: number, j: number, coords: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "geodesic",
           "doc": "Compute geodesic trajectory\n\nSolves the geodesic equations using RK4 integration.\n\n# Arguments\n\n* `initial_pos` - Initial position\n* `initial_vel` - Initial velocity\n* `t_max` - Maximum time\n* `dt` - Time step\n\n# Returns\n\nFlat array of trajectory points and velocities:\n[x0, y0, vx0, vy0, x1, y1, vx1, vy1, ...]",
-          "signature": "(initial_pos: Float64Array, initial_vel: Float64Array, t_max: number, dt: number): Float64Array",
+          "signature": "(initial_pos: Float64Array | number[], initial_vel: Float64Array | number[], t_max: number, dt: number): Float64Array",
           "is_static": false
         },
         {
           "name": "ricciTensor",
           "doc": "Compute Ricci tensor component R_ij\n\n# Arguments\n\n* `i` - First index\n* `j` - Second index\n* `coords` - Coordinates",
-          "signature": "(i: number, j: number, coords: Float64Array): number",
+          "signature": "(i: number, j: number, coords: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "riemannTensor",
           "doc": "Compute Riemann curvature tensor component R^i_jkl\n\n# Arguments\n\n* `i` - Upper index\n* `j` - First lower index\n* `k` - Second lower index\n* `l` - Third lower index\n* `coords` - Coordinates",
-          "signature": "(i: number, j: number, k: number, l: number, coords: Float64Array): number",
+          "signature": "(i: number, j: number, k: number, l: number, coords: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "scalarCurvature",
           "doc": "Compute scalar curvature R\n\n# Arguments\n\n* `coords` - Coordinates\n\n# Returns\n\nScalar curvature value",
-          "signature": "(coords: Float64Array): number",
+          "signature": "(coords: Float64Array | number[]): number",
           "is_static": false
         }
       ],
@@ -816,13 +816,13 @@
         {
           "name": "batchEvaluate",
           "doc": "Batch evaluate the field at multiple points\n\n# Arguments\n\n* `points` - Array of points as flat array [x1, y1, x2, y2, ...]\n\n# Returns\n\nArray of field values",
-          "signature": "(points: Float64Array): Float64Array",
+          "signature": "(points: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "evaluate",
           "doc": "Evaluate the scalar field at a point\n\n# Arguments\n\n* `point` - Coordinates [x, y] or [x, y, z]\n\n# Returns\n\nField value at the point",
-          "signature": "(point: Float64Array): number",
+          "signature": "(point: Float64Array | number[]): number",
           "is_static": false
         }
       ],
@@ -878,37 +878,37 @@
         {
           "name": "batchTropicalAdd",
           "doc": "Batch tropical addition (max operation)",
-          "signature": "(values: Float64Array): number",
+          "signature": "(values: Float64Array | number[]): number",
           "is_static": true
         },
         {
           "name": "batchTropicalMul",
           "doc": "Batch tropical multiplication (addition)",
-          "signature": "(values: Float64Array): number",
+          "signature": "(values: Float64Array | number[]): number",
           "is_static": true
         },
         {
           "name": "foldOplus",
           "doc": "Fold values with tropical addition (`max`).",
-          "signature": "(values: Float64Array): number",
+          "signature": "(values: Float64Array | number[]): number",
           "is_static": true
         },
         {
           "name": "foldOtimes",
           "doc": "Fold values with tropical multiplication (`+`).",
-          "signature": "(values: Float64Array): number",
+          "signature": "(values: Float64Array | number[]): number",
           "is_static": true
         },
         {
           "name": "maxLogProb",
           "doc": "Convert array of log probabilities to tropical numbers and find maximum",
-          "signature": "(log_probs: Float64Array): number",
+          "signature": "(log_probs: Float64Array | number[]): number",
           "is_static": true
         },
         {
           "name": "viterbiStep",
           "doc": "Viterbi algorithm helper: find best path through trellis",
-          "signature": "(prev_scores: Float64Array, transition_scores: Float64Array, emission_scores: Float64Array, num_states: number): Float64Array",
+          "signature": "(prev_scores: Float64Array | number[], transition_scores: Float64Array | number[], emission_scores: Float64Array | number[], num_states: number): Float64Array",
           "is_static": true
         }
       ],
@@ -926,7 +926,7 @@
         {
           "name": "convexCombination",
           "doc": "Compute tropical convex combination (used in optimization)",
-          "signature": "(values: Float64Array, weights: Float64Array): number",
+          "signature": "(values: Float64Array | number[], weights: Float64Array | number[]): number",
           "is_static": true
         },
         {
@@ -955,7 +955,7 @@
         {
           "name": "evaluate",
           "doc": "Evaluate the vector field at a point\n\n# Arguments\n\n* `point` - Coordinates [x, y] or [x, y, z]\n\n# Returns\n\nVector at the point",
-          "signature": "(point: Float64Array): Float64Array",
+          "signature": "(point: Float64Array | number[]): Float64Array",
           "is_static": false
         }
       ],
@@ -1034,7 +1034,7 @@
         {
           "name": "encode",
           "doc": "Encode a message vector (k bits as 0/1 array) into a codeword (n bits).",
-          "signature": "(message: Uint8Array): Uint8Array",
+          "signature": "(message: Uint8Array | number[]): Uint8Array",
           "is_static": false
         },
         {
@@ -1070,7 +1070,7 @@
         {
           "name": "syndrome",
           "doc": "Compute syndrome of a received word (n bits as 0/1 array).",
-          "signature": "(received: Uint8Array): Uint8Array",
+          "signature": "(received: Uint8Array | number[]): Uint8Array",
           "is_static": false
         },
         {
@@ -1096,13 +1096,13 @@
         {
           "name": "fromGenerator",
           "doc": "Create from a generator matrix (flat row-major 0/1 array with dimensions).",
-          "signature": "(data: Uint8Array, nrows: number, ncols: number): WasmBinaryCode",
+          "signature": "(data: Uint8Array | number[], nrows: number, ncols: number): WasmBinaryCode",
           "is_static": true
         },
         {
           "name": "fromParityCheck",
           "doc": "Create from a parity check matrix (flat row-major 0/1 array with dimensions).",
-          "signature": "(data: Uint8Array, nrows: number, ncols: number): WasmBinaryCode",
+          "signature": "(data: Uint8Array | number[], nrows: number, ncols: number): WasmBinaryCode",
           "is_static": true
         },
         {
@@ -1156,7 +1156,7 @@
       "name": "WasmBinaryHologram",
       "doc": "WASM wrapper for BinaryHologram.\n\nBit-packed binary pattern for DMD display, the output of Lee encoding.",
       "private_constructor": false,
-      "constructor_signature": "(pattern: Uint8Array, width: number, height: number);",
+      "constructor_signature": "(pattern: Uint8Array | number[], width: number, height: number);",
       "methods": [
         {
           "name": "asBytes",
@@ -1345,7 +1345,7 @@
         {
           "name": "fromBits",
           "doc": "Create from a coefficient array of 0/1 values (one per basis blade).",
-          "signature": "(bits: Uint8Array, n: number, r: number): WasmBinaryMultivector",
+          "signature": "(bits: Uint8Array | number[], n: number, r: number): WasmBinaryMultivector",
           "is_static": true
         },
         {
@@ -1411,13 +1411,13 @@
         {
           "name": "ofSchubertCell",
           "doc": "Compute the CSM class of a Schubert cell in Gr(k, n)",
-          "signature": "(partition: Uint32Array, k: number, n: number): WasmCSMClass",
+          "signature": "(partition: Uint32Array | number[], k: number, n: number): WasmCSMClass",
           "is_static": true
         },
         {
           "name": "ofSchubertVariety",
           "doc": "Compute the CSM class of a Schubert variety in Gr(k, n)",
-          "signature": "(partition: Uint32Array, k: number, n: number): WasmCSMClass",
+          "signature": "(partition: Uint32Array | number[], k: number, n: number): WasmCSMClass",
           "is_static": true
         }
       ],
@@ -1429,7 +1429,7 @@
       "name": "WasmCapability",
       "doc": "WASM wrapper for capabilities (access control conditions)",
       "private_constructor": false,
-      "constructor_signature": "(id: string, name: string, partition: Uint32Array, k: number, n: number);",
+      "constructor_signature": "(id: string, name: string, partition: Uint32Array | number[], k: number, n: number);",
       "methods": [
         {
           "name": "getCodimension",
@@ -1974,31 +1974,31 @@
         {
           "name": "bregmanDivergence",
           "doc": "Compute Bregman divergence (KL divergence for probability distributions)",
-          "signature": "(p: Float64Array, q: Float64Array): number",
+          "signature": "(p: Float64Array | number[], q: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "fisherMetricAt",
           "doc": "Compute Fisher information metric at a point",
-          "signature": "(point: Float64Array): WasmFisherInformationMatrix",
+          "signature": "(point: Float64Array | number[]): WasmFisherInformationMatrix",
           "is_static": false
         },
         {
           "name": "jsDivergence",
           "doc": "Compute JS divergence (symmetric version of KL divergence)",
-          "signature": "(p: Float64Array, q: Float64Array): number",
+          "signature": "(p: Float64Array | number[], q: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "klDivergence",
           "doc": "Compute KL divergence between two probability distributions",
-          "signature": "(p: Float64Array, q: Float64Array): number",
+          "signature": "(p: Float64Array | number[], q: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "wassersteinDistance",
           "doc": "Compute Wasserstein-1 distance (Earth Mover's Distance)",
-          "signature": "(p: Float64Array, q: Float64Array): number",
+          "signature": "(p: Float64Array | number[], q: Float64Array | number[]): number",
           "is_static": false
         }
       ],
@@ -2295,7 +2295,7 @@
         {
           "name": "add",
           "doc": "Add a simplex at a given filtration time.",
-          "signature": "(time: number, vertices: Uint32Array): void",
+          "signature": "(time: number, vertices: Uint32Array | number[]): void",
           "is_static": false
         },
         {
@@ -2361,13 +2361,13 @@
         {
           "name": "fisherMetric",
           "doc": "Compute the Fisher information metric at parameter point θ",
-          "signature": "(data: Float64Array, params: Float64Array): Float64Array",
+          "signature": "(data: Float64Array | number[], params: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "volumeElement",
           "doc": "Compute the Riemannian volume element √det(g(θ))",
-          "signature": "(data: Float64Array, params: Float64Array): number",
+          "signature": "(data: Float64Array | number[], params: Float64Array | number[]): number",
           "is_static": false
         }
       ],
@@ -2387,7 +2387,7 @@
       "name": "WasmFixedPoint",
       "doc": "WASM wrapper for torus fixed points on Grassmannians",
       "private_constructor": false,
-      "constructor_signature": "(subset: Uint32Array, k: number, n: number);",
+      "constructor_signature": "(subset: Uint32Array | number[], k: number, n: number);",
       "methods": [
         {
           "name": "getGrassmannian",
@@ -2569,7 +2569,7 @@
         {
           "name": "fromRows",
           "doc": "Create from a flat row-major array of 0/1 values.\n\nThe array length must equal nrows * ncols.",
-          "signature": "(data: Uint8Array, nrows: number, ncols: number): WasmGF2Matrix",
+          "signature": "(data: Uint8Array | number[], nrows: number, ncols: number): WasmGF2Matrix",
           "is_static": true
         },
         {
@@ -2648,7 +2648,7 @@
         {
           "name": "fromBits",
           "doc": "Create a vector from an array of 0/1 values.",
-          "signature": "(bits: Uint8Array): WasmGF2Vector",
+          "signature": "(bits: Uint8Array | number[]): WasmGF2Vector",
           "is_static": true
         }
       ],
@@ -2779,7 +2779,7 @@
         {
           "name": "logProb",
           "doc": "Compute log probability of a multivector\n\n# Arguments\n* `coefficients` - 8 coefficients of the multivector",
-          "signature": "(coefficients: Float64Array): number",
+          "signature": "(coefficients: Float64Array | number[]): number",
           "is_static": false
         },
         {
@@ -2805,13 +2805,13 @@
         {
           "name": "isotropic",
           "doc": "Create an isotropic Gaussian with given mean and variance\n\n# Arguments\n* `mean` - 8 coefficients for the mean multivector\n* `variance` - Variance (same for all components)",
-          "signature": "(mean: Float64Array, variance: number): WasmGaussianMultivector",
+          "signature": "(mean: Float64Array | number[], variance: number): WasmGaussianMultivector",
           "is_static": true
         },
         {
           "name": "withParameters",
           "doc": "Create a Gaussian with specified mean and standard deviation\n\n# Arguments\n* `mean` - 8 coefficients for the mean multivector\n* `std_dev` - 8 coefficients for per-coefficient standard deviation",
-          "signature": "(mean: Float64Array, std_dev: Float64Array): WasmGaussianMultivector",
+          "signature": "(mean: Float64Array | number[], std_dev: Float64Array | number[]): WasmGaussianMultivector",
           "is_static": true
         }
       ],
@@ -2938,7 +2938,7 @@
         {
           "name": "fromCoefficients",
           "doc": null,
-          "signature": "(p: number, q: number, r: number, coefficients: Float64Array): WasmGenericMultivector",
+          "signature": "(p: number, q: number, r: number, coefficients: Float64Array | number[]): WasmGenericMultivector",
           "is_static": true
         },
         {
@@ -3044,7 +3044,7 @@
         {
           "name": "expectedValue",
           "doc": "Compute expected value at time t given initial value\n\nE[X(t)] = X(0) * exp(μt)",
-          "signature": "(initial: Float64Array, t: number): Float64Array",
+          "signature": "(initial: Float64Array | number[], t: number): Float64Array",
           "is_static": false
         },
         {
@@ -3062,13 +3062,13 @@
         {
           "name": "samplePath",
           "doc": "Sample a single path of the process\n\n# Arguments\n* `initial` - Initial multivector (8 coefficients)\n* `t_end` - End time\n* `num_steps` - Number of time steps\n\nReturns flat array: (num_steps + 1) * 9 values\nEach point is [time, coeff0, coeff1, ..., coeff7]",
-          "signature": "(initial: Float64Array, t_end: number, num_steps: number): Float64Array",
+          "signature": "(initial: Float64Array | number[], t_end: number, num_steps: number): Float64Array",
           "is_static": false
         },
         {
           "name": "variance",
           "doc": "Compute variance at time t given initial value\n\nVar(X(t)) = X(0)² * exp(2μt) * (exp(σ²t) - 1)",
-          "signature": "(initial: Float64Array, t: number): Float64Array",
+          "signature": "(initial: Float64Array | number[], t: number): Float64Array",
           "is_static": false
         }
       ],
@@ -3146,13 +3146,13 @@
         {
           "name": "setCell",
           "doc": "Set a cell value using 2D coordinates",
-          "signature": "(x: number, y: number, coefficients: Float64Array): void",
+          "signature": "(x: number, y: number, coefficients: Float64Array | number[]): void",
           "is_static": false
         },
         {
           "name": "setGrid",
           "doc": "Set the entire grid from a flattened array of coefficients",
-          "signature": "(grid: Float64Array): void",
+          "signature": "(grid: Float64Array | number[]): void",
           "is_static": false
         },
         {
@@ -3266,13 +3266,13 @@
         {
           "name": "addNode",
           "doc": "Add a node at the specified position (using flat coefficient array)",
-          "signature": "(coefficients: Float64Array): number",
+          "signature": "(coefficients: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "addNodeWithMetadata",
           "doc": "Add a node with metadata",
-          "signature": "(coefficients: Float64Array, label?: string | null): number",
+          "signature": "(coefficients: Float64Array | number[], label?: string | null): number",
           "is_static": false
         },
         {
@@ -3350,7 +3350,7 @@
         {
           "name": "simulateDiffusion",
           "doc": "Simulate information diffusion through the network",
-          "signature": "(initial_sources: Uint32Array, max_steps: number, diffusion_rate: number): WasmPropagationAnalysis",
+          "signature": "(initial_sources: Uint32Array | number[], max_steps: number, diffusion_rate: number): WasmPropagationAnalysis",
           "is_static": false
         },
         {
@@ -3399,13 +3399,13 @@
         {
           "name": "optimizeBatch",
           "doc": "Batch optimization with parallel processing simulation",
-          "signature": "(problems_data: Float64Array, problem_size: number, num_problems: number, max_iterations: number, tolerance: number): Promise<Float64Array>",
+          "signature": "(problems_data: Float64Array | number[], problem_size: number, num_problems: number, max_iterations: number, tolerance: number): Promise<Float64Array>",
           "is_static": false
         },
         {
           "name": "optimizeQuadraticGpu",
           "doc": "Optimize a quadratic function with GPU acceleration",
-          "signature": "(coefficients: Float64Array, initial_point: Float64Array, max_iterations: number, tolerance: number): Promise<WasmOptimizationResult>",
+          "signature": "(coefficients: Float64Array | number[], initial_point: Float64Array | number[], max_iterations: number, tolerance: number): Promise<WasmOptimizationResult>",
           "is_static": false
         }
       ],
@@ -3501,43 +3501,43 @@
         {
           "name": "distance",
           "doc": "Compute distance d(x, y) = ||x - y||",
-          "signature": "(x: Float64Array, y: Float64Array): number",
+          "signature": "(x: Float64Array | number[], y: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "fromCoefficients",
           "doc": "Create a multivector from coefficients\n\n# Arguments\n* `coefficients` - Array of 4 coefficients [scalar, e1, e2, e12]",
-          "signature": "(coefficients: Float64Array): Float64Array",
+          "signature": "(coefficients: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "innerProduct",
           "doc": "Compute inner product <x, y>",
-          "signature": "(x: Float64Array, y: Float64Array): number",
+          "signature": "(x: Float64Array | number[], y: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "isOrthogonal",
           "doc": "Check if two vectors are orthogonal",
-          "signature": "(x: Float64Array, y: Float64Array, tolerance: number): boolean",
+          "signature": "(x: Float64Array | number[], y: Float64Array | number[], tolerance: number): boolean",
           "is_static": false
         },
         {
           "name": "norm",
           "doc": "Compute the norm ||x||",
-          "signature": "(x: Float64Array): number",
+          "signature": "(x: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "normalize",
           "doc": "Normalize a vector to unit length",
-          "signature": "(x: Float64Array): Float64Array",
+          "signature": "(x: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "project",
           "doc": "Orthogonal projection of x onto y",
-          "signature": "(x: Float64Array, y: Float64Array): Float64Array",
+          "signature": "(x: Float64Array | number[], y: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
@@ -3585,19 +3585,19 @@
         {
           "name": "retrieve",
           "doc": "Retrieve a value by key\n\nReturns the retrieved coefficients as a Float64Array.",
-          "signature": "(key: Float64Array): Float64Array",
+          "signature": "(key: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "retrieveConfidence",
           "doc": "Get retrieval confidence for a key",
-          "signature": "(key: Float64Array): number",
+          "signature": "(key: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "store",
           "doc": "Store a key-value pair in memory (using flat coefficient arrays)\n\nEach array should have 256 coefficients for ProductCl3x32.",
-          "signature": "(key: Float64Array, value: Float64Array): void",
+          "signature": "(key: Float64Array | number[], value: Float64Array | number[]): void",
           "is_static": false
         },
         {
@@ -3682,7 +3682,7 @@
         {
           "name": "evaluateFitness",
           "doc": "Evaluate fitness of a candidate configuration",
-          "signature": "(candidate: Float64Array): number",
+          "signature": "(candidate: Float64Array | number[]): number",
           "is_static": false
         },
         {
@@ -3694,7 +3694,7 @@
         {
           "name": "setTarget",
           "doc": "Set the target pattern that we want to achieve",
-          "signature": "(target_grid: Float64Array): void",
+          "signature": "(target_grid: Float64Array | number[]): void",
           "is_static": false
         }
       ],
@@ -3718,13 +3718,13 @@
         {
           "name": "measureBox",
           "doc": "Compute the measure of a box (hyper-rectangle) with given side lengths",
-          "signature": "(sides: Float64Array): number",
+          "signature": "(sides: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "measureInterval",
           "doc": "Compute the measure of an interval [a, b]\n\nFor 1D: returns length (b - a)\nFor higher dimensions: returns the product of interval lengths",
-          "signature": "(lower: Float64Array, upper: Float64Array): number",
+          "signature": "(lower: Float64Array | number[], upper: Float64Array | number[]): number",
           "is_static": false
         }
       ],
@@ -3779,7 +3779,7 @@
       "name": "WasmMatrixOperator",
       "doc": "WASM wrapper for matrix operators on Hilbert spaces\n\nRepresents bounded linear operators as matrices.",
       "private_constructor": false,
-      "constructor_signature": "(entries: Float64Array);",
+      "constructor_signature": "(entries: Float64Array | number[]);",
       "methods": [
         {
           "name": "add",
@@ -3790,7 +3790,7 @@
         {
           "name": "apply",
           "doc": "Apply the operator to a vector: T(x)",
-          "signature": "(x: Float64Array): Float64Array",
+          "signature": "(x: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
@@ -3846,7 +3846,7 @@
         {
           "name": "diagonal",
           "doc": "Create a diagonal matrix from diagonal entries",
-          "signature": "(entries: Float64Array): WasmMatrixOperator",
+          "signature": "(entries: Float64Array | number[]): WasmMatrixOperator",
           "is_static": true
         },
         {
@@ -3941,7 +3941,7 @@
         {
           "name": "rankOf",
           "doc": "Compute the rank of a subset",
-          "signature": "(subset: Uint32Array): number",
+          "signature": "(subset: Uint32Array | number[]): number",
           "is_static": false
         }
       ],
@@ -3949,7 +3949,7 @@
         {
           "name": "schubertMatroid",
           "doc": "Create a Schubert matroid from a partition on Gr(k, n)",
-          "signature": "(partition: Uint32Array, k: number, n: number): WasmMatroid",
+          "signature": "(partition: Uint32Array | number[], k: number, n: number): WasmMatroid",
           "is_static": true
         },
         {
@@ -4070,19 +4070,19 @@
         {
           "name": "sampleCovariance",
           "doc": "Compute sample covariance matrix from batch samples\n\n# Arguments\n* `samples` - Flat array of samples (num_samples * 8)\n\n# Returns\n64 values for 8x8 covariance matrix (row-major)",
-          "signature": "(samples: Float64Array): Float64Array",
+          "signature": "(samples: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "sampleMean",
           "doc": "Compute sample mean from batch samples\n\n# Arguments\n* `samples` - Flat array of samples (num_samples * 8)\n\n# Returns\n8 coefficients for the mean",
-          "signature": "(samples: Float64Array): Float64Array",
+          "signature": "(samples: Float64Array | number[]): Float64Array",
           "is_static": true
         },
         {
           "name": "sampleVariance",
           "doc": "Compute sample variance from batch samples\n\n# Arguments\n* `samples` - Flat array of samples (num_samples * 8)\n\n# Returns\n8 values for per-coefficient variance",
-          "signature": "(samples: Float64Array): Float64Array",
+          "signature": "(samples: Float64Array | number[]): Float64Array",
           "is_static": true
         }
       ],
@@ -4123,7 +4123,7 @@
         {
           "name": "checkWeakMorseInequalities",
           "doc": "Check if weak Morse inequalities hold: c_k >= beta_k.",
-          "signature": "(betti: Uint32Array): boolean",
+          "signature": "(betti: Uint32Array | number[]): boolean",
           "is_static": false
         },
         {
@@ -4142,7 +4142,7 @@
       "name": "WasmMultiDualNumber",
       "doc": "WASM wrapper for multi-variable dual numbers",
       "private_constructor": false,
-      "constructor_signature": "(real: number, duals: Float64Array);",
+      "constructor_signature": "(real: number, duals: Float64Array | number[]);",
       "methods": [
         {
           "name": "add",
@@ -4215,7 +4215,7 @@
         {
           "name": "variables",
           "doc": "Create one basis-seeded variable per input coordinate.",
-          "signature": "(values: Float64Array): Array<any>",
+          "signature": "(values: Float64Array | number[]): Array<any>",
           "is_static": true
         }
       ],
@@ -4384,7 +4384,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector030",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector030",
           "is_static": true
         },
         {
@@ -4517,7 +4517,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector110",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector110",
           "is_static": true
         },
         {
@@ -4650,7 +4650,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector200",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector200",
           "is_static": true
         },
         {
@@ -4783,7 +4783,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector210",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector210",
           "is_static": true
         },
         {
@@ -4916,7 +4916,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector300",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector300",
           "is_static": true
         },
         {
@@ -5049,7 +5049,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector310",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector310",
           "is_static": true
         },
         {
@@ -5182,7 +5182,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector410",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector410",
           "is_static": true
         },
         {
@@ -5315,7 +5315,7 @@
         {
           "name": "fromCoefficients",
           "doc": "Create from a Float64Array of coefficients.",
-          "signature": "(coefficients: Float64Array): WasmMultivector500",
+          "signature": "(coefficients: Float64Array | number[]): WasmMultivector500",
           "is_static": true
         },
         {
@@ -5590,7 +5590,7 @@
         {
           "name": "bundle",
           "doc": "Bundle multiple fields (weighted superposition).\n\n# Arguments\n* `fields` - Flattened array of field data (scalars, bivectors, amplitudes for each field)\n* `weights` - Weights for each field\n* `field_count` - Number of fields",
-          "signature": "(fields: WasmOpticalRotorField[], weights: Float32Array): WasmOpticalRotorField",
+          "signature": "(fields: WasmOpticalRotorField[], weights: Float32Array | number[]): WasmOpticalRotorField",
           "is_static": false
         },
         {
@@ -5666,7 +5666,7 @@
       "name": "WasmOpticalRotorField",
       "doc": "WASM wrapper for OpticalRotorField.\n\nRepresents an optical wavefront as a grid of rotors in Cl(2,0).\nEach point has phase (rotor angle) and amplitude components.",
       "private_constructor": false,
-      "constructor_signature": "(phase: Float32Array, amplitude: Float32Array, width: number, height: number);",
+      "constructor_signature": "(phase: Float32Array | number[], amplitude: Float32Array | number[], width: number, height: number);",
       "methods": [
         {
           "name": "amplitudeAt",
@@ -5721,7 +5721,7 @@
         {
           "name": "fromPhase",
           "doc": "Create from phase array with uniform amplitude of 1.0.",
-          "signature": "(phase: Float32Array, width: number, height: number): WasmOpticalRotorField",
+          "signature": "(phase: Float32Array | number[], width: number, height: number): WasmOpticalRotorField",
           "is_static": true
         },
         {
@@ -5798,13 +5798,13 @@
         {
           "name": "dominates",
           "doc": "Check if a point dominates another in multi-objective optimization",
-          "signature": "(objectives1: Float64Array, objectives2: Float64Array): boolean",
+          "signature": "(objectives1: Float64Array | number[], objectives2: Float64Array | number[]): boolean",
           "is_static": true
         },
         {
           "name": "numericalGradient",
           "doc": "Compute numerical gradient",
-          "signature": "(coefficients: Float64Array, point: Float64Array, epsilon: number): Float64Array",
+          "signature": "(coefficients: Float64Array | number[], point: Float64Array | number[], epsilon: number): Float64Array",
           "is_static": true
         }
       ],
@@ -6044,25 +6044,25 @@
         {
           "name": "evaluate",
           "doc": "Evaluate density at point x with parameters\n\n# Arguments\n* `x` - Point to evaluate\n* `params` - Parameters (Gaussian: [μ, σ], Exponential: [λ], etc.)",
-          "signature": "(x: number, params: Float64Array): number",
+          "signature": "(x: number, params: Float64Array | number[]): number",
           "is_static": false
         },
         {
           "name": "fisherInformation",
           "doc": "Compute Fisher information matrix from data samples",
-          "signature": "(data: Float64Array, params: Float64Array): Float64Array",
+          "signature": "(data: Float64Array | number[], params: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "gradient",
           "doc": "Compute numerical gradient ∇_θ p(x|θ)",
-          "signature": "(x: number, params: Float64Array): Float64Array",
+          "signature": "(x: number, params: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "logDensity",
           "doc": "Compute log-density log p(x|θ)",
-          "signature": "(x: number, params: Float64Array): number",
+          "signature": "(x: number, params: Float64Array | number[]): number",
           "is_static": false
         }
       ],
@@ -6100,7 +6100,7 @@
       "name": "WasmPartition",
       "doc": "WASM wrapper for partitions used in Schubert calculus and LR coefficients",
       "private_constructor": false,
-      "constructor_signature": "(parts: Uint32Array);",
+      "constructor_signature": "(parts: Uint32Array | number[]);",
       "methods": [
         {
           "name": "contains",
@@ -6595,18 +6595,18 @@
       "name": "WasmResonator",
       "doc": "WASM wrapper for Resonator using ProductClifford algebra",
       "private_constructor": false,
-      "constructor_signature": "(codebook_flat: Float64Array);",
+      "constructor_signature": "(codebook_flat: Float64Array | number[]);",
       "methods": [
         {
           "name": "cleanup",
           "doc": "Clean up a noisy input to find the closest codebook item",
-          "signature": "(input: Float64Array): Float64Array",
+          "signature": "(input: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "cleanupWithInfo",
           "doc": "Get cleanup result with metadata",
-          "signature": "(input: Float64Array): any",
+          "signature": "(input: Float64Array | number[]): any",
           "is_static": false
         },
         {
@@ -6951,7 +6951,7 @@
       "name": "WasmSchubertClass",
       "doc": "WASM wrapper for Schubert classes on Grassmannians",
       "private_constructor": false,
-      "constructor_signature": "(partition: Uint32Array, k: number, n: number);",
+      "constructor_signature": "(partition: Uint32Array | number[], k: number, n: number);",
       "methods": [
         {
           "name": "getCodimension",
@@ -7048,7 +7048,7 @@
         {
           "name": "addComponent",
           "doc": "Add a component to the system",
-          "signature": "(type_name: string, position: Float64Array): number",
+          "signature": "(type_name: string, position: Float64Array | number[]): number",
           "is_static": false
         },
         {
@@ -7253,7 +7253,7 @@
         {
           "name": "optimizeQuadratic",
           "doc": "Optimize a simple quadratic function: minimize sum(c_i * x_i^2)",
-          "signature": "(coefficients: Float64Array, initial_point: Float64Array): WasmOptimizationResult",
+          "signature": "(coefficients: Float64Array | number[], initial_point: Float64Array | number[]): WasmOptimizationResult",
           "is_static": false
         }
       ],
@@ -7266,7 +7266,7 @@
       "name": "WasmSimplex",
       "doc": "A simplex (vertex, edge, triangle, tetrahedron, etc.) for WASM.",
       "private_constructor": false,
-      "constructor_signature": "(vertices: Uint32Array);",
+      "constructor_signature": "(vertices: Uint32Array | number[]);",
       "methods": [
         {
           "name": "boundaryFaces",
@@ -7325,7 +7325,7 @@
         {
           "name": "addSimplex",
           "doc": "Add a simplex (and all its faces) to the complex.",
-          "signature": "(vertices: Uint32Array): void",
+          "signature": "(vertices: Uint32Array | number[]): void",
           "is_static": false
         },
         {
@@ -7349,7 +7349,7 @@
         {
           "name": "contains",
           "doc": "Check if the complex contains a simplex with given vertices.",
-          "signature": "(vertices: Uint32Array): boolean",
+          "signature": "(vertices: Uint32Array | number[]): boolean",
           "is_static": false
         },
         {
@@ -7602,13 +7602,13 @@
         {
           "name": "apply",
           "doc": "Apply the reconstructed operator T = Σᵢ λᵢ Pᵢ to a vector",
-          "signature": "(x: Float64Array): Float64Array",
+          "signature": "(x: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "applyFunction",
           "doc": "Apply f(T) = Σᵢ f(λᵢ) Pᵢ to a vector using functional calculus\n\n# Arguments\n* `f` - JavaScript function to apply to eigenvalues\n* `x` - Input vector",
-          "signature": "(f: Function, x: Float64Array): Float64Array",
+          "signature": "(f: Function, x: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
@@ -7706,7 +7706,7 @@
       "name": "WasmStaticMultiDual2",
       "doc": null,
       "private_constructor": false,
-      "constructor_signature": "(value: number, gradient: Float64Array);",
+      "constructor_signature": "(value: number, gradient: Float64Array | number[]);",
       "methods": [
         {
           "name": "add",
@@ -7791,7 +7791,7 @@
         {
           "name": "variables",
           "doc": "Create one fixed-size variable per coordinate.",
-          "signature": "(values: Float64Array): Array<any>",
+          "signature": "(values: Float64Array | number[]): Array<any>",
           "is_static": true
         }
       ],
@@ -7803,7 +7803,7 @@
       "name": "WasmStaticMultiDual3",
       "doc": null,
       "private_constructor": false,
-      "constructor_signature": "(value: number, gradient: Float64Array);",
+      "constructor_signature": "(value: number, gradient: Float64Array | number[]);",
       "methods": [
         {
           "name": "add",
@@ -7888,7 +7888,7 @@
         {
           "name": "variables",
           "doc": "Create one fixed-size variable per coordinate.",
-          "signature": "(values: Float64Array): Array<any>",
+          "signature": "(values: Float64Array | number[]): Array<any>",
           "is_static": true
         }
       ],
@@ -7900,7 +7900,7 @@
       "name": "WasmStaticMultiDual4",
       "doc": null,
       "private_constructor": false,
-      "constructor_signature": "(value: number, gradient: Float64Array);",
+      "constructor_signature": "(value: number, gradient: Float64Array | number[]);",
       "methods": [
         {
           "name": "add",
@@ -7985,7 +7985,7 @@
         {
           "name": "variables",
           "doc": "Create one fixed-size variable per coordinate.",
-          "signature": "(values: Float64Array): Array<any>",
+          "signature": "(values: Float64Array | number[]): Array<any>",
           "is_static": true
         }
       ],
@@ -7997,7 +7997,7 @@
       "name": "WasmTorusWeights",
       "doc": "WASM wrapper for torus weights in equivariant localization",
       "private_constructor": false,
-      "constructor_signature": "(weights: Int32Array);",
+      "constructor_signature": "(weights: Int32Array | number[]);",
       "methods": [
         {
           "name": "getWeights",
@@ -8200,7 +8200,7 @@
         {
           "name": "tropicalAttention",
           "doc": "Perform tropical attention operation",
-          "signature": "(keys: Float64Array, values: Float64Array): Float64Array",
+          "signature": "(keys: Float64Array | number[], values: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
@@ -8220,13 +8220,13 @@
         {
           "name": "fromLogits",
           "doc": "Create from logits (array of log-probabilities)",
-          "signature": "(logits: Float64Array): WasmTropicalDualClifford",
+          "signature": "(logits: Float64Array | number[]): WasmTropicalDualClifford",
           "is_static": true
         },
         {
           "name": "fromProbabilities",
           "doc": "Create from probability distribution\n\nNote: Converts probabilities to log space for tropical representation",
-          "signature": "(probs: Float64Array): WasmTropicalDualClifford",
+          "signature": "(probs: Float64Array | number[]): WasmTropicalDualClifford",
           "is_static": true
         },
         {
@@ -8261,13 +8261,13 @@
         {
           "name": "infimum",
           "doc": "Compute tropical infimum (minimum) of function over sample points\n\nReturns the minimum value and the point where it occurs",
-          "signature": "(f: Function, points: Float64Array): Float64Array",
+          "signature": "(f: Function, points: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
           "name": "supremum",
           "doc": "Compute tropical supremum (maximum) of function over sample points\n\nReturns the maximum value and the point where it occurs",
-          "signature": "(f: Function, points: Float64Array): Float64Array",
+          "signature": "(f: Function, points: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
@@ -8317,7 +8317,7 @@
         {
           "name": "fromWeights",
           "doc": "Create tropical network from weight matrix",
-          "signature": "(weights: Float64Array, size: number): WasmTropicalNetwork",
+          "signature": "(weights: Float64Array | number[], size: number): WasmTropicalNetwork",
           "is_static": true
         }
       ],
@@ -8489,7 +8489,7 @@
       "name": "WasmTropicalPolynomial",
       "doc": "WASM wrapper for TropicalPolynomial - polynomial operations in tropical algebra",
       "private_constructor": false,
-      "constructor_signature": "(coefficients: Float64Array);",
+      "constructor_signature": "(coefficients: Float64Array | number[]);",
       "methods": [
         {
           "name": "coefficients_count",
@@ -8524,13 +8524,13 @@
         {
           "name": "decode",
           "doc": "Decode the most likely state sequence for given observations\n\nReturns an object with `states` (array of state indices) and `probability` (log probability)",
-          "signature": "(observations: Uint32Array): any",
+          "signature": "(observations: Uint32Array | number[]): any",
           "is_static": false
         },
         {
           "name": "forward_probabilities",
           "doc": "Compute forward probabilities for all states",
-          "signature": "(observations: Uint32Array): Array<any>",
+          "signature": "(observations: Uint32Array | number[]): Array<any>",
           "is_static": false
         }
       ],
@@ -8543,7 +8543,7 @@
       "name": "WasmUncertainMultivector",
       "doc": "WASM wrapper for uncertain multivector (mean + covariance)\n\nRepresents a multivector with associated uncertainty, useful for\nerror propagation through geometric operations.",
       "private_constructor": false,
-      "constructor_signature": "(mean: Float64Array, variances: Float64Array);",
+      "constructor_signature": "(mean: Float64Array | number[], variances: Float64Array | number[]);",
       "methods": [
         {
           "name": "add",
@@ -8592,13 +8592,13 @@
         {
           "name": "deterministic",
           "doc": "Create a deterministic (zero variance) uncertain multivector",
-          "signature": "(value: Float64Array): WasmUncertainMultivector",
+          "signature": "(value: Float64Array | number[]): WasmUncertainMultivector",
           "is_static": true
         },
         {
           "name": "withCovariance",
           "doc": "Create with full covariance matrix\n\n# Arguments\n* `mean` - 8 coefficients for the mean\n* `covariance` - 64 values for 8x8 covariance matrix (row-major)",
-          "signature": "(mean: Float64Array, covariance: Float64Array): WasmUncertainMultivector",
+          "signature": "(mean: Float64Array | number[], covariance: Float64Array | number[]): WasmUncertainMultivector",
           "is_static": true
         }
       ],
@@ -8639,7 +8639,7 @@
         {
           "name": "logProb",
           "doc": "Compute log probability of a multivector\n\nReturns log(1/volume) if inside bounds, error otherwise",
-          "signature": "(coefficients: Float64Array): number",
+          "signature": "(coefficients: Float64Array | number[]): number",
           "is_static": false
         },
         {
@@ -8665,7 +8665,7 @@
         {
           "name": "withBounds",
           "doc": "Create a uniform distribution with specified bounds\n\n# Arguments\n* `lower` - 8 coefficients for lower bounds\n* `upper` - 8 coefficients for upper bounds",
-          "signature": "(lower: Float64Array, upper: Float64Array): WasmUniformMultivector",
+          "signature": "(lower: Float64Array | number[], upper: Float64Array | number[]): WasmUniformMultivector",
           "is_static": true
         }
       ],
@@ -8806,7 +8806,7 @@
     {
       "name": "findCriticalPoints2D",
       "doc": "Find critical points of a 2D function on a grid.\n\n- `resolution`: Grid resolution in each dimension\n- `x_min`, `x_max`, `y_min`, `y_max`: Bounding box\n- `tolerance`: Gradient norm threshold for critical points\n- `evaluator`: Function that takes (x, y) and returns f(x, y)",
-      "signature": "findCriticalPoints2D(resolution: number, x_min: number, x_max: number, y_min: number, y_max: number, tolerance: number, values: Float64Array): WasmCriticalPoint[];"
+      "signature": "findCriticalPoints2D(resolution: number, x_min: number, x_max: number, y_min: number, y_max: number, tolerance: number, values: Float64Array | number[]): WasmCriticalPoint[];"
     },
     {
       "name": "flynnExpectedValueObligation",
@@ -8876,12 +8876,12 @@
     {
       "name": "inverseIteration",
       "doc": "Inverse iteration for computing eigenvalue near a shift\n\n# Arguments\n* `matrix` - The matrix operator\n* `shift` - Value near the desired eigenvalue\n* `initial` - Initial guess (optional)\n* `max_iterations` - Maximum iterations\n* `tolerance` - Convergence tolerance\n\n# Returns\n[eigenvalue, eigenvector...] flattened array",
-      "signature": "inverseIteration(matrix: WasmMatrixOperator, shift: number, initial: Float64Array | null | undefined, max_iterations: number, tolerance: number): Float64Array;"
+      "signature": "inverseIteration(matrix: WasmMatrixOperator, shift: number, initial: Float64Array | number[] | null | undefined, max_iterations: number, tolerance: number): Float64Array;"
     },
     {
       "name": "klDivergence",
       "doc": "Compute KL divergence D_KL(P||Q) between two distributions\n\n# Arguments\n* `p_density` - First distribution\n* `q_density` - Second distribution\n* `p_params` - Parameters for P\n* `q_params` - Parameters for Q\n* `sample_points` - Points to evaluate at",
-      "signature": "klDivergence(p_density: WasmParametricDensity, q_density: WasmParametricDensity, p_params: Float64Array, q_params: Float64Array, sample_points: Float64Array): number;"
+      "signature": "klDivergence(p_density: WasmParametricDensity, q_density: WasmParametricDensity, p_params: Float64Array | number[], q_params: Float64Array | number[], sample_points: Float64Array | number[]): number;"
     },
     {
       "name": "light_deflection_angle",
@@ -8906,12 +8906,12 @@
     {
       "name": "powerMethod",
       "doc": "Power method for computing dominant eigenvalue\n\n# Arguments\n* `matrix` - The matrix operator\n* `initial` - Initial guess (optional, uses random if not provided)\n* `max_iterations` - Maximum iterations\n* `tolerance` - Convergence tolerance\n\n# Returns\n[eigenvalue, eigenvector...] flattened array",
-      "signature": "powerMethod(matrix: WasmMatrixOperator, initial: Float64Array | null | undefined, max_iterations: number, tolerance: number): Float64Array;"
+      "signature": "powerMethod(matrix: WasmMatrixOperator, initial: Float64Array | number[] | null | undefined, max_iterations: number, tolerance: number): Float64Array;"
     },
     {
       "name": "ripsFromDistances",
       "doc": "Create a Vietoris-Rips filtration from pairwise distances.\n\n- `num_points`: Number of points\n- `max_dim`: Maximum simplex dimension to include\n- `distances`: Flat array of pairwise distances (upper triangular, row-major)",
-      "signature": "ripsFromDistances(num_points: number, max_dim: number, distances: Float64Array): WasmFiltration;"
+      "signature": "ripsFromDistances(num_points: number, max_dim: number, distances: Float64Array | number[]): WasmFiltration;"
     },
     {
       "name": "schubertProduct",

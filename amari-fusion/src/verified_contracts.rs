@@ -202,11 +202,7 @@ impl<T: Float, const DIM: usize> VerifiedContractTropicalDualClifford<T, DIM> {
 
         // Basic geometric algebra properties
         let norm = clifford.coefficient_norm();
-        if norm.is_nan() || norm.is_infinite() || norm < 0.0 {
-            return false;
-        }
-
-        true
+        !(norm.is_nan() || norm.is_infinite() || norm < 0.0)
     }
 
     /// Contract verification for cross-algebraic consistency

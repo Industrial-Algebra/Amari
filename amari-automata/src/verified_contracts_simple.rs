@@ -201,11 +201,7 @@ impl<const P: usize, const Q: usize, const R: usize> VerifiedContractCayleyTable
 
         // Allow for floating point precision
         let scalar_diff = (left_assoc.scalar_part() - right_assoc.scalar_part()).abs();
-        if scalar_diff > 1e-10 {
-            return false;
-        }
-
-        true
+        scalar_diff <= 1e-10
     }
 
     /// Verify computational correctness of Cayley table operations
@@ -222,11 +218,7 @@ impl<const P: usize, const Q: usize, const R: usize> VerifiedContractCayleyTable
 
         // Verify geometric product is defined
         let product = test_mv.geometric_product(&test_mv);
-        if !product.coefficient_norm().is_finite() {
-            return false;
-        }
-
-        true
+        product.coefficient_norm().is_finite()
     }
 }
 
