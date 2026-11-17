@@ -240,6 +240,34 @@ impl RankerWeights {
         self.digest
     }
 
+    /// Every layer's `([in, out] weight_t, bias, in_width, out_width)`, head
+    /// last — the trainer's (Task 42) view of the parameters it descends.
+    ///
+    /// Crate-private on purpose: the public seam is
+    /// [`Self::from_tensors`], and a caller never needs the transposed
+    /// layout. The trainer copies these into its own buffers once per run.
+    pub(crate) fn training_layers(&self) -> Vec<(&[f32], &[f32], usize, usize)> {
+        let mut layers: Vec<(&[f32], &[f32], usize, usize)> = self
+            .layers
+            .iter()
+            .map(|layer| {
+                (
+                    layer.weight_t.as_slice(),
+                    layer.bias.as_slice(),
+                    layer.in_width,
+                    layer.out_width,
+                )
+            })
+            .collect();
+        layers.push((
+            self.head.weight_t.as_slice(),
+            self.head.bias.as_slice(),
+            self.head.in_width,
+            self.head.out_width,
+        ));
+        layers
+    }
+
     /// The `(input_width, output_width)` pair of every layer, head last.
     fn shape_signature(&self) -> Vec<(usize, usize)> {
         let mut signature: Vec<(usize, usize)> = self
@@ -508,12 +536,15 @@ impl MlpRanker {
 /// `forward` maps one frozen feature vector (length
 /// [`CANDIDATE_FEATURE_WIDTH`]) to its one-element score vector, and `loss`
 /// is the squared error of two score vectors — the differentiable surrogate
-/// Task 42's pairwise trainer consumes. `Gradient` is the unit placeholder
-/// because this task ships the forward pass only; backpropagation belongs to
-/// the trainer.
+/// a caller may use. `Gradient` is the trainer's hand-derived pairwise
+/// backprop type ([`crate::neural::RankerGradients`], Task 42): the same
+/// `Linear -> ReLU -> Linear -> scalar` graph, differentiated by hand with
+/// the forward pass's accumulation order. The training *loop* lives in
+/// [`crate::neural::train`]; this impl only names the types the trait asks
+/// for.
 impl DifferentiableRule<Vec<f32>> for MlpRanker {
     type Parameters = RankerWeights;
-    type Gradient = ();
+    type Gradient = crate::neural::RankerGradients;
     type Error = NeuralError;
 
     fn forward(&self, state: &Vec<f32>) -> Result<Vec<f32>, NeuralError> {

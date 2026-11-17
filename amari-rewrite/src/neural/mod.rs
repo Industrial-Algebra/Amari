@@ -64,17 +64,34 @@
 //! non-finite score, because a bound argued for only in a comment is not a
 //! contract.
 //!
+//! ## Training (Task 42)
+//!
+//! [`train`] descends [`MlpRanker`]'s parameters over Task 41 [`Dataset`]
+//! examples with a pairwise hinge and AdamW. The training surface is
+//! deliberately separate from the scoring surface: the ranker's forward pass
+//! is untouched, and [`train`] returns a *new* validated [`RankerWeights`]
+//! that a caller binds with [`MlpRanker::new`]. Training is bounded and
+//! deterministic by construction — seeded initialization, a fixed example
+//! order, a step budget, and no wall clock (see [`train`]'s module):
+//! [`TrainingOutcome::Completed`] is convergence evidence,
+//! [`TrainingOutcome::Partial`] is a budget-truncated snapshot and is marked
+//! non-replayable.
+//!
 //! ## Errors
 //!
-//! [`NeuralError`] is the only error type the module exposes. Backend
-//! failures are replaced by a static, stage-named message: no
+//! [`NeuralError`] is the only error type the *scoring* surface exposes.
+//! Backend failures are replaced by a static, stage-named message: no
 //! `borsalino_tensor::TensorError`, no shape dump, and no backend op name
-//! ever reaches a caller.
+//! ever reaches a caller. The training surface adds its own typed,
+//! sanitized [`TrainingError`] (configuration, ceilings, non-finite values
+//! with their step index); it computes in this crate, so it has no backend
+//! error to translate.
 
 mod config;
 mod data;
 mod encode;
 mod model;
+mod train;
 
 /// Byte cap on caller-supplied text quoted into a diagnostic.
 ///
@@ -108,6 +125,13 @@ pub use encode::{
     CANDIDATE_FEATURE_WIDTH,
 };
 pub use model::{MlpRanker, RankedCandidate, RankerWeights, MAX_RANKED_CANDIDATES};
+pub use train::{
+    corpus_from_dataset, example_order, pairwise_hinge, seeded_weights, train, train_from_seed,
+    AdamWState, ExampleOrder, HingeEvaluation, LayerGradients, OptimizerStateEntry, PartialReason,
+    RankerGradients, TrainConfig, TrainingError, TrainingExample, TrainingOutcome,
+    ADAMW_MOMENT_SUFFIX, ADAMW_NAMING_STATUS, ADAMW_VELOCITY_SUFFIX, DEFAULT_MARGIN, INIT_SCALE,
+    ORDER_STREAM_SALT,
+};
 
 use thiserror::Error;
 
