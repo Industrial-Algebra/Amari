@@ -259,7 +259,7 @@
       "alias": "wasm-bindgen",
       "package": "wasm-bindgen",
       "kind": "normal",
-      "version": "0.2",
+      "version": "=0.2.130",
       "optional": false,
       "default_features": true
     },
@@ -288,7 +288,7 @@
       "alias": "wasm-bindgen-test",
       "package": "wasm-bindgen-test",
       "kind": "development",
-      "version": "0.3",
+      "version": "=0.3.80",
       "optional": false,
       "default_features": true
     }
