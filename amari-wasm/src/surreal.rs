@@ -27,11 +27,13 @@ pub struct WasmDyadic {
 #[wasm_bindgen]
 impl WasmDyadic {
     /// Create and normalize a dyadic rational `numerator / 2^exponent`.
+    ///
+    /// Errors when `exponent` exceeds the representable bound.
     #[wasm_bindgen(constructor)]
-    pub fn new(numerator: i32, exponent: u32) -> Self {
-        Self {
-            inner: Dyadic::new(numerator, exponent),
-        }
+    pub fn new(numerator: i32, exponent: u32) -> Result<WasmDyadic, JsValue> {
+        Ok(Self {
+            inner: Dyadic::try_new(numerator, exponent).map_err(surreal_error)?,
+        })
     }
 
     /// Create a dyadic integer.
@@ -110,10 +112,13 @@ impl WasmDyadic {
     }
 
     /// Multiply two dyadics exactly.
-    pub fn mul(&self, rhs: &WasmDyadic) -> WasmDyadic {
-        WasmDyadic {
-            inner: self.inner.clone() * rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result exponent exceeds the representable bound
+    /// (e.g. squaring a bound-maximum dyadic).
+    pub fn mul(&self, rhs: &WasmDyadic) -> Result<WasmDyadic, JsValue> {
+        Ok(WasmDyadic {
+            inner: self.inner.checked_mul(&rhs.inner).map_err(surreal_error)?,
+        })
     }
 
     /// Negate the dyadic.
@@ -271,10 +276,17 @@ impl WasmShortSurreal {
     }
 
     /// Multiply two short surreals exactly.
-    pub fn mul(&self, rhs: &WasmShortSurreal) -> WasmShortSurreal {
-        WasmShortSurreal {
-            inner: self.inner.clone() * rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result exponent exceeds the representable bound.
+    pub fn mul(&self, rhs: &WasmShortSurreal) -> Result<WasmShortSurreal, JsValue> {
+        Ok(WasmShortSurreal {
+            inner: self
+                .inner
+                .to_dyadic()
+                .checked_mul(&rhs.inner.to_dyadic())
+                .map(ShortSurreal::from_dyadic)
+                .map_err(surreal_error)?,
+        })
     }
 
     /// Negate the value.
@@ -556,10 +568,14 @@ impl WasmExperimentalEpsilonRational {
     ///
     /// WASM boundary note: `exponent` is currently exposed as a 32-bit signed
     /// integer, matching the experimental Rust exponent representation.
-    pub fn monomial(coeff: &WasmRationalSurreal, exponent: i32) -> Self {
-        Self {
-            inner: EpsilonRational::monomial(coeff.inner_ref().clone(), exponent),
-        }
+    /// A monomial rational function `coeff · ε^exp / 1`.
+    ///
+    /// Errors when `|exponent|` exceeds the representable bound.
+    pub fn monomial(coeff: &WasmRationalSurreal, exponent: i32) -> Result<Self, JsValue> {
+        Ok(Self {
+            inner: EpsilonRational::try_monomial(coeff.inner_ref().clone(), exponent)
+                .map_err(surreal_error)?,
+        })
     }
 
     /// Format the epsilon rational.
@@ -568,24 +584,40 @@ impl WasmExperimentalEpsilonRational {
     }
 
     /// Add two epsilon rationals.
-    pub fn add(&self, rhs: &WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational {
-        WasmExperimentalEpsilonRational {
-            inner: self.inner.clone() + rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result leaves the representable bound (checked
+    /// arithmetic — never a trap).
+    pub fn add(
+        &self,
+        rhs: &WasmExperimentalEpsilonRational,
+    ) -> Result<WasmExperimentalEpsilonRational, JsValue> {
+        Ok(WasmExperimentalEpsilonRational {
+            inner: self.inner.checked_add(&rhs.inner).map_err(surreal_error)?,
+        })
     }
 
     /// Subtract two epsilon rationals.
-    pub fn sub(&self, rhs: &WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational {
-        WasmExperimentalEpsilonRational {
-            inner: self.inner.clone() - rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result leaves the representable bound.
+    pub fn sub(
+        &self,
+        rhs: &WasmExperimentalEpsilonRational,
+    ) -> Result<WasmExperimentalEpsilonRational, JsValue> {
+        Ok(WasmExperimentalEpsilonRational {
+            inner: self.inner.checked_sub(&rhs.inner).map_err(surreal_error)?,
+        })
     }
 
     /// Multiply two epsilon rationals.
-    pub fn mul(&self, rhs: &WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational {
-        WasmExperimentalEpsilonRational {
-            inner: self.inner.clone() * rhs.inner.clone(),
-        }
+    ///
+    /// Errors when the result leaves the representable bound.
+    pub fn mul(
+        &self,
+        rhs: &WasmExperimentalEpsilonRational,
+    ) -> Result<WasmExperimentalEpsilonRational, JsValue> {
+        Ok(WasmExperimentalEpsilonRational {
+            inner: self.inner.checked_mul(&rhs.inner).map_err(surreal_error)?,
+        })
     }
 
     /// Negate the value.
@@ -642,8 +674,8 @@ mod tests {
 
     #[test]
     fn wasm_dyadic_and_short_surreal_arithmetic_are_exact() {
-        let half = WasmDyadic::new(1, 1);
-        let quarter = WasmDyadic::new(1, 2);
+        let half = WasmDyadic::new(1, 1).unwrap();
+        let quarter = WasmDyadic::new(1, 2).unwrap();
         let three_quarters = half.add(&quarter);
 
         assert_eq!(three_quarters.numerator_string(), "3");
@@ -781,7 +813,7 @@ mod tests {
     #[test]
     fn epsilon_squared_lt_epsilon() {
         let eps = WasmExperimentalEpsilonRational::epsilon();
-        let eps_sq = eps.mul(&eps);
+        let eps_sq = eps.mul(&eps).unwrap();
         // ε² < ε (since ε → 0⁺)
         assert_eq!(eps_sq.compare(&eps), "less");
     }
@@ -804,11 +836,11 @@ mod tests {
         let zero = WasmExperimentalEpsilonRational::zero();
 
         // 1 + ε > 1 (since ε > 0)
-        let sum = one.add(&eps);
+        let sum = one.add(&eps).unwrap();
         assert_eq!(sum.compare(&one), "greater");
 
         // 1 - ε < 1
-        let diff = one.sub(&eps);
+        let diff = one.sub(&eps).unwrap();
         assert_eq!(diff.compare(&one), "less");
         // 1 - ε > 0
         assert_eq!(diff.compare(&zero), "greater");
@@ -818,7 +850,7 @@ mod tests {
         assert_eq!(neg.compare(&zero), "less");
 
         // (1 + ε) + (-ε) == 1
-        let recomposed = sum.add(&neg);
+        let recomposed = sum.add(&neg).unwrap();
         assert_eq!(recomposed.compare(&one), "equal");
     }
 
@@ -859,5 +891,32 @@ mod tests {
         let one = WasmExperimentalEpsilonRational::one();
         let zero = WasmExperimentalEpsilonRational::zero();
         assert!(one.checked_div(&zero).is_err());
+    }
+}
+
+#[cfg(test)]
+mod bound_tests {
+    use super::*;
+
+    #[test]
+    fn exponent_bound_reaches_js_as_error_not_trap() {
+        // Constructor above the bound: JS-visible error, not a panic.
+        assert!(WasmDyadic::new(1, amari_surreal::dyadic::MAX_EXPONENT + 1).is_err());
+        assert!(WasmDyadic::new(1, amari_surreal::dyadic::MAX_EXPONENT).is_ok());
+        // Squaring a bound-max dyadic: error, not a trap.
+        let at_bound = WasmDyadic::new(1, amari_surreal::dyadic::MAX_EXPONENT).unwrap();
+        assert!(at_bound.mul(&at_bound).is_err());
+        let as_short = WasmShortSurreal::from_dyadic(&at_bound);
+        assert!(as_short.mul(&as_short).is_err());
+        // Small multiplications still succeed.
+        assert!(half_times_half_is_quarter());
+    }
+
+    fn half_times_half_is_quarter() -> bool {
+        let half = WasmDyadic::new(1, 1).unwrap();
+        match half.mul(&half) {
+            Ok(q) => q.format() == "1/4",
+            Err(_) => false,
+        }
     }
 }

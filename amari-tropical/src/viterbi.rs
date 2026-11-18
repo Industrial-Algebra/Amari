@@ -74,8 +74,8 @@ impl<T: Float> TropicalViterbi<T> {
         let mut best_final_prob = TropicalNumber::zero();
         let mut best_final_state = 0;
 
-        for state in 0..n_states {
-            let prob = trellis.data[state][n_obs - 1];
+        for (state, row) in trellis.data.iter().enumerate().take(n_states) {
+            let prob = row[n_obs - 1];
             if prob.value() > best_final_prob.value() {
                 best_final_prob = prob;
                 best_final_state = state;
@@ -281,9 +281,9 @@ mod tests {
         assert_eq!(forward.cols, 2);
 
         // All probabilities should be valid (not zero/neg-inf)
-        for i in 0..2 {
-            for j in 0..2 {
-                assert!(!forward.data[i][j].is_zero());
+        for row in &forward.data {
+            for value in row {
+                assert!(!value.is_zero());
             }
         }
     }
