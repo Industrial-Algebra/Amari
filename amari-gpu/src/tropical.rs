@@ -386,12 +386,11 @@ mod redesign_pending {
             let gpu_numbers: &[GpuTropicalNumber] = bytemuck::cast_slice(data_slice);
 
             let mut matrix = TropicalMatrix::new(rows, cols);
-            for i in 0..rows {
-                for j in 0..cols {
+            for (i, row) in matrix.data.iter_mut().enumerate().take(rows) {
+                for (j, cell) in row.iter_mut().enumerate().take(cols) {
                     let idx = i * cols + j;
                     if idx < gpu_numbers.len() {
-                        matrix.data[i][j] =
-                            TropicalNumber::new(<T as From<f32>>::from(gpu_numbers[idx].value));
+                        *cell = TropicalNumber::new(<T as From<f32>>::from(gpu_numbers[idx].value));
                     }
                 }
             }
@@ -769,11 +768,10 @@ impl TropicalGpuOps {
             .await?;
 
         let mut result = TropicalMatrix::new(a.rows, b.cols);
-        for i in 0..a.rows {
-            for j in 0..b.cols {
+        for (i, row) in result.data.iter_mut().enumerate().take(a.rows) {
+            for (j, cell) in row.iter_mut().enumerate().take(b.cols) {
                 let idx = i * b.cols + j;
-                result.data[i][j] =
-                    TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
+                *cell = TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
             }
         }
 
@@ -901,11 +899,10 @@ impl TropicalGpuOps {
             .await?;
 
         let mut result = TropicalMatrix::new(logits.rows, logits.cols);
-        for i in 0..logits.rows {
-            for j in 0..logits.cols {
+        for (i, row) in result.data.iter_mut().enumerate().take(logits.rows) {
+            for (j, cell) in row.iter_mut().enumerate().take(logits.cols) {
                 let idx = i * logits.cols + j;
-                result.data[i][j] =
-                    TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
+                *cell = TropicalNumber::new(<T as From<f32>>::from(result_data[idx].value));
             }
         }
 
@@ -1122,12 +1119,12 @@ mod tests {
     fn make_benchmark_matrix(rows: usize, cols: usize, seed: u32) -> TropicalMatrix<f32> {
         let mut matrix = TropicalMatrix::new(rows, cols);
         let mut state = seed;
-        for i in 0..rows {
-            for j in 0..cols {
+        for row in matrix.data.iter_mut().take(rows) {
+            for cell in row.iter_mut().take(cols) {
                 state = state.wrapping_mul(1664525).wrapping_add(1013904223);
                 let normalized = ((state >> 8) as f32) / ((u32::MAX >> 8) as f32);
                 let value = normalized * 16.0 - 8.0;
-                matrix.data[i][j] = TropicalNumber::new(value);
+                *cell = TropicalNumber::new(value);
             }
         }
         matrix
@@ -1199,16 +1196,16 @@ mod tests {
         let mut scores = TropicalMatrix::new(logits.rows, logits.cols);
         for i in 0..logits.rows {
             let mut row_max = f32::NEG_INFINITY;
-            for j in 0..logits.cols {
-                row_max = row_max.max(logits.data[i][j].value());
+            for value in logits.data[i].iter().take(logits.cols) {
+                row_max = row_max.max(value.value());
             }
-            for j in 0..logits.cols {
+            for (j, score_cell) in scores.data[i].iter_mut().enumerate().take(logits.cols) {
                 let score = if logits.data[i][j].value() == row_max {
                     1.0
                 } else {
                     0.0
                 };
-                scores.data[i][j] = TropicalNumber::new(score);
+                *score_cell = TropicalNumber::new(score);
             }
         }
         scores
