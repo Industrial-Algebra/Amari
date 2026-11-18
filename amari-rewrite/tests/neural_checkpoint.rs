@@ -19,6 +19,10 @@
 //! - **optimizer all-or-nothing** — a file missing one moment is rejected;
 //! - **resume-training determinism** — `train N, save, load, train M` equals
 //!   `train N+M`, artifacts included;
+//! - **epoch-boundary admission** — a mid-epoch state cannot become a
+//!   checkpoint (construction and load both refuse it, naming the visit count
+//!   and the corpus length), and a resume corpus of another length is
+//!   refused; the raw-seam divergence that motivates the gate is pinned too;
 //! - **path sanitization** — no rejection quotes a path or the file's text.
 //!
 //! Fixtures are frozen [`FeatureVector`]s: the encode path is Task 40's
@@ -38,7 +42,7 @@ use amari_rewrite::neural::{
     ADAMW_VELOCITY_SUFFIX, CANDIDATE_FEATURE_WIDTH, MAX_CHECKPOINT_STEPS,
     MAX_OPTIMIZER_CHECKPOINT_BYTES, MAX_WEIGHTS_CHECKPOINT_BYTES, META_CHECKPOINT_VERSION,
     META_FEATURE_SCHEMA_HASH, META_FEATURE_SCHEMA_VERSION, META_RANKER_SPEC_HASH,
-    META_TRAINING_STEP, META_WEIGHTS_HASH,
+    META_TRAINING_EXAMPLES, META_TRAINING_STEP, META_TRAINING_STEPS, META_WEIGHTS_HASH,
 };
 use katakuri::checkpoint::TrustPolicy;
 
@@ -89,6 +93,27 @@ fn contradictory_corpus() -> Vec<TrainingExample> {
     vec![example(&[(0, 1.0)], &[]), example(&[], &[(0, 1.0)])]
 }
 
+/// A corpus whose update **depends on which example is visited**: each pair
+/// prefers a different lane, so the gradient differs per example. This is the
+/// fixture that makes an order error observable (the symmetric corpora above
+/// hide it).
+fn lane_corpus() -> Vec<TrainingExample> {
+    vec![
+        example(&[(0, 1.0)], &[(0, 0.0)]),
+        example(&[(1, 1.0)], &[(1, 0.0)]),
+        example(&[(2, 1.0)], &[(2, 0.0)]),
+    ]
+}
+
+/// Length of [`separable_corpus`] (examples per epoch).
+const SEPARABLE_EXAMPLES: u64 = 3;
+
+/// Length of [`contradictory_corpus`] (examples per epoch).
+const CONTRADICTORY_EXAMPLES: u64 = 2;
+
+/// Length of [`lane_corpus`] (examples per epoch).
+const LANE_EXAMPLES: u64 = 3;
+
 fn train_config(max_steps: usize) -> TrainConfig {
     TrainConfig::new(
         0.05,
@@ -108,13 +133,13 @@ fn run(config: &RankerConfig, steps: usize, corpus: &[TrainingExample]) -> Train
     train_from_seed(config, &train_config(steps), corpus).expect("deterministic training run")
 }
 
-fn checkpoint_of(config: &RankerConfig, outcome: &TrainingOutcome) -> RankerCheckpoint {
-    RankerCheckpoint::new(
-        config.clone(),
-        outcome.parameters().clone(),
-        outcome.optimizer_state().clone(),
-    )
-    .expect("consistent checkpoint")
+fn checkpoint_of(
+    config: &RankerConfig,
+    outcome: &TrainingOutcome,
+    examples: u64,
+) -> RankerCheckpoint {
+    RankerCheckpoint::from_outcome(config.clone(), outcome, examples)
+        .expect("consistent checkpoint")
 }
 
 /// Every optimizer entry's bits: bit equality rather than `f32` equality.
@@ -173,6 +198,7 @@ fn load(
     dir: &TempDir,
     expected: &RankerConfig,
     resume: &TrainConfig,
+    examples: u64,
 ) -> Result<RankerCheckpoint, CheckpointError> {
     RankerCheckpoint::load(
         &dir.weights(),
@@ -180,15 +206,18 @@ fn load(
         &checkpoint_policy(),
         expected,
         resume,
+        examples,
     )
 }
 
 /// Save the standard fixture, then load it.
 fn saved_fixture(dir: &TempDir, config: &RankerConfig) -> (TrainingOutcome, TrainConfig) {
     let corpus = separable_corpus();
-    let settings = train_config(16);
+    // 15 visits is a whole number of epochs over 3 examples, so the fixture
+    // is always saveable (a converged run stops on an epoch boundary too).
+    let settings = train_config(15);
     let outcome = train_from_seed(config, &settings, &corpus).expect("training run");
-    save(dir, &checkpoint_of(config, &outcome));
+    save(dir, &checkpoint_of(config, &outcome, SEPARABLE_EXAMPLES));
     (outcome, settings)
 }
 
@@ -358,13 +387,14 @@ fn corrupt_first_tensor_to_nan(path: &Path) {
 fn save_then_load_round_trips_weights_optimizer_state_and_scores() {
     let config = config(&[3]);
     let corpus = separable_corpus();
-    let settings = train_config(64);
+    // 63 visits is a whole number of epochs over 3 examples.
+    let settings = train_config(63);
     let outcome = train_from_seed(&config, &settings, &corpus).expect("training run");
-    let checkpoint = checkpoint_of(&config, &outcome);
+    let checkpoint = checkpoint_of(&config, &outcome, SEPARABLE_EXAMPLES);
     let dir = TempDir::new("roundtrip");
     save(&dir, &checkpoint);
 
-    let loaded = load(&dir, &config, &settings).expect("valid checkpoint");
+    let loaded = load(&dir, &config, &settings, SEPARABLE_EXAMPLES).expect("valid checkpoint");
     assert_eq!(
         loaded.training_step(),
         outcome.optimizer_state().step() as u64,
@@ -457,6 +487,16 @@ fn artifacts_carry_the_binding_metadata() {
         Some(step.to_string().as_str()),
         "the training step is recorded"
     );
+    assert_eq!(
+        metadata[META_TRAINING_STEPS].as_str(),
+        Some(outcome.steps_run().to_string().as_str()),
+        "the run's visit count is recorded: it is the epoch position"
+    );
+    assert_eq!(
+        metadata[META_TRAINING_EXAMPLES].as_str(),
+        Some(SEPARABLE_EXAMPLES.to_string().as_str()),
+        "the epoch length is recorded: it is part of the checkpoint's identity"
+    );
 
     let optimizer = metadata_json(&dir.optimizer());
     assert_eq!(optimizer["optimizer_state_version"].as_str(), Some("1"));
@@ -483,7 +523,7 @@ fn artifacts_are_byte_stable_and_canonically_ordered() {
     let first = TempDir::new("stable-a");
     let second = TempDir::new("stable-b");
     let (outcome, settings) = saved_fixture(&first, &config);
-    let checkpoint = checkpoint_of(&config, &outcome);
+    let checkpoint = checkpoint_of(&config, &outcome, SEPARABLE_EXAMPLES);
     save(&second, &checkpoint);
 
     for paths in [
@@ -499,7 +539,7 @@ fn artifacts_are_byte_stable_and_canonically_ordered() {
 
     // Re-saving a loaded checkpoint reproduces its artifacts exactly.
     let third = TempDir::new("stable-c");
-    let loaded = load(&first, &config, &settings).expect("valid checkpoint");
+    let loaded = load(&first, &config, &settings, SEPARABLE_EXAMPLES).expect("valid checkpoint");
     save(&third, &loaded);
     assert_eq!(
         std::fs::read(first.weights()).expect("read"),
@@ -551,12 +591,17 @@ fn artifacts_are_byte_stable_and_canonically_ordered() {
 fn load_rejects_a_mismatched_architecture() {
     let dir = TempDir::new("wrong-arch");
     saved_fixture(&dir, &config(&[3]));
-    match load(&dir, &config(&[4]), &train_config(16)) {
+    match load(&dir, &config(&[4]), &train_config(15), SEPARABLE_EXAMPLES) {
         Err(CheckpointError::ArchitectureMismatch) => {}
         other => panic!("expected a typed architecture mismatch, got {other:?}"),
     }
     // The same widths in a different layer order is also a different model.
-    match load(&dir, &config(&[2, 1]), &train_config(16)) {
+    match load(
+        &dir,
+        &config(&[2, 1]),
+        &train_config(15),
+        SEPARABLE_EXAMPLES,
+    ) {
         Err(CheckpointError::ArchitectureMismatch) => {}
         other => panic!("expected a typed architecture mismatch, got {other:?}"),
     }
@@ -569,7 +614,7 @@ fn load_rejects_a_tensor_whose_shape_disagrees_with_the_spec() {
     // 3 x 64 f32 = 192 f32 = the same 768-byte span, so the file stays
     // parse-valid and the divergence is a genuine layout disagreement.
     reshape_entry(&dir.weights(), "hidden.0.weight", "[3,64]", "[192]");
-    match load(&dir, &config(&[3]), &train_config(16)) {
+    match load(&dir, &config(&[3]), &train_config(15), SEPARABLE_EXAMPLES) {
         Err(CheckpointError::WeightsRejected {
             kind: WeightsRejection::Layout,
         }) => {}
@@ -591,6 +636,7 @@ fn load_rejects_an_oversized_artifact() {
         &policy,
         &config(&[3]),
         &settings,
+        SEPARABLE_EXAMPLES,
     ) {
         Err(CheckpointError::WeightsRejected {
             kind: WeightsRejection::TooLarge,
@@ -613,6 +659,7 @@ fn load_rejects_a_truncated_artifact() {
         &checkpoint_policy(),
         &config(&[3]),
         &settings,
+        SEPARABLE_EXAMPLES,
     ) {
         Err(CheckpointError::WeightsRejected {
             kind: WeightsRejection::Parse,
@@ -627,7 +674,7 @@ fn load_rejects_nonfinite_values() {
     let dir = TempDir::new("nonfinite");
     let (_, settings) = saved_fixture(&dir, &config);
     corrupt_first_tensor_to_nan(&dir.weights());
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::WeightsRejected {
             kind: WeightsRejection::Nonfinite,
         }) => {}
@@ -637,7 +684,7 @@ fn load_rejects_nonfinite_values() {
     let dir = TempDir::new("nonfinite-moments");
     let (_, settings) = saved_fixture(&dir, &config);
     corrupt_first_tensor_to_nan(&dir.optimizer());
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::OptimizerRejected {
             kind: OptimizerRejection::Nonfinite,
         }) => {}
@@ -661,6 +708,7 @@ fn load_rejects_a_symlinked_artifact() {
         &checkpoint_policy(),
         &config,
         &settings,
+        SEPARABLE_EXAMPLES,
     ) {
         Err(CheckpointError::WeightsRejected {
             kind: WeightsRejection::NotRegularFile,
@@ -676,6 +724,7 @@ fn load_rejects_a_symlinked_artifact() {
         &checkpoint_policy(),
         &config,
         &settings,
+        SEPARABLE_EXAMPLES,
     ) {
         Err(CheckpointError::OptimizerRejected {
             kind: OptimizerRejection::NotRegularFile,
@@ -690,7 +739,7 @@ fn load_rejects_a_different_feature_schema() {
     let dir = TempDir::new("schema-drift");
     let (_, settings) = saved_fixture(&dir, &config);
     set_metadata(&dir.weights(), META_FEATURE_SCHEMA_HASH, &"0".repeat(64));
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::FeatureSchemaDrift) => {}
         other => panic!("expected a feature-schema drift rejection, got {other:?}"),
     }
@@ -698,7 +747,7 @@ fn load_rejects_a_different_feature_schema() {
     let dir = TempDir::new("schema-version-drift");
     let (_, settings) = saved_fixture(&dir, &config);
     set_metadata(&dir.weights(), META_FEATURE_SCHEMA_VERSION, "2");
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::FeatureSchemaDrift) => {}
         other => panic!("expected a feature-schema drift rejection, got {other:?}"),
     }
@@ -710,7 +759,7 @@ fn load_rejects_an_unknown_checkpoint_version() {
     let dir = TempDir::new("checkpoint-version");
     let (_, settings) = saved_fixture(&dir, &config);
     set_metadata(&dir.weights(), META_CHECKPOINT_VERSION, "2");
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::UnsupportedCheckpointVersion { found: 2 }) => {}
         other => panic!("expected a typed version rejection, got {other:?}"),
     }
@@ -722,7 +771,7 @@ fn load_rejects_missing_metadata() {
     let dir = TempDir::new("missing-metadata");
     let (_, settings) = saved_fixture(&dir, &config);
     remove_metadata(&dir.weights(), META_TRAINING_STEP);
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::InvalidMetadata {
             key: META_TRAINING_STEP,
         }) => {}
@@ -733,7 +782,7 @@ fn load_rejects_missing_metadata() {
     let dir = TempDir::new("missing-spec");
     let (_, settings) = saved_fixture(&dir, &config);
     remove_metadata(&dir.weights(), "ia.spec");
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::WeightsRejected {
             kind: WeightsRejection::Metadata,
         }) => {}
@@ -747,7 +796,7 @@ fn optimizer_state_is_all_or_nothing() {
     let dir = TempDir::new("all-or-nothing");
     let (_, settings) = saved_fixture(&dir, &config);
     remove_tensor_entry(&dir.optimizer(), "hidden.0.weight.adamw.v");
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::OptimizerRejected {
             kind: OptimizerRejection::Moments,
         }) => {}
@@ -761,7 +810,7 @@ fn load_rejects_an_unbounded_step_counter() {
     let dir = TempDir::new("step-ceiling");
     let (_, settings) = saved_fixture(&dir, &config);
     set_metadata(&dir.optimizer(), "step", &u64::MAX.to_string());
-    match load(&dir, &config, &settings) {
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
         Err(CheckpointError::LimitExceeded {
             resource: "checkpoint steps",
             ..
@@ -780,8 +829,14 @@ fn load_rejects_artifacts_from_different_runs() {
     // step counters are exactly the budgets.
     let head = run(&config, 8, &corpus);
     let tail = run(&config, 12, &corpus);
-    save(&first, &checkpoint_of(&config, &head));
-    save(&second, &checkpoint_of(&config, &tail));
+    save(
+        &first,
+        &checkpoint_of(&config, &head, CONTRADICTORY_EXAMPLES),
+    );
+    save(
+        &second,
+        &checkpoint_of(&config, &tail, CONTRADICTORY_EXAMPLES),
+    );
     let settings = train_config(4);
 
     match RankerCheckpoint::load(
@@ -790,6 +845,7 @@ fn load_rejects_artifacts_from_different_runs() {
         &checkpoint_policy(),
         &config,
         &settings,
+        CONTRADICTORY_EXAMPLES,
     ) {
         Err(CheckpointError::InconsistentCheckpoint { .. }) => {}
         other => panic!("expected a typed pair inconsistency, got {other:?}"),
@@ -811,6 +867,7 @@ fn load_rejects_artifacts_from_different_runs() {
         &checkpoint_policy(),
         &config,
         &settings,
+        CONTRADICTORY_EXAMPLES,
     ) {
         Err(CheckpointError::InconsistentCheckpoint { .. }) => {}
         other => panic!("expected a typed pair inconsistency, got {other:?}"),
@@ -841,12 +898,13 @@ fn resume_training_matches_uninterrupted_training() {
     let head = run(&config, first, &corpus);
     assert_eq!(head.steps_run(), first);
     let dir = TempDir::new("resume");
-    save(&dir, &checkpoint_of(&config, &head));
+    save(&dir, &checkpoint_of(&config, &head, CONTRADICTORY_EXAMPLES));
 
     // The resumed leg restarts the example order, so `first` must be a whole
     // number of epochs (2 examples per epoch here); the state at that point is
     // then exactly the start-of-epoch state the uninterrupted run had.
-    let resumed_checkpoint = load(&dir, &config, &train_config(rest)).expect("valid checkpoint");
+    let resumed_checkpoint =
+        load(&dir, &config, &train_config(rest), CONTRADICTORY_EXAMPLES).expect("valid checkpoint");
     let resumed = train_with_state(
         &config,
         resumed_checkpoint.weights(),
@@ -880,8 +938,23 @@ fn resume_training_matches_uninterrupted_training() {
     // The artifacts are byte-identical, which is the checkpoint's own claim.
     let resumed_dir = TempDir::new("resume-artifact");
     let uninterrupted_dir = TempDir::new("uninterrupted-artifact");
-    save(&resumed_dir, &checkpoint_of(&config, &resumed));
-    save(&uninterrupted_dir, &checkpoint_of(&config, &uninterrupted));
+    // `from_outcome` counts a run's own visits, and a resumed leg only ran
+    // its own budget; the cumulative artifact composes the two counts (the
+    // precondition `new` re-checks: the optimizer cannot have advanced more
+    // often than the run visited examples).
+    let resumed_checkpoint = RankerCheckpoint::new(
+        config.clone(),
+        resumed.parameters().clone(),
+        resumed.optimizer_state().clone(),
+        (first + resumed.steps_run()) as u64,
+        CONTRADICTORY_EXAMPLES,
+    )
+    .expect("the resumed run sits on an epoch boundary");
+    save(&resumed_dir, &resumed_checkpoint);
+    save(
+        &uninterrupted_dir,
+        &checkpoint_of(&config, &uninterrupted, CONTRADICTORY_EXAMPLES),
+    );
     assert_eq!(
         std::fs::read(resumed_dir.weights()).expect("read"),
         std::fs::read(uninterrupted_dir.weights()).expect("read"),
@@ -892,6 +965,148 @@ fn resume_training_matches_uninterrupted_training() {
         std::fs::read(uninterrupted_dir.optimizer()).expect("read"),
         "the resumed run's optimizer artifact is byte-identical"
     );
+}
+
+// ── epoch-boundary admission (PR #375 round 1) ──────────────────────
+
+#[test]
+fn a_mid_epoch_checkpoint_cannot_be_constructed() {
+    let config = config(&[3]);
+    let corpus = contradictory_corpus();
+    // Five visits over a two-example corpus stops mid-epoch: resuming it
+    // would restart the example order and silently diverge.
+    let outcome = train_from_seed(&config, &train_config(5), &corpus).expect("training run");
+    assert_eq!(outcome.steps_run(), 5);
+
+    match RankerCheckpoint::from_outcome(config.clone(), &outcome, CONTRADICTORY_EXAMPLES) {
+        Err(CheckpointError::NonEpochBoundary { step, examples }) => {
+            assert_eq!(step, 5, "the rejection names the visit count");
+            assert_eq!(
+                examples, CONTRADICTORY_EXAMPLES,
+                "the rejection names the corpus length"
+            );
+        }
+        other => panic!("expected a typed epoch-boundary rejection, got {other:?}"),
+    }
+
+    // The raw constructor applies the same rule, so no code path can build
+    // an unresumable checkpoint.
+    match RankerCheckpoint::new(
+        config.clone(),
+        outcome.parameters().clone(),
+        outcome.optimizer_state().clone(),
+        5,
+        CONTRADICTORY_EXAMPLES,
+    ) {
+        Err(CheckpointError::NonEpochBoundary { step, examples }) => {
+            assert_eq!((step, examples), (5, CONTRADICTORY_EXAMPLES));
+        }
+        other => panic!("expected a typed epoch-boundary rejection, got {other:?}"),
+    }
+
+    // A whole number of epochs is admitted, so the gate is a boundary check
+    // rather than a blanket refusal.
+    let aligned = train_from_seed(&config, &train_config(6), &corpus).expect("training run");
+    let checkpoint =
+        RankerCheckpoint::from_outcome(config.clone(), &aligned, CONTRADICTORY_EXAMPLES)
+            .expect("six visits is three whole epochs");
+    assert_eq!(checkpoint.steps_run(), 6);
+    assert_eq!(checkpoint.training_examples(), CONTRADICTORY_EXAMPLES);
+    assert_eq!(
+        checkpoint.training_step(),
+        aligned.optimizer_state().step() as u64,
+        "the S6 step counter stays the optimizer's own"
+    );
+}
+
+#[test]
+fn a_mid_epoch_artifact_is_rejected_on_load() {
+    let config = config(&[3]);
+    let dir = TempDir::new("mid-epoch-load");
+    let (outcome, settings) = saved_fixture(&dir, &config);
+    let visits = outcome.steps_run() as u64;
+    // A file can come from anywhere: patch the recorded visit count off the
+    // boundary and the loader must refuse it rather than resume it.
+    set_metadata(
+        &dir.weights(),
+        META_TRAINING_STEPS,
+        &(visits + 1).to_string(),
+    );
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
+        Err(CheckpointError::NonEpochBoundary { step, examples }) => {
+            assert_eq!(step, visits + 1);
+            assert_eq!(examples, SEPARABLE_EXAMPLES);
+        }
+        other => panic!("expected a typed epoch-boundary rejection, got {other:?}"),
+    }
+}
+
+#[test]
+fn a_resume_corpus_of_another_length_is_rejected() {
+    let config = config(&[3]);
+    let dir = TempDir::new("corpus-mismatch");
+    let (outcome, settings) = saved_fixture(&dir, &config);
+    let visits = outcome.steps_run() as u64;
+    // The fixture's visit count is aligned for a five-example corpus too, so
+    // alignment cannot be what rejects this: the corpus identity is.
+    assert!(visits.is_multiple_of(5));
+    match load(&dir, &config, &settings, 5) {
+        Err(CheckpointError::CorpusMismatch { recorded, resume }) => {
+            assert_eq!(recorded, SEPARABLE_EXAMPLES);
+            assert_eq!(resume, 5);
+        }
+        other => panic!("expected a typed corpus-mismatch rejection, got {other:?}"),
+    }
+}
+
+#[test]
+fn a_mid_epoch_state_diverges_while_an_aligned_one_is_byte_identical() {
+    // The reviewer's repro, pinned on an order-sensitive fixture: the raw seam
+    // restarts the example order each epoch, so a state captured mid-epoch
+    // continues at the wrong example and silently diverges — while an
+    // epoch-aligned state continues bit-identically. That contrast is why
+    // `RankerCheckpoint` refuses to represent a mid-epoch state at all.
+    let config = config(&[2]);
+    let corpus = lane_corpus();
+
+    let uninterrupted = run(&config, 2, &corpus);
+    let head = run(&config, 1, &corpus);
+    assert_eq!(head.steps_run(), 1, "one visit is mid-epoch for 3 examples");
+    let diverged = train_with_state(
+        &config,
+        head.parameters(),
+        head.optimizer_state().clone(),
+        &train_config(1),
+        &corpus,
+    )
+    .expect("the raw seam does not police the boundary");
+    assert_ne!(
+        diverged.parameters().digest(),
+        uninterrupted.parameters().digest(),
+        "a mid-epoch resume diverges from the uninterrupted run"
+    );
+
+    let aligned_head = run(&config, 3, &corpus);
+    assert_eq!(
+        aligned_head.steps_run(),
+        3,
+        "three visits is one whole epoch"
+    );
+    let resumed = train_with_state(
+        &config,
+        aligned_head.parameters(),
+        aligned_head.optimizer_state().clone(),
+        &train_config(3),
+        &corpus,
+    )
+    .expect("resumed run");
+    let contiguous = run(&config, 6, &corpus);
+    assert_eq!(
+        resumed.parameters().digest(),
+        contiguous.parameters().digest(),
+        "the same fixture resumed on an epoch boundary is byte-identical"
+    );
+    assert_eq!(LANE_EXAMPLES, 3);
 }
 
 // ── admission and diagnostics ───────────────────────────────────────
@@ -924,7 +1139,14 @@ fn policy_must_be_strict() {
             policy
         }),
     ] {
-        match RankerCheckpoint::load(&dir.weights(), &dir.optimizer(), &lax, &config, &settings) {
+        match RankerCheckpoint::load(
+            &dir.weights(),
+            &dir.optimizer(),
+            &lax,
+            &config,
+            &settings,
+            SEPARABLE_EXAMPLES,
+        ) {
             Err(CheckpointError::UnsafePolicy { flag: reported }) => assert_eq!(reported, flag),
             other => panic!("expected an unsafe-policy rejection for {flag}, got {other:?}"),
         }
@@ -941,10 +1163,10 @@ fn rejections_are_typed_bounded_and_path_free() {
         .expect("temp dir name")
         .to_string_lossy()
         .to_string();
-    let settings = train_config(16);
+    let settings = train_config(15);
 
     // A missing artifact (I/O failure, not a parse failure).
-    let missing = load(&dir, &config, &settings).expect_err("no files written");
+    let missing = load(&dir, &config, &settings, SEPARABLE_EXAMPLES).expect_err("no files written");
     assert!(
         matches!(
             missing,
@@ -970,7 +1192,8 @@ fn rejections_are_typed_bounded_and_path_free() {
     let (_, settings) = saved_fixture(&dir, &config);
     let bytes = std::fs::read(dir.weights()).expect("read");
     std::fs::write(dir.weights(), &bytes[..bytes.len() / 2]).expect("truncate");
-    let malformed = load(&dir, &config, &settings).expect_err("truncated artifact");
+    let malformed =
+        load(&dir, &config, &settings, SEPARABLE_EXAMPLES).expect_err("truncated artifact");
     let rendered = malformed.to_string();
     assert!(!rendered.contains(&marker));
     assert!(
@@ -984,12 +1207,14 @@ fn checkpoint_construction_rejects_mismatched_components() {
     let narrow = config(&[3]);
     let wide = config(&[4]);
     let corpus = separable_corpus();
-    let outcome = train_from_seed(&narrow, &train_config(16), &corpus).expect("training run");
+    let outcome = train_from_seed(&narrow, &train_config(15), &corpus).expect("training run");
 
     match RankerCheckpoint::new(
         wide.clone(),
         outcome.parameters().clone(),
         outcome.optimizer_state().clone(),
+        outcome.steps_run() as u64,
+        SEPARABLE_EXAMPLES,
     ) {
         Err(CheckpointError::WeightsRejected {
             kind: WeightsRejection::Layout,
@@ -997,11 +1222,13 @@ fn checkpoint_construction_rejects_mismatched_components() {
         other => panic!("expected a typed layout rejection, got {other:?}"),
     }
 
-    let wide_outcome = train_from_seed(&wide, &train_config(16), &corpus).expect("training run");
+    let wide_outcome = train_from_seed(&wide, &train_config(15), &corpus).expect("training run");
     match RankerCheckpoint::new(
         wide.clone(),
         wide_outcome.parameters().clone(),
         outcome.optimizer_state().clone(),
+        outcome.steps_run() as u64,
+        SEPARABLE_EXAMPLES,
     ) {
         Err(CheckpointError::OptimizerRejected {
             kind: OptimizerRejection::Moments,
