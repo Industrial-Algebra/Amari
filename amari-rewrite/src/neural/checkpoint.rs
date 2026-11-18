@@ -68,6 +68,38 @@
 //! hostile artifact cannot make a diagnostic allocate (the bounded-diagnostics
 //! doctrine, applied to the checkpoint surface).
 //!
+//! ## Resumption is a whole-epoch operation (PR #375 round 1)
+//!
+//! [`train_with_state`](crate::neural::train_with_state) restarts the example
+//! order at index 0 of every epoch, so a state captured *mid-epoch* would
+//! continue at the wrong example and diverge from the run it claims to
+//! continue — silently. A checkpoint therefore **is** an epoch boundary, and
+//! the type cannot represent anything else:
+//!
+//! - **the step that matters is the visit count**, not the optimizer's S6
+//!   `step`: a visit whose hinge is already satisfied applies no update, so
+//!   `S6 step % examples` is not the position in the epoch. The artifact
+//!   records the run's visit count ([`RankerCheckpoint::steps_run`]) beside
+//!   the S6 counter, and both are cross-checked (`optimizer step <=
+//!   steps_run`);
+//! - **at construction/save** ([`RankerCheckpoint::new`],
+//!   [`RankerCheckpoint::from_outcome`]) a state whose visit count is not a
+//!   whole number of epochs over the corpus it ran on is
+//!   [`CheckpointError::NonEpochBoundary`]. Failing here is the friendly gate:
+//!   an unresumable artifact is never written;
+//! - **at load**, the recorded bookkeeping is re-validated (files travel) and
+//!   the boundary is re-checked against the corpus the caller intends to
+//!   resume on — the same typed error, naming both numbers;
+//! - **the corpus is part of the checkpoint's identity**
+//!   ([`CheckpointError::CorpusMismatch`]): continuing a run over a
+//!   differently sized corpus is a different computation, not a resumption.
+//!
+//! Neither check bounds any work: a modulo and a comparison over two `u64`s,
+//! so an artifact may record an arbitrarily large visit count without costing
+//! anything (the corpus length is still capped at
+//! [`TrainConfig::MAX_TRAIN_EXAMPLES`], because no larger corpus can be
+//! trained on).
+//!
 //! ## Determinism
 //!
 //! Two saves of the same `(spec, weights, optimizer)` produce byte-identical
@@ -117,7 +149,9 @@ use katakuri::optimizer::{
 };
 
 use crate::neural::encode::FeatureSchemaV1;
-use crate::neural::train::{parameter_base, AdamWState, TrainConfig, TrainingMoments};
+use crate::neural::train::{
+    parameter_base, AdamWState, TrainConfig, TrainingMoments, TrainingOutcome,
+};
 use crate::neural::{MlpRanker, NeuralError, RankerConfig, RankerWeights};
 use crate::relation::Sha256Digest;
 
@@ -143,6 +177,15 @@ pub const META_TRAINING_STEP: &str = "amari.training-step";
 
 /// `__metadata__` key carrying [`RankerWeights::digest`] as lowercase hex.
 pub const META_WEIGHTS_HASH: &str = "amari.weights-hash";
+
+/// `__metadata__` key carrying the run's **visit count** — the training loop's
+/// step counter, which is what indexes the example order (the S6 `step` skips
+/// no-op visits and therefore cannot express epoch position).
+pub const META_TRAINING_STEPS: &str = "amari.training-steps";
+
+/// `__metadata__` key carrying the number of examples the run was trained
+/// over: the epoch length, and part of the checkpoint's identity.
+pub const META_TRAINING_EXAMPLES: &str = "amari.training-examples";
 
 /// Largest step counter a checkpoint may declare.
 ///
@@ -200,33 +243,79 @@ pub struct RankerCheckpoint {
     config: RankerConfig,
     weights: RankerWeights,
     optimizer: AdamWState,
+    /// The training loop's step counter (example visits) at the checkpoint.
+    steps_run: u64,
+    /// Number of examples the run was trained over (the epoch length).
+    examples: u64,
 }
 
 impl RankerCheckpoint {
-    /// Bind already-validated components into a checkpoint.
+    /// Bind already-validated components into an epoch-boundary checkpoint.
     ///
-    /// The step counter is [`AdamWState::step`] itself read as a `u64` — the
-    /// S6 convention's `step` metadata is the optimizer's counter, so it is
-    /// derived rather than passed and cannot disagree with the state.
+    /// `steps_run` is the training loop's step counter (one per example
+    /// visited, no-ops included) and `examples` the number of examples the run
+    /// was trained over. Both are part of the resumability contract, so a
+    /// mid-epoch state cannot be represented: it would resume at the wrong
+    /// example (see the module documentation).
+    ///
+    /// The S6 `step` metadata stays the **optimizer's** counter
+    /// ([`AdamWState::step`]), derived rather than passed so it cannot disagree
+    /// with the state; `steps_run` is recorded beside it and must be at least
+    /// as large.
     ///
     /// # Errors
     ///
     /// [`CheckpointError::WeightsRejected`] with [`WeightsRejection::Layout`]
-    /// when the weights were built for a different architecture, and
+    /// when the weights were built for a different architecture,
     /// [`CheckpointError::OptimizerRejected`] with
-    /// [`OptimizerRejection::Moments`] when the optimizer state was.
+    /// [`OptimizerRejection::Moments`] when the optimizer state was,
+    /// [`CheckpointError::NonEpochBoundary`] when `steps_run` is not a whole
+    /// number of epochs over `examples`, and
+    /// [`CheckpointError::LimitExceeded`] when `examples` is not a trainable
+    /// corpus length.
     pub fn new(
         config: RankerConfig,
         weights: RankerWeights,
         optimizer: AdamWState,
+        steps_run: u64,
+        examples: u64,
     ) -> Result<Self, CheckpointError> {
         check_weights(&config, &weights)?;
         check_optimizer(&config, &optimizer)?;
+        admit_examples(examples)?;
+        admit_alignment(steps_run, examples)?;
+        admit_counter_crossing(steps_run, &optimizer)?;
         Ok(Self {
             config,
             weights,
             optimizer,
+            steps_run,
+            examples,
         })
+    }
+
+    /// Build a checkpoint from a training run's outcome and its corpus length.
+    ///
+    /// The visit count comes from [`TrainingOutcome::steps_run`], so a caller
+    /// cannot pair a run's state with another run's step count.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::new`] — in particular
+    /// [`CheckpointError::NonEpochBoundary`] for a budget-truncated run that
+    /// stopped mid-epoch (pick a step budget that is a whole number of epochs).
+    pub fn from_outcome(
+        config: RankerConfig,
+        outcome: &TrainingOutcome,
+        examples: u64,
+    ) -> Result<Self, CheckpointError> {
+        Self::new(
+            config,
+            outcome.parameters().clone(),
+            outcome.optimizer_state().clone(),
+            u64::try_from(outcome.steps_run()).unwrap_or(u64::MAX),
+            examples,
+        )
     }
 
     /// The bound architecture.
@@ -245,9 +334,21 @@ impl RankerCheckpoint {
     }
 
     /// The training step this checkpoint belongs to (the optimizer's S6 step
-    /// counter).
+    /// counter: updates applied, no-op visits excluded).
     pub fn training_step(&self) -> u64 {
         u64::try_from(self.optimizer.step()).unwrap_or(u64::MAX)
+    }
+
+    /// The number of examples the run had visited at this checkpoint (the
+    /// counter that indexes the example order, so it is a whole number of
+    /// epochs by construction).
+    pub fn steps_run(&self) -> u64 {
+        self.steps_run
+    }
+
+    /// The number of examples the run was trained over (the epoch length).
+    pub fn training_examples(&self) -> u64 {
+        self.examples
     }
 
     /// Build the ranker from the validated weights.
@@ -292,18 +393,24 @@ impl RankerCheckpoint {
     /// choice and not checkpointed state: S6 records the step counter, so the
     /// bias-correction accumulators are re-derived from `(step, betas)`. A
     /// resumed run must therefore use the same betas it was trained with, for
-    /// the same reason it must use the same learning rate.
+    /// the same reason it must use the same learning rate. `examples` is the
+    /// length of the corpus the caller intends to resume on: the checkpoint
+    /// must belong to that corpus and stop on a whole-epoch boundary of it.
     ///
     /// # Errors
     ///
     /// [`CheckpointError`] — a typed, sanitized rejection from any stage of
-    /// the ordered pipeline documented at the module level.
+    /// the ordered pipeline documented at the module level, plus
+    /// [`CheckpointError::NonEpochBoundary`] and
+    /// [`CheckpointError::CorpusMismatch`] for an artifact that cannot be
+    /// resumed without silently diverging.
     pub fn load(
         weights_path: &Path,
         optimizer_path: &Path,
         policy: &TrustPolicy,
         expected: &RankerConfig,
         resume: &TrainConfig,
+        examples: u64,
     ) -> Result<Self, CheckpointError> {
         let weights_policy = enforce_policy(policy, MAX_WEIGHTS_CHECKPOINT_BYTES)?;
         let optimizer_policy = enforce_policy(policy, MAX_OPTIMIZER_CHECKPOINT_BYTES)?;
@@ -330,6 +437,21 @@ impl RankerCheckpoint {
         }
         let declared_weights = metadata_digest(metadata, META_WEIGHTS_HASH)?;
         let weights_step = metadata_u64(metadata, META_TRAINING_STEP)?;
+        // Epoch bookkeeping, re-validated because the artifact is untrusted:
+        // the recorded visit count must be a whole number of epochs over the
+        // corpus it was trained on, and that corpus must be the one the caller
+        // is resuming on.
+        let steps_run = metadata_u64(metadata, META_TRAINING_STEPS)?;
+        let recorded_examples = metadata_u64(metadata, META_TRAINING_EXAMPLES)?;
+        admit_examples(recorded_examples)?;
+        if recorded_examples != examples {
+            return Err(CheckpointError::CorpusMismatch {
+                recorded: recorded_examples,
+                resume: examples,
+            });
+        }
+        admit_examples(examples)?;
+        admit_alignment(steps_run, examples)?;
 
         let mut tensors: Vec<(String, Vec<f32>)> = Vec::with_capacity(loaded.tensors.len());
         for tensor in &loaded.tensors {
@@ -376,11 +498,14 @@ impl RankerCheckpoint {
                     kind: OptimizerRejection::Moments,
                 }
             })?;
+        admit_counter_crossing(steps_run, &optimizer)?;
 
         Ok(Self {
             config: expected.clone(),
             weights,
             optimizer,
+            steps_run,
+            examples,
         })
     }
 
@@ -415,6 +540,11 @@ impl RankerCheckpoint {
         metadata.insert(
             META_TRAINING_STEP.to_string(),
             self.training_step().to_string(),
+        );
+        metadata.insert(META_TRAINING_STEPS.to_string(), self.steps_run.to_string());
+        metadata.insert(
+            META_TRAINING_EXAMPLES.to_string(),
+            self.examples.to_string(),
         );
         metadata.insert(
             META_WEIGHTS_HASH.to_string(),
@@ -581,6 +711,29 @@ pub enum CheckpointError {
     InconsistentCheckpoint {
         /// What disagreed.
         detail: &'static str,
+    },
+    /// The checkpoint does not sit on a whole-epoch boundary for the corpus it
+    /// would be resumed against, so resuming it would silently diverge from
+    /// the run it claims to continue.
+    #[error(
+        "checkpoint stops at step {step}, which is not a whole number of epochs over \
+         {examples} examples"
+    )]
+    NonEpochBoundary {
+        /// The run's visit count at the checkpoint.
+        step: u64,
+        /// The epoch length (corpus size) that count is measured against.
+        examples: u64,
+    },
+    /// The checkpoint was produced over a differently sized corpus than the
+    /// one it would be resumed on. Continuing over another corpus is a
+    /// different computation, never a resumption.
+    #[error("checkpoint was trained over {recorded} examples, the resume corpus has {resume}")]
+    CorpusMismatch {
+        /// The corpus length recorded in the artifact.
+        recorded: u64,
+        /// The corpus length the caller intends to resume on.
+        resume: u64,
     },
     /// An F32 tensor span was not a whole number of elements. Unreachable
     /// after the seam's span validation; reported rather than assumed.
@@ -776,6 +929,46 @@ fn enforce_policy(policy: &TrustPolicy, cap: u64) -> Result<TrustPolicy, Checkpo
         byte_cap: policy.byte_cap.min(cap),
         ..policy.clone()
     })
+}
+
+/// Admit a corpus length: no larger corpus can be trained on, and an empty one
+/// has no epoch to be aligned to (and would divide by zero).
+fn admit_examples(examples: u64) -> Result<(), CheckpointError> {
+    if examples == 0
+        || examples > u64::try_from(TrainConfig::MAX_TRAIN_EXAMPLES).unwrap_or(u64::MAX)
+    {
+        return Err(CheckpointError::LimitExceeded {
+            resource: "checkpoint corpus examples",
+            value: usize::try_from(examples).unwrap_or(usize::MAX),
+            limit: TrainConfig::MAX_TRAIN_EXAMPLES,
+        });
+    }
+    Ok(())
+}
+
+/// Admit a visit count as a whole number of epochs over `examples`.
+///
+/// O(1) whatever the count: a modulo and a comparison, so an artifact cannot
+/// make the loader do work proportional to a number it wrote.
+fn admit_alignment(steps_run: u64, examples: u64) -> Result<(), CheckpointError> {
+    if examples == 0 || !steps_run.is_multiple_of(examples) {
+        return Err(CheckpointError::NonEpochBoundary {
+            step: steps_run,
+            examples,
+        });
+    }
+    Ok(())
+}
+
+/// The optimizer cannot have applied more updates than the run visited
+/// examples: one update is the most a visit can do.
+fn admit_counter_crossing(steps_run: u64, optimizer: &AdamWState) -> Result<(), CheckpointError> {
+    if u64::try_from(optimizer.step()).unwrap_or(u64::MAX) > steps_run {
+        return Err(CheckpointError::InconsistentCheckpoint {
+            detail: "the optimizer advanced more often than the run visited examples",
+        });
+    }
+    Ok(())
 }
 
 /// One artifact tensor's placement in the canonical writer order.

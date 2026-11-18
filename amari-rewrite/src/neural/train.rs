@@ -1135,8 +1135,15 @@ pub fn train(
 /// [`train`] is exactly this function with a zeroed state — the step loop,
 /// the example order, and every numeric rule are shared, so a run that is
 /// stopped, checkpointed, and resumed computes the same bits as one that was
-/// never stopped (Task 43's resume determinism contract; the resumed leg must
-/// start at an epoch boundary, because the example order restarts by design).
+/// never stopped (Task 43's resume determinism contract).
+///
+/// **The resume must start on a whole-epoch boundary**, because the example
+/// order restarts at index 0 of every epoch: a state captured mid-epoch
+/// continues at the wrong example and diverges. This raw seam deliberately
+/// does not police that — an [`AdamWState`] does not know how many examples
+/// were visited — so the gate lives where the visit count is known:
+/// [`crate::neural::RankerCheckpoint`] refuses to construct, save, or load a
+/// mid-epoch state (PR #375 round 1).
 ///
 /// `state` must belong to `arch`; a state loaded from a checkpoint of another
 /// architecture is [`TrainingError::MismatchedOptimizerState`].
