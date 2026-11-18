@@ -168,9 +168,7 @@ impl FokkerPlanck1D {
     pub fn init_uniform(&mut self) {
         let n = self.density.len();
         let value = 1.0 / (n as f64 * self.config.dx(0));
-        for p in &mut self.density {
-            *p = value;
-        }
+        self.density.fill(value);
     }
 
     /// Normalize the density

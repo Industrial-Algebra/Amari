@@ -177,11 +177,16 @@ impl<T: Float, const P: usize, const Q: usize, const R: usize> DualMultivector<T
         let mut result = Self::zero();
 
         for i in 0..Self::BASIS_COUNT {
-            for j in 0..Self::BASIS_COUNT {
+            for (j, other_coefficient) in other
+                .coefficients
+                .iter()
+                .enumerate()
+                .take(Self::BASIS_COUNT)
+            {
                 let index = i ^ j; // Same blade combination rule
 
                 // Dual number multiplication with chain rule
-                let product = self.coefficients[i] * other.coefficients[j];
+                let product = self.coefficients[i] * *other_coefficient;
 
                 // Apply the appropriate sign from Cayley table
                 let sign = self.compute_cayley_sign(i, j);
@@ -437,8 +442,8 @@ impl<T: Float, const P: usize, const Q: usize, const R: usize> core::ops::Mul<Du
     type Output = Self;
 
     fn mul(mut self, scalar: DualNumber<T>) -> Self {
-        for i in 0..Self::BASIS_COUNT {
-            self.coefficients[i] = self.coefficients[i] * scalar;
+        for coefficient in self.coefficients.iter_mut().take(Self::BASIS_COUNT) {
+            *coefficient = *coefficient * scalar;
         }
         self
     }

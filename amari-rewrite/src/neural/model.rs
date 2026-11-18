@@ -560,7 +560,7 @@ struct Prepared {
 /// Only call this on an admitted candidate: it clones the term, and
 /// `Term::clone` recurses, so an over-large term must already have been
 /// rejected by the encoder (see [`MlpRanker::prepare`]).
-fn canonical_digest(candidate: &CandidateInput<'_>) -> Sha256Digest {
+pub(crate) fn canonical_digest(candidate: &CandidateInput<'_>) -> Sha256Digest {
     SymbolicState::new(candidate.term.clone(), candidate.constraints.clone()).canonical_digest()
 }
 
@@ -577,7 +577,7 @@ fn canonical_digest(candidate: &CandidateInput<'_>) -> Sha256Digest {
 ///
 /// The key starts with the state digest, so distinct states keep the
 /// documented digest-ascending order among equal scores.
-fn content_key(candidate: &CandidateInput<'_>, digest: Sha256Digest) -> Vec<u8> {
+pub(crate) fn content_key(candidate: &CandidateInput<'_>, digest: Sha256Digest) -> Vec<u8> {
     let mut key = Vec::with_capacity(160);
     key.extend_from_slice(digest.as_bytes());
     let provenance = candidate.provenance;

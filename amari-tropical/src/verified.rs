@@ -200,9 +200,11 @@ impl<T: Float + Clone + Copy, const P: usize, const Q: usize, const R: usize>
         let mut result =
             vec![VerifiedTropicalNumber::<T, MaxPlus>::tropical_zero(); Self::BASIS_SIZE];
 
-        for i in 0..Self::BASIS_SIZE {
-            for j in 0..Self::BASIS_SIZE {
-                let coeff_product = self.coefficients[i].tropical_mul(other.coefficients[j]);
+        for (i, self_coefficient) in self.coefficients.iter().enumerate().take(Self::BASIS_SIZE) {
+            for (j, other_coefficient) in
+                other.coefficients.iter().enumerate().take(Self::BASIS_SIZE)
+            {
+                let coeff_product = self_coefficient.tropical_mul(*other_coefficient);
                 let target_index = i ^ j; // XOR for geometric algebra indices
 
                 result[target_index] = result[target_index].tropical_add(coeff_product);
