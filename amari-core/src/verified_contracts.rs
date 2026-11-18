@@ -4,6 +4,7 @@
 //! with concrete geometric algebra operations.
 
 use super::verified::VerifiedMultivector;
+use alloc::vec::Vec;
 use creusot_contracts::macros::requires;
 use num_traits::{Float, One, Zero};
 

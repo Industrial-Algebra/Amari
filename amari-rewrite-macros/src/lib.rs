@@ -12,27 +12,18 @@
 //! - `term!(f(a, X))` — checked `trs::Term` construction (Task 5).
 //! - `rule!(lhs => rhs)` — checked `trs::Rule` construction (Task 5).
 //! - `relation!(lhs <=> rhs)` — checked relational construction
-//!   (Cohort 2).
+//!   (Cohort 7).
 //!
-//! Entry points marked with a task expand to stable `compile_error!`
-//! diagnostics naming the implementing task until they land.
+//! Every macro expands to fully qualified checked constructors in
+//! `amari-rewrite`; nothing here registers runtime state, and the
+//! expansion output is a pure function of the input tokens.
 
 use proc_macro::TokenStream;
 
 mod paths;
+mod relation;
 mod rewritable_derive;
 mod syntax;
-
-fn not_yet(implemented_in: &str) -> TokenStream {
-    let message = format!(
-        "this macro is scaffolded but not yet implemented; checked expansion \
-         lands in {implemented_in} of the amari-rewrite 0.25 expansion plan"
-    );
-    let diagnostic = quote::quote! {
-        ::core::compile_error!(#message);
-    };
-    diagnostic.into()
-}
 
 /// Derive `Rewritable` for an expression tree.
 ///
@@ -73,9 +64,45 @@ pub fn rule(input: TokenStream) -> TokenStream {
 
 /// Checked relational construction: `relation!(add(zero, X) <=> X)`.
 ///
-/// Expands only to checked declarative constructors for the constrained
-/// rewrite-relation model (Cohort 2).
+/// Grammar:
+///
+/// ```text
+/// relation   := [ "exists" VAR { "," VAR } "." ] term "<=>" term
+///               [ "where" constraint { "," constraint } ]
+/// constraint := term ( "==" | "!=" ) term
+/// ```
+///
+/// The declaration expands to
+/// `RewriteResult<(trs::Rule, relation::BackwardClause, Option<trs::Rule>,
+/// relation::ConstraintSet)>`, built only from checked constructors:
+///
+/// - the forward rule, via `trs::Rule::new` (an RHS variable the LHS does
+///   not bind is a compile error here, not a runtime error);
+/// - its compiled backward contract, via
+///   `relation::BackwardClause::compile`;
+/// - the reverse rule `Some(..)` exactly when the reverse direction is
+///   itself a checked rule, and `None` when the reverse direction
+///   erases variables — then `BackwardClause::erased_variables()` names
+///   the residual schema the reverse direction needs. No
+///   `Rule::new_unchecked` and no closure is ever generated;
+/// - the declared constraints, in declaration order, ready for
+///   `relation::ConstraintSet::normalize`.
+///
+/// `exists` markers are optional and assert that the named variables
+/// are the ones the reverse direction erases (they must occur on
+/// exactly one side and the marker set must equal the erased set).
+/// `exists` counts as a marker only when an existential variable
+/// follows, so a symbol named `exists` still parses as a term.
+///
+/// A lone `=>` or `<=` is rejected: it is ambiguous between a
+/// one-directional TRS rule, an ARS step, and a reversed relation
+/// direction. Malformed constraints, unmarked erasure, and forward
+/// variable introduction are compile errors at the offending token.
+///
+/// The generated code names only `::core` and the resolved
+/// `amari-rewrite` crate path (renamed dependencies included), so the
+/// expansion is usable from `no_std` consumers.
 #[proc_macro]
-pub fn relation(_input: TokenStream) -> TokenStream {
-    not_yet("Cohort 2")
+pub fn relation(input: TokenStream) -> TokenStream {
+    relation::expand(input.into()).into()
 }

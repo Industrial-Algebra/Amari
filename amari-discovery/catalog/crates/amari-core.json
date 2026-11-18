@@ -61,7 +61,10 @@
       ]
     },
     {
-      "name": "phantom-types"
+      "name": "phantom-types",
+      "enables": [
+        "num-traits/libm"
+      ]
     },
     {
       "name": "rayon",
@@ -82,7 +85,11 @@
       ]
     },
     {
-      "name": "std"
+      "name": "std",
+      "enables": [
+        "num-traits/std",
+        "thiserror/std"
+      ]
     },
     {
       "name": "wasm-precision",
@@ -125,12 +132,20 @@
       "default_features": false
     },
     {
+      "alias": "libm",
+      "package": "libm",
+      "kind": "normal",
+      "version": "0.2",
+      "optional": false,
+      "default_features": true
+    },
+    {
       "alias": "num-traits",
       "package": "num-traits",
       "kind": "normal",
       "version": "0.2",
       "optional": false,
-      "default_features": true
+      "default_features": false
     },
     {
       "alias": "rayon",
@@ -163,9 +178,9 @@
       "alias": "thiserror",
       "package": "thiserror",
       "kind": "normal",
-      "version": "2.0",
+      "version": "2",
       "optional": false,
-      "default_features": true
+      "default_features": false
     },
     {
       "alias": "criterion",

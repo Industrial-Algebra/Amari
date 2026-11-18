@@ -1,0 +1,2 @@
+amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-core) high-precision,native-precision
+[dev-dependencies]

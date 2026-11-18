@@ -46,8 +46,13 @@ pub use rewrite::{
     RewritePreimagesOutput, RewritePreimagesRequest, RewriteRankedSymbol, RewriteResidualAuthority,
     RewriteResidualReplayOutput, RewriteResidualReplayRequest, RewriteRule, RewriteSearchMode,
     RewriteSymbolicPredecessor, RewriteSymbolicPredecessorsOutput,
-    RewriteSymbolicPredecessorsRequest, RewriteSymbolicProvenance, RewriteTerm,
-    RewriteTermConstraint, RewriteTerminationSummary,
+    RewriteSymbolicPredecessorsRequest, RewriteSymbolicProvenance, RewriteSynthesisExample,
+    RewriteTerm, RewriteTermConstraint, RewriteTerminationSummary,
+};
+pub use rewrite::{
+    RewriteCoverageEntry, RewriteInverseClause, RewriteInverseEvidence, RewriteInverseRefutation,
+    RewriteInverseSynthesisOutput, RewriteInverseSynthesisRequest, RewriteInverseUnknown,
+    RewriteResidualSchemaBinding, RewriteSpecializeOutput, RewriteSpecializeRequest,
 };
 pub use surreal::{
     DecimalRational, DecimalSurcomplex, RationalSurcomplexDivisionOutput,
@@ -504,6 +509,18 @@ fn schema_document(schema_id: &str) -> DiscoveryResult<ProbeSchemaDocument> {
         "amari.discovery/probe/rewrite-residual-replay/output/v1" => {
             ProbeSchemaDocument::from_contract::<RewriteResidualReplayOutput>()
         }
+        "amari.discovery/probe/rewrite-specialize/input/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteSpecializeRequest>()
+        }
+        "amari.discovery/probe/rewrite-specialize/output/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteSpecializeOutput>()
+        }
+        "amari.discovery/probe/rewrite-synthesize-inverse/input/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteInverseSynthesisRequest>()
+        }
+        "amari.discovery/probe/rewrite-synthesize-inverse/output/v1" => {
+            ProbeSchemaDocument::from_contract::<RewriteInverseSynthesisOutput>()
+        }
         "amari.discovery/probe/surreal-rational-arithmetic/input/v1" => {
             ProbeSchemaDocument::from_contract::<RationalSurrealArithmeticRequest>()
         }
@@ -581,7 +598,9 @@ fn compiled_registrations() -> DiscoveryResult<Vec<AdapterRegistration>> {
         rewrite::predecessors_registration()?,
         rewrite::preimages_registration()?,
         rewrite::residual_replay_registration()?,
+        rewrite::specialize_registration()?,
         rewrite::symbolic_predecessors_registration()?,
+        rewrite::synthesize_inverse_registration()?,
         surreal::surcomplex_division_registration()?,
         surreal::rational_arithmetic_registration()?,
         tropical::registration()?,

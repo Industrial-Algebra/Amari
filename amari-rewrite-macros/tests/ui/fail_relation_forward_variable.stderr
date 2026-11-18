@@ -1,0 +1,5 @@
+error: the forward direction `lhs => rhs` introduces variable `Y`, which the left-hand side does not bind; a checked forward rule cannot invent variables
+ --> tests/ui/fail_relation_forward_variable.rs:6:37
+  |
+6 |     let _ = relation!(f(X) <=> g(X, Y));
+  |                                     ^

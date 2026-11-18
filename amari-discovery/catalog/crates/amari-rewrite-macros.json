@@ -95,14 +95,14 @@
     {
       "path": "amari_rewrite_macros::relation",
       "kind": "fn",
-      "signature": "pub fn relation (_input : TokenStream) -> TokenStream",
+      "signature": "pub fn relation (input : TokenStream) -> TokenStream",
       "source_path": "amari-rewrite-macros/src/lib.rs",
       "is_reexport": false,
       "source_module": "amari_rewrite_macros",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn relation (_input : TokenStream) -> TokenStream",
+          "signature": "pub fn relation (input : TokenStream) -> TokenStream",
           "source_path": "amari-rewrite-macros/src/lib.rs",
           "source_module": "amari_rewrite_macros",
           "is_reexport": false,
@@ -166,7 +166,7 @@
       "name": "relation",
       "kind": "proc_macro",
       "source_path": "amari-rewrite-macros/src/lib.rs",
-      "signature": "pub fn relation (_input : TokenStream) -> TokenStream"
+      "signature": "pub fn relation (input : TokenStream) -> TokenStream"
     },
     {
       "path": "amari_rewrite_macros::rule",
@@ -187,7 +187,7 @@
     {
       "path": "amari_rewrite_macros::derive_rewritable",
       "source_path": "amari-rewrite-macros/src/lib.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 0,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -195,7 +195,7 @@
     {
       "path": "amari_rewrite_macros::relation",
       "source_path": "amari-rewrite-macros/src/lib.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -203,7 +203,7 @@
     {
       "path": "amari_rewrite_macros::rule",
       "source_path": "amari-rewrite-macros/src/lib.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -211,7 +211,7 @@
     {
       "path": "amari_rewrite_macros::term",
       "source_path": "amari-rewrite-macros/src/lib.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"

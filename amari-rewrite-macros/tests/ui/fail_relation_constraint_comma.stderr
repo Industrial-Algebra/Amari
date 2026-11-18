@@ -1,0 +1,5 @@
+error: expected a relation constraint after `,`
+ --> tests/ui/fail_relation_constraint_comma.rs:6:52
+  |
+6 |     let _ = relation!(f(X) <=> g(X) where X != zero,);
+  |                                                    ^

@@ -3,6 +3,7 @@
 
 use super::matrix::GF2Matrix;
 use super::scalar::GF2;
+use alloc::vec;
 use alloc::vec::Vec;
 
 /// Gaussian binomial coefficient [n choose k]_q.

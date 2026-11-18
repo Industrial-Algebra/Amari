@@ -1,0 +1,5 @@
+error: expected `<=>` in a relation declaration
+ --> tests/ui/fail_relation_missing_arrow.rs:6:28
+  |
+6 |     let _ = relation!(f(X) g(X));
+  |                            ^

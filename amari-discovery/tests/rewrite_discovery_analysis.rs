@@ -165,9 +165,9 @@ fn catalog_descriptors_cover_the_analysis_probes() {
         .iter()
         .map(|descriptor| descriptor.id.to_string())
         .collect();
-    // Descriptor count is locked: Task 35 extends the existing
-    // twenty-one with the analysis and completion probes.
-    assert_eq!(ids.len(), 23);
+    // Descriptor count is locked: Task 39 extends the existing
+    // twenty-three with the synthesis probes.
+    assert_eq!(ids.len(), 25);
     assert!(ids.iter().any(|id| id == ANALYSIS));
     assert!(ids.iter().any(|id| id == COMPLETION));
 

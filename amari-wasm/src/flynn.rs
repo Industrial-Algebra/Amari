@@ -22,6 +22,9 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct WasmSmtProofObligation {
     inner: SmtProofObligation,
+    /// Probability captured at construction (pre/post kinds): the hold
+    /// probability the Monte Carlo bridge simulates.
+    probability: f64,
 }
 
 #[wasm_bindgen]
@@ -66,6 +69,7 @@ impl WasmSmtProofObligation {
 
         Ok(Self {
             inner: SmtProofObligation::new(name, description, obligation_kind),
+            probability: param1,
         })
     }
 
@@ -112,10 +116,16 @@ impl WasmSmtProofObligation {
 
     /// Verify this obligation statistically using Monte Carlo sampling
     ///
+    /// Simulates the obligation's hold event (true with the probability
+    /// captured at construction) and checks P(hold) >= that probability.
     /// Returns "Verified", "Violated", or "Inconclusive"
     #[wasm_bindgen(js_name = verifyWithMonteCarlo)]
     pub fn verify_with_monte_carlo(&self, samples: usize) -> String {
-        match self.inner.verify_with_monte_carlo(samples) {
+        let hold_probability = self.probability;
+        match self
+            .inner
+            .verify_with_monte_carlo(|| fastrand::f64() < hold_probability, samples)
+        {
             VerificationResult::Verified => "Verified".to_string(),
             VerificationResult::Violated => "Violated".to_string(),
             VerificationResult::Inconclusive => "Inconclusive".to_string(),
@@ -138,6 +148,9 @@ pub fn flynn_hoeffding_obligation(
 ) -> WasmSmtProofObligation {
     WasmSmtProofObligation {
         inner: smt::hoeffding_obligation(name, n, epsilon, delta),
+        // ConcentrationBound kind: verify_with_monte_carlo derives the
+        // bound from n/epsilon and never samples this probability.
+        probability: 0.0,
     }
 }
 
@@ -152,6 +165,7 @@ pub fn flynn_precondition_obligation(
 ) -> WasmSmtProofObligation {
     WasmSmtProofObligation {
         inner: smt::precondition_obligation(name, condition, probability),
+        probability,
     }
 }
 
@@ -166,6 +180,7 @@ pub fn flynn_postcondition_obligation(
 ) -> WasmSmtProofObligation {
     WasmSmtProofObligation {
         inner: smt::postcondition_obligation(name, condition, probability),
+        probability,
     }
 }
 
@@ -181,6 +196,9 @@ pub fn flynn_expected_value_obligation(
 ) -> WasmSmtProofObligation {
     WasmSmtProofObligation {
         inner: smt::expected_value_obligation(name, expected, epsilon, samples),
+        // ExpectedValue kind: verify_with_monte_carlo derives the bound
+        // from samples/epsilon and never samples this probability.
+        probability: 0.0,
     }
 }
 
@@ -224,16 +242,16 @@ impl WasmMonteCarloVerifier {
         vec![estimate, lower, upper]
     }
 
-    /// Verify that P(success) <= bound using Monte Carlo sampling
+    /// Verify that P(success) >= bound using Monte Carlo sampling
     ///
     /// Runs Bernoulli trials with the given success probability and checks
-    /// whether the estimated probability is within the bound.
+    /// the hold frame: whether P(success) is at least the bound.
     /// Returns "Verified", "Violated", or "Inconclusive".
-    #[wasm_bindgen(js_name = verifyProbabilityBound)]
-    pub fn verify_probability_bound(&self, success_probability: f64, bound: f64) -> String {
+    #[wasm_bindgen(js_name = verifyProbabilityAtLeast)]
+    pub fn verify_probability_at_least(&self, success_probability: f64, bound: f64) -> String {
         let verifier = MonteCarloVerifier::new(self.samples);
         let result =
-            verifier.verify_probability_bound(|| fastrand::f64() < success_probability, bound);
+            verifier.verify_probability_at_least(|| fastrand::f64() < success_probability, bound);
         match result {
             VerificationResult::Verified => "Verified".to_string(),
             VerificationResult::Violated => "Violated".to_string(),

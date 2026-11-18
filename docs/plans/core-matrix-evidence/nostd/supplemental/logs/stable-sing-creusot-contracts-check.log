@@ -1,0 +1,11 @@
+   Compiling syn v2.0.119
+   Compiling zerocopy-derive v0.8.63
+   Compiling creusot-contracts-proc v0.8.0
+    Checking creusot-contracts v0.8.0
+    Checking amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/amari-core)
+    Checking zerocopy v0.8.63
+    Checking half v2.7.1
+    Checking ciborium-ll v0.2.2
+    Checking ciborium v0.2.2
+    Checking criterion v0.8.2
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.06s

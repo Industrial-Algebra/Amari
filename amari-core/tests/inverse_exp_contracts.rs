@@ -938,8 +938,20 @@ fn round5_hyperbolic_symbolic_vector_matches_scalar_bits() {
     let a = 5214.592735436862_f64;
     let x = mv::<1, 0, 0>(&[(s, &[]), (a, &[1])]);
     let e = x.exp().expect("finite hyperbolic symbolic result");
-    assert_eq!(e.get(0).to_bits(), 96263207714727);
-    assert_eq!(e.get(1).to_bits(), 96263207714727);
+    // The test's contract is CHANNEL EQUALITY: the exact 1/(2a) rational
+    // finalization must reproduce the scalar channel's bits in the vector
+    // channel. The absolute constant documents the glibc-backed bits
+    // (std feature); the P-EMBED dispatch routes std-off builds through
+    // libm, which may differ by 1 ULP in the last place — so the absolute
+    // check allows that seam while channel equality stays exact.
+    let scalar = e.get(0).to_bits();
+    let vector = e.get(1).to_bits();
+    assert_eq!(vector, scalar, "vector channel must match scalar bits");
+    let documented = 96263207714727_u64;
+    assert!(
+        scalar.abs_diff(documented) <= 1,
+        "scalar channel bit distance > 1 from the documented bits: {scalar} vs {documented}"
+    );
 }
 
 #[test]

@@ -112,7 +112,9 @@ fn extract_multi_params(
 /// ```
 ///
 /// - `condition`: Boolean expression that should hold for inputs
-/// - `probability_bound`: Maximum probability the condition is violated (0.0 to 1.0)
+/// - `probability_bound`: MINIMUM probability the condition HOLDS
+///   (hold frame; 0.0 to 1.0). For the violation frame use
+///   [`prob_violation_at_most`].
 ///
 /// # Example
 ///
@@ -139,88 +141,63 @@ fn extract_multi_params(
 pub fn prob_requires(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
 
-    // Parse attribute or use default documentation
-    let doc_string = if attr.is_empty() {
-        "Probabilistic precondition: Contract to be verified statistically".to_string()
+    // Parse the attribute ONCE; malformed contracts fail expansion loudly
+    // (never silently degrade to documentation defaults — audit U5/F10).
+    let parsed = if attr.is_empty() {
+        None
     } else {
         match syn::parse::<ProbabilisticAttr>(attr.clone()) {
-            Ok(parsed) => {
-                let condition = &parsed.condition;
-                let bound = &parsed.bound;
-                format!(
-                    "Probabilistic precondition: Requires `{}` with P >= {}",
-                    quote!(#condition),
-                    bound.base10_parse::<f64>().unwrap_or(0.0)
-                )
+            Ok(parsed) => Some(parsed),
+            Err(err) => {
+                return compile_error_spanned(err.to_compile_error());
             }
-            Err(_) => "Probabilistic precondition: Invalid contract specification".to_string(),
         }
     };
 
     let fn_name = &input.sig.ident;
-
-    // Generate verification helper function name
     let verify_fn_name =
         syn::Ident::new(&format!("verify_{}_precondition", fn_name), fn_name.span());
 
-    // Extract parameter type and name for binding in verification helper
-    let (param_type, param_bindings) = if input.sig.inputs.len() == 1 {
-        // Single-parameter: cleaner generated code without tuple wrapper
-        if let Some(FnArg::Typed(pat_type)) = input.sig.inputs.first() {
-            let param_type = &pat_type.ty;
-            if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
-                let param_name = &pat_ident.ident;
-                (quote! { #param_type }, quote! { let #param_name = inputs; })
-            } else {
-                (quote! { _ }, quote! {})
-            }
-        } else {
-            (quote! { _ }, quote! {})
-        }
-    } else if input.sig.inputs.len() > 1 {
-        // Multi-parameter: use tuple destructuring
-        match extract_multi_params(&input.sig.inputs) {
-            Some(extracted) => (extracted.param_type, extracted.param_bindings),
-            None => (quote! { _ }, quote! {}),
-        }
-    } else {
-        (quote! { _ }, quote! {})
-    };
-
-    // If we successfully parsed the attribute, generate a verification helper
-    let verification_helper = if !attr.is_empty() {
-        match syn::parse::<ProbabilisticAttr>(attr) {
-            Ok(parsed) => {
-                let condition = &parsed.condition;
-                let bound = &parsed.bound;
-
-                quote! {
-                    #[cfg(test)]
-                    #[doc = concat!("Verification helper for ", stringify!(#fn_name), " precondition")]
-                    #[allow(dead_code)]
-                    fn #verify_fn_name<F>(
-                        input_generator: F,
-                        samples: usize,
-                    ) -> amari_flynn::contracts::VerificationResult
-                    where
-                        F: Fn() -> #param_type,
-                    {
-                        let verifier = amari_flynn::backend::monte_carlo::MonteCarloVerifier::new(samples);
-                        verifier.verify_probability_bound(
-                            || {
-                                let inputs = input_generator();
-                                #param_bindings
-                                #condition
-                            },
-                            #bound,
-                        )
-                    }
+    let (doc_string, verification_helper) = match &parsed {
+        None => (
+            "Probabilistic precondition: contract not yet specified".to_string(),
+            quote! {},
+        ),
+        Some(parsed_attr) => {
+            let condition = &parsed_attr.condition;
+            let bound = parsed_attr
+                .bound
+                .base10_parse::<f64>()
+                .expect("probability bound literal must be a valid f64");
+            let doc_string = format!(
+                "Probabilistic precondition: Requires `{}` with P >= {bound}",
+                quote!(#condition)
+            );
+            let (param_type, param_bindings) = extract_binding_shape(&input);
+            let helper = quote! {
+                #[cfg(test)]
+                #[doc = concat!("Verification helper for ", stringify!(#fn_name), " precondition (hold frame: P(condition) >= ", stringify!(#bound), ")")]
+                #[allow(dead_code)]
+                fn #verify_fn_name<F>(
+                    input_generator: F,
+                    samples: usize,
+                ) -> amari_flynn::contracts::VerificationResult
+                where
+                    F: Fn() -> #param_type,
+                {
+                    let verifier = amari_flynn::backend::monte_carlo::MonteCarloVerifier::new(samples);
+                    verifier.verify_probability_at_least(
+                        || {
+                            let inputs = input_generator();
+                            #param_bindings
+                            #condition
+                        },
+                        #bound,
+                    )
                 }
-            }
-            Err(_) => quote! {},
+            };
+            (doc_string, helper)
         }
-    } else {
-        quote! {}
     };
 
     let output = quote! {
@@ -231,6 +208,31 @@ pub fn prob_requires(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     output.into()
+}
+
+fn compile_error_spanned(tokens: proc_macro2::TokenStream) -> TokenStream {
+    tokens.into()
+}
+
+/// Extract (generator return type, destructure bindings) for the function.
+fn extract_binding_shape(input: &ItemFn) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
+    if input.sig.inputs.is_empty() {
+        (quote! { () }, quote! {})
+    } else if input.sig.inputs.len() == 1 {
+        if let Some(FnArg::Typed(pat_type)) = input.sig.inputs.first() {
+            let param_type = &pat_type.ty;
+            if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
+                let param_name = &pat_ident.ident;
+                return (quote! { #param_type }, quote! { let #param_name = inputs; });
+            }
+        }
+        (quote! { core::marker::PhantomData<()> }, quote! {})
+    } else {
+        match extract_multi_params(&input.sig.inputs) {
+            Some(extracted) => (extracted.param_type, extracted.param_bindings),
+            None => (quote! { core::marker::PhantomData<()> }, quote! {}),
+        }
+    }
 }
 
 /// Probabilistic postcondition
@@ -244,7 +246,9 @@ pub fn prob_requires(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// ```
 ///
 /// - `condition`: Boolean expression that should hold for outputs
-/// - `probability_bound`: Maximum probability the condition is violated (0.0 to 1.0)
+/// - `probability_bound`: MINIMUM probability the condition HOLDS
+///   (hold frame; 0.0 to 1.0). For the violation frame use
+///   [`prob_violation_at_most`].
 ///
 /// # Example
 ///
@@ -271,20 +275,12 @@ pub fn prob_requires(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn prob_ensures(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
 
-    let doc_string = if attr.is_empty() {
-        "Probabilistic postcondition: Contract to be verified statistically".to_string()
+    let parsed = if attr.is_empty() {
+        None
     } else {
         match syn::parse::<ProbabilisticAttr>(attr.clone()) {
-            Ok(parsed) => {
-                let condition = &parsed.condition;
-                let bound = &parsed.bound;
-                format!(
-                    "Probabilistic postcondition: Ensures `{}` with P >= {}",
-                    quote!(#condition),
-                    bound.base10_parse::<f64>().unwrap_or(0.0)
-                )
-            }
-            Err(_) => "Probabilistic postcondition: Invalid contract specification".to_string(),
+            Ok(parsed) => Some(parsed),
+            Err(err) => return err.to_compile_error().into(),
         }
     };
 
@@ -292,77 +288,47 @@ pub fn prob_ensures(attr: TokenStream, item: TokenStream) -> TokenStream {
     let verify_fn_name =
         syn::Ident::new(&format!("verify_{}_postcondition", fn_name), fn_name.span());
 
-    // Extract parameter type and name for binding in verification helper
-    // Handle zero-parameter, single-parameter, and multi-parameter functions
-    let (param_type, param_bindings, fn_call) = if input.sig.inputs.is_empty() {
-        // Zero-parameter function
-        (quote! { () }, quote! {}, quote! { #fn_name() })
-    } else if input.sig.inputs.len() == 1 {
-        // Single-parameter function
-        if let Some(FnArg::Typed(pat_type)) = input.sig.inputs.first() {
-            let param_type = &pat_type.ty;
-            if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
-                let param_name = &pat_ident.ident;
-                (
-                    quote! { #param_type },
-                    quote! { let #param_name = inputs; },
-                    quote! { #fn_name(inputs) },
-                )
-            } else {
-                (quote! { _ }, quote! {}, quote! { #fn_name(inputs) })
-            }
-        } else {
-            (quote! { _ }, quote! {}, quote! { #fn_name(inputs) })
-        }
-    } else {
-        // Multi-parameter function: tuple destructuring
-        match extract_multi_params(&input.sig.inputs) {
-            Some(extracted) => {
-                let names = &extracted.param_names;
-                (
-                    extracted.param_type,
-                    extracted.param_bindings,
-                    quote! { #fn_name(#(#names),*) },
-                )
-            }
-            None => (quote! { _ }, quote! {}, quote! { #fn_name(inputs) }),
-        }
-    };
-
-    let verification_helper = if !attr.is_empty() {
-        match syn::parse::<ProbabilisticAttr>(attr) {
-            Ok(parsed) => {
-                let condition = &parsed.condition;
-                let bound = &parsed.bound;
-
-                quote! {
-                    #[cfg(test)]
-                    #[doc = concat!("Verification helper for ", stringify!(#fn_name), " postcondition")]
-                    #[allow(dead_code)]
-                    fn #verify_fn_name<F>(
-                        input_generator: F,
-                        samples: usize,
-                    ) -> amari_flynn::contracts::VerificationResult
-                    where
-                        F: Fn() -> #param_type,
-                    {
-                        let verifier = amari_flynn::backend::monte_carlo::MonteCarloVerifier::new(samples);
-                        verifier.verify_probability_bound(
-                            || {
-                                let inputs = input_generator();
-                                #param_bindings
-                                let result = #fn_call;
-                                #condition
-                            },
-                            #bound,
-                        )
-                    }
+    let (doc_string, verification_helper) = match &parsed {
+        None => (
+            "Probabilistic postcondition: contract not yet specified".to_string(),
+            quote! {},
+        ),
+        Some(parsed_attr) => {
+            let condition = &parsed_attr.condition;
+            let bound = parsed_attr
+                .bound
+                .base10_parse::<f64>()
+                .expect("probability bound literal must be a valid f64");
+            let doc_string = format!(
+                "Probabilistic postcondition: Ensures `{}` with P >= {bound}",
+                quote!(#condition)
+            );
+            let (param_type, param_bindings, fn_call) = extract_call_shape(&input);
+            let helper = quote! {
+                #[cfg(test)]
+                #[doc = concat!("Verification helper for ", stringify!(#fn_name), " postcondition (hold frame: P(condition) >= ", stringify!(#bound), ")")]
+                #[allow(dead_code)]
+                fn #verify_fn_name<F>(
+                    input_generator: F,
+                    samples: usize,
+                ) -> amari_flynn::contracts::VerificationResult
+                where
+                    F: Fn() -> #param_type,
+                {
+                    let verifier = amari_flynn::backend::monte_carlo::MonteCarloVerifier::new(samples);
+                    verifier.verify_probability_at_least(
+                        || {
+                            let inputs = input_generator();
+                            #param_bindings
+                            let result = #fn_call;
+                            #condition
+                        },
+                        #bound,
+                    )
                 }
-            }
-            Err(_) => quote! {},
+            };
+            (doc_string, helper)
         }
-    } else {
-        quote! {}
     };
 
     let output = quote! {
@@ -373,6 +339,54 @@ pub fn prob_ensures(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     output.into()
+}
+
+/// (generator type, destructure bindings, fn call) for ensures-style
+/// helpers that must CALL the annotated function.
+fn extract_call_shape(
+    input: &ItemFn,
+) -> (
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+) {
+    let fn_name = &input.sig.ident;
+    if input.sig.inputs.is_empty() {
+        (quote! { () }, quote! {}, quote! { #fn_name() })
+    } else if input.sig.inputs.len() == 1 {
+        if let Some(FnArg::Typed(pat_type)) = input.sig.inputs.first() {
+            let param_type = &pat_type.ty;
+            if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
+                let param_name = &pat_ident.ident;
+                return (
+                    quote! { #param_type },
+                    quote! { let #param_name = inputs; },
+                    quote! { #fn_name(inputs) },
+                );
+            }
+        }
+        (
+            quote! { core::marker::PhantomData<()> },
+            quote! {},
+            quote! { #fn_name(inputs) },
+        )
+    } else {
+        match extract_multi_params(&input.sig.inputs) {
+            Some(extracted) => {
+                let names = &extracted.param_names;
+                (
+                    extracted.param_type,
+                    extracted.param_bindings,
+                    quote! { #fn_name(#(#names),*) },
+                )
+            }
+            None => (
+                quote! { core::marker::PhantomData<()> },
+                quote! {},
+                quote! { #fn_name(inputs) },
+            ),
+        }
+    }
 }
 
 /// Expected value constraint
@@ -410,26 +424,101 @@ pub fn prob_ensures(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     x - y
 /// }
 /// ```
+/// Probabilistic violation bound (the named violation frame, D1(c)).
+///
+/// # Syntax
+///
+/// ```ignore
+/// #[prob_violation_at_most(violation_condition, delta)]
+/// ```
+///
+/// - `violation_condition`: Boolean expression that is TRUE when the BAD
+///   event occurs
+/// - `delta`: maximum allowed probability of the violation (0.0 to 1.0)
+///
+/// The generated test helper verifies `P(violation) <= delta` via
+/// `MonteCarloVerifier::verify_violation_bound`.
+#[proc_macro_attribute]
+pub fn prob_violation_at_most(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as ItemFn);
+
+    let parsed = if attr.is_empty() {
+        None
+    } else {
+        match syn::parse::<ProbabilisticAttr>(attr.clone()) {
+            Ok(parsed) => Some(parsed),
+            Err(err) => return err.to_compile_error().into(),
+        }
+    };
+
+    let fn_name = &input.sig.ident;
+    let verify_fn_name = syn::Ident::new(
+        &format!("verify_{}_violation_bound", fn_name),
+        fn_name.span(),
+    );
+
+    let (doc_string, verification_helper) = match &parsed {
+        None => (
+            "Probabilistic violation bound: contract not yet specified".to_string(),
+            quote! {},
+        ),
+        Some(parsed_attr) => {
+            let condition = &parsed_attr.condition;
+            let bound = parsed_attr
+                .bound
+                .base10_parse::<f64>()
+                .expect("delta literal must be a valid f64");
+            let doc_string = format!(
+                "Probabilistic violation bound: `{}` with P <= {bound} (violation frame)",
+                quote!(#condition)
+            );
+            let (param_type, param_bindings) = extract_binding_shape(&input);
+            let helper = quote! {
+                #[cfg(test)]
+                #[doc = concat!("Verification helper for ", stringify!(#fn_name), " violation bound (P(violation) <= ", stringify!(#bound), ")")]
+                #[allow(dead_code)]
+                fn #verify_fn_name<F>(
+                    input_generator: F,
+                    samples: usize,
+                ) -> amari_flynn::contracts::VerificationResult
+                where
+                    F: Fn() -> #param_type,
+                {
+                    let verifier = amari_flynn::backend::monte_carlo::MonteCarloVerifier::new(samples);
+                    verifier.verify_violation_bound(
+                        || {
+                            let inputs = input_generator();
+                            #param_bindings
+                            #condition
+                        },
+                        #bound,
+                    )
+                }
+            };
+            (doc_string, helper)
+        }
+    };
+
+    let output = quote! {
+        #[doc = #doc_string]
+        #input
+
+        #verification_helper
+    };
+
+    output.into()
+}
+
 #[proc_macro_attribute]
 pub fn ensures_expected(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
 
-    let doc_string = if attr.is_empty() {
-        "Expected value constraint: Statistical verification of mean".to_string()
+    let parsed = if attr.is_empty() {
+        None
     } else {
         match syn::parse::<ExpectedValueAttr>(attr.clone()) {
-            Ok(parsed) => {
-                let expression = &parsed.expression;
-                let expected = &parsed.expected;
-                let epsilon = &parsed.epsilon;
-                format!(
-                    "Expected value constraint: E[{}] = {} +/- {}",
-                    quote!(#expression),
-                    expected.base10_parse::<f64>().unwrap_or(0.0),
-                    epsilon.base10_parse::<f64>().unwrap_or(0.0)
-                )
-            }
-            Err(_) => "Expected value constraint: Invalid specification".to_string(),
+            Ok(parsed) => Some(parsed),
+            Err(err) => return err.to_compile_error().into(),
         }
     };
 
@@ -439,80 +528,51 @@ pub fn ensures_expected(attr: TokenStream, item: TokenStream) -> TokenStream {
         fn_name.span(),
     );
 
-    // Extract parameter type and name for binding in verification helper
-    // Handle zero-parameter, single-parameter, and multi-parameter functions
-    let (param_type, param_bindings, fn_call) = if input.sig.inputs.is_empty() {
-        // Zero-parameter function
-        (quote! { () }, quote! {}, quote! { #fn_name() })
-    } else if input.sig.inputs.len() == 1 {
-        // Single-parameter function
-        if let Some(FnArg::Typed(pat_type)) = input.sig.inputs.first() {
-            let param_type = &pat_type.ty;
-            if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
-                let param_name = &pat_ident.ident;
-                (
-                    quote! { #param_type },
-                    quote! { let #param_name = inputs; },
-                    quote! { #fn_name(inputs) },
-                )
-            } else {
-                (quote! { _ }, quote! {}, quote! { #fn_name(inputs) })
-            }
-        } else {
-            (quote! { _ }, quote! {}, quote! { #fn_name(inputs) })
-        }
-    } else {
-        // Multi-parameter function: tuple destructuring
-        match extract_multi_params(&input.sig.inputs) {
-            Some(extracted) => {
-                let names = &extracted.param_names;
-                (
-                    extracted.param_type,
-                    extracted.param_bindings,
-                    quote! { #fn_name(#(#names),*) },
-                )
-            }
-            None => (quote! { _ }, quote! {}, quote! { #fn_name(inputs) }),
-        }
-    };
-
-    let verification_helper = if !attr.is_empty() {
-        match syn::parse::<ExpectedValueAttr>(attr) {
-            Ok(parsed) => {
-                let expression = &parsed.expression;
-                let expected = &parsed.expected;
-                let epsilon = &parsed.epsilon;
-
-                quote! {
-                    #[cfg(test)]
-                    #[doc = concat!("Verification helper for ", stringify!(#fn_name), " expected value")]
-                    #[allow(dead_code)]
-                    fn #verify_fn_name<F>(
-                        input_generator: F,
-                        samples: usize,
-                    ) -> bool
-                    where
-                        F: Fn() -> #param_type,
-                    {
-                        let mut sum = 0.0;
-                        for _ in 0..samples {
-                            let inputs = input_generator();
-                            #param_bindings
-                            let value = #fn_call;
-                            let #expression = value;
-                            sum += #expression;
-                        }
-                        let mean = sum / samples as f64;
-                        let expected = #expected;
-                        let epsilon = #epsilon;
-                        (mean - expected).abs() <= epsilon
+    let (doc_string, verification_helper) = match &parsed {
+        None => (
+            "Expected value constraint: contract not yet specified".to_string(),
+            quote! {},
+        ),
+        Some(parsed_attr) => {
+            let expression = &parsed_attr.expression;
+            let expected = parsed_attr
+                .expected
+                .base10_parse::<f64>()
+                .expect("expected value literal must be a valid f64");
+            let epsilon = parsed_attr
+                .epsilon
+                .base10_parse::<f64>()
+                .expect("epsilon literal must be a valid f64");
+            let doc_string = format!(
+                "Expected value constraint (SMOKE CHECK — fixed-threshold mean comparison, \
+                 not a confidence-interval verdict): E[{}] = {expected} +/- {epsilon}",
+                quote!(#expression)
+            );
+            let (param_type, param_bindings, fn_call) = extract_call_shape(&input);
+            let helper = quote! {
+                #[cfg(test)]
+                #[doc = concat!("Verification helper for ", stringify!(#fn_name), " expected value (smoke check: |mean - expected| <= epsilon)")]
+                #[allow(dead_code)]
+                fn #verify_fn_name<F>(
+                    input_generator: F,
+                    samples: usize,
+                ) -> bool
+                where
+                    F: Fn() -> #param_type,
+                {
+                    let mut sum = 0.0f64;
+                    for _ in 0..samples {
+                        let inputs = input_generator();
+                        #param_bindings
+                        let result = #fn_call;
+                        sum += (#expression);
                     }
+                    let mean = sum / samples as f64;
+                    (mean - #expected).abs() <= #epsilon
                 }
-            }
-            Err(_) => quote! {},
+            };
+            (doc_string, helper)
         }
-    } else {
-        quote! {}
     };
 
     let output = quote! {

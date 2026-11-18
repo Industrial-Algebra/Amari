@@ -28,9 +28,13 @@ pub enum VerificationResult {
     Inconclusive,
 }
 
+#[cfg(all(feature = "alloc", not(feature = "std")))]
+use alloc::string::String;
+
 /// Represents a rare but possible event
 ///
 /// Rare events (P << 1) are tracked separately from impossible events (P = 0)
+#[cfg(feature = "alloc")]
 #[derive(Clone, Debug)]
 pub struct RareEvent<T> {
     probability: f64,
@@ -38,6 +42,7 @@ pub struct RareEvent<T> {
     _phantom: core::marker::PhantomData<T>,
 }
 
+#[cfg(feature = "alloc")]
 impl<T> RareEvent<T> {
     /// Create a rare event with given probability and description
     pub fn new(probability: f64, description: impl Into<String>) -> Self {
@@ -92,7 +97,7 @@ impl EventVerification {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "alloc"))]
 mod tests {
     use super::*;
 

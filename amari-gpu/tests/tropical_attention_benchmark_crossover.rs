@@ -10,10 +10,10 @@ use std::time::{Duration, Instant};
 
 fn make_logits(rows: usize, cols: usize) -> TropicalMatrix<f32> {
     let mut logits = TropicalMatrix::new(rows, cols);
-    for i in 0..rows {
-        for j in 0..cols {
+    for (i, row) in logits.data.iter_mut().enumerate().take(rows) {
+        for (j, cell) in row.iter_mut().enumerate().take(cols) {
             let value = (((i * 31 + j * 17) % 101) as f32 - 50.0) / 11.0;
-            logits.data[i][j] = TropicalNumber::new(value);
+            *cell = TropicalNumber::new(value);
         }
     }
     logits
@@ -23,8 +23,8 @@ fn cpu_attention_scores(logits: &TropicalMatrix<f32>) -> TropicalMatrix<f32> {
     let mut scores = TropicalMatrix::new(logits.rows, logits.cols);
     for i in 0..logits.rows {
         let mut row_max = f32::NEG_INFINITY;
-        for j in 0..logits.cols {
-            row_max = row_max.max(logits.data[i][j].value());
+        for value in logits.data[i].iter().take(logits.cols) {
+            row_max = row_max.max(value.value());
         }
         for j in 0..logits.cols {
             scores.data[i][j] = TropicalNumber::new(if logits.data[i][j].value() == row_max {

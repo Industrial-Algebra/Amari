@@ -1,0 +1,35 @@
+=== fmt ===
+info: latest update on 2026-08-20 for version 1.98.0 (88d9e12ae 2026-08-18)
+info: downloading 6 components
+=== clippy --all-features --all-targets -D warnings ===
+  build script failed, must exit now
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+warning: build failed, waiting for other jobs to finish...
+  build script failed, must exit now
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+warning: build failed, waiting for other jobs to finish...
+=== clippy (CI flags: --workspace --features native-precision -D warnings) ===
+Caused by:
+  No such file or directory (os error 2)
+=== fmt ===
+fmt OK
+=== default tests (workspace, excl discovery per CI) ===
+      1 error: could not execute process `'' ''\'''\''' /home/lucien/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc -vV` (never executed)
+=== clippy (CI flags) ===
+    Checking amari-gpu v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-matrix/amari-gpu)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.83s
+=== tests (CI flags) ===
+total passed: 3035  failed: 0
+failing suites: 0
+=== amari-core no-default ===
+no-default: 437 passed 0 failed
+=== catalog drift gate ===
+discovery: 195 passed 24 failed
+=== MSRV 1.89.0 check (core, default) ===
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.24s
+=== wasm32 compile closure ===
+error: could not compile `num-modular` (lib) due to 1 previous error
+test result: ok. 72 passed; 0 failed; 0 ignored; 0 measured; 146 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+=== wasm recheck ===
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.64s

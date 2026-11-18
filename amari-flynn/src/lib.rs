@@ -41,12 +41,21 @@
 //!
 //! // Create probabilistic values
 //! let coin_flip = Prob::with_probability(0.5, true);
+//! ```
+//!
+//! With the `std` feature (distributions and rare events):
+//!
+//! ```rust
+//! # #[cfg(feature = "std")]
+//! # {
+//! use amari_flynn::prelude::*;
 //!
 //! // Sample from distributions
 //! let die_roll = Uniform::new(1, 6).sample();
 //!
 //! // Track rare events
 //! let miracle_shot = RareEvent::<()>::new(0.001, "critical_hit");
+//! # }
 //! ```
 //!
 //! ## Future Integration with Amari
@@ -56,10 +65,9 @@
 //!
 //! ## Roadmap
 //!
-//! - **SMT-LIB2 Backend** (v0.19.0): Generate proof obligations in SMT-LIB2 format
-//!   for Z3, CVC5, and other solvers. See [`backend::smt`].
-//! - **Creusot Support**: Rust-native formal verification
-//! - **External Solver Integration**: Automatic invocation of installed solvers
+//! - **SMT-LIB2 Backend**: solver-valid proof obligations in QF_NRA with
+//!   certified rational enclosures (see backend::smt; std builds).
+//! - **Creusot Support**: Rust-native formal verification (future)
 //!
 //! ## The ISO Philosophy
 //!
@@ -87,23 +95,29 @@
 #![warn(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(all(feature = "alloc", not(feature = "std")))]
+extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
 pub mod backend;
 pub mod contracts;
+#[cfg(feature = "std")]
 pub mod distributions;
 pub mod prob;
 pub mod statistical;
 
 /// Prelude module for common imports
 pub mod prelude {
-    pub use crate::backend::monte_carlo::MonteCarloVerifier;
-    pub use crate::backend::smt::{ObligationKind, SmtProofObligation};
+    pub use crate::backend::monte_carlo::{MonteCarloVerifier, DEFAULT_DELTA};
+    #[cfg(feature = "std")]
+    pub use crate::backend::smt::{EmissionMode, ObligationKind, SmtProofObligation};
+    #[cfg(feature = "alloc")]
+    pub use crate::contracts::RareEvent;
     pub use crate::contracts::{
-        EventVerification, ProbabilisticContract, RareEvent, StatisticalProperty,
-        VerificationResult,
+        EventVerification, ProbabilisticContract, StatisticalProperty, VerificationResult,
     };
+    #[cfg(feature = "std")]
     pub use crate::distributions::{Bernoulli, Exponential, Normal, Uniform};
     pub use crate::prob::Prob;
 }

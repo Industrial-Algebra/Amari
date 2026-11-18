@@ -1,0 +1,5 @@
+# Retain the smoke entry point: without an explicit entry the linker's
+# garbage collection strips main and every consumer path (R1 P1 — the
+# first ELF was entry-0 with no executable sections).
+[target.thumbv7em-none-eabihf]
+rustflags = ["-C", "link-arg=--entry=main"]

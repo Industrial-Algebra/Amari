@@ -224,13 +224,13 @@ console.log("Converged state:", final);`,
         }
 
         // Run dynamics from partial cue
-        const cue = [1, 1, 0, 0, 0, 0, 0, 0];
-        let state = [...cue];
+        const cue: number[] = [1, 1, 0, 0, 0, 0, 0, 0];
+        let state: number[] = [...cue];
 
-        const history = [state.map(s => s > 0 ? 1 : -1)];
+        const history: (1 | -1)[][] = [state.map(s => (s > 0 ? 1 : -1) as 1 | -1)];
 
         for (let iter = 0; iter < 10; iter++) {
-          const newState = [];
+          const newState: (1 | -1)[] = [];
           for (let i = 0; i < n; i++) {
             let h = 0;
             for (let j = 0; j < n; j++) {
@@ -238,8 +238,8 @@ console.log("Converged state:", final);`,
             }
             newState.push(h > 0 ? 1 : -1);
           }
+          history.push([...newState]);
           state = newState;
-          history.push([...state]);
 
           // Check convergence
           if (JSON.stringify(history[history.length - 1]) ===
@@ -801,7 +801,7 @@ attractors.forEach((a, i) => {
         const numAttractors = 3;
 
         // Generate random attractors
-        const attractors = [];
+        const attractors: number[][] = [];
         for (let a = 0; a < numAttractors; a++) {
           attractors.push(Array(n).fill(0).map(() => Math.random() * 2 * Math.PI));
         }

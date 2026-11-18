@@ -26,9 +26,19 @@ amari-rewrite-macros = { workspace = true, optional = true }
 # imports), and their transitive `zip ^8.6.0` requirement became unsatisfiable
 # when zip's entire 8.x line was yanked from crates.io, breaking every
 # `--all-features` CI resolution without a single line of code being involved.
-# The `neural` feature stays trait-only. When a backend is wanted, adopt
-# Katakuri (Shandora workspace, built over Zunesha) — do NOT re-introduce a
-# pre-declared tensor-framework dependency.
+#
+# ADOPTED 2026-10-26 (Task 40, operator decision): the neural backend is
+# Katakuri 0.2.0 (model/weight layer: `MlpSpec`, canonical tensor order — it
+# never computes) over borsalino-tensor (typed tensor op-set + CPU T1
+# reference: matmul/add/…). Both are consumed for real below, which is what
+# the removed note demanded: no pre-declared, unconsumed dependency.
+#
+# The borsalino-tensor git dep is TEMPORARY BY DESIGN: it is refined by the
+# requirements Amari discovers (Cohort 8) and publishes as part of a
+# Borsalino 0.9.0 release; Amari switches to the version dep before the
+# 0.25.0 release, because git dependencies block `cargo publish`.
+katakuri = { version = "0.2.0", optional = true }
+borsalino-tensor = { git = "https://github.com/Industrial-Algebra/Borsalino.git", branch = "develop", optional = true }
 z3 = { version = "=0.20.2", default-features = false, features = ["vendored"], optional = true }
 
 [features]
@@ -40,7 +50,7 @@ serialize = ["dep:serde"]
 completion = []
 macros = ["dep:amari-rewrite-macros"]
 smt = ["std", "dep:z3"]
-neural = ["std"]
+neural = ["std", "dep:katakuri", "dep:borsalino-tensor"]
 network = ["std", "neural", "dep:amari-network"]
 holographic-guidance = ["std", "dep:amari-holographic"]
 

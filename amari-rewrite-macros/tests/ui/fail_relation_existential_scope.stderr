@@ -1,0 +1,5 @@
+error: existential variable `X` occurs on both sides of the relation; an existential variable must be bound by exactly one side
+ --> tests/ui/fail_relation_existential_scope.rs:6:30
+  |
+6 |     let _ = relation!(exists X. f(X) <=> g(X));
+  |                              ^

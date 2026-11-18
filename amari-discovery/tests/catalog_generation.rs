@@ -443,9 +443,9 @@ timeout_millis = 1000
 fn probe_descriptors_equal_manifest() {
     let catalog = generate_workspace_catalog(workspace_root()).unwrap();
 
-    // probes.toml has 23 probes (Task 35 adds the analysis and
-    // completion probes).
-    assert_eq!(catalog.probe_descriptors.len(), 23);
+    // probes.toml has 25 probes (Task 39 adds the specialization and
+    // inverse-synthesis probes).
+    assert_eq!(catalog.probe_descriptors.len(), 25);
 
     let ids: BTreeSet<String> = catalog
         .probe_descriptors

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! UI contracts for `derive(Rewritable)`: diagnostics, hygiene, and
-//! renamed-crate support. `term!`/`rule!` fixtures arrive in Task 5.
+//! UI contracts for `derive(Rewritable)` and the checked construction
+//! macros: diagnostics, hygiene, and renamed-crate support.
 
 #[test]
 fn rewritable_ui() {
@@ -9,6 +9,7 @@ fn rewritable_ui() {
     cases.pass("tests/ui/pass_enum.rs");
     cases.pass("tests/ui/pass_struct_children.rs");
     cases.pass("tests/ui/pass_term_rule.rs");
+    cases.pass("tests/ui/pass_relation.rs");
     cases.compile_fail("tests/ui/fail_union.rs");
     cases.compile_fail("tests/ui/fail_generic.rs");
     cases.compile_fail("tests/ui/fail_duplicate_child.rs");
@@ -18,6 +19,19 @@ fn rewritable_ui() {
     cases.compile_fail("tests/ui/fail_term_literal.rs");
     cases.compile_fail("tests/ui/fail_rule_arrow.rs");
     cases.compile_fail("tests/ui/fail_rule_trailing.rs");
+    cases.compile_fail("tests/ui/fail_relation_rule_arrow.rs");
+    cases.compile_fail("tests/ui/fail_relation_reverse_arrow.rs");
+    cases.compile_fail("tests/ui/fail_relation_missing_arrow.rs");
+    cases.compile_fail("tests/ui/fail_relation_forward_variable.rs");
+    cases.compile_fail("tests/ui/fail_relation_existential_scope.rs");
+    cases.compile_fail("tests/ui/fail_relation_existential_absent.rs");
+    cases.compile_fail("tests/ui/fail_relation_existential_incomplete.rs");
+    cases.compile_fail("tests/ui/fail_relation_existential_dot.rs");
+    cases.compile_fail("tests/ui/fail_relation_constraint_operator.rs");
+    cases.compile_fail("tests/ui/fail_relation_constraint_operand.rs");
+    cases.compile_fail("tests/ui/fail_relation_constraint_missing.rs");
+    cases.compile_fail("tests/ui/fail_relation_constraint_comma.rs");
+    cases.compile_fail("tests/ui/fail_relation_constraint_variable.rs");
 }
 
 /// Renamed-crate support: the fixture under `tests/renamed` depends on

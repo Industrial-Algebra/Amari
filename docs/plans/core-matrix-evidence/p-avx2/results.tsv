@@ -1,0 +1,6 @@
+config	cmd	exit
+default	 --test simd_audit	0
+default-full	 	0
+minimal	--no-default-features --test simd_audit	0
+native	--features native-precision --test simd_audit	0
+all	--all-features --test simd_audit	0

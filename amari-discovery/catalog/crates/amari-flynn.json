@@ -10,13 +10,22 @@
   ],
   "features": [
     {
+      "name": "alloc"
+    },
+    {
       "name": "default",
       "enables": [
         "std"
       ]
     },
     {
-      "name": "std"
+      "name": "std",
+      "enables": [
+        "alloc"
+      ]
+    },
+    {
+      "name": "z3-tests"
     }
   ],
   "dependencies": [
@@ -26,6 +35,14 @@
       "kind": "normal",
       "version": "0.24.1",
       "path": "amari-flynn-macros",
+      "optional": false,
+      "default_features": true
+    },
+    {
+      "alias": "libm",
+      "package": "libm",
+      "kind": "normal",
+      "version": "0.2",
       "optional": false,
       "default_features": true
     },
@@ -82,6 +99,25 @@
   ],
   "items": [
     {
+      "path": "amari_flynn::backend::monte_carlo::DEFAULT_DELTA",
+      "kind": "const",
+      "signature": "pub const DEFAULT_DELTA : f64",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DEFAULT_DELTA : f64",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "DEFAULT_DELTA"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier",
       "kind": "struct",
       "signature": "pub struct MonteCarloVerifier",
@@ -109,6 +145,25 @@
       ]
     },
     {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::delta",
+      "kind": "method",
+      "signature": "pub fn delta (& self) -> f64",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn delta (& self) -> f64",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::delta"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::estimate_probability",
       "kind": "method",
       "signature": "pub fn estimate_probability < F > (& self , predicate : F) -> (f64 , f64 , f64) where F : Fn () -> bool ,",
@@ -124,6 +179,25 @@
           "is_reexport": false,
           "declaration_module": "amari_flynn::backend::monte_carlo",
           "declaration_ident": "MonteCarloVerifier::estimate_probability"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::estimate_probability_with_rng",
+      "kind": "method",
+      "signature": "pub fn estimate_probability_with_rng < R , F > (& self , rng : & mut R , predicate : F) -> (f64 , f64 , f64) where R : Rng , F : FnMut (& mut R) -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn estimate_probability_with_rng < R , F > (& self , rng : & mut R , predicate : F) -> (f64 , f64 , f64) where R : Rng , F : FnMut (& mut R) -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::estimate_probability_with_rng"
         }
       ]
     },
@@ -147,21 +221,181 @@
       ]
     },
     {
-      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_probability_bound",
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::samples",
       "kind": "method",
-      "signature": "pub fn verify_probability_bound < F > (& self , predicate : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+      "signature": "pub fn samples (& self) -> usize",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
       "is_reexport": false,
       "source_module": "amari_flynn::backend::monte_carlo",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn verify_probability_bound < F > (& self , predicate : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+          "signature": "pub fn samples (& self) -> usize",
           "source_path": "amari-flynn/src/backend/monte_carlo.rs",
           "source_module": "amari_flynn::backend::monte_carlo",
           "is_reexport": false,
           "declaration_module": "amari_flynn::backend::monte_carlo",
-          "declaration_ident": "MonteCarloVerifier::verify_probability_bound"
+          "declaration_ident": "MonteCarloVerifier::samples"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_probability_at_least",
+      "kind": "method",
+      "signature": "pub fn verify_probability_at_least < F > (& self , predicate : F , threshold : f64) -> VerificationResult where F : Fn () -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_probability_at_least < F > (& self , predicate : F , threshold : f64) -> VerificationResult where F : Fn () -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_probability_at_least"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_probability_at_least_with_rng",
+      "kind": "method",
+      "signature": "pub fn verify_probability_at_least_with_rng < R , F > (& self , rng : & mut R , predicate : F , threshold : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_probability_at_least_with_rng < R , F > (& self , rng : & mut R , predicate : F , threshold : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_probability_at_least_with_rng"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_violation_bound",
+      "kind": "method",
+      "signature": "pub fn verify_violation_bound < F > (& self , violation : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_violation_bound < F > (& self , violation : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_violation_bound"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_violation_bound_with_rng",
+      "kind": "method",
+      "signature": "pub fn verify_violation_bound_with_rng < R , F > (& self , rng : & mut R , violation : F , bound : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_violation_bound_with_rng < R , F > (& self , rng : & mut R , violation : F , bound : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_violation_bound_with_rng"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::with_confidence",
+      "kind": "method",
+      "signature": "pub fn with_confidence (samples : usize , delta : f64) -> Self",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_confidence (samples : usize , delta : f64) -> Self",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::with_confidence"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::smt::EmissionMode",
+      "kind": "enum",
+      "signature": "pub enum EmissionMode",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "CertifiedEnclosure",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Exact",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Rounded",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum EmissionMode",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "CertifiedEnclosure",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Exact",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Rounded",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "EmissionMode"
         }
       ]
     },
@@ -371,6 +605,10 @@
             "ty": "ObligationKind"
           },
           {
+            "label": "mode",
+            "ty": "EmissionMode"
+          },
+          {
             "label": "variables",
             "ty": "Vec < SmtVariable >"
           },
@@ -401,6 +639,10 @@
               {
                 "label": "kind",
                 "ty": "ObligationKind"
+              },
+              {
+                "label": "mode",
+                "ty": "EmissionMode"
               },
               {
                 "label": "variables",
@@ -436,6 +678,25 @@
           "is_reexport": false,
           "declaration_module": "amari_flynn::backend::smt",
           "declaration_ident": "SmtProofObligation::add_assertion"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::add_system_assertion",
+      "kind": "method",
+      "signature": "pub fn add_system_assertion (& mut self , expr : impl Into < String > , comment : Option < String >)",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn add_system_assertion (& mut self , expr : impl Into < String > , comment : Option < String >)",
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "SmtProofObligation::add_system_assertion"
         }
       ]
     },
@@ -478,6 +739,25 @@
       ]
     },
     {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::observe_mean",
+      "kind": "method",
+      "signature": "pub fn observe_mean (& mut self , lower : f64 , upper : f64)",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn observe_mean (& mut self , lower : f64 , upper : f64)",
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "SmtProofObligation::observe_mean"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::backend::smt::SmtProofObligation::to_smtlib2",
       "kind": "method",
       "signature": "pub fn to_smtlib2 (& self) -> String",
@@ -499,19 +779,38 @@
     {
       "path": "amari_flynn::backend::smt::SmtProofObligation::verify_with_monte_carlo",
       "kind": "method",
-      "signature": "pub fn verify_with_monte_carlo (& self , samples : usize) -> VerificationResult",
+      "signature": "pub fn verify_with_monte_carlo < F > (& self , predicate : F , samples : usize) -> VerificationResult where F : Fn () -> bool ,",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "is_reexport": false,
       "source_module": "amari_flynn::backend::smt",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn verify_with_monte_carlo (& self , samples : usize) -> VerificationResult",
+          "signature": "pub fn verify_with_monte_carlo < F > (& self , predicate : F , samples : usize) -> VerificationResult where F : Fn () -> bool ,",
           "source_path": "amari-flynn/src/backend/smt.rs",
           "source_module": "amari_flynn::backend::smt",
           "is_reexport": false,
           "declaration_module": "amari_flynn::backend::smt",
           "declaration_ident": "SmtProofObligation::verify_with_monte_carlo"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::with_mode",
+      "kind": "method",
+      "signature": "pub fn with_mode (name : impl Into < String > , description : impl Into < String > , kind : ObligationKind , mode : EmissionMode ,) -> Self",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_mode (name : impl Into < String > , description : impl Into < String > , kind : ObligationKind , mode : EmissionMode ,) -> Self",
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "SmtProofObligation::with_mode"
         }
       ]
     },
@@ -683,6 +982,25 @@
       ]
     },
     {
+      "path": "amari_flynn::backend::smt::hoeffding_obligation_with_mode",
+      "kind": "fn",
+      "signature": "pub fn hoeffding_obligation_with_mode (name : impl Into < String > , n : usize , epsilon : f64 , delta : f64 , mode : EmissionMode ,) -> SmtProofObligation",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn hoeffding_obligation_with_mode (name : impl Into < String > , n : usize , epsilon : f64 , delta : f64 , mode : EmissionMode ,) -> SmtProofObligation",
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "hoeffding_obligation_with_mode"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::backend::smt::postcondition_obligation",
       "kind": "fn",
       "signature": "pub fn postcondition_obligation (name : impl Into < String > , condition_desc : impl Into < String > , probability : f64 ,) -> SmtProofObligation",
@@ -717,71 +1035,6 @@
           "is_reexport": false,
           "declaration_module": "amari_flynn::backend::smt",
           "declaration_ident": "precondition_obligation"
-        }
-      ]
-    },
-    {
-      "path": "amari_flynn::backend::why3::Why3Generator",
-      "kind": "struct",
-      "signature": "pub struct Why3Generator",
-      "shape": {
-        "kind": "struct",
-        "fields": []
-      },
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "is_reexport": false,
-      "source_module": "amari_flynn::backend::why3",
-      "variants": [
-        {
-          "kind": "struct",
-          "signature": "pub struct Why3Generator",
-          "shape": {
-            "kind": "struct",
-            "fields": []
-          },
-          "source_path": "amari-flynn/src/backend/why3.rs",
-          "source_module": "amari_flynn::backend::why3",
-          "is_reexport": false,
-          "declaration_module": "amari_flynn::backend::why3",
-          "declaration_ident": "Why3Generator"
-        }
-      ]
-    },
-    {
-      "path": "amari_flynn::backend::why3::Why3Generator::generate_probability_theory",
-      "kind": "method",
-      "signature": "pub fn generate_probability_theory (& self , _description : & str) -> String",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "is_reexport": false,
-      "source_module": "amari_flynn::backend::why3",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn generate_probability_theory (& self , _description : & str) -> String",
-          "source_path": "amari-flynn/src/backend/why3.rs",
-          "source_module": "amari_flynn::backend::why3",
-          "is_reexport": false,
-          "declaration_module": "amari_flynn::backend::why3",
-          "declaration_ident": "Why3Generator::generate_probability_theory"
-        }
-      ]
-    },
-    {
-      "path": "amari_flynn::backend::why3::Why3Generator::new",
-      "kind": "method",
-      "signature": "pub fn new () -> Self",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "is_reexport": false,
-      "source_module": "amari_flynn::backend::why3",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn new () -> Self",
-          "source_path": "amari-flynn/src/backend/why3.rs",
-          "source_module": "amari_flynn::backend::why3",
-          "is_reexport": false,
-          "declaration_module": "amari_flynn::backend::why3",
-          "declaration_ident": "Why3Generator::new"
         }
       ]
     },
@@ -1198,6 +1451,25 @@
       ]
     },
     {
+      "path": "amari_flynn::distributions::Bernoulli::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < bool >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < bool >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Bernoulli::sample_with_rng"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::distributions::Exponential",
       "kind": "struct",
       "signature": "pub struct Exponential",
@@ -1259,6 +1531,25 @@
           "is_reexport": false,
           "declaration_module": "amari_flynn::distributions",
           "declaration_ident": "Exponential::sample"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::distributions::Exponential::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Exponential::sample_with_rng"
         }
       ]
     },
@@ -1328,6 +1619,25 @@
       ]
     },
     {
+      "path": "amari_flynn::distributions::Normal::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Normal::sample_with_rng"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::distributions::Uniform",
       "kind": "struct",
       "signature": "pub struct Uniform < T >",
@@ -1393,6 +1703,25 @@
       ]
     },
     {
+      "path": "amari_flynn::distributions::Uniform::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < i32 >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < i32 >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Uniform::sample_with_rng"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::prelude::Bernoulli",
       "kind": "struct",
       "signature": "pub struct Bernoulli",
@@ -1454,6 +1783,109 @@
           "is_reexport": true,
           "declaration_module": "amari_flynn::distributions",
           "declaration_ident": "Bernoulli::sample"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::Bernoulli::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < bool >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < bool >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Bernoulli::sample_with_rng"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::DEFAULT_DELTA",
+      "kind": "const",
+      "signature": "pub const DEFAULT_DELTA : f64",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DEFAULT_DELTA : f64",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "DEFAULT_DELTA"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::EmissionMode",
+      "kind": "enum",
+      "signature": "pub enum EmissionMode",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "CertifiedEnclosure",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Exact",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Rounded",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum EmissionMode",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "CertifiedEnclosure",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Exact",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Rounded",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "EmissionMode"
         }
       ]
     },
@@ -1607,6 +2039,25 @@
       ]
     },
     {
+      "path": "amari_flynn::prelude::Exponential::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Exponential::sample_with_rng"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::prelude::MonteCarloVerifier",
       "kind": "struct",
       "signature": "pub struct MonteCarloVerifier",
@@ -1634,6 +2085,25 @@
       ]
     },
     {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::delta",
+      "kind": "method",
+      "signature": "pub fn delta (& self) -> f64",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn delta (& self) -> f64",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::delta"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::prelude::MonteCarloVerifier::estimate_probability",
       "kind": "method",
       "signature": "pub fn estimate_probability < F > (& self , predicate : F) -> (f64 , f64 , f64) where F : Fn () -> bool ,",
@@ -1649,6 +2119,25 @@
           "is_reexport": true,
           "declaration_module": "amari_flynn::backend::monte_carlo",
           "declaration_ident": "MonteCarloVerifier::estimate_probability"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::estimate_probability_with_rng",
+      "kind": "method",
+      "signature": "pub fn estimate_probability_with_rng < R , F > (& self , rng : & mut R , predicate : F) -> (f64 , f64 , f64) where R : Rng , F : FnMut (& mut R) -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn estimate_probability_with_rng < R , F > (& self , rng : & mut R , predicate : F) -> (f64 , f64 , f64) where R : Rng , F : FnMut (& mut R) -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::estimate_probability_with_rng"
         }
       ]
     },
@@ -1672,21 +2161,116 @@
       ]
     },
     {
-      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_probability_bound",
+      "path": "amari_flynn::prelude::MonteCarloVerifier::samples",
       "kind": "method",
-      "signature": "pub fn verify_probability_bound < F > (& self , predicate : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+      "signature": "pub fn samples (& self) -> usize",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
       "is_reexport": true,
       "source_module": "amari_flynn::backend::monte_carlo",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn verify_probability_bound < F > (& self , predicate : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+          "signature": "pub fn samples (& self) -> usize",
           "source_path": "amari-flynn/src/backend/monte_carlo.rs",
           "source_module": "amari_flynn::backend::monte_carlo",
           "is_reexport": true,
           "declaration_module": "amari_flynn::backend::monte_carlo",
-          "declaration_ident": "MonteCarloVerifier::verify_probability_bound"
+          "declaration_ident": "MonteCarloVerifier::samples"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_probability_at_least",
+      "kind": "method",
+      "signature": "pub fn verify_probability_at_least < F > (& self , predicate : F , threshold : f64) -> VerificationResult where F : Fn () -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_probability_at_least < F > (& self , predicate : F , threshold : f64) -> VerificationResult where F : Fn () -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_probability_at_least"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_probability_at_least_with_rng",
+      "kind": "method",
+      "signature": "pub fn verify_probability_at_least_with_rng < R , F > (& self , rng : & mut R , predicate : F , threshold : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_probability_at_least_with_rng < R , F > (& self , rng : & mut R , predicate : F , threshold : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_probability_at_least_with_rng"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_violation_bound",
+      "kind": "method",
+      "signature": "pub fn verify_violation_bound < F > (& self , violation : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_violation_bound < F > (& self , violation : F , bound : f64) -> VerificationResult where F : Fn () -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_violation_bound"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_violation_bound_with_rng",
+      "kind": "method",
+      "signature": "pub fn verify_violation_bound_with_rng < R , F > (& self , rng : & mut R , violation : F , bound : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn verify_violation_bound_with_rng < R , F > (& self , rng : & mut R , violation : F , bound : f64 ,) -> VerificationResult where R : Rng , F : FnMut (& mut R) -> bool ,",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::verify_violation_bound_with_rng"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::with_confidence",
+      "kind": "method",
+      "signature": "pub fn with_confidence (samples : usize , delta : f64) -> Self",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::monte_carlo",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_confidence (samples : usize , delta : f64) -> Self",
+          "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+          "source_module": "amari_flynn::backend::monte_carlo",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::monte_carlo",
+          "declaration_ident": "MonteCarloVerifier::with_confidence"
         }
       ]
     },
@@ -1752,6 +2336,25 @@
           "is_reexport": true,
           "declaration_module": "amari_flynn::distributions",
           "declaration_ident": "Normal::sample"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::Normal::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < f64 >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Normal::sample_with_rng"
         }
       ]
     },
@@ -2236,6 +2839,10 @@
             "ty": "ObligationKind"
           },
           {
+            "label": "mode",
+            "ty": "EmissionMode"
+          },
+          {
             "label": "variables",
             "ty": "Vec < SmtVariable >"
           },
@@ -2266,6 +2873,10 @@
               {
                 "label": "kind",
                 "ty": "ObligationKind"
+              },
+              {
+                "label": "mode",
+                "ty": "EmissionMode"
               },
               {
                 "label": "variables",
@@ -2301,6 +2912,25 @@
           "is_reexport": true,
           "declaration_module": "amari_flynn::backend::smt",
           "declaration_ident": "SmtProofObligation::add_assertion"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::SmtProofObligation::add_system_assertion",
+      "kind": "method",
+      "signature": "pub fn add_system_assertion (& mut self , expr : impl Into < String > , comment : Option < String >)",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn add_system_assertion (& mut self , expr : impl Into < String > , comment : Option < String >)",
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "SmtProofObligation::add_system_assertion"
         }
       ]
     },
@@ -2343,6 +2973,25 @@
       ]
     },
     {
+      "path": "amari_flynn::prelude::SmtProofObligation::observe_mean",
+      "kind": "method",
+      "signature": "pub fn observe_mean (& mut self , lower : f64 , upper : f64)",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn observe_mean (& mut self , lower : f64 , upper : f64)",
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "SmtProofObligation::observe_mean"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::prelude::SmtProofObligation::to_smtlib2",
       "kind": "method",
       "signature": "pub fn to_smtlib2 (& self) -> String",
@@ -2364,19 +3013,38 @@
     {
       "path": "amari_flynn::prelude::SmtProofObligation::verify_with_monte_carlo",
       "kind": "method",
-      "signature": "pub fn verify_with_monte_carlo (& self , samples : usize) -> VerificationResult",
+      "signature": "pub fn verify_with_monte_carlo < F > (& self , predicate : F , samples : usize) -> VerificationResult where F : Fn () -> bool ,",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "is_reexport": true,
       "source_module": "amari_flynn::backend::smt",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn verify_with_monte_carlo (& self , samples : usize) -> VerificationResult",
+          "signature": "pub fn verify_with_monte_carlo < F > (& self , predicate : F , samples : usize) -> VerificationResult where F : Fn () -> bool ,",
           "source_path": "amari-flynn/src/backend/smt.rs",
           "source_module": "amari_flynn::backend::smt",
           "is_reexport": true,
           "declaration_module": "amari_flynn::backend::smt",
           "declaration_ident": "SmtProofObligation::verify_with_monte_carlo"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::SmtProofObligation::with_mode",
+      "kind": "method",
+      "signature": "pub fn with_mode (name : impl Into < String > , description : impl Into < String > , kind : ObligationKind , mode : EmissionMode ,) -> Self",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::backend::smt",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_mode (name : impl Into < String > , description : impl Into < String > , kind : ObligationKind , mode : EmissionMode ,) -> Self",
+          "source_path": "amari-flynn/src/backend/smt.rs",
+          "source_module": "amari_flynn::backend::smt",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::backend::smt",
+          "declaration_ident": "SmtProofObligation::with_mode"
         }
       ]
     },
@@ -2518,6 +3186,25 @@
           "is_reexport": true,
           "declaration_module": "amari_flynn::distributions",
           "declaration_ident": "Uniform::sample"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::prelude::Uniform::sample_with_rng",
+      "kind": "method",
+      "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < i32 >",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "is_reexport": true,
+      "source_module": "amari_flynn::distributions",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn sample_with_rng < R : Rng > (& self , rng : & mut R) -> Prob < i32 >",
+          "source_path": "amari-flynn/src/distributions.rs",
+          "source_module": "amari_flynn::distributions",
+          "is_reexport": true,
+          "declaration_module": "amari_flynn::distributions",
+          "declaration_ident": "Uniform::sample_with_rng"
         }
       ]
     },
@@ -2814,14 +3501,14 @@
     {
       "path": "amari_flynn::statistical::bounds::chernoff_bound",
       "kind": "fn",
-      "signature": "pub fn chernoff_bound (_n : usize , mu : f64 , delta : f64) -> f64",
+      "signature": "pub fn chernoff_bound (n : usize , mu : f64 , delta : f64) -> f64",
       "source_path": "amari-flynn/src/statistical/bounds.rs",
       "is_reexport": false,
       "source_module": "amari_flynn::statistical::bounds",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn chernoff_bound (_n : usize , mu : f64 , delta : f64) -> f64",
+          "signature": "pub fn chernoff_bound (n : usize , mu : f64 , delta : f64) -> f64",
           "source_path": "amari-flynn/src/statistical/bounds.rs",
           "source_module": "amari_flynn::statistical::bounds",
           "is_reexport": false,
@@ -2869,6 +3556,25 @@
       ]
     },
     {
+      "path": "amari_flynn::statistical::bounds::hoeffding_epsilon",
+      "kind": "fn",
+      "signature": "pub fn hoeffding_epsilon (n : usize , delta : f64) -> f64",
+      "source_path": "amari-flynn/src/statistical/bounds.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::statistical::bounds",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn hoeffding_epsilon (n : usize , delta : f64) -> f64",
+          "source_path": "amari-flynn/src/statistical/bounds.rs",
+          "source_module": "amari_flynn::statistical::bounds",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::statistical::bounds",
+          "declaration_ident": "hoeffding_epsilon"
+        }
+      ]
+    },
+    {
       "path": "amari_flynn::statistical::estimators::confidence_interval",
       "kind": "fn",
       "signature": "pub fn confidence_interval (successes : usize , total : usize , confidence : f64) -> (f64 , f64)",
@@ -2884,6 +3590,25 @@
           "is_reexport": false,
           "declaration_module": "amari_flynn::statistical::estimators",
           "declaration_ident": "confidence_interval"
+        }
+      ]
+    },
+    {
+      "path": "amari_flynn::statistical::estimators::confidence_z_score",
+      "kind": "fn",
+      "signature": "pub fn confidence_z_score (confidence : f64) -> f64",
+      "source_path": "amari-flynn/src/statistical/estimators.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn::statistical::estimators",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn confidence_z_score (confidence : f64) -> f64",
+          "source_path": "amari-flynn/src/statistical/estimators.rs",
+          "source_module": "amari_flynn::statistical::estimators",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn::statistical::estimators",
+          "declaration_ident": "confidence_z_score"
         }
       ]
     },
@@ -3015,6 +3740,24 @@
   "trait_implementations": [
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_flynn::backend::smt::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_flynn::backend::smt::ObligationKind",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 4,
@@ -3053,7 +3796,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_flynn::backend::smt::SmtProofObligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -3251,6 +3994,24 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_flynn::prelude::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_flynn::prelude::EventVerification",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 5,
@@ -3363,7 +4124,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_flynn::prelude::SmtProofObligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -3448,6 +4209,24 @@
         "ident": "ProbabilityDensity"
       },
       "generics": "< T >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_flynn::backend::smt::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -3581,6 +4360,24 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_flynn::prelude::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_flynn::prelude::EventVerification",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 5,
@@ -3729,6 +4526,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_flynn::backend::smt::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_flynn::backend::smt::ObligationKind",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 4,
@@ -3767,7 +4582,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_flynn::backend::smt::SmtProofObligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -3812,24 +4627,6 @@
         "kind": "local",
         "module": "amari_flynn::backend::smt",
         "ident": "SmtVariable"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": true
-    },
-    {
-      "trait_path": "Debug",
-      "impl_type_path": "amari_flynn::backend::why3::Why3Generator",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "source_ordinal": 0,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Debug"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_flynn::backend::why3",
-        "ident": "Why3Generator"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -3983,6 +4780,24 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_flynn::prelude::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_flynn::prelude::EventVerification",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 5,
@@ -4095,7 +4910,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_flynn::prelude::SmtProofObligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 8,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -4188,7 +5003,7 @@
       "trait_path": "Default",
       "impl_type_path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Default"
@@ -4204,27 +5019,9 @@
     },
     {
       "trait_path": "Default",
-      "impl_type_path": "amari_flynn::backend::why3::Why3Generator",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "source_ordinal": 2,
-      "trait_endpoint": {
-        "kind": "external",
-        "path": "Default"
-      },
-      "impl_type_endpoint": {
-        "kind": "local",
-        "module": "amari_flynn::backend::why3",
-        "ident": "Why3Generator"
-      },
-      "unsafe_trait": false,
-      "negative": false,
-      "is_derived": false
-    },
-    {
-      "trait_path": "Default",
       "impl_type_path": "amari_flynn::prelude::MonteCarloVerifier",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Default"
@@ -4256,6 +5053,24 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": false
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_flynn::backend::smt::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
     },
     {
       "trait_path": "Eq",
@@ -4306,6 +5121,24 @@
         "kind": "local",
         "module": "amari_flynn::contracts",
         "ident": "VerificationResult"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_flynn::prelude::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -4349,6 +5182,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_flynn::backend::smt::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_flynn::backend::smt::SmtSort",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 0,
@@ -4396,6 +5247,24 @@
         "kind": "local",
         "module": "amari_flynn::contracts",
         "ident": "VerificationResult"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_flynn::prelude::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_flynn::backend::smt",
+        "ident": "EmissionMode"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -4510,7 +5379,7 @@
       "surface_kind": "module"
     },
     {
-      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier",
+      "path": "amari_flynn::backend::monte_carlo::DEFAULT_DELTA",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
       "source_ordinal": 0,
       "gate": "always",
@@ -4518,9 +5387,33 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::delta",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::estimate_probability",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::estimate_probability_with_rng",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -4534,7 +5427,47 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_probability_bound",
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::samples",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_probability_at_least",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_probability_at_least_with_rng",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_violation_bound",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::verify_violation_bound_with_rng",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::monte_carlo::MonteCarloVerifier::with_confidence",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
       "source_ordinal": 1,
       "gate": "always",
@@ -4545,15 +5478,23 @@
       "path": "amari_flynn::backend::smt",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "module"
+    },
+    {
+      "path": "amari_flynn::backend::smt::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::backend::smt::ObligationKind",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 4,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4561,60 +5502,28 @@
       "path": "amari_flynn::backend::smt::SmtAssertion",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 3,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::backend::smt::SmtProofObligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 6,
-      "gate": "always",
+      "source_ordinal": 8,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::backend::smt::SmtProofObligation::add_assertion",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 2,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_flynn::backend::smt::SmtProofObligation::add_variable",
-      "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 1,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_flynn::backend::smt::SmtProofObligation::new",
-      "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 0,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_flynn::backend::smt::SmtProofObligation::to_smtlib2",
-      "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 3,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_flynn::backend::smt::SmtProofObligation::verify_with_monte_carlo",
-      "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 5,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_flynn::backend::smt::SmtProofObligation::write_to_file",
+      "path": "amari_flynn::backend::smt::SmtProofObligation::add_system_assertion",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 4,
       "gate": "feature(\"std\")",
@@ -4622,10 +5531,66 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::add_variable",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::new",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::observe_mean",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::to_smtlib2",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::verify_with_monte_carlo",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::with_mode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::backend::smt::SmtProofObligation::write_to_file",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 7,
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_flynn::backend::smt::SmtSort",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4633,73 +5598,49 @@
       "path": "amari_flynn::backend::smt::SmtVariable",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 2,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::backend::smt::expected_value_obligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 11,
-      "gate": "always",
+      "source_ordinal": 17,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::backend::smt::hoeffding_obligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 8,
-      "gate": "always",
+      "source_ordinal": 12,
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn::backend::smt::hoeffding_obligation_with_mode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 13,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::backend::smt::postcondition_obligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 10,
-      "gate": "always",
+      "source_ordinal": 15,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::backend::smt::precondition_obligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 9,
-      "gate": "always",
+      "source_ordinal": 14,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
-    },
-    {
-      "path": "amari_flynn::backend::why3",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "source_ordinal": 0,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "module"
-    },
-    {
-      "path": "amari_flynn::backend::why3::Why3Generator",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "source_ordinal": 0,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "top_level"
-    },
-    {
-      "path": "amari_flynn::backend::why3::Why3Generator::generate_probability_theory",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "source_ordinal": 1,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_flynn::backend::why3::Why3Generator::new",
-      "source_path": "amari-flynn/src/backend/why3.rs",
-      "source_ordinal": 0,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
     },
     {
       "path": "amari_flynn::contracts",
@@ -4745,7 +5686,7 @@
       "path": "amari_flynn::contracts::RareEvent",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 3,
-      "gate": "always",
+      "gate": "feature(\"alloc\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4753,7 +5694,7 @@
       "path": "amari_flynn::contracts::RareEvent::description",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 2,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4761,7 +5702,7 @@
       "path": "amari_flynn::contracts::RareEvent::is_rare",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 3,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4769,7 +5710,7 @@
       "path": "amari_flynn::contracts::RareEvent::new",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4777,7 +5718,7 @@
       "path": "amari_flynn::contracts::RareEvent::probability",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4817,7 +5758,7 @@
       "path": "amari_flynn::distributions",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "module"
     },
@@ -4825,7 +5766,7 @@
       "path": "amari_flynn::distributions::Bernoulli",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 2,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4833,7 +5774,7 @@
       "path": "amari_flynn::distributions::Bernoulli::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4841,7 +5782,15 @@
       "path": "amari_flynn::distributions::Bernoulli::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::distributions::Bernoulli::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4849,7 +5798,7 @@
       "path": "amari_flynn::distributions::Exponential",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 6,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4857,7 +5806,7 @@
       "path": "amari_flynn::distributions::Exponential::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4865,7 +5814,15 @@
       "path": "amari_flynn::distributions::Exponential::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::distributions::Exponential::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4873,7 +5830,7 @@
       "path": "amari_flynn::distributions::Normal",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 4,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4881,7 +5838,7 @@
       "path": "amari_flynn::distributions::Normal::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4889,7 +5846,15 @@
       "path": "amari_flynn::distributions::Normal::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::distributions::Normal::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4897,7 +5862,7 @@
       "path": "amari_flynn::distributions::Uniform",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4905,7 +5870,7 @@
       "path": "amari_flynn::distributions::Uniform::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4913,7 +5878,15 @@
       "path": "amari_flynn::distributions::Uniform::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "feature(\"std\")",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::distributions::Uniform::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"std\")",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4929,7 +5902,7 @@
       "path": "amari_flynn::prelude::Bernoulli",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 2,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4937,7 +5910,7 @@
       "path": "amari_flynn::prelude::Bernoulli::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4945,9 +5918,33 @@
       "path": "amari_flynn::prelude::Bernoulli::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::Bernoulli::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::DEFAULT_DELTA",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn::prelude::EmissionMode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 6,
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::prelude::EventVerification",
@@ -4969,7 +5966,7 @@
       "path": "amari_flynn::prelude::Exponential",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 6,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -4977,7 +5974,7 @@
       "path": "amari_flynn::prelude::Exponential::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -4985,22 +5982,46 @@
       "path": "amari_flynn::prelude::Exponential::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::Exponential::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_flynn::prelude::MonteCarloVerifier",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
-      "source_ordinal": 0,
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::delta",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_flynn::prelude::MonteCarloVerifier::estimate_probability",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::estimate_probability_with_rng",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -5014,7 +6035,47 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_probability_bound",
+      "path": "amari_flynn::prelude::MonteCarloVerifier::samples",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_probability_at_least",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_probability_at_least_with_rng",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_violation_bound",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::verify_violation_bound_with_rng",
+      "source_path": "amari-flynn/src/backend/monte_carlo.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::MonteCarloVerifier::with_confidence",
       "source_path": "amari-flynn/src/backend/monte_carlo.rs",
       "source_ordinal": 1,
       "gate": "always",
@@ -5025,7 +6086,7 @@
       "path": "amari_flynn::prelude::Normal",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 4,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -5033,7 +6094,7 @@
       "path": "amari_flynn::prelude::Normal::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5041,7 +6102,15 @@
       "path": "amari_flynn::prelude::Normal::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::Normal::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5049,7 +6118,7 @@
       "path": "amari_flynn::prelude::ObligationKind",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 4,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -5145,7 +6214,7 @@
       "path": "amari_flynn::prelude::RareEvent",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 3,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"))",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -5153,7 +6222,7 @@
       "path": "amari_flynn::prelude::RareEvent::description",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 2,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"), all(feature(\"alloc\")))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5161,7 +6230,7 @@
       "path": "amari_flynn::prelude::RareEvent::is_rare",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 3,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"), all(feature(\"alloc\")))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5169,7 +6238,7 @@
       "path": "amari_flynn::prelude::RareEvent::new",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"), all(feature(\"alloc\")))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5177,31 +6246,39 @@
       "path": "amari_flynn::prelude::RareEvent::probability",
       "source_path": "amari-flynn/src/contracts.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "all(feature(\"alloc\"), all(feature(\"alloc\")))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_flynn::prelude::SmtProofObligation",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 6,
-      "gate": "always",
+      "source_ordinal": 8,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
       "path": "amari_flynn::prelude::SmtProofObligation::add_assertion",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 2,
-      "gate": "always",
+      "source_ordinal": 3,
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::SmtProofObligation::add_system_assertion",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 4,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_flynn::prelude::SmtProofObligation::add_variable",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 1,
-      "gate": "always",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5209,31 +6286,47 @@
       "path": "amari_flynn::prelude::SmtProofObligation::new",
       "source_path": "amari-flynn/src/backend/smt.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::SmtProofObligation::observe_mean",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 5,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_flynn::prelude::SmtProofObligation::to_smtlib2",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 3,
-      "gate": "always",
+      "source_ordinal": 6,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_flynn::prelude::SmtProofObligation::verify_with_monte_carlo",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 5,
-      "gate": "always",
+      "source_ordinal": 8,
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::SmtProofObligation::with_mode",
+      "source_path": "amari-flynn/src/backend/smt.rs",
+      "source_ordinal": 1,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_flynn::prelude::SmtProofObligation::write_to_file",
       "source_path": "amari-flynn/src/backend/smt.rs",
-      "source_ordinal": 4,
-      "gate": "feature(\"std\")",
+      "source_ordinal": 7,
+      "gate": "all(feature(\"std\"), all(feature(\"std\")))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5265,7 +6358,7 @@
       "path": "amari_flynn::prelude::Uniform",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "top_level"
     },
@@ -5273,7 +6366,7 @@
       "path": "amari_flynn::prelude::Uniform::new",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 0,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5281,7 +6374,15 @@
       "path": "amari_flynn::prelude::Uniform::sample",
       "source_path": "amari-flynn/src/distributions.rs",
       "source_ordinal": 1,
-      "gate": "always",
+      "gate": "all(feature(\"std\"))",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_flynn::prelude::Uniform::sample_with_rng",
+      "source_path": "amari-flynn/src/distributions.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"std\"))",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
@@ -5408,7 +6509,7 @@
     {
       "path": "amari_flynn::statistical::bounds::chernoff_bound",
       "source_path": "amari-flynn/src/statistical/bounds.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -5416,7 +6517,7 @@
     {
       "path": "amari_flynn::statistical::bounds::compute_confidence",
       "source_path": "amari-flynn/src/statistical/bounds.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -5425,6 +6526,14 @@
       "path": "amari_flynn::statistical::bounds::hoeffding_bound",
       "source_path": "amari-flynn/src/statistical/bounds.rs",
       "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn::statistical::bounds::hoeffding_epsilon",
+      "source_path": "amari-flynn/src/statistical/bounds.rs",
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -5441,6 +6550,14 @@
       "path": "amari_flynn::statistical::estimators::confidence_interval",
       "source_path": "amari-flynn/src/statistical/estimators.rs",
       "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn::statistical::estimators::confidence_z_score",
+      "source_path": "amari-flynn/src/statistical/estimators.rs",
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -5468,7 +6585,6 @@
     "amari_flynn::backend",
     "amari_flynn::backend::monte_carlo",
     "amari_flynn::backend::smt",
-    "amari_flynn::backend::why3",
     "amari_flynn::contracts",
     "amari_flynn::distributions",
     "amari_flynn::prelude",

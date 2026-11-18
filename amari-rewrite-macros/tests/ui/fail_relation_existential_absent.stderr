@@ -1,0 +1,5 @@
+error: existential variable `Z` does not occur on either side of the relation
+ --> tests/ui/fail_relation_existential_absent.rs:6:30
+  |
+6 |     let _ = relation!(exists Z. f(X) <=> g(X));
+  |                              ^

@@ -1,0 +1,38 @@
+warning: unreachable expression
+   --> amari-core/src/simd.rs:168:5
+    |
+150 |         return geometric_product_3d_avx2;
+    |         -------------------------------- any code following this expression is unreachable
+...
+168 |     |lhs, rhs| lhs.geometric_product(rhs)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unreachable expression
+    |
+    = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: unreachable expression
+   --> amari-core/src/simd.rs:202:5
+    |
+185 |         return "avx2+fma";
+    |         ----------------- any code following this expression is unreachable
+...
+202 |     "scalar-fallback"
+    |     ^^^^^^^^^^^^^^^^^ unreachable expression
+
+warning: `amari-core` (lib) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/simd_audit.rs (target/avx2-gate/debug/deps/simd_audit-44677e844a9a8c97)
+
+running 10 tests
+test batch_contract::batch_matches_scalar_on_full_pairs ... ok
+test bound_rejection::bound_rejects_bogus_results_at_max_scale ... ok
+test batch_contract::batch_rejects_partial_tails - should panic ... ok
+test simd_rows::runtime_inventory ... ok
+test oracle_subnormal_regression::oracle_handles_subnormal_results ... ok
+test simd_rows::tier1_expected_divergent_inf_minus_inf ... ok
+test simd_rows::tier1_all_basis_pairs ... ok
+test simd_rows::tier1_adversarial_sets ... ok
+test oracle_selfcheck::oracle_agrees_with_scalar_on_dense_inputs ... ok
+test simd_rows::tier1_randomized_dense ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.78s
+

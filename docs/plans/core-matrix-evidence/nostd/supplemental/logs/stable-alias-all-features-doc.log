@@ -1,0 +1,10 @@
+   Compiling libc v0.2.191
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+    Checking either v1.19.0
+    Checking rayon v1.12.0
+    Checking gmp-mpfr-sys v1.7.1
+    Checking rug v1.30.0
+ Documenting amari-core v0.24.1 (/home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/amari-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.78s
+   Generated /home/lucien/working/industrial-algebra/Amari/.worktrees/core-nostd/target/mh-s3-stable/x86_64-unknown-linux-gnu/doc/amari_core/index.html

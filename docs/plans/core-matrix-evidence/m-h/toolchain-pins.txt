@@ -1,0 +1,8 @@
+# Exact toolchain identities for every M-H quadrant (rustc -vV commit-hash).
+# Runners assert these; full dumps archived as toolchain-<mode>.txt.
+# stable: 1.98.0
+88d9e12ae178fab0fb5cc050a94da85685d449ea
+# nightly (researched pin, matrix §4): 1.100.0-nightly 2026-08-25
+787af2b8c80638c51a4fc8e44f84e6891f243ec7
+# MSRV: 1.89.0
+29483883eed69d5fb4db01964cdf2af4d86e9cb2

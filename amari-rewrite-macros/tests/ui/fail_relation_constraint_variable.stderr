@@ -1,0 +1,5 @@
+error: relation constraint variable `Y` does not occur in the relation
+ --> tests/ui/fail_relation_constraint_variable.rs:6:43
+  |
+6 |     let _ = relation!(f(X) <=> g(X) where Y != zero);
+  |                                           ^

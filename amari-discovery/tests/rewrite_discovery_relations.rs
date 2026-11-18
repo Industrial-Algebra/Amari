@@ -81,8 +81,8 @@ fn catalog_descriptors_cover_all_three_relation_probes() {
     for id in [SYMBOLIC, ANALYSIS, REPLAY] {
         assert!(probes.iter().any(|known| known == id), "missing {id}");
     }
-    // Descriptor count is locked: Task 35 extended the set again.
-    assert_eq!(probes.len(), 23);
+    // Descriptor count is locked: Task 39 extended the set again.
+    assert_eq!(probes.len(), 25);
 }
 
 #[test]

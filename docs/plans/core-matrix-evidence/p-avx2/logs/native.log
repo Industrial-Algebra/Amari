@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/simd_audit.rs (target/avx2-gate/debug/deps/simd_audit-112cdcefaa2efdc2)
+
+running 10 tests
+test batch_contract::batch_matches_scalar_on_full_pairs ... ok
+test simd_rows::runtime_inventory ... ok
+test batch_contract::batch_rejects_partial_tails - should panic ... ok
+test bound_rejection::bound_rejects_bogus_results_at_max_scale ... ok
+test oracle_subnormal_regression::oracle_handles_subnormal_results ... ok
+test simd_rows::tier1_expected_divergent_inf_minus_inf ... ok
+test simd_rows::tier1_all_basis_pairs ... ok
+test simd_rows::tier1_adversarial_sets ... ok
+test oracle_selfcheck::oracle_agrees_with_scalar_on_dense_inputs ... ok
+test simd_rows::tier1_randomized_dense ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.14s
+

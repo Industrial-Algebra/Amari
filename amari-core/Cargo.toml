@@ -11,11 +11,16 @@ keywords = ["geometric-algebra", "clifford-algebra", "mathematics", "linear-alge
 categories = ["mathematics", "science", "algorithms"]
 
 [dependencies]
-num-traits = { workspace = true }
+num-traits = { version = "0.2", default-features = false }
 approx = { workspace = true }
 rayon = { workspace = true, optional = true }
 bytemuck = { workspace = true }
-thiserror = { workspace = true }
+# Target-side float dispatch (P-EMBED S2b): the std-only transcendental
+# methods route through libm on no-std targets. Same lock version as
+# num-traits' optional edge (0.2.16) — zero new resolution; inert on
+# host std builds (cfg-gated use in src/math_dispatch.rs).
+libm = "0.2"
+thiserror = { version = "2", default-features = false }
 serde = { workspace = true, optional = true }
 rug = { version = "1.24", optional = true }
 dashu-float = { version = "0.4.3", optional = true, default-features = false }
@@ -32,11 +37,11 @@ rand = "0.10"
 
 [features]
 default = ["std", "phantom-types", "high-precision", "gf2"]
-std = []
+std = ["num-traits/std", "thiserror/std", ]
 serialize = ["serde"]
 parallel = ["rayon"]
 # Phantom types for compile-time verification (works on stable)
-phantom-types = []
+phantom-types = ["num-traits/libm"]
 # High-precision arithmetic (pure Rust, WASM-compatible)
 high-precision = ["dep:dashu-float", "dashu-float/std"]
 # WASM-compatible high-precision (alias for high-precision)

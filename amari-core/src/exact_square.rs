@@ -244,7 +244,7 @@ impl SignedAccumulator {
         let r = e.rem_euclid(2);
         let q = (e - r) / 2;
         let radicand = if r == 1 { mantissa * 2.0 } else { mantissa };
-        scale_pow2(radicand.sqrt(), q)
+        scale_pow2(crate::math_dispatch::sqrt_f64(radicand), q)
     }
 }
 
@@ -516,7 +516,7 @@ impl ExactSquare {
                 let r = e.rem_euclid(2);
                 let q = (e - r) / 2;
                 let radicand = if r == 1 { mantissa * 2.0 } else { mantissa };
-                (sign, radicand.sqrt(), q)
+                (sign, crate::math_dispatch::sqrt_f64(radicand), q)
             }
             None => (0, 0.0, 0),
         }
@@ -1876,7 +1876,7 @@ impl ExactPositive {
     /// Range-safe natural logarithm `ln(m) + e·ln 2` with `m in [1, 2)`.
     pub(crate) fn ln(&self) -> f64 {
         let (significand, exponent) = normalized_dyadic(&self.magnitude, self.exponent);
-        significand.ln() + (exponent as f64) * core::f64::consts::LN_2
+        crate::math_dispatch::ln_f64(significand) + (exponent as f64) * core::f64::consts::LN_2
     }
 
     /// Range-safe half logarithm `½·ln(self)`.
@@ -1894,7 +1894,8 @@ impl ExactPositive {
         let (num_significand, num_exponent) = normalized_dyadic(&self.magnitude, self.exponent);
         let (den_significand, den_exponent) =
             normalized_dyadic(&denominator.magnitude, denominator.exponent);
-        num_significand.ln() - den_significand.ln()
+        crate::math_dispatch::ln_f64(num_significand)
+            - crate::math_dispatch::ln_f64(den_significand)
             + ((num_exponent - den_exponent) as f64) * core::f64::consts::LN_2
     }
 }

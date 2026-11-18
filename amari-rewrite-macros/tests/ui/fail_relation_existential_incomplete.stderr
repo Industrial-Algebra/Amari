@@ -1,0 +1,5 @@
+error: the reverse direction erases variable `Z`, but the declaration does not mark it `exists`; mark it `exists` or omit the existential marker entirely
+ --> tests/ui/fail_relation_existential_incomplete.rs:6:46
+  |
+6 |     let _ = relation!(exists Y. triple(X, Y, Z) <=> X);
+  |                                              ^

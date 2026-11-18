@@ -25,7 +25,9 @@ const REWRITE_PREDECESSORS: &str = "amari-probe:rewrite:predecessors:v1";
 const REWRITE_PREIMAGES: &str = "amari-probe:rewrite:preimages:v1";
 const REWRITE_INVERSE_ANALYSIS: &str = "amari-probe:rewrite:inverse-analysis:v1";
 const REWRITE_RESIDUAL_REPLAY: &str = "amari-probe:rewrite:residual-replay:v1";
+const REWRITE_SPECIALIZE: &str = "amari-probe:rewrite:specialize:v1";
 const REWRITE_SYMBOLIC_PREDECESSORS: &str = "amari-probe:rewrite:symbolic-predecessors:v1";
+const REWRITE_SYNTHESIZE_INVERSE: &str = "amari-probe:rewrite:synthesize-inverse:v1";
 const RECALL: &str = "amari-probe:holographic:recall:v1";
 const SUPERPOSITION: &str = "amari-probe:holographic:superposition:v1";
 const RATIONAL_ARITHMETIC: &str = "amari-probe:surreal:rational-arithmetic:v1";
@@ -60,7 +62,9 @@ fn engine_derives_executable_state_from_the_private_registry() {
     let rewrite_preimages = REWRITE_PREIMAGES.parse().unwrap();
     let rewrite_inverse_analysis = REWRITE_INVERSE_ANALYSIS.parse().unwrap();
     let rewrite_residual_replay = REWRITE_RESIDUAL_REPLAY.parse().unwrap();
+    let rewrite_specialize = REWRITE_SPECIALIZE.parse().unwrap();
     let rewrite_symbolic_predecessors = REWRITE_SYMBOLIC_PREDECESSORS.parse().unwrap();
+    let rewrite_synthesize_inverse = REWRITE_SYNTHESIZE_INVERSE.parse().unwrap();
     let recall = RECALL.parse().unwrap();
     let superposition = SUPERPOSITION.parse().unwrap();
     let surreal = RATIONAL_ARITHMETIC.parse().unwrap();
@@ -133,6 +137,14 @@ fn engine_derives_executable_state_from_the_private_registry() {
         cfg!(feature = "standard-probes")
     );
     assert_eq!(
+        engine.is_executable(&rewrite_specialize),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
+        engine.is_executable(&rewrite_synthesize_inverse),
+        cfg!(feature = "standard-probes")
+    );
+    assert_eq!(
         engine.is_executable(&surreal),
         cfg!(feature = "standard-probes")
     );
@@ -167,7 +179,9 @@ fn engine_derives_executable_state_from_the_private_registry() {
                 rewrite_predecessors,
                 rewrite_preimages,
                 rewrite_residual_replay,
+                rewrite_specialize,
                 rewrite_symbolic_predecessors,
+                rewrite_synthesize_inverse,
                 surcomplex,
                 surreal,
                 viterbi,

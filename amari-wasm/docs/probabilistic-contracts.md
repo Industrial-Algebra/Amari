@@ -52,8 +52,8 @@ async function flynnDemo() {
   const estimate = verifier.estimateProbability(10000, 0.7);
   console.log(`P = ${estimate[0].toFixed(3)} [${estimate[1].toFixed(3)}, ${estimate[2].toFixed(3)}]`);
 
-  const check = verifier.verifyProbabilityBound(0.3, 0.5);
-  console.log(`P(success) <= 0.5: ${check}`); // "Verified"
+  const check = verifier.verifyProbabilityAtLeast(0.8, 0.5);
+  console.log(`P(success) >= 0.5: ${check}`); // "Verified"
 
   // Probabilistic values
   const coinFlip = WasmProb.withProbability(0.5, 1.0);
@@ -100,7 +100,7 @@ Bernoulli-parameterized statistical verification.
 
 - `new(samples)`: Create verifier
 - `estimateProbability(trials, successProb)`: Returns [estimate, lower, upper] (95% CI)
-- `verifyProbabilityBound(successProb, bound)`: Check P <= bound, returns `"Verified"` / `"Violated"` / `"Inconclusive"`
+- `verifyProbabilityAtLeast(successProb, bound)`: Check P(success) >= bound, returns `"Verified"` / `"Violated"` / `"Inconclusive"`
 
 ### WasmProb
 
