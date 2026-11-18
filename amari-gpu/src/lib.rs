@@ -1394,9 +1394,9 @@ impl GpuFisherMatrix {
     pub async fn eigenvalues(&self) -> Result<Vec<f64>, GpuError> {
         // Simplified eigenvalue computation
         let mut eigenvals = Vec::new();
-        for i in 0..self.matrix.len() {
-            if i < self.matrix[i].len() {
-                eigenvals.push(self.matrix[i][i]);
+        for (i, row) in self.matrix.iter().enumerate() {
+            if let Some(&value) = row.get(i) {
+                eigenvals.push(value);
             }
         }
         Ok(eigenvals)

@@ -15,7 +15,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # Core WASM dependencies
-wasm-bindgen = "0.2"
+# Drift-stability pin (0.2.x <-> 0.3.x version-locked pair): the wasm surface
+# catalog embeds the exact .d.ts this version emits; bump both pins deliberately
+# together with a full regen chain (surface + structural catalog) in one PR.
+wasm-bindgen = "=0.2.130"
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 serde = { workspace = true }
@@ -61,7 +64,7 @@ features = [
 ]
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3"
+wasm-bindgen-test = "=0.3.80"
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-O4"]

@@ -350,7 +350,7 @@ impl GpuOptimizer {
             }
 
             // Check convergence
-            let grad_norm = gradient.norm();
+            let grad_norm = gradient.norm_squared().sqrt();
             if grad_norm < tolerance {
                 iterations = iter;
                 break;
