@@ -31,7 +31,8 @@ use amari_rewrite::inverse::{
     config_hash, guidance_hash, score_candidate, scorer_hash, scorer_hash_with,
     symbolic_predecessors, BackwardExplorer, BackwardSearchOutcome, GuidanceCandidate,
     GuidanceFailureKind, GuidanceMode, GuidanceRequest, GuidanceStrategy, GuidedSearchOutcome,
-    InverseSearchConfig, SearchMode, SymbolicPredecessor, SymbolicScore, SymbolicState,
+    InverseSearchConfig, ReplayCertificate, ReplayDerivation, ReplayQuery, ResourceObservation,
+    SearchMode, SymbolicPredecessor, SymbolicScore, SymbolicState,
 };
 use amari_rewrite::neural::{
     FeatureEncoder, FeatureSchemaV1, MlpRanker, NeuralStrategy, NeuralStrategyConfig, RankerConfig,
@@ -148,7 +149,9 @@ fn strategy(ranker: MlpRanker) -> NeuralStrategy {
     NeuralStrategy::from_ranker(ranker, encoder())
 }
 
-fn guided(outcome: Result<GuidedSearchOutcome, amari_rewrite::RewriteError>) -> GuidedSearchOutcome {
+fn guided(
+    outcome: Result<GuidedSearchOutcome, amari_rewrite::RewriteError>,
+) -> GuidedSearchOutcome {
     outcome.expect("search must not return a hard error")
 }
 
@@ -189,12 +192,13 @@ fn two_candidate_system() -> TermSystem {
     ])
 }
 
-/// `b => x`, `f(c) => x`, `d => f(c)`: both candidates reach the goal, so the
-/// visit order decides which (equally valid) witness is returned.
+/// `b => x`, `f(c) => x`, `d => b`, `d => f(c)`: both candidates reach the
+/// goal, so the visit order decides which (equally valid) witness is returned.
 fn two_witness_system() -> TermSystem {
     system(vec![
         Rule::new(parse("b"), parse("x")).unwrap(),
         Rule::new(parse("f(c)"), parse("x")).unwrap(),
+        Rule::new(parse("d"), parse("b")).unwrap(),
         Rule::new(parse("d"), parse("f(c)")).unwrap(),
     ])
 }
@@ -225,15 +229,7 @@ impl Round {
             .iter()
             .zip(&states)
             .map(|(predecessor, state)| {
-                score_candidate(
-                    &parent,
-                    state,
-                    predecessor,
-                    1,
-                    branch_factor,
-                    false,
-                    0,
-                )
+                score_candidate(&parent, state, predecessor, 1, branch_factor, false, 0)
             })
             .collect();
         Self {
@@ -282,15 +278,13 @@ fn complete_mode_preserves_the_candidate_set() {
         .unwrap();
     let adapter = strategy(constant_ranker());
     let guided_outcome = completed(guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("a"),
-                &parse("z"),
-                SearchMode::BreadthFirst,
-                &GuidanceMode::CompleteWithinLimits,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("a"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&adapter),
+        ),
     ));
     let BackwardSearchOutcome::Exhausted(plain) = &baseline else {
         panic!("baseline must exhaust: {baseline:?}");
@@ -314,15 +308,13 @@ fn complete_mode_ordering_steers_without_dropping() {
         .unwrap();
     let adapter = strategy(prefers_larger_terms());
     let guided_outcome = completed(guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("x"),
-                &parse("d"),
-                SearchMode::BreadthFirst,
-                &GuidanceMode::CompleteWithinLimits,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("d"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&adapter),
+        ),
     ));
     let BackwardSearchOutcome::Witness(baseline) = baseline else {
         panic!("baseline must witness");
@@ -334,6 +326,34 @@ fn complete_mode_ordering_steers_without_dropping() {
     assert_eq!(baseline.steps.first().unwrap().term, parse("b"));
     // The neural order takes the candidate the ranker scored better first.
     assert_eq!(neural.steps.first().unwrap().term, parse("f(c)"));
+    // Steering never changes what a derivation IS: the neural witness replays
+    // through the original system and verifies as a certificate under the same
+    // guidance-mode identity as the symbolic one.
+    let query = ReplayQuery::Backward {
+        target: parse("x"),
+        goal: parse("d"),
+    };
+    let resources = ResourceObservation {
+        states: 3,
+        transitions: 2,
+        retained_bytes: 256,
+        operations: 8,
+    };
+    let certificate = ReplayCertificate::issue(
+        &system,
+        query,
+        ReplayDerivation::Backward(neural),
+        small_config(),
+        GuidanceMode::CompleteWithinLimits,
+        resources,
+    );
+    certificate
+        .verify(&system)
+        .expect("a neural-ordered derivation must replay and verify");
+    assert_eq!(
+        certificate.guidance_hash,
+        guidance_hash(&GuidanceMode::CompleteWithinLimits)
+    );
 }
 
 /// The adapter's ranking really prefers what the ranker scored better: the
@@ -407,15 +427,13 @@ fn heuristic_mode_records_beam_drops() {
     let adapter = strategy(prefers_larger_terms());
     let mode = GuidanceMode::HeuristicPruning { beam_width: 1 };
     let outcome = completed(guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("x"),
-                &parse("z"),
-                SearchMode::BreadthFirst,
-                &mode,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &mode,
+            Some(&adapter),
+        ),
     ));
     let evidence = approximate(&outcome);
     assert_eq!(evidence.dropped_candidates, 1);
@@ -435,12 +453,7 @@ fn heuristic_mode_ordering_decides_what_survives_the_beam() {
     ]);
     let mode = GuidanceMode::HeuristicPruning { beam_width: 1 };
     let baseline = BackwardExplorer::new(&system, small_config())
-        .search_with_guidance(
-            &parse("x"),
-            &parse("d"),
-            SearchMode::BreadthFirst,
-            &mode,
-        )
+        .search_with_guidance(&parse("x"), &parse("d"), SearchMode::BreadthFirst, &mode)
         .unwrap();
     assert!(
         matches!(baseline, BackwardSearchOutcome::Approximate(_)),
@@ -448,15 +461,13 @@ fn heuristic_mode_ordering_decides_what_survives_the_beam() {
     );
     let adapter = strategy(prefers_larger_terms());
     let guided_outcome = completed(guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("x"),
-                &parse("d"),
-                SearchMode::BreadthFirst,
-                &mode,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("d"),
+            SearchMode::BreadthFirst,
+            &mode,
+            Some(&adapter),
+        ),
     ));
     let BackwardSearchOutcome::Witness(derivation) = guided_outcome else {
         panic!("the neural beam keeps the route to the goal: {guided_outcome:?}");
@@ -476,15 +487,13 @@ fn pruned_search_cannot_claim_exhaustion() {
     let adapter = strategy(prefers_larger_terms());
     let mode = GuidanceMode::HeuristicPruning { beam_width: 1 };
     let outcome = completed(guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("x"),
-                &parse("z"),
-                SearchMode::BreadthFirst,
-                &mode,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &mode,
+            Some(&adapter),
+        ),
     ));
     assert!(!matches!(outcome, BackwardSearchOutcome::Exhausted(_)));
     let evidence = approximate(&outcome);
@@ -506,15 +515,13 @@ fn model_failure_mid_search_is_a_typed_outcome() {
     let tight = FeatureEncoder::new(RelationLimits::new(1, 64, 4_096, 1_000_000).unwrap());
     let adapter = NeuralStrategy::from_ranker(constant_ranker(), tight);
     let outcome = guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("x"),
-                &parse("z"),
-                SearchMode::BreadthFirst,
-                &GuidanceMode::CompleteWithinLimits,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&adapter),
+        ),
     );
     let GuidedSearchOutcome::StrategyFailed(failure) = outcome else {
         panic!("a mid-search scoring failure must be a typed outcome: {outcome:?}");
@@ -532,7 +539,10 @@ fn model_failure_mid_search_is_a_typed_outcome() {
     assert_eq!(failure.scored, 1);
     // Sanitized: the rendered failure names the stage and the meter only.
     let rendered = failure.to_string();
-    assert!(!rendered.contains('/'), "no paths in a diagnostic: {rendered}");
+    assert!(
+        !rendered.contains('/'),
+        "no paths in a diagnostic: {rendered}"
+    );
 }
 
 /// The candidate set is admitted against the strategy's own ceiling BEFORE
@@ -541,19 +551,21 @@ fn model_failure_mid_search_is_a_typed_outcome() {
 fn bounded_admission_rejects_an_oversized_candidate_set() {
     let system = two_candidate_system();
     let config = NeuralStrategyConfig::new(1).expect("one candidate is a valid ceiling");
-    let adapter =
-        NeuralStrategy::new(constant_ranker(), encoder(), FeatureSchemaV1.digest(), config)
-            .expect("declared schema matches");
+    let adapter = NeuralStrategy::new(
+        constant_ranker(),
+        encoder(),
+        FeatureSchemaV1.digest(),
+        config,
+    )
+    .expect("declared schema matches");
     let outcome = guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("x"),
-                &parse("z"),
-                SearchMode::BreadthFirst,
-                &GuidanceMode::CompleteWithinLimits,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&adapter),
+        ),
     );
     let GuidedSearchOutcome::StrategyFailed(failure) = outcome else {
         panic!("an over-wide round must be rejected: {outcome:?}");
@@ -606,15 +618,13 @@ fn scorer_hash_participates_in_replay_identity() {
     let mode = GuidanceMode::HeuristicPruning { beam_width: 1 };
     let adapter = strategy(prefers_larger_terms());
     let guided_outcome = completed(guided(
-        BackwardExplorer::new(&system, small_config())
-            .search_with_strategy(
-                &parse("x"),
-                &parse("z"),
-                SearchMode::BreadthFirst,
-                &mode,
-                Some(&adapter),
-            )
-            .unwrap(),
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &mode,
+            Some(&adapter),
+        ),
     ));
     let evidence = approximate(&guided_outcome);
     assert_eq!(
@@ -647,15 +657,13 @@ fn identical_inputs_replay_identically() {
     let run = || {
         let adapter = strategy(prefers_larger_terms());
         let outcome = completed(guided(
-            BackwardExplorer::new(&system, small_config())
-                .search_with_strategy(
-                    &parse("x"),
-                    &parse("d"),
-                    SearchMode::BreadthFirst,
-                    &mode,
-                    Some(&adapter),
-                )
-                .unwrap(),
+            BackwardExplorer::new(&system, small_config()).search_with_strategy(
+                &parse("x"),
+                &parse("d"),
+                SearchMode::BreadthFirst,
+                &mode,
+                Some(&adapter),
+            ),
         ));
         (adapter.strategy_hash(), outcome)
     };

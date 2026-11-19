@@ -4171,6 +4171,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::inverse::BackwardExplorer::search_with_strategy",
+      "kind": "method",
+      "signature": "pub fn search_with_strategy (& self , target : & Term , goal : & Term , mode : SearchMode , guidance : & GuidanceMode , strategy : Option < & dyn GuidanceStrategy > ,) -> RewriteResult < GuidedSearchOutcome >",
+      "source_path": "amari-rewrite/src/inverse/backward.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::backward",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn search_with_strategy (& self , target : & Term , goal : & Term , mode : SearchMode , guidance : & GuidanceMode , strategy : Option < & dyn GuidanceStrategy > ,) -> RewriteResult < GuidedSearchOutcome >",
+          "source_path": "amari-rewrite/src/inverse/backward.rs",
+          "source_module": "amari_rewrite::inverse::backward",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::backward",
+          "declaration_ident": "BackwardExplorer::search_with_strategy"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::inverse::BackwardFrontier",
       "kind": "struct",
       "signature": "pub struct BackwardFrontier",
@@ -4986,6 +5005,352 @@
       ]
     },
     {
+      "path": "amari_rewrite::inverse::GuidanceCandidate",
+      "kind": "struct",
+      "signature": "pub struct GuidanceCandidate < 'a >",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "state",
+            "ty": "& 'a SymbolicState"
+          },
+          {
+            "label": "predecessor",
+            "ty": "& 'a SymbolicPredecessor"
+          },
+          {
+            "label": "score",
+            "ty": "& 'a SymbolicScore"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GuidanceCandidate < 'a >",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "state",
+                "ty": "& 'a SymbolicState"
+              },
+              {
+                "label": "predecessor",
+                "ty": "& 'a SymbolicPredecessor"
+              },
+              {
+                "label": "score",
+                "ty": "& 'a SymbolicScore"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceCandidate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceFailure",
+      "kind": "struct",
+      "signature": "pub struct GuidanceFailure",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "kind",
+            "ty": "GuidanceFailureKind"
+          },
+          {
+            "label": "candidates",
+            "ty": "usize"
+          },
+          {
+            "label": "scored",
+            "ty": "usize"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GuidanceFailure",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "kind",
+                "ty": "GuidanceFailureKind"
+              },
+              {
+                "label": "candidates",
+                "ty": "usize"
+              },
+              {
+                "label": "scored",
+                "ty": "usize"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceFailure"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceFailure::new",
+      "kind": "method",
+      "signature": "pub fn new (kind : GuidanceFailureKind , candidates : usize , scored : usize) -> Self",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (kind : GuidanceFailureKind , candidates : usize , scored : usize) -> Self",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceFailure::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "kind": "enum",
+      "signature": "pub enum GuidanceFailureKind",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LimitExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "value",
+                  "ty": "usize"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BudgetExhausted",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "InvalidConfig",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "InvalidParameters",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "InvalidFeatures",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "BackendRejected",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "stage",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NonFiniteScore",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "stage",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Unavailable",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "stage",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "MalformedRanking",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum GuidanceFailureKind",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "LimitExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "value",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "BudgetExhausted",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "InvalidConfig",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "InvalidParameters",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "InvalidFeatures",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "BackendRejected",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NonFiniteScore",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Unavailable",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "MalformedRanking",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceFailureKind"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::inverse::GuidanceMode",
       "kind": "enum",
       "signature": "pub enum GuidanceMode",
@@ -5066,6 +5431,189 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::inverse::guidance",
           "declaration_ident": "GuidanceMode::validate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceRequest",
+      "kind": "struct",
+      "signature": "pub struct GuidanceRequest < 'a >",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "parent",
+            "ty": "& 'a SymbolicState"
+          },
+          {
+            "label": "depth",
+            "ty": "u64"
+          },
+          {
+            "label": "mode",
+            "ty": "& 'a GuidanceMode"
+          },
+          {
+            "label": "candidates",
+            "ty": "& 'a [GuidanceCandidate < 'a >]"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GuidanceRequest < 'a >",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "parent",
+                "ty": "& 'a SymbolicState"
+              },
+              {
+                "label": "depth",
+                "ty": "u64"
+              },
+              {
+                "label": "mode",
+                "ty": "& 'a GuidanceMode"
+              },
+              {
+                "label": "candidates",
+                "ty": "& 'a [GuidanceCandidate < 'a >]"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceRequest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceStrategy",
+      "kind": "trait",
+      "signature": "pub trait GuidanceStrategy",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "trait",
+          "signature": "pub trait GuidanceStrategy",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceStrategy"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceStrategy::rank",
+      "kind": "method",
+      "signature": "fn rank (& self , request : & GuidanceRequest < '_ >) -> Result < Vec < usize > , GuidanceFailure >",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn rank (& self , request : & GuidanceRequest < '_ >) -> Result < Vec < usize > , GuidanceFailure >",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceStrategy::rank"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceStrategy::strategy_hash",
+      "kind": "method",
+      "signature": "fn strategy_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn strategy_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidanceStrategy::strategy_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidedSearchOutcome",
+      "kind": "enum",
+      "signature": "pub enum GuidedSearchOutcome",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Completed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "BackwardSearchOutcome"
+              ]
+            }
+          },
+          {
+            "name": "StrategyFailed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "GuidanceFailure"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum GuidedSearchOutcome",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Completed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "BackwardSearchOutcome"
+                  ]
+                }
+              },
+              {
+                "name": "StrategyFailed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "GuidanceFailure"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "GuidedSearchOutcome"
         }
       ]
     },
@@ -6567,6 +7115,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::inverse::score_candidate",
+      "kind": "fn",
+      "signature": "pub fn score_candidate (parent : & SymbolicState , child : & SymbolicState , predecessor : & SymbolicPredecessor , depth : u64 , branch_factor : u64 , cycle : bool , rule_priority : u64 ,) -> SymbolicScore",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn score_candidate (parent : & SymbolicState , child : & SymbolicState , predecessor : & SymbolicPredecessor , depth : u64 , branch_factor : u64 , cycle : bool , rule_priority : u64 ,) -> SymbolicScore",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "score_candidate"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::inverse::scorer_hash",
       "kind": "fn",
       "signature": "pub fn scorer_hash () -> Sha256Digest",
@@ -6582,6 +7149,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::inverse::guidance",
           "declaration_ident": "scorer_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::scorer_hash_with",
+      "kind": "fn",
+      "signature": "pub fn scorer_hash_with (strategy : Option < & Sha256Digest >) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn scorer_hash_with (strategy : Option < & Sha256Digest >) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "scorer_hash_with"
         }
       ]
     },
@@ -6620,6 +7206,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::inverse::replay",
           "declaration_ident": "system_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::validate_ranking",
+      "kind": "fn",
+      "signature": "pub fn validate_ranking (order : & [usize] , candidates : usize) -> Result < () , GuidanceFailure >",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::inverse::guidance",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn validate_ranking (order : & [usize] , candidates : usize) -> Result < () , GuidanceFailure >",
+          "source_path": "amari-rewrite/src/inverse/guidance.rs",
+          "source_module": "amari_rewrite::inverse::guidance",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::inverse::guidance",
+          "declaration_ident": "validate_ranking"
         }
       ]
     },
@@ -12578,6 +13183,269 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::NeuralStrategy",
+      "kind": "struct",
+      "signature": "pub struct NeuralStrategy",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct NeuralStrategy",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::FRAME",
+      "kind": "const",
+      "signature": "pub const FRAME : & 'static str",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const FRAME : & 'static str",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::config",
+      "kind": "method",
+      "signature": "pub fn config (& self) -> & NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn config (& self) -> & NeuralStrategyConfig",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::config"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::encoder",
+      "kind": "method",
+      "signature": "pub fn encoder (& self) -> & FeatureEncoder",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn encoder (& self) -> & FeatureEncoder",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::encoder"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::from_ranker",
+      "kind": "method",
+      "signature": "pub fn from_ranker (ranker : MlpRanker , encoder : FeatureEncoder) -> Self",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn from_ranker (ranker : MlpRanker , encoder : FeatureEncoder) -> Self",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::from_ranker"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::new",
+      "kind": "method",
+      "signature": "pub fn new (ranker : MlpRanker , encoder : FeatureEncoder , declared_schema : Sha256Digest , config : NeuralStrategyConfig ,) -> Result < Self , StrategyError >",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (ranker : MlpRanker , encoder : FeatureEncoder , declared_schema : Sha256Digest , config : NeuralStrategyConfig ,) -> Result < Self , StrategyError >",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::ranker",
+      "kind": "method",
+      "signature": "pub fn ranker (& self) -> & MlpRanker",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn ranker (& self) -> & MlpRanker",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::ranker"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::replay_hash",
+      "kind": "method",
+      "signature": "pub fn replay_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn replay_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::replay_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::schema_digest",
+      "kind": "method",
+      "signature": "pub fn schema_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn schema_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategy::schema_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "kind": "struct",
+      "signature": "pub struct NeuralStrategyConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct NeuralStrategyConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategyConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig::DEFAULT_MAX_CANDIDATES",
+      "kind": "const",
+      "signature": "pub const DEFAULT_MAX_CANDIDATES : usize",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DEFAULT_MAX_CANDIDATES : usize",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategyConfig::DEFAULT_MAX_CANDIDATES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig::max_candidates",
+      "kind": "method",
+      "signature": "pub fn max_candidates (& self) -> usize",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_candidates (& self) -> usize",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategyConfig::max_candidates"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (max_candidates : usize) -> Result < Self , StrategyError >",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (max_candidates : usize) -> Result < Self , StrategyError >",
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "NeuralStrategyConfig::new"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::ORDER_STREAM_SALT",
       "kind": "const",
       "signature": "pub const ORDER_STREAM_SALT : u64",
@@ -14046,6 +14914,107 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::neural::encode",
           "declaration_ident": "SearchContext::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::neural::StrategyError",
+      "kind": "enum",
+      "signature": "pub enum StrategyError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "FeatureSchemaMismatch",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "expected",
+                  "ty": "Sha256Digest"
+                },
+                {
+                  "name": "recorded",
+                  "ty": "Sha256Digest"
+                }
+              ]
+            }
+          },
+          {
+            "name": "LimitExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "value",
+                  "ty": "usize"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::strategy",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum StrategyError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "FeatureSchemaMismatch",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "expected",
+                      "ty": "Sha256Digest"
+                    },
+                    {
+                      "name": "recorded",
+                      "ty": "Sha256Digest"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "LimitExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "value",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/neural/strategy.rs",
+          "source_module": "amari_rewrite::neural::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::strategy",
+          "declaration_ident": "StrategyError"
         }
       ]
     },
@@ -22335,6 +23304,30 @@
       ]
     },
     {
+      "export_path": "amari_rewrite::inverse::GuidanceStrategy",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 12,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceStrategy"
+      },
+      "required_items": [
+        {
+          "name": "strategy_hash",
+          "kind": "method",
+          "signature": "fn strategy_hash (& self) -> Sha256Digest",
+          "status": "required"
+        },
+        {
+          "name": "rank",
+          "kind": "method",
+          "signature": "fn rank (& self , request : & GuidanceRequest < '_ >) -> Result < Vec < usize > , GuidanceFailure >",
+          "status": "required"
+        }
+      ]
+    },
+    {
       "export_path": "amari_rewrite::neural::DifferentiableRule",
       "source_path": "amari-rewrite/src/neural/mod.rs",
       "source_ordinal": 3,
@@ -23377,6 +24370,61 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceCandidate",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceCandidate"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailure",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailureKind"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::inverse::GuidanceMode",
       "source_path": "amari-rewrite/src/inverse/guidance.rs",
       "source_ordinal": 1,
@@ -23388,6 +24436,43 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::guidance",
         "ident": "GuidanceMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceRequest",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceRequest"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidedSearchOutcome"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -24296,6 +25381,42 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategy",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
       "source_ordinal": 18,
@@ -24469,6 +25590,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::neural::StrategyError",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "StrategyError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -25556,6 +26695,80 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceCandidate",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceCandidate"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailure",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailureKind"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceRequest",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceRequest"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
       "source_path": "amari-rewrite/src/inverse/config.rs",
       "source_ordinal": 2,
@@ -25899,6 +27112,24 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
       "source_ordinal": 18,
@@ -25964,6 +27195,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::neural::StrategyError",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "StrategyError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -27036,6 +28285,61 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceCandidate",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceCandidate"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailure",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailureKind"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::inverse::GuidanceMode",
       "source_path": "amari-rewrite/src/inverse/guidance.rs",
       "source_ordinal": 1,
@@ -27047,6 +28351,43 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::guidance",
         "ident": "GuidanceMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceRequest",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceRequest"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidedSearchOutcome"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -27955,6 +29296,42 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategy",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
       "source_ordinal": 18,
@@ -28128,6 +29505,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::neural::StrategyError",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "StrategyError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -29269,6 +30664,24 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::neural::SearchContext",
       "source_path": "amari-rewrite/src/neural/encode.rs",
       "source_ordinal": 7,
@@ -30206,6 +31619,42 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailure",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailureKind"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
       "source_path": "amari-rewrite/src/inverse/config.rs",
       "source_ordinal": 2,
@@ -30818,6 +32267,24 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
       "source_ordinal": 18,
@@ -30883,6 +32350,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::neural::StrategyError",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "StrategyError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -33738,6 +35223,42 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailure",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailureKind"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::inverse::GuidanceMode",
       "source_path": "amari-rewrite/src/inverse/guidance.rs",
       "source_ordinal": 1,
@@ -33749,6 +35270,24 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::guidance",
         "ident": "GuidanceMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidedSearchOutcome"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -34548,6 +36087,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
       "source_ordinal": 18,
@@ -34721,6 +36278,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::encode",
         "ident": "SearchContext"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::neural::StrategyError",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "StrategyError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -36097,6 +37672,25 @@
       "is_derived": false
     },
     {
+      "trait_path": "amari_rewrite::inverse::GuidanceStrategy",
+      "impl_type_path": "amari_rewrite::neural::NeuralStrategy",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceStrategy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "NeuralStrategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
       "trait_path": "amari_rewrite::neural::DifferentiableRule",
       "impl_type_path": "amari_rewrite::neural::MlpRanker",
       "source_path": "amari-rewrite/src/neural/model.rs",
@@ -36202,6 +37796,24 @@
         "kind": "local",
         "module": "amari_rewrite::relation::digest",
         "ident": "Sha256Digest"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailureKind"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -36432,6 +38044,24 @@
     },
     {
       "trait_path": "thiserror::Error",
+      "impl_type_path": "amari_rewrite::inverse::GuidanceFailure",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "thiserror::Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "thiserror::Error",
       "impl_type_path": "amari_rewrite::neural::CheckpointError",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
       "source_ordinal": 16,
@@ -36443,6 +38073,24 @@
         "kind": "local",
         "module": "amari_rewrite::neural::checkpoint",
         "ident": "CheckpointError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "thiserror::Error",
+      "impl_type_path": "amari_rewrite::neural::StrategyError",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "thiserror::Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::neural::strategy",
+        "ident": "StrategyError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -37179,6 +38827,14 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_rewrite::inverse::BackwardExplorer::search_with_strategy",
+      "source_path": "amari-rewrite/src/inverse/backward.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::inverse::BackwardFrontier",
       "source_path": "amari-rewrite/src/inverse/outcome.rs",
       "source_ordinal": 1,
@@ -37331,6 +38987,38 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::inverse::GuidanceCandidate",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceFailure",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 10,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceFailure::new",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceFailureKind",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 8,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::inverse::GuidanceMode",
       "source_path": "amari-rewrite/src/inverse/guidance.rs",
       "source_ordinal": 1,
@@ -37345,6 +39033,46 @@
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceRequest",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 7,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceStrategy",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceStrategy::rank",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidanceStrategy::strategy_hash",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::GuidedSearchOutcome",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 13,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_rewrite::inverse::InverseSearchConfig",
@@ -37787,9 +39515,25 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::inverse::score_candidate",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 15,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::inverse::scorer_hash",
       "source_path": "amari-rewrite/src/inverse/guidance.rs",
       "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::scorer_hash_with",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -37806,6 +39550,14 @@
       "path": "amari_rewrite::inverse::system_hash",
       "source_path": "amari-rewrite/src/inverse/replay.rs",
       "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::validate_ranking",
+      "source_path": "amari-rewrite/src/inverse/guidance.rs",
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -39755,6 +41507,110 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::neural::NeuralStrategy",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::FRAME",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::config",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::encoder",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::from_ranker",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::new",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::ranker",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::replay_hash",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategy::schema_digest",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig::DEFAULT_MAX_CANDIDATES",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig::max_candidates",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::NeuralStrategyConfig::new",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_rewrite::neural::ORDER_STREAM_SALT",
       "source_path": "amari-rewrite/src/neural/train.rs",
       "source_ordinal": 5,
@@ -40217,6 +42073,14 @@
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::neural::StrategyError",
+      "source_path": "amari-rewrite/src/neural/strategy.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_rewrite::neural::TrainConfig",

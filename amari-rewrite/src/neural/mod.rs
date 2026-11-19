@@ -109,6 +109,7 @@ mod config;
 mod data;
 mod encode;
 mod model;
+mod strategy;
 mod train;
 
 /// Byte cap on caller-supplied text quoted into a diagnostic.
@@ -150,6 +151,7 @@ pub use encode::{
     CANDIDATE_FEATURE_WIDTH,
 };
 pub use model::{MlpRanker, RankedCandidate, RankerWeights, MAX_RANKED_CANDIDATES};
+pub use strategy::{NeuralStrategy, NeuralStrategyConfig, StrategyError};
 pub use train::{
     corpus_from_dataset, example_order, pairwise_hinge, seeded_weights, train, train_from_seed,
     train_with_state, AdamWState, ExampleOrder, HingeEvaluation, LayerGradients,
