@@ -108,7 +108,7 @@ async fn test_probabilistic_public_api_validation_and_cpu_gpu_parity() {
         .await
         .unwrap();
     assert_eq!(deterministic.len(), 128 * 3);
-    for chunk in deterministic.chunks_exact(3) {
+    for chunk in deterministic.as_chunks::<3>().0 {
         assert!((chunk[0] - 1.0).abs() < 1e-6);
         assert!((chunk[1] + 2.0).abs() < 1e-6);
         assert!((chunk[2] - 0.5).abs() < 1e-6);

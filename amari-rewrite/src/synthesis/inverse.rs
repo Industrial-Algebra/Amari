@@ -168,10 +168,11 @@ impl InverseSynthesisConfig {
     /// Revalidate every invariant, including the enclosed
     /// specialization config and its relation limits.
     ///
-    /// `RelationLimits` deserializes through its derived impl, which
-    /// bypasses [`RelationLimits::new`]; re-running the checked
-    /// `SpecializationConfig` constructor here closes that route for a
-    /// config received from anywhere (Task 32/36 precedent).
+    /// A limits value can no longer arrive unvalidated — [`RelationLimits`]
+    /// validates its own wire form (PR #353 round 4 P2b) — but re-running
+    /// the checked `SpecializationConfig` constructor here keeps this
+    /// config's authority a function of its own checked fields, whatever
+    /// produced them (Task 32/36 precedent).
     fn revalidate(&self) -> RewriteResult<()> {
         let specialization = &self.specialization;
         let _checked = SpecializationConfig::new(

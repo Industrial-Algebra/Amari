@@ -1,0 +1,14 @@
+# Isolated carrier fixture (own workspace — P-EMBED smoke pattern):
+# cargo-creusot v0.8.0's metadata check only sees UNCONDITIONAL direct
+# deps, so amari-core's feature-gated formal surface is translated via
+# this carrier. No dev-deps; no std beyond amari-core's own.
+[workspace]
+
+[package]
+name = "c4-smoke"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+creusot-contracts = "=0.8.0"
+amari-core = { path = "../../../../../amari-core", default-features = false, features = ["std", "formal-verification"] }

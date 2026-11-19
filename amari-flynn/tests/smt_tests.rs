@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 //! Integration tests for the SMT-LIB2 backend.
 
 use amari_flynn::backend::smt::{
@@ -11,14 +13,17 @@ fn test_hoeffding_obligation_roundtrip() {
     let ob = hoeffding_obligation("test_hoeffding", 1000, 0.1, 0.05);
     let smt = ob.to_smtlib2();
 
-    // Should be well-formed SMT-LIB2
+    // Well-formed SMT-LIB2 with the certified-enclosure shape (R1: no
+    // n/epsilon/delta variable declarations — all values are exact
+    // rational literals; no exp anywhere).
     assert!(smt.starts_with("; Proof obligation: test_hoeffding"));
     assert!(smt.contains("(set-logic QF_NRA)"));
-    assert!(smt.contains("(declare-const n Real)"));
-    assert!(smt.contains("(declare-const epsilon Real)"));
-    assert!(smt.contains("(declare-const delta Real)"));
     assert!(smt.contains("(declare-const hoeffding_bound Real)"));
-    assert!(smt.contains("(assert (= n 1000.0))"));
+    assert!(smt.contains("(>= hoeffding_bound (/"));
+    assert!(smt.contains("(<= hoeffding_bound (/"));
+    // delta = 0.05 exactly (not a Display decimal).
+    assert!(smt.contains("(not (<= hoeffding_bound (/ 3602879701896397 72057594037927936))"));
+    assert!(!smt.contains("(exp"));
     assert!(smt.contains("(check-sat)"));
     assert!(smt.contains("(exit)"));
 }
@@ -33,9 +38,10 @@ fn test_precondition_obligation_structure() {
     assert!(smt.contains("0.95"));
     assert!(smt.contains("(declare-const p_condition Real)"));
     assert!(smt.contains("(declare-const bound Real)"));
-    // Should have non-negativity and upper bound constraints
+    // Non-negativity and upper bound constraints (upper bound is the
+    // exact rational literal "1").
     assert!(smt.contains("(>= p_condition 0.0)"));
-    assert!(smt.contains("(<= p_condition 1.0)"));
+    assert!(smt.contains("(<= p_condition 1)"));
 }
 
 #[test]
@@ -53,11 +59,16 @@ fn test_expected_value_obligation_structure() {
     let ob = expected_value_obligation("ev_mean_five", 5.0, 0.1, 10000);
     let smt = ob.to_smtlib2();
 
+    // Exact rational literals; certified tail enclosure; NO exp; the
+    // property is |sample_mean - mu| <= epsilon (no (= sample_mean mu)
+    // assumption).
     assert!(smt.contains("(= mu 5)"));
-    assert!(smt.contains("(= epsilon 0.1)"));
-    assert!(smt.contains("(= n 10000.0)"));
+    assert!(smt.contains("(= epsilon (/ 3602879701896397 36028797018963968))"));
+    assert!(smt.contains("(= n 10000)"));
     assert!(smt.contains("tail_prob"));
-    assert!(smt.contains("exp"));
+    assert!(!smt.contains("(exp"));
+    assert!(smt.contains("|sample_mean - mu| <= epsilon"));
+    assert!(!smt.contains("(= sample_mean mu)"));
 }
 
 #[test]
@@ -107,7 +118,9 @@ fn test_monte_carlo_bridge_concentration() {
     // With n=10000 and epsilon=0.1, Hoeffding bound = 2*exp(-200) ≈ 0
     // This should easily verify
     let ob = hoeffding_obligation("mc_bridge", 10000, 0.1, 0.05);
-    let result = ob.verify_with_monte_carlo(10000);
+    // Concentration obligations are self-checks (no system predicate).
+    let result =
+        ob.verify_with_monte_carlo(|| unreachable!("not sampled for concentration"), 10000);
     assert_eq!(result, VerificationResult::Verified);
 }
 
@@ -115,7 +128,8 @@ fn test_monte_carlo_bridge_concentration() {
 fn test_monte_carlo_bridge_expected_value() {
     // With n=10000 and epsilon=0.1, tail_prob is tiny -> Verified
     let ob = expected_value_obligation("mc_ev", 5.0, 0.1, 10000);
-    let result = ob.verify_with_monte_carlo(10000);
+    let result =
+        ob.verify_with_monte_carlo(|| unreachable!("not sampled for expected value"), 10000);
     assert_eq!(result, VerificationResult::Verified);
 }
 

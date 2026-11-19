@@ -117,11 +117,11 @@ pub struct SpecializationConfig {
 #[cfg(feature = "serialize")]
 impl<'de> serde::Deserialize<'de> for SpecializationConfig {
     /// Deserialization routes through the checked constructor, which
-    /// also revalidates the enclosed [`RelationLimits`]: its own
-    /// derive bypasses [`RelationLimits::new`], so a raw
+    /// also revalidates the enclosed [`RelationLimits`]: a raw
     /// `{"max_examples":99999,...}` or a zero/above-ceiling nested
     /// limit never becomes a usable config (Task 32 precedent;
-    /// PR #320 round 1 P2).
+    /// PR #320 round 1 P2). [`RelationLimits`] validates its own wire
+    /// form too (PR #353 round 4 P2b), so this is defence in depth.
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
         #[serde(deny_unknown_fields)]
@@ -170,10 +170,10 @@ impl SpecializationConfig {
 
     /// Revalidate every invariant, including the enclosed limits.
     ///
-    /// `RelationLimits` deserializes through its derived impl, which
-    /// bypasses [`RelationLimits::new`]; re-running the checked
-    /// constructor here closes that route for a config received from
-    /// anywhere.
+    /// A limits value can no longer arrive unvalidated — [`RelationLimits`]
+    /// validates its own wire form (PR #353 round 4 P2b) — but re-running
+    /// the checked constructor here keeps the config's authority a function
+    /// of its own checked fields, whatever produced them.
     fn revalidate(&self) -> RewriteResult<()> {
         self.check("examples", self.max_examples, Self::MAX_EXAMPLES)?;
         self.check("candidates", self.max_candidates, Self::MAX_CANDIDATES)?;

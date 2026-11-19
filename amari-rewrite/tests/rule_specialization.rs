@@ -548,17 +548,29 @@ fn deserialized_config_is_validated() {
 
 #[cfg(feature = "serialize")]
 #[test]
-fn constructor_revalidates_deserialized_relation_limits() {
-    // A raw RelationLimits deserializes through its derive, bypassing
-    // RelationLimits::new; the config constructor must revalidate
-    // every enclosed invariant (PR #320 round 1 P2).
-    let limits: RelationLimits = serde_json::from_str(
+fn deserialized_relation_limits_are_validated_on_the_wire() {
+    // RelationLimits validates on the wire (PR #353 round 4 P2b): a raw
+    // document can no longer smuggle a zero or above-ceiling limit in for a
+    // downstream constructor to catch. The checked constructors still
+    // revalidate as defence in depth (PR #320 round 1 P2), but no decoding
+    // route reaches them with an impossible value any more.
+    for raw in [
         r#"{"max_term_nodes":4096,"max_term_depth":64,"max_constraints":4096,"max_operations":0}"#,
+        r#"{"max_term_nodes":20000,"max_term_depth":64,"max_constraints":4096,"max_operations":1000000}"#,
+        r#"{"max_term_nodes":4096,"max_term_depth":10001,"max_constraints":4096,"max_operations":1000000}"#,
+    ] {
+        assert!(
+            serde_json::from_str::<RelationLimits>(raw).is_err(),
+            "the wire must enforce the hard ceilings: {raw}"
+        );
+    }
+
+    let limits: RelationLimits = serde_json::from_str(
+        r#"{"max_term_nodes":4096,"max_term_depth":64,"max_constraints":4096,"max_operations":1000}"#,
     )
-    .expect("the limits derive accepts the raw value");
-    let error = SpecializationConfig::new(4, 4, 4, limits)
-        .expect_err("zero operations must be rejected at construction");
-    assert!(matches!(error, RewriteError::InvalidLimit { .. }));
+    .expect("admissible limits deserialize");
+    let config = SpecializationConfig::new(4, 4, 4, limits).expect("valid config");
+    assert_eq!(config.limits().max_operations(), 1_000);
 }
 
 #[test]

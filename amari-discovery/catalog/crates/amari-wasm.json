@@ -259,7 +259,7 @@
       "alias": "wasm-bindgen",
       "package": "wasm-bindgen",
       "kind": "normal",
-      "version": "0.2",
+      "version": "=0.2.130",
       "optional": false,
       "default_features": true
     },
@@ -288,7 +288,7 @@
       "alias": "wasm-bindgen-test",
       "package": "wasm-bindgen-test",
       "kind": "development",
-      "version": "0.3",
+      "version": "=0.3.80",
       "optional": false,
       "default_features": true
     }
@@ -7822,21 +7822,21 @@
       ]
     },
     {
-      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_bound",
+      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_at_least",
       "kind": "method",
-      "signature": "pub fn verify_probability_bound (& self , success_probability : f64 , bound : f64) -> String",
+      "signature": "pub fn verify_probability_at_least (& self , success_probability : f64 , bound : f64) -> String",
       "source_path": "amari-wasm/src/flynn.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::flynn",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn verify_probability_bound (& self , success_probability : f64 , bound : f64) -> String",
+          "signature": "pub fn verify_probability_at_least (& self , success_probability : f64 , bound : f64) -> String",
           "source_path": "amari-wasm/src/flynn.rs",
           "source_module": "amari_wasm::flynn",
           "is_reexport": false,
           "declaration_module": "amari_wasm::flynn",
-          "declaration_ident": "WasmMonteCarloVerifier::verify_probability_bound"
+          "declaration_ident": "WasmMonteCarloVerifier::verify_probability_at_least"
         }
       ]
     },
@@ -20763,14 +20763,14 @@
     {
       "path": "amari_wasm::surreal::WasmDyadic::mul",
       "kind": "method",
-      "signature": "pub fn mul (& self , rhs : & WasmDyadic) -> WasmDyadic",
+      "signature": "pub fn mul (& self , rhs : & WasmDyadic) -> Result < WasmDyadic , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn mul (& self , rhs : & WasmDyadic) -> WasmDyadic",
+          "signature": "pub fn mul (& self , rhs : & WasmDyadic) -> Result < WasmDyadic , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -20801,14 +20801,14 @@
     {
       "path": "amari_wasm::surreal::WasmDyadic::new",
       "kind": "method",
-      "signature": "pub fn new (numerator : i32 , exponent : u32) -> Self",
+      "signature": "pub fn new (numerator : i32 , exponent : u32) -> Result < WasmDyadic , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn new (numerator : i32 , exponent : u32) -> Self",
+          "signature": "pub fn new (numerator : i32 , exponent : u32) -> Result < WasmDyadic , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -20942,14 +20942,14 @@
     {
       "path": "amari_wasm::surreal::WasmExperimentalEpsilonRational::add",
       "kind": "method",
-      "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+      "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+          "signature": "pub fn add (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -21075,14 +21075,14 @@
     {
       "path": "amari_wasm::surreal::WasmExperimentalEpsilonRational::monomial",
       "kind": "method",
-      "signature": "pub fn monomial (coeff : & WasmRationalSurreal , exponent : i32) -> Self",
+      "signature": "pub fn monomial (coeff : & WasmRationalSurreal , exponent : i32) -> Result < Self , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn monomial (coeff : & WasmRationalSurreal , exponent : i32) -> Self",
+          "signature": "pub fn monomial (coeff : & WasmRationalSurreal , exponent : i32) -> Result < Self , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -21094,14 +21094,14 @@
     {
       "path": "amari_wasm::surreal::WasmExperimentalEpsilonRational::mul",
       "kind": "method",
-      "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+      "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+          "signature": "pub fn mul (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -21151,14 +21151,14 @@
     {
       "path": "amari_wasm::surreal::WasmExperimentalEpsilonRational::sub",
       "kind": "method",
-      "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+      "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational) -> WasmExperimentalEpsilonRational",
+          "signature": "pub fn sub (& self , rhs : & WasmExperimentalEpsilonRational ,) -> Result < WasmExperimentalEpsilonRational , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -21908,14 +21908,14 @@
     {
       "path": "amari_wasm::surreal::WasmShortSurreal::mul",
       "kind": "method",
-      "signature": "pub fn mul (& self , rhs : & WasmShortSurreal) -> WasmShortSurreal",
+      "signature": "pub fn mul (& self , rhs : & WasmShortSurreal) -> Result < WasmShortSurreal , JsValue >",
       "source_path": "amari-wasm/src/surreal.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::surreal",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn mul (& self , rhs : & WasmShortSurreal) -> WasmShortSurreal",
+          "signature": "pub fn mul (& self , rhs : & WasmShortSurreal) -> Result < WasmShortSurreal , JsValue >",
           "source_path": "amari-wasm/src/surreal.rs",
           "source_module": "amari_wasm::surreal",
           "is_reexport": false,
@@ -28213,7 +28213,7 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_bound",
+      "path": "amari_wasm::flynn::WasmMonteCarloVerifier::verify_probability_at_least",
       "source_path": "amari-wasm/src/flynn.rs",
       "source_ordinal": 2,
       "gate": "always",

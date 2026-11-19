@@ -105,6 +105,25 @@
           "declaration_ident": "prob_requires"
         }
       ]
+    },
+    {
+      "path": "amari_flynn_macros::prob_violation_at_most",
+      "kind": "fn",
+      "signature": "pub fn prob_violation_at_most (attr : TokenStream , item : TokenStream) -> TokenStream",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "is_reexport": false,
+      "source_module": "amari_flynn_macros",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn prob_violation_at_most (attr : TokenStream , item : TokenStream) -> TokenStream",
+          "source_path": "amari-flynn-macros/src/lib.rs",
+          "source_module": "amari_flynn_macros",
+          "is_reexport": false,
+          "declaration_module": "amari_flynn_macros",
+          "declaration_ident": "prob_violation_at_most"
+        }
+      ]
     }
   ],
   "macros": [
@@ -128,13 +147,20 @@
       "kind": "proc_macro_attribute",
       "source_path": "amari-flynn-macros/src/lib.rs",
       "signature": "pub fn prob_requires (attr : TokenStream , item : TokenStream) -> TokenStream"
+    },
+    {
+      "path": "amari_flynn_macros::prob_violation_at_most",
+      "name": "prob_violation_at_most",
+      "kind": "proc_macro_attribute",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "signature": "pub fn prob_violation_at_most (attr : TokenStream , item : TokenStream) -> TokenStream"
     }
   ],
   "cfg_gates": [
     {
       "path": "amari_flynn_macros::ensures_expected",
       "source_path": "amari-flynn-macros/src/lib.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -142,7 +168,7 @@
     {
       "path": "amari_flynn_macros::prob_ensures",
       "source_path": "amari-flynn-macros/src/lib.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -151,6 +177,14 @@
       "path": "amari_flynn_macros::prob_requires",
       "source_path": "amari-flynn-macros/src/lib.rs",
       "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_flynn_macros::prob_violation_at_most",
+      "source_path": "amari-flynn-macros/src/lib.rs",
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"

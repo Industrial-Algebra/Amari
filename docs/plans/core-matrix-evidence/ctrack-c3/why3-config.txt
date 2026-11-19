@@ -1,0 +1,11 @@
+## why3 config detect summary
+'list' is not a why3config command.
+
+Available commands:
+  add-prover               add prover
+  detect                   detect installed provers
+  list-provers             list all the registered provers
+  list-supported-provers   list all the supported provers
+  show                     show the full configuration
+## why3find
+why3find v1.2.0+dev
