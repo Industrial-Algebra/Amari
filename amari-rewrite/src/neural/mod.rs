@@ -86,7 +86,25 @@
 //! sanitized [`TrainingError`] (configuration, ceilings, non-finite values
 //! with their step index); it computes in this crate, so it has no backend
 //! error to translate.
+//!
+//! ## Checkpoints (Task 43)
+//!
+//! [`RankerCheckpoint`] makes a trained ranker resumable. It saves and loads
+//! two artifacts: the weights through Katakuri's validated-checkpoint seam
+//! (`load_validated` + `TrustPolicy`) and the AdamW state through Katakuri's
+//! ratified S6 optimizer-state convention. Validation is complete *before*
+//! a model is built — regular-file check, byte cap, metadata, schema and
+//! architecture agreement, tensor shapes/dtypes, declared hashes, and the
+//! nonfinite scan all run first, so [`RankerCheckpoint::ranker`] is a
+//! separate, post-validation step. Artifacts are byte-stable, in canonical
+//! parameter order, and a resumed training run reproduces the uninterrupted
+//! run bit for bit ([`train_with_state`] is the resume entry point).
+//! Rejections are typed and sanitized: no path, file text, or backend detail
+//! is ever quoted. [`RankerCheckpoint`]'s documentation carries the full
+//! contract, including the temporary git dependency on the unreleased
+//! Katakuri S6 convention.
 
+mod checkpoint;
 mod config;
 mod data;
 mod encode;
@@ -115,6 +133,13 @@ pub(crate) fn bounded_excerpt(text: &str) -> String {
     format!("{}... ({} bytes)", &text[..end], text.len())
 }
 
+pub use checkpoint::{
+    checkpoint_policy, CheckpointError, OptimizerRejection, RankerCheckpoint, WeightsRejection,
+    CHECKPOINT_SCHEMA_VERSION, MAX_CHECKPOINT_STEPS, MAX_OPTIMIZER_CHECKPOINT_BYTES,
+    MAX_WEIGHTS_CHECKPOINT_BYTES, META_CHECKPOINT_VERSION, META_FEATURE_SCHEMA_HASH,
+    META_FEATURE_SCHEMA_VERSION, META_RANKER_SPEC_HASH, META_TRAINING_EXAMPLES, META_TRAINING_STEP,
+    META_TRAINING_STEPS, META_WEIGHTS_HASH,
+};
 pub use config::RankerConfig;
 pub use data::{
     Dataset, DatasetBuilder, DatasetConfig, DatasetManifest, LabelAuthority, PairwiseExample,
@@ -127,10 +152,10 @@ pub use encode::{
 pub use model::{MlpRanker, RankedCandidate, RankerWeights, MAX_RANKED_CANDIDATES};
 pub use train::{
     corpus_from_dataset, example_order, pairwise_hinge, seeded_weights, train, train_from_seed,
-    AdamWState, ExampleOrder, HingeEvaluation, LayerGradients, OptimizerStateEntry, PartialReason,
-    RankerGradients, TrainConfig, TrainingError, TrainingExample, TrainingOutcome,
-    ADAMW_MOMENT_SUFFIX, ADAMW_NAMING_STATUS, ADAMW_VELOCITY_SUFFIX, DEFAULT_MARGIN, INIT_SCALE,
-    ORDER_STREAM_SALT,
+    train_with_state, AdamWState, ExampleOrder, HingeEvaluation, LayerGradients,
+    OptimizerStateEntry, PartialReason, RankerGradients, TrainConfig, TrainingError,
+    TrainingExample, TrainingOutcome, ADAMW_MOMENT_SUFFIX, ADAMW_NAMING_STATUS,
+    ADAMW_VELOCITY_SUFFIX, DEFAULT_MARGIN, INIT_SCALE, ORDER_STREAM_SALT,
 };
 
 use thiserror::Error;

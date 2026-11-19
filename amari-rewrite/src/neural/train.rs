@@ -90,16 +90,19 @@
 //! ceiling are all checked on scalars, so a rejected configuration costs a
 //! comparison rather than an allocation.
 //!
-//! ## Provisional optimizer-state naming (S6)
+//! ## The ratified optimizer-state convention (S6)
 //!
 //! [`AdamWState::optimizer_state_entries`] is the *only* place the state's
-//! tensor names are spelled. It exports `<param>.adamw.m` and
-//! `<param>.adamw.v` for each parameter, where `<param>` is the canonical
-//! Katakuri tensor name (`hidden.0.weight`, `head.bias`, ...) and the values
-//! are in that tensor's canonical `[out, in]` row-major layout. The
-//! convention is **provisional**: Katakuri's S6 work defines the ratified
-//! optimizer-state convention in parallel, and Task 43 reconciles this
-//! function with it. Nothing else in the crate may depend on the suffixes.
+//! tensor names are spelled, and it speaks Katakuri's ratified S6 convention
+//! ([`katakuri::optimizer`], version [`katakuri::optimizer::OPTIMIZER_STATE_VERSION`]):
+//! `<param>.adamw.m` and `<param>.adamw.v` for each parameter, where
+//! `<param>` is the canonical Katakuri tensor name (`hidden.0.weight`,
+//! `head.bias`, ...), values in that tensor's canonical `[out, in]` row-major
+//! layout, emitted in S6's **lexicographic canonical order**. The suffixes
+//! come from Katakuri's constants, not from strings restated here, so the
+//! convention has exactly one spelling. Task 43 removed the provisional
+//! status Task 42 carried; nothing else in the crate may depend on the
+//! suffixes.
 
 use thiserror::Error;
 
@@ -116,15 +119,21 @@ use crate::neural::{
 /// ordering is not a rounding artifact.
 pub const DEFAULT_MARGIN: f32 = 1.0;
 
-/// Provisional suffix of the first-moment export (`S6-provisional`).
-pub const ADAMW_MOMENT_SUFFIX: &str = ".adamw.m";
+/// Suffix of the first-moment export (the ratified S6 convention).
+///
+/// Re-exported from [`katakuri::optimizer::SUFFIX_FIRST_MOMENT`]: the
+/// convention's spelling lives in Katakuri, never in a second literal here.
+pub const ADAMW_MOMENT_SUFFIX: &str = katakuri::optimizer::SUFFIX_FIRST_MOMENT;
 
-/// Provisional suffix of the second-moment export (`S6-provisional`).
-pub const ADAMW_VELOCITY_SUFFIX: &str = ".adamw.v";
+/// Suffix of the second-moment export (the ratified S6 convention).
+///
+/// Re-exported from [`katakuri::optimizer::SUFFIX_SECOND_MOMENT`].
+pub const ADAMW_VELOCITY_SUFFIX: &str = katakuri::optimizer::SUFFIX_SECOND_MOMENT;
 
 /// Export naming status, so a consumer can see it without reading Task 43.
 pub const ADAMW_NAMING_STATUS: &str =
-    "provisional S6 convention (`<param>.adamw.m` / `<param>.adamw.v`); Task 43 reconciles";
+    "ratified S6 convention (`<param>.adamw.m` / `<param>.adamw.v`, \
+     katakuri::optimizer v1); lexicographic canonical order";
 
 /// Magnitude of the seeded initialization: weights land in
 /// `[-INIT_SCALE, INIT_SCALE)`.
@@ -385,6 +394,10 @@ pub enum TrainingError {
     /// The initial weights do not match the training architecture.
     #[error("initial weights do not match the training architecture")]
     MismatchedWeights,
+    /// A resumed optimizer state does not match the training architecture
+    /// (Task 43: a state loaded from a checkpoint of a different shape).
+    #[error("the optimizer state does not match the training architecture")]
+    MismatchedOptimizerState,
 }
 
 fn invalid(field: &'static str, message: &'static str) -> TrainingError {
@@ -698,7 +711,7 @@ pub struct OptimizerStateEntry {
 }
 
 impl OptimizerStateEntry {
-    /// The provisional tensor name (`<param>.adamw.m` / `<param>.adamw.v`).
+    /// The ratified tensor name (`<param>.adamw.m` / `<param>.adamw.v`).
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -708,6 +721,20 @@ impl OptimizerStateEntry {
     pub fn values(&self) -> &[f32] {
         &self.values
     }
+}
+
+/// One layer's AdamW moment buffers, borrowed in the trainer's internal
+/// `[in, out]` layout, plus the layer's shape.
+///
+/// The checkpoint writer's view (Task 43): borrowed so a save never clones
+/// the whole optimizer state.
+pub(crate) struct TrainingMoments<'a> {
+    pub(crate) weight_m: &'a [f32],
+    pub(crate) weight_v: &'a [f32],
+    pub(crate) bias_m: &'a [f32],
+    pub(crate) bias_v: &'a [f32],
+    pub(crate) in_width: usize,
+    pub(crate) out_width: usize,
 }
 
 /// One layer's AdamW moment buffers.
@@ -793,12 +820,17 @@ impl AdamWState {
 
     /// Export the state as named tensors.
     ///
-    /// This is the **single** place the state's naming lives (module
-    /// documentation: provisional S6 convention). For each parameter it emits
-    /// `<param>.adamw.m` (first moment) and `<param>.adamw.v` (second
-    /// moment), in [`RankerConfig::expected_tensors`] order, with the values
-    /// transposed back to Katakuri's canonical `[out, in]` row-major layout
-    /// so they line up with a checkpoint's parameter tensors (Task 43).
+    /// This is the **single** place the state's naming lives. For each
+    /// parameter it emits `<param>.adamw.m` (first moment) and
+    /// `<param>.adamw.v` (second moment) via Katakuri's
+    /// [`moment_name`](katakuri::optimizer::moment_name), with the values
+    /// transposed back to the canonical `[out, in]` row-major layout so they
+    /// line up with a checkpoint's parameter tensors (Task 43).
+    ///
+    /// The emitted order is S6's **lexicographic canonical order** over the
+    /// moment names — not parameter order, which sorts `bias` after `weight`
+    /// only by accident of the canonical tensor list. Sorting here is what
+    /// makes an exported artifact byte-reproducible.
     ///
     /// The transpose is exact (a permutation, no arithmetic) and happens once
     /// per export, never per step.
@@ -806,30 +838,153 @@ impl AdamWState {
         let depth = self.shapes.len();
         let mut entries = Vec::with_capacity(depth * 4);
         for (index, (moment, shape)) in self.moments.iter().zip(&self.shapes).enumerate() {
-            // The head is the final layer of the canonical order.
-            let base = if index + 1 == depth {
-                "head".to_string()
-            } else {
-                format!("hidden.{index}")
-            };
+            let base = parameter_base(index, depth);
+            let weight = format!("{base}.weight");
+            let bias = format!("{base}.bias");
             entries.push(OptimizerStateEntry {
-                name: format!("{base}.weight{ADAMW_MOMENT_SUFFIX}"),
+                name: katakuri::optimizer::moment_name(
+                    &weight,
+                    katakuri::optimizer::MomentKind::First,
+                ),
                 values: transpose(&moment.weight_m, shape.in_width, shape.out_width),
             });
             entries.push(OptimizerStateEntry {
-                name: format!("{base}.weight{ADAMW_VELOCITY_SUFFIX}"),
+                name: katakuri::optimizer::moment_name(
+                    &weight,
+                    katakuri::optimizer::MomentKind::Second,
+                ),
                 values: transpose(&moment.weight_v, shape.in_width, shape.out_width),
             });
             entries.push(OptimizerStateEntry {
-                name: format!("{base}.bias{ADAMW_MOMENT_SUFFIX}"),
+                name: katakuri::optimizer::moment_name(
+                    &bias,
+                    katakuri::optimizer::MomentKind::First,
+                ),
                 values: moment.bias_m.clone(),
             });
             entries.push(OptimizerStateEntry {
-                name: format!("{base}.bias{ADAMW_VELOCITY_SUFFIX}"),
+                name: katakuri::optimizer::moment_name(
+                    &bias,
+                    katakuri::optimizer::MomentKind::Second,
+                ),
                 values: moment.bias_v.clone(),
             });
         }
+        entries.sort_unstable_by(|left, right| left.name.cmp(&right.name));
         entries
+    }
+
+    /// Every layer's moment buffers, head last, in the trainer's internal
+    /// `[in, out]` layout — the checkpoint writer's borrowed view (Task 43).
+    ///
+    /// Crate-private: the public seam is [`Self::optimizer_state_entries`],
+    /// which owns its buffers. A writer uses this view so saving the largest
+    /// admissible artifact does not materialize a second copy of every
+    /// moment.
+    pub(crate) fn training_moments(&self) -> Vec<TrainingMoments<'_>> {
+        self.moments
+            .iter()
+            .zip(&self.shapes)
+            .map(|(moment, shape)| TrainingMoments {
+                weight_m: moment.weight_m.as_slice(),
+                weight_v: moment.weight_v.as_slice(),
+                bias_m: moment.bias_m.as_slice(),
+                bias_v: moment.bias_v.as_slice(),
+                in_width: shape.in_width,
+                out_width: shape.out_width,
+            })
+            .collect()
+    }
+
+    /// Rebuild a validated checkpoint's optimizer state (Task 43).
+    ///
+    /// `moments` are `(name, values)` pairs in S6 canonical (lexicographic)
+    /// order, each carrying its parameter's shape and canonical `[out, in]`
+    /// row-major layout.
+    ///
+    /// The bias-correction accumulators are *derived*, not stored: S6 carries
+    /// the step counter as metadata, so they are re-accumulated here with the
+    /// same rule [`apply_adamw`] uses — one multiplication per step, no
+    /// `powf` — which is what makes a resumed run bit-identical to an
+    /// uninterrupted one. The loop stops at the exact fixed point (`0.0`,
+    /// where `x * beta == x` for every later step), so a large `step` costs
+    /// at most the underflow distance rather than the raw count.
+    ///
+    /// # Errors
+    ///
+    /// [`TrainingError::MismatchedWeights`] when a moment is missing, present
+    /// twice, or the wrong length for the architecture.
+    pub(crate) fn from_checkpoint(
+        arch: &RankerConfig,
+        step: usize,
+        config: &TrainConfig,
+        moments: &[(&str, &[f32])],
+    ) -> Result<Self, TrainingError> {
+        let shapes = layer_shapes(arch);
+        let depth = shapes.len();
+        let mut buffers = Vec::with_capacity(depth);
+        for (index, shape) in shapes.iter().enumerate() {
+            let base = parameter_base(index, depth);
+            let weight = format!("{base}.weight");
+            let bias = format!("{base}.bias");
+            let weight_elements = shape.in_width * shape.out_width;
+            let first = katakuri::optimizer::MomentKind::First;
+            let second = katakuri::optimizer::MomentKind::Second;
+            let weight_m = moment_values(
+                moments,
+                &katakuri::optimizer::moment_name(&weight, first),
+                weight_elements,
+            )?;
+            let weight_v = moment_values(
+                moments,
+                &katakuri::optimizer::moment_name(&weight, second),
+                weight_elements,
+            )?;
+            let bias_m = moment_values(
+                moments,
+                &katakuri::optimizer::moment_name(&bias, first),
+                shape.out_width,
+            )?;
+            let bias_v = moment_values(
+                moments,
+                &katakuri::optimizer::moment_name(&bias, second),
+                shape.out_width,
+            )?;
+            buffers.push(MomentBuffers {
+                weight_m: from_canonical_layout(weight_m, shape.in_width, shape.out_width),
+                weight_v: from_canonical_layout(weight_v, shape.in_width, shape.out_width),
+                bias_m: bias_m.to_vec(),
+                bias_v: bias_v.to_vec(),
+            });
+        }
+        let mut state = Self {
+            moments: buffers,
+            shapes,
+            step,
+            beta1_power: 1.0,
+            beta2_power: 1.0,
+        };
+        let mut counted = 0usize;
+        while counted < step {
+            let next1 = state.beta1_power * config.beta1;
+            let next2 = state.beta2_power * config.beta2;
+            if next1 == state.beta1_power && next2 == state.beta2_power {
+                break;
+            }
+            state.beta1_power = next1;
+            state.beta2_power = next2;
+            counted += 1;
+        }
+        Ok(state)
+    }
+}
+
+/// The canonical parameter-name prefix of layer `index` (the head is last).
+pub(crate) fn parameter_base(index: usize, depth: usize) -> String {
+    if index + 1 == depth {
+        "head".to_string()
+    } else {
+        format!("hidden.{index}")
     }
 }
 
@@ -968,14 +1123,52 @@ pub fn train(
     config: &TrainConfig,
     examples: &[TrainingExample],
 ) -> Result<TrainingOutcome, TrainingError> {
+    // Admission first: scalars only, no allocation. `train_with_state`
+    // re-admits (scalars only) because it is public and must be safe on its
+    // own; the zeroed state is only sized once admission passed.
+    admit(arch, config, examples.len())?;
+    train_with_state(arch, init, AdamWState::zeros(arch), config, examples)
+}
+
+/// Train from an existing optimizer state: the checkpoint resume seam.
+///
+/// [`train`] is exactly this function with a zeroed state — the step loop,
+/// the example order, and every numeric rule are shared, so a run that is
+/// stopped, checkpointed, and resumed computes the same bits as one that was
+/// never stopped (Task 43's resume determinism contract).
+///
+/// **The resume must start on a whole-epoch boundary**, because the example
+/// order restarts at index 0 of every epoch: a state captured mid-epoch
+/// continues at the wrong example and diverges. This raw seam deliberately
+/// does not police that — an [`AdamWState`] does not know how many examples
+/// were visited — so the gate lives where the visit count is known:
+/// [`crate::neural::RankerCheckpoint`] refuses to construct, save, or load a
+/// mid-epoch state (PR #375 round 1).
+///
+/// `state` must belong to `arch`; a state loaded from a checkpoint of another
+/// architecture is [`TrainingError::MismatchedOptimizerState`].
+///
+/// # Errors
+///
+/// As [`train`], plus [`TrainingError::MismatchedOptimizerState`].
+pub fn train_with_state(
+    arch: &RankerConfig,
+    init: &RankerWeights,
+    state: AdamWState,
+    config: &TrainConfig,
+    examples: &[TrainingExample],
+) -> Result<TrainingOutcome, TrainingError> {
     // Admission first: scalars only, no allocation.
     admit(arch, config, examples.len())?;
     // `init`'s shapes are checked against the architecture here, before any
     // buffer is sized from them.
     let mut parameters = parameters_from(init, arch)?;
+    if state.shapes != layer_shapes(arch) {
+        return Err(TrainingError::MismatchedOptimizerState);
+    }
+    let mut state = state;
     let bound = arch.max_weight_magnitude();
     let order = example_order(config, examples.len());
-    let mut state = AdamWState::zeros(arch);
     let mut workspace = Workspace::new(&parameters);
 
     let mut steps = 0usize;
@@ -1658,4 +1851,35 @@ fn transpose(values: &[f32], in_width: usize, out_width: usize) -> Vec<f32> {
         }
     }
     transposed
+}
+
+/// Reinterpret `[out, in]` row-major (a checkpoint's canonical layout) as
+/// `[in, out]` row-major. Exact: a permutation, never arithmetic.
+fn from_canonical_layout(values: &[f32], in_width: usize, out_width: usize) -> Vec<f32> {
+    let mut internal = vec![0.0f32; values.len()];
+    for input in 0..in_width {
+        for output in 0..out_width {
+            internal[input * out_width + output] = values[output * in_width + input];
+        }
+    }
+    internal
+}
+
+/// Look up one moment's values, exactly once, at its declared length.
+fn moment_values<'a>(
+    moments: &[(&str, &'a [f32])],
+    name: &str,
+    expected: usize,
+) -> Result<&'a [f32], TrainingError> {
+    let mut found: Option<&'a [f32]> = None;
+    for (other, values) in moments {
+        if *other != name {
+            continue;
+        }
+        if found.is_some() || values.len() != expected {
+            return Err(TrainingError::MismatchedWeights);
+        }
+        found = Some(values);
+    }
+    found.ok_or(TrainingError::MismatchedWeights)
 }

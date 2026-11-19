@@ -37,7 +37,19 @@ amari-rewrite-macros = { workspace = true, optional = true }
 # requirements Amari discovers (Cohort 8) and publishes as part of a
 # Borsalino 0.9.0 release; Amari switches to the version dep before the
 # 0.25.0 release, because git dependencies block `cargo publish`.
-katakuri = { version = "0.2.0", optional = true }
+# The katakuri git dep is TEMPORARY BY DESIGN (Task 43, Cohort 8 precedent):
+# the ranker checkpoint consumes the optimizer-state convention (S6,
+# `katakuri::optimizer`) merged as Katakuri #22, which is on Katakuri develop
+# but unreleased. It is pinned to the post-S6 merge commit so the convention
+# cannot drift under us, and Amari returns to a version dep before the 0.25.0
+# release (git dependencies block `cargo publish`).
+#
+# `std` + `digest` are required by `katakuri::checkpoint` and
+# `katakuri::optimizer`: the checkpoint module is file I/O plus canonical
+# sha256 identity verification, and neither is available in a dependency-free
+# build. The default and no-default Amari builds do not enable this optional
+# dep at all, so they remain dependency-free.
+katakuri = { git = "https://github.com/Industrial-Algebra/Katakuri.git", rev = "b24c31a11ce4863513262ed5f6bd7cdc28261071", default-features = false, features = ["std", "digest"], optional = true }
 borsalino-tensor = { git = "https://github.com/Industrial-Algebra/Borsalino.git", branch = "develop", optional = true }
 z3 = { version = "=0.20.2", default-features = false, features = ["vendored"], optional = true }
 

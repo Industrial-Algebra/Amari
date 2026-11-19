@@ -1093,10 +1093,10 @@ fn initial_weights_must_match_the_architecture() {
     }
 }
 
-// ── optimizer state export (provisional S6 naming) ──────────────────
+// ── optimizer state export (ratified S6 naming) ────────────────────
 
 #[test]
-fn optimizer_state_export_is_one_provisional_naming_function() {
+fn optimizer_state_export_is_one_ratified_naming_function() {
     let config = config(&[3]);
     let corpus = separable_corpus();
     let init = seeded_weights(&config, 2).expect("seeded weights");
@@ -1104,28 +1104,41 @@ fn optimizer_state_export_is_one_provisional_naming_function() {
     let outcome = train(&config, &init, &settings, &corpus).expect("training run");
     let entries = outcome.optimizer_state().optimizer_state_entries();
 
-    // One `m` and one `v` tensor per parameter tensor, in canonical order.
+    // One `m` and one `v` tensor per parameter tensor, in the ratified S6
+    // canonical order: lexicographic over the moment names, which puts a
+    // layer's `bias` moments before its `weight` moments.
     let mut expected_names = Vec::new();
     for (name, _) in config.expected_tensors() {
         expected_names.push(format!("{name}{ADAMW_MOMENT_SUFFIX}"));
         expected_names.push(format!("{name}{ADAMW_VELOCITY_SUFFIX}"));
     }
+    expected_names.sort();
     let actual_names: Vec<String> = entries
         .iter()
         .map(|entry| entry.name().to_string())
         .collect();
     assert_eq!(actual_names, expected_names);
 
-    // The values are in the canonical `[out, in]` layout, so their lengths
-    // are the canonical tensor lengths (two entries per parameter tensor).
-    let tensors = config.expected_tensors();
-    for (index, entry) in entries.iter().enumerate() {
-        let (name, shape) = &tensors[index / 2];
+    // The values are in the canonical `[out, in]` layout, so each entry's
+    // length is its parameter tensor's element count (found by name, since
+    // the export order is no longer parameter order).
+    for entry in &entries {
+        let parameter = entry
+            .name()
+            .strip_suffix(ADAMW_MOMENT_SUFFIX)
+            .or_else(|| entry.name().strip_suffix(ADAMW_VELOCITY_SUFFIX))
+            .expect("a moment name carries a ratified suffix");
+        let shape = config
+            .expected_tensors()
+            .into_iter()
+            .find(|(name, _)| name == parameter)
+            .map(|(_, shape)| shape)
+            .expect("every moment names a parameter tensor");
         let elements: usize = shape.iter().product();
         assert_eq!(
             entry.values().len(),
             elements,
-            "entry {name} must carry one value per parameter element"
+            "entry {parameter} must carry one value per parameter element"
         );
     }
     assert_eq!(entries.len(), config.expected_tensors().len() * 2);
@@ -1137,10 +1150,12 @@ fn optimizer_state_export_is_one_provisional_naming_function() {
             .sum::<usize>()
     );
 
-    // The convention is explicitly provisional until Task 43 reconciles it.
+    // The convention is ratified (Task 43 reconciled Task 42's provisional
+    // spelling with Katakuri's S6 module).
     assert!(ADAMW_MOMENT_SUFFIX.contains("adamw.m"));
     assert!(ADAMW_VELOCITY_SUFFIX.contains("adamw.v"));
-    assert!(ADAMW_NAMING_STATUS.contains("provisional"));
+    assert!(ADAMW_NAMING_STATUS.contains("ratified"));
+    assert!(!ADAMW_NAMING_STATUS.contains("provisional"));
 }
 
 // ── the trait seam names the real gradient type ─────────────────────
