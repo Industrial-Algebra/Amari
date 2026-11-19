@@ -29,7 +29,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.2.6",
     "react-router": "^7.0.1",
-    "react-router-dom": "^7.14.2",
+    "react-router-dom": "^7.18.5",
     "shiki": "^4.0.2",
     "typescript": "~7.0.2",
     "vite": "^8.3.4",
