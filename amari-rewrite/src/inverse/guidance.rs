@@ -23,8 +23,17 @@
 //!   truncates the strategy's order and counts what it dropped), so
 //!   ordering authority and completeness authority stay separate;
 //! - complete mode consumes the same permutation and drops nothing, so the
-//!   explored set — and therefore the exhaustion/replay hash — is identical
-//!   with and without a strategy. Only the visit order differs.
+//!   invariant is *per-round candidate preservation*: a strategy never adds,
+//!   removes, or alters a candidate within a round, it only permutes it;
+//! - what follows from that invariant is closure-relative parity, not
+//!   unconditional parity. A fully **exhausted** closure admits every candidate
+//!   of every round, so its explored set — and therefore its
+//!   exhaustion/replay hash — is identical with and without a strategy, and
+//!   only the visit order differs. A run cut short by a resource limit is
+//!   different: the order decides which candidates are admitted before the
+//!   budget runs out, so a budget-truncated run has an **order-dependent
+//!   explored set**. Both runs remain `Partial` — ordering can change what a
+//!   cut-off search saw, never whether it may claim a certificate.
 //!
 //! The strategy's identity enters replay identity through the scorer hash
 //! ([`scorer_hash_with`]): [`scorer_hash`] alone is the transparent symbolic

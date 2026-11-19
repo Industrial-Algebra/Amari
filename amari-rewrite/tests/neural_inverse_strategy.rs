@@ -2,10 +2,13 @@
 //!
 //! One test per enumerated rule of the task:
 //!
-//! - **ordering only** — complete mode never drops a candidate: the explored
-//!   set (and therefore the replay/exhaustion hash) is identical with and
-//!   without the neural adapter, while the visit order may differ (pinned by
-//!   a witness differential);
+//! - **ordering only** — complete mode never drops or alters a candidate within
+//!   a round: per-round candidate preservation is the invariant. Parity of the
+//!   explored set (and therefore of the replay/exhaustion hash) is claimed for
+//!   fully exhausted closures; a budget-truncated run has an order-dependent
+//!   explored set, so a guided and an unguided cut may retain different (equally
+//!   valid) frontier states while both stay `Partial` — pinned by the two
+//!   budget regression tests below;
 //! - **preferred valid predecessor** — a ranker that scores a candidate
 //!   better puts it first, and the search actually follows that order;
 //! - **ties** — equal scores resolve by the Task 40 canonical content key, so
@@ -203,6 +206,25 @@ fn two_witness_system() -> TermSystem {
     ])
 }
 
+/// A budget that admits the root plus exactly one child: whichever candidate the
+/// visit order reaches first is the one that fits, so the explored set depends
+/// on the order.
+fn two_state_config() -> InverseSearchConfig {
+    InverseSearchConfig::new(
+        8,
+        2,
+        4_096,
+        4_096,
+        64,
+        4_096,
+        65_536,
+        100_000,
+        1 << 20,
+        1 << 20,
+    )
+    .unwrap()
+}
+
 /// One expansion round's engine candidates, their canonical states, and their
 /// transparent symbolic scores — in the engine's own order.
 struct Round {
@@ -267,11 +289,12 @@ impl Round {
     }
 }
 
-/// Ordering only: complete mode never drops a candidate, so the explored set —
-/// and therefore the certified exhaustion evidence — is identical with and
-/// without the neural adapter.
+/// Ordering only, on a fully exhausted closure: complete mode never drops a
+/// candidate within a round, so an exhausted closure's explored set — and
+/// therefore its certified exhaustion evidence — is identical with and without
+/// the neural adapter.
 #[test]
-fn complete_mode_preserves_the_candidate_set() {
+fn complete_mode_exhausted_closure_preserves_the_evidence_hash() {
     let system = cycle_system();
     let baseline = BackwardExplorer::new(&system, small_config())
         .search(&parse("a"), &parse("z"), SearchMode::BreadthFirst)
@@ -293,7 +316,137 @@ fn complete_mode_preserves_the_candidate_set() {
         panic!("neural complete mode must still exhaust: {guided_outcome:?}");
     };
     // Identical evidence hash == identical explored set == identical replay
-    // identity: ordering changed nothing about authority.
+    // identity: on an exhausted closure, ordering changed nothing about
+    // authority (the budget-limited case below is the qualifier).
+    assert_eq!(plain.evidence_hash(), neural.evidence_hash());
+    assert_eq!(plain.authority(), neural.authority());
+}
+
+/// Budget-limited complete mode has an order-dependent explored set (PR #376
+/// round 1, P2).
+///
+/// Reviewer's reproduction: `c => x`, `b => x`, target `x`, goal `z`, BFS, and a
+/// two-state budget. The root consumes one state slot, so exactly one candidate
+/// fits. The symbolic order admits `c` (lowest rule priority); the tied
+/// zero-weight ranker settles the tie by canonical content and admits the other
+/// candidate. The explored *sets* therefore differ — which is exactly why the
+/// parity claim is scoped to exhausted closures. Both runs stay `Partial`, both
+/// retain only engine-built states, and neither may claim a certificate.
+#[test]
+fn budget_limited_complete_mode_has_an_order_dependent_explored_set() {
+    let system = system(vec![
+        Rule::new(parse("c"), parse("x")).unwrap(),
+        Rule::new(parse("b"), parse("x")).unwrap(),
+    ]);
+    let tight = two_state_config();
+    let baseline = BackwardExplorer::new(&system, tight)
+        .search(&parse("x"), &parse("z"), SearchMode::BreadthFirst)
+        .unwrap();
+    let adapter = strategy(constant_ranker());
+    let guided_outcome = completed(guided(
+        BackwardExplorer::new(&system, tight).search_with_strategy(
+            &parse("x"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&adapter),
+        ),
+    ));
+    // Both are `Partial`: a budget cut can never become a certificate, with or
+    // without guidance.
+    let BackwardSearchOutcome::Partial(plain) = &baseline else {
+        panic!("the unguided budget cut must be Partial: {baseline:?}");
+    };
+    let BackwardSearchOutcome::Partial(neural) = &guided_outcome else {
+        panic!("the guided budget cut must be Partial: {guided_outcome:?}");
+    };
+    // The root plus one child: the budget admitted exactly one candidate.
+    assert_eq!(plain.states.len(), 1);
+    assert_eq!(neural.states.len(), 1);
+    let plain_state = plain.states[0].term().clone();
+    let neural_state = neural.states[0].term().clone();
+    // The symbolic order takes the lowest rule priority (`c => x` is rule 0).
+    assert_eq!(plain_state, parse("c"));
+    // The zero-weight ranker orders tiers by the Task 40 canonical content key,
+    // a function of the candidate and never of request order.
+    let digest_b = SymbolicState::new(parse("b"), ConstraintSet::new()).canonical_digest();
+    let digest_c = SymbolicState::new(parse("c"), ConstraintSet::new()).canonical_digest();
+    let ranked_first = if digest_b < digest_c {
+        parse("b")
+    } else {
+        parse("c")
+    };
+    assert_eq!(neural_state, ranked_first);
+    // Divergence is real: the ordering decides which candidate fits the budget,
+    // so the two explored sets are not the same set.
+    assert_ne!(
+        plain_state, neural_state,
+        "a budget-truncated explored set is order-dependent"
+    );
+    // ...and divergence is never fabrication: every retained frontier state is
+    // one the symbolic engine produced for this round.
+    let engine_terms: Vec<Term> =
+        symbolic_predecessors(&system, &parse("x"), &RelationLimits::default(), 0)
+            .expect("the engine round")
+            .into_iter()
+            .map(|predecessor| predecessor.term)
+            .collect();
+    assert_eq!(engine_terms.len(), 2);
+    for term in [&plain_state, &neural_state] {
+        assert!(
+            engine_terms.contains(term),
+            "every retained state is engine-built: {term:?}"
+        );
+    }
+    // The invariant that does hold unconditionally is per-round candidate
+    // preservation: the adapter permutes the round, it never drops from it.
+    // The divergence above comes from the budget, not from the strategy.
+    let round = Round::of(&system, &parse("x"));
+    let mode = GuidanceMode::CompleteWithinLimits;
+    let candidates = round.candidates();
+    let request = round.request(&candidates, &mode);
+    let order = adapter.rank(&request).expect("the round is admissible");
+    assert_eq!(
+        order.len(),
+        round.states.len(),
+        "the strategy drops no candidate within a round"
+    );
+    let mut permuted = order.clone();
+    permuted.sort_unstable();
+    assert_eq!(permuted, (0..round.states.len()).collect::<Vec<_>>());
+}
+
+/// With budget to spare the reviewer's system exhausts, and there the parity
+/// claim holds: identical explored set and identical certified exhaustion
+/// evidence (PR #376 round 1, P2).
+#[test]
+fn exhausted_closures_share_the_explored_set_and_evidence_hash() {
+    let system = system(vec![
+        Rule::new(parse("c"), parse("x")).unwrap(),
+        Rule::new(parse("b"), parse("x")).unwrap(),
+    ]);
+    let baseline = BackwardExplorer::new(&system, small_config())
+        .search(&parse("x"), &parse("z"), SearchMode::BreadthFirst)
+        .unwrap();
+    let adapter = strategy(constant_ranker());
+    let guided_outcome = completed(guided(
+        BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("z"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&adapter),
+        ),
+    ));
+    let BackwardSearchOutcome::Exhausted(plain) = &baseline else {
+        panic!("the unguided closure must exhaust: {baseline:?}");
+    };
+    let BackwardSearchOutcome::Exhausted(neural) = &guided_outcome else {
+        panic!("the guided closure must exhaust: {guided_outcome:?}");
+    };
+    // Identical evidence hash == identical explored set == identical replay
+    // identity. This is the parity the guidance seam promises, and it is
+    // exactly the exhaustion case — never a truncated one.
     assert_eq!(plain.evidence_hash(), neural.evidence_hash());
     assert_eq!(plain.authority(), neural.authority());
 }

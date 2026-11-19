@@ -15,10 +15,14 @@
 //!   ([`GuidanceMode::HeuristicPruning`] truncates the returned order and
 //!   counts what it dropped). The strategy never drops anything, so
 //!   completeness authority stays where the Task 34 tri-state doctrine put it;
-//! - in complete mode the same permutation is consumed in full, so the explored
-//!   set — and the certified exhaustion/replay hash — is identical with and
-//!   without the strategy. Only visit order changes, which is how the strategy
-//!   "steers" without claiming authority.
+//! - in complete mode the same permutation is consumed in full, so no candidate
+//!   is dropped or altered within a round. Parity with an unguided run is
+//!   therefore claimed for fully *exhausted* closures: same explored set, same
+//!   certified exhaustion/replay hash. A budget-truncated run is
+//!   order-dependent — the order decides which candidates fit the remaining
+//!   budget, so the two runs may retain different (equally valid, engine-built)
+//!   frontier states — and both stay `Partial`, never a certificate. Steering
+//!   never claims authority.
 //!
 //! ## Determinism
 //!

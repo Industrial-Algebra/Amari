@@ -151,8 +151,13 @@ impl<'a> BackwardExplorer<'a> {
     /// The strategy sees each expansion round's already-valid candidates and
     /// returns an ordering (a permutation) of them; the guidance mode then
     /// decides whether that order is truncated. Complete mode keeps every
-    /// candidate, so the explored set and the certified exhaustion evidence
-    /// are identical to an unguided search — only the visit order differs.
+    /// candidate within a round, so a fully exhausted closure explores the same
+    /// state set and certifies the same exhaustion evidence as an unguided
+    /// search — only the visit order differs. A run cut short by a resource
+    /// limit is order-dependent by nature: the order decides which candidates
+    /// fit the remaining budget, so a guided and an unguided truncation may
+    /// retain different (equally valid) frontier states. Both are `Partial`;
+    /// neither may claim a certificate.
     ///
     /// # Errors
     ///
