@@ -88,6 +88,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "rewrite_discovery_inverse_search",
         "rewrite_discovery_languages",
         "rewrite_discovery_macros",
+        "rewrite_discovery_neural",
         "rewrite_discovery_preimages",
         "rewrite_discovery_relations",
         "rewrite_discovery_synthesis",
