@@ -582,3 +582,117 @@ kind = "composes_with"
 from = "amari:amari-rewrite:synthesis:inverse"
 to = "amari:amari-rewrite:inverse:predecessors"
 kind = "composes_with"
+
+# ---------------------------------------------------------------------------
+# Neural inverse guidance (0.25 Cohort 8, Task 45) — experimental metadata.
+#
+# These five capabilities describe the opt-in `amari-rewrite` `neural`
+# backend: the frozen candidate feature schema, the MLP ranker that orders
+# already-valid candidates, its deterministic pairwise-hinge training, the
+# validated ranker checkpoint, and the inverse-search strategy that binds
+# them together. Discovery curates the metadata only: no probe is declared
+# and `amari-discovery` never enables the `neural` feature, so no Katakuri or
+# borsalino-tensor dependency enters this crate's graph. Ordering guidance
+# never creates a transition; the symbolic inverse engine keeps that
+# authority.
+# ---------------------------------------------------------------------------
+
+[[capabilities]]
+id = "amari:amari-rewrite:neural:candidate-encoding"
+name = "Neural candidate feature encoding"
+description = "Encode already-generated inverse-search candidates into a frozen, versioned feature schema with exact IEEE-754 arithmetic, so a learned ranker only ever orders transitions the symbolic engine produced."
+aliases = ["candidate encoding", "feature encoder", "candidate features"]
+concepts = ["neural guidance", "inverse rewriting", "feature encoding"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:neural"]
+symbol_refs = ["amari_rewrite::neural::FeatureEncoder", "amari_rewrite::neural::FeatureEncoder::encode", "amari_rewrite::neural::CandidateInput", "amari_rewrite::neural::FeatureSchemaV1", "amari_rewrite::neural::CANDIDATE_FEATURE_WIDTH"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-rewrite:neural:ranker"
+name = "MLP candidate ranker"
+description = "Score encoded candidates with a bounded Katakuri-specified, borsalino-computed MLP and return candidates sorted by score and content key, without pruning, synthesizing, or certifying anything."
+aliases = ["neural ranker", "candidate ranker", "MLP ranker"]
+concepts = ["neural guidance", "candidate ranking", "inverse rewriting"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:neural"]
+symbol_refs = ["amari_rewrite::neural::MlpRanker", "amari_rewrite::neural::MlpRanker::rank", "amari_rewrite::neural::RankerWeights", "amari_rewrite::neural::RankedCandidate", "amari_rewrite::neural::RankerConfig"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:neural:training"
+name = "Pairwise-hinge ranker training"
+description = "Descend ranker parameters over labelled candidate pairs with a pairwise hinge and AdamW under a fixed example order and step budget, so training is seeded, bounded, and free of wall-clock dependence."
+aliases = ["ranker training", "pairwise hinge", "AdamW training"]
+concepts = ["neural guidance", "candidate ranking", "training"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:neural"]
+symbol_refs = ["amari_rewrite::neural::train", "amari_rewrite::neural::train_from_seed", "amari_rewrite::neural::train_with_state", "amari_rewrite::neural::TrainConfig", "amari_rewrite::neural::TrainingOutcome", "amari_rewrite::neural::Dataset"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "high"
+
+[[capabilities]]
+id = "amari:amari-rewrite:neural:checkpoint"
+name = "Validated ranker checkpoints"
+description = "Save and load weights and AdamW optimizer state as byte-stable artifacts validated before any model is built, so a resumed training run reproduces the uninterrupted run and rejections stay typed and sanitized."
+aliases = ["ranker checkpoint", "optimizer state checkpoint", "safe tensor checkpoint"]
+concepts = ["neural guidance", "checkpointing", "reproducibility"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:neural"]
+symbol_refs = ["amari_rewrite::neural::RankerCheckpoint", "amari_rewrite::neural::RankerCheckpoint::save", "amari_rewrite::neural::RankerCheckpoint::load", "amari_rewrite::neural::checkpoint_policy", "amari_rewrite::neural::CheckpointError", "amari_rewrite::neural::CHECKPOINT_SCHEMA_VERSION"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:neural:strategy"
+name = "Neural inverse-search guidance"
+description = "Bind the frozen encoder, trained ranker, and replay hash into a strategy that orders bounded inverse-search candidates, leaving every transition to the symbolic engine and every rejected candidate visible to the caller."
+aliases = ["neural guidance", "neural inverse search", "learned candidate ordering"]
+concepts = ["neural guidance", "inverse rewriting", "term rewriting system"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:neural"]
+symbol_refs = ["amari_rewrite::neural::NeuralStrategy", "amari_rewrite::neural::NeuralStrategy::from_ranker", "amari_rewrite::neural::NeuralStrategy::replay_hash", "amari_rewrite::neural::NeuralStrategyConfig", "amari_rewrite::neural::StrategyError"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[relations]]
+from = "amari:amari-rewrite:neural:candidate-encoding"
+to = "amari:amari-rewrite:neural:ranker"
+kind = "produces_input_for"
+
+[[relations]]
+from = "amari:amari-rewrite:neural:training"
+to = "amari:amari-rewrite:neural:ranker"
+kind = "produces_input_for"
+
+[[relations]]
+from = "amari:amari-rewrite:neural:checkpoint"
+to = "amari:amari-rewrite:neural:training"
+kind = "supports"
+
+[[relations]]
+from = "amari:amari-rewrite:neural:ranker"
+to = "amari:amari-rewrite:neural:strategy"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:neural:strategy"
+to = "amari:amari-rewrite:inverse:predecessors"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:neural:strategy"
+to = "amari:amari-rewrite:inverse:backward-search"
+kind = "composes_with"
