@@ -22,7 +22,11 @@ pub use bidirectional::{
     BidirectionalSearchOutcome, ForwardStep,
 };
 pub use config::InverseSearchConfig;
-pub use guidance::{guidance_hash, scorer_hash, GuidanceMode, SymbolicScore};
+pub use guidance::{
+    guidance_hash, score_candidate, scorer_hash, scorer_hash_with, validate_ranking,
+    GuidanceCandidate, GuidanceFailure, GuidanceFailureKind, GuidanceMode, GuidanceRequest,
+    GuidanceStrategy, GuidedSearchOutcome, SymbolicScore,
+};
 pub use outcome::{
     ApproximateSearchEvidence, BackwardDerivation, BackwardFrontier, BackwardSearchOutcome,
     CertifiedExhaustion, ExhaustionAuthority, UnsupportedRelation,

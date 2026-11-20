@@ -15,7 +15,10 @@ use alloc::vec::Vec;
 
 use crate::analysis::unify;
 use crate::error::{RewriteError, RewriteResult};
-use crate::inverse::guidance::{GuidanceMode, SymbolicScore};
+use crate::inverse::guidance::{
+    GuidanceCandidate, GuidanceMode, GuidanceRequest, GuidanceStrategy, GuidedSearchOutcome,
+    SymbolicScore,
+};
 use crate::inverse::outcome::{
     ApproximateSearchEvidence, BackwardDerivation, BackwardFrontier, BackwardSearchOutcome,
     CertifiedExhaustion, ExhaustionAuthority, UnsupportedRelation,
@@ -132,6 +135,55 @@ impl<'a> BackwardExplorer<'a> {
         mode: SearchMode,
         guidance: &GuidanceMode,
     ) -> RewriteResult<BackwardSearchOutcome> {
+        match self.run(target, goal, mode, guidance, None)? {
+            GuidedSearchOutcome::Completed(outcome) => Ok(outcome),
+            // A strategy can only fail when one was supplied, so this arm is
+            // unreachable by construction. Reported as an internal-consistency
+            // error rather than assumed away.
+            GuidedSearchOutcome::StrategyFailed(failure) => Err(RewriteError::ResidualMismatch {
+                message: alloc::format!("guidance reported `{failure}` with no strategy bound"),
+            }),
+        }
+    }
+
+    /// Search backward with a candidate strategy bound to guidance.
+    ///
+    /// The strategy sees each expansion round's already-valid candidates and
+    /// returns an ordering (a permutation) of them; the guidance mode then
+    /// decides whether that order is truncated. Complete mode keeps every
+    /// candidate within a round, so a fully exhausted closure explores the same
+    /// state set and certifies the same exhaustion evidence as an unguided
+    /// search — only the visit order differs. A run cut short by a resource
+    /// limit is order-dependent by nature: the order decides which candidates
+    /// fit the remaining budget, so a guided and an unguided truncation may
+    /// retain different (equally valid) frontier states. Both are `Partial`;
+    /// neither may claim a certificate.
+    ///
+    /// # Errors
+    ///
+    /// A [`crate::error::RewriteError`] when the symbolic search itself fails.
+    /// A strategy failure is *not* a hard error: it is returned as
+    /// [`GuidedSearchOutcome::StrategyFailed`] with its sanitized cause and its
+    /// round meter.
+    pub fn search_with_strategy(
+        &self,
+        target: &Term,
+        goal: &Term,
+        mode: SearchMode,
+        guidance: &GuidanceMode,
+        strategy: Option<&dyn GuidanceStrategy>,
+    ) -> RewriteResult<GuidedSearchOutcome> {
+        self.run(target, goal, mode, guidance, strategy)
+    }
+
+    fn run(
+        &self,
+        target: &Term,
+        goal: &Term,
+        mode: SearchMode,
+        guidance: &GuidanceMode,
+        strategy: Option<&dyn GuidanceStrategy>,
+    ) -> RewriteResult<GuidedSearchOutcome> {
         guidance.validate(&self.config)?;
         // Re-validate the whole configuration, not just the four
         // relation-limit fields: a config built outside `new`
@@ -153,13 +205,22 @@ impl<'a> BackwardExplorer<'a> {
         let mut truncated = false;
         let mut dropped: u64 = 0;
         let mut scope: u64 = 0;
+        // The scorer identity that actually ranked this search. Computed once:
+        // a strategy's identity is a function of its checkpoint and spec, not
+        // of the search, so every recorded approximation carries the same one.
+        let scorer = match strategy {
+            Some(strategy) => {
+                crate::inverse::guidance::scorer_hash_with(Some(&strategy.strategy_hash()))
+            }
+            None => crate::inverse::guidance::scorer_hash(),
+        };
 
         let root = SymbolicState::new(target.clone(), ConstraintSet::new());
         match goal_check(&limits, goal, root.term()) {
             GoalCheck::Match => {
-                return Ok(BackwardSearchOutcome::Witness(BackwardDerivation {
-                    steps: Vec::new(),
-                }));
+                return Ok(GuidedSearchOutcome::Completed(
+                    BackwardSearchOutcome::Witness(BackwardDerivation { steps: Vec::new() }),
+                ));
             }
             GoalCheck::NoMatch => {}
             // The root cannot even be checked inside the limits:
@@ -170,10 +231,12 @@ impl<'a> BackwardExplorer<'a> {
         if resources.record_state().is_err()
             || resources.record_bytes(root.retained_bytes()).is_err()
         {
-            return Ok(BackwardSearchOutcome::Partial(BackwardFrontier {
-                states: Vec::new(),
-                depth_reached: 0,
-            }));
+            return Ok(GuidedSearchOutcome::Completed(
+                BackwardSearchOutcome::Partial(BackwardFrontier {
+                    states: Vec::new(),
+                    depth_reached: 0,
+                }),
+            ));
         }
         let root_digest = *root.canonical_digest().as_bytes();
         pending.push(term_cost(root.term()), root_digest);
@@ -216,9 +279,9 @@ impl<'a> BackwardExplorer<'a> {
                         // because a clash at expansion time IS an
                         // unsupported-search condition should the
                         // expansion contract ever change.
-                        return Ok(BackwardSearchOutcome::Unsupported(UnsupportedRelation {
-                            reason,
-                        }));
+                        return Ok(GuidedSearchOutcome::Completed(
+                            BackwardSearchOutcome::Unsupported(UnsupportedRelation { reason }),
+                        ));
                     }
                     Err(_) => {
                         truncated = true;
@@ -255,24 +318,52 @@ impl<'a> BackwardExplorer<'a> {
                     .position(|rule| RuleId::from_rule(rule) == predecessor.provenance.rule_id)
                     .unwrap_or(usize::MAX) as u64
             };
-            let mut scored: Vec<(SymbolicScore, [u8; 32], SymbolicState, SymbolicPredecessor)> =
-                candidates
-                    .into_iter()
-                    .map(|(child, predecessor)| {
-                        let child_digest = *child.canonical_digest().as_bytes();
-                        let score = crate::inverse::guidance::score_candidate(
-                            &parent_state,
-                            &child,
-                            &predecessor,
-                            depth + 1,
-                            branch_factor,
-                            nodes.contains_key(&child_digest),
-                            rule_priority(&predecessor),
-                        );
-                        (score, child_digest, child, predecessor)
+            let mut scored: Vec<ScoredCandidate> = candidates
+                .into_iter()
+                .map(|(child, predecessor)| {
+                    let child_digest = *child.canonical_digest().as_bytes();
+                    let score = crate::inverse::guidance::score_candidate(
+                        &parent_state,
+                        &child,
+                        &predecessor,
+                        depth + 1,
+                        branch_factor,
+                        nodes.contains_key(&child_digest),
+                        rule_priority(&predecessor),
+                    );
+                    (score, child_digest, child, predecessor)
+                })
+                .collect();
+            scored.sort_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)));
+            // Guidance strategies order the engine's candidates and nothing
+            // else. A strategy that cannot answer is a typed outcome: falling
+            // back to the symbolic order would be a silently different search.
+            if let Some(strategy) = strategy {
+                let candidates: Vec<GuidanceCandidate<'_>> = scored
+                    .iter()
+                    .map(|(score, _, state, predecessor)| GuidanceCandidate {
+                        state,
+                        predecessor,
+                        score,
                     })
                     .collect();
-            scored.sort_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)));
+                let request = GuidanceRequest {
+                    parent: &parent_state,
+                    depth,
+                    mode: guidance,
+                    candidates: &candidates,
+                };
+                let order = match strategy.rank(&request) {
+                    Ok(order) => order,
+                    Err(failure) => return Ok(GuidedSearchOutcome::StrategyFailed(failure)),
+                };
+                if let Err(failure) =
+                    crate::inverse::guidance::validate_ranking(&order, scored.len())
+                {
+                    return Ok(GuidedSearchOutcome::StrategyFailed(failure));
+                }
+                scored = apply_ordering(scored, &order);
+            }
             if let GuidanceMode::HeuristicPruning { beam_width } = guidance {
                 let keep = (*beam_width).min(usize::MAX as u64) as usize;
                 if scored.len() > keep {
@@ -293,7 +384,9 @@ impl<'a> BackwardExplorer<'a> {
                 match goal_check(&limits, goal, child.term()) {
                     GoalCheck::Match => {
                         let steps = build_chain(&nodes, &digest, predecessor);
-                        return self.replay_witness(steps, target);
+                        return Ok(GuidedSearchOutcome::Completed(
+                            self.replay_witness(steps, target)?,
+                        ));
                     }
                     GoalCheck::NoMatch => {}
                     // The check ran out of budget: the child may or
@@ -341,7 +434,7 @@ impl<'a> BackwardExplorer<'a> {
                 ),
                 explored_states: explored,
                 dropped_candidates: dropped,
-                scorer_hash: crate::inverse::guidance::scorer_hash(),
+                scorer_hash: scorer,
                 config_hash: crate::inverse::replay::config_hash(&self.config),
                 guidance_hash: crate::inverse::guidance::guidance_hash(guidance),
                 frontier,
@@ -359,20 +452,33 @@ impl<'a> BackwardExplorer<'a> {
                 depth_reached,
             };
             if dropped > 0 {
-                return Ok(approximate(Some(frontier), dropped, resources.states()));
+                return Ok(GuidedSearchOutcome::Completed(approximate(
+                    Some(frontier),
+                    dropped,
+                    resources.states(),
+                )));
             }
-            return Ok(BackwardSearchOutcome::Partial(frontier));
+            return Ok(GuidedSearchOutcome::Completed(
+                BackwardSearchOutcome::Partial(frontier),
+            ));
         }
 
         if dropped > 0 {
-            return Ok(approximate(None, dropped, resources.states()));
+            return Ok(GuidedSearchOutcome::Completed(approximate(
+                None,
+                dropped,
+                resources.states(),
+            )));
         }
         let mut evidence = Vec::new();
         for digest in nodes.keys() {
             evidence.extend_from_slice(digest);
         }
-        Ok(BackwardSearchOutcome::Exhausted(
-            CertifiedExhaustion::certify(ExhaustionAuthority::ClosedSymbolicSearch, &evidence),
+        Ok(GuidedSearchOutcome::Completed(
+            BackwardSearchOutcome::Exhausted(CertifiedExhaustion::certify(
+                ExhaustionAuthority::ClosedSymbolicSearch,
+                &evidence,
+            )),
         ))
     }
 
@@ -495,6 +601,26 @@ fn build_chain(
     }
     steps.reverse();
     steps
+}
+
+/// One scored round entry: the transparent symbolic score, the candidate's
+/// canonical digest, its state, and the engine transition that produced it.
+type ScoredCandidate = (SymbolicScore, [u8; 32], SymbolicState, SymbolicPredecessor);
+
+/// Reorder a round by a validated permutation.
+///
+/// `order` has already passed [`crate::inverse::guidance::validate_ranking`], so
+/// it is a permutation of `0..scored.len()` and this move is total: every
+/// element is placed exactly once and nothing is dropped.
+fn apply_ordering(scored: Vec<ScoredCandidate>, order: &[usize]) -> Vec<ScoredCandidate> {
+    let mut slots: Vec<Option<ScoredCandidate>> = scored.into_iter().map(Some).collect();
+    let mut ordered = Vec::with_capacity(slots.len());
+    for index in order {
+        if let Some(item) = slots.get_mut(*index).and_then(Option::take) {
+            ordered.push(item);
+        }
+    }
+    ordered
 }
 
 fn term_cost(term: &Term) -> u64 {
