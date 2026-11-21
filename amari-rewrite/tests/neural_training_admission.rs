@@ -26,8 +26,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, MutexGuard};
 
 use amari_rewrite::neural::{
-    seeded_weights, train, train_from_seed, ExampleOrder, FeatureVector, RankerConfig, TrainConfig,
-    TrainingError, TrainingExample, CANDIDATE_FEATURE_WIDTH,
+    example_order, seeded_weights, train, train_from_seed, ExampleOrder, FeatureVector,
+    RankerConfig, TrainConfig, TrainingError, TrainingExample, CANDIDATE_FEATURE_WIDTH,
 };
 
 /// Allocation calls seen by the counter, cumulative.
@@ -199,6 +199,56 @@ fn an_empty_corpus_allocates_nothing_on_either_entry_point() {
     let (from_seed, calls, _) = measured(&guard, || train_from_seed(&config, &settings, &[]));
     assert_eq!(from_seed, Err(TrainingError::EmptyDataset));
     assert_eq!(calls, 0, "an empty corpus must be refused from its length");
+}
+
+#[test]
+fn a_rejected_example_order_is_typed_and_allocates_nothing() {
+    let guard = exclusive();
+    let settings = settings(4);
+
+    // The public order seam admits its length before it sizes the order
+    // vector, so the ceiling violation is a typed error naming the bound —
+    // never a 65,537-element allocation, and never a capacity-overflow panic
+    // for `usize::MAX`.
+    for length in [
+        TrainConfig::MAX_TRAIN_EXAMPLES + 1,
+        usize::MAX,
+        usize::MAX - 1,
+    ] {
+        let (result, calls, bytes) = measured(&guard, || example_order(&settings, length));
+        match result {
+            Err(TrainingError::LimitExceeded {
+                resource: "training examples",
+                value,
+                limit,
+            }) => {
+                assert_eq!(value, length, "the rejection names the offending length");
+                assert_eq!(
+                    limit,
+                    TrainConfig::MAX_TRAIN_EXAMPLES,
+                    "the rejection names the ceiling it crossed"
+                );
+            }
+            other => panic!("length {length}: expected a typed admission rejection, got {other:?}"),
+        }
+        assert_eq!(
+            (calls, bytes),
+            (0, 0),
+            "an over-ceiling order must be refused from its length alone (length {length})"
+        );
+    }
+
+    // The positive control: an admitted order does allocate its vector.
+    let (order, calls, bytes) = measured(&guard, || example_order(&settings, 8));
+    assert_eq!(
+        order.expect("an admitted order"),
+        (0..8).collect::<Vec<_>>(),
+        "canonical order is the dataset's own order"
+    );
+    assert!(
+        calls > 0 && bytes > 0,
+        "an admitted order must allocate (calls {calls}, bytes {bytes})"
+    );
 }
 
 #[test]

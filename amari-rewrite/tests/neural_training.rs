@@ -21,16 +21,20 @@
 #![cfg(feature = "neural")]
 
 use amari_rewrite::inverse::{
-    BackwardExplorer, BackwardSearchOutcome, GuidanceMode, InverseSearchConfig, ReplayCertificate,
-    ReplayDerivation, ReplayQuery, ResourceObservation, SearchMode,
+    score_candidate, symbolic_predecessors, BackwardExplorer, BackwardSearchOutcome,
+    GuidanceCandidate, GuidanceMode, GuidanceRequest, GuidanceStrategy, InverseSearchConfig,
+    ReplayCertificate, ReplayDerivation, ReplayQuery, ResourceObservation, SearchMode,
+    SymbolicState,
 };
 use amari_rewrite::neural::{
-    corpus_from_dataset, example_order, pairwise_hinge, seeded_weights, train, train_from_seed,
-    DatasetBuilder, DatasetConfig, DifferentiableRule, ExampleOrder, FeatureVector, MlpRanker,
-    PartialReason, RankerConfig, RankerWeights, TrainConfig, TrainingError, TrainingExample,
-    TrainingOutcome, ADAMW_MOMENT_SUFFIX, ADAMW_NAMING_STATUS, ADAMW_VELOCITY_SUFFIX,
-    CANDIDATE_FEATURE_WIDTH, INIT_SCALE,
+    checkpoint_policy, corpus_from_dataset, example_order, pairwise_hinge, seeded_weights, train,
+    train_from_seed, CandidateInput, DatasetBuilder, DatasetConfig, DifferentiableRule,
+    ExampleOrder, FeatureEncoder, FeatureVector, MlpRanker, NeuralStrategy, PartialReason,
+    RankerCheckpoint, RankerConfig, RankerWeights, SearchContext, TrainConfig, TrainingError,
+    TrainingExample, TrainingOutcome, ADAMW_MOMENT_SUFFIX, ADAMW_NAMING_STATUS,
+    ADAMW_VELOCITY_SUFFIX, CANDIDATE_FEATURE_WIDTH, INIT_SCALE,
 };
+use amari_rewrite::relation::{ConstraintSet, RelationLimits};
 use amari_rewrite::trs::{Rule, Term, TermSystem};
 
 // ── fixtures ────────────────────────────────────────────────────────
@@ -69,10 +73,12 @@ fn example(chosen: &[(usize, f32)], unchosen: &[(usize, f32)]) -> TrainingExampl
     TrainingExample::new(features(chosen), features(unchosen))
 }
 
-/// A separable toy corpus: every pair differs on lane 0 (chosen higher), and
-/// a shared lane 1/2 value keeps the non-discriminating weights gradient-free
-/// on those lanes. Achievable margin: chosen lane 0 is 1.0, 0.75, 0.5 against
-/// 0.0, 0.25, 0.0, so a positive lane-0 weight separates all three.
+/// A separable toy corpus: every pair differs on lane 0 (the chosen candidate
+/// carries the larger lane-0 value), and a shared lane 1/2 value keeps the
+/// non-discriminating weights gradient-free on those lanes. Achievable margin:
+/// chosen lane 0 is 1.0, 0.75, 0.5 against 0.0, 0.25, 0.0, so the hinge can
+/// separate all three with either sign of the lane-0 weight — the *sign* is
+/// what the direction contract fixes, and F1's end-to-end regression pins it.
 fn separable_corpus() -> Vec<TrainingExample> {
     vec![
         example(&[(0, 1.0)], &[]),
@@ -240,8 +246,8 @@ fn seeded_example_order_is_a_pure_function_of_seed_and_length() {
     )
     .expect("valid config");
 
-    let first = example_order(&settings, 32);
-    let second = example_order(&settings, 32);
+    let first = example_order(&settings, 32).expect("admitted order");
+    let second = example_order(&settings, 32).expect("admitted order");
     assert_eq!(
         first, second,
         "the order must be a pure function of the seed"
@@ -273,19 +279,24 @@ fn seeded_example_order_is_a_pure_function_of_seed_and_length() {
     .expect("valid config");
     assert_ne!(
         first,
-        example_order(&other_seed, 32),
+        example_order(&other_seed, 32).expect("admitted order"),
         "a different seed must permute differently"
     );
 
     let canonical = train_config(16, 0xabcd, 0.01);
     assert_eq!(
-        example_order(&canonical, 8),
+        example_order(&canonical, 8).expect("admitted order"),
         (0..8).collect::<Vec<_>>(),
         "canonical order is the dataset's own order"
     );
     // Degenerate lengths must not panic or break the permutation property.
-    assert!(example_order(&settings, 0).is_empty());
-    assert_eq!(example_order(&settings, 1), vec![0]);
+    assert!(example_order(&settings, 0)
+        .expect("an empty order is admitted")
+        .is_empty());
+    assert_eq!(
+        example_order(&settings, 1).expect("admitted order"),
+        vec![0]
+    );
 }
 
 // ── initialization ──────────────────────────────────────────────────
@@ -355,7 +366,7 @@ fn seeded_initialization_follows_the_documented_integer_mapping() {
 // ── convergence sanity ──────────────────────────────────────────────
 
 #[test]
-fn a_separable_corpus_trains_until_every_chosen_score_wins() {
+fn a_separable_corpus_trains_until_every_chosen_score_is_lower() {
     let config = config(&[4]);
     let corpus = separable_corpus();
     let init = seeded_weights(&config, 11).expect("seeded weights");
@@ -385,8 +396,9 @@ fn a_separable_corpus_trains_until_every_chosen_score_wins() {
             .score_features(example.unchosen())
             .expect("finite unchosen score");
         assert!(
-            chosen > unchosen,
-            "the trained ranker must prefer the chosen candidate ({chosen} vs {unchosen})"
+            chosen < unchosen,
+            "the trained ranker must prefer the chosen candidate, which is the \
+             LOWER score ({chosen} vs {unchosen})"
         );
     }
     assert!(
@@ -405,6 +417,193 @@ fn a_separable_corpus_trains_until_every_chosen_score_wins() {
     );
 }
 
+// ── score direction: producer matches consumer (cohort 8 closeout F1) ──
+
+/// A self-cleaning temporary directory for the end-to-end direction fixture.
+struct DirectionDir {
+    path: std::path::PathBuf,
+}
+
+impl DirectionDir {
+    fn new() -> Self {
+        let mut path = std::env::temp_dir();
+        path.push(format!("amari-c8-f1-direction-{}", std::process::id()));
+        std::fs::create_dir_all(&path).expect("create temp dir");
+        Self { path }
+    }
+
+    fn weights(&self) -> std::path::PathBuf {
+        self.path.join("ranker.safetensors")
+    }
+
+    fn optimizer(&self) -> std::path::PathBuf {
+        self.path.join("ranker.adamw.safetensors")
+    }
+}
+
+impl Drop for DirectionDir {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.path);
+    }
+}
+
+/// The producer must agree with the consumer's direction.
+///
+/// Guidance consumes scores *ascending* ([`MlpRanker::rank`], the neural
+/// strategy's total order: preferred = LOWER), so training must push the
+/// chosen candidate's score below its unchosen counterpart. The reviewer's
+/// closeout fixture is the whole path a caller uses — an engine round
+/// (`f(a) => x`, `a => x`, the trace choosing `f(a)`), train to convergence,
+/// checkpoint, load, guide — and the trained ranker must rank the chosen
+/// candidate first. Under the pre-fix hinge (which pushed the chosen score
+/// *higher*) this test fails with the trained order reversed.
+#[test]
+fn a_trained_ranker_orders_the_engine_chosen_candidate_first() {
+    let arch = config(&[]);
+    let chosen = Term::sym("f", [Term::constant("a")]);
+    let unchosen = Term::constant("a");
+    let target = Term::constant("x");
+    let system = TermSystem::new(vec![
+        Rule::new(chosen.clone(), target.clone()).expect("checked rule"),
+        Rule::new(unchosen.clone(), target.clone()).expect("checked rule"),
+    ]);
+    let predecessors = symbolic_predecessors(&system, &target, &RelationLimits::default(), 0)
+        .expect("the engine round");
+    assert_eq!(
+        predecessors.len(),
+        2,
+        "the fixture round is exactly the two-rule expansion"
+    );
+    let states: Vec<SymbolicState> = predecessors
+        .iter()
+        .map(|predecessor| {
+            SymbolicState::new(predecessor.term.clone(), predecessor.constraints.clone())
+        })
+        .collect();
+    let parent = SymbolicState::new(target, ConstraintSet::new());
+    let branch_factor = predecessors.len() as u64;
+    let scores: Vec<_> = predecessors
+        .iter()
+        .zip(&states)
+        .map(|(predecessor, state)| {
+            score_candidate(&parent, state, predecessor, 1, branch_factor, false, 0)
+        })
+        .collect();
+    let encoder = FeatureEncoder::new(RelationLimits::default());
+    let inputs: Vec<CandidateInput<'_>> = predecessors
+        .iter()
+        .zip(&scores)
+        .map(|(predecessor, score)| {
+            CandidateInput::new(
+                &predecessor.term,
+                &predecessor.constraints,
+                &predecessor.provenance,
+                SearchContext::new(
+                    score.depth,
+                    score.branch_factor,
+                    score.cycle,
+                    score.term_growth,
+                    score.constraint_growth,
+                    predecessor.existentials.len(),
+                    score.rule_priority,
+                ),
+            )
+        })
+        .collect();
+
+    let chosen_index = predecessors
+        .iter()
+        .position(|predecessor| predecessor.term == chosen)
+        .expect("the chosen candidate is engine-produced");
+    let unchosen_index = 1 - chosen_index;
+    let example = TrainingExample::new(
+        encoder
+            .encode(&inputs[chosen_index])
+            .expect("chosen features"),
+        encoder
+            .encode(&inputs[unchosen_index])
+            .expect("unchosen features"),
+    );
+
+    // One example per epoch, so a converged run is always on an epoch
+    // boundary (the checkpoint's own precondition).
+    let settings = TrainConfig::new(
+        0.1,
+        0.9,
+        0.999,
+        1e-8,
+        0.0,
+        1.0,
+        40_000,
+        42,
+        ExampleOrder::Canonical,
+    )
+    .expect("valid training config");
+    let outcome = train_from_seed(&arch, &settings, &[example]).expect("training run");
+    assert!(
+        outcome.is_complete(),
+        "the fixture must train to convergence, got {:?}",
+        outcome.partial_reason()
+    );
+
+    let dir = DirectionDir::new();
+    RankerCheckpoint::from_outcome(arch.clone(), &outcome, 1)
+        .expect("epoch-boundary checkpoint")
+        .save(&dir.weights(), &dir.optimizer())
+        .expect("checkpoint save");
+    let loaded = RankerCheckpoint::load(
+        &dir.weights(),
+        &dir.optimizer(),
+        &checkpoint_policy(),
+        &arch,
+        &settings,
+        1,
+    )
+    .expect("the checkpoint pair loads");
+    let model = loaded.ranker().expect("a trained ranker");
+
+    let chosen_score = model
+        .score_candidate(&encoder, &inputs[chosen_index])
+        .expect("chosen score")
+        .score();
+    let unchosen_score = model
+        .score_candidate(&encoder, &inputs[unchosen_index])
+        .expect("unchosen score")
+        .score();
+    assert!(
+        chosen_score < unchosen_score,
+        "training must leave the chosen candidate LOWER (lower is better): \
+         chosen {chosen_score}, unchosen {unchosen_score}"
+    );
+
+    let strategy = NeuralStrategy::from_ranker(model, encoder);
+    let candidates: Vec<GuidanceCandidate<'_>> = states
+        .iter()
+        .zip(&predecessors)
+        .zip(&scores)
+        .map(|((state, predecessor), score)| GuidanceCandidate {
+            state,
+            predecessor,
+            score,
+        })
+        .collect();
+    let mode = GuidanceMode::CompleteWithinLimits;
+    let order = strategy
+        .rank(&GuidanceRequest {
+            parent: &parent,
+            depth: 0,
+            mode: &mode,
+            candidates: &candidates,
+        })
+        .expect("guidance ranks the round");
+    assert_eq!(
+        order.first().copied(),
+        Some(chosen_index),
+        "the trained ranker must order the trace's chosen candidate first \
+         (got {order:?}, chosen {chosen_index})"
+    );
+}
+
 // ── the trainer's forward pass is the ranker's ──────────────────────
 
 #[test]
@@ -420,10 +619,10 @@ fn the_trainers_hinge_uses_the_rankers_own_score_bits() {
         let chosen = model.score_features(example.chosen()).expect("score");
         let unchosen = model.score_features(example.unchosen()).expect("score");
         let difference = chosen - unchosen;
-        let expected = if difference >= margin {
+        let expected = if difference <= -margin {
             0.0
         } else {
-            margin - difference
+            margin + difference
         };
         assert_eq!(
             evaluation.loss().to_bits(),
@@ -447,7 +646,8 @@ fn the_trainers_hinge_uses_the_rankers_own_score_bits() {
 /// always the head bias) has an identically zero derivative and cannot be used
 /// as a probe.
 ///
-/// Hand-computed forward pass (margin 4.0, so the hinge stays active):
+/// Hand-computed forward pass (margin 4.0, so the hinge stays active — the
+/// chosen score must be at least 4.0 *below* the unchosen one):
 ///
 /// ```text
 ///            chosen                 unchosen
@@ -459,12 +659,13 @@ fn the_trainers_hinge_uses_the_rankers_own_score_bits() {
 /// h1 pre     [3.475, 0.525]         [0.55, -0.10]   (unit 1 dead)
 /// h1         [3.475, 0.525]         [0.55, 0.0]
 /// score       4.11875                0.80           difference 3.31875
-/// loss        4.0 - 3.31875 = 0.68125 (active)
+/// loss        4.0 + 3.31875 = 7.31875 (active)
 /// ```
 ///
-/// Every ReLU pre-activation is at least `0.10` away from zero and the margin
-/// headroom is `0.68`, so a `5e-3` perturbation cannot cross a kink or satisfy
-/// the hinge: the loss stays affine in the perturbed coordinate.
+/// Every ReLU pre-activation is at least `0.10` away from zero and the
+/// distance from the hinge's satisfied region is `7.32`, so a `5e-3`
+/// perturbation cannot cross a kink or satisfy the hinge: the loss stays
+/// affine in the perturbed coordinate.
 fn gradient_tensors(config: &RankerConfig) -> Vec<(String, Vec<f32>)> {
     let mut tensors = config
         .expected_tensors()
@@ -534,8 +735,8 @@ struct Probe {
 ///   monotone relu, an active hinge), so the `O(eps^2)` Taylor term is exactly
 ///   zero. `eps` is therefore not limited by curvature; the fixture's
 ///   constraint is distance to the nearest kink (`0.10` at the h1-unit-1
-///   pre-activation) and to the margin (`0.68`), both of which `5e-3` clears by
-///   a factor of at least `20`.
+///   pre-activation) and to the hinge's satisfied region (`7.32`), both of
+///   which `5e-3` clears by a factor of at least `20`.
 /// - **Rounding dominates.** Each loss evaluation rounds at `gamma ~ 4 *
 ///   2^-24 ~ 2.4e-7` relative on `|loss| <= 2`, and the difference of two such
 ///   values carries that error absolutely. Dividing by `2 * eps = 1e-2` gives a
@@ -568,8 +769,8 @@ fn the_hand_derived_gradient_matches_a_central_difference() {
 
     let evaluation = pairwise_hinge(&config, &weights, margin, &example).expect("hinge evaluation");
     assert!(
-        (evaluation.loss() - 0.68125).abs() < 1e-5,
-        "the fixture's loss must be the hand-computed 0.68125 (got {})",
+        (evaluation.loss() - 7.31875).abs() < 1e-5,
+        "the fixture's loss must be the hand-computed 7.31875 (got {})",
         evaluation.loss()
     );
     assert!(evaluation.loss() > 0.0, "the hinge must be active");
@@ -644,7 +845,8 @@ fn the_hand_derived_gradient_matches_a_central_difference() {
         },
         Probe {
             // The pairwise hinge's gradient with respect to a constant offset
-            // shared by both scores is `-1 + 1 = 0` exactly. Asserting the zero
+            // shared by both scores is `+1 - 1 = 0` exactly (the chosen score
+            // enters with `+1` because lower is better). Asserting the zero
             // (with its derivation) is what keeps this a check rather than a
             // vacuous probe: a spurious non-zero here would be a real bug.
             tensor: "head.bias",
@@ -772,8 +974,10 @@ fn analytic_gradient(
 #[test]
 fn a_satisfied_example_has_no_gradient() {
     let config = config(&[2]);
-    // A ranker that separates the corpus by a wide margin: lane 0 weighted
-    // positively through one hidden unit, head weight positive.
+    // A ranker that separates the corpus by a wide margin in the consumed
+    // direction: lane 0 weighted positively through one hidden unit, and the
+    // head weight negative, so the chosen candidate's score is far LOWER
+    // (lower is better).
     let mut tensors = patterned_tensors(&config);
     for (name, values) in &mut tensors {
         match name.as_str() {
@@ -784,7 +988,7 @@ fn a_satisfied_example_has_no_gradient() {
             "hidden.0.bias" => values.fill(0.0),
             "head.weight" => {
                 values.fill(0.0);
-                values[0] = 4.0;
+                values[0] = -4.0;
             }
             "head.bias" => values.fill(0.0),
             _ => unreachable!("canonical tensor names are known"),
@@ -794,7 +998,11 @@ fn a_satisfied_example_has_no_gradient() {
     let example = example(&[(0, 1.0)], &[(0, 0.0)]);
 
     let evaluation = pairwise_hinge(&config, &weights, 1.0, &example).expect("hinge evaluation");
-    assert_eq!(evaluation.loss(), 0.0, "16 - 0 exceeds the unit margin");
+    assert_eq!(
+        evaluation.loss(),
+        0.0,
+        "-16 is a full 16 units below 0, well past the unit margin"
+    );
     assert!(
         evaluation.gradients().layers().iter().all(|layer| layer
             .weights()
