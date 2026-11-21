@@ -7,7 +7,7 @@
 //! pairwise examples Task 41 derives from replay-validated traces. The
 //! structure mirrors the two halves it trains:
 //!
-//! - **The objective is a hinge**, `max(0, margin - (s_chosen - s_unchosen))`,
+//! - **The objective is a hinge**, `max(0, margin + s_chosen - s_unchosen)`,
 //!   evaluated over Task 41 [`Dataset`] examples (or any hand-built
 //!   [`TrainingExample`], which is how the toy convergence fixtures are
 //!   assembled). There is no softmax, no cross-entropy, no log-sum-exp.
@@ -17,6 +17,23 @@
 //!   borsalino-tensor's CPU reference uses (`k` ascending, one `f32`
 //!   accumulator per output element), so the gradient of the loss is the
 //!   gradient of the score the ranker computes.
+//!
+//! ## Score direction: preferred is LOWER (cohort 8 closeout F1)
+//!
+//! The hinge **minimizes the chosen score relative to the unchosen one**, so
+//! the loss is active while `s_chosen` is above `s_unchosen` and zero once the
+//! chosen candidate sits a full margin below it. That is the direction every
+//! consumer of a score already uses: [`crate::neural::MlpRanker::rank`] and
+//! [`crate::neural::NeuralStrategy`] both order candidates by **ascending**
+//! score, and [`crate::neural::RankedCandidate::score`] documents "lower is
+//! better". Training against the opposite sign (the Task 42 revision, which
+//! read the hinge as `max(0, margin - (s_chosen - s_unchosen))` and pushed the
+//! chosen score *higher*) produced rankers that ordered the trace's chosen
+//! candidate last; the sign correction is exactly this section, the two
+//! mirrored call sites below, and the direction-pinning tests that moved with
+//! it. `s_chosen < s_unchosen` is the invariant to check before adding an
+//! optimizer or a loss to this module: a producer that disagrees with the
+//! consumers' direction trains a ranker to be wrong.
 //!
 //! ## No transcendental functions, anywhere
 //!
@@ -55,8 +72,9 @@
 //!   layer's weight buffer before its bias buffer), and within a buffer the
 //!   row-major element order.
 //! - **Gradient accumulation order** is serial: the chosen example's
-//!   contribution first (negated), then the unchosen example's. No reduction
-//!   is reordered, tree-shaped, or parallel.
+//!   contribution first (its `+1` factor, because lowering the chosen score
+//!   lowers the loss), then the unchosen example's (`-1`). No reduction is
+//!   reordered, tree-shaped, or parallel.
 //!
 //! ## Typed outcomes, and what `Partial` is not
 //!
@@ -111,8 +129,12 @@ use crate::neural::{
     CANDIDATE_FEATURE_WIDTH,
 };
 
-/// Default hinge margin (`1.0`): a chosen score must beat its unchosen
-/// counterpart by a full unit before the example contributes no loss.
+/// Default hinge margin (`1.0`): the chosen score must be at least this far
+/// *below* its unchosen counterpart before the example contributes no loss.
+///
+/// (Preferred is lower — see the module documentation. The margin is a
+/// separation in the consumed direction, not a difference in the producer's
+/// own sign convention.)
 ///
 /// One is the natural unit for scores that are sums of `[0, 1]` features
 /// times bounded weights, and it is large enough that a converged ranker's
@@ -529,7 +551,8 @@ pub struct HingeEvaluation {
 }
 
 impl HingeEvaluation {
-    /// `max(0, margin - (s_chosen - s_unchosen))`.
+    /// `max(0, margin + s_chosen - s_unchosen)` (active while the chosen score
+    /// is not yet `margin` below the unchosen one).
     pub fn loss(&self) -> f32 {
         self.loss
     }
@@ -580,29 +603,31 @@ pub fn pairwise_hinge(
     if !difference.is_finite() {
         return Err(TrainingError::NonFinite { step: 0 });
     }
-    if difference >= margin {
-        // A satisfied example has a zero subgradient: the evaluation is a
-        // zero loss paired with a zero gradient, exactly what the trainer
-        // treats as a no-op.
+    if difference <= -margin {
+        // Satisfied (the chosen score is at least `margin` below the
+        // unchosen one): a satisfied example has a zero subgradient, so the
+        // evaluation is a zero loss paired with a zero gradient, exactly what
+        // the trainer treats as a no-op.
         return Ok(HingeEvaluation {
             loss: 0.0,
             gradients: gradients.into_gradients(),
         });
     }
-    let loss = margin - difference;
-    // Accumulation order: the chosen side (negated) first, then the
-    // unchosen side, matching the trainer's per-step order.
+    let loss = margin + difference;
+    // Accumulation order: the chosen side first, then the unchosen side,
+    // matching the trainer's per-step order. The chosen score enters the loss
+    // with `+1` (lower is better), the unchosen one with `-1`.
     backward(
         &parameters,
         &chosen_cache,
-        -1.0,
+        1.0,
         &mut gradients,
         &mut buffers,
     );
     backward(
         &parameters,
         &unchosen_cache,
-        1.0,
+        -1.0,
         &mut gradients,
         &mut buffers,
     );
@@ -1084,8 +1109,33 @@ pub fn seeded_weights(arch: &RankerConfig, seed: u64) -> Result<RankerWeights, T
 /// on the bias being zero. Changing either the salt or the rule changes every
 /// seeded order, so both are pinned here.
 ///
-/// Allocates one `len`-element vector; call it on an admitted example count.
-pub fn example_order(config: &TrainConfig, len: usize) -> Vec<usize> {
+/// ## Admission precedes the allocation (cohort 8 closeout F3)
+///
+/// This is a public entry point, so it is also an admission gate: `len` is
+/// checked against [`TrainConfig::MAX_TRAIN_EXAMPLES`] *before* the order
+/// vector is sized, and an over-ceiling length is
+/// [`TrainingError::LimitExceeded`] naming the count and the ceiling. A raw
+/// `(0..len).collect()` would answer a ceiling violation with a 65,537-element
+/// allocation and answer `usize::MAX` with a capacity-overflow panic; neither
+/// is an admission decision. The trainer's own hot path calls the private
+/// `example_order_admitted` after its scalar gate has already run.
+///
+/// # Errors
+///
+/// [`TrainingError::LimitExceeded`] when `len` exceeds
+/// [`TrainConfig::MAX_TRAIN_EXAMPLES`]. Zero is legal: an empty order is the
+/// identity permutation of nothing.
+pub fn example_order(config: &TrainConfig, len: usize) -> Result<Vec<usize>, TrainingError> {
+    admit_example_ceiling(len)?;
+    Ok(example_order_admitted(config, len))
+}
+
+/// The example order for a length the caller has already admitted.
+///
+/// Private on purpose: the allocation below is only reachable through
+/// [`example_order`] (which admits) or through the trainer's scalar gate
+/// ([`admit`]), so no public path can size an unadmitted vector.
+fn example_order_admitted(config: &TrainConfig, len: usize) -> Vec<usize> {
     let mut order: Vec<usize> = (0..len).collect();
     if config.order == ExampleOrder::SeededPermutation {
         let mut stream = SplitMix64::new(config.seed ^ ORDER_STREAM_SALT);
@@ -1168,7 +1218,8 @@ pub fn train_with_state(
     }
     let mut state = state;
     let bound = arch.max_weight_magnitude();
-    let order = example_order(config, examples.len());
+    // Already admitted by the scalar gate above.
+    let order = example_order_admitted(config, examples.len());
     let mut workspace = Workspace::new(&parameters);
 
     let mut steps = 0usize;
@@ -1256,13 +1307,7 @@ fn admit(
     if example_count == 0 {
         return Err(TrainingError::EmptyDataset);
     }
-    if example_count > TrainConfig::MAX_TRAIN_EXAMPLES {
-        return Err(TrainingError::LimitExceeded {
-            resource: "training examples",
-            value: example_count,
-            limit: TrainConfig::MAX_TRAIN_EXAMPLES,
-        });
-    }
+    admit_example_ceiling(example_count)?;
     let parameters = arch.tensor_elements();
     if parameters > RankerConfig::MAX_TENSOR_ELEMENTS {
         return Err(TrainingError::LimitExceeded {
@@ -1275,6 +1320,22 @@ fn admit(
 }
 
 // ── internals ───────────────────────────────────────────────────────
+
+/// The corpus ceiling, checked on a scalar alone.
+///
+/// Shared by [`admit`] (the trainer's gate) and [`example_order`] (the order
+/// seam's own gate), so the bound has exactly one spelling and both entry
+/// points refuse an over-ceiling count before allocating anything.
+fn admit_example_ceiling(example_count: usize) -> Result<(), TrainingError> {
+    if example_count > TrainConfig::MAX_TRAIN_EXAMPLES {
+        return Err(TrainingError::LimitExceeded {
+            resource: "training examples",
+            value: example_count,
+            limit: TrainConfig::MAX_TRAIN_EXAMPLES,
+        });
+    }
+    Ok(())
+}
 
 /// One layer's trainable parameters, in the internal `[in, out]` layout.
 #[derive(Clone, Debug, PartialEq)]
@@ -1637,12 +1698,13 @@ fn run_step(
     if !difference.is_finite() {
         return Err(TrainingError::NonFinite { step });
     }
-    if difference >= config.margin {
-        // Satisfied: the hinge's gradient is zero, so the step is a no-op
-        // and the optimizer does not advance.
+    if difference <= -config.margin {
+        // Satisfied (chosen at least `margin` below unchosen): the hinge's
+        // gradient is zero, so the step is a no-op and the optimizer does not
+        // advance.
         return Ok(0.0);
     }
-    let loss = config.margin - difference;
+    let loss = config.margin + difference;
     if !loss.is_finite() {
         return Err(TrainingError::NonFinite { step });
     }
@@ -1651,14 +1713,14 @@ fn run_step(
     backward(
         parameters,
         &workspace.chosen,
-        -1.0,
+        1.0,
         &mut workspace.gradients,
         &mut workspace.backward,
     );
     backward(
         parameters,
         &workspace.unchosen,
-        1.0,
+        -1.0,
         &mut workspace.gradients,
         &mut workspace.backward,
     );
