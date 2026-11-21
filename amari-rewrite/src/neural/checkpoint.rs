@@ -48,13 +48,45 @@
 //! 5. **Optimizer seam** — the S6 pipeline: policy checks, moments
 //!    all-or-nothing, dtype/shape agreement against the same spec, hashes,
 //!    nonfinite scan.
-//! 6. **Pair consistency** — the two artifacts must describe the same run
-//!    (equal step counters) and the step counter must be inside
+//! 6. **Pair consistency** — the two artifacts must describe the same run:
+//!    the weights artifact must declare the optimizer artifact's canonical
+//!    content digest (`amari.optimizer-digest`) and the declaration must
+//!    match the loaded moments, the two artifacts must record equal step
+//!    counters, and the step counter must be inside
 //!    [`MAX_CHECKPOINT_STEPS`].
 //!
 //! Only then is a [`RankerWeights`] built and an [`AdamWState`]
 //! reconstructed. [`RankerCheckpoint::ranker`] — the one call that touches
 //! the tensor backend — is a *separate* step the caller makes afterwards.
+//!
+//! ## The pair is bound by content, not by a step counter (F2)
+//!
+//! Equal step counters are necessary and not sufficient: two runs of the same
+//! architecture over the same corpus converge on the same step count, so
+//! `weights` from run A combined with `optimizer` from run B used to load and
+//! resume from moments that never belonged to those parameters — silently
+//! diverging from the run the pair claims to continue.
+//!
+//! The pair is therefore bound by **content**. [`RankerCheckpoint::save`]
+//! always records the companion optimizer artifact's canonical content digest
+//! — SHA-256 over its data section, which is the concatenation of the S6
+//! moments in lexicographic canonical order — under
+//! [`META_OPTIMIZER_DIGEST`], and [`RankerCheckpoint::load`] *requires* that
+//! key and re-derives the digest from the loaded state. A mixed pair is
+//! [`CheckpointError::InconsistentCheckpoint`]; a pre-binding artifact is
+//! [`CheckpointError::InvalidMetadata`] (no compatibility shim: this format is
+//! experimental and unreleased).
+//!
+//! The digest lives in the **weights** artifact because that is the artifact
+//! whose validated seam returns its metadata map ([`ValidatedCheckpoint`]).
+//! S6's validated seam returns the moments and the step, not `__metadata__`,
+//! so a digest written into the optimizer artifact could be neither required
+//! nor verified without re-opening that file — which would re-implement safe
+//! opening and byte capping, exactly what this module refuses to do. Writing
+//! the binding where it can be enforced is the whole point of the binding.
+//! Single-artifact (weights-only) loads are unaffected: the key is metadata,
+//! not a tensor, so the S5 seam's layout and hash checks see the same bytes
+//! they always did.
 //!
 //! ## What is trusted after validation
 //!
@@ -177,6 +209,16 @@ pub const META_TRAINING_STEP: &str = "amari.training-step";
 
 /// `__metadata__` key carrying [`RankerWeights::digest`] as lowercase hex.
 pub const META_WEIGHTS_HASH: &str = "amari.weights-hash";
+
+/// `__metadata__` key carrying the companion **optimizer artifact's** canonical
+/// content digest as lowercase hex (SHA-256 over its data section: the S6
+/// moments concatenated in lexicographic canonical order).
+///
+/// This is the pair's content binding. Step counters can agree across runs;
+/// content digests do not. See the module documentation for why the digest is
+/// recorded here, in the weights artifact, rather than in the optimizer
+/// artifact.
+pub const META_OPTIMIZER_DIGEST: &str = "amari.optimizer-digest";
 
 /// `__metadata__` key carrying the run's **visit count** — the training loop's
 /// step counter, which is what indexes the example order (the S6 `step` skips
@@ -374,6 +416,10 @@ impl RankerCheckpoint {
     /// destination policy (this module never follows an untrusted *target*
     /// path; reading is the untrusted direction and is policy-checked).
     ///
+    /// Both artifacts are built before either is written, because the weights
+    /// artifact records the optimizer artifact's content digest: a build
+    /// failure therefore leaves no half-pair on disk.
+    ///
     /// # Errors
     ///
     /// [`CheckpointError::WeightsRejected`] /
@@ -381,9 +427,9 @@ impl RankerCheckpoint {
     /// disagree with the architecture, and [`CheckpointError::WriteFailed`]
     /// when a file cannot be written.
     pub fn save(&self, weights_path: &Path, optimizer_path: &Path) -> Result<(), CheckpointError> {
-        let weights = self.weights_artifact()?;
+        let (optimizer, optimizer_digest) = self.optimizer_artifact()?;
+        let weights = self.weights_artifact(&optimizer_digest)?;
         write_artifact(weights_path, &weights, "weights")?;
-        let optimizer = self.optimizer_artifact()?;
         write_artifact(optimizer_path, &optimizer, "optimizer")
     }
 
@@ -436,6 +482,10 @@ impl RankerCheckpoint {
             return Err(CheckpointError::ArchitectureMismatch);
         }
         let declared_weights = metadata_digest(metadata, META_WEIGHTS_HASH)?;
+        // The pair's content binding: required, never optional. An artifact
+        // written before the binding existed is rejected rather than accepted
+        // without a content check (the format is experimental and unreleased).
+        let declared_optimizer = metadata_digest(metadata, META_OPTIMIZER_DIGEST)?;
         let weights_step = metadata_u64(metadata, META_TRAINING_STEP)?;
         // Epoch bookkeeping, re-validated because the artifact is untrusted:
         // the recorded visit count must be a whole number of epochs over the
@@ -482,6 +532,13 @@ impl RankerCheckpoint {
                 detail: "the weights and optimizer artifacts record different training steps",
             });
         }
+        // Content, not just counters: same-architecture, same-corpus runs agree
+        // on the step count, so only the digest can refuse a mixed pair.
+        if artifact_sha256(&validated.canonical_data_bytes()) != declared_optimizer.to_hex() {
+            return Err(CheckpointError::InconsistentCheckpoint {
+                detail: "the optimizer artifact is not the companion the weights artifact binds",
+            });
+        }
         let step = usize::try_from(validated.step).map_err(|_| CheckpointError::LimitExceeded {
             resource: "checkpoint steps",
             value: usize::MAX,
@@ -510,7 +567,11 @@ impl RankerCheckpoint {
     }
 
     /// Build the weights artifact's bytes.
-    fn weights_artifact(&self) -> Result<Vec<u8>, CheckpointError> {
+    ///
+    /// `optimizer_digest` is the companion optimizer artifact's canonical
+    /// content digest; it is written under [`META_OPTIMIZER_DIGEST`] and is
+    /// therefore recorded by every save, not by a caller's choice.
+    fn weights_artifact(&self, optimizer_digest: &str) -> Result<Vec<u8>, CheckpointError> {
         check_weights(&self.config, &self.weights)?;
         let plan = self.config.expected_tensors();
         let layers = self.weights.training_layers();
@@ -550,6 +611,10 @@ impl RankerCheckpoint {
             META_WEIGHTS_HASH.to_string(),
             self.weights.digest().to_hex(),
         );
+        metadata.insert(
+            META_OPTIMIZER_DIGEST.to_string(),
+            optimizer_digest.to_string(),
+        );
 
         let artifact = build_artifact(&plan, &metadata, MAX_WEIGHTS_CHECKPOINT_BYTES, |index| {
             let (weight_t, bias, in_width, out_width) = layers[index / 2];
@@ -559,20 +624,24 @@ impl RankerCheckpoint {
                 bias.to_vec()
             }
         });
-        artifact.map_err(|failure| match failure {
-            ArtifactFailure::PlanMismatch => CheckpointError::WeightsRejected {
-                kind: WeightsRejection::Layout,
-            },
-            ArtifactFailure::TooLarge { value, limit } => CheckpointError::LimitExceeded {
-                resource: "checkpoint bytes",
-                value,
-                limit,
-            },
-        })
+        artifact
+            .map(|(bytes, _)| bytes)
+            .map_err(|failure| match failure {
+                ArtifactFailure::PlanMismatch => CheckpointError::WeightsRejected {
+                    kind: WeightsRejection::Layout,
+                },
+                ArtifactFailure::TooLarge { value, limit } => CheckpointError::LimitExceeded {
+                    resource: "checkpoint bytes",
+                    value,
+                    limit,
+                },
+            })
     }
 
-    /// Build the optimizer-state artifact's bytes.
-    fn optimizer_artifact(&self) -> Result<Vec<u8>, CheckpointError> {
+    /// Build the optimizer-state artifact's bytes, plus its canonical content
+    /// digest (SHA-256 over the data section, which is what the weights
+    /// artifact binds).
+    fn optimizer_artifact(&self) -> Result<(Vec<u8>, String), CheckpointError> {
         check_optimizer(&self.config, &self.optimizer)?;
         let moments = self.optimizer.training_moments();
         let depth = moments.len();
@@ -1185,13 +1254,16 @@ enum ArtifactFailure {
 /// `plan` is the tensor order and shapes; `values` yields one tensor's f32
 /// elements at a time, so the writer never holds more than one tensor's copy.
 /// `ia.model-hash` is computed here, over the bytes this function emits, and
-/// inserted into the metadata before the header is built.
+/// inserted into the metadata before the header is built. The returned string
+/// is the artifact's **canonical content digest** — the same
+/// `artifact_sha256` over the same data section, which is what the pair
+/// binding records and what the loader re-derives from the validated state.
 fn build_artifact<F>(
     plan: &[(String, Vec<usize>)],
     metadata: &BTreeMap<String, String>,
     cap: u64,
     mut values: F,
-) -> Result<Vec<u8>, ArtifactFailure>
+) -> Result<(Vec<u8>, String), ArtifactFailure>
 where
     F: FnMut(usize) -> Vec<f32>,
 {
@@ -1211,7 +1283,8 @@ where
     }
 
     let mut metadata = metadata.clone();
-    metadata.insert(META_MODEL_HASH.to_string(), artifact_sha256(&data));
+    let content_digest = artifact_sha256(&data);
+    metadata.insert(META_MODEL_HASH.to_string(), content_digest.clone());
     let header = build_header(plan, &spans, &metadata);
 
     let limit = usize::try_from(cap).unwrap_or(usize::MAX);
@@ -1232,7 +1305,7 @@ where
     artifact.extend_from_slice(&(header.len() as u64).to_le_bytes());
     artifact.extend_from_slice(header.as_bytes());
     artifact.extend_from_slice(&data);
-    Ok(artifact)
+    Ok((artifact, content_digest))
 }
 
 /// Build the deterministic safetensors header.
