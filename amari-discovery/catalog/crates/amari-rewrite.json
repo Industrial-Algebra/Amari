@@ -34,6 +34,7 @@
     {
       "name": "network",
       "enables": [
+        "dep:amari-core",
         "dep:amari-network",
         "neural",
         "std"
@@ -65,6 +66,15 @@
     }
   ],
   "dependencies": [
+    {
+      "alias": "amari-core",
+      "package": "amari-core",
+      "kind": "normal",
+      "version": "0.24.1",
+      "path": "amari-core",
+      "optional": true,
+      "default_features": true
+    },
     {
       "alias": "amari-holographic",
       "package": "amari-holographic",
@@ -10282,6 +10292,1737 @@
       ]
     },
     {
+      "path": "amari_rewrite::network::EMBEDDING_WIDTH",
+      "kind": "const",
+      "signature": "pub const EMBEDDING_WIDTH : usize",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const EMBEDDING_WIDTH : usize",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "EMBEDDING_WIDTH"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::EmbeddingComponent",
+      "kind": "struct",
+      "signature": "pub struct EmbeddingComponent",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "name",
+            "ty": "& 'static str"
+          },
+          {
+            "label": "formula",
+            "ty": "& 'static str"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct EmbeddingComponent",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "name",
+                "ty": "& 'static str"
+              },
+              {
+                "label": "formula",
+                "ty": "& 'static str"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "EmbeddingComponent"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::EmbeddingComponent::new",
+      "kind": "method",
+      "signature": "pub const fn new (name : & 'static str , formula : & 'static str) -> Self",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn new (name : & 'static str , formula : & 'static str) -> Self",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "EmbeddingComponent::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore",
+      "kind": "struct",
+      "signature": "pub struct GeometricScore",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GeometricScore",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::branching",
+      "kind": "method",
+      "signature": "pub fn branching (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn branching (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::branching"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::constraints",
+      "kind": "method",
+      "signature": "pub fn constraints (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn constraints (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::constraints"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::cycle",
+      "kind": "method",
+      "signature": "pub fn cycle (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn cycle (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::cycle"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::depth",
+      "kind": "method",
+      "signature": "pub fn depth (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn depth (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::depth"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::distance",
+      "kind": "method",
+      "signature": "pub fn distance (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn distance (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::distance"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::existentials",
+      "kind": "method",
+      "signature": "pub fn existentials (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn existentials (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::existentials"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::lanes",
+      "kind": "method",
+      "signature": "pub fn lanes (& self) -> [f64 ; SCORE_LANES]",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn lanes (& self) -> [f64 ; SCORE_LANES]",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::lanes"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::novelty",
+      "kind": "method",
+      "signature": "pub fn novelty (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn novelty (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::novelty"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::of",
+      "kind": "method",
+      "signature": "pub fn of (candidate : & GuidanceCandidate < '_ > , graph : & InverseSearchGraph ,) -> Result < Self , NetworkError >",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn of (candidate : & GuidanceCandidate < '_ > , graph : & InverseSearchGraph ,) -> Result < Self , NetworkError >",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::of"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::revisit",
+      "kind": "method",
+      "signature": "pub fn revisit (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn revisit (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::revisit"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::total",
+      "kind": "method",
+      "signature": "pub fn total (& self) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn total (& self) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::total"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::total_of",
+      "kind": "method",
+      "signature": "pub fn total_of (lanes : & [f64 ; SCORE_LANES]) -> f64",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn total_of (lanes : & [f64 ; SCORE_LANES]) -> f64",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScore::total_of"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable",
+      "kind": "struct",
+      "signature": "pub struct GeometricScoreTable",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GeometricScoreTable",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScoreTable"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::FRAME",
+      "kind": "const",
+      "signature": "pub const FRAME : & 'static str",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const FRAME : & 'static str",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScoreTable::FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::LANES",
+      "kind": "const",
+      "signature": "pub const LANES : [ScoreLane ; SCORE_LANES]",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const LANES : [ScoreLane ; SCORE_LANES]",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScoreTable::LANES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::PINNED_DIGEST",
+      "kind": "const",
+      "signature": "pub const PINNED_DIGEST : & 'static str",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const PINNED_DIGEST : & 'static str",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScoreTable::PINNED_DIGEST"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::VERSION",
+      "kind": "const",
+      "signature": "pub const VERSION : u32",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const VERSION : u32",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScoreTable::VERSION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::WEIGHTS",
+      "kind": "const",
+      "signature": "pub const WEIGHTS : [f64 ; SCORE_LANES]",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const WEIGHTS : [f64 ; SCORE_LANES]",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScoreTable::WEIGHTS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::digest",
+      "kind": "method",
+      "signature": "pub fn digest () -> Sha256Digest",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn digest () -> Sha256Digest",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricScoreTable::digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy",
+      "kind": "struct",
+      "signature": "pub struct GeometricStrategy",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GeometricStrategy",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricStrategy"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::config",
+      "kind": "method",
+      "signature": "pub fn config (& self) -> & GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn config (& self) -> & GeometricStrategyConfig",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricStrategy::config"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::graph",
+      "kind": "method",
+      "signature": "pub fn graph (& self) -> & InverseSearchGraph",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn graph (& self) -> & InverseSearchGraph",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricStrategy::graph"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::new",
+      "kind": "method",
+      "signature": "pub fn new (graph : InverseSearchGraph , config : GeometricStrategyConfig) -> Self",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (graph : InverseSearchGraph , config : GeometricStrategyConfig) -> Self",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricStrategy::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::replay_hash",
+      "kind": "method",
+      "signature": "pub fn replay_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn replay_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricStrategy::replay_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::score",
+      "kind": "method",
+      "signature": "pub fn score (& self , candidate : & GuidanceCandidate < '_ >) -> Result < GeometricScore , NetworkError >",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn score (& self , candidate : & GuidanceCandidate < '_ >) -> Result < GeometricScore , NetworkError >",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "GeometricStrategy::score"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig",
+      "kind": "struct",
+      "signature": "pub struct GeometricStrategyConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GeometricStrategyConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "GeometricStrategyConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig::DEFAULT_MAX_CANDIDATES",
+      "kind": "const",
+      "signature": "pub const DEFAULT_MAX_CANDIDATES : usize",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DEFAULT_MAX_CANDIDATES : usize",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "GeometricStrategyConfig::DEFAULT_MAX_CANDIDATES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig::max_candidates",
+      "kind": "method",
+      "signature": "pub fn max_candidates (& self) -> usize",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_candidates (& self) -> usize",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "GeometricStrategyConfig::max_candidates"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (max_candidates : usize) -> Result < Self , NetworkError >",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (max_candidates : usize) -> Result < Self , NetworkError >",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "GeometricStrategyConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GraphNodeInput",
+      "kind": "struct",
+      "signature": "pub struct GraphNodeInput < 'a >",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "state",
+            "ty": "& 'a SymbolicState"
+          },
+          {
+            "label": "search_depth",
+            "ty": "u64"
+          },
+          {
+            "label": "existentials",
+            "ty": "usize"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct GraphNodeInput < 'a >",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "state",
+                "ty": "& 'a SymbolicState"
+              },
+              {
+                "label": "search_depth",
+                "ty": "u64"
+              },
+              {
+                "label": "existentials",
+                "ty": "usize"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "GraphNodeInput"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GraphNodeInput::new",
+      "kind": "method",
+      "signature": "pub fn new (state : & 'a SymbolicState , search_depth : u64 , existentials : usize) -> Self",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (state : & 'a SymbolicState , search_depth : u64 , existentials : usize) -> Self",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "GraphNodeInput::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::GraphNodeInput::of_candidate",
+      "kind": "method",
+      "signature": "pub fn of_candidate (candidate : & GuidanceCandidate < 'a >) -> Self",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn of_candidate (candidate : & GuidanceCandidate < 'a >) -> Self",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "GraphNodeInput::of_candidate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig",
+      "kind": "struct",
+      "signature": "pub struct InverseGraphConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InverseGraphConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "InverseGraphConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::limits",
+      "kind": "method",
+      "signature": "pub fn limits (& self) -> & RelationLimits",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn limits (& self) -> & RelationLimits",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "InverseGraphConfig::limits"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::max_edges",
+      "kind": "method",
+      "signature": "pub fn max_edges (& self) -> usize",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_edges (& self) -> usize",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "InverseGraphConfig::max_edges"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::max_nodes",
+      "kind": "method",
+      "signature": "pub fn max_nodes (& self) -> usize",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_nodes (& self) -> usize",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "InverseGraphConfig::max_nodes"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (max_nodes : usize , max_edges : usize , limits : RelationLimits ,) -> Result < Self , NetworkError >",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (max_nodes : usize , max_edges : usize , limits : RelationLimits ,) -> Result < Self , NetworkError >",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "InverseGraphConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph",
+      "kind": "struct",
+      "signature": "pub struct InverseSearchGraph",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InverseSearchGraph",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::config",
+      "kind": "method",
+      "signature": "pub fn config (& self) -> & InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn config (& self) -> & InverseGraphConfig",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::config"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::connect",
+      "kind": "method",
+      "signature": "pub fn connect (& mut self , from : GraphNodeInput < '_ > , to : GraphNodeInput < '_ > ,) -> Result < (usize , usize) , NetworkError >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn connect (& mut self , from : GraphNodeInput < '_ > , to : GraphNodeInput < '_ > ,) -> Result < (usize , usize) , NetworkError >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::connect"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::contains",
+      "kind": "method",
+      "signature": "pub fn contains (& self , digest : & Sha256Digest) -> bool",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn contains (& self , digest : & Sha256Digest) -> bool",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::contains"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::distance_to_nearest",
+      "kind": "method",
+      "signature": "pub fn distance_to_nearest (& self , embedding : & InverseStateEmbeddingV1) -> Option < f64 >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn distance_to_nearest (& self , embedding : & InverseStateEmbeddingV1) -> Option < f64 >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::distance_to_nearest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::has_edge",
+      "kind": "method",
+      "signature": "pub fn has_edge (& self , from : usize , to : usize) -> bool",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn has_edge (& self , from : usize , to : usize) -> bool",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::has_edge"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::index_of",
+      "kind": "method",
+      "signature": "pub fn index_of (& self , digest : & Sha256Digest) -> Option < usize >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn index_of (& self , digest : & Sha256Digest) -> Option < usize >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::index_of"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::insert",
+      "kind": "method",
+      "signature": "pub fn insert (& mut self , node : GraphNodeInput < '_ >) -> Result < usize , NetworkError >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn insert (& mut self , node : GraphNodeInput < '_ >) -> Result < usize , NetworkError >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::insert"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::nearest",
+      "kind": "method",
+      "signature": "pub fn nearest (& self , embedding : & InverseStateEmbeddingV1) -> Option < (usize , f64) >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn nearest (& self , embedding : & InverseStateEmbeddingV1) -> Option < (usize , f64) >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::nearest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::network",
+      "kind": "method",
+      "signature": "pub fn network (& self) -> & GeometricNetwork < 3 , 0 , 0 >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn network (& self) -> & GeometricNetwork < 3 , 0 , 0 >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::network"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::new",
+      "kind": "method",
+      "signature": "pub fn new (config : InverseGraphConfig) -> Self",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (config : InverseGraphConfig) -> Self",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::node_depth",
+      "kind": "method",
+      "signature": "pub fn node_depth (& self , index : usize) -> Option < u64 >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn node_depth (& self , index : usize) -> Option < u64 >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::node_depth"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::node_digest",
+      "kind": "method",
+      "signature": "pub fn node_digest (& self , index : usize) -> Option < Sha256Digest >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn node_digest (& self , index : usize) -> Option < Sha256Digest >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::node_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::node_embedding",
+      "kind": "method",
+      "signature": "pub fn node_embedding (& self , index : usize) -> Option < & InverseStateEmbeddingV1 >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn node_embedding (& self , index : usize) -> Option < & InverseStateEmbeddingV1 >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::node_embedding"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::num_edges",
+      "kind": "method",
+      "signature": "pub fn num_edges (& self) -> usize",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn num_edges (& self) -> usize",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::num_edges"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::num_nodes",
+      "kind": "method",
+      "signature": "pub fn num_nodes (& self) -> usize",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn num_nodes (& self) -> usize",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::num_nodes"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::observe_round",
+      "kind": "method",
+      "signature": "pub fn observe_round (& mut self , request : & GuidanceRequest < '_ >) -> Result < usize , NetworkError >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn observe_round (& mut self , request : & GuidanceRequest < '_ >) -> Result < usize , NetworkError >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseSearchGraph::observe_round"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1",
+      "kind": "struct",
+      "signature": "pub struct InverseStateEmbeddingV1",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct InverseStateEmbeddingV1",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::COMPONENTS",
+      "kind": "const",
+      "signature": "pub const COMPONENTS : [EmbeddingComponent ; EMBEDDING_WIDTH]",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const COMPONENTS : [EmbeddingComponent ; EMBEDDING_WIDTH]",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::COMPONENTS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::DEPTH_CEILING",
+      "kind": "const",
+      "signature": "pub const DEPTH_CEILING : usize",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DEPTH_CEILING : usize",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::DEPTH_CEILING"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::FRAME",
+      "kind": "const",
+      "signature": "pub const FRAME : & 'static str",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const FRAME : & 'static str",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::NODE_LOG_SCALE",
+      "kind": "const",
+      "signature": "pub const NODE_LOG_SCALE : f64",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const NODE_LOG_SCALE : f64",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::NODE_LOG_SCALE"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::PINNED_DIGEST",
+      "kind": "const",
+      "signature": "pub const PINNED_DIGEST : & 'static str",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const PINNED_DIGEST : & 'static str",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::PINNED_DIGEST"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::VERSION",
+      "kind": "const",
+      "signature": "pub const VERSION : u32",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const VERSION : u32",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::VERSION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::WIDTH",
+      "kind": "const",
+      "signature": "pub const WIDTH : usize",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const WIDTH : usize",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::WIDTH"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::coefficients",
+      "kind": "method",
+      "signature": "pub fn coefficients (& self) -> [f64 ; EMBEDDING_WIDTH]",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn coefficients (& self) -> [f64 ; EMBEDDING_WIDTH]",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::coefficients"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::component",
+      "kind": "method",
+      "signature": "pub fn component (& self , index : usize) -> Option < f64 >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn component (& self , index : usize) -> Option < f64 >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::component"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::distance",
+      "kind": "method",
+      "signature": "pub fn distance (& self , other : & Self) -> f64",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn distance (& self , other : & Self) -> f64",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::distance"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::hash",
+      "kind": "method",
+      "signature": "pub fn hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::of_candidate",
+      "kind": "method",
+      "signature": "pub fn of_candidate (candidate : & GuidanceCandidate < '_ > , limits : & RelationLimits ,) -> Result < Self , NetworkError >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn of_candidate (candidate : & GuidanceCandidate < '_ > , limits : & RelationLimits ,) -> Result < Self , NetworkError >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::of_candidate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::of_state",
+      "kind": "method",
+      "signature": "pub fn of_state (state : & SymbolicState , search_depth : u64 , existentials : usize , limits : & RelationLimits ,) -> Result < Self , NetworkError >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn of_state (state : & SymbolicState , search_depth : u64 , existentials : usize , limits : & RelationLimits ,) -> Result < Self , NetworkError >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::of_state"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::schema_digest",
+      "kind": "method",
+      "signature": "pub fn schema_digest () -> Sha256Digest",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn schema_digest () -> Sha256Digest",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::schema_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::to_multivector",
+      "kind": "method",
+      "signature": "pub fn to_multivector (& self) -> Multivector < 3 , 0 , 0 >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn to_multivector (& self) -> Multivector < 3 , 0 , 0 >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "InverseStateEmbeddingV1::to_multivector"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::MAX_EMBEDDING_DISTANCE",
+      "kind": "const",
+      "signature": "pub const MAX_EMBEDDING_DISTANCE : f64",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_EMBEDDING_DISTANCE : f64",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "MAX_EMBEDDING_DISTANCE"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::MAX_GEOMETRIC_CANDIDATES",
+      "kind": "const",
+      "signature": "pub const MAX_GEOMETRIC_CANDIDATES : usize",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_GEOMETRIC_CANDIDATES : usize",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "MAX_GEOMETRIC_CANDIDATES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::MAX_GRAPH_EDGES",
+      "kind": "const",
+      "signature": "pub const MAX_GRAPH_EDGES : usize",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_GRAPH_EDGES : usize",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "MAX_GRAPH_EDGES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::MAX_GRAPH_NODES",
+      "kind": "const",
+      "signature": "pub const MAX_GRAPH_NODES : usize",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_GRAPH_NODES : usize",
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "MAX_GRAPH_NODES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::NetworkError",
+      "kind": "enum",
+      "signature": "pub enum NetworkError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LimitExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "value",
+                  "ty": "usize"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BudgetExhausted",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "UnknownNode",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "index",
+                  "ty": "usize"
+                },
+                {
+                  "name": "nodes",
+                  "ty": "usize"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::config",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum NetworkError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "LimitExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "value",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "BudgetExhausted",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "UnknownNode",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "index",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "nodes",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/network/config.rs",
+          "source_module": "amari_rewrite::network::config",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::config",
+          "declaration_ident": "NetworkError"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::network::RewriteGraphSummary",
       "kind": "struct",
       "signature": "pub struct RewriteGraphSummary",
@@ -10342,6 +12083,89 @@
           "is_reexport": false,
           "declaration_module": "amari_rewrite::network",
           "declaration_ident": "RewriteGraphSummary::from_trace"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::SCORE_LANES",
+      "kind": "const",
+      "signature": "pub const SCORE_LANES : usize",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const SCORE_LANES : usize",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "SCORE_LANES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::ScoreLane",
+      "kind": "struct",
+      "signature": "pub struct ScoreLane",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "name",
+            "ty": "& 'static str"
+          },
+          {
+            "label": "formula",
+            "ty": "& 'static str"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct ScoreLane",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "name",
+                "ty": "& 'static str"
+              },
+              {
+                "label": "formula",
+                "ty": "& 'static str"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "ScoreLane"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::ScoreLane::new",
+      "kind": "method",
+      "signature": "pub const fn new (name : & 'static str , formula : & 'static str) -> Self",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::strategy",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn new (name : & 'static str , formula : & 'static str) -> Self",
+          "source_path": "amari-rewrite/src/network/strategy.rs",
+          "source_module": "amari_rewrite::network::strategy",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::strategy",
+          "declaration_ident": "ScoreLane::new"
         }
       ]
     },
@@ -25075,6 +26899,187 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::EmbeddingComponent",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "EmbeddingComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::GeometricScore",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScore"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::GeometricScoreTable",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScoreTable"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategy",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricStrategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "GeometricStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::GraphNodeInput",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "GraphNodeInput"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "InverseGraphConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::InverseSearchGraph",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "InverseSearchGraph"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::InverseStateEmbeddingV1",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "InverseStateEmbeddingV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::NetworkError",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "NetworkError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
       "source_path": "amari-rewrite/src/network/mod.rs",
       "source_ordinal": 0,
@@ -25086,6 +27091,24 @@
         "kind": "local",
         "module": "amari_rewrite::network",
         "ident": "RewriteGraphSummary"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::network::ScoreLane",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "ScoreLane"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -26950,6 +28973,133 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::EmbeddingComponent",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "EmbeddingComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::GeometricScore",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScore"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::GeometricScoreTable",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScoreTable"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "GeometricStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::GraphNodeInput",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "GraphNodeInput"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "InverseGraphConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::InverseStateEmbeddingV1",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "InverseStateEmbeddingV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
       "source_path": "amari-rewrite/src/network/mod.rs",
       "source_ordinal": 0,
@@ -26961,6 +29111,24 @@
         "kind": "local",
         "module": "amari_rewrite::network",
         "ident": "RewriteGraphSummary"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::network::ScoreLane",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "ScoreLane"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -28990,6 +31158,187 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::EmbeddingComponent",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "EmbeddingComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::GeometricScore",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScore"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::GeometricScoreTable",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScoreTable"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategy",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricStrategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "GeometricStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::GraphNodeInput",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "GraphNodeInput"
+      },
+      "generics": "< 'a >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "InverseGraphConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::InverseSearchGraph",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "InverseSearchGraph"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::InverseStateEmbeddingV1",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "InverseStateEmbeddingV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::NetworkError",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "NetworkError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
       "source_path": "amari-rewrite/src/network/mod.rs",
       "source_ordinal": 0,
@@ -29001,6 +31350,24 @@
         "kind": "local",
         "module": "amari_rewrite::network",
         "ident": "RewriteGraphSummary"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::network::ScoreLane",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "ScoreLane"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -30629,6 +32996,60 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::network::GeometricScoreTable",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScoreTable"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "GeometricStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::network::InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "InverseGraphConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::neural::DatasetConfig",
       "source_path": "amari-rewrite/src/neural/data.rs",
       "source_ordinal": 4,
@@ -32124,6 +34545,96 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::network::EmbeddingComponent",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "EmbeddingComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::network::GeometricScoreTable",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScoreTable"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "GeometricStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::network::InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "InverseGraphConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::network::NetworkError",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "NetworkError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
       "source_path": "amari-rewrite/src/network/mod.rs",
       "source_ordinal": 0,
@@ -32135,6 +34646,24 @@
         "kind": "local",
         "module": "amari_rewrite::network",
         "ident": "RewriteGraphSummary"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::network::ScoreLane",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "ScoreLane"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -35836,6 +38365,132 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::EmbeddingComponent",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "EmbeddingComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::GeometricScore",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScore"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::GeometricScoreTable",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricScoreTable"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "GeometricStrategyConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "InverseGraphConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::InverseStateEmbeddingV1",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::graph",
+        "ident": "InverseStateEmbeddingV1"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::NetworkError",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "NetworkError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::network::RewriteGraphSummary",
       "source_path": "amari-rewrite/src/network/mod.rs",
       "source_ordinal": 0,
@@ -35847,6 +38502,24 @@
         "kind": "local",
         "module": "amari_rewrite::network",
         "ident": "RewriteGraphSummary"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::network::ScoreLane",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "ScoreLane"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -37692,6 +40365,25 @@
     },
     {
       "trait_path": "amari_rewrite::inverse::GuidanceStrategy",
+      "impl_type_path": "amari_rewrite::network::GeometricStrategy",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceStrategy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::strategy",
+        "ident": "GeometricStrategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_rewrite::inverse::GuidanceStrategy",
       "impl_type_path": "amari_rewrite::neural::NeuralStrategy",
       "source_path": "amari-rewrite/src/neural/strategy.rs",
       "source_ordinal": 6,
@@ -38074,6 +40766,24 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::guidance",
         "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "thiserror::Error",
+      "impl_type_path": "amari_rewrite::network::NetworkError",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "thiserror::Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::network::config",
+        "ident": "NetworkError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -40662,6 +43372,638 @@
       "surface_kind": "module"
     },
     {
+      "path": "amari_rewrite::network::EMBEDDING_WIDTH",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::EmbeddingComponent",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::EmbeddingComponent::new",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::branching",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::constraints",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::cycle",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::depth",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::distance",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::existentials",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::lanes",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::novelty",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::of",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::revisit",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::total",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScore::total_of",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::FRAME",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::LANES",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::PINNED_DIGEST",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::VERSION",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::WEIGHTS",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricScoreTable::digest",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::config",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::graph",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::new",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::replay_hash",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategy::score",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig::DEFAULT_MAX_CANDIDATES",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig::max_candidates",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GeometricStrategyConfig::new",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GraphNodeInput",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::GraphNodeInput::new",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::GraphNodeInput::of_candidate",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::limits",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::max_edges",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::max_nodes",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseGraphConfig::new",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 13,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::config",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::connect",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 12,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::contains",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::distance_to_nearest",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 15,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::has_edge",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::index_of",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::insert",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::nearest",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 14,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::network",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::new",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::node_depth",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::node_digest",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::node_embedding",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::num_edges",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::num_nodes",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseSearchGraph::observe_round",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 13,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::COMPONENTS",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::DEPTH_CEILING",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::FRAME",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::NODE_LOG_SCALE",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::PINNED_DIGEST",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::VERSION",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::WIDTH",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::coefficients",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::component",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::distance",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 13,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::hash",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 12,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::of_candidate",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::of_state",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::schema_digest",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::InverseStateEmbeddingV1::to_multivector",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 14,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::MAX_EMBEDDING_DISTANCE",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::MAX_GEOMETRIC_CANDIDATES",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::MAX_GRAPH_EDGES",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::MAX_GRAPH_NODES",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::NetworkError",
+      "source_path": "amari-rewrite/src/network/config.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::network::RewriteGraphSummary",
       "source_path": "amari-rewrite/src/network/mod.rs",
       "source_ordinal": 0,
@@ -40672,6 +44014,30 @@
     {
       "path": "amari_rewrite::network::RewriteGraphSummary::from_trace",
       "source_path": "amari-rewrite/src/network/mod.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::SCORE_LANES",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::ScoreLane",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::network::ScoreLane::new",
+      "source_path": "amari-rewrite/src/network/strategy.rs",
       "source_ordinal": 0,
       "gate": "feature(\"network\")",
       "status": "disabled",
