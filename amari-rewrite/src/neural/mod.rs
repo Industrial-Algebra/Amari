@@ -77,6 +77,13 @@
 //! [`TrainingOutcome::Partial`] is a budget-truncated snapshot and is marked
 //! non-replayable.
 //!
+//! **Score direction is one convention across both surfaces**: the ranker's
+//! ordering is ascending, so preferred = LOWER, and the trainer's hinge
+//! minimizes the chosen score relative to the unchosen one
+//! (`max(0, margin + s_chosen - s_unchosen)`). A trained ranker therefore ranks
+//! a trace's chosen candidate first, which is the property the end-to-end
+//! guidance regression pins (cohort 8 closeout F1).
+//!
 //! ## Errors
 //!
 //! [`NeuralError`] is the only error type the *scoring* surface exposes.
@@ -138,8 +145,8 @@ pub use checkpoint::{
     checkpoint_policy, CheckpointError, OptimizerRejection, RankerCheckpoint, WeightsRejection,
     CHECKPOINT_SCHEMA_VERSION, MAX_CHECKPOINT_STEPS, MAX_OPTIMIZER_CHECKPOINT_BYTES,
     MAX_WEIGHTS_CHECKPOINT_BYTES, META_CHECKPOINT_VERSION, META_FEATURE_SCHEMA_HASH,
-    META_FEATURE_SCHEMA_VERSION, META_RANKER_SPEC_HASH, META_TRAINING_EXAMPLES, META_TRAINING_STEP,
-    META_TRAINING_STEPS, META_WEIGHTS_HASH,
+    META_FEATURE_SCHEMA_VERSION, META_OPTIMIZER_DIGEST, META_RANKER_SPEC_HASH,
+    META_TRAINING_EXAMPLES, META_TRAINING_STEP, META_TRAINING_STEPS, META_WEIGHTS_HASH,
 };
 pub use config::RankerConfig;
 pub use data::{

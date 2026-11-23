@@ -12666,6 +12666,25 @@
       ]
     },
     {
+      "path": "amari_rewrite::neural::META_OPTIMIZER_DIGEST",
+      "kind": "const",
+      "signature": "pub const META_OPTIMIZER_DIGEST : & str",
+      "source_path": "amari-rewrite/src/neural/checkpoint.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::neural::checkpoint",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const META_OPTIMIZER_DIGEST : & str",
+          "source_path": "amari-rewrite/src/neural/checkpoint.rs",
+          "source_module": "amari_rewrite::neural::checkpoint",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::neural::checkpoint",
+          "declaration_ident": "META_OPTIMIZER_DIGEST"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::neural::META_RANKER_SPEC_HASH",
       "kind": "const",
       "signature": "pub const META_RANKER_SPEC_HASH : & str",
@@ -16032,14 +16051,14 @@
     {
       "path": "amari_rewrite::neural::example_order",
       "kind": "fn",
-      "signature": "pub fn example_order (config : & TrainConfig , len : usize) -> Vec < usize >",
+      "signature": "pub fn example_order (config : & TrainConfig , len : usize) -> Result < Vec < usize > , TrainingError >",
       "source_path": "amari-rewrite/src/neural/train.rs",
       "is_reexport": true,
       "source_module": "amari_rewrite::neural::train",
       "variants": [
         {
           "kind": "fn",
-          "signature": "pub fn example_order (config : & TrainConfig , len : usize) -> Vec < usize >",
+          "signature": "pub fn example_order (config : & TrainConfig , len : usize) -> Result < Vec < usize > , TrainingError >",
           "source_path": "amari-rewrite/src/neural/train.rs",
           "source_module": "amari_rewrite::neural::train",
           "is_reexport": true,
@@ -25113,7 +25132,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::CheckpointError",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -25419,7 +25438,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -25509,7 +25528,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::RankerCheckpoint",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -25689,7 +25708,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::neural::WeightsRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 18,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -27132,7 +27151,7 @@
       "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Copy"
@@ -27240,7 +27259,7 @@
       "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::neural::WeightsRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 18,
       "trait_endpoint": {
         "kind": "external",
         "path": "Copy"
@@ -29028,7 +29047,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::CheckpointError",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -29334,7 +29353,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -29424,7 +29443,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::RankerCheckpoint",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -29604,7 +29623,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::neural::WeightsRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 18,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -32125,7 +32144,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::neural::CheckpointError",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -32287,7 +32306,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -32395,7 +32414,7 @@
       "trait_path": "Eq",
       "impl_type_path": "amari_rewrite::neural::WeightsRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 18,
       "trait_endpoint": {
         "kind": "external",
         "path": "Eq"
@@ -35855,7 +35874,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::CheckpointError",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -36107,7 +36126,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -36197,7 +36216,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::RankerCheckpoint",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -36377,7 +36396,7 @@
       "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::neural::WeightsRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 18,
       "trait_endpoint": {
         "kind": "external",
         "path": "PartialEq"
@@ -38064,7 +38083,7 @@
       "trait_path": "thiserror::Error",
       "impl_type_path": "amari_rewrite::neural::CheckpointError",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 17,
       "trait_endpoint": {
         "kind": "external",
         "path": "thiserror::Error"
@@ -40765,7 +40784,7 @@
     {
       "path": "amari_rewrite::neural::CheckpointError",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 17,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -41349,7 +41368,7 @@
     {
       "path": "amari_rewrite::neural::MAX_CHECKPOINT_STEPS",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -41357,7 +41376,7 @@
     {
       "path": "amari_rewrite::neural::MAX_OPTIMIZER_CHECKPOINT_BYTES",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 13,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -41373,7 +41392,7 @@
     {
       "path": "amari_rewrite::neural::MAX_WEIGHTS_CHECKPOINT_BYTES",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 12,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -41403,6 +41422,14 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_rewrite::neural::META_OPTIMIZER_DIGEST",
+      "source_path": "amari-rewrite/src/neural/checkpoint.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"neural\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_rewrite::neural::META_RANKER_SPEC_HASH",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
       "source_ordinal": 4,
@@ -41413,7 +41440,7 @@
     {
       "path": "amari_rewrite::neural::META_TRAINING_EXAMPLES",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -41429,7 +41456,7 @@
     {
       "path": "amari_rewrite::neural::META_TRAINING_STEPS",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -41621,7 +41648,7 @@
     {
       "path": "amari_rewrite::neural::OptimizerRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -41749,7 +41776,7 @@
     {
       "path": "amari_rewrite::neural::RankerCheckpoint",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 15,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -42309,7 +42336,7 @@
     {
       "path": "amari_rewrite::neural::WeightsRejection",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 18,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -42317,7 +42344,7 @@
     {
       "path": "amari_rewrite::neural::checkpoint_policy",
       "source_path": "amari-rewrite/src/neural/checkpoint.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 14,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -42357,7 +42384,7 @@
     {
       "path": "amari_rewrite::neural::train",
       "source_path": "amari-rewrite/src/neural/train.rs",
-      "source_ordinal": 38,
+      "source_ordinal": 39,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -42365,7 +42392,7 @@
     {
       "path": "amari_rewrite::neural::train_from_seed",
       "source_path": "amari-rewrite/src/neural/train.rs",
-      "source_ordinal": 40,
+      "source_ordinal": 41,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"
@@ -42373,7 +42400,7 @@
     {
       "path": "amari_rewrite::neural::train_with_state",
       "source_path": "amari-rewrite/src/neural/train.rs",
-      "source_ordinal": 39,
+      "source_ordinal": 40,
       "gate": "feature(\"neural\")",
       "status": "disabled",
       "surface_kind": "top_level"

@@ -41,8 +41,9 @@ use amari_rewrite::neural::{
     TrainConfig, TrainingExample, TrainingOutcome, WeightsRejection, ADAMW_MOMENT_SUFFIX,
     ADAMW_VELOCITY_SUFFIX, CANDIDATE_FEATURE_WIDTH, MAX_CHECKPOINT_STEPS,
     MAX_OPTIMIZER_CHECKPOINT_BYTES, MAX_WEIGHTS_CHECKPOINT_BYTES, META_CHECKPOINT_VERSION,
-    META_FEATURE_SCHEMA_HASH, META_FEATURE_SCHEMA_VERSION, META_RANKER_SPEC_HASH,
-    META_TRAINING_EXAMPLES, META_TRAINING_STEP, META_TRAINING_STEPS, META_WEIGHTS_HASH,
+    META_FEATURE_SCHEMA_HASH, META_FEATURE_SCHEMA_VERSION, META_OPTIMIZER_DIGEST,
+    META_RANKER_SPEC_HASH, META_TRAINING_EXAMPLES, META_TRAINING_STEP, META_TRAINING_STEPS,
+    META_WEIGHTS_HASH,
 };
 use katakuri::checkpoint::TrustPolicy;
 
@@ -497,6 +498,14 @@ fn artifacts_carry_the_binding_metadata() {
         Some(SEPARABLE_EXAMPLES.to_string().as_str()),
         "the epoch length is recorded: it is part of the checkpoint's identity"
     );
+    // The pair binding is content, not a step counter: the weights artifact
+    // records the companion optimizer artifact's canonical content digest, so
+    // two run states that agree on architecture and step cannot be mixed.
+    assert_eq!(
+        metadata[META_OPTIMIZER_DIGEST].as_str(),
+        Some(hex_sha256(&data_section(&dir.optimizer())).as_str()),
+        "the weights artifact binds the optimizer artifact's canonical content"
+    );
 
     let optimizer = metadata_json(&dir.optimizer());
     assert_eq!(optimizer["optimizer_state_version"].as_str(), Some("1"));
@@ -871,6 +880,108 @@ fn load_rejects_artifacts_from_different_runs() {
     ) {
         Err(CheckpointError::InconsistentCheckpoint { .. }) => {}
         other => panic!("expected a typed pair inconsistency, got {other:?}"),
+    }
+}
+
+// ── pair content binding (cohort 8 closeout F2) ────────────────────
+
+/// Two checkpoints of the same architecture and *the same step counter* but
+/// from different runs must not be mixable.
+///
+/// The reviewer's closeout repro: seeds 42 and 43, one whole-epoch step each.
+/// Equal architecture and equal step counters make every pre-binding check
+/// pass, so only a content binding can tell the pair apart. The pre-fix loader
+/// accepted the mixed pair and resumed from moments that do not belong to the
+/// weights; the post-fix loader rejects it with a typed inconsistency, while
+/// the correctly paired artifacts still resume bit-identically.
+#[test]
+fn load_rejects_a_mixed_pair_that_agrees_on_architecture_and_step() {
+    let config = config(&[2]);
+    // One example per epoch, so a one-step budget is a whole epoch and the
+    // visit count is exactly one in both runs.
+    let corpus = vec![example(&[(0, 1.0)], &[(0, 0.25)])];
+    let settings = |seed: u64, steps: usize| {
+        TrainConfig::new(
+            0.05,
+            0.9,
+            0.999,
+            1e-8,
+            0.0,
+            1.0,
+            steps,
+            seed,
+            ExampleOrder::Canonical,
+        )
+        .expect("valid training config")
+    };
+    let first = train_from_seed(&config, &settings(42, 1), &corpus).expect("first run");
+    let second = train_from_seed(&config, &settings(43, 1), &corpus).expect("second run");
+
+    let a = TempDir::new("mixed-a");
+    let b = TempDir::new("mixed-b");
+    let checkpoint_a = checkpoint_of(&config, &first, 1);
+    let checkpoint_b = checkpoint_of(&config, &second, 1);
+    assert_eq!(
+        checkpoint_a.training_step(),
+        checkpoint_b.training_step(),
+        "the fixture's whole point is that the step counters agree"
+    );
+    assert_ne!(
+        checkpoint_a.weights().digest(),
+        checkpoint_b.weights().digest(),
+        "the two runs must carry different weights"
+    );
+    save(&a, &checkpoint_a);
+    save(&b, &checkpoint_b);
+
+    // Correctly paired, the checkpoint still loads and resumes to exactly the
+    // uninterrupted run's parameters.
+    let pair = load(&a, &config, &settings(42, 1), 1).expect("the correct pair loads");
+    let resumed = train_with_state(
+        &config,
+        pair.weights(),
+        pair.optimizer_state().clone(),
+        &settings(42, 1),
+        &corpus,
+    )
+    .expect("resumed run");
+    let uninterrupted = train_from_seed(&config, &settings(42, 2), &corpus).expect("two-step run");
+    assert_eq!(
+        resumed.parameters().digest(),
+        uninterrupted.parameters().digest(),
+        "the correctly paired resume stays byte-identical to the uninterrupted run"
+    );
+
+    // Either mix is refused before any ranker is built.
+    for (weights, optimizer) in [(a.weights(), b.optimizer()), (b.weights(), a.optimizer())] {
+        match RankerCheckpoint::load(
+            &weights,
+            &optimizer,
+            &checkpoint_policy(),
+            &config,
+            &settings(42, 1),
+            1,
+        ) {
+            Err(CheckpointError::InconsistentCheckpoint { .. }) => {}
+            other => panic!("a mixed pair must be rejected, got {other:?}"),
+        }
+    }
+}
+
+#[test]
+fn load_rejects_a_pair_without_the_content_binding() {
+    let config = config(&[3]);
+    let dir = TempDir::new("pre-binding");
+    let (_, settings) = saved_fixture(&dir, &config);
+    // A pre-binding artifact (written before the pair carried the digest) has
+    // no key, and there is no compatibility shim: the format is experimental
+    // and unreleased.
+    remove_metadata(&dir.weights(), META_OPTIMIZER_DIGEST);
+    match load(&dir, &config, &settings, SEPARABLE_EXAMPLES) {
+        Err(CheckpointError::InvalidMetadata {
+            key: META_OPTIMIZER_DIGEST,
+        }) => {}
+        other => panic!("expected a typed missing-binding rejection, got {other:?}"),
     }
 }
 

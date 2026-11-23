@@ -218,6 +218,12 @@ impl Default for DatasetConfig {
 /// One pairwise example: a chosen candidate and a valid-but-unchosen
 /// candidate from the same expansion round, featurized through the frozen
 /// schema.
+///
+/// The label is a *direction*, and the direction is the consumers': guidance
+/// orders candidates by ascending score, so "chosen" means **preferred, i.e.
+/// lower**. [`crate::neural::train`]'s hinge minimizes the chosen score
+/// relative to the unchosen one for exactly that reason (cohort 8 closeout
+/// F1); a dataset does not carry a sign convention of its own.
 #[derive(Clone, Debug, PartialEq)]
 pub struct PairwiseExample {
     chosen: FeatureVector,
