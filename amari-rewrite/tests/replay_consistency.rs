@@ -437,3 +437,88 @@ fn holographic_admission_rejects_halves_that_never_meet() {
         "the rejection is a provenance rejection, got {error}"
     );
 }
+
+/// F15 (P1): the bidirectional backward half is ANCHORED at the checked
+/// meeting.
+///
+/// Rule `f(U,V) -> g(V)`; source and forward meeting `f(a,b)`; backward meeting
+/// `f(X,Y)` under the checked unifier `{X := a, Y := b}`; the sole recorded
+/// backward term is `f(Y,X)`; goal `g(X)`. The junction validates `f(a,b)` on
+/// both meeting terms, but an EMPTY recorded-to-replay correspondence is then
+/// free to bind `Y := a, X := b` from the record, which contradicts the checked
+/// `X := a` and accepts `g(b)`. The correspondence must be seeded from the
+/// checked meeting before any record or goal matching, so this certificate is a
+/// typed mismatch.
+#[test]
+fn bidirectional_replay_anchors_the_backward_half_at_the_checked_meeting() {
+    let system = TermSystem::new(vec![
+        Rule::new(parse("f(U,V)"), parse("g(V)")).expect("checked rule")
+    ]);
+    let f_g = RuleId::from_rule(&system.rules()[0]);
+    let source = parse("f(a,b)");
+    let goal = parse("g(X)");
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Bidirectional {
+            source: source.clone(),
+            goal: goal.clone(),
+        },
+        ReplayDerivation::Bidirectional(BidirectionalDerivation {
+            forward_steps: Vec::new(),
+            backward_steps: vec![recorded(parse("f(Y,X)"), f_g, &parse("g(X)"), 1)],
+            meeting_forward: source.clone(),
+            meeting_backward: parse("f(X,Y)"),
+            unifier: Substitution::new()
+                .with("X", parse("a"))
+                .with("Y", parse("b")),
+        }),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        observation(),
+    );
+    let error = certificate
+        .verify(&system)
+        .expect_err("a record that contradicts the checked meeting must not verify");
+    assert!(
+        error.to_string().contains("goal"),
+        "the typed rejection names the goal the anchored trace cannot reach, got {error}"
+    );
+}
+
+/// F15 positive control: a recorded half consistent with the checked meeting
+/// still verifies.
+///
+/// Same junction and unifier as the negative control, but the record is the
+/// meeting term itself (`f(X,Y)`) and the goal is `g(Y)`, so ONE instantiation
+/// (`X := a`, `Y := b`) is shared by the anchor, the record, and the goal.
+#[test]
+fn bidirectional_replay_admits_a_record_consistent_with_the_checked_meeting() {
+    let system = TermSystem::new(vec![
+        Rule::new(parse("f(U,V)"), parse("g(V)")).expect("checked rule")
+    ]);
+    let f_g = RuleId::from_rule(&system.rules()[0]);
+    let source = parse("f(a,b)");
+    let goal = parse("g(Y)");
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Bidirectional {
+            source: source.clone(),
+            goal: goal.clone(),
+        },
+        ReplayDerivation::Bidirectional(BidirectionalDerivation {
+            forward_steps: Vec::new(),
+            backward_steps: vec![recorded(parse("f(X,Y)"), f_g, &parse("g(Y)"), 1)],
+            meeting_forward: source.clone(),
+            meeting_backward: parse("f(X,Y)"),
+            unifier: Substitution::new()
+                .with("X", parse("a"))
+                .with("Y", parse("b")),
+        }),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        observation(),
+    );
+    certificate
+        .verify(&system)
+        .expect("a record consistent with the checked meeting must verify");
+}

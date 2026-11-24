@@ -6,7 +6,7 @@
 //! term/operation limits. Shared by critical pairs, inverse frontier
 //! meeting, constraints, and synthesis.
 
-use amari_rewrite::analysis::unify;
+use amari_rewrite::analysis::{unify, unify_with};
 use amari_rewrite::relation::{RelationLimits, RelationResources};
 use amari_rewrite::trs::{Substitution, Term};
 use amari_rewrite::RewriteError;
@@ -190,4 +190,77 @@ fn unification_respects_operation_limits() {
         result,
         Err(RewriteError::RelationLimitExceeded { .. })
     ));
+}
+
+/// The doubling chain of the F16 replay finding: leaf `f(Z, X0, ..., Xn)` and
+/// goal `f(X0, pair(X1,X1), ..., pair(Xn,Xn), a)`.
+fn doubling_pair(arity: usize) -> (Term, Term) {
+    let mut leaf_args = vec![Term::var("Z")];
+    leaf_args.extend((0..arity).map(|index| Term::var(format!("X{index}"))));
+    let mut goal_args = vec![Term::var("X0")];
+    // Ascending order: `pair(X1,X1)` pairs with the leaf's `X0`, and so on.
+    for index in 1..arity {
+        let variable = Term::var(format!("X{index}"));
+        goal_args.push(Term::sym("pair", vec![variable.clone(), variable]));
+    }
+    goal_args.push(Term::constant("a"));
+    (Term::sym("f", leaf_args), Term::sym("f", goal_args))
+}
+
+/// F16 (P1): resolve/occurs work is charged against the unified budget.
+///
+/// The outer worklist of the doubling chain is tiny (one pair per argument), so
+/// a budget that the worklist alone fits used to be irrelevant: the occurs
+/// checks resolved the whole doubling expansion unmetered. Resolution and
+/// occurs inspection now share the caller's [`RelationResources`], so a budget
+/// that cannot pay for the traversal is a typed operations rejection instead of
+/// unbounded work.
+#[test]
+fn resolution_and_occurs_work_is_metered() {
+    let (leaf, goal) = doubling_pair(21);
+    let limits = RelationLimits::new(4_096, 64, 4_096, 256).expect("valid tightened limits");
+    let mut budget = RelationResources::new(&limits);
+    let result = unify(&leaf, &goal, &mut budget);
+    assert!(
+        matches!(
+            result,
+            Err(RewriteError::RelationLimitExceeded {
+                resource: "operations",
+                ..
+            })
+        ),
+        "an under-budget traversal is a typed operations rejection, got {result:?}"
+    );
+    // Negative control: the traversal is not charged per *expansion* node, so
+    // the same unification inside the default budget still succeeds with the
+    // same unifier and a linear meter.
+    let mut budget = resources();
+    let substitution = unify(&leaf, &goal, &mut budget).expect("the chain unifies");
+    assert_eq!(
+        substitution.len(),
+        22,
+        "one binding per chain link, plus the free leading variable"
+    );
+    assert!(
+        budget.operations() <= 4_096,
+        "each reachable binding is inspected once: {} operations",
+        budget.operations()
+    );
+}
+
+/// F16 cycle/fixed-point semantics: a pre-existing cyclic substitution makes
+/// resolve/occurs terminate instead of recursing forever.
+#[test]
+fn cyclic_bindings_resolve_to_their_fixed_point_during_unification() {
+    let mut cyclic = Substitution::new().with("Y", Term::sym("g", vec![Term::var("Y")]));
+    let mut budget = resources();
+    unify_with(&mut cyclic, &Term::var("X"), &Term::var("Y"), &mut budget)
+        .expect("a cyclic binding is a fixed point, not a divergence");
+    assert_eq!(cyclic.get("X"), Some(&Term::sym("g", vec![Term::var("Y")])));
+    // A self-referential binding resolves to the variable itself.
+    let mut identity = Substitution::new().with("W", Term::var("W"));
+    let mut budget = resources();
+    unify_with(&mut identity, &Term::var("V"), &Term::var("W"), &mut budget)
+        .expect("W := W is the identity");
+    assert_eq!(identity.get("V"), Some(&Term::var("W")));
 }
