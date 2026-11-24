@@ -444,9 +444,10 @@ fn dataset_is_invariant_to_trace_permutation() {
 fn trace_drift_is_rejected() {
     let (system, certificate) = backward_witness();
     let mut drifted = certificate;
-    // Tamper an intermediate predecessor term. Verify replays through
-    // provenance alone and still passes, but re-derivation from the
-    // tampered state can no longer find the next chosen transition.
+    // Tamper an intermediate predecessor term. Since F1 (PR #384 round 1) the
+    // replay verifies every recorded step term against the replayed state
+    // sequence, so the drift is refused at verification — the stronger and
+    // earlier gate — before any training data could be derived from it.
     match &mut drifted.derivation {
         ReplayDerivation::Backward(derivation) => {
             assert!(derivation.steps.len() >= 2, "fixture needs two steps");
@@ -455,12 +456,12 @@ fn trace_drift_is_rejected() {
         ReplayDerivation::Bidirectional(_) => unreachable!(),
     }
     assert!(
-        drifted.verify(&system).is_ok(),
-        "verify replays provenance only"
+        drifted.verify(&system).is_err(),
+        "the replay rejects a tampered intermediate term"
     );
     assert!(matches!(
         builder().build(&system, &[drifted]),
-        Err(NeuralError::TraceDrift)
+        Err(NeuralError::TraceVerificationFailed)
     ));
 }
 

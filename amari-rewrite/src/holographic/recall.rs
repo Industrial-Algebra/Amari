@@ -69,16 +69,31 @@
 //! the configured ceiling, admission checks the corpus size, the trace length,
 //! and the identity set *before* encoding, and recall allocates at most the
 //! admitted entry count.
+//!
+//! Minting is bounded the same way, on borrowed data: [`RecallTrace::validate`]
+//! checks the certificate's borrowed step count against [`MAX_TRACE_TERMS`] and
+//! measures the shape of every borrowed term *before* the certificate is
+//! replayed and before any term is cloned (F3/F5, PR #384 round 1).
+//!
+//! ## Similarity interval
+//!
+//! Every lane is documented to lie in `[-1, 1]`, and that interval is a stated
+//! invariant of this surface rather than an approximation: a lane is clamped to
+//! it (F6, PR #384 round 1), because the canonical inner product is a
+//! floating-point value that can overshoot by one unit in the last place (an
+//! identical trace at `D = 3` scores `1.0000000000000002`).
 
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
 
 use amari_holographic::BindingAlgebra;
 
-use crate::holographic::encode::{HolographicEncoder, TraceEncoding, MAX_TRACE_TERMS};
+use crate::holographic::encode::{
+    measure_trace_term, HolographicEncoder, TraceEncoding, MAX_TRACE_TERMS,
+};
 use crate::holographic::HolographicError;
 use crate::inverse::{ReplayCertificate, ReplayDerivation, ReplayQuery};
-use crate::relation::Sha256Digest;
+use crate::relation::{RelationLimits, Sha256Digest};
 use crate::trs::{Term, TermSystem};
 
 /// Hard ceiling on the traces one corpus may hold.
@@ -121,48 +136,53 @@ impl RecallTrace {
     /// The certificate is verified against `system` first
     /// ([`ReplayCertificate::verify`]): every binding hash must recompute, the
     /// recorded resources must fit the configuration ceilings, and the
-    /// derivation must replay to the recorded query. Only then is the trace's
-    /// content read out — the certified goal, and the recorded step terms in
-    /// derivation order (goal side first). For a bidirectional certificate the
-    /// recorded inverse half is the trace; forward steps carry hashes but no
-    /// terms, so nothing is reconstructed.
+    /// derivation must replay to the recorded query — including the *recorded
+    /// intermediate terms*, each of which must equal the state the replay
+    /// reaches (see [`crate::inverse`]). Only then is the trace's content read
+    /// out — the certified goal, and the recorded step terms in derivation
+    /// order (goal side first). For a bidirectional certificate the recorded
+    /// inverse half is the trace; forward steps carry hashes but no terms, so
+    /// nothing is reconstructed.
+    ///
+    /// The borrowed data is admitted *before* that replay and before any term
+    /// is cloned, because the replay is the expensive part and because a
+    /// certificate is caller-supplied:
+    ///
+    /// 1. the borrowed step count is checked against [`MAX_TRACE_TERMS`], so an
+    ///    oversize derivation is rejected before it is replayed or cloned;
+    /// 2. the shape of every borrowed term the replay must reproduce — the
+    ///    certified goal, the query's other endpoint, each recorded step term,
+    ///    and (for a bidirectional certificate) both meeting terms — is
+    ///    measured against the crate's hard relation ceilings
+    ///    ([`RelationLimits::default`]: node and depth). Since each replayed
+    ///    intermediate state must equal its measured recorded step term, this
+    ///    measurement meters the replay's own intermediate terms too;
+    /// 3. only then does the replay run, and only then is the content cloned.
     ///
     /// # Errors
     ///
-    /// - [`HolographicError::UnvalidatedProvenance`] when the certificate does
-    ///   not verify against `system` (tampered hash, tampered query, foreign
-    ///   system, or an invented derivation);
     /// - [`HolographicError::LimitExceeded`] when the trace has more than
-    ///   [`MAX_TRACE_TERMS`] terms.
+    ///   [`MAX_TRACE_TERMS`] terms or a borrowed term exceeds the node or depth
+    ///   ceiling;
+    /// - [`HolographicError::UnvalidatedProvenance`] when the certificate does
+    ///   not verify against `system` (tampered hash, tampered query, tampered
+    ///   intermediate term, foreign system, or an invented derivation);
+    /// - [`HolographicError::MalformedTrace`] when the query kind and the
+    ///   derivation kind disagree.
     pub fn validate(
         system: &TermSystem,
         certificate: &ReplayCertificate,
     ) -> Result<Self, HolographicError> {
-        certificate
-            .verify(system)
-            .map_err(HolographicError::UnvalidatedProvenance)?;
-        // `verify` already enforces query/derivation agreement; the step terms
-        // are still read from the certified pair, never from caller text.
-        let (goal, steps) = match (&certificate.query, &certificate.derivation) {
-            (ReplayQuery::Backward { goal, .. }, ReplayDerivation::Backward(derivation)) => (
-                goal.clone(),
-                derivation
-                    .steps
-                    .iter()
-                    .map(|step| step.term.clone())
-                    .collect::<Vec<_>>(),
-            ),
+        // Borrowed admission: read the certificate's terms by reference only,
+        // so every check below costs one bounded walk and never a clone.
+        let (goal, steps, endpoint) = match (&certificate.query, &certificate.derivation) {
+            (ReplayQuery::Backward { target, goal }, ReplayDerivation::Backward(derivation)) => {
+                (goal, derivation.steps.as_slice(), target)
+            }
             (
-                ReplayQuery::Bidirectional { goal, .. },
+                ReplayQuery::Bidirectional { source, goal },
                 ReplayDerivation::Bidirectional(derivation),
-            ) => (
-                goal.clone(),
-                derivation
-                    .backward_steps
-                    .iter()
-                    .map(|step| step.term.clone())
-                    .collect::<Vec<_>>(),
-            ),
+            ) => (goal, derivation.backward_steps.as_slice(), source),
             _ => {
                 return Err(HolographicError::MalformedTrace {
                     reason: "query kind does not match the derivation kind",
@@ -177,6 +197,32 @@ impl RecallTrace {
                 limit: MAX_TRACE_TERMS,
             });
         }
+        let limits = RelationLimits::default();
+        measure_trace_term(goal, limits)?;
+        measure_trace_term(endpoint, limits)?;
+        for step in steps {
+            measure_trace_term(&step.term, limits)?;
+        }
+        // A bidirectional certificate's meeting terms are the last borrowed
+        // terms the replay hashes (`meeting_forward`) and instantiates
+        // (`meeting_backward`), so they are measured under the same ceilings
+        // before the replay reaches them.
+        if let ReplayDerivation::Bidirectional(derivation) = &certificate.derivation {
+            measure_trace_term(&derivation.meeting_forward, limits)?;
+            measure_trace_term(&derivation.meeting_backward, limits)?;
+        }
+
+        certificate
+            .verify(system)
+            .map_err(HolographicError::UnvalidatedProvenance)?;
+        // Every borrowed term is admitted and the certificate replays, so the
+        // trace content is read out from the certified pair, never from caller
+        // text.
+        let goal = goal.clone();
+        let steps = steps
+            .iter()
+            .map(|step| step.term.clone())
+            .collect::<Vec<_>>();
         let trace_hash = trace_identity(&goal, &steps);
         Ok(Self {
             goal,
@@ -243,9 +289,12 @@ fn trace_identity(goal: &Term, steps: &[Term]) -> Sha256Digest {
 /// The transparent similarity evidence of one match.
 ///
 /// Each lane is the canonical [`BindingAlgebra::similarity`] of one pair of
-/// published parts (see the module documentation for the formula). **Higher is
-/// more similar**; `combined` is the ranked scalar and the other two are
-/// independent evidence, never summed into it.
+/// published parts (see the module documentation for the formula), **clamped to
+/// the documented `[-1, 1]` interval**: the canonical value is a floating-point
+/// inner product that can overshoot the interval by one unit in the last place,
+/// and the interval is a stated invariant of this surface rather than an
+/// approximation. **Higher is more similar**; `combined` is the ranked scalar
+/// and the other two are independent evidence, never summed into it.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TraceSimilarity {
     /// Similarity of the full trace vectors — the ranked scalar.
@@ -477,20 +526,9 @@ impl<const D: usize> TraceCorpus<D> {
             matches.push(TraceMatch {
                 trace_hash: entry.trace_hash,
                 score: TraceSimilarity {
-                    combined: <amari_holographic::FHRRAlgebra<D> as BindingAlgebra>::similarity(
-                        &encoded.vector,
-                        &entry.vector,
-                    ),
-                    goal_alignment:
-                        <amari_holographic::FHRRAlgebra<D> as BindingAlgebra>::similarity(
-                            &encoded.goal,
-                            &entry.goal,
-                        ),
-                    path_alignment:
-                        <amari_holographic::FHRRAlgebra<D> as BindingAlgebra>::similarity(
-                            &encoded.path,
-                            &entry.path,
-                        ),
+                    combined: lane_similarity(&encoded.vector, &entry.vector),
+                    goal_alignment: lane_similarity(&encoded.goal, &entry.goal),
+                    path_alignment: lane_similarity(&encoded.path, &entry.path),
                 },
             });
         }
@@ -521,4 +559,17 @@ fn check(resource: &'static str, value: usize, limit: usize) -> Result<(), Holog
         });
     }
     Ok(())
+}
+
+/// One similarity lane, clamped to the documented `[-1, 1]` interval.
+///
+/// [`BindingAlgebra::similarity`] is a floating-point inner product, so an identical vector can score one ulp
+/// above `1.0` (`1.0000000000000002`). The module documents the interval, so the
+/// interval is enforced here (F6, PR #384 round 1); clamping never reorders
+/// matches, because the clamp is monotone.
+fn lane_similarity<const D: usize>(
+    left: &amari_holographic::FHRRAlgebra<D>,
+    right: &amari_holographic::FHRRAlgebra<D>,
+) -> f64 {
+    <amari_holographic::FHRRAlgebra<D> as BindingAlgebra>::similarity(left, right).clamp(-1.0, 1.0)
 }

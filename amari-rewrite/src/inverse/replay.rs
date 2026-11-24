@@ -258,6 +258,16 @@ fn replay_backward(
     }
     let mut current = leaf.clone();
     for step in derivation.steps.iter().rev() {
+        // F1 (PR #384 round 1): the recorded term of each step IS the state
+        // this replay must reach, so it is compared before the step is applied.
+        // Without this, a certificate whose recorded intermediate terms were
+        // replaced (no hash touched) would replay to the right endpoint and
+        // still be admitted as trace content.
+        if canonical(&current) != canonical(&step.term) {
+            return Err(mismatch(
+                "replayed state does not match the recorded step term",
+            ));
+        }
         let rule = system
             .rules()
             .iter()
@@ -315,6 +325,19 @@ fn replay_bidirectional(
     }
     let mut current = derivation.unifier.apply(&derivation.meeting_backward);
     for step in derivation.backward_steps.iter().rev() {
+        // F1 (PR #384 round 1): the recorded backward term of each step IS the
+        // state this replay must reach, so it is compared before the step is
+        // applied. The recorded terms carry freshened logic variables while the
+        // replay starts from the meeting substitution's instantiation, so the
+        // acceptance shape is the same one the goal endpoint uses: the replayed
+        // state must be an INSTANCE of the recorded term. A constant or a term
+        // of another shape is still a hard rejection, so a fabricated
+        // intermediate term cannot be certified.
+        if match_pattern(&step.term, &current).is_none() {
+            return Err(mismatch(
+                "replayed state does not match the recorded backward term",
+            ));
+        }
         let rule = system
             .rules()
             .iter()

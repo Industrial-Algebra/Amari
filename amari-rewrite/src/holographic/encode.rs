@@ -50,9 +50,11 @@
 //!
 //! [`MAX_TRACE_DIMENSION`] and [`MAX_TRACE_TERMS`] are hard ceilings, and every
 //! admitted term is measured against the encoder's
-//! [`RelationLimits`](crate::relation::RelationLimits) — nodes and depth — with
+//! [`RelationLimits`] — nodes and depth — with
 //! an explicit worklist *before* the token derivation hashes anything. A
-//! rejected term is never copied, sorted, or hashed.
+//! rejected term is never copied, sorted, or hashed, and the worklist charges
+//! its pending node budget *before* pushing children, so a wide term is
+//! rejected without a worklist proportional to its arity (F2, PR #384 round 1).
 //!
 //! ## Every public encoding path requires validated input
 //!
@@ -179,14 +181,36 @@ impl<const D: usize> HolographicEncoder<D> {
         Sha256Digest::framed(ENCODER_FRAME, &payload)
     }
 
-    /// The frozen token of `term`: a bipolar vector at position 0.
+    /// Inspect the frozen token of one term of a replay-validated trace.
+    ///
+    /// `index` 0 is the certified goal and `1..` are the derivation's step
+    /// terms in derivation order (goal side first). Token *derivation* is
+    /// private: every public encoding path takes a [`RecallTrace`], so no
+    /// encoding can be minted from a term the recall boundary did not validate
+    /// (F4, PR #384 round 1).
     ///
     /// # Errors
     ///
-    /// [`HolographicError::LimitExceeded`] when the term exceeds the encoder's
-    /// node or depth ceiling. The term is measured with an explicit worklist
-    /// before anything is hashed.
-    pub fn encode_token(&self, term: &Term) -> Result<FHRRAlgebra<D>, HolographicError> {
+    /// - [`HolographicError::MalformedTrace`] when `index` is past the trace's
+    ///   last term;
+    /// - [`HolographicError::LimitExceeded`] when the term exceeds the encoder's
+    ///   node or depth ceiling. The term is measured with an explicit worklist
+    ///   before anything is hashed.
+    pub fn trace_token(
+        &self,
+        trace: &RecallTrace,
+        index: usize,
+    ) -> Result<FHRRAlgebra<D>, HolographicError> {
+        let term = if index == 0 {
+            trace.goal()
+        } else {
+            trace
+                .steps()
+                .get(index - 1)
+                .ok_or(HolographicError::MalformedTrace {
+                    reason: "trace term index out of range",
+                })?
+        };
         self.token(term)
     }
 
@@ -305,38 +329,68 @@ impl<const D: usize> HolographicEncoder<D> {
 
     /// Measure a term against the walk ceilings with an explicit worklist.
     ///
-    /// The worklist starts with one frame and holds at most the admitted node
-    /// count, and the counters are charged before anything else happens, so an
-    /// over-limit term is rejected without recursive descent or allocation
-    /// proportional to its size.
+    /// Delegates to [`measure_trace_term`], the same bounded measurement the
+    /// recall boundary applies to borrowed terms before replaying them.
     fn measure(&self, term: &Term) -> Result<(), HolographicError> {
-        let mut stack: Vec<(&Term, usize)> = Vec::with_capacity(8);
-        stack.push((term, 1));
-        let mut nodes = 0usize;
-        while let Some((node, depth)) = stack.pop() {
-            nodes += 1;
-            if nodes > self.limits.max_term_nodes() {
+        measure_trace_term(term, self.limits)
+    }
+}
+
+/// Measure a borrowed term against `limits` with an explicit worklist.
+///
+/// The worklist starts with one frame and never holds more than the admitted
+/// node budget: the counters are charged before a child is pushed, so an
+/// over-limit term is rejected without recursive descent and without an
+/// allocation proportional to its size or arity (F2, PR #384 round 1).
+///
+/// # Errors
+///
+/// [`HolographicError::LimitExceeded`] on the node ceiling (`trace term nodes`)
+/// or the depth ceiling (`trace term depth`).
+pub(crate) fn measure_trace_term(
+    term: &Term,
+    limits: RelationLimits,
+) -> Result<(), HolographicError> {
+    let max_nodes = limits.max_term_nodes();
+    let max_depth = limits.max_term_depth();
+    let mut stack: Vec<(&Term, usize)> = Vec::with_capacity(8);
+    stack.push((term, 1));
+    let mut nodes = 0usize;
+    while let Some((node, depth)) = stack.pop() {
+        nodes += 1;
+        if nodes > max_nodes {
+            return Err(HolographicError::LimitExceeded {
+                resource: "trace term nodes",
+                value: nodes,
+                limit: max_nodes,
+            });
+        }
+        if depth > max_depth {
+            return Err(HolographicError::LimitExceeded {
+                resource: "trace term depth",
+                value: depth,
+                limit: max_depth,
+            });
+        }
+        if let Term::Sym(_, args) = node {
+            // Charge-before-push: every worklist frame is a distinct node, so
+            // `nodes + stack.len() + args.len()` is a lower bound on the
+            // term's node count. An over-budget term is rejected HERE, never
+            // after the worklist has grown to its arity.
+            let pending = nodes.saturating_add(stack.len()).saturating_add(args.len());
+            if pending > max_nodes {
                 return Err(HolographicError::LimitExceeded {
                     resource: "trace term nodes",
-                    value: nodes,
-                    limit: self.limits.max_term_nodes(),
+                    value: pending,
+                    limit: max_nodes,
                 });
             }
-            if depth > self.limits.max_term_depth() {
-                return Err(HolographicError::LimitExceeded {
-                    resource: "trace term depth",
-                    value: depth,
-                    limit: self.limits.max_term_depth(),
-                });
-            }
-            if let Term::Sym(_, args) = node {
-                for arg in args {
-                    stack.push((arg, depth + 1));
-                }
+            for arg in args {
+                stack.push((arg, depth + 1));
             }
         }
-        Ok(())
     }
+    Ok(())
 }
 
 /// One encoded trace: the frozen vector and the parts its evidence decomposes
@@ -378,13 +432,10 @@ mod tests {
         const ARITY: usize = 200_000;
         let wide = Term::sym(
             "f",
-            core::iter::repeat(Term::constant("a"))
-                .take(ARITY)
-                .collect::<Vec<_>>(),
+            core::iter::repeat_n(Term::constant("a"), ARITY).collect::<Vec<_>>(),
         );
         let limits = RelationLimits::new(4, 64, 16, 1_024).expect("valid limits");
-        let encoder =
-            HolographicEncoder::<3>::new(0, limits).expect("a bounded dimension");
+        let encoder = HolographicEncoder::<3>::new(0, limits).expect("a bounded dimension");
         let error = encoder
             .measure(&wide)
             .expect_err("a 200,000-arity term exceeds a four-node budget");

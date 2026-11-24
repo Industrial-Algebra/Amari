@@ -193,13 +193,7 @@ fn tampered_bidirectional_backward_term_is_a_typed_rejection() {
         source_hash: hash(&source),
         result_hash: hash(&meeting_term),
     };
-    let backward_step = predecessor(
-        meeting_term.clone(),
-        g_id,
-        &goal,
-        Path::root(),
-        1,
-    );
+    let backward_step = predecessor(meeting_term.clone(), g_id, &goal, Path::root(), 1);
     let derivation = BidirectionalDerivation {
         forward_steps: vec![forward_step],
         backward_steps: vec![backward_step],
@@ -310,11 +304,10 @@ fn borrowed_endpoint_shapes_are_measured_before_replay() {
         resource_observation(),
     );
     assert_eq!(
-        RecallTrace::validate(&system, &mismatched)
-            .expect_err("a depth-130 endpoint is rejected"),
+        RecallTrace::validate(&system, &mismatched).expect_err("a depth-130 endpoint is rejected"),
         HolographicError::LimitExceeded {
             resource: "trace term depth",
-            value: 130,
+            value: RelationLimits::MAX_TERM_DEPTH + 1,
             limit: RelationLimits::MAX_TERM_DEPTH,
         }
     );
@@ -338,7 +331,7 @@ fn borrowed_endpoint_shapes_are_measured_before_replay() {
             .expect_err("a depth-130 endpoint is rejected before encoding"),
         HolographicError::LimitExceeded {
             resource: "trace term depth",
-            value: 130,
+            value: RelationLimits::MAX_TERM_DEPTH + 1,
             limit: RelationLimits::MAX_TERM_DEPTH,
         }
     );

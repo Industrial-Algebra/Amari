@@ -213,20 +213,29 @@ mod guidance {
             "the encoder config digest is pinned"
         );
 
-        for (term, expected) in [
-            (constant("a"), TOKEN_A),
-            (constant("b"), TOKEN_B),
-            (constant("p"), TOKEN_P),
-            (Term::var("X"), TOKEN_X),
+        // Tokens are inspected through replay-validated traces only: `full`
+        // carries `a` and `b`, `other` carries `p`, and a zero-step witness to
+        // the variable `X` carries the variable token.
+        let full = full_trace();
+        let other = other_trace();
+        let variable = validated(&chain_system(), &constant("a"), &Term::var("X"));
+        assert!(variable.steps().is_empty());
+        for (trace, index, expected) in [
+            (&full, 0, TOKEN_A),
+            (&full, 1, TOKEN_B),
+            (&other, 0, TOKEN_P),
+            (&variable, 0, TOKEN_X),
         ] {
-            let token = encoder.encode_token(&term).expect("a bounded term");
+            let token = encoder
+                .trace_token(trace, index)
+                .expect("a validated, bounded term");
             assert_eq!(encoder.dimension(), token.dimension());
             assert_eq!(digest_hex(&encoder.vector_digest(&token)), expected);
         }
 
         // Literal components, not only digests: the token of `a` starts with
         // these eight signs (LSB-first bit order within each digest byte).
-        let token_a = encoder.encode_token(&constant("a")).expect("bounded");
+        let token_a = encoder.trace_token(&full, 0).expect("bounded");
         let components: Vec<f64> = (0..8).map(|i| token_a.real(i).expect("in range")).collect();
         assert_eq!(components, vec![-1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0]);
         // Bipolar by construction: every component is a sign, the imaginary
@@ -243,7 +252,7 @@ mod guidance {
         let wide =
             HolographicEncoder::<128>::new(SEED, RelationLimits::default()).expect("bounded");
         assert_eq!(
-            digest_hex(&wide.vector_digest(&wide.encode_token(&constant("a")).expect("bounded"))),
+            digest_hex(&wide.vector_digest(&wide.trace_token(&full, 0).expect("bounded"))),
             TOKEN_A_D128
         );
         assert_eq!(digest_hex(&wide.digest()), ENCODER_DIGEST_D128);
@@ -284,12 +293,13 @@ mod guidance {
         );
 
         // Rebuild the same vector lane by lane: token at position `i`,
-        // permuted by `i`, superposed in order.
-        let terms = [trace.goal().clone(), constant("b"), constant("a")];
+        // permuted by `i`, superposed in order. The tokens come from the
+        // validated trace itself (index 0 is the goal, then the steps).
+        let token_sources = [0usize, 1, 0];
         let mut rebuilt = <FHRRAlgebra<DIMENSION> as BindingAlgebra>::zero();
-        for (position, term) in terms.iter().enumerate() {
+        for (position, index) in token_sources.iter().enumerate() {
             let step = BindingAlgebra::permute(
-                &encoder.encode_token(term).expect("bounded"),
+                &encoder.trace_token(&trace, *index).expect("bounded"),
                 position as i32,
             );
             rebuilt = <FHRRAlgebra<DIMENSION> as BindingAlgebra>::superpose(&rebuilt, &step)
@@ -345,12 +355,12 @@ mod guidance {
         let mut reordered = <FHRRAlgebra<DIMENSION> as BindingAlgebra>::zero();
         reordered = <FHRRAlgebra<DIMENSION> as BindingAlgebra>::superpose(
             &reordered,
-            &encoder.encode_token(&constant("a")).expect("bounded"),
+            &encoder.trace_token(&trace, 0).expect("bounded"),
         )
         .unwrap();
-        for (position, term) in [constant("a"), constant("b")].iter().enumerate() {
+        for (position, index) in [(0usize, 0usize), (1, 1)] {
             let step = BindingAlgebra::permute(
-                &encoder.encode_token(term).expect("bounded"),
+                &encoder.trace_token(&trace, index).expect("bounded"),
                 (position + 1) as i32,
             );
             reordered =
@@ -826,25 +836,26 @@ mod guidance {
         assert_eq!(config.max_terms(), MAX_TRACE_TERMS);
         assert_eq!(config.max_results(), MAX_RECALL_RESULTS);
 
-        // A trace longer than the limit's depth ceiling is rejected by the
-        // encoder side too, before any hashing or encoding work.
-        let mut deep: Term = constant("x");
-        for _ in 0..(MAX_TRACE_TERMS + 4) {
-            deep = Term::sym("f", [deep]);
-        }
-        let error = encoder()
-            .encode_token(&deep)
-            .expect_err("an oversized term is rejected");
-        assert!(matches!(
+        // A trace term deeper than the encoder's depth ceiling is rejected at
+        // admission, before any hashing or encoding work, so a deep term never
+        // reaches the derivation.
+        let shallow = RelationLimits::new(64, 3, 16, 4_096).expect("valid limits");
+        let mut bounded = TraceCorpus::<DIMENSION>::new(
+            HolographicEncoder::new(SEED, shallow).unwrap(),
+            RecallConfig::default(),
+        );
+        let error = bounded
+            .admit(&trace)
+            .expect_err("a depth ceiling rejects the trace");
+        assert_eq!(
             error,
             HolographicError::LimitExceeded {
                 resource: "trace term depth",
-                ..
-            } | HolographicError::LimitExceeded {
-                resource: "trace term nodes",
-                ..
+                value: 4,
+                limit: 3,
             }
-        ));
+        );
+        assert!(bounded.is_empty());
     }
 
     /// A trace can only be minted at the replay boundary: the module consumes

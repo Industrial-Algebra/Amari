@@ -4059,25 +4059,6 @@
       ]
     },
     {
-      "path": "amari_rewrite::holographic::HolographicEncoder::encode_token",
-      "kind": "method",
-      "signature": "pub fn encode_token (& self , term : & Term) -> Result < FHRRAlgebra < D > , HolographicError >",
-      "source_path": "amari-rewrite/src/holographic/encode.rs",
-      "is_reexport": true,
-      "source_module": "amari_rewrite::holographic::encode",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn encode_token (& self , term : & Term) -> Result < FHRRAlgebra < D > , HolographicError >",
-          "source_path": "amari-rewrite/src/holographic/encode.rs",
-          "source_module": "amari_rewrite::holographic::encode",
-          "is_reexport": true,
-          "declaration_module": "amari_rewrite::holographic::encode",
-          "declaration_ident": "HolographicEncoder::encode_token"
-        }
-      ]
-    },
-    {
       "path": "amari_rewrite::holographic::HolographicEncoder::limits",
       "kind": "method",
       "signature": "pub fn limits (& self) -> RelationLimits",
@@ -4131,6 +4112,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::holographic::encode",
           "declaration_ident": "HolographicEncoder::seed"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::trace_token",
+      "kind": "method",
+      "signature": "pub fn trace_token (& self , trace : & RecallTrace , index : usize ,) -> Result < FHRRAlgebra < D > , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn trace_token (& self , trace : & RecallTrace , index : usize ,) -> Result < FHRRAlgebra < D > , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::trace_token"
         }
       ]
     },
@@ -27334,7 +27334,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::holographic::TraceEncoding",
       "source_path": "amari-rewrite/src/holographic/encode.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -31848,7 +31848,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::holographic::TraceEncoding",
       "source_path": "amari-rewrite/src/holographic/encode.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -43475,14 +43475,6 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_rewrite::holographic::HolographicEncoder::encode_token",
-      "source_path": "amari-rewrite/src/holographic/encode.rs",
-      "source_ordinal": 5,
-      "gate": "feature(\"holographic-guidance\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
       "path": "amari_rewrite::holographic::HolographicEncoder::limits",
       "source_path": "amari-rewrite/src/holographic/encode.rs",
       "source_ordinal": 3,
@@ -43502,6 +43494,14 @@
       "path": "amari_rewrite::holographic::HolographicEncoder::seed",
       "source_path": "amari-rewrite/src/holographic/encode.rs",
       "source_ordinal": 1,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::trace_token",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 5,
       "gate": "feature(\"holographic-guidance\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -43749,7 +43749,7 @@
     {
       "path": "amari_rewrite::holographic::TraceEncoding",
       "source_path": "amari-rewrite/src/holographic/encode.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "feature(\"holographic-guidance\")",
       "status": "disabled",
       "surface_kind": "top_level"
