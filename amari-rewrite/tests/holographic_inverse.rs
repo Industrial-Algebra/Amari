@@ -986,15 +986,17 @@ mod guidance {
 ///
 /// The claim is about *one* configuration, so the module is compiled only in
 /// that exact configuration: `std` on and `holographic-guidance`, `neural`,
-/// `network`, `completion`, `smt`, and `serialize` all off. A build that turns
-/// any research feature on is not a default build (its `holographic` surface
-/// question is not this module's obligation) and would fail the count below for
-/// the honest reason that it did compile a research surface. Gating here keeps
-/// the assertion truthful in every feature combination the file is built under,
-/// including `--all-features`, instead of asserting a default-build property
-/// from a non-default build. The crate-root `compile_fail` doctest is
-/// deliberately not gated this way: it must keep proving the absence of
-/// `amari_rewrite::holographic` in *every* non-`holographic-guidance` build.
+/// `network`, `completion`, `macros`, `smt`, and `serialize` all off (the whole
+/// non-default feature list from `Cargo.toml`). A build that turns any research
+/// feature on is not a default build (its `holographic` surface question is not
+/// this module's obligation) and would fail the count below for the honest
+/// reason that it did compile a research surface. Gating here keeps the
+/// assertion truthful in every feature combination the file is built under,
+/// including `--all-features` and `--features macros`, instead of asserting a
+/// default-build property from a non-default build. The crate-root
+/// `compile_fail` doctest is deliberately not gated this way: it must keep
+/// proving the absence of `amari_rewrite::holographic` in *every*
+/// non-`holographic-guidance` build.
 #[cfg(all(
     feature = "std",
     not(feature = "holographic-guidance"),
@@ -1013,6 +1015,7 @@ mod default_isolation {
         let research_surfaces = u8::from(cfg!(feature = "neural"))
             + u8::from(cfg!(feature = "network"))
             + u8::from(cfg!(feature = "completion"))
+            + u8::from(cfg!(feature = "macros"))
             + u8::from(cfg!(feature = "smt"))
             + u8::from(cfg!(feature = "serialize"))
             + u8::from(!cfg!(feature = "std"));
