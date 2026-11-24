@@ -1,0 +1,1 @@
+cargo:rustc-check-cfg=cfg(force_bits, values("16", "32", "64"))

@@ -1,0 +1,26 @@
+LEE A=0 DC=0 |C1|=0.00000000 arg=0.00000 power=0.00000000 api=0.00000000
+LEE A=0.25 DC=0.25 |C1|=0.22510168 arg=0.36816 power=0.05067077 api=0.20264234
+LEE A=0.5 DC=0.5 |C1|=0.31834185 arg=0.36816 power=0.10134153 api=0.40528470
+LEE A=0.75 DC=0.75 |C1|=0.22510168 arg=0.36816 power=0.05067077 api=0.20264234
+LEE A=1 DC=1 |C1|=0.00000000 arg=1.98567 power=0.00000000 api=0.00000000
+LEE A=2 DC=0 |C1|=0.00000000 arg=0.00000 power=0.00000000 api=0.00000000
+BAND k=8 +/-phase patterns distance=240 bins=(8, 1016)
+BAND k=512 +/-phase patterns distance=0 bins=(512, 512)
+BAND k=0 +/-phase patterns distance=0 bins=(0, 0)
+UNBIND amp=0.2 expected=.8
+SIM inverse=-1 tiny=0 large=0
+NORM tiny=0.000000000001 big=0 bundle_tiny=0
+RAW selfsim=4 variance=-1
+LAWS tie_ab=1 tie_ba=-1 lhs=-1 rhs=0
+SOFT (1.0, 0.0, NaN)
+ATTR exact 2 -> 1
+INDEX invalid (2,0) (-0.41614684, 0.9092974, 2.0) == (0,1) (-0.41614684, 0.9092974, 2.0)
+SHAPE min=(2, 2) empty_dist=0 reverse_ham_panics=true
+SERDE accepted: field len=4 amp_len=0 hologram fill=8 hamming=8
+SEED native=6ad4880886c80eb8 LE=6ad4880886c80eb8 BE=8ff883bd769f9f50
+CHECKPOINT same=true
+DRIFT norm=10.507562 sim=110.40886
+RAMP q=3 k=11 fill=0.5 |Ck|=0.31831039
+RAMP q=-8 k=0 fill=1 |Ck|=1.00000000
+RAMP q=504 k=512 fill=0.5 |Ck|=0.50000000
+PRODUCT field len=0 holo len=0 dims=(9223372036854775808, 2)
