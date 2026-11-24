@@ -512,3 +512,242 @@ fn admission_checks_cheap_lengths_before_walking_unifier_ranges() {
          allocations"
     );
 }
+
+/// F29 (P2): the application preflight counts EVERY pending Enter frame.
+///
+/// The recorded meeting substitution is `X0 |-> f(X1, A*3999)`,
+/// `X1 |-> f(A*4000)` with the variable `A` unbound: applying it to `X0`
+/// expands to 8,001 nodes, well over the 4,096-node ceiling. The round-4 lower
+/// bound counted only pending SYMBOL frames, and every pending sibling here is a
+/// VARIABLE, so at the inner `f` it saw just `nodes + args = 4,002` and enqueued
+/// 4,000 further children before rejecting. Counting every pending Enter frame
+/// (an unbound variable is its own output node and a bound one's range is at
+/// least one node, so the bound stays a true lower bound) sees 8,001 and rejects
+/// at once.
+#[test]
+fn the_application_preflight_counts_every_pending_enter_frame() {
+    let _exclusive = exclusive();
+    let system = TermSystem::new(Vec::new());
+    let meeting = Term::var("X0");
+    // `X0 |-> f(X1, A x 3999)`: 4,001 nodes, with `A` an unbound VARIABLE.
+    let outer = Term::sym(
+        "f",
+        core::iter::once(Term::var("X1")).chain((0..3_999).map(|_| Term::var("A"))),
+    );
+    // `X1 |-> f(A x 4000)`: 4,001 nodes.
+    let inner = Term::sym("f", (0..4_000).map(|_| Term::var("A")));
+    let unifier = Substitution::new().with("X0", outer).with("X1", inner);
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Bidirectional {
+            source: meeting.clone(),
+            goal: meeting.clone(),
+        },
+        ReplayDerivation::Bidirectional(BidirectionalDerivation {
+            forward_steps: Vec::new(),
+            backward_steps: Vec::new(),
+            meeting_forward: meeting.clone(),
+            meeting_backward: meeting,
+            unifier,
+        }),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        ResourceObservation {
+            states: 1,
+            transitions: 0,
+            retained_bytes: 64,
+            operations: 0,
+        },
+    );
+    let (allocations, peak, outcome) = measure(|| certificate.verify(&system));
+    let error = outcome.expect_err("an 8,001-node expansion must not verify");
+    assert!(
+        matches!(
+            error,
+            amari_rewrite::RewriteError::RelationLimitExceeded {
+                resource: "term nodes",
+                limit,
+            } if limit == RelationLimits::MAX_TERM_NODES
+        ),
+        "the typed rejection is the term node ceiling, got {error}"
+    );
+    // The only large allocation on the rejected path is the ADMISSION walk of
+    // the two legal 4,001-node ranges (a worklist of borrowed references).
+    // Building the expansion's own 8,000-frame worklist first would add a
+    // second, larger one.
+    assert!(
+        peak < 100 * 1024,
+        "the apply preflight is abandoned before 4,000 further children are \
+         enqueued: peak {peak} bytes, {allocations} allocations"
+    );
+    assert!(
+        allocations < 200,
+        "no 4,000-frame expansion worklist is built: {allocations} allocations, \
+         peak {peak} bytes"
+    );
+}
+
+/// A bidirectional zero-step certificate whose recorded unifier is the supplied
+/// substitution.
+#[cfg(feature = "holographic-guidance")]
+fn unused_ranges_certificate(
+    system: &TermSystem,
+    unifier: Substitution,
+    guidance: GuidanceMode,
+    resources: ResourceObservation,
+) -> ReplayCertificate {
+    let meeting = Term::constant("a");
+    ReplayCertificate::issue(
+        system,
+        ReplayQuery::Bidirectional {
+            source: meeting.clone(),
+            goal: meeting.clone(),
+        },
+        ReplayDerivation::Bidirectional(BidirectionalDerivation {
+            forward_steps: Vec::new(),
+            backward_steps: Vec::new(),
+            meeting_forward: meeting.clone(),
+            meeting_backward: meeting,
+            unifier,
+        }),
+        InverseSearchConfig::default(),
+        guidance,
+        resources,
+    )
+}
+
+/// `count` unused constant ranges `Zn |-> a`.
+#[cfg(feature = "holographic-guidance")]
+fn unused_ranges(count: usize) -> Substitution {
+    let mut unifier = Substitution::new();
+    for index in 0..count {
+        unifier.insert(format!("Z{index}"), Term::constant("a"));
+    }
+    unifier
+}
+
+/// F27 (P2): an over-ceiling recorded observation is rejected before the
+/// borrowed ranges are walked.
+///
+/// `RecallTrace::validate` used to measure every borrowed term and walk every
+/// recorded unifier range, and only then call `verify`, which rejected the
+/// recorded `states` observation on integers. A certificate with 100,000 unused
+/// ranges therefore paid 100,000 walks before a single integer comparison. The
+/// shared preflight decides configuration, guidance, the derivation ceilings and
+/// the observation first, so the rejection allocates nothing proportional to the
+/// substitution.
+#[cfg(feature = "holographic-guidance")]
+#[test]
+fn validate_rejects_an_over_observation_before_walking_ranges() {
+    let _exclusive = exclusive();
+    use amari_rewrite::holographic::{HolographicError, RecallTrace};
+
+    let system = TermSystem::new(Vec::new());
+    let config = InverseSearchConfig::default();
+    let certificate = unused_ranges_certificate(
+        &system,
+        unused_ranges(100_000),
+        GuidanceMode::CompleteWithinLimits,
+        ResourceObservation {
+            states: config.max_states() + 1,
+            transitions: 0,
+            retained_bytes: 64,
+            operations: 0,
+        },
+    );
+    let (allocations, _peak, outcome) = measure(|| RecallTrace::validate(&system, &certificate));
+    let error = outcome.expect_err("an over-ceiling observation must not admit a trace");
+    assert!(
+        matches!(
+            error,
+            HolographicError::UnvalidatedProvenance(
+                amari_rewrite::RewriteError::RelationLimitExceeded {
+                    resource: "certificate states",
+                    ..
+                }
+            )
+        ),
+        "the recorded observation ceiling answers first, got {error}"
+    );
+    assert!(
+        allocations < 2_000,
+        "100,000 range walks must not precede the integer rejection: {allocations} \
+         allocations"
+    );
+}
+
+/// F27 (P2): invalid guidance is rejected before the borrowed ranges are walked.
+#[cfg(feature = "holographic-guidance")]
+#[test]
+fn validate_rejects_invalid_guidance_before_walking_ranges() {
+    let _exclusive = exclusive();
+    use amari_rewrite::holographic::{HolographicError, RecallTrace};
+
+    let system = TermSystem::new(Vec::new());
+    let certificate = unused_ranges_certificate(
+        &system,
+        unused_ranges(100_000),
+        // Rejected by `GuidanceMode::validate`: a zero-width beam.
+        GuidanceMode::HeuristicPruning { beam_width: 0 },
+        ResourceObservation {
+            states: 1,
+            transitions: 0,
+            retained_bytes: 64,
+            operations: 0,
+        },
+    );
+    let (allocations, _peak, outcome) = measure(|| RecallTrace::validate(&system, &certificate));
+    let error = outcome.expect_err("invalid guidance must not admit a trace");
+    assert!(
+        matches!(
+            error,
+            HolographicError::UnvalidatedProvenance(amari_rewrite::RewriteError::InvalidLimit {
+                resource: "guidance beam width",
+                ..
+            })
+        ),
+        "the guidance mode is validated first, got {error}"
+    );
+    assert!(
+        allocations < 2_000,
+        "100,000 range walks must not precede the guidance rejection: {allocations} \
+         allocations"
+    );
+}
+
+/// F27 (P2): a VALID certificate's borrowed ranges are admitted once on the whole
+/// `RecallTrace::validate` path.
+///
+/// The trace boundary ran the full borrowed admission and then called
+/// `ReplayCertificate::verify`, which ran the same admission again — twice the
+/// work for every valid certificate. The shared preflight is now the boundary's
+/// own pass and the replay continues from an internal entry that does not
+/// re-admit, so the measured allocations stay at one walk per range.
+#[cfg(feature = "holographic-guidance")]
+#[test]
+fn validate_admits_a_valid_certificate_with_one_admission_walk() {
+    let _exclusive = exclusive();
+    use amari_rewrite::holographic::RecallTrace;
+
+    let ranges = 1_000;
+    let system = TermSystem::new(Vec::new());
+    let certificate = unused_ranges_certificate(
+        &system,
+        unused_ranges(ranges),
+        GuidanceMode::CompleteWithinLimits,
+        ResourceObservation {
+            states: 1,
+            transitions: 0,
+            retained_bytes: 64,
+            operations: 0,
+        },
+    );
+    let (allocations, _peak, outcome) = measure(|| RecallTrace::validate(&system, &certificate));
+    let trace = outcome.expect("the valid certificate mints a trace");
+    assert_eq!(trace.steps().len(), 0, "a zero-step trace has no steps");
+    assert!(
+        allocations < 1_500,
+        "the valid path walks the {ranges} borrowed ranges once: {allocations} \
+         allocations (a second admission walk would exceed this)"
+    );
+}

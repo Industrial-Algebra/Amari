@@ -515,8 +515,11 @@ fn replay_rejects_a_derivation_cheaper_than_its_producer_minimum() {
     // meet. Its expansion meter is coupled to the same ceiling through the
     // per-check relation budget, so the smallest configuration in which the
     // search can run at all is the observable threshold; it is never below the
-    // two expansions admission demands.
-    let outcome = BidirectionalExplorer::new(&system, operations_config(8))
+    // two expansions admission demands. The measured threshold is 12: the two
+    // expansions themselves plus the per-check unification admission, one
+    // charged enqueue per equation, and each resolve walk, all drawn from the
+    // same `max_operations` pool (F16, PR #384 round 4; F24, PR #384 round 5).
+    let outcome = BidirectionalExplorer::new(&system, operations_config(12))
         .search(&Term::constant("a"), &Term::constant("c"))
         .expect("search must run");
     let BidirectionalSearchOutcome::Witness(real) = outcome else {
@@ -532,7 +535,7 @@ fn replay_rejects_a_derivation_cheaper_than_its_producer_minimum() {
         Term::constant("a"),
         Term::constant("c"),
         real,
-        operations_config(8),
+        operations_config(12),
     )
     .verify(&system)
     .expect("the real witness must verify under its own configuration");
@@ -611,4 +614,90 @@ fn replay_admits_a_near_boundary_generated_intermediate() {
     certificate
         .verify(&system)
         .expect("a near-boundary generated intermediate must verify");
+}
+
+/// F29 (P2): the exact node ceiling is still admissible when the expansion runs
+/// through a SUBSTITUTED variable.
+///
+/// `{X := f(Y, a x 4094), Y := b}` expands to `f(b, a x 4094)` — 4,096 nodes at
+/// depth 2, exactly the ceiling. Counting every pending Enter frame as one
+/// inevitable output node keeps this admissible: the inner `Y` frame resolves to
+/// the one-node range `b`, so the bound never exceeds the true node count.
+#[test]
+fn replay_admits_a_chained_application_at_the_exact_node_ceiling() {
+    let system = TermSystem::new(Vec::new());
+    let meeting = Term::var("X");
+    let children = RelationLimits::MAX_TERM_NODES - 2;
+    let range = Term::sym(
+        "f",
+        core::iter::once(Term::var("Y")).chain((0..children).map(|_| Term::constant("a"))),
+    );
+    let unifier = Substitution::new()
+        .with("X", range)
+        .with("Y", Term::constant("b"));
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Bidirectional {
+            source: meeting.clone(),
+            goal: meeting.clone(),
+        },
+        ReplayDerivation::Bidirectional(BidirectionalDerivation {
+            forward_steps: Vec::new(),
+            backward_steps: Vec::new(),
+            meeting_forward: meeting.clone(),
+            meeting_backward: meeting,
+            unifier,
+        }),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        observation(),
+    );
+    certificate
+        .verify(&system)
+        .expect("an expansion of exactly the node ceiling must verify");
+}
+
+/// F29 (P2) negative boundary: one child more is one node over the ceiling.
+#[test]
+fn replay_rejects_a_chained_application_one_node_over_the_ceiling() {
+    let system = TermSystem::new(Vec::new());
+    let meeting = Term::var("X");
+    let children = RelationLimits::MAX_TERM_NODES - 1;
+    let range = Term::sym(
+        "f",
+        core::iter::once(Term::var("Y")).chain((0..children).map(|_| Term::constant("a"))),
+    );
+    let unifier = Substitution::new()
+        .with("X", range)
+        .with("Y", Term::constant("b"));
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Bidirectional {
+            source: meeting.clone(),
+            goal: meeting.clone(),
+        },
+        ReplayDerivation::Bidirectional(BidirectionalDerivation {
+            forward_steps: Vec::new(),
+            backward_steps: Vec::new(),
+            meeting_forward: meeting.clone(),
+            meeting_backward: meeting,
+            unifier,
+        }),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        observation(),
+    );
+    let error = certificate
+        .verify(&system)
+        .expect_err("an expansion one node over the ceiling must not verify");
+    assert!(
+        matches!(
+            error,
+            amari_rewrite::RewriteError::RelationLimitExceeded {
+                resource: "term nodes",
+                limit,
+            } if limit == RelationLimits::MAX_TERM_NODES
+        ),
+        "the typed rejection is the term node ceiling, got {error}"
+    );
 }
