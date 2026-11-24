@@ -36,13 +36,12 @@ pub use replay::{
     config_hash, query_hash, system_hash, ReplayCertificate, ReplayDerivation, ReplayQuery,
     ResourceObservation,
 };
-// The trace-recall admission boundary decides the producer-derived ceilings on
-// integers before it walks borrowed terms, and shares one relation budget across
-// the recorded unifier ranges.
-#[cfg(feature = "holographic-guidance")]
+// The bounded borrowed-shape walk is shared by the trace-recall admission
+// boundary and by unification's borrowed admission preflight (F24, PR #384
+// round 5), so it is always available crate-internally.
 pub(crate) use bounded::measure_borrowed;
 #[cfg(feature = "holographic-guidance")]
-pub(crate) use replay::check_derivation_bounds;
+pub(crate) use replay::{preflight_and_admit, CertificateRejection};
 pub use state::{SearchResources, SymbolicState};
 
 use crate::analysis::unify;

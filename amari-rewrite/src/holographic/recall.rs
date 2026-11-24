@@ -102,13 +102,9 @@ use alloc::vec::Vec;
 
 use amari_holographic::BindingAlgebra;
 
-use crate::holographic::encode::{
-    measure_trace_term, HolographicEncoder, TraceEncoding, MAX_TRACE_TERMS,
-};
+use crate::holographic::encode::{HolographicEncoder, TraceEncoding, MAX_TRACE_TERMS};
 use crate::holographic::HolographicError;
-use crate::inverse::{
-    measure_borrowed, InverseSearchConfig, ReplayCertificate, ReplayDerivation, ReplayQuery,
-};
+use crate::inverse::{CertificateRejection, ReplayCertificate, ReplayDerivation, ReplayQuery};
 use crate::relation::{RelationLimits, RelationResources, Sha256Digest};
 use crate::trs::{Term, TermSystem};
 
@@ -165,22 +161,29 @@ impl RecallTrace {
     /// certificate is caller-supplied:
     ///
     /// 1. every cheap ceiling is decided on integers first: the borrowed step
-    ///    count against [`MAX_TRACE_TERMS`], and the derivation against the
+    ///    count against [`MAX_TRACE_TERMS`], and — through the SAME
+    ///    crate-internal preflight [`ReplayCertificate::verify`] uses — the
+    ///    embedded configuration and guidance mode, the derivation against the
     ///    embedded search's producer-derived step, state, transition, and
-    ///    operation authority (F18/F20/F21, PR #384 round 4). An oversize
-    ///    derivation is therefore rejected before it is replayed, cloned, or
-    ///    walked;
+    ///    operation authority, and the recorded resource observation
+    ///    (F18/F20/F21, PR #384 round 4; F27, PR #384 round 5). An oversize
+    ///    derivation, an invalid configuration or guidance mode, and an
+    ///    over-ceiling observation are therefore all rejected before any term is
+    ///    walked, cloned, or replayed;
     /// 2. the shape of every borrowed term the replay must reproduce — the
     ///    certified goal, the query's other endpoint, each recorded step term,
     ///    and (for a bidirectional certificate) both meeting terms — is
     ///    measured against the crate's hard relation ceilings
-    ///    ([`RelationLimits::default`]: node and depth). Since each replayed
-    ///    intermediate state must equal its measured recorded step term, this
-    ///    measurement meters the replay's own intermediate terms too. The
-    ///    recorded meeting substitution's ranges are admitted under ONE shared
-    ///    relation meter, so the aggregate admission is bounded by the operation
-    ///    ceiling instead of growing with the number of bindings;
-    /// 3. only then does the replay run, and only then is the content cloned.
+    ///    ([`RelationLimits::default`]: node and depth), and the recorded
+    ///    meeting substitution's ranges are admitted under ONE shared relation
+    ///    meter, so the aggregate admission is bounded by the operation ceiling
+    ///    instead of growing with the number of bindings. This measurement
+    ///    meters the replay's own intermediate terms too, because each replayed
+    ///    intermediate state must equal its measured recorded step term;
+    /// 3. only then does the replay run (through the crate-internal
+    ///    continuation that does NOT re-admit the borrowed data), and only then
+    ///    is the content cloned. A valid certificate's borrowed terms are
+    ///    therefore walked exactly once on the whole path.
     ///
     /// # Errors
     ///
@@ -198,14 +201,14 @@ impl RecallTrace {
     ) -> Result<Self, HolographicError> {
         // Borrowed admission: read the certificate's terms by reference only,
         // so every check below costs one bounded walk and never a clone.
-        let (goal, steps, endpoint) = match (&certificate.query, &certificate.derivation) {
-            (ReplayQuery::Backward { target, goal }, ReplayDerivation::Backward(derivation)) => {
-                (goal, derivation.steps.as_slice(), target)
+        let (goal, steps) = match (&certificate.query, &certificate.derivation) {
+            (ReplayQuery::Backward { goal, .. }, ReplayDerivation::Backward(derivation)) => {
+                (goal, derivation.steps.as_slice())
             }
             (
-                ReplayQuery::Bidirectional { source, goal },
+                ReplayQuery::Bidirectional { goal, .. },
                 ReplayDerivation::Bidirectional(derivation),
-            ) => (goal, derivation.backward_steps.as_slice(), source),
+            ) => (goal, derivation.backward_steps.as_slice()),
             _ => {
                 return Err(HolographicError::MalformedTrace {
                     reason: "query kind does not match the derivation kind",
@@ -229,34 +232,24 @@ impl RecallTrace {
         // *embedded search configuration* rather than by the encoded trace-term
         // ceiling above (F12, PR #384 round 3; producer-derived retained-state
         // and operation bounds, F18/F20, PR #384 round 4).
-        check_derivation_bounds(&certificate.derivation, &certificate.config)?;
-        // Borrowed shape admission. The goal, the query's other endpoint, every
-        // recorded step term, and both meeting terms are measured against the
-        // fixed relation ceilings (`measure_trace_term` allocates nothing
-        // proportional to the term). The recorded unifier ranges are then admitted
-        // under ONE `RelationResources` meter rather than one fresh walk per
-        // binding, so aggregate substitution admission is bounded (F21).
+        //
+        // F27 (PR #384 round 5): the rest of the cheap preflight (configuration,
+        // guidance, derivation ceilings, recorded observation) and the aggregate
+        // borrowed admission are the SAME crate-internal pass
+        // `ReplayCertificate::verify` runs, under one meter. Reusing it is what
+        // puts every integer ceiling before the first range walk and keeps a
+        // valid certificate from being walked twice.
         let limits = RelationLimits::default();
-        measure_trace_term(goal, limits)?;
-        measure_trace_term(endpoint, limits)?;
-        for step in steps {
-            measure_trace_term(&step.term, limits)?;
-        }
-        if let ReplayDerivation::Bidirectional(derivation) = &certificate.derivation {
-            measure_trace_term(&derivation.meeting_forward, limits)?;
-            measure_trace_term(&derivation.meeting_backward, limits)?;
-            let mut meter = RelationResources::new(&limits);
-            for (_, range) in derivation.unifier.iter() {
-                admit_range(range, &mut meter)?;
-            }
-        }
-
+        let mut meter = RelationResources::new(&limits);
+        crate::inverse::preflight_and_admit(certificate, &mut meter)
+            .map_err(admission_rejection)?;
+        // Every borrowed term is admitted and the certificate is preflight-clean,
+        // so only the hashes and the replay remain: no second admission walk.
         certificate
-            .verify(system)
+            .verify_admitted(system)
             .map_err(HolographicError::UnvalidatedProvenance)?;
-        // Every borrowed term is admitted and the certificate replays, so the
-        // trace content is read out from the certified pair, never from caller
-        // text.
+        // The trace content is read out from the certified pair, never from
+        // caller text.
         let goal = goal.clone();
         let steps = steps
             .iter()
@@ -595,17 +588,29 @@ impl<const D: usize> TraceCorpus<D> {
     }
 }
 
-/// Admit one borrowed substitution range against the shared relation meter.
+/// Map one shared preflight/admission rejection onto the recall boundary's
+/// public error type, preserving every mapping this boundary always had (F27,
+/// PR #384 round 5):
 ///
-/// The meter is shared by every range (and by the replay's own work), so the
-/// aggregate admission is bounded. The ceilings are the crate's hard relation
-/// ceilings, reported under the same resource names as
-/// [`measure_trace_term`].
-fn admit_range(range: &Term, meter: &mut RelationResources) -> Result<(), HolographicError> {
-    let shape = measure_borrowed(range, meter).map_err(admission_error)?;
-    meter
-        .record_term(shape.nodes, shape.depth)
-        .map_err(admission_error)
+/// - a certificate error (invalid embedded configuration, invalid guidance mode,
+///   over-ceiling recorded observation, or disagreeing query/derivation kinds)
+///   is unvalidated provenance;
+/// - an integer derivation ceiling is an admission limit under its own resource
+///   name;
+/// - a borrowed shape is an admission limit, reported under the trace-specific
+///   names the trace-term measurement has always used.
+fn admission_rejection(rejection: CertificateRejection) -> HolographicError {
+    match rejection {
+        CertificateRejection::Certificate(error) => HolographicError::UnvalidatedProvenance(error),
+        CertificateRejection::StepCeiling(ceiling) => HolographicError::LimitExceeded {
+            resource: ceiling.resource,
+            value: ceiling.value,
+            limit: ceiling.limit,
+        },
+        CertificateRejection::Shape { resource, limit } => {
+            admission_error(crate::error::RewriteError::RelationLimitExceeded { resource, limit })
+        }
+    }
 }
 
 /// Surface a relation-limit rejection as an admission limit.
@@ -627,22 +632,6 @@ fn admission_error(error: crate::error::RewriteError) -> HolographicError {
         }
         other => HolographicError::UnvalidatedProvenance(other),
     }
-}
-
-/// Validate a replayed derivation against the embedded configuration's
-/// producer-derived step, state, transition, and operation ceilings, surfacing
-/// the violation as an admission limit.
-fn check_derivation_bounds(
-    derivation: &ReplayDerivation,
-    config: &InverseSearchConfig,
-) -> Result<(), HolographicError> {
-    crate::inverse::check_derivation_bounds(derivation, config).map_err(|ceiling| {
-        HolographicError::LimitExceeded {
-            resource: ceiling.resource,
-            value: ceiling.value,
-            limit: ceiling.limit,
-        }
-    })
 }
 
 /// Reject a zero or above-ceiling value.

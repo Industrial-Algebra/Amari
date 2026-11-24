@@ -169,74 +169,28 @@ impl ReplayCertificate {
     /// derivation must be one the embedded search could have produced, and the
     /// derivation must replay through the system to the recorded query.
     ///
-    /// ## Admission order (F19/F21, PR #384 round 4)
-    ///
-    /// The certificate is caller-supplied, so verification is ordered from the
-    /// cheapest authority to the most expensive work, and NOTHING proportional
-    /// to the certificate is hashed, cloned, or allocated before it is admitted:
-    ///
-    /// 1. the embedded configuration and guidance mode are validated (fixed
-    ///    ceilings, no term work);
-    /// 2. the cheap structural ceilings are decided on integers — each half's
-    ///    step count, the producer-derived retained-state and operation bounds
-    ///    (documented on the crate-internal step checker), and the recorded
-    ///    resource observation;
-    /// 3. every borrowed term the replay reads — both query endpoints, every
-    ///    recorded step term, both meeting terms, and every recorded unifier
-    ///    range — is admitted under ONE shared [`RelationResources`] meter, so
-    ///    the aggregate admission is bounded instead of one fresh walk per
-    ///    binding;
-    /// 4. only then are the binding hashes recomputed (`query_hash` encodes the
-    ///    whole query) and the replay run, which is also where the first clone
-    ///    of the source can happen.
+    /// The order is the shared crate-internal preflight and admission slice
+    /// (cheap authority first, borrowed admission last, both before any hash or
+    /// clone), followed by the crate-internal `verify_admitted` continuation
+    /// (the hashes and the replay).
     pub fn verify(&self, system: &TermSystem) -> RewriteResult<()> {
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        preflight_and_admit(self, &mut resources).map_err(certificate_rejection_error)?;
+        self.verify_admitted(system)
+    }
+
+    /// Verify a certificate whose cheap preflight and borrowed admission have
+    /// already run: recompute every binding hash, then replay the derivation.
+    ///
+    /// Crate-internal continuation of [`Self::verify`]. `RecallTrace::validate`
+    /// runs the shared [`preflight_and_admit`] itself (so it can map the
+    /// rejection onto its own public error type) and then enters here, which is
+    /// what keeps a valid certificate's borrowed terms from being walked twice
+    /// (F27, PR #384 round 5).
+    pub(crate) fn verify_admitted(&self, system: &TermSystem) -> RewriteResult<()> {
         let mismatch = |message: &str| RewriteError::ResidualMismatch {
             message: message.to_string(),
         };
-        // The embedded configuration is part of the certified
-        // statement, so it must be a VALID configuration: a
-        // certificate carrying limits no search could run under
-        // (for example max_depth = 0) is rejected regardless of
-        // whether its hashes match.
-        self.config
-            .validate()
-            .map_err(|error| RewriteError::ResidualMismatch {
-                message: alloc::format!("certificate configuration is invalid: {error}"),
-            })?;
-        self.guidance.validate(&self.config)?;
-        // Cheap integer ceilings first: a half longer than the embedded search
-        // could walk is rejected before any term is touched (F21).
-        check_derivation_bounds(&self.derivation, &self.config).map_err(ceiling_error)?;
-        let observed = self.resources;
-        let config = &self.config;
-        for (resource, value, ceiling) in [
-            ("certificate states", observed.states, config.max_states()),
-            (
-                "certificate transitions",
-                observed.transitions,
-                config.max_transitions(),
-            ),
-            (
-                "certificate retained bytes",
-                observed.retained_bytes,
-                config.max_frontier_bytes(),
-            ),
-            (
-                "certificate operations",
-                observed.operations,
-                config.max_operations(),
-            ),
-        ] {
-            if value > ceiling {
-                return Err(RewriteError::RelationLimitExceeded {
-                    resource,
-                    limit: ceiling as usize,
-                });
-            }
-        }
-        // Borrowed admission: one shared meter, no clones, no hashes yet.
-        let mut resources = RelationResources::new(&RelationLimits::default());
-        admit_certificate(&self.query, &self.derivation, &mut resources)?;
         if system_hash(system) != self.system_hash {
             return Err(mismatch("certificate system hash mismatch"));
         }
@@ -258,6 +212,122 @@ impl ReplayCertificate {
                 ReplayDerivation::Bidirectional(derivation),
             ) => replay_bidirectional(system, source, goal, derivation),
             _ => Err(mismatch("query kind does not match derivation kind")),
+        }
+    }
+}
+
+/// One rejection from the shared certificate preflight and borrowed admission.
+///
+/// Each public entry point maps these onto its own error type:
+/// [`ReplayCertificate::verify`] reports the certificate error itself, while the
+/// holographic recall boundary wraps a certificate error as unvalidated
+/// provenance and reports both an integer ceiling and a borrowed shape as its
+/// own admission limit.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum CertificateRejection {
+    /// The embedded configuration, guidance mode, or recorded observation is
+    /// invalid, or the query and derivation kinds disagree.
+    Certificate(RewriteError),
+    /// A derivation half exceeds the embedded search's integer ceilings.
+    StepCeiling(StepCeiling),
+    /// A borrowed term or substitution range exceeds the relation ceilings.
+    Shape {
+        /// The rejected resource (`"term nodes"` or `"term depth"`).
+        resource: &'static str,
+        /// The applied ceiling.
+        limit: usize,
+    },
+}
+
+/// The cheapest authority first, the borrowed admission last, and no hashing or
+/// cloning in between (F19/F21/F27, PR #384 rounds 4-5).
+///
+/// 1. the embedded configuration and guidance mode are validated (fixed
+///    ceilings, no term work);
+/// 2. the cheap structural ceilings are decided on integers — each half's step
+///    count, the producer-derived retained-state and operation bounds
+///    (documented on the crate-internal step checker), and the recorded resource
+///    observation;
+/// 3. every borrowed term the replay reads — both query endpoints, every
+///    recorded step term, both meeting terms, and every recorded unifier range —
+///    is admitted under ONE caller-supplied [`RelationResources`] meter, so the
+///    aggregate admission is bounded instead of one fresh walk per binding;
+/// 4. only then may the caller recompute the binding hashes (`query_hash`
+///    encodes the whole query) and run the replay, which is where the first
+///    clone of the source can happen.
+///
+/// Both public entries share this exact pass, so a certificate with many unused
+/// ranges and an over-ceiling recorded observation is rejected on integers
+/// before the first range walk, and a valid certificate's borrowed terms are
+/// admitted once on the whole path.
+pub(crate) fn preflight_and_admit(
+    certificate: &ReplayCertificate,
+    resources: &mut RelationResources,
+) -> Result<(), CertificateRejection> {
+    // The embedded configuration is part of the certified statement, so it must
+    // be a VALID configuration: a certificate carrying limits no search could
+    // run under (for example max_depth = 0) is rejected regardless of whether
+    // its hashes match.
+    certificate.config.validate().map_err(|error| {
+        CertificateRejection::Certificate(RewriteError::ResidualMismatch {
+            message: alloc::format!("certificate configuration is invalid: {error}"),
+        })
+    })?;
+    certificate
+        .guidance
+        .validate(&certificate.config)
+        .map_err(CertificateRejection::Certificate)?;
+    // Cheap integer ceilings first: a half longer than the embedded search could
+    // walk is rejected before any term is touched (F21).
+    check_derivation_bounds(&certificate.derivation, &certificate.config)
+        .map_err(CertificateRejection::StepCeiling)?;
+    let observed = certificate.resources;
+    let config = &certificate.config;
+    for (resource, value, ceiling) in [
+        ("certificate states", observed.states, config.max_states()),
+        (
+            "certificate transitions",
+            observed.transitions,
+            config.max_transitions(),
+        ),
+        (
+            "certificate retained bytes",
+            observed.retained_bytes,
+            config.max_frontier_bytes(),
+        ),
+        (
+            "certificate operations",
+            observed.operations,
+            config.max_operations(),
+        ),
+    ] {
+        if value > ceiling {
+            return Err(CertificateRejection::Certificate(
+                RewriteError::RelationLimitExceeded {
+                    resource,
+                    limit: ceiling as usize,
+                },
+            ));
+        }
+    }
+    // Borrowed admission: one shared meter, no clones, no hashes yet.
+    admit_certificate(&certificate.query, &certificate.derivation, resources).map_err(|error| {
+        match error {
+            RewriteError::RelationLimitExceeded { resource, limit } => {
+                CertificateRejection::Shape { resource, limit }
+            }
+            other => CertificateRejection::Certificate(other),
+        }
+    })
+}
+
+/// Map one shared rejection onto [`ReplayCertificate::verify`]'s error type.
+fn certificate_rejection_error(rejection: CertificateRejection) -> RewriteError {
+    match rejection {
+        CertificateRejection::Certificate(error) => error,
+        CertificateRejection::StepCeiling(ceiling) => ceiling_error(ceiling),
+        CertificateRejection::Shape { resource, limit } => {
+            RewriteError::RelationLimitExceeded { resource, limit }
         }
     }
 }
@@ -331,9 +401,15 @@ pub(crate) struct ProducerBounds {
 ///
 /// A backward witness retains the target root plus every non-winning
 /// predecessor: the goal-matching leaf is checked against the goal BEFORE it is
-/// retained, so `n` steps retain `n` states, not `n + 1`. A zero-step witness is
-/// the root itself, which every validated configuration can afford
-/// (`max_states >= 1`).
+/// retained, so `n` steps retain `n` states, not `n + 1`.
+///
+/// A zero-step witness retains ZERO states: an immediate root hit returns a
+/// witness BEFORE the producer's first `record_state`, so nothing is retained
+/// and the derivation carries no step at all (F30, PR #384 round 5). The bound
+/// reported here is therefore one — the smallest retained-state ceiling a
+/// producer can run under — and not the number of retained states. A validated
+/// configuration always has `max_states >= 1`, so the bound never rejects the
+/// zero-step witness a producer can really issue.
 ///
 /// A bidirectional witness retains BOTH roots before the search loop, and then
 /// exactly one meeting state: the side that did not find the meet retains its
@@ -370,12 +446,17 @@ pub(crate) fn bidirectional_producer_bounds(forward: usize, backward: usize) -> 
 /// Four separate authorities are checked, in this order:
 ///
 /// 1. **depth** — a half cannot be longer than the embedded `max_depth`, because
-///    every step walks one edge of a frontier the search expands depth-first;
+///    every step walks one edge of the derivation;
 /// 2. **transitions** — one transition per step, shared across both halves of a
 ///    bidirectional derivation (they share one frontier budget);
 /// 3. **retained states and operations** — the producer-derived lower bounds
 ///    from [`backward_producer_bounds`] / [`bidirectional_producer_bounds`], NOT
 ///    a blanket `steps + 1`.
+///
+/// The depth and transition bounds follow from the number of steps and the
+/// producer's per-expansion checks alone: they hold for every traversal order,
+/// so no search order (breadth-first, cost-first, guided) is claimed or required
+/// here (F30, PR #384 round 5).
 ///
 /// This is deliberately NOT [`crate::holographic::MAX_TRACE_TERMS`]: that
 /// ceiling bounds the encoded terms a corpus stores, not the non-encoded forward
@@ -472,6 +553,22 @@ fn narrow(value: u64) -> usize {
 
 fn mismatch(message: alloc::string::String) -> RewriteError {
     RewriteError::ResidualMismatch { message }
+}
+
+/// Translate ONLY a unification failure into a replay mismatch (F26, PR #384
+/// round 5).
+///
+/// The replay shares one [`RelationResources`] meter between borrowed admission
+/// and the unification it performs, so an exhausted budget surfaces from
+/// `unify` as [`RewriteError::RelationLimitExceeded`]. That is the replay's own
+/// typed limit and must never be flattened into a certificate mismatch; every
+/// other typed error (for example an [`RewriteError::InvalidSubstitution`] from
+/// an unsupported cyclic input) is propagated unchanged as well.
+fn translate_unification(error: RewriteError, message: &str) -> RewriteError {
+    match error {
+        RewriteError::UnificationFailure { .. } => mismatch(message.to_string()),
+        other => other,
+    }
 }
 
 fn ceiling_error(ceiling: StepCeiling) -> RewriteError {
@@ -577,17 +674,23 @@ fn replay_backward(
     let _ = admit(target, &mut resources)?;
     let _ = admit(goal, &mut resources)?;
     if derivation.steps.is_empty() {
-        // Zero-step witness: target must unify with the goal.
+        // Zero-step witness: target must unify with the goal. ONLY a genuine
+        // unification failure is a certificate mismatch; a resource rejection
+        // from unification is the replay's own typed budget error and is
+        // propagated unchanged (F26, PR #384 round 5).
         return unify(target, goal, &mut resources)
             .map(|_| ())
-            .map_err(|_| mismatch("zero-step witness does not unify".to_string()));
+            .map_err(|error| translate_unification(error, "zero-step witness does not unify"));
     }
     let leaf = &derivation.steps.last().expect("non-empty").term;
     let leaf_shape = admit(leaf, &mut resources)?;
     // F7 (PR #384 round 2): the leaf/goal unifier is retained, never discarded.
-    // It is the one assignment every reconstructed term is read under.
-    let assignment = unify(leaf, goal, &mut resources)
-        .map_err(|_| mismatch("derivation leaf does not unify with the goal".to_string()))?;
+    // It is the one assignment every reconstructed term is read under. F26: a
+    // resource rejection is not a mismatch, so it keeps its type (and its
+    // `RelationLimitExceeded` resource name) all the way out.
+    let assignment = unify(leaf, goal, &mut resources).map_err(|error| {
+        translate_unification(error, "derivation leaf does not unify with the goal")
+    })?;
     // F9 (PR #384 round 3): the anchor of the one whole-trace correspondence.
     let mut correspondence = TraceVariables::new();
     let anchored_leaf = apply_checked(&assignment, leaf, &mut resources)?;
@@ -819,5 +922,67 @@ mod tests {
         certificate.config_hash = config_hash(&certificate.config);
         let result = certificate.verify(&system);
         assert!(result.is_err(), "max_depth = 0 must not verify");
+    }
+
+    /// F28 (P2, PR #384 round 5): the shared admission meters ONE pool for every
+    /// borrowed term AND every recorded unifier range.
+    ///
+    /// Four constant terms (source, goal, both meeting terms) and two unused
+    /// constant ranges are six borrowed one-node values, i.e. exactly six
+    /// operations. A budget of six passes; a budget of five rejects on
+    /// operations although every individual term is legal. A fresh meter per
+    /// range would admit both ranges inside the five-operation budget, so this
+    /// contract is what pins that the aggregate admission is shared.
+    #[test]
+    fn the_shared_admission_charges_one_pool_for_terms_and_ranges() {
+        let system = TermSystem::new(vec![]);
+        let meeting = Term::constant("a");
+        let unifier = Substitution::new()
+            .with("U1", Term::constant("u1"))
+            .with("U2", Term::constant("u2"));
+        let certificate = ReplayCertificate::issue(
+            &system,
+            ReplayQuery::Bidirectional {
+                source: meeting.clone(),
+                goal: meeting.clone(),
+            },
+            ReplayDerivation::Bidirectional(BidirectionalDerivation {
+                forward_steps: Vec::new(),
+                backward_steps: Vec::new(),
+                meeting_forward: meeting.clone(),
+                meeting_backward: meeting,
+                unifier,
+            }),
+            InverseSearchConfig::default(),
+            GuidanceMode::CompleteWithinLimits,
+            ResourceObservation {
+                states: 1,
+                transitions: 0,
+                retained_bytes: 64,
+                operations: 0,
+            },
+        );
+        let exact_limits = RelationLimits::new(4_096, 64, 4_096, 6).expect("valid limits");
+        let mut exact = RelationResources::new(&exact_limits);
+        preflight_and_admit(&certificate, &mut exact)
+            .expect("six one-node borrowed values fit exactly six operations");
+        assert_eq!(
+            exact.operations(),
+            6,
+            "four terms plus two ranges, from one shared pool"
+        );
+
+        let short_limits = RelationLimits::new(4_096, 64, 4_096, 5).expect("valid limits");
+        let mut short = RelationResources::new(&short_limits);
+        let error = preflight_and_admit(&certificate, &mut short)
+            .expect_err("the shared meter cannot pay for the sixth value");
+        assert_eq!(
+            error,
+            CertificateRejection::Shape {
+                resource: "operations",
+                limit: 5,
+            },
+            "the aggregate admission is one pool, not one meter per range"
+        );
     }
 }

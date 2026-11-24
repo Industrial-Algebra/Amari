@@ -258,12 +258,15 @@ fn metering_shares_one_pool_across_enumeration_and_search() {
     let report = local_confluence(&system, &mut generous).expect("computed");
     assert_eq!(report.pairs.len(), 1);
     let total = generous.operations();
-    // 16 enumeration + 2 search expansions + 12 resolution/occurs inspections:
-    // unification charges its borrowed resolve/occurs walk against the SAME pool
-    // (F16, PR #384 round 4), so the pinned total is the whole shared charge.
+    // 16 enumeration + 2 search expansions + 30 metered unification steps:
+    // unification charges its borrowed admission of both inputs, one operation
+    // per enqueued equation, and its resolve/occurs walk against the SAME pool
+    // (F16, PR #384 round 4; F24, PR #384 round 5 — admission precedes cloning
+    // and every pending equation is paid for before it is pushed), so the pinned
+    // total is the whole shared charge.
     assert_eq!(
-        total, 30,
-        "16 enumeration + 2 search expansions + 12 metered unification steps"
+        total, 48,
+        "16 enumeration + 2 search expansions + 30 metered unification steps"
     );
 
     let exact_limits = RelationLimits::new(4096, 64, 4096, total).expect("valid");

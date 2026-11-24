@@ -115,13 +115,22 @@ pub(crate) fn measure_borrowed(
 /// Deep application with [`Substitution::apply`]'s chain resolution and
 /// fixed-point cycle semantics, measured without materializing anything.
 ///
-/// The worklist holds two kinds of frame: a TERM frame (a node that will appear
-/// in the result, or resolve into one) and a LEAVE frame (bookkeeping that pops
-/// a variable from the cycle guard). Only term frames are output nodes, so the
-/// charge-before-push lower bound counts them — `nodes + queued_terms +
-/// args.len()` — and never the cleanup frames. Counting a leave frame inflated
-/// every chained application by one and rejected an expansion of exactly the
-/// node ceiling (F17, PR #384 round 4).
+/// The worklist holds two kinds of frame: an ENTER frame (a node that will
+/// appear in the result, or resolve into one) and a LEAVE frame (bookkeeping
+/// that pops a variable from the cycle guard). Every pending Enter frame —
+/// whether it holds a symbol or a variable — is guaranteed to contribute at
+/// least one output node: an unbound variable is its own output, a bound
+/// variable is replaced by a range of at least one node, and a symbol is its
+/// own output plus its children. Only Leave frames are bookkeeping, so the
+/// charge-before-push lower bound counts `nodes + pending_enters + args.len()`
+/// and never a cleanup frame.
+///
+/// Counting only pending SYMBOL frames (the round-4 formula) undercounted a
+/// chained application by every pending variable: `X0 |-> f(X1, a*3999)`,
+/// `X1 |-> f(a*4000)` reports 4,002 inevitable nodes at a point where 8,001 are
+/// inevitable, and pushed 4,000 further children before rejecting (F29, PR #384
+/// round 5). Counting every Enter frame is still a lower bound, so an expansion
+/// of exactly the ceiling stays admissible (F17).
 fn measure_apply(
     substitution: &Substitution,
     term: &Term,
@@ -137,20 +146,16 @@ fn measure_apply(
     let mut nodes = 0usize;
     let mut depth = 1usize;
     let mut stack: Vec<Frame<'_>> = Vec::from([Frame::Enter(term, 1)]);
-    // Pending SYMBOL frames on the stack, each of which is guaranteed to
-    // contribute one output node. Leave frames are bookkeeping, and a pending
-    // variable frame may resolve away, so neither is counted: the bound
-    // `nodes + symbols + args.len()` is a true lower bound on the expansion.
-    let mut symbols = usize::from(matches!(term, Term::Sym(..)));
+    // Pending Enter frames on the stack, each of which is guaranteed to
+    // contribute one output node. Leave frames are bookkeeping only.
+    let mut pending_enters = 1usize;
     while let Some(frame) = stack.pop() {
         match frame {
             Frame::Leave(variable) => {
                 let _ = visiting.remove(variable);
             }
             Frame::Enter(node, node_depth) => {
-                if matches!(node, Term::Sym(..)) {
-                    symbols = symbols.saturating_sub(1);
-                }
+                pending_enters = pending_enters.saturating_sub(1);
                 resources.record_operations(1)?;
                 match node {
                     // A variable being resolved is replaced by its range, so it
@@ -163,9 +168,7 @@ fn measure_apply(
                                 let _ = visiting.insert(variable);
                                 stack.push(Frame::Leave(variable));
                                 stack.push(Frame::Enter(bound, node_depth));
-                                if matches!(bound, Term::Sym(..)) {
-                                    symbols = symbols.saturating_add(1);
-                                }
+                                pending_enters = pending_enters.saturating_add(1);
                             }
                             None => {
                                 nodes = nodes.saturating_add(1);
@@ -198,19 +201,21 @@ fn measure_apply(
                             return Err(limit("term depth", max_depth));
                         }
                         depth = depth.max(node_depth);
-                        // Charge-before-push: every pending symbol frame and
-                        // every child about to be pushed is one output node.
-                        // Cleanup leaves are not output nodes, so an expansion
-                        // of exactly the ceiling is admissible (F17).
-                        let pending = nodes.saturating_add(symbols).saturating_add(args.len());
+                        // Charge-before-push: every pending Enter frame and
+                        // every child about to be pushed is one output node, so
+                        // an over-budget expansion is rejected before the
+                        // worklist grows to its arity (F29). Cleanup leaves are
+                        // not output nodes, so an expansion of exactly the
+                        // ceiling is admissible (F17).
+                        let pending = nodes
+                            .saturating_add(pending_enters)
+                            .saturating_add(args.len());
                         if pending > max_nodes {
                             return Err(limit("term nodes", max_nodes));
                         }
                         for arg in args.iter().rev() {
-                            if matches!(arg, Term::Sym(..)) {
-                                symbols = symbols.saturating_add(1);
-                            }
                             stack.push(Frame::Enter(arg, node_depth + 1));
+                            pending_enters = pending_enters.saturating_add(1);
                         }
                     }
                 }
