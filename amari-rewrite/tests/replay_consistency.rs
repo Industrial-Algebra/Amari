@@ -480,8 +480,8 @@ fn bidirectional_replay_anchors_the_backward_half_at_the_checked_meeting() {
         .verify(&system)
         .expect_err("a record that contradicts the checked meeting must not verify");
     assert!(
-        error.to_string().contains("goal"),
-        "the typed rejection names the goal the anchored trace cannot reach, got {error}"
+        error.to_string().contains("recorded backward term"),
+        "the typed rejection names the record that contradicts the anchor, got {error}"
     );
 }
 

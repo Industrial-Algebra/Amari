@@ -42,7 +42,7 @@ use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use amari_rewrite::inverse::{
-    BackwardDerivation, BackwardProvenance, BidirectionalDerivation, ForwardStep, GuidanceMode,
+    BackwardDerivation, BackwardProvenance, BidirectionalDerivation, GuidanceMode,
     InverseSearchConfig, ReplayCertificate, ReplayDerivation, ReplayQuery, ResourceObservation,
     SymbolicPredecessor,
 };
@@ -432,6 +432,7 @@ fn verify_admits_every_borrowed_unifier_range_under_one_meter() {
 fn admission_checks_cheap_lengths_before_walking_unifier_ranges() {
     let _exclusive = exclusive();
     use amari_rewrite::holographic::{HolographicError, RecallTrace};
+    use amari_rewrite::inverse::ForwardStep;
 
     let ab = Rule::new(Term::constant("a"), Term::constant("b")).expect("checked rule");
     let ba = Rule::new(Term::constant("b"), Term::constant("a")).expect("checked rule");

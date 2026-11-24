@@ -36,10 +36,13 @@ pub use replay::{
     config_hash, query_hash, system_hash, ReplayCertificate, ReplayDerivation, ReplayQuery,
     ResourceObservation,
 };
-// The trace-recall admission boundary validates replayed derivation halves
-// against the embedded configuration before the certificate is replayed.
+// The trace-recall admission boundary decides the producer-derived ceilings on
+// integers before it walks borrowed terms, and shares one relation budget across
+// the recorded unifier ranges.
 #[cfg(feature = "holographic-guidance")]
-pub(crate) use replay::check_replay_steps;
+pub(crate) use bounded::measure_borrowed;
+#[cfg(feature = "holographic-guidance")]
+pub(crate) use replay::check_derivation_bounds;
 pub use state::{SearchResources, SymbolicState};
 
 use crate::analysis::unify;

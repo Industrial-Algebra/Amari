@@ -87,15 +87,15 @@
 //! floating-point value that can overshoot by one unit in the last place (an
 //! identical trace at `D = 3` scores `1.0000000000000002`).
 //!
-//! The clamp is monotone, so it preserves *strict* comparisons: a lane strictly
-//! greater before clamping is still strictly greater after it. It does not make
-//! the map injective — two lanes that were distinct can be clamped into the same
-//! interval endpoint, and floating evaluation can already produce equal values
-//! for mathematically identical operands. When scores tie, the total order falls
-//! back to the trace identity (ascending content hash), which is what makes the
-//! returned order total and content-only. There is no claim that a clamped lane
-//! is bit-exactly `1.0` for every identical operand, nor that clamping can never
-//! introduce a tie.
+//! The clamp is **nondecreasing, not strictly order preserving**. Clamping
+//! cannot invert a comparison — a lane that was greater before clamping is never
+//! less after it — but it CAN collapse a strict comparison into a tie: two lanes
+//! that were strictly ordered can be clamped onto the same interval endpoint.
+//! After a tie, the trace identity (ascending content hash) determines the order,
+//! which is what makes the returned order total and content-only. There is no
+//! claim that a clamped lane is bit-exactly `1.0` for every identical operand,
+//! and no claim that distinct or strictly ordered lanes stay distinct or strictly
+//! ordered (F22, PR #384 round 4).
 
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
@@ -106,8 +106,10 @@ use crate::holographic::encode::{
     measure_trace_term, HolographicEncoder, TraceEncoding, MAX_TRACE_TERMS,
 };
 use crate::holographic::HolographicError;
-use crate::inverse::{InverseSearchConfig, ReplayCertificate, ReplayDerivation, ReplayQuery};
-use crate::relation::{RelationLimits, Sha256Digest};
+use crate::inverse::{
+    measure_borrowed, InverseSearchConfig, ReplayCertificate, ReplayDerivation, ReplayQuery,
+};
+use crate::relation::{RelationLimits, RelationResources, Sha256Digest};
 use crate::trs::{Term, TermSystem};
 
 /// Hard ceiling on the traces one corpus may hold.
@@ -162,15 +164,22 @@ impl RecallTrace {
     /// is cloned, because the replay is the expensive part and because a
     /// certificate is caller-supplied:
     ///
-    /// 1. the borrowed step count is checked against [`MAX_TRACE_TERMS`], so an
-    ///    oversize derivation is rejected before it is replayed or cloned;
+    /// 1. every cheap ceiling is decided on integers first: the borrowed step
+    ///    count against [`MAX_TRACE_TERMS`], and the derivation against the
+    ///    embedded search's producer-derived step, state, transition, and
+    ///    operation authority (F18/F20/F21, PR #384 round 4). An oversize
+    ///    derivation is therefore rejected before it is replayed, cloned, or
+    ///    walked;
     /// 2. the shape of every borrowed term the replay must reproduce — the
     ///    certified goal, the query's other endpoint, each recorded step term,
     ///    and (for a bidirectional certificate) both meeting terms — is
     ///    measured against the crate's hard relation ceilings
     ///    ([`RelationLimits::default`]: node and depth). Since each replayed
     ///    intermediate state must equal its measured recorded step term, this
-    ///    measurement meters the replay's own intermediate terms too;
+    ///    measurement meters the replay's own intermediate terms too. The
+    ///    recorded meeting substitution's ranges are admitted under ONE shared
+    ///    relation meter, so the aggregate admission is bounded by the operation
+    ///    ceiling instead of growing with the number of bindings;
     /// 3. only then does the replay run, and only then is the content cloned.
     ///
     /// # Errors
@@ -203,6 +212,11 @@ impl RecallTrace {
                 });
             }
         };
+        // Every cheap CEILING is decided on integers before any borrowed walk:
+        // the encoded trace-term count, then the embedded search's step, state,
+        // transition, and operation authority. A certificate carrying 100,000
+        // unused unifier bindings and an over-deep half is therefore rejected
+        // without walking a single binding (F21, PR #384 round 4).
         let terms = steps.len() + 1;
         if terms > MAX_TRACE_TERMS {
             return Err(HolographicError::LimitExceeded {
@@ -211,49 +225,29 @@ impl RecallTrace {
                 limit: MAX_TRACE_TERMS,
             });
         }
+        // Each derivation half is replayed, not encoded, so it is bounded by the
+        // *embedded search configuration* rather than by the encoded trace-term
+        // ceiling above (F12, PR #384 round 3; producer-derived retained-state
+        // and operation bounds, F18/F20, PR #384 round 4).
+        check_derivation_bounds(&certificate.derivation, &certificate.config)?;
+        // Borrowed shape admission. The goal, the query's other endpoint, every
+        // recorded step term, and both meeting terms are measured against the
+        // fixed relation ceilings (`measure_trace_term` allocates nothing
+        // proportional to the term). The recorded unifier ranges are then admitted
+        // under ONE `RelationResources` meter rather than one fresh walk per
+        // binding, so aggregate substitution admission is bounded (F21).
         let limits = RelationLimits::default();
         measure_trace_term(goal, limits)?;
         measure_trace_term(endpoint, limits)?;
         for step in steps {
             measure_trace_term(&step.term, limits)?;
         }
-        // A bidirectional certificate's meeting terms are the last borrowed
-        // terms the replay hashes (`meeting_forward`) and instantiates
-        // (`meeting_backward`), so they are measured under the same ceilings
-        // before the replay reaches them. The recorded meeting substitution's
-        // ranges are also borrowed terms the replay applies, so they are
-        // admitted here before use.
         if let ReplayDerivation::Bidirectional(derivation) = &certificate.derivation {
             measure_trace_term(&derivation.meeting_forward, limits)?;
             measure_trace_term(&derivation.meeting_backward, limits)?;
+            let mut meter = RelationResources::new(&limits);
             for (_, range) in derivation.unifier.iter() {
-                measure_trace_term(range, limits)?;
-            }
-        }
-        // Each derivation half is replayed, not encoded, so its step count is
-        // bounded by the *embedded search configuration* rather than by the
-        // encoded trace-term ceiling above (F12, PR #384 round 3). A half longer
-        // than the configuration's depth, states, or transitions could never
-        // have been produced by the certified search.
-        match &certificate.derivation {
-            ReplayDerivation::Backward(derivation) => {
-                check_replay_steps(
-                    "replay backward steps",
-                    derivation.steps.len(),
-                    &certificate.config,
-                )?;
-            }
-            ReplayDerivation::Bidirectional(derivation) => {
-                check_replay_steps(
-                    "replay forward steps",
-                    derivation.forward_steps.len(),
-                    &certificate.config,
-                )?;
-                check_replay_steps(
-                    "replay backward steps",
-                    derivation.backward_steps.len(),
-                    &certificate.config,
-                )?;
+                admit_range(range, &mut meter)?;
             }
         }
 
@@ -341,9 +335,10 @@ fn trace_identity(goal: &Term, steps: &[Term]) -> Sha256Digest {
 /// approximation. The clamped value is the public number: mathematically
 /// identical operands have similarity `1`, but the exposed lane may be
 /// `0.9999999999999998` (or clamp to `1.0` from above) and is never documented
-/// as bit-exactly `1.0`. Clamping is monotone, so strict comparisons survive it,
-/// but distinct values can be clamped into one, in which case the recall order
-/// falls back to the trace-identity tiebreak. **Higher is more similar**;
+/// as bit-exactly `1.0`. Clamping is nondecreasing and therefore cannot invert a
+/// comparison, but it is NOT strict-order preserving: a strict comparison can be
+/// clamped into a tie, in which case the recall order falls back to the
+/// trace-identity tiebreak. **Higher is more similar**;
 /// `combined` is the ranked scalar and the other two are independent evidence,
 /// never summed into it.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -600,14 +595,48 @@ impl<const D: usize> TraceCorpus<D> {
     }
 }
 
-/// Validate one replayed derivation half against the embedded configuration's
-/// step ceilings, surfacing the violation as an admission limit.
-fn check_replay_steps(
-    resource: &'static str,
-    steps: usize,
+/// Admit one borrowed substitution range against the shared relation meter.
+///
+/// The meter is shared by every range (and by the replay's own work), so the
+/// aggregate admission is bounded. The ceilings are the crate's hard relation
+/// ceilings, reported under the same resource names as
+/// [`measure_trace_term`].
+fn admit_range(range: &Term, meter: &mut RelationResources) -> Result<(), HolographicError> {
+    let shape = measure_borrowed(range, meter).map_err(admission_error)?;
+    meter
+        .record_term(shape.nodes, shape.depth)
+        .map_err(admission_error)
+}
+
+/// Surface a relation-limit rejection as an admission limit.
+///
+/// `value` is the first inadmissible value (`limit + 1`): the measured walk
+/// abandons at the ceiling rather than counting the whole over-limit term.
+fn admission_error(error: crate::error::RewriteError) -> HolographicError {
+    match error {
+        crate::error::RewriteError::RelationLimitExceeded { resource, limit } => {
+            HolographicError::LimitExceeded {
+                resource: match resource {
+                    "term nodes" => "trace term nodes",
+                    "term depth" => "trace term depth",
+                    other => other,
+                },
+                value: limit.saturating_add(1),
+                limit,
+            }
+        }
+        other => HolographicError::UnvalidatedProvenance(other),
+    }
+}
+
+/// Validate a replayed derivation against the embedded configuration's
+/// producer-derived step, state, transition, and operation ceilings, surfacing
+/// the violation as an admission limit.
+fn check_derivation_bounds(
+    derivation: &ReplayDerivation,
     config: &InverseSearchConfig,
 ) -> Result<(), HolographicError> {
-    crate::inverse::check_replay_steps(resource, steps, config).map_err(|ceiling| {
+    crate::inverse::check_derivation_bounds(derivation, config).map_err(|ceiling| {
         HolographicError::LimitExceeded {
             resource: ceiling.resource,
             value: ceiling.value,
@@ -633,10 +662,11 @@ fn check(resource: &'static str, value: usize, limit: usize) -> Result<(), Holog
 /// [`BindingAlgebra::similarity`] is a floating-point inner product, so an
 /// identical vector can score one ulp above `1.0` (`1.0000000000000002`) or one
 /// ulp below it (`0.9999999999999998`). The module documents the interval, so the
-/// interval is enforced here (F6, PR #384 round 1). Clamping is monotone, so
-/// strict comparisons are preserved and the ranked order never *inverts*; it can,
-/// however, collapse distinct values into a tie, which the trace-identity
-/// tiebreak then resolves. No bit-exact `1.0` is implied for identical operands.
+/// interval is enforced here (F6, PR #384 round 1). Clamping is nondecreasing,
+/// so clamping itself never reverses a pair of lanes. It is not strict-order
+/// preserving, however: a strict comparison can be clamped into a tie, which the
+/// trace-identity tiebreak then resolves. No bit-exact `1.0` is implied for
+/// identical operands (F22, PR #384 round 4).
 fn lane_similarity<const D: usize>(
     left: &amari_holographic::FHRRAlgebra<D>,
     right: &amari_holographic::FHRRAlgebra<D>,

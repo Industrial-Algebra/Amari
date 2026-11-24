@@ -163,10 +163,32 @@ impl ReplayCertificate {
         }
     }
 
-    /// Verify the certificate against a supplied system: every
-    /// binding hash must recompute exactly, the recorded resources
-    /// must fit the configuration ceilings, and the derivation must
-    /// replay through the system to the recorded query.
+    /// Verify the certificate against a supplied system: every binding hash must
+    /// recompute exactly, the recorded resources must fit the configuration
+    /// ceilings, every borrowed term must fit the relation ceilings, the
+    /// derivation must be one the embedded search could have produced, and the
+    /// derivation must replay through the system to the recorded query.
+    ///
+    /// ## Admission order (F19/F21, PR #384 round 4)
+    ///
+    /// The certificate is caller-supplied, so verification is ordered from the
+    /// cheapest authority to the most expensive work, and NOTHING proportional
+    /// to the certificate is hashed, cloned, or allocated before it is admitted:
+    ///
+    /// 1. the embedded configuration and guidance mode are validated (fixed
+    ///    ceilings, no term work);
+    /// 2. the cheap structural ceilings are decided on integers — each half's
+    ///    step count, the producer-derived retained-state and operation bounds
+    ///    (documented on the crate-internal step checker), and the recorded
+    ///    resource observation;
+    /// 3. every borrowed term the replay reads — both query endpoints, every
+    ///    recorded step term, both meeting terms, and every recorded unifier
+    ///    range — is admitted under ONE shared [`RelationResources`] meter, so
+    ///    the aggregate admission is bounded instead of one fresh walk per
+    ///    binding;
+    /// 4. only then are the binding hashes recomputed (`query_hash` encodes the
+    ///    whole query) and the replay run, which is also where the first clone
+    ///    of the source can happen.
     pub fn verify(&self, system: &TermSystem) -> RewriteResult<()> {
         let mismatch = |message: &str| RewriteError::ResidualMismatch {
             message: message.to_string(),
@@ -181,19 +203,10 @@ impl ReplayCertificate {
             .map_err(|error| RewriteError::ResidualMismatch {
                 message: alloc::format!("certificate configuration is invalid: {error}"),
             })?;
-        if system_hash(system) != self.system_hash {
-            return Err(mismatch("certificate system hash mismatch"));
-        }
-        if query_hash(&self.query) != self.query_hash {
-            return Err(mismatch("certificate query hash mismatch"));
-        }
-        if config_hash(&self.config) != self.config_hash {
-            return Err(mismatch("certificate config hash mismatch"));
-        }
-        if crate::inverse::guidance_hash(&self.guidance) != self.guidance_hash {
-            return Err(mismatch("certificate guidance hash mismatch"));
-        }
         self.guidance.validate(&self.config)?;
+        // Cheap integer ceilings first: a half longer than the embedded search
+        // could walk is rejected before any term is touched (F21).
+        check_derivation_bounds(&self.derivation, &self.config).map_err(ceiling_error)?;
         let observed = self.resources;
         let config = &self.config;
         for (resource, value, ceiling) in [
@@ -221,16 +234,74 @@ impl ReplayCertificate {
                 });
             }
         }
+        // Borrowed admission: one shared meter, no clones, no hashes yet.
+        let mut resources = RelationResources::new(&RelationLimits::default());
+        admit_certificate(&self.query, &self.derivation, &mut resources)?;
+        if system_hash(system) != self.system_hash {
+            return Err(mismatch("certificate system hash mismatch"));
+        }
+        if query_hash(&self.query) != self.query_hash {
+            return Err(mismatch("certificate query hash mismatch"));
+        }
+        if config_hash(&self.config) != self.config_hash {
+            return Err(mismatch("certificate config hash mismatch"));
+        }
+        if crate::inverse::guidance_hash(&self.guidance) != self.guidance_hash {
+            return Err(mismatch("certificate guidance hash mismatch"));
+        }
         match (&self.query, &self.derivation) {
             (ReplayQuery::Backward { target, goal }, ReplayDerivation::Backward(derivation)) => {
-                replay_backward(system, target, goal, derivation, &self.config)
+                replay_backward(system, target, goal, derivation)
             }
             (
                 ReplayQuery::Bidirectional { source, goal },
                 ReplayDerivation::Bidirectional(derivation),
-            ) => replay_bidirectional(system, source, goal, derivation, &self.config),
+            ) => replay_bidirectional(system, source, goal, derivation),
             _ => Err(mismatch("query kind does not match derivation kind")),
         }
+    }
+}
+
+/// Admit every borrowed term the replay reads, under one shared meter.
+///
+/// This is the exact set the replay touches — the query's endpoints, every
+/// recorded step term, both meeting terms, and every recorded unifier range —
+/// measured by reference before anything is hashed, cloned, or applied. The
+/// meter is shared, so `n` bindings cost one bounded aggregate walk instead of
+/// `n` independent unmetered ones (F21, PR #384 round 4).
+fn admit_certificate(
+    query: &ReplayQuery,
+    derivation: &ReplayDerivation,
+    resources: &mut RelationResources,
+) -> RewriteResult<()> {
+    match (query, derivation) {
+        (ReplayQuery::Backward { target, goal }, ReplayDerivation::Backward(derivation)) => {
+            let _ = admit(target, resources)?;
+            let _ = admit(goal, resources)?;
+            for step in &derivation.steps {
+                let _ = admit(&step.term, resources)?;
+            }
+            Ok(())
+        }
+        (
+            ReplayQuery::Bidirectional { source, goal },
+            ReplayDerivation::Bidirectional(derivation),
+        ) => {
+            let _ = admit(source, resources)?;
+            let _ = admit(goal, resources)?;
+            let _ = admit(&derivation.meeting_forward, resources)?;
+            let _ = admit(&derivation.meeting_backward, resources)?;
+            for step in &derivation.backward_steps {
+                let _ = admit(&step.term, resources)?;
+            }
+            for (_, range) in derivation.unifier.iter() {
+                let _ = admit(range, resources)?;
+            }
+            Ok(())
+        }
+        _ => Err(mismatch(
+            "query kind does not match derivation kind".to_string(),
+        )),
     }
 }
 
@@ -246,24 +317,105 @@ pub(crate) struct StepCeiling {
     pub(crate) limit: usize,
 }
 
-/// Validate one derivation half's step count against the embedded
-/// configuration's ceilings, before the half is replayed.
+/// Retained-state and operation lower bounds a producing search must have paid
+/// for one derivation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct ProducerBounds {
+    /// The fewest retained states any producer of this derivation can end with.
+    pub(crate) states: usize,
+    /// The fewest expansion operations any producer of this derivation can spend.
+    pub(crate) operations: usize,
+}
+
+/// Producer-derived retained-state and operation bounds, PER DERIVATION KIND.
 ///
-/// A recorded half is *replay* content, not encoded trace content: its length
-/// is bounded by the search that could have produced it. Every step walks one
-/// edge, so a half cannot be longer than the embedded `max_depth`, and it
-/// cannot consume fewer than one retained state (`steps + 1`) or one transition
-/// per step. This is deliberately NOT
-/// [`crate::holographic::MAX_TRACE_TERMS`]: that ceiling bounds the encoded
-/// terms a corpus stores, not the non-encoded forward steps a bidirectional
-/// derivation replays (F12, PR #384 round 3).
-pub(crate) fn check_replay_steps(
+/// A backward witness retains the target root plus every non-winning
+/// predecessor: the goal-matching leaf is checked against the goal BEFORE it is
+/// retained, so `n` steps retain `n` states, not `n + 1`. A zero-step witness is
+/// the root itself, which every validated configuration can afford
+/// (`max_states >= 1`).
+///
+/// A bidirectional witness retains BOTH roots before the search loop, and then
+/// exactly one meeting state: the side that did not find the meet retains its
+/// own chain (including the meeting node), while the side that found the meet
+/// returns before retaining the new child. `n_f + n_b` steps therefore retain
+/// `n_f + n_b + 1` states. Applying the backward formula to both kinds (the old
+/// blanket `steps + 1` per half, or the backwards `n` here) misstates one of
+/// them.
+///
+/// The operation bound is the same for both producers — expanding one node is
+/// one accounted operation, and a chain of `n` steps requires expanding the `n`
+/// nodes one edge before each step — but it is derived per kind so a future
+/// producer that meters differently does not silently inherit a wrong bound.
+pub(crate) fn backward_producer_bounds(steps: usize) -> ProducerBounds {
+    ProducerBounds {
+        states: steps.max(1),
+        operations: steps,
+    }
+}
+
+/// See [`backward_producer_bounds`] for the accounting; bidirectional halves
+/// share one frontier, so their bound is derived from the total step count.
+pub(crate) fn bidirectional_producer_bounds(forward: usize, backward: usize) -> ProducerBounds {
+    let total = forward.saturating_add(backward);
+    ProducerBounds {
+        states: total.saturating_add(1),
+        operations: total,
+    }
+}
+
+/// Validate a derivation against the embedded configuration's ceilings, before
+/// any half is replayed and before any borrowed term is admitted.
+///
+/// Four separate authorities are checked, in this order:
+///
+/// 1. **depth** — a half cannot be longer than the embedded `max_depth`, because
+///    every step walks one edge of a frontier the search expands depth-first;
+/// 2. **transitions** — one transition per step, shared across both halves of a
+///    bidirectional derivation (they share one frontier budget);
+/// 3. **retained states and operations** — the producer-derived lower bounds
+///    from [`backward_producer_bounds`] / [`bidirectional_producer_bounds`], NOT
+///    a blanket `steps + 1`.
+///
+/// This is deliberately NOT [`crate::holographic::MAX_TRACE_TERMS`]: that
+/// ceiling bounds the encoded terms a corpus stores, not the non-encoded forward
+/// steps a bidirectional derivation replays (F12, PR #384 round 3). It is also
+/// separate from the replay's own term-inspection meter: the embedded
+/// `max_operations` is search authority, and the walks verification performs are
+/// charged to a [`RelationResources`] budget (F20, PR #384 round 4).
+pub(crate) fn check_derivation_bounds(
+    derivation: &ReplayDerivation,
+    config: &InverseSearchConfig,
+) -> Result<(), StepCeiling> {
+    match derivation {
+        ReplayDerivation::Backward(derivation) => {
+            let steps = derivation.steps.len();
+            check_depth("replay backward steps", steps, config)?;
+            check_transitions("replay transitions", steps, config)?;
+            let bounds = backward_producer_bounds(steps);
+            check_states(bounds.states, config)?;
+            check_operations(bounds.operations, config)
+        }
+        ReplayDerivation::Bidirectional(derivation) => {
+            let forward = derivation.forward_steps.len();
+            let backward = derivation.backward_steps.len();
+            check_depth("replay forward steps", forward, config)?;
+            check_depth("replay backward steps", backward, config)?;
+            let total = forward.saturating_add(backward);
+            check_transitions("replay transitions", total, config)?;
+            let bounds = bidirectional_producer_bounds(forward, backward);
+            check_states(bounds.states, config)?;
+            check_operations(bounds.operations, config)
+        }
+    }
+}
+
+fn check_depth(
     resource: &'static str,
     steps: usize,
     config: &InverseSearchConfig,
 ) -> Result<(), StepCeiling> {
     let steps_wide = u64::try_from(steps).unwrap_or(u64::MAX);
-    let narrow = |value: u64| usize::try_from(value).unwrap_or(usize::MAX);
     if steps_wide > config.max_depth() {
         return Err(StepCeiling {
             resource,
@@ -271,21 +423,51 @@ pub(crate) fn check_replay_steps(
             limit: narrow(config.max_depth()),
         });
     }
-    if steps_wide.saturating_add(1) > config.max_states() {
-        return Err(StepCeiling {
-            resource: "replay states",
-            value: steps.saturating_add(1),
-            limit: narrow(config.max_states()),
-        });
-    }
+    Ok(())
+}
+
+fn check_transitions(
+    resource: &'static str,
+    steps: usize,
+    config: &InverseSearchConfig,
+) -> Result<(), StepCeiling> {
+    let steps_wide = u64::try_from(steps).unwrap_or(u64::MAX);
     if steps_wide > config.max_transitions() {
         return Err(StepCeiling {
-            resource: "replay transitions",
+            resource,
             value: steps,
             limit: narrow(config.max_transitions()),
         });
     }
     Ok(())
+}
+
+fn check_states(states: usize, config: &InverseSearchConfig) -> Result<(), StepCeiling> {
+    let states_wide = u64::try_from(states).unwrap_or(u64::MAX);
+    if states_wide > config.max_states() {
+        return Err(StepCeiling {
+            resource: "replay states",
+            value: states,
+            limit: narrow(config.max_states()),
+        });
+    }
+    Ok(())
+}
+
+fn check_operations(operations: usize, config: &InverseSearchConfig) -> Result<(), StepCeiling> {
+    let operations_wide = u64::try_from(operations).unwrap_or(u64::MAX);
+    if operations_wide > config.max_operations() {
+        return Err(StepCeiling {
+            resource: "replay operations",
+            value: operations,
+            limit: narrow(config.max_operations()),
+        });
+    }
+    Ok(())
+}
+
+fn narrow(value: u64) -> usize {
+    usize::try_from(value).unwrap_or(usize::MAX)
 }
 
 fn mismatch(message: alloc::string::String) -> RewriteError {
@@ -386,11 +568,11 @@ fn replay_backward(
     target: &Term,
     goal: &Term,
     derivation: &BackwardDerivation,
-    config: &InverseSearchConfig,
 ) -> RewriteResult<()> {
     let mut resources = RelationResources::new(&RelationLimits::default());
-    check_replay_steps("replay backward steps", derivation.steps.len(), config)
-        .map_err(ceiling_error)?;
+    // The embedded step/state/operation ceilings were already decided on
+    // integers by the caller (see the crate-internal step checker); this replay
+    // only meters the work it performs.
     // Admit every borrowed endpoint before it is cloned or unified.
     let _ = admit(target, &mut resources)?;
     let _ = admit(goal, &mut resources)?;
@@ -474,53 +656,32 @@ fn replay_backward(
 /// and the goal — because one substitution instantiates the entire recorded
 /// trace.
 ///
-/// Bounded-application order (F11/F12): each half's step count is checked
-/// against the embedded configuration first, borrowed endpoints and meeting
-/// terms are admitted before they are cloned, and every generated state is
-/// preflighted and charged before it is materialized.
+/// Meeting anchor (PR #384 round 4, F15): the recorded-to-replay correspondence
+/// is SEEDED from the checked meeting — the borrowed `meeting_backward` matched
+/// against the instantiated meeting the junction accepted — before any record or
+/// goal is matched. Records therefore EXTEND a correspondence that already
+/// carries the meeting's own bindings, instead of being free to re-interpret
+/// them; the reviewer's record `f(Y,X)` against a meeting `f(X,Y)` under
+/// `{X := a, Y := b}` is a typed mismatch, where an empty seed accepted `g(b)`.
+///
+/// Bounded-application order (F11/F12): the embedded step, state, transition, and
+/// operation ceilings are decided by the caller (see the crate-internal step
+/// checker); borrowed endpoints and meeting terms are admitted before they are
+/// cloned, including the source clone the forward half needs; and every generated
+/// state is preflighted and charged before it is materialized.
 fn replay_bidirectional(
     system: &TermSystem,
     source: &Term,
     goal: &Term,
     derivation: &BidirectionalDerivation,
-    config: &InverseSearchConfig,
 ) -> RewriteResult<()> {
     let mut resources = RelationResources::new(&RelationLimits::default());
-    check_replay_steps(
-        "replay forward steps",
-        derivation.forward_steps.len(),
-        config,
-    )
-    .map_err(ceiling_error)?;
-    check_replay_steps(
-        "replay backward steps",
-        derivation.backward_steps.len(),
-        config,
-    )
-    .map_err(ceiling_error)?;
-    // Each step retains at least one state and explores at least one
-    // transition, and the two halves share ONE configuration budget.
-    let total_steps = derivation
-        .forward_steps
-        .len()
-        .saturating_add(derivation.backward_steps.len());
-    let total_wide = u64::try_from(total_steps).unwrap_or(u64::MAX);
-    let narrow = |value: u64| usize::try_from(value).unwrap_or(usize::MAX);
-    if total_wide > config.max_transitions() {
-        return Err(RewriteError::RelationLimitExceeded {
-            resource: "replay transitions",
-            limit: narrow(config.max_transitions()),
-        });
-    }
-    if total_wide.saturating_add(1) > config.max_states() {
-        return Err(RewriteError::RelationLimitExceeded {
-            resource: "replay states",
-            limit: narrow(config.max_states()),
-        });
-    }
-    // Admit every borrowed endpoint and meeting term before any clone.
-    let mut current = source.clone();
+    // The embedded step/state/operation/transition ceilings were already decided
+    // on integers by the caller (see the crate-internal step checker).
+    // Admit every borrowed endpoint and meeting term BEFORE any clone, including
+    // the source clone the forward half needs.
     let mut current_shape = admit(source, &mut resources)?;
+    let mut current = source.clone();
     let _ = admit(goal, &mut resources)?;
     let _ = admit(&derivation.meeting_forward, &mut resources)?;
     let _ = admit(&derivation.meeting_backward, &mut resources)?;
@@ -563,7 +724,20 @@ fn replay_bidirectional(
     // Start the inverse half from the checked state, not from a raw record.
     let mut current = meeting_forward;
     let mut current_shape = admit(&current, &mut resources)?;
+    // F15 (PR #384 round 4): ANCHOR the one recorded-to-replay correspondence at
+    // the checked meeting, before any record or goal matching. The borrowed
+    // backward meeting is a claim about the very state the replay stands on, so
+    // matching it against the checked instantiated meeting fixes every recorded
+    // variable the junction already fixed. Without this seed the record below is
+    // free to bind them to another instance (the reviewer's record `f(Y,X)`
+    // re-binding `X := a` to `X := b`, accepting `g(b)` for a meeting that says
+    // `g(a)`).
     let mut correspondence = Substitution::new();
+    if !match_pattern_into(&mut correspondence, &derivation.meeting_backward, &current) {
+        return Err(mismatch(
+            "recorded backward meeting does not match the checked meeting term".to_string(),
+        ));
+    }
     for step in derivation.backward_steps.iter().rev() {
         // F1 (PR #384 round 1): the recorded backward term of each step IS the
         // state this replay must reach, so it is compared before the step is
