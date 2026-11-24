@@ -53,6 +53,22 @@
 //! [`RelationLimits`](crate::relation::RelationLimits) — nodes and depth — with
 //! an explicit worklist *before* the token derivation hashes anything. A
 //! rejected term is never copied, sorted, or hashed.
+//!
+//! ## Every public encoding path requires validated input
+//!
+//! Raw-term token derivation is private. Tokens are inspected only through a
+//! replay-validated [`RecallTrace`], so no public path mints an encoding from a
+//! term the recall boundary never validated:
+//!
+//! ```compile_fail
+//! use amari_rewrite::holographic::HolographicEncoder;
+//! use amari_rewrite::relation::RelationLimits;
+//! use amari_rewrite::trs::Term;
+//!
+//! let encoder = HolographicEncoder::<64>::new(0, RelationLimits::default()).unwrap();
+//! // Not a public path: a raw term cannot be encoded without validation.
+//! let _ = encoder.encode_token(&Term::constant("a"));
+//! ```
 
 use alloc::vec::Vec;
 
@@ -343,4 +359,43 @@ pub struct TraceEncoding<const D: usize> {
     pub digest: Sha256Digest,
     /// The trace's content identity.
     pub trace_hash: Sha256Digest,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// F2 (P2, `encode.rs:317`): the pending-node budget is charged *before*
+    /// children are pushed.
+    ///
+    /// A million-child term under a four-node budget must be rejected without
+    /// building a worklist proportional to its arity (16 MiB at a million
+    /// children). The observable contract is the rejection's reported value: it
+    /// is the whole charged pending set — the root plus its children — which
+    /// can only be known before the children are pushed.
+    #[test]
+    fn worklist_charges_the_node_budget_before_pushing_children() {
+        const ARITY: usize = 200_000;
+        let wide = Term::sym(
+            "f",
+            core::iter::repeat(Term::constant("a"))
+                .take(ARITY)
+                .collect::<Vec<_>>(),
+        );
+        let limits = RelationLimits::new(4, 64, 16, 1_024).expect("valid limits");
+        let encoder =
+            HolographicEncoder::<3>::new(0, limits).expect("a bounded dimension");
+        let error = encoder
+            .measure(&wide)
+            .expect_err("a 200,000-arity term exceeds a four-node budget");
+        assert_eq!(
+            error,
+            HolographicError::LimitExceeded {
+                resource: "trace term nodes",
+                value: ARITY + 1,
+                limit: 4,
+            },
+            "the charge covers the pending children before they are pushed"
+        );
+    }
 }
