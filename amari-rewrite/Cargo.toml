@@ -55,7 +55,7 @@ amari-rewrite-macros = { workspace = true, optional = true }
 # dep at all, so they remain dependency-free.
 katakuri = { git = "https://github.com/Industrial-Algebra/Katakuri.git", rev = "b24c31a11ce4863513262ed5f6bd7cdc28261071", default-features = false, features = ["std", "digest"], optional = true }
 borsalino-tensor = { git = "https://github.com/Industrial-Algebra/Borsalino.git", branch = "develop", optional = true }
-z3 = { version = "=0.20.2", default-features = false, features = ["vendored"], optional = true }
+z3 = { version = "=0.24.0", default-features = false, features = ["vendored"], optional = true }
 
 [features]
 default = ["std"]
