@@ -12,7 +12,9 @@
 //!   is built from states the caller already holds and from transitions the
 //!   engine already validated; it has no access to a term system and no method
 //!   that returns a term, a state, or a candidate, so it can reorder evidence
-//!   and never produce it;
+//!   and never produce it. Edge admission is enforced: [`TransitionWitness`]
+//!   can be minted only from engine round output, and an unwitnessed pair is a
+//!   typed [`NetworkError::UnwitnessedTransition`] rejection;
 //! - node identity is the canonical state digest,
 //!   [`crate::inverse::SymbolicState::canonical_digest`], and **never**
 //!   embedding equality. [`InverseStateEmbeddingV1`] is a heuristic,
@@ -38,7 +40,8 @@
 //! ## Bounds
 //!
 //! [`InverseGraphConfig`] bounds the graph's nodes and edges as well as every
-//! descriptor walk, and [`GeometricStrategyConfig`] bounds a ranking round's
+//! descriptor walk (term nodes, depth, constraints, identifier bytes, and
+//! operations), and [`GeometricStrategyConfig`] bounds a ranking round's
 //! candidate count. Every ceiling is validated at construction and admitted
 //! before allocation; callers may tighten one and never widen it.
 //!
@@ -57,11 +60,11 @@ mod strategy;
 
 pub use config::{
     GeometricStrategyConfig, InverseGraphConfig, NetworkError, MAX_EMBEDDING_DISTANCE,
-    MAX_GEOMETRIC_CANDIDATES, MAX_GRAPH_EDGES, MAX_GRAPH_NODES,
+    MAX_GEOMETRIC_CANDIDATES, MAX_GRAPH_EDGES, MAX_GRAPH_NODES, MAX_IDENTIFIER_BYTES,
 };
 pub use graph::{
     EmbeddingComponent, GraphNodeInput, InverseSearchGraph, InverseStateEmbeddingV1,
-    EMBEDDING_WIDTH,
+    TransitionWitness, EMBEDDING_WIDTH,
 };
 pub use strategy::{
     GeometricScore, GeometricScoreTable, GeometricStrategy, ScoreLane, SCORE_LANES,

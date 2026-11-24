@@ -15,9 +15,11 @@
 //! round is scored against.
 //!
 //! The graph it scores against is built by the caller from the engine's own
-//! rounds ([`InverseSearchGraph::observe_round`]) or from explicit valid
-//! `from -> to` links. Nothing in this module can add a node or an edge, so no
-//! score can be improved by inventing a state.
+//! rounds ([`InverseSearchGraph::observe_round`]) or from witnessed
+//! `from -> to` links (a [`crate::network::TransitionWitness`] minted from
+//! engine output).
+//! Nothing in this module can add a node or an edge, so no score can be
+//! improved by inventing a state.
 //!
 //! ## The score is transparent
 //!
@@ -327,23 +329,41 @@ impl GeometricStrategy {
     }
 
     /// This strategy's replay identity: the descriptor schema, the score table,
-    /// the graph's admitted state digests in node order, and every ceiling that
-    /// can change a ranking.
+    /// the graph's ranking-relevant snapshot — every admitted state's canonical
+    /// digest, stored descriptor identity, and recorded depth in node order,
+    /// plus every recorded transition — and every ceiling that can change a
+    /// ranking.
     ///
     /// Two different graph snapshots never share it, and a changed descriptor
-    /// schema, score table, node count, node set, or ceiling is a changed
-    /// strategy — because each one can change the ranking.
+    /// schema, score table, stored descriptor, node, edge, or ceiling is a
+    /// changed strategy. The descriptor identity is included because the stored
+    /// descriptor *is* the ranking's distance evidence: two graphs over the same
+    /// states with different stored insertion metadata rank differently (PR
+    /// #382 round 1 F1), so they must not replay as the same strategy.
     pub fn replay_hash(&self) -> Sha256Digest {
-        let mut payload = Vec::with_capacity(160 + self.graph.num_nodes() * 32);
+        let nodes = self.graph.num_nodes();
+        let edges = self.graph.num_edges();
+        let mut payload = Vec::with_capacity(192 + nodes * 72 + edges * 16);
         payload.extend_from_slice(&InverseStateEmbeddingV1::VERSION.to_le_bytes());
         payload.extend_from_slice(InverseStateEmbeddingV1::schema_digest().as_bytes());
         payload.extend_from_slice(&GeometricScoreTable::VERSION.to_le_bytes());
         payload.extend_from_slice(GeometricScoreTable::digest().as_bytes());
-        payload.extend_from_slice(&(self.graph.num_nodes() as u64).to_le_bytes());
-        for index in 0..self.graph.num_nodes() {
+        payload.extend_from_slice(&(nodes as u64).to_le_bytes());
+        for index in 0..nodes {
             if let Some(digest) = self.graph.node_digest(index) {
                 payload.extend_from_slice(digest.as_bytes());
             }
+            if let Some(embedding) = self.graph.node_embedding(index) {
+                payload.extend_from_slice(embedding.hash().as_bytes());
+            }
+            if let Some(depth) = self.graph.node_depth(index) {
+                payload.extend_from_slice(&depth.to_le_bytes());
+            }
+        }
+        payload.extend_from_slice(&(edges as u64).to_le_bytes());
+        for (from, to) in self.graph.edges() {
+            payload.extend_from_slice(&(from as u64).to_le_bytes());
+            payload.extend_from_slice(&(to as u64).to_le_bytes());
         }
         payload.extend_from_slice(&(self.config.max_candidates() as u64).to_le_bytes());
         let config = self.graph.config();
@@ -458,6 +478,12 @@ fn failure(error: &NetworkError, candidates: usize, scored: usize) -> GuidanceFa
         // rather than mapped onto a scoring cause that did not happen.
         NetworkError::UnknownNode { .. } => GuidanceFailureKind::Unavailable {
             stage: "graph node",
+        },
+        // Recording edges is not part of scoring a round either: a witness
+        // rejection cannot arise here, and is reported as an unavailable
+        // surface rather than as a scoring cause that did not happen.
+        NetworkError::UnwitnessedTransition => GuidanceFailureKind::Unavailable {
+            stage: "graph transition",
         },
     };
     GuidanceFailure::new(kind, candidates, scored)

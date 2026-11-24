@@ -23,10 +23,20 @@
 //! - **partial graph** — a graph built from a subset of the reachable states
 //!   ranks against what it knows, and an empty graph reports no nearest node;
 //! - **cycles** — cyclic and self-loop transitions, and a long back-edge, are
-//!   ordinary edges: no recursion, no growth, no duplicate edges;
+//!   ordinary edges when they are witnessed: no recursion, no growth, no
+//!   duplicate edges, and an unwitnessed self-loop is a typed rejection;
 //! - **limits** — graph size, edge count, descriptor computation, and the
 //!   strategy's candidate admission are all bounded before allocation, and a
-//!   caller may tighten a ceiling but never widen it;
+//!   caller may tighten a ceiling but never widen it. The descriptor's
+//!   identifier ceiling is checked on the borrowed name before anything is
+//!   collected (Task 40 doctrine), so a shared 16 MiB prefix cannot turn
+//!   sort/dedup into unbounded comparison work;
+//! - **witnessed edges** — `connect` records an edge only against a
+//!   [`TransitionWitness`] minted from engine round output, so an empty system
+//!   cannot record `a -> b` (PR #382 round 1 F2);
+//! - **replay identity** — the strategy hash covers the ranking-relevant graph
+//!   snapshot (stored descriptors included), so two graphs over the same states
+//!   that rank differently cannot share it (PR #382 round 1 F1);
 //! - **determinism and direction** — a round's ranking is a function of content
 //!   alone (permutation-invariant), it is a permutation of the engine's
 //!   candidates (never a generation and never a drop), and the pinned score
@@ -45,8 +55,8 @@ use amari_rewrite::inverse::{
 use amari_rewrite::network::{
     EmbeddingComponent, GeometricScore, GeometricScoreTable, GeometricStrategy,
     GeometricStrategyConfig, GraphNodeInput, InverseGraphConfig, InverseSearchGraph,
-    InverseStateEmbeddingV1, NetworkError, MAX_GEOMETRIC_CANDIDATES, MAX_GRAPH_EDGES,
-    MAX_GRAPH_NODES,
+    InverseStateEmbeddingV1, NetworkError, TransitionWitness, MAX_GEOMETRIC_CANDIDATES,
+    MAX_GRAPH_EDGES, MAX_GRAPH_NODES, MAX_IDENTIFIER_BYTES,
 };
 use amari_rewrite::relation::{ConstraintSet, RelationLimits, TermConstraint};
 use amari_rewrite::trs::{Rule, Term, TermSystem};
@@ -575,8 +585,8 @@ fn partial_graph_and_cycles_are_safe() {
         .map(|index| state(Term::constant(format!("c{index}"))))
         .collect();
 
-    // A path of 200 nodes: the graph never needs the missing remainder of the
-    // state space to answer.
+    // A partial graph — only these 200 states are known — answers against what
+    // it holds; the missing remainder of the state space is never needed.
     let indices: Vec<usize> = nodes
         .iter()
         .enumerate()
@@ -587,27 +597,56 @@ fn partial_graph_and_cycles_are_safe() {
         })
         .collect();
     assert_eq!(graph.num_nodes(), 200);
-    for link in 0..(nodes.len() - 1) {
-        let (source, target) = graph
-            .connect(
-                GraphNodeInput::new(&nodes[link], link as u64, 0),
-                GraphNodeInput::new(&nodes[link + 1], (link + 1) as u64, 0),
-            )
-            .expect("admitted");
-        assert_eq!(source, indices[link]);
-        assert_eq!(target, indices[link + 1]);
-    }
-    assert_eq!(graph.num_edges(), 199);
 
-    // Closing the path into a cycle, then a self-loop: both are ordinary
-    // edges. Re-connecting an existing pair adds nothing.
-    let first = GraphNodeInput::new(&nodes[0], 0, 0);
-    let last = GraphNodeInput::new(&nodes[199], 199, 0);
-    graph.connect(last, first).expect("admitted");
-    graph.connect(first, first).expect("admitted");
-    assert_eq!(graph.num_edges(), 201);
-    graph.connect(last, first).expect("already present");
-    assert_eq!(graph.num_edges(), 201, "duplicate edges are not re-added");
+    // A cyclic system's rounds witness a genuine three-cycle: `a -> c`,
+    // `b -> a`, `c -> b`. The final edge is a long back-edge closing the
+    // cycle, and every edge is a transition the engine actually produced.
+    let system = cycle_system();
+    let rounds: Vec<Round> = ["a", "b", "c"]
+        .iter()
+        .map(|target| Round::of(&system, &parse(target)))
+        .collect();
+    let mode = GuidanceMode::CompleteWithinLimits;
+    for round in &rounds {
+        let candidates = round.candidates();
+        let request = round.request(&candidates, &mode);
+        graph.observe_round(&request).expect("admitted");
+    }
+    assert_eq!(graph.num_nodes(), 203, "the cycle's three states joined");
+    assert_eq!(graph.num_edges(), 3, "one witnessed edge per round");
+    let a = graph
+        .index_of(&state(parse("a")).canonical_digest())
+        .expect("a is a node");
+    let b = graph
+        .index_of(&state(parse("b")).canonical_digest())
+        .expect("b is a node");
+    let c = graph
+        .index_of(&state(parse("c")).canonical_digest())
+        .expect("c is a node");
+    assert!(graph.has_edge(a, c));
+    assert!(graph.has_edge(c, b));
+    assert!(graph.has_edge(b, a), "the back-edge closes the cycle");
+
+    // Re-observing a round adds no duplicate edge, and an unwitnessed
+    // self-loop is a typed rejection rather than an ordinary edge.
+    let candidates = rounds[0].candidates();
+    let request = rounds[0].request(&candidates, &mode);
+    graph.observe_round(&request).expect("already observed");
+    assert_eq!(graph.num_edges(), 3, "duplicate edges are not re-added");
+    let witness = TransitionWitness::of_candidate(&rounds[0].parent, &candidates[0]);
+    assert!(matches!(
+        graph.connect(
+            witness,
+            GraphNodeInput::new(&rounds[0].parent, 0, 0),
+            GraphNodeInput::new(&rounds[0].parent, 0, 0),
+        ),
+        Err(NetworkError::UnwitnessedTransition)
+    ));
+    assert_eq!(
+        graph.num_edges(),
+        3,
+        "the unwitnessed self-loop added nothing"
+    );
 
     // The cycle is walked as a lookup, not a recursion: re-inserting a node
     // and re-reading its index are constant-time and never grow the graph.
@@ -623,8 +662,8 @@ fn partial_graph_and_cycles_are_safe() {
             Some(indices[199])
         );
     }
-    assert_eq!(graph.num_nodes(), 200);
-    assert_eq!(graph.num_edges(), 201);
+    assert_eq!(graph.num_nodes(), 203);
+    assert_eq!(graph.num_edges(), 3);
     assert!(graph
         .distance_to_nearest(graph.node_embedding(0).expect("a node"))
         .is_some());
@@ -688,18 +727,32 @@ fn limits_are_enforced_before_allocation() {
     ));
     assert_eq!(graph.num_nodes(), 2, "the rejected node was never added");
 
-    // One edge is admitted; the second is rejected and not recorded.
-    graph
-        .connect(GraphNodeInput::new(&a, 0, 0), GraphNodeInput::new(&b, 0, 0))
+    // One witnessed edge is admitted; the second is rejected by the edge
+    // ceiling and not recorded.
+    let round = Round::of(&two_candidate_system(), &parse("x"));
+    let candidates = round.candidates();
+    let parent = GraphNodeInput::new(&round.parent, 0, 0);
+    let mut edges =
+        InverseSearchGraph::new(InverseGraphConfig::new(3, 1, limits()).expect("admitted"));
+    edges
+        .connect(
+            TransitionWitness::of_candidate(&round.parent, &candidates[0]),
+            parent,
+            GraphNodeInput::of_candidate(&candidates[0]),
+        )
         .expect("first edge");
     assert!(matches!(
-        graph.connect(GraphNodeInput::new(&b, 0, 0), GraphNodeInput::new(&a, 0, 0)),
+        edges.connect(
+            TransitionWitness::of_candidate(&round.parent, &candidates[1]),
+            parent,
+            GraphNodeInput::of_candidate(&candidates[1]),
+        ),
         Err(NetworkError::LimitExceeded {
             resource: "graph edges",
             ..
         })
     ));
-    assert_eq!(graph.num_edges(), 1);
+    assert_eq!(edges.num_edges(), 1);
 
     // The descriptor's computation is sized by the relation ceilings.
     assert!(matches!(
@@ -914,4 +967,211 @@ fn complete_mode_keeps_the_evidence_hash_with_a_geometric_strategy() {
     // identity: ordering changed nothing about authority.
     assert_eq!(plain.evidence_hash(), geometric.evidence_hash());
     assert_eq!(plain.authority(), geometric.authority());
+}
+
+/// **F1 reproduction (PR #382 round 1).** Two graphs admit exactly the same
+/// candidate states — identical canonical digests, identical node order — but
+/// store different insertion metadata (search depth 64 / `usize::MAX`
+/// existentials versus 1 / 0). The stored descriptors are ranking-relevant, so
+/// the two rankings really do differ; the replay identity must not alias them.
+#[test]
+fn replay_hash_covers_ranking_relevant_graph_state() {
+    let system = two_candidate_system();
+    let round = Round::of(&system, &parse("x"));
+    let candidates = round.candidates();
+    let mode = GuidanceMode::CompleteWithinLimits;
+    let request = round.request(&candidates, &mode);
+
+    let build = |metadata: &[(u64, usize)]| {
+        let mut graph = InverseSearchGraph::new(InverseGraphConfig::default());
+        for (candidate, (depth, existentials)) in candidates.iter().zip(metadata) {
+            graph
+                .insert(GraphNodeInput::new(candidate.state, *depth, *existentials))
+                .expect("admitted");
+        }
+        graph
+    };
+
+    let fresh =
+        GeometricStrategy::new(build(&[(1, 0), (1, 0)]), GeometricStrategyConfig::default());
+    let saturated = GeometricStrategy::new(
+        build(&[(64, usize::MAX), (1, 0)]),
+        GeometricStrategyConfig::default(),
+    );
+
+    // Identical candidate sets: the alias is not a different node set.
+    let digests = |graph: &InverseSearchGraph| -> Vec<_> {
+        (0..graph.num_nodes())
+            .map(|index| graph.node_digest(index).expect("a node"))
+            .collect()
+    };
+    assert_eq!(
+        digests(fresh.graph()),
+        digests(saturated.graph()),
+        "the reproduction is two graphs over the same states"
+    );
+    assert_eq!(
+        fresh.graph().num_nodes(),
+        saturated.graph().num_nodes(),
+        "nor is it a different node count"
+    );
+
+    // The stored metadata is ranking-relevant: the same round ranks in the
+    // opposite order (the reviewer's [0, 1] versus [1, 0]).
+    assert_eq!(fresh.rank(&request).expect("ranked"), vec![0, 1]);
+    assert_eq!(saturated.rank(&request).expect("ranked"), vec![1, 0]);
+
+    // Therefore a replay identity that only covered the state digests aliased
+    // two different rankings. It must cover the ranking-relevant snapshot.
+    assert_ne!(
+        fresh.replay_hash(),
+        saturated.replay_hash(),
+        "rankings differ, so replay identities must differ"
+    );
+    // Determinism is untouched: identical inputs hash identically.
+    assert_eq!(
+        fresh.replay_hash(),
+        GeometricStrategy::new(build(&[(1, 0), (1, 0)]), GeometricStrategyConfig::default())
+            .replay_hash()
+    );
+}
+
+/// **F2 remediation (PR #382 round 1).** An edge is admitted only against an
+/// engine witness: the reproduction's empty system has no predecessor, so its
+/// `a -> b` link can never be recorded — and a witness minted for a different
+/// round is a typed rejection that admits nothing.
+#[test]
+fn unwitnessed_transitions_are_rejected() {
+    let empty = system(Vec::new());
+    let a = state(parse("a"));
+    let b = state(parse("b"));
+    assert!(
+        symbolic_predecessors(&empty, a.term(), &limits(), 0)
+            .expect("the empty round")
+            .is_empty(),
+        "an empty system has no predecessor, so no engine witness exists"
+    );
+
+    // A real round elsewhere mints a witness -- for `x -> b`, not for `a -> b`.
+    let system = two_candidate_system();
+    let round = Round::of(&system, &parse("x"));
+    let candidates = round.candidates();
+    let candidate = candidates
+        .iter()
+        .find(|candidate| candidate.state.canonical_digest() == b.canonical_digest())
+        .expect("the round derives b");
+    let witness = TransitionWitness::of_candidate(&round.parent, candidate);
+    assert_eq!(witness.from_digest(), round.parent.canonical_digest());
+    assert_eq!(witness.to_digest(), b.canonical_digest());
+    assert_eq!(
+        witness.provenance_digest(),
+        TransitionWitness::of_candidate(&round.parent, candidate).provenance_digest(),
+        "the witness is a deterministic copy of the engine's record"
+    );
+
+    // The reviewer's reproduction: `a -> b` has no engine witness, so the pair
+    // the witness does not name is rejected and the graph stays empty.
+    let mut graph = InverseSearchGraph::new(InverseGraphConfig::default());
+    let outcome = graph.connect(
+        witness,
+        GraphNodeInput::new(&a, 0, 0),
+        GraphNodeInput::new(&b, 0, 0),
+    );
+    assert!(
+        matches!(outcome, Err(NetworkError::UnwitnessedTransition)),
+        "an unwitnessed edge must be a typed rejection, got {outcome:?}"
+    );
+    assert_eq!(graph.num_nodes(), 0, "a rejected edge admits no endpoint");
+    assert_eq!(graph.num_edges(), 0, "no edge is recorded");
+
+    // The same holds for a self-loop: an unwitnessed `a -> a` is rejected.
+    assert!(matches!(
+        graph.connect(
+            witness,
+            GraphNodeInput::new(&a, 0, 0),
+            GraphNodeInput::new(&a, 0, 0)
+        ),
+        Err(NetworkError::UnwitnessedTransition)
+    ));
+    assert_eq!(graph.num_edges(), 0, "no self-loop is recorded either");
+
+    // The witnessed pair itself is admitted, and an existing edge is not
+    // re-added. Reversing the witness's endpoints is again a rejection.
+    let parent = GraphNodeInput::new(&round.parent, 0, 0);
+    let target = GraphNodeInput::of_candidate(candidate);
+    let (source, sink) = graph.connect(witness, parent, target).expect("witnessed");
+    assert_eq!(graph.num_edges(), 1);
+    assert!(graph.has_edge(source, sink));
+    assert_eq!(
+        graph.connect(witness, parent, target).expect("present"),
+        (source, sink)
+    );
+    assert_eq!(graph.num_edges(), 1, "duplicate edges are not re-added");
+    assert!(matches!(
+        graph.connect(witness, target, parent),
+        Err(NetworkError::UnwitnessedTransition)
+    ));
+    assert_eq!(graph.num_edges(), 1, "the reversed pair was never admitted");
+}
+
+/// **F3 reproduction (PR #382 round 1).** Two variable names sharing a 16 MiB
+/// prefix make the descriptor's sort/dedup scan unbounded bytes with no
+/// admission and no charge. The identifier ceiling (Task 40 doctrine) is
+/// applied to the borrowed name before anything is collected.
+#[test]
+fn oversized_identifiers_are_rejected_before_the_descriptor_sorts_them() {
+    const IDENTIFIER_CEILING: usize = MAX_IDENTIFIER_BYTES;
+    assert_eq!(MAX_IDENTIFIER_BYTES, 256, "Task 40's ceiling, unchanged");
+    let tight = RelationLimits::new(3, 2, 1, 3).expect("admitted");
+    let prefix = "x".repeat(16 * 1024 * 1024);
+    let term = Term::sym(
+        "f",
+        [
+            Term::var(format!("{prefix}a")),
+            Term::var(format!("{prefix}b")),
+        ],
+    );
+    let rejected = InverseStateEmbeddingV1::of_state(&state(term), 0, 0, &tight);
+    assert!(
+        matches!(
+            rejected,
+            Err(NetworkError::LimitExceeded {
+                resource: "identifier bytes",
+                value,
+                limit,
+            }) if limit == IDENTIFIER_CEILING && value > IDENTIFIER_CEILING
+        ),
+        "an unbounded identifier must be a typed rejection, got {rejected:?}"
+    );
+
+    // The ceiling is a boundary, not a heuristic: a name of exactly the
+    // ceiling is admitted, one byte more is rejected.
+    let admitted = Term::var("y".repeat(IDENTIFIER_CEILING));
+    let admitted_term = Term::sym("f", [admitted.clone(), Term::var("Z")]);
+    assert!(
+        InverseStateEmbeddingV1::of_state(&state(admitted_term), 0, 0, &tight).is_ok(),
+        "an identifier at the ceiling is admitted"
+    );
+    let over = Term::sym(
+        "f",
+        [
+            Term::var("y".repeat(IDENTIFIER_CEILING + 1)),
+            Term::var("Z"),
+        ],
+    );
+    assert!(matches!(
+        InverseStateEmbeddingV1::of_state(&state(over), 0, 0, &tight),
+        Err(NetworkError::LimitExceeded {
+            resource: "identifier bytes",
+            ..
+        })
+    ));
+    let symbol = Term::sym("s".repeat(IDENTIFIER_CEILING + 1), Vec::new());
+    assert!(matches!(
+        InverseStateEmbeddingV1::of_state(&state(symbol), 0, 0, &tight),
+        Err(NetworkError::LimitExceeded {
+            resource: "identifier bytes",
+            ..
+        })
+    ));
 }

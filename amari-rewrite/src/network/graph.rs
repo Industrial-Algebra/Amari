@@ -36,16 +36,26 @@
 //!
 //! [`InverseSearchGraph`] is a bounded witness structure. It is built from
 //! states the caller already holds and from transitions the symbolic engine
-//! already validated ([`GuidanceRequest`] rounds, or explicit `from -> to`
-//! links); it has no access to a term system and no method that returns a
-//! term, a state, or a candidate. Geometry here orders the engine's
-//! candidates — it can never add, validate, or invalidate one, and a graph
-//! edge is a record of a valid transition, not a proposal.
+//! already validated ([`GuidanceRequest`] rounds, or [`TransitionWitness`]
+//! tokens minted from them); it has no access to a term system and no method
+//! that returns a term, a state, or a candidate. Geometry here orders the
+//! engine's candidates — it can never add, validate, or invalidate one, and a
+//! graph edge is a record of a valid transition, not a proposal.
+//!
+//! Edge admission is **enforced**, not promised: [`InverseSearchGraph::connect`]
+//! takes a [`TransitionWitness`], and a witness names exactly the parent and
+//! candidate state digests plus the transition provenance of one engine-built
+//! round entry. A pair the witness does not name is a typed
+//! [`NetworkError::UnwitnessedTransition`], so no caller can record an edge the
+//! engine never produced. A recorded edge still creates no search candidate:
+//! it is evidence about a transition the engine already derived.
 //!
 //! ## Cycles, partial graphs, and depth
 //!
-//! A backward search re-encounters states, so cycles are ordinary: an edge
-//! may point backwards, and a self-loop is a legal edge. Every operation here
+//! A backward search re-encounters states, so cycles are ordinary: an edge may
+//! point backwards, and a self-loop is a legal edge when it is *witnessed* (the
+//! engine excludes syntactically equal predecessors, but an alpha-variant
+//! transition can still name the same canonical state). Every operation here
 //! is iterative — a path walk, a nearest-node scan, a descriptor walk — so a
 //! cycle changes nothing but the edge count, and a *partial* graph (only the
 //! states reached so far) answers against what it knows and reports "no
@@ -55,12 +65,13 @@
 //!
 //! [`InverseSearchGraph::new`] allocates at most the config's node and edge
 //! ceilings. A node insertion checks the node ceiling *before* the descriptor
-//! walk, the walk checks term nodes, term depth, constraints, and the
-//! operation budget *before* it pushes a frontier frame, and an edge checks
-//! the edge ceiling before it is recorded. A rejected insertion leaves the
-//! graph exactly as it was (except that node admission, which precedes edge
-//! admission in [`InverseSearchGraph::connect`], has already happened — an
-//! admitted node stays admitted).
+//! walk, the walk checks term nodes, term depth, constraints, identifier bytes,
+//! and the operation budget *before* it pushes a frontier frame or collects a
+//! name, and an edge checks its witness and the edge ceiling before it is
+//! recorded. A rejected insertion leaves the graph exactly as it was (except
+//! that node admission, which precedes edge admission in
+//! [`InverseSearchGraph::connect`], has already happened — an admitted node
+//! stays admitted).
 
 use alloc::collections::{BTreeMap, BTreeSet};
 use alloc::vec::Vec;
@@ -68,8 +79,8 @@ use alloc::vec::Vec;
 use amari_core::Multivector;
 use amari_network::GeometricNetwork;
 
-use crate::inverse::{GuidanceCandidate, GuidanceRequest, SymbolicState};
-use crate::network::config::{InverseGraphConfig, NetworkError};
+use crate::inverse::{GuidanceCandidate, GuidanceRequest, SymbolicPredecessor, SymbolicState};
+use crate::network::config::{InverseGraphConfig, NetworkError, MAX_IDENTIFIER_BYTES};
 use crate::relation::{RelationLimits, RelationResources, Sha256Digest};
 use crate::trs::Term;
 
@@ -344,11 +355,15 @@ fn shape(
         stats.depth = stats.depth.max(depth);
         match node {
             Term::Var(variable) => {
-                // The name is borrowed, never copied: no identifier ceiling is
-                // owed here (nothing is retained or hashed).
+                // Task 40's identifier-byte doctrine, applied before the name
+                // is collected: the sort below never sees a name longer than
+                // the ceiling, so a shared 16 MiB prefix cannot turn dedup into
+                // unbounded comparison work. The name is borrowed either way.
+                check_identifier(variable.as_str())?;
                 variables.push(variable.as_str());
             }
             Term::Sym(symbol, args) => {
+                check_identifier(symbol.as_str())?;
                 stats.symbol_nodes += 1;
                 pairs.push((symbol.as_str(), args.len()));
                 // The frontier is bounded before it is materialized.
@@ -379,6 +394,22 @@ fn shape(
     stats.distinct_vars = variables.len();
     stats.distinct_pairs = pairs.len();
     Ok(stats)
+}
+
+/// Reject an identifier longer than [`MAX_IDENTIFIER_BYTES`].
+///
+/// The length is measured on the borrowed `str`, before the descriptor
+/// collects, sorts, dedups, or hashes the name. Task 40's doctrine: a name that
+/// cannot be admitted cannot make the surface do work proportional to it.
+fn check_identifier(name: &str) -> Result<(), NetworkError> {
+    if name.len() > MAX_IDENTIFIER_BYTES {
+        return Err(NetworkError::LimitExceeded {
+            resource: "identifier bytes",
+            value: name.len(),
+            limit: MAX_IDENTIFIER_BYTES,
+        });
+    }
+    Ok(())
 }
 
 /// `part / whole`, with the empty-set case defined as zero.
@@ -464,6 +495,77 @@ struct GraphNode {
     depth: u64,
 }
 
+/// A proof that the symbolic engine validated one inverse transition.
+///
+/// The graph records an edge only against a witness. A witness names the
+/// transition it came from — the parent's canonical state digest, the
+/// candidate's canonical state digest, and the transition's provenance digest —
+/// and is minted only from the engine's own round output ([`GuidanceCandidate`],
+/// as built by [`crate::inverse::symbolic_predecessors`] and scored by the
+/// round). [`InverseSearchGraph::connect`] then refuses any endpoint pair the
+/// witness does not name, so "valid inverse transitions only" is enforced by the
+/// API rather than promised in a comment.
+///
+/// The type holds digests alone: no term, no path, no diagnostic, so a witness
+/// is not a content channel and cannot become one. Minting one never derives a
+/// transition — it copies the engine's own record.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TransitionWitness {
+    from: Sha256Digest,
+    to: Sha256Digest,
+    provenance: Sha256Digest,
+}
+
+impl TransitionWitness {
+    /// Mint a witness from one engine-built candidate of the round expanding
+    /// `parent`.
+    ///
+    /// `parent` is the state being expanded and `candidate` is one entry of the
+    /// engine's [`GuidanceRequest::candidates`]. Both are engine products, so
+    /// this constructor records a transition and never invents one.
+    pub fn of_candidate(parent: &SymbolicState, candidate: &GuidanceCandidate<'_>) -> Self {
+        Self {
+            from: parent.canonical_digest(),
+            to: candidate.state.canonical_digest(),
+            provenance: provenance_digest(candidate.predecessor),
+        }
+    }
+
+    /// The witness's source state digest.
+    pub fn from_digest(&self) -> Sha256Digest {
+        self.from
+    }
+
+    /// The witness's target state digest.
+    pub fn to_digest(&self) -> Sha256Digest {
+        self.to
+    }
+
+    /// The witness's transition provenance digest.
+    pub fn provenance_digest(&self) -> Sha256Digest {
+        self.provenance
+    }
+}
+
+/// Digest of one transition's provenance: rule identity, replaced position,
+/// freshening scope, and the authority hashes, exactly as the engine recorded
+/// them.
+fn provenance_digest(predecessor: &SymbolicPredecessor) -> Sha256Digest {
+    let provenance = &predecessor.provenance;
+    let mut payload = Vec::with_capacity(160);
+    payload.extend_from_slice(provenance.rule_id.digest().as_bytes());
+    let position = provenance.position.as_slice();
+    let position_len = u32::try_from(position.len()).unwrap_or(u32::MAX);
+    payload.extend_from_slice(&position_len.to_le_bytes());
+    for index in position {
+        payload.extend_from_slice(&(*index as u64).to_le_bytes());
+    }
+    payload.extend_from_slice(&provenance.scope.to_le_bytes());
+    payload.extend_from_slice(provenance.target_hash.as_bytes());
+    payload.extend_from_slice(provenance.predecessor_hash.as_bytes());
+    Sha256Digest::framed("amari.network.inverse-transition/v1", &payload)
+}
+
 /// A bounded geometric inverse search graph: symbolic states as nodes, the
 /// engine's valid transitions as edges, keyed by canonical state digest.
 ///
@@ -545,6 +647,11 @@ impl InverseSearchGraph {
         self.edges.contains(&(from, to))
     }
 
+    /// Every recorded transition, in ascending `(from, to)` index order.
+    pub fn edges(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
+        self.edges.iter().copied()
+    }
+
     /// Admit one state, returning its index.
     ///
     /// A node already present (by canonical digest) is returned unchanged: a
@@ -586,22 +693,42 @@ impl InverseSearchGraph {
         Ok(index)
     }
 
-    /// Record the transition `from -> to`, admitting both endpoints first.
+    /// Record the witnessed transition `from -> to`, admitting both endpoints
+    /// first.
+    ///
+    /// `witness` must name exactly these two endpoints: it is minted from the
+    /// engine's own round output ([`TransitionWitness::of_candidate`]), so the
+    /// pair an edge records is a transition the symbolic engine already
+    /// validated. A pair the witness does not name is the typed
+    /// [`NetworkError::UnwitnessedTransition`] rejection and admits nothing —
+    /// the witness is checked before either endpoint.
     ///
     /// The edge weight is the geometric distance between the endpoints'
     /// descriptors — a heuristic edge measure, never an authority. A repeated
-    /// pair is not re-added, and a self-loop or back-edge is an ordinary edge.
+    /// pair is not re-added, and a witnessed self-loop or back-edge is an
+    /// ordinary edge. A recorded edge never creates a search candidate: it is a
+    /// record of a transition the engine produced, not a proposal.
     ///
     /// # Errors
     ///
-    /// [`NetworkError::LimitExceeded`] when either endpoint is not admitted or
-    /// the edge ceiling is reached. An endpoint admitted by this call stays
-    /// admitted even when the edge that introduced it is then rejected.
+    /// [`NetworkError::UnwitnessedTransition`] when the endpoints are not the
+    /// pair the witness names, [`NetworkError::LimitExceeded`] when either
+    /// endpoint is not admitted or the edge ceiling is reached. An endpoint
+    /// admitted by this call stays admitted even when the edge that introduced
+    /// it is then rejected.
     pub fn connect(
         &mut self,
+        witness: TransitionWitness,
         from: GraphNodeInput<'_>,
         to: GraphNodeInput<'_>,
     ) -> Result<(usize, usize), NetworkError> {
+        // The witness gates everything: an unwitnessed transition leaves the
+        // graph exactly as it was, not even admitting an endpoint.
+        if from.state.canonical_digest() != witness.from
+            || to.state.canonical_digest() != witness.to
+        {
+            return Err(NetworkError::UnwitnessedTransition);
+        }
         let source = self.insert(from)?;
         let target = self.insert(to)?;
         if self.edges.contains(&(source, target)) {
@@ -633,7 +760,9 @@ impl InverseSearchGraph {
     ///
     /// This is the only bulk entry point, and it consumes the engine's round:
     /// the graph learns `parent -> candidate` for transitions the symbolic
-    /// engine already validated, and nothing else.
+    /// engine already validated, and nothing else. Each edge is recorded
+    /// against the [`TransitionWitness`] minted from the round entry that
+    /// produced it.
     ///
     /// The parent is the state being expanded, so the request carries no
     /// existential count for it (existentials belong to the *step* that produced
@@ -647,7 +776,8 @@ impl InverseSearchGraph {
     pub fn observe_round(&mut self, request: &GuidanceRequest<'_>) -> Result<usize, NetworkError> {
         let parent = GraphNodeInput::new(request.parent, request.depth, 0);
         for candidate in request.candidates {
-            self.connect(parent, GraphNodeInput::of_candidate(candidate))?;
+            let witness = TransitionWitness::of_candidate(request.parent, candidate);
+            self.connect(witness, parent, GraphNodeInput::of_candidate(candidate))?;
         }
         self.insert(parent)
     }

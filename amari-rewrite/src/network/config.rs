@@ -38,6 +38,16 @@ pub const MAX_GEOMETRIC_CANDIDATES: usize = 256;
 /// ceiling, never a correctness claim.
 pub const MAX_EMBEDDING_DISTANCE: f64 = 8.0;
 
+/// Hard ceiling on the bytes of one term identifier the descriptor admits.
+///
+/// Task 40's identifier-byte doctrine applies unchanged: a variable or symbol
+/// name is measured on the borrowed `str` *before* the descriptor collects,
+/// sorts, dedups, or hashes it, so an arbitrarily long name cannot make the
+/// descriptor do unbounded comparison work. The value matches the neural
+/// surface's ceiling; the two are independent constants because the features
+/// are independent.
+pub const MAX_IDENTIFIER_BYTES: usize = 256;
+
 /// Typed rejection from the geometric network surface.
 ///
 /// Every variant is a static resource name, a count, or a ceiling: no path, no
@@ -71,6 +81,11 @@ pub enum NetworkError {
         /// The graph's node count.
         nodes: usize,
     },
+    /// A transition had no engine witness naming its endpoints.
+    ///
+    /// Carries no endpoint, digest, or term: a rejection is not an oracle.
+    #[error("network transition has no engine witness")]
+    UnwitnessedTransition,
 }
 
 /// Validated ceilings for one inverse search graph.
