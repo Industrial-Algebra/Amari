@@ -11,6 +11,25 @@ pub fn match_pattern(pattern: &Term, term: &Term) -> Option<Substitution> {
     match_into(pattern, term, &mut subst).then_some(subst)
 }
 
+/// Extend an EXISTING substitution so `pattern` matches `term`.
+///
+/// Unlike [`match_pattern`], which starts from an empty substitution and so
+/// answers independently of every other match, this accumulates ONE
+/// correspondence: a pattern variable already bound by `substitution` must
+/// match the term it is already bound to, and a conflict is a plain `false`.
+/// Successive calls therefore describe a single instantiation of a whole
+/// recorded sequence rather than one plausible instantiation per record.
+///
+/// The substitution is extended in place (there is no rollback), so callers
+/// treat `false` as terminal for the current sequence.
+pub(crate) fn match_pattern_into(
+    substitution: &mut Substitution,
+    pattern: &Term,
+    term: &Term,
+) -> bool {
+    match_into(pattern, term, substitution)
+}
+
 fn match_into(pattern: &Term, term: &Term, subst: &mut Substitution) -> bool {
     match (pattern, term) {
         (Term::Var(var), _) => match subst.get_var(var) {

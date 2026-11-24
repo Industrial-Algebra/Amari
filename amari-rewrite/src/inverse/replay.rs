@@ -17,7 +17,7 @@ use crate::inverse::{
     BackwardDerivation, BidirectionalDerivation, GuidanceMode, InverseSearchConfig,
 };
 use crate::relation::{RelationLimits, RelationResources, RuleId, Sha256Digest};
-use crate::trs::{match_pattern, Term, TermSystem};
+use crate::trs::{match_pattern, match_pattern_into, Substitution, Term, TermSystem};
 
 /// The query a derivation answers.
 #[derive(Clone, Debug, PartialEq)]
@@ -230,8 +230,21 @@ impl ReplayCertificate {
     }
 }
 
-/// Replay a backward derivation forward to its target and confirm
-/// the leaf unifies with the goal.
+/// Replay a backward derivation forward to its target and confirm the
+/// recorded trace under ONE assignment.
+///
+/// Acceptance invariant (PR #384 round 2, F7): the leaf/goal unifier is the
+/// certificate's single assignment. It is retained, and every comparison —
+/// each recorded step term against the state the replay reaches, and the
+/// reconstructed endpoint against the declared target — is made after applying
+/// that one assignment to both sides. So a certificate is admitted only when
+/// ONE instantiation of its variables makes the recorded trace denote the
+/// declared query: a discarded leaf/goal unifier would let the replay
+/// reconstruct an endpoint that merely alpha-matches the target (the reviewer's
+/// `h(R)` against `h(Q)` under `Q := a`, `R := b`), which is a different term
+/// instance and is now a typed mismatch. Variables the unifier does not fix
+/// stay free, so valid symbolic certificates are still admitted (comparison is
+/// alpha-invariant, as before).
 fn replay_backward(
     system: &TermSystem,
     target: &Term,
@@ -242,28 +255,41 @@ fn replay_backward(
         message: message.to_string(),
     };
     let canonical = |term: &Term| Sha256Digest::canonical_term("amari.relation.term/v1", term);
+    let limits = RelationLimits::default();
+    let mut resources = RelationResources::new(&limits);
     if derivation.steps.is_empty() {
         // Zero-step witness: target must unify with the goal.
-        let limits = RelationLimits::default();
-        let mut resources = RelationResources::new(&limits);
         return unify(target, goal, &mut resources)
             .map(|_| ())
             .map_err(|_| mismatch("zero-step witness does not unify"));
     }
     let leaf = &derivation.steps.last().expect("non-empty").term;
-    let limits = RelationLimits::default();
-    let mut resources = RelationResources::new(&limits);
-    if unify(leaf, goal, &mut resources).is_err() {
-        return Err(mismatch("derivation leaf does not unify with the goal"));
-    }
+    // F7 (PR #384 round 2): the leaf/goal unifier is retained, never discarded.
+    // It is the one assignment every reconstructed term is read under.
+    let assignment = unify(leaf, goal, &mut resources)
+        .map_err(|_| mismatch("derivation leaf does not unify with the goal"))?;
+    // Instantiation is metered against the same relation budget the unifier
+    // consumed, so a substitution cannot inflate a borrowed term past the
+    // crate's hard node/depth ceilings unobserved.
+    let instantiate = |term: &Term, resources: &mut RelationResources| {
+        let instantiated = assignment.apply(term);
+        resources.record_term(
+            super::term_nodes(&instantiated),
+            super::term_depth(&instantiated),
+        )?;
+        Ok::<Term, RewriteError>(instantiated)
+    };
     let mut current = leaf.clone();
     for step in derivation.steps.iter().rev() {
         // F1 (PR #384 round 1): the recorded term of each step IS the state
         // this replay must reach, so it is compared before the step is applied.
         // Without this, a certificate whose recorded intermediate terms were
         // replaced (no hash touched) would replay to the right endpoint and
-        // still be admitted as trace content.
-        if canonical(&current) != canonical(&step.term) {
+        // still be admitted as trace content. F7 (round 2): both sides of that
+        // comparison are read under the ONE leaf/goal assignment.
+        if canonical(&instantiate(&current, &mut resources)?)
+            != canonical(&instantiate(&step.term, &mut resources)?)
+        {
             return Err(mismatch(
                 "replayed state does not match the recorded step term",
             ));
@@ -285,7 +311,12 @@ fn replay_backward(
             )
             .map_err(|_| mismatch("replay failed to rebuild the term"))?;
     }
-    if canonical(&current) != canonical(target) {
+    // The reconstructed endpoint and the declared target are compared under
+    // the same single assignment, so the certificate commits to exactly one
+    // endpoint instance.
+    if canonical(&instantiate(&current, &mut resources)?)
+        != canonical(&instantiate(target, &mut resources)?)
+    {
         return Err(mismatch("replay does not reconstruct the target"));
     }
     Ok(())
@@ -294,6 +325,16 @@ fn replay_backward(
 /// Replay a bidirectional derivation: forward half from the source
 /// to the meeting term, then the instantiated backward half to the
 /// goal.
+///
+/// Acceptance invariant (PR #384 round 2, F8): the whole backward half and the
+/// goal/endpoint check are read through ONE recorded-term-to-replay
+/// correspondence. Each successive match must EXTEND the correspondence, so a
+/// recorded variable shared by two records (the reviewer's `[g(Z), f(Z)]`) must
+/// denote the same value everywhere; a conflicting binding is a typed mismatch.
+/// Genuine generalization is still accepted — `Z := a` for `f(Z)` and `g(Z)`
+/// and the goal — because one substitution instantiates the entire recorded
+/// trace. Independent per-record matches, and per-term digest comparisons, are
+/// exactly what this replaces.
 fn replay_bidirectional(
     system: &TermSystem,
     source: &Term,
@@ -324,16 +365,22 @@ fn replay_bidirectional(
         return Err(mismatch("forward half does not reach the meeting term"));
     }
     let mut current = derivation.unifier.apply(&derivation.meeting_backward);
+    // F8 (PR #384 round 2): ONE correspondence, extended by every record and
+    // carried into the goal check. Bindings are subterms of already-borrowed
+    // terms, so no new term shape is constructed here.
+    let mut correspondence = Substitution::new();
     for step in derivation.backward_steps.iter().rev() {
         // F1 (PR #384 round 1): the recorded backward term of each step IS the
         // state this replay must reach, so it is compared before the step is
         // applied. The recorded terms carry freshened logic variables while the
         // replay starts from the meeting substitution's instantiation, so the
         // acceptance shape is the same one the goal endpoint uses: the replayed
-        // state must be an INSTANCE of the recorded term. A constant or a term
-        // of another shape is still a hard rejection, so a fabricated
-        // intermediate term cannot be certified.
-        if match_pattern(&step.term, &current).is_none() {
+        // state must be an INSTANCE of the recorded term — under the one
+        // correspondence accumulated so far. A constant or a term of another
+        // shape is still a hard rejection, so a fabricated intermediate term
+        // cannot be certified, and a variable bound to two different instances
+        // by two records is a hard rejection too (F8).
+        if !match_pattern_into(&mut correspondence, &step.term, &current) {
             return Err(mismatch(
                 "replayed state does not match the recorded backward term",
             ));
@@ -359,9 +406,9 @@ fn replay_bidirectional(
     // instantiation of the meeting term, so a goal whose variables
     // were bound by the meet reconstructs to an INSTANCE of the
     // goal, not the raw goal. Acceptance is pattern matching with
-    // the goal as the pattern: the reconstructed endpoint must be
-    // an instance of the declared goal.
-    if match_pattern(goal, &current).is_none() {
+    // the goal as the pattern — extended into the SAME correspondence, so the
+    // goal's variables share the recorded trace's instantiation.
+    if !match_pattern_into(&mut correspondence, goal, &current) {
         return Err(mismatch(
             "replay does not reconstruct an instance of the goal",
         ));
