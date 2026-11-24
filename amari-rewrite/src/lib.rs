@@ -12,8 +12,23 @@
 //! (`completion`): a convergent completion may propose predecessor
 //! candidates, but every witness is replayed against the original system
 //! and negative authority never transfers from the completed system.
+//!
+//! The non-default `holographic-guidance` feature adds deterministic
+//! holographic trace recall (`holographic`): replay-validated inverse traces
+//! are encoded into holographic vectors and ranked against a query by
+//! similarity, returning advisory evidence with the decomposition exposed. A
+//! default build exposes no holographic surface at all.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+// Default builds expose no holographic surface: the module is behind
+// `holographic-guidance`, and this doctest is compiled only when the feature is
+// off, so it proves the module path does not resolve.
+#![cfg_attr(
+    not(feature = "holographic-guidance"),
+    doc = "```compile_fail
+use amari_rewrite::holographic;
+```"
+)]
 
 extern crate alloc;
 
@@ -41,6 +56,9 @@ pub use rewritable::{Path, Rewritable};
 
 #[cfg(feature = "neural")]
 pub mod neural;
+
+#[cfg(feature = "holographic-guidance")]
+pub mod holographic;
 
 #[cfg(feature = "smt")]
 pub mod smt;

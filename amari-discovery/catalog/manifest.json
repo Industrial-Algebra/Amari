@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 108 dependency edges",
-  "content_hash": "93a2d39fca4b477e27efca1fb0e140c419a4f15274ef19fe0e5feec974b9a04d",
+  "content_hash": "d7f2f02861ada32a294d8ec634af0e8010ee2f22aef246aa80b13f2ed0c6c915",
   "probe_descriptors": [
     {
       "id": "amari-probe:core:geometric-product:v1",
@@ -1088,7 +1088,7 @@
   ],
   "totals": {
     "crates": 28,
-    "items": 11608,
+    "items": 11650,
     "dependency_edges": 108
   }
 }

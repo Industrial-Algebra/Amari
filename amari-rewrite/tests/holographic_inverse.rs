@@ -65,8 +65,7 @@ mod guidance {
     const DIMENSION: usize = 64;
 
     /// Golden: framed digest of the `(seed, dimension, schema, limits)` config.
-    const ENCODER_DIGEST: &str =
-        "2278d319c0363cef701a5746d118d58f5973628d4d2054753930cfb075fc9dca";
+    const ENCODER_DIGEST: &str = "2278d319c0363cef701a5746d118d58f5973628d4d2054753930cfb075fc9dca";
 
     /// Golden: token vector digests for `a`, `b`, `p`, and the variable `X`.
     const TOKEN_A: &str = "64d2a07c0b64d531a5e423334b1c7264faf57acdd847ec548ecdc7427ca6916c";
@@ -126,7 +125,7 @@ mod guidance {
     /// tightened walk ceiling rejects it at admission.
     fn nested_system() -> TermSystem {
         TermSystem::new(vec![
-            Rule::new(nested(constant("a"), 4), constant("c")).unwrap(),
+            Rule::new(nested(constant("a"), 4), constant("c")).unwrap()
         ])
     }
 
@@ -241,12 +240,24 @@ mod guidance {
 
         // The dimension is part of the frozen derivation: a different `D` is a
         // different vector, not a prefix of this one.
-        let wide = HolographicEncoder::<128>::new(SEED, RelationLimits::default()).expect("bounded");
+        let wide =
+            HolographicEncoder::<128>::new(SEED, RelationLimits::default()).expect("bounded");
         assert_eq!(
             digest_hex(&wide.vector_digest(&wide.encode_token(&constant("a")).expect("bounded"))),
             TOKEN_A_D128
         );
         assert_eq!(digest_hex(&wide.digest()), ENCODER_DIGEST_D128);
+
+        // The other two trace vectors are pinned too, so every corpus entry the
+        // contract tests use has a frozen encoding.
+        assert_eq!(
+            digest_hex(&encoder.encode(&short_trace()).expect("bounded").digest),
+            VECTOR_SHORT
+        );
+        assert_eq!(
+            digest_hex(&encoder.encode(&other_trace()).expect("bounded").digest),
+            VECTOR_OTHER
+        );
         assert_eq!(digest_hex(&encoder.digest()).len(), 64);
         assert_eq!(SCORE_DIRECTION, "higher-is-better");
     }
@@ -267,7 +278,10 @@ mod guidance {
             VECTOR_FULL,
             "the frozen trace vector is pinned"
         );
-        assert_eq!(digest_hex(&encoder.vector_digest(&encoding.vector)), VECTOR_FULL);
+        assert_eq!(
+            digest_hex(&encoder.vector_digest(&encoding.vector)),
+            VECTOR_FULL
+        );
 
         // Rebuild the same vector lane by lane: token at position `i`,
         // permuted by `i`, superposed in order.
@@ -339,8 +353,8 @@ mod guidance {
                 &encoder.encode_token(term).expect("bounded"),
                 (position + 1) as i32,
             );
-            reordered = <FHRRAlgebra<DIMENSION> as BindingAlgebra>::superpose(&reordered, &step)
-                .unwrap();
+            reordered =
+                <FHRRAlgebra<DIMENSION> as BindingAlgebra>::superpose(&reordered, &step).unwrap();
         }
         assert_ne!(
             digest_hex(&encoder.vector_digest(&reordered)),
@@ -379,15 +393,13 @@ mod guidance {
         assert_eq!(digest_hex(&short_trace().trace_hash()), TRACE_SHORT);
         assert_eq!(digest_hex(&other_trace().trace_hash()), TRACE_OTHER);
         assert_eq!(
-            digest_hex(
-                &reseeded
-                    .encode(&trace)
-                    .expect("bounded")
-                    .digest
-            ),
+            digest_hex(&reseeded.encode(&trace).expect("bounded").digest),
             VECTOR_FULL_SEED2
         );
-        assert_eq!(trace.trace_hash(), reseeded.encode(&trace).unwrap().trace_hash);
+        assert_eq!(
+            trace.trace_hash(),
+            reseeded.encode(&trace).unwrap().trace_hash
+        );
 
         // Re-validating the same content yields the same identity; the query
         // identity binds to the certified query, and the system identity to
@@ -461,7 +473,10 @@ mod guidance {
             .collect();
         assert_eq!(backwards_order, order);
         for (left, right) in first.matches.iter().zip(backwards.matches.iter()) {
-            assert_eq!(left.score.combined.to_bits(), right.score.combined.to_bits());
+            assert_eq!(
+                left.score.combined.to_bits(),
+                right.score.combined.to_bits()
+            );
         }
 
         // The limit truncates the tail only, keeping the ranked prefix.
@@ -618,7 +633,9 @@ mod guidance {
         // A duplicate identity is malformed: the same trace content cannot be
         // admitted twice under one identity.
         let duplicate = full_trace();
-        let error = corpus.admit(&duplicate).expect_err("duplicates are rejected");
+        let error = corpus
+            .admit(&duplicate)
+            .expect_err("duplicates are rejected");
         assert_eq!(
             error,
             HolographicError::MalformedTrace {
@@ -631,7 +648,9 @@ mod guidance {
         // replay-validated inverse step, so admitting it is malformed.
         let empty = validated(&chain_system(), &constant("a"), &constant("a"));
         assert!(empty.steps().is_empty());
-        let error = corpus.admit(&empty).expect_err("zero-step traces are rejected");
+        let error = corpus
+            .admit(&empty)
+            .expect_err("zero-step traces are rejected");
         assert_eq!(
             error,
             HolographicError::MalformedTrace {
@@ -646,11 +665,9 @@ mod guidance {
     #[test]
     fn oversized_requests_are_typed_rejections() {
         // Dimension above the hard ceiling.
-        let error = HolographicEncoder::<{ MAX_TRACE_DIMENSION + 1 }>::new(
-            SEED,
-            RelationLimits::default(),
-        )
-        .expect_err("an oversized dimension is rejected");
+        let error =
+            HolographicEncoder::<{ MAX_TRACE_DIMENSION + 1 }>::new(SEED, RelationLimits::default())
+                .expect_err("an oversized dimension is rejected");
         assert_eq!(
             error,
             HolographicError::LimitExceeded {
@@ -661,12 +678,12 @@ mod guidance {
         );
 
         // Corpus size ceiling, tightened by the caller.
-        let mut corpus = TraceCorpus::<DIMENSION>::new(
+        let mut bounded = TraceCorpus::<DIMENSION>::new(
             encoder(),
             RecallConfig::new(1, MAX_TRACE_TERMS, 4).unwrap(),
         );
-        corpus.admit(&full_trace()).expect("first admission fits");
-        let error = corpus
+        bounded.admit(&full_trace()).expect("first admission fits");
+        let error = bounded
             .admit(&short_trace())
             .expect_err("the ceiling rejects the second");
         assert_eq!(
@@ -677,13 +694,11 @@ mod guidance {
                 limit: 1,
             }
         );
-        assert_eq!(corpus.len(), 1);
+        assert_eq!(bounded.len(), 1);
 
         // Trace length ceiling.
-        let mut tight = TraceCorpus::<DIMENSION>::new(
-            encoder(),
-            RecallConfig::new(8, 2, 4).unwrap(),
-        );
+        let mut tight =
+            TraceCorpus::<DIMENSION>::new(encoder(), RecallConfig::new(8, 2, 4).unwrap());
         let error = tight
             .admit(&full_trace())
             .expect_err("a three-term trace exceeds a two-term ceiling");
@@ -735,7 +750,9 @@ mod guidance {
 
         let corpus = corpus(&[&full_trace()]);
         assert_eq!(
-            corpus.recall(&full_trace(), 0).expect_err("zero results is invalid"),
+            corpus
+                .recall(&full_trace(), 0)
+                .expect_err("zero results is invalid"),
             HolographicError::LimitExceeded {
                 resource: "recall results",
                 value: 0,
@@ -799,10 +816,7 @@ mod guidance {
         assert_eq!(corpus.encoder_digest(), before);
 
         // The same trace fits a corpus with the default budget.
-        let mut roomy = TraceCorpus::<DIMENSION>::new(
-            encoder(),
-            RecallConfig::default(),
-        );
+        let mut roomy = TraceCorpus::<DIMENSION>::new(encoder(), RecallConfig::default());
         roomy.admit(&trace).expect("the default budget admits it");
         assert_eq!(roomy.len(), 1);
 
@@ -888,10 +902,7 @@ mod guidance {
 
         assert_eq!(left_outcome.considered, 1);
         assert_eq!(right_outcome.considered, 1);
-        assert_eq!(
-            digest_hex(&left_outcome.matches[0].trace_hash),
-            TRACE_FULL
-        );
+        assert_eq!(digest_hex(&left_outcome.matches[0].trace_hash), TRACE_FULL);
         assert_eq!(
             digest_hex(&right_outcome.matches[0].trace_hash),
             TRACE_OTHER
@@ -952,17 +963,29 @@ mod guidance {
 
 /// Default-feature builds expose no holographic surface.
 ///
-/// The compile-time half of this assertion lives at the crate root: a
-/// `compile_fail` doctest that names `amari_rewrite::holographic` is compiled
-/// only when `holographic-guidance` is off, so a default build proves the
-/// module path does not resolve. This test pins the other half — that this
-/// configuration really is the default one, with no holographic contract
-/// compiled at all.
+/// The compile-time proof lives at the crate root: a `compile_fail` doctest
+/// that names `amari_rewrite::holographic` is compiled only while
+/// `holographic-guidance` is off, so a default build demonstrates that the
+/// module path does not resolve. This module pins the other half — that the
+/// configuration under test really is a plain `std` default build with no
+/// research-guidance surface compiled at all (so the whole contract module
+/// above is absent, not merely skipped).
 #[cfg(not(feature = "holographic-guidance"))]
 mod default_isolation {
     #[test]
     fn default_builds_expose_no_holographic_surface() {
-        assert!(!cfg!(feature = "holographic-guidance"));
-        assert!(!cfg!(feature = "holographic_guidance"));
+        // Count the research surfaces this build compiled. `std` is the only
+        // member of the default feature set, so every other count must be
+        // zero and the std count must be one.
+        let research_surfaces = u8::from(cfg!(feature = "neural"))
+            + u8::from(cfg!(feature = "network"))
+            + u8::from(cfg!(feature = "completion"))
+            + u8::from(cfg!(feature = "smt"))
+            + u8::from(cfg!(feature = "serialize"))
+            + u8::from(!cfg!(feature = "std"));
+        assert_eq!(
+            research_surfaces, 0,
+            "a default build compiles no research surface"
+        );
     }
 }
