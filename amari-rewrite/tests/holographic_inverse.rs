@@ -40,8 +40,10 @@
 //!   never see each other's traces, and nothing is recalled that was not
 //!   admitted;
 //! - **default isolation** — a default-feature build exposes no holographic
-//!   surface at all (this file compiles under both configurations, and the
-//!   crate-root `compile_fail` doctest asserts the module path is absent).
+//!   surface at all (this file compiles under every feature combination, the
+//!   default-isolation module itself is compiled only in the exact default-like
+//!   build, and the crate-root `compile_fail` doctest asserts the module path is
+//!   absent from every non-`holographic-guidance` build).
 
 #[cfg(feature = "holographic-guidance")]
 mod guidance {
@@ -981,7 +983,27 @@ mod guidance {
 /// configuration under test really is a plain `std` default build with no
 /// research-guidance surface compiled at all (so the whole contract module
 /// above is absent, not merely skipped).
-#[cfg(not(feature = "holographic-guidance"))]
+///
+/// The claim is about *one* configuration, so the module is compiled only in
+/// that exact configuration: `std` on and `holographic-guidance`, `neural`,
+/// `network`, `completion`, `smt`, and `serialize` all off. A build that turns
+/// any research feature on is not a default build (its `holographic` surface
+/// question is not this module's obligation) and would fail the count below for
+/// the honest reason that it did compile a research surface. Gating here keeps
+/// the assertion truthful in every feature combination the file is built under,
+/// including `--all-features`, instead of asserting a default-build property
+/// from a non-default build. The crate-root `compile_fail` doctest is
+/// deliberately not gated this way: it must keep proving the absence of
+/// `amari_rewrite::holographic` in *every* non-`holographic-guidance` build.
+#[cfg(all(
+    feature = "std",
+    not(feature = "holographic-guidance"),
+    not(feature = "neural"),
+    not(feature = "network"),
+    not(feature = "completion"),
+    not(feature = "smt"),
+    not(feature = "serialize")
+))]
 mod default_isolation {
     #[test]
     fn default_builds_expose_no_holographic_surface() {
