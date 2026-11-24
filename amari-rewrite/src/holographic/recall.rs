@@ -33,10 +33,14 @@
 //! path_alignment  = sim(q.path,   t.path)
 //! ```
 //!
-//! where `sim` is the canonical [`BindingAlgebra::similarity`] (the normalized
-//! real inner product, in `[-1, 1]`; `1.0` identical, `0.0` orthogonal, and
-//! `0.0` for a zero-norm operand). Each lane is recomputable by any caller from
-//! the published vectors.
+//! where `sim` is the canonical [`BindingAlgebra::similarity`] — the normalized
+//! real inner product — **clamped to `[-1, 1]`**. The clamped value is the
+//! public formula: mathematically identical operands have similarity `1`, but
+//! the same value computed in floating point can land at
+//! `0.9999999999999998` (or overshoot to `1.0000000000000002`), so a lane is not
+//! documented as bit-exactly `1.0` for identical traces. `0.0` is orthogonal and
+//! `0.0` is also the result for a zero-norm operand. Each lane is recomputable
+//! by any caller from the published vectors and the same clamp.
 //!
 //! The three lanes are **independent evidence, not an additive score**: they
 //! are measured against different parts with different norms, so
@@ -75,13 +79,23 @@
 //! measures the shape of every borrowed term *before* the certificate is
 //! replayed and before any term is cloned (F3/F5, PR #384 round 1).
 //!
-//! ## Similarity interval
+//! ## Similarity interval and ties
 //!
 //! Every lane is documented to lie in `[-1, 1]`, and that interval is a stated
 //! invariant of this surface rather than an approximation: a lane is clamped to
 //! it (F6, PR #384 round 1), because the canonical inner product is a
 //! floating-point value that can overshoot by one unit in the last place (an
 //! identical trace at `D = 3` scores `1.0000000000000002`).
+//!
+//! The clamp is monotone, so it preserves *strict* comparisons: a lane strictly
+//! greater before clamping is still strictly greater after it. It does not make
+//! the map injective — two lanes that were distinct can be clamped into the same
+//! interval endpoint, and floating evaluation can already produce equal values
+//! for mathematically identical operands. When scores tie, the total order falls
+//! back to the trace identity (ascending content hash), which is what makes the
+//! returned order total and content-only. There is no claim that a clamped lane
+//! is bit-exactly `1.0` for every identical operand, nor that clamping can never
+//! introduce a tie.
 
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
@@ -92,7 +106,7 @@ use crate::holographic::encode::{
     measure_trace_term, HolographicEncoder, TraceEncoding, MAX_TRACE_TERMS,
 };
 use crate::holographic::HolographicError;
-use crate::inverse::{ReplayCertificate, ReplayDerivation, ReplayQuery};
+use crate::inverse::{InverseSearchConfig, ReplayCertificate, ReplayDerivation, ReplayQuery};
 use crate::relation::{RelationLimits, Sha256Digest};
 use crate::trs::{Term, TermSystem};
 
@@ -206,10 +220,41 @@ impl RecallTrace {
         // A bidirectional certificate's meeting terms are the last borrowed
         // terms the replay hashes (`meeting_forward`) and instantiates
         // (`meeting_backward`), so they are measured under the same ceilings
-        // before the replay reaches them.
+        // before the replay reaches them. The recorded meeting substitution's
+        // ranges are also borrowed terms the replay applies, so they are
+        // admitted here before use.
         if let ReplayDerivation::Bidirectional(derivation) = &certificate.derivation {
             measure_trace_term(&derivation.meeting_forward, limits)?;
             measure_trace_term(&derivation.meeting_backward, limits)?;
+            for (_, range) in derivation.unifier.iter() {
+                measure_trace_term(range, limits)?;
+            }
+        }
+        // Each derivation half is replayed, not encoded, so its step count is
+        // bounded by the *embedded search configuration* rather than by the
+        // encoded trace-term ceiling above (F12, PR #384 round 3). A half longer
+        // than the configuration's depth, states, or transitions could never
+        // have been produced by the certified search.
+        match &certificate.derivation {
+            ReplayDerivation::Backward(derivation) => {
+                check_replay_steps(
+                    "replay backward steps",
+                    derivation.steps.len(),
+                    &certificate.config,
+                )?;
+            }
+            ReplayDerivation::Bidirectional(derivation) => {
+                check_replay_steps(
+                    "replay forward steps",
+                    derivation.forward_steps.len(),
+                    &certificate.config,
+                )?;
+                check_replay_steps(
+                    "replay backward steps",
+                    derivation.backward_steps.len(),
+                    &certificate.config,
+                )?;
+            }
         }
 
         certificate
@@ -293,8 +338,14 @@ fn trace_identity(goal: &Term, steps: &[Term]) -> Sha256Digest {
 /// the documented `[-1, 1]` interval**: the canonical value is a floating-point
 /// inner product that can overshoot the interval by one unit in the last place,
 /// and the interval is a stated invariant of this surface rather than an
-/// approximation. **Higher is more similar**; `combined` is the ranked scalar
-/// and the other two are independent evidence, never summed into it.
+/// approximation. The clamped value is the public number: mathematically
+/// identical operands have similarity `1`, but the exposed lane may be
+/// `0.9999999999999998` (or clamp to `1.0` from above) and is never documented
+/// as bit-exactly `1.0`. Clamping is monotone, so strict comparisons survive it,
+/// but distinct values can be clamped into one, in which case the recall order
+/// falls back to the trace-identity tiebreak. **Higher is more similar**;
+/// `combined` is the ranked scalar and the other two are independent evidence,
+/// never summed into it.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TraceSimilarity {
     /// Similarity of the full trace vectors — the ranked scalar.
@@ -549,6 +600,22 @@ impl<const D: usize> TraceCorpus<D> {
     }
 }
 
+/// Validate one replayed derivation half against the embedded configuration's
+/// step ceilings, surfacing the violation as an admission limit.
+fn check_replay_steps(
+    resource: &'static str,
+    steps: usize,
+    config: &InverseSearchConfig,
+) -> Result<(), HolographicError> {
+    crate::inverse::check_replay_steps(resource, steps, config).map_err(|ceiling| {
+        HolographicError::LimitExceeded {
+            resource: ceiling.resource,
+            value: ceiling.value,
+            limit: ceiling.limit,
+        }
+    })
+}
+
 /// Reject a zero or above-ceiling value.
 fn check(resource: &'static str, value: usize, limit: usize) -> Result<(), HolographicError> {
     if value == 0 || value > limit {
@@ -563,10 +630,13 @@ fn check(resource: &'static str, value: usize, limit: usize) -> Result<(), Holog
 
 /// One similarity lane, clamped to the documented `[-1, 1]` interval.
 ///
-/// [`BindingAlgebra::similarity`] is a floating-point inner product, so an identical vector can score one ulp
-/// above `1.0` (`1.0000000000000002`). The module documents the interval, so the
-/// interval is enforced here (F6, PR #384 round 1); clamping never reorders
-/// matches, because the clamp is monotone.
+/// [`BindingAlgebra::similarity`] is a floating-point inner product, so an
+/// identical vector can score one ulp above `1.0` (`1.0000000000000002`) or one
+/// ulp below it (`0.9999999999999998`). The module documents the interval, so the
+/// interval is enforced here (F6, PR #384 round 1). Clamping is monotone, so
+/// strict comparisons are preserved and the ranked order never *inverts*; it can,
+/// however, collapse distinct values into a tie, which the trace-identity
+/// tiebreak then resolves. No bit-exact `1.0` is implied for identical operands.
 fn lane_similarity<const D: usize>(
     left: &amari_holographic::FHRRAlgebra<D>,
     right: &amari_holographic::FHRRAlgebra<D>,

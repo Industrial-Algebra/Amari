@@ -1003,6 +1003,7 @@ mod guidance {
     not(feature = "neural"),
     not(feature = "network"),
     not(feature = "completion"),
+    not(feature = "macros"),
     not(feature = "smt"),
     not(feature = "serialize")
 ))]

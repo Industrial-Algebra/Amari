@@ -10,6 +10,7 @@ use alloc::vec::Vec;
 
 mod backward;
 mod bidirectional;
+mod bounded;
 mod config;
 pub(crate) mod guidance;
 mod outcome;
@@ -35,6 +36,10 @@ pub use replay::{
     config_hash, query_hash, system_hash, ReplayCertificate, ReplayDerivation, ReplayQuery,
     ResourceObservation,
 };
+// The trace-recall admission boundary validates replayed derivation halves
+// against the embedded configuration before the certificate is replayed.
+#[cfg(feature = "holographic-guidance")]
+pub(crate) use replay::check_replay_steps;
 pub use state::{SearchResources, SymbolicState};
 
 use crate::analysis::unify;
