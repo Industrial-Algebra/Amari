@@ -972,6 +972,42 @@ mod guidance {
         assert_eq!(encoder.limits().max_term_nodes(), 64);
         assert!(encoder.limits().max_term_nodes() <= RelationLimits::MAX_TERM_NODES);
     }
+
+    /// F35 (P2): the public recall error preserves the measured offending
+    /// lower bound, not merely the first value above the ceiling.
+    #[test]
+    fn recall_reports_the_measured_oversized_term_value() {
+        let system = TermSystem::new(Vec::new());
+        let oversized = Term::sym("f", (0..5_000).map(|_| Term::constant("a")));
+        let certificate = ReplayCertificate::issue(
+            &system,
+            ReplayQuery::Backward {
+                target: Term::constant("a"),
+                goal: oversized,
+            },
+            ReplayDerivation::Backward(amari_rewrite::inverse::BackwardDerivation {
+                steps: Vec::new(),
+            }),
+            InverseSearchConfig::default(),
+            GuidanceMode::CompleteWithinLimits,
+            ResourceObservation {
+                states: 1,
+                transitions: 0,
+                retained_bytes: 64,
+                operations: 0,
+            },
+        );
+        let error = RecallTrace::validate(&system, &certificate)
+            .expect_err("the 5,001-node goal must be rejected at admission");
+        assert_eq!(
+            error,
+            HolographicError::LimitExceeded {
+                resource: "trace term nodes",
+                value: 5_001,
+                limit: RelationLimits::MAX_TERM_NODES,
+            }
+        );
+    }
 }
 
 /// Default-feature builds expose no holographic surface.

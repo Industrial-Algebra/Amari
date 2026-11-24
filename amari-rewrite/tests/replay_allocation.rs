@@ -751,3 +751,35 @@ fn validate_admits_a_valid_certificate_with_one_admission_walk() {
          allocations (a second admission walk would exceed this)"
     );
 }
+
+/// F32 (P2): a zero-step backward certificate admits its endpoints once on
+/// the complete verify path, not in preflight, replay, and unification again.
+#[test]
+fn verify_admits_zero_step_endpoints_once() {
+    let _exclusive = exclusive();
+    let system = TermSystem::new(Vec::new());
+    let endpoint = Term::constant("a");
+    let certificate = ReplayCertificate::issue(
+        &system,
+        ReplayQuery::Backward {
+            target: endpoint.clone(),
+            goal: endpoint,
+        },
+        ReplayDerivation::Backward(BackwardDerivation { steps: Vec::new() }),
+        InverseSearchConfig::default(),
+        GuidanceMode::CompleteWithinLimits,
+        ResourceObservation {
+            states: 1,
+            transitions: 0,
+            retained_bytes: 64,
+            operations: 0,
+        },
+    );
+    let (allocations, peak, outcome) = measure(|| certificate.verify(&system));
+    outcome.expect("the reflexive zero-step witness verifies");
+    assert!(
+        allocations <= 6,
+        "two borrowed admission walks plus the small unification worklist are \
+         the whole allowance: {allocations} allocations, peak {peak} bytes"
+    );
+}

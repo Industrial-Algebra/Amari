@@ -174,6 +174,26 @@ fn constraint_limits_are_enforced() {
     ));
 }
 
+#[test]
+fn normalization_propagates_unification_budget_exhaustion() {
+    let limits = RelationLimits::new(4_096, 64, 4_096, 4).unwrap();
+    let mut set = ConstraintSet::new();
+    set.insert(eq(Term::var("X"), Term::constant("a")));
+    let error = set
+        .normalize(&limits)
+        .expect_err("operation exhaustion is not a proof of unsatisfiability");
+    assert!(
+        matches!(
+            error,
+            amari_rewrite::RewriteError::RelationLimitExceeded {
+                resource: "operations",
+                limit: 4,
+            }
+        ),
+        "the typed unification budget error must propagate, got {error}"
+    );
+}
+
 #[cfg(feature = "serialize")]
 #[test]
 fn constraints_serde_roundtrip() {

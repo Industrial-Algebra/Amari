@@ -512,13 +512,18 @@ fn replay_rejects_a_derivation_cheaper_than_its_producer_minimum() {
         "the typed rejection is the producer operation ceiling, got {error}"
     );
     // Producer evidence: the real search produces exactly this two-forward-step
-    // meet. Its expansion meter is coupled to the same ceiling through the
-    // per-check relation budget, so the smallest configuration in which the
-    // search can run at all is the observable threshold; it is never below the
-    // two expansions admission demands. The measured threshold is 12: the two
-    // expansions themselves plus the per-check unification admission, one
-    // charged enqueue per equation, and each resolve walk, all drawn from the
-    // same `max_operations` pool (F16, PR #384 round 4; F24, PR #384 round 5).
+    // meet. Its decisive local predecessor meter is separate from the two
+    // frontier-expansion budgets: backward expansion from c runs unify(b,c)
+    // and unify(c,c) in one RelationResources instance, each costing six
+    // operations. At 11 the second unification exhausts that local meter and
+    // the producer returns Partial; at 12 it returns the two-edge witness.
+    let below = BidirectionalExplorer::new(&system, operations_config(11))
+        .search(&Term::constant("a"), &Term::constant("c"))
+        .expect("the tightened search itself must run");
+    assert!(
+        matches!(below, BidirectionalSearchOutcome::Partial(_)),
+        "11 operations must truncate the local predecessor unification: {below:?}"
+    );
     let outcome = BidirectionalExplorer::new(&system, operations_config(12))
         .search(&Term::constant("a"), &Term::constant("c"))
         .expect("search must run");

@@ -249,7 +249,8 @@ fn mixed_report_orders_pairs_and_flags_non_confluence() {
 }
 
 /// Test 8: enumeration and search bill one shared pool. The exact
-/// boundary is 16 enumeration operations plus 2 search expansions.
+/// boundary is 4 preprocessing + 6 overlap attempts + 36 unification
+/// operations + 2 search expansions.
 #[test]
 fn metering_shares_one_pool_across_enumeration_and_search() {
     let system = diamond();
@@ -258,7 +259,7 @@ fn metering_shares_one_pool_across_enumeration_and_search() {
     let report = local_confluence(&system, &mut generous).expect("computed");
     assert_eq!(report.pairs.len(), 1);
     let total = generous.operations();
-    // 16 enumeration + 2 search expansions + 30 metered unification steps:
+    // 4 preprocessing + 6 overlap attempts + 36 unification + 2 expansions:
     // unification charges its borrowed admission of both inputs, one operation
     // per enqueued equation, and its resolve/occurs walk against the SAME pool
     // (F16, PR #384 round 4; F24, PR #384 round 5 — admission precedes cloning
@@ -266,7 +267,7 @@ fn metering_shares_one_pool_across_enumeration_and_search() {
     // total is the whole shared charge.
     assert_eq!(
         total, 48,
-        "16 enumeration + 2 search expansions + 30 metered unification steps"
+        "4 preprocessing + 6 overlap attempts + 36 unification + 2 expansions"
     );
 
     let exact_limits = RelationLimits::new(4096, 64, 4096, total).expect("valid");

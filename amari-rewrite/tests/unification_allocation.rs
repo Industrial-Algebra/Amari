@@ -175,6 +175,10 @@ fn a_wide_borrowed_input_is_rejected_before_any_clone() {
         "the wide input must not be cloned before admission: {allocations} allocations, \
          peak {peak} bytes"
     );
+    assert!(
+        peak < 16 * 1024,
+        "the last operation must not queue the full wide root: peak {peak} bytes"
+    );
     drop(input);
 }
 
@@ -241,5 +245,41 @@ fn a_term_at_the_depth_ceiling_still_unifies() {
     assert!(
         substitution.is_empty(),
         "an identical deep pair needs no binding"
+    );
+}
+
+/// F31 (P1): after both inputs are admitted, an exhausted enqueue budget
+/// rejects before any child equation is cloned.
+#[test]
+fn child_equations_are_not_cloned_before_their_enqueue_budget() {
+    let _exclusive = exclusive();
+    let left = wide(4_000);
+    let right = wide(4_000);
+    // Admission costs 8,002 operations; root enqueue/pop and two root
+    // resolves consume the remaining four. No child enqueue is affordable.
+    let limits =
+        RelationLimits::new(4_096, 64, 4_096, 8_006).expect("valid tightened limits");
+    let (allocations, peak, outcome) = measure(|| {
+        unify(
+            &left,
+            &right,
+            &mut RelationResources::new(&limits),
+        )
+    });
+    let error = outcome.expect_err("no child equation fits the remaining budget");
+    assert!(
+        matches!(
+            error,
+            RewriteError::RelationLimitExceeded {
+                resource: "operations",
+                ..
+            }
+        ),
+        "the child enqueue meter must answer, got {error}"
+    );
+    assert!(
+        allocations < 10_000,
+        "only the admitted root pair may be cloned before this rejection: \
+         {allocations} allocations, peak {peak} bytes"
     );
 }
