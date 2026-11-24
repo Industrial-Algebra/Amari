@@ -11504,14 +11504,14 @@
     {
       "path": "amari_rewrite::network::InverseSearchGraph::observe_round",
       "kind": "method",
-      "signature": "pub fn observe_round (& mut self , request : & GuidanceRequest < '_ >) -> Result < usize , NetworkError >",
+      "signature": "pub fn observe_round (& mut self , parent : GraphNodeInput < '_ > , steps : & [(TransitionWitness , GraphNodeInput < '_ >)] ,) -> Result < usize , NetworkError >",
       "source_path": "amari-rewrite/src/network/graph.rs",
       "is_reexport": true,
       "source_module": "amari_rewrite::network::graph",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn observe_round (& mut self , request : & GuidanceRequest < '_ >) -> Result < usize , NetworkError >",
+          "signature": "pub fn observe_round (& mut self , parent : GraphNodeInput < '_ > , steps : & [(TransitionWitness , GraphNodeInput < '_ >)] ,) -> Result < usize , NetworkError >",
           "source_path": "amari-rewrite/src/network/graph.rs",
           "source_module": "amari_rewrite::network::graph",
           "is_reexport": true,
@@ -12266,25 +12266,6 @@
       ]
     },
     {
-      "path": "amari_rewrite::network::TransitionWitness::of_candidate",
-      "kind": "method",
-      "signature": "pub fn of_candidate (parent : & SymbolicState , candidate : & GuidanceCandidate < '_ >) -> Self",
-      "source_path": "amari-rewrite/src/network/graph.rs",
-      "is_reexport": true,
-      "source_module": "amari_rewrite::network::graph",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn of_candidate (parent : & SymbolicState , candidate : & GuidanceCandidate < '_ >) -> Self",
-          "source_path": "amari-rewrite/src/network/graph.rs",
-          "source_module": "amari_rewrite::network::graph",
-          "is_reexport": true,
-          "declaration_module": "amari_rewrite::network::graph",
-          "declaration_ident": "TransitionWitness::of_candidate"
-        }
-      ]
-    },
-    {
       "path": "amari_rewrite::network::TransitionWitness::provenance_digest",
       "kind": "method",
       "signature": "pub fn provenance_digest (& self) -> Sha256Digest",
@@ -12319,6 +12300,25 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::network::graph",
           "declaration_ident": "TransitionWitness::to_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::network::TransitionWitness::validate",
+      "kind": "method",
+      "signature": "pub fn validate (system : & crate :: trs :: TermSystem , parent : & SymbolicState , candidate : & GuidanceCandidate < '_ > , limits : & crate :: relation :: RelationLimits ,) -> Result < Self , crate :: network :: NetworkError >",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::network::graph",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn validate (system : & crate :: trs :: TermSystem , parent : & SymbolicState , candidate : & GuidanceCandidate < '_ > , limits : & crate :: relation :: RelationLimits ,) -> Result < Self , crate :: network :: NetworkError >",
+          "source_path": "amari-rewrite/src/network/graph.rs",
+          "source_module": "amari_rewrite::network::graph",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::network::graph",
+          "declaration_ident": "TransitionWitness::validate"
         }
       ]
     },
@@ -44319,14 +44319,6 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_rewrite::network::TransitionWitness::of_candidate",
-      "source_path": "amari-rewrite/src/network/graph.rs",
-      "source_ordinal": 0,
-      "gate": "feature(\"network\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
       "path": "amari_rewrite::network::TransitionWitness::provenance_digest",
       "source_path": "amari-rewrite/src/network/graph.rs",
       "source_ordinal": 3,
@@ -44338,6 +44330,14 @@
       "path": "amari_rewrite::network::TransitionWitness::to_digest",
       "source_path": "amari-rewrite/src/network/graph.rs",
       "source_ordinal": 2,
+      "gate": "feature(\"network\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::network::TransitionWitness::validate",
+      "source_path": "amari-rewrite/src/network/graph.rs",
+      "source_ordinal": 0,
       "gate": "feature(\"network\")",
       "status": "disabled",
       "surface_kind": "inherent_method"

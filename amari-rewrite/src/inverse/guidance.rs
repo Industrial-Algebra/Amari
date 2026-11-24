@@ -398,3 +398,96 @@ pub fn score_candidate(
         rule_priority,
     }
 }
+
+/// Engine-controlled witness minting (PR #382 round 2, F4).
+///
+/// [`InverseSearchGraph`](crate::network::InverseSearchGraph) deliberately has
+/// no term system, so it cannot decide what the engine validated — and a
+/// graph-side constructor that trusted a caller-assembled [`GuidanceCandidate`]
+/// could not either, because every field of a guidance record is public. The
+/// validating boundary therefore lives here, on the engine-owning inverse side,
+/// and it is the only way to obtain a
+/// [`TransitionWitness`](crate::network::TransitionWitness).
+#[cfg(feature = "network")]
+impl crate::network::TransitionWitness {
+    /// Validate one engine transition and mint its witness.
+    ///
+    /// The engine is asked again: `parent`'s predecessor round is re-derived
+    /// with [`crate::inverse::symbolic_predecessors`] at the freshening scope
+    /// the candidate's own provenance records, and a witness is minted only
+    /// when the engine derives that exact transition — same rule provenance,
+    /// same freshened term, same existentials, same substitution — and the
+    /// candidate's canonical state is the state that predecessor yields.
+    ///
+    /// Consequences, enforced here rather than documented as a caller
+    /// obligation:
+    ///
+    /// - a genuine predecessor for one parent cannot mint a witness for an
+    ///   unrelated parent, because the engine derives nothing for it;
+    /// - a substituted candidate state cannot mint one, because the candidate
+    ///   state's digest is re-derived from the predecessor, never taken on
+    ///   trust;
+    /// - a caller-assembled [`GuidanceRequest`] cannot mint one, so
+    ///   [`observe_round`](crate::network::InverseSearchGraph::observe_round)
+    ///   cannot record an edge from a fabricated round.
+    ///
+    /// Validation is deterministic and side-effect free: the same
+    /// `(system, parent, candidate, limits)` either validates every time or
+    /// never does, and nothing is admitted anywhere on the way.
+    ///
+    /// `limits` bounds the re-derivation. Passing the limits the round itself
+    /// ran under reproduces it exactly; tighter limits can only fail closed.
+    ///
+    /// The checked step is the engine's own term-level backward step, which is
+    /// what `symbolic_predecessors` derives; the witness additionally binds the
+    /// parent's *full* canonical state digest as supplied, which is the identity
+    /// the graph keys nodes on.
+    ///
+    /// # Errors
+    ///
+    /// [`NetworkError::UnwitnessedTransition`](crate::network::NetworkError::UnwitnessedTransition)
+    /// when the engine does not derive the candidate's transition — including
+    /// when the re-derivation itself exceeds `limits`, since a transition the
+    /// engine cannot re-derive is not witnessed. The rejection carries no
+    /// endpoint, digest, or term.
+    #[cfg(feature = "network")]
+    pub fn validate(
+        system: &crate::trs::TermSystem,
+        parent: &SymbolicState,
+        candidate: &GuidanceCandidate<'_>,
+        limits: &crate::relation::RelationLimits,
+    ) -> Result<Self, crate::network::NetworkError> {
+        let predecessor = candidate.predecessor;
+        // The scope is bound to the record, not supplied by the caller: a
+        // witness cannot re-scope a transition the engine derived elsewhere.
+        let scope = predecessor.provenance.scope;
+        let derived = crate::inverse::symbolic_predecessors(system, parent.term(), limits, scope)
+            .map_err(|_| crate::network::NetworkError::UnwitnessedTransition)?;
+        let mut validated = None;
+        for entry in &derived {
+            // Transition content, never the resource snapshot: the same round
+            // need not be charged identically under different limits.
+            if entry.term != predecessor.term
+                || entry.existentials != predecessor.existentials
+                || entry.constraints != predecessor.constraints
+                || entry.substitution != predecessor.substitution
+                || entry.provenance != predecessor.provenance
+            {
+                continue;
+            }
+            // The candidate's state is re-derived, not trusted.
+            let state = SymbolicState::new(entry.term.clone(), entry.constraints.clone());
+            if state.canonical_digest() != candidate.state.canonical_digest() {
+                continue;
+            }
+            validated = Some(entry);
+            break;
+        }
+        let entry = validated.ok_or(crate::network::NetworkError::UnwitnessedTransition)?;
+        Ok(Self::mint(
+            parent.canonical_digest(),
+            candidate.state.canonical_digest(),
+            crate::network::provenance_digest(entry),
+        ))
+    }
+}

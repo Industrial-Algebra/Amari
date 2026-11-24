@@ -16,10 +16,10 @@
 //!
 //! The graph it scores against is built by the caller from the engine's own
 //! rounds ([`InverseSearchGraph::observe_round`]) or from witnessed
-//! `from -> to` links (a [`crate::network::TransitionWitness`] minted from
-//! engine output).
-//! Nothing in this module can add a node or an edge, so no score can be
-//! improved by inventing a state.
+//! `from -> to` links (a [`crate::network::TransitionWitness`] minted at the
+//! engine-side validating boundary,
+//! [`crate::network::TransitionWitness::validate`]). Nothing in this module can
+//! add a node or an edge, so no score can be improved by inventing a state.
 //!
 //! ## The score is transparent
 //!

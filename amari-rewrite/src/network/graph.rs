@@ -36,20 +36,34 @@
 //!
 //! [`InverseSearchGraph`] is a bounded witness structure. It is built from
 //! states the caller already holds and from transitions the symbolic engine
-//! already validated ([`GuidanceRequest`] rounds, or [`TransitionWitness`]
-//! tokens minted from them); it has no access to a term system and no method
-//! that returns a term, a state, or a candidate. Geometry here orders the
-//! engine's candidates — it can never add, validate, or invalidate one, and a
-//! graph edge is a record of a valid transition, not a proposal.
+//! already validated ([`GuidanceRequest`](crate::inverse::GuidanceRequest)
+//! rounds, or [`TransitionWitness`] tokens minted at the engine boundary); it
+//! has no access to a term system and no method that returns a term, a state, or
+//! a candidate. Geometry here orders the engine's candidates — it can never add,
+//! validate, or invalidate one, and a graph edge is a record of a valid
+//! transition, not a proposal.
 //!
 //! Edge admission is **enforced**, not promised: [`InverseSearchGraph::connect`]
 //! takes a [`TransitionWitness`], and a witness names exactly the parent and
-//! candidate state digests plus the transition provenance of one engine-built
-//! round entry. A pair the witness does not name is a typed
+//! candidate state digests plus the transition provenance of one
+//! engine-validated transition. A pair the witness does not name is a typed
 //! [`NetworkError::UnwitnessedTransition`], so no caller can record an edge the
 //! engine never produced. A recorded edge still creates no search candidate:
 //! it is evidence about a transition the engine already derived.
 //!
+//! ## Witnesses are minted at the engine, never here
+//!
+//! This module has no access to a term system, so it is not the witness
+//! authority either. [`TransitionWitness`] has private fields and no public
+//! constructor: the one minting path is [`TransitionWitness::validate`], which
+//! lives on the engine-owning inverse side, re-derives the parent's
+//! predecessor round from the [`crate::trs::TermSystem`], and mints only when
+//! the engine derives the supplied candidate's transition. A witness therefore
+//! asserts "the engine validated this parent to candidate transition", and that
+//! assertion is enforced by construction: an unrelated parent or a substituted
+//! candidate state cannot mint one, so it is not expressible on this surface.
+//! Both edge-creation paths ([`InverseSearchGraph::connect`] and
+//! [`InverseSearchGraph::observe_round`]) consume only the validated token.
 //! ## Cycles, partial graphs, and depth
 //!
 //! A backward search re-encounters states, so cycles are ordinary: an edge may
@@ -68,7 +82,12 @@
 //! walk, the walk checks term nodes, term depth, constraints, identifier bytes,
 //! and the operation budget *before* it pushes a frontier frame or collects a
 //! name, and an edge checks its witness and the edge ceiling before it is
-//! recorded. A rejected insertion leaves the graph exactly as it was (except
+//! recorded. The walk's only pre-inspection allocation is its traversal stack,
+//! which starts with the bounded root frame — a constant-size vector, never
+//! proportional to an identifier. **No identifier-sized allocation precedes a
+//! rejection**: a name's bytes are measured on the borrowed `str` before the
+//! name is pushed, so an over-long identifier is refused without having been
+//! copied, sorted, or hashed. A rejected insertion leaves the graph exactly as it was (except
 //! that node admission, which precedes edge admission in
 //! [`InverseSearchGraph::connect`], has already happened — an admitted node
 //! stays admitted).
@@ -79,7 +98,7 @@ use alloc::vec::Vec;
 use amari_core::Multivector;
 use amari_network::GeometricNetwork;
 
-use crate::inverse::{GuidanceCandidate, GuidanceRequest, SymbolicPredecessor, SymbolicState};
+use crate::inverse::{GuidanceCandidate, SymbolicPredecessor, SymbolicState};
 use crate::network::config::{InverseGraphConfig, NetworkError, MAX_IDENTIFIER_BYTES};
 use crate::relation::{RelationLimits, RelationResources, Sha256Digest};
 use crate::trs::Term;
@@ -500,15 +519,27 @@ struct GraphNode {
 /// The graph records an edge only against a witness. A witness names the
 /// transition it came from — the parent's canonical state digest, the
 /// candidate's canonical state digest, and the transition's provenance digest —
-/// and is minted only from the engine's own round output ([`GuidanceCandidate`],
-/// as built by [`crate::inverse::symbolic_predecessors`] and scored by the
-/// round). [`InverseSearchGraph::connect`] then refuses any endpoint pair the
-/// witness does not name, so "valid inverse transitions only" is enforced by the
-/// API rather than promised in a comment.
+/// and asserts exactly one thing: **the engine validated this parent to
+/// candidate transition**. That assertion is enforced by construction, not by
+/// convention:
+///
+/// - the fields are private and there is no public setter, so a minted witness
+///   cannot be re-bound to a different parent, state, or provenance;
+/// - there is no public constructor from a caller-assembled record. The one
+///   minting path is [`TransitionWitness::validate`], which lives on the
+///   engine-owning inverse side, re-runs the engine for the supplied parent,
+///   and mints only when the engine derives that candidate's transition. A
+///   genuine predecessor for `x` therefore cannot mint a witness for an
+///   unrelated parent `a`, and a substituted candidate state cannot be passed
+///   off as a predecessor — neither is expressible.
+///
+/// [`InverseSearchGraph::connect`] then refuses any endpoint pair the witness
+/// does not name, so "valid inverse transitions only" is enforced by the API
+/// rather than promised in a comment.
 ///
 /// The type holds digests alone: no term, no path, no diagnostic, so a witness
 /// is not a content channel and cannot become one. Minting one never derives a
-/// transition — it copies the engine's own record.
+/// transition — it copies an engine validation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TransitionWitness {
     from: Sha256Digest,
@@ -517,17 +548,17 @@ pub struct TransitionWitness {
 }
 
 impl TransitionWitness {
-    /// Mint a witness from one engine-built candidate of the round expanding
-    /// `parent`.
+    /// Mint the token for a transition the engine has already validated.
     ///
-    /// `parent` is the state being expanded and `candidate` is one entry of the
-    /// engine's [`GuidanceRequest::candidates`]. Both are engine products, so
-    /// this constructor records a transition and never invents one.
-    pub fn of_candidate(parent: &SymbolicState, candidate: &GuidanceCandidate<'_>) -> Self {
+    /// Crate-internal by design: the only caller is
+    /// [`TransitionWitness::validate`], the public engine-side constructor that
+    /// re-checks the transition. Keeping this private to the crate is what
+    /// makes "caller-assembled record, therefore witness" inexpressible.
+    pub(crate) fn mint(from: Sha256Digest, to: Sha256Digest, provenance: Sha256Digest) -> Self {
         Self {
-            from: parent.canonical_digest(),
-            to: candidate.state.canonical_digest(),
-            provenance: provenance_digest(candidate.predecessor),
+            from,
+            to,
+            provenance,
         }
     }
 
@@ -550,7 +581,10 @@ impl TransitionWitness {
 /// Digest of one transition's provenance: rule identity, replaced position,
 /// freshening scope, and the authority hashes, exactly as the engine recorded
 /// them.
-fn provenance_digest(predecessor: &SymbolicPredecessor) -> Sha256Digest {
+///
+/// Crate-internal so the engine-side minting boundary
+/// ([`TransitionWitness::validate`]) can bind the provenance it validated.
+pub(crate) fn provenance_digest(predecessor: &SymbolicPredecessor) -> Sha256Digest {
     let provenance = &predecessor.provenance;
     let mut payload = Vec::with_capacity(160);
     payload.extend_from_slice(provenance.rule_id.digest().as_bytes());
@@ -696,9 +730,9 @@ impl InverseSearchGraph {
     /// Record the witnessed transition `from -> to`, admitting both endpoints
     /// first.
     ///
-    /// `witness` must name exactly these two endpoints: it is minted from the
-    /// engine's own round output ([`TransitionWitness::of_candidate`]), so the
-    /// pair an edge records is a transition the symbolic engine already
+    /// `witness` must name exactly these two endpoints: it is minted by the
+    /// engine-side validating constructor ([`TransitionWitness::validate`]), so
+    /// the pair an edge records is a transition the symbolic engine already
     /// validated. A pair the witness does not name is the typed
     /// [`NetworkError::UnwitnessedTransition`] rejection and admits nothing —
     /// the witness is checked before either endpoint.
@@ -755,29 +789,34 @@ impl InverseSearchGraph {
         Ok((source, target))
     }
 
-    /// Record one expansion round: the parent state and one valid transition to
-    /// each of its engine-built candidates.
+    /// Record one expansion round: the parent state and one validated transition
+    /// to each of its engine-derived candidates.
     ///
-    /// This is the only bulk entry point, and it consumes the engine's round:
+    /// This is the only bulk entry point, and it consumes engine **witnesses**:
     /// the graph learns `parent -> candidate` for transitions the symbolic
-    /// engine already validated, and nothing else. Each edge is recorded
-    /// against the [`TransitionWitness`] minted from the round entry that
-    /// produced it.
+    /// engine already validated, and nothing else. Each `(witness, candidate)`
+    /// step is admitted through [`Self::connect`], so the witness names both
+    /// endpoints and an unmatched pair is a typed
+    /// [`NetworkError::UnwitnessedTransition`] — a caller-assembled
+    /// [`GuidanceRequest`](crate::inverse::GuidanceRequest) alone cannot record
+    /// an edge, because it cannot mint a witness.
     ///
-    /// The parent is the state being expanded, so the request carries no
-    /// existential count for it (existentials belong to the *step* that produced
-    /// a candidate). The parent node is therefore recorded with zero
-    /// existentials, which affects only its descriptor's existential ratio —
-    /// node identity is its canonical digest either way.
+    /// The parent is the state being expanded, so it carries no existential
+    /// count (existentials belong to the *step* that produced a candidate). The
+    /// parent node is therefore recorded with zero existentials, which affects
+    /// only its descriptor's existential ratio — node identity is its canonical
+    /// digest either way.
     ///
     /// # Errors
     ///
     /// As [`Self::connect`].
-    pub fn observe_round(&mut self, request: &GuidanceRequest<'_>) -> Result<usize, NetworkError> {
-        let parent = GraphNodeInput::new(request.parent, request.depth, 0);
-        for candidate in request.candidates {
-            let witness = TransitionWitness::of_candidate(request.parent, candidate);
-            self.connect(witness, parent, GraphNodeInput::of_candidate(candidate))?;
+    pub fn observe_round(
+        &mut self,
+        parent: GraphNodeInput<'_>,
+        steps: &[(TransitionWitness, GraphNodeInput<'_>)],
+    ) -> Result<usize, NetworkError> {
+        for &(witness, candidate) in steps {
+            self.connect(witness, parent, candidate)?;
         }
         self.insert(parent)
     }

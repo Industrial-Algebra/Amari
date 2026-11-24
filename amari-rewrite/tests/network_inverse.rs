@@ -32,8 +32,10 @@
 //!   collected (Task 40 doctrine), so a shared 16 MiB prefix cannot turn
 //!   sort/dedup into unbounded comparison work;
 //! - **witnessed edges** — `connect` records an edge only against a
-//!   [`TransitionWitness`] minted from engine round output, so an empty system
-//!   cannot record `a -> b` (PR #382 round 1 F2);
+//!   [`TransitionWitness`], and a witness can only be minted by the engine-side
+//!   validating constructor [`TransitionWitness::validate`], so an empty system
+//!   can record neither `a -> b` nor an invented `a -> a` (PR #382 rounds 1-2,
+//!   F2/F4);
 //! - **replay identity** — the strategy hash covers the ranking-relevant graph
 //!   snapshot (stored descriptors included), so two graphs over the same states
 //!   that rank differently cannot share it (PR #382 round 1 F1);
@@ -207,6 +209,31 @@ impl Round {
             mode,
             candidates,
         }
+    }
+
+    /// One `(witness, candidate node)` pair per candidate, each witness minted
+    /// by the engine-side validating boundary that re-derives this parent's
+    /// round. This is the only way a caller can reach the graph's edge paths.
+    fn witness_steps<'a>(
+        &'a self,
+        system: &TermSystem,
+        limits: &RelationLimits,
+    ) -> Vec<(TransitionWitness, GraphNodeInput<'a>)> {
+        self.states
+            .iter()
+            .zip(&self.predecessors)
+            .zip(&self.scores)
+            .map(|((state, predecessor), score)| {
+                let candidate = GuidanceCandidate {
+                    state,
+                    predecessor,
+                    score,
+                };
+                let witness = TransitionWitness::validate(system, &self.parent, &candidate, limits)
+                    .expect("the engine validates its own round");
+                (witness, GraphNodeInput::of_candidate(&candidate))
+            })
+            .collect()
     }
 }
 
@@ -606,11 +633,11 @@ fn partial_graph_and_cycles_are_safe() {
         .iter()
         .map(|target| Round::of(&system, &parse(target)))
         .collect();
-    let mode = GuidanceMode::CompleteWithinLimits;
     for round in &rounds {
-        let candidates = round.candidates();
-        let request = round.request(&candidates, &mode);
-        graph.observe_round(&request).expect("admitted");
+        let steps = round.witness_steps(&system, &limits());
+        graph
+            .observe_round(GraphNodeInput::new(&round.parent, 0, 0), &steps)
+            .expect("admitted");
     }
     assert_eq!(graph.num_nodes(), 203, "the cycle's three states joined");
     assert_eq!(graph.num_edges(), 3, "one witnessed edge per round");
@@ -630,10 +657,14 @@ fn partial_graph_and_cycles_are_safe() {
     // Re-observing a round adds no duplicate edge, and an unwitnessed
     // self-loop is a typed rejection rather than an ordinary edge.
     let candidates = rounds[0].candidates();
-    let request = rounds[0].request(&candidates, &mode);
-    graph.observe_round(&request).expect("already observed");
+    let steps = rounds[0].witness_steps(&system, &limits());
+    graph
+        .observe_round(GraphNodeInput::new(&rounds[0].parent, 0, 0), &steps)
+        .expect("already observed");
     assert_eq!(graph.num_edges(), 3, "duplicate edges are not re-added");
-    let witness = TransitionWitness::of_candidate(&rounds[0].parent, &candidates[0]);
+    let witness =
+        TransitionWitness::validate(&system, &rounds[0].parent, &candidates[0], &limits())
+            .expect("the engine validates its own round");
     assert!(matches!(
         graph.connect(
             witness,
@@ -729,21 +760,26 @@ fn limits_are_enforced_before_allocation() {
 
     // One witnessed edge is admitted; the second is rejected by the edge
     // ceiling and not recorded.
-    let round = Round::of(&two_candidate_system(), &parse("x"));
+    let system = two_candidate_system();
+    let round = Round::of(&system, &parse("x"));
     let candidates = round.candidates();
     let parent = GraphNodeInput::new(&round.parent, 0, 0);
     let mut edges =
         InverseSearchGraph::new(InverseGraphConfig::new(3, 1, limits()).expect("admitted"));
+    let witness = |index: usize| {
+        TransitionWitness::validate(&system, &round.parent, &candidates[index], &limits())
+            .expect("the engine validates its own round")
+    };
     edges
         .connect(
-            TransitionWitness::of_candidate(&round.parent, &candidates[0]),
+            witness(0),
             parent,
             GraphNodeInput::of_candidate(&candidates[0]),
         )
         .expect("first edge");
     assert!(matches!(
         edges.connect(
-            TransitionWitness::of_candidate(&round.parent, &candidates[1]),
+            witness(1),
             parent,
             GraphNodeInput::of_candidate(&candidates[1]),
         ),
@@ -767,7 +803,6 @@ fn limits_are_enforced_before_allocation() {
 
     // Candidate admission precedes every descriptor: an over-full round is
     // rejected with nothing scored.
-    let system = two_candidate_system();
     let round = Round::of(&system, &parse("x"));
     let candidates = round.candidates();
     let mode = GuidanceMode::CompleteWithinLimits;
@@ -941,9 +976,11 @@ fn complete_mode_keeps_the_evidence_hash_with_a_geometric_strategy() {
     let round = Round::of(&system, &target);
     let candidates = round.candidates();
     let mode = GuidanceMode::CompleteWithinLimits;
-    let request = round.request(&candidates, &mode);
     let mut graph = InverseSearchGraph::new(InverseGraphConfig::default());
-    let parent = graph.observe_round(&request).expect("admitted");
+    let steps = round.witness_steps(&system, &limits());
+    let parent = graph
+        .observe_round(GraphNodeInput::new(&round.parent, 0, 0), &steps)
+        .expect("admitted");
     assert_eq!(graph.num_nodes(), 2);
     assert_eq!(graph.num_edges(), candidates.len());
     assert_eq!(graph.node_depth(parent), Some(0));
@@ -1060,13 +1097,16 @@ fn unwitnessed_transitions_are_rejected() {
         .iter()
         .find(|candidate| candidate.state.canonical_digest() == b.canonical_digest())
         .expect("the round derives b");
-    let witness = TransitionWitness::of_candidate(&round.parent, candidate);
+    let witness = TransitionWitness::validate(&system, &round.parent, candidate, &limits())
+        .expect("the engine validates its own round");
     assert_eq!(witness.from_digest(), round.parent.canonical_digest());
     assert_eq!(witness.to_digest(), b.canonical_digest());
     assert_eq!(
         witness.provenance_digest(),
-        TransitionWitness::of_candidate(&round.parent, candidate).provenance_digest(),
-        "the witness is a deterministic copy of the engine's record"
+        TransitionWitness::validate(&system, &round.parent, candidate, &limits())
+            .expect("the engine validates its own round")
+            .provenance_digest(),
+        "the witness is a deterministic copy of the engine's validation"
     );
 
     // The reviewer's reproduction: `a -> b` has no engine witness, so the pair
@@ -1112,6 +1152,123 @@ fn unwitnessed_transitions_are_rejected() {
         Err(NetworkError::UnwitnessedTransition)
     ));
     assert_eq!(graph.num_edges(), 1, "the reversed pair was never admitted");
+}
+
+/// **F4 reproduction (PR #382 round 2).** Witness minting is the engine's, not
+/// the caller's. The reviewer's three cases — a genuine predecessor paired with
+/// an unrelated parent, a substituted candidate state posing as a self-loop, and
+/// a fabricated round pushed through the bulk path — are all typed rejections,
+/// and none of them admits a node or an edge.
+///
+/// The positive control matters as much as the negative ones: the same
+/// engine-side boundary accepts the round it just derived, so this test cannot
+/// be satisfied by a constructor that rejects everything.
+#[test]
+fn fabricated_transitions_cannot_mint_witnesses() {
+    let limits = limits();
+    let empty = system(Vec::new());
+    let a = state(parse("a"));
+    let b = state(parse("b"));
+    let x = state(parse("x"));
+    assert!(
+        symbolic_predecessors(&empty, a.term(), &limits, 0)
+            .expect("the empty round")
+            .is_empty(),
+        "an empty system derives no predecessor of `a`"
+    );
+
+    // A genuine engine round elsewhere: rule `b => x`.
+    let other = system(vec![Rule::new(parse("b"), parse("x")).unwrap()]);
+    let round = Round::of(&other, x.term());
+    let candidates = round.candidates();
+    let genuine = candidates
+        .iter()
+        .find(|candidate| candidate.state.canonical_digest() == b.canonical_digest())
+        .expect("the round derives b");
+    let genuine_witness = TransitionWitness::validate(&other, &round.parent, genuine, &limits)
+        .expect("the engine validates the round it derived");
+    assert_eq!(genuine_witness.from_digest(), x.canonical_digest());
+    assert_eq!(genuine_witness.to_digest(), b.canonical_digest());
+
+    // Case 1 — the reviewer's reproduction: a real `x -> b` record paired with
+    // an unrelated parent `a`. The engine derives no predecessor of `a` under
+    // the empty system, so no witness exists: the typed rejection, not an
+    // `Ok((0, 1))` edge.
+    let unrelated = TransitionWitness::validate(&empty, &a, genuine, &limits);
+    assert!(
+        matches!(unrelated, Err(NetworkError::UnwitnessedTransition)),
+        "an unrelated parent must be a typed rejection, got {unrelated:?}"
+    );
+
+    // Case 2 — the candidate state substituted for the parent (`a` posing as
+    // its own predecessor). The candidate state's digest is re-derived from the
+    // predecessor, so this cannot mint either: no `Ok((0, 0))` self-loop.
+    let substituted = GuidanceCandidate {
+        state: &a,
+        predecessor: genuine.predecessor,
+        score: genuine.score,
+    };
+    let forged = TransitionWitness::validate(&other, &a, &substituted, &limits);
+    assert!(
+        matches!(forged, Err(NetworkError::UnwitnessedTransition)),
+        "a substituted candidate state must be a typed rejection, got {forged:?}"
+    );
+    assert!(
+        TransitionWitness::validate(&other, &round.parent, &substituted, &limits).is_err(),
+        "nor may the parent's own round bridge the substitution"
+    );
+
+    // Case 3 — a fabricated round through the bulk path. `GuidanceRequest` is
+    // publicly constructible, but it is not a witness: every entry of it is a
+    // typed rejection at the minting boundary, so `observe_round` has no token
+    // to consume and records nothing.
+    let mode = GuidanceMode::CompleteWithinLimits;
+    let request = GuidanceRequest {
+        parent: &a,
+        depth: 0,
+        mode: &mode,
+        candidates: &[substituted],
+    };
+    assert_eq!(
+        request.candidates.len(),
+        1,
+        "the fabricated round has one entry"
+    );
+    for candidate in request.candidates {
+        let minted = TransitionWitness::validate(&other, request.parent, candidate, &limits);
+        assert!(
+            matches!(minted, Err(NetworkError::UnwitnessedTransition)),
+            "a fabricated round entry must be a typed rejection, got {minted:?}"
+        );
+    }
+    let mut graph = InverseSearchGraph::new(InverseGraphConfig::default());
+    let steps: Vec<(TransitionWitness, GraphNodeInput<'_>)> = Vec::new();
+    graph
+        .observe_round(GraphNodeInput::new(&a, 0, 0), &steps)
+        .expect("an empty round records nothing");
+    assert_eq!(
+        graph.num_nodes(),
+        1,
+        "only the observed parent was admitted"
+    );
+    assert_eq!(graph.num_edges(), 0, "a fabricated round records no edge");
+    assert!(
+        !graph.has_edge(0, 0),
+        "in particular, no invented self-loop"
+    );
+
+    // And the genuine round still reaches the graph unchanged: the boundary
+    // admits what the engine derived and nothing else.
+    let steps = round.witness_steps(&other, &limits);
+    let mut graph = InverseSearchGraph::new(InverseGraphConfig::default());
+    let parent = graph
+        .observe_round(GraphNodeInput::new(&round.parent, 0, 0), &steps)
+        .expect("the genuine round is admitted");
+    assert_eq!(graph.num_edges(), candidates.len());
+    assert_eq!(graph.node_digest(parent), Some(x.canonical_digest()));
+    let (source, sink) = graph.edges().next().expect("one recorded transition");
+    assert_eq!(graph.node_digest(source), Some(x.canonical_digest()));
+    assert_eq!(graph.node_digest(sink), Some(b.canonical_digest()));
 }
 
 /// **F3 reproduction (PR #382 round 1).** Two variable names sharing a 16 MiB

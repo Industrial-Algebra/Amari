@@ -13,7 +13,8 @@
 //!   engine already validated; it has no access to a term system and no method
 //!   that returns a term, a state, or a candidate, so it can reorder evidence
 //!   and never produce it. Edge admission is enforced: [`TransitionWitness`]
-//!   can be minted only from engine round output, and an unwitnessed pair is a
+//!   can be minted only by the engine-side validating constructor
+//!   ([`TransitionWitness::validate`]), and an unwitnessed pair is a
 //!   typed [`NetworkError::UnwitnessedTransition`] rejection;
 //! - node identity is the canonical state digest,
 //!   [`crate::inverse::SymbolicState::canonical_digest`], and **never**
@@ -66,6 +67,10 @@ pub use graph::{
     EmbeddingComponent, GraphNodeInput, InverseSearchGraph, InverseStateEmbeddingV1,
     TransitionWitness, EMBEDDING_WIDTH,
 };
+
+/// The provenance digest of one engine transition, minted by the engine-side
+/// witness boundary ([`TransitionWitness::validate`]).
+pub(crate) use graph::provenance_digest;
 pub use strategy::{
     GeometricScore, GeometricScoreTable, GeometricStrategy, ScoreLane, SCORE_LANES,
 };
