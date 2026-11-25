@@ -9829,6 +9829,44 @@
       ]
     },
     {
+      "path": "amari_wasm::fusion::WasmHolographicMemory::membership_evidence",
+      "kind": "method",
+      "signature": "pub fn membership_evidence (& self , key : & [f64]) -> Result < JsValue , JsValue >",
+      "source_path": "amari-wasm/src/fusion.rs",
+      "is_reexport": false,
+      "source_module": "amari_wasm::fusion",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn membership_evidence (& self , key : & [f64]) -> Result < JsValue , JsValue >",
+          "source_path": "amari-wasm/src/fusion.rs",
+          "source_module": "amari_wasm::fusion",
+          "is_reexport": false,
+          "declaration_module": "amari_wasm::fusion",
+          "declaration_ident": "WasmHolographicMemory::membership_evidence"
+        }
+      ]
+    },
+    {
+      "path": "amari_wasm::fusion::WasmHolographicMemory::nearest_key_similarity",
+      "kind": "method",
+      "signature": "pub fn nearest_key_similarity (& self , key : & [f64]) -> Result < Option < f64 > , JsValue >",
+      "source_path": "amari-wasm/src/fusion.rs",
+      "is_reexport": false,
+      "source_module": "amari_wasm::fusion",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn nearest_key_similarity (& self , key : & [f64]) -> Result < Option < f64 > , JsValue >",
+          "source_path": "amari-wasm/src/fusion.rs",
+          "source_module": "amari_wasm::fusion",
+          "is_reexport": false,
+          "declaration_module": "amari_wasm::fusion",
+          "declaration_ident": "WasmHolographicMemory::nearest_key_similarity"
+        }
+      ]
+    },
+    {
       "path": "amari_wasm::fusion::WasmHolographicMemory::new",
       "kind": "method",
       "signature": "pub fn new () -> Self",
@@ -9882,25 +9920,6 @@
           "is_reexport": false,
           "declaration_module": "amari_wasm::fusion",
           "declaration_ident": "WasmHolographicMemory::retrieve"
-        }
-      ]
-    },
-    {
-      "path": "amari_wasm::fusion::WasmHolographicMemory::retrieve_confidence",
-      "kind": "method",
-      "signature": "pub fn retrieve_confidence (& self , key : & [f64]) -> Result < f64 , JsValue >",
-      "source_path": "amari-wasm/src/fusion.rs",
-      "is_reexport": false,
-      "source_module": "amari_wasm::fusion",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn retrieve_confidence (& self , key : & [f64]) -> Result < f64 , JsValue >",
-          "source_path": "amari-wasm/src/fusion.rs",
-          "source_module": "amari_wasm::fusion",
-          "is_reexport": false,
-          "declaration_module": "amari_wasm::fusion",
-          "declaration_ident": "WasmHolographicMemory::retrieve_confidence"
         }
       ]
     },
@@ -9989,40 +10008,40 @@
       ]
     },
     {
-      "path": "amari_wasm::fusion::WasmResonator::cleanup",
+      "path": "amari_wasm::fusion::WasmResonator::cleanup_nearest",
       "kind": "method",
-      "signature": "pub fn cleanup (& self , input : & [f64]) -> Result < Vec < f64 > , JsValue >",
+      "signature": "pub fn cleanup_nearest (& self , input : & [f64]) -> Result < JsValue , JsValue >",
       "source_path": "amari-wasm/src/fusion.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::fusion",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn cleanup (& self , input : & [f64]) -> Result < Vec < f64 > , JsValue >",
+          "signature": "pub fn cleanup_nearest (& self , input : & [f64]) -> Result < JsValue , JsValue >",
           "source_path": "amari-wasm/src/fusion.rs",
           "source_module": "amari_wasm::fusion",
           "is_reexport": false,
           "declaration_module": "amari_wasm::fusion",
-          "declaration_ident": "WasmResonator::cleanup"
+          "declaration_ident": "WasmResonator::cleanup_nearest"
         }
       ]
     },
     {
-      "path": "amari_wasm::fusion::WasmResonator::cleanup_with_info",
+      "path": "amari_wasm::fusion::WasmResonator::cleanup_weighted",
       "kind": "method",
-      "signature": "pub fn cleanup_with_info (& self , input : & [f64]) -> Result < JsValue , JsValue >",
+      "signature": "pub fn cleanup_weighted (& self , input : & [f64] , max_iterations : usize , initial_beta : f64 , final_beta : f64 ,) -> Result < JsValue , JsValue >",
       "source_path": "amari-wasm/src/fusion.rs",
       "is_reexport": false,
       "source_module": "amari_wasm::fusion",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn cleanup_with_info (& self , input : & [f64]) -> Result < JsValue , JsValue >",
+          "signature": "pub fn cleanup_weighted (& self , input : & [f64] , max_iterations : usize , initial_beta : f64 , final_beta : f64 ,) -> Result < JsValue , JsValue >",
           "source_path": "amari-wasm/src/fusion.rs",
           "source_module": "amari_wasm::fusion",
           "is_reexport": false,
           "declaration_module": "amari_wasm::fusion",
-          "declaration_ident": "WasmResonator::cleanup_with_info"
+          "declaration_ident": "WasmResonator::cleanup_weighted"
         }
       ]
     },
@@ -24805,7 +24824,7 @@
       "trait_path": "Default",
       "impl_type_path": "amari_wasm::fusion::WasmHolographicMemory",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "trait_endpoint": {
         "kind": "external",
         "path": "Default"
@@ -28999,7 +29018,7 @@
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 17,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -29007,7 +29026,7 @@
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory::clear",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -29015,7 +29034,7 @@
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory::estimated_snr",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -29023,13 +29042,29 @@
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory::is_near_capacity",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 9,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
     },
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory::item_count",
+      "source_path": "amari-wasm/src/fusion.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_wasm::fusion::WasmHolographicMemory::membership_evidence",
+      "source_path": "amari-wasm/src/fusion.rs",
+      "source_ordinal": 4,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_wasm::fusion::WasmHolographicMemory::nearest_key_similarity",
       "source_path": "amari-wasm/src/fusion.rs",
       "source_ordinal": 5,
       "gate": "always",
@@ -29047,7 +29082,7 @@
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory::random_versor",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -29056,14 +29091,6 @@
       "path": "amari_wasm::fusion::WasmHolographicMemory::retrieve",
       "source_path": "amari-wasm/src/fusion.rs",
       "source_ordinal": 3,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_wasm::fusion::WasmHolographicMemory::retrieve_confidence",
-      "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -29079,7 +29106,7 @@
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory::theoretical_capacity",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 6,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -29095,13 +29122,13 @@
     {
       "path": "amari_wasm::fusion::WasmResonator",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 19,
+      "source_ordinal": 20,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
-      "path": "amari_wasm::fusion::WasmResonator::cleanup",
+      "path": "amari_wasm::fusion::WasmResonator::cleanup_nearest",
       "source_path": "amari-wasm/src/fusion.rs",
       "source_ordinal": 1,
       "gate": "always",
@@ -29109,7 +29136,7 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_wasm::fusion::WasmResonator::cleanup_with_info",
+      "path": "amari_wasm::fusion::WasmResonator::cleanup_weighted",
       "source_path": "amari-wasm/src/fusion.rs",
       "source_ordinal": 2,
       "gate": "always",
@@ -29415,7 +29442,7 @@
     {
       "path": "amari_wasm::fusion::init_holographic",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 21,
+      "source_ordinal": 22,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"

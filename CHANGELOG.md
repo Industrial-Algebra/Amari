@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Holographic additive memory (breaking behavior)
+
+Rebuild stored attention traces from the original ordered key/value pairs in a new namespace; no rescaling of the compressed trace recovers the additive contributions. Memory operations now report failures instead of fabricating zero or advancing the record count. Tracked membership is exact key evidence; nearest-key similarity is a separate optional readout, not confidence. The discovery recall probe moves to v2. Split resonator cleanup into nearest selection and weighted updates; accept reconstruction only against the observed coefficients. See the [H3 migration and verification notes](docs/plans/holo-h3-impl-notes.md).
+
 ### Holographic Clifford correction (breaking behavior)
 
 `Cl3`/`ProductCliffordAlgebra` binding, including WASM and GPU, now uses the Euclidean product. For example, `e13 * e2` changes from `+e123` to `−e123`. Raw coefficient slots do not move. Rebuild derived bindings, indexes and memory traces from their original inputs in a new cache namespace; old compressed traces alone cannot be converted. WASM rejects singular or nonfinite keys. See the [crate migration notes](amari-holographic/README.md#0250-clifford-migration).

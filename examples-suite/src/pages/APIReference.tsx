@@ -2589,9 +2589,14 @@ const bound = key.bind(value);`
             description: "Retrieve value by key"
           },
           {
-            name: "retrieveConfidence",
-            signature: "retrieveConfidence(key: Float64Array): number",
-            description: "Get retrieval confidence for a key"
+            name: "membershipEvidence",
+            signature: "membershipEvidence(key: Float64Array): {kind: string, indices?: number[]}",
+            description: "Exact tracked key evidence: present, absent, or unknown without tracking"
+          },
+          {
+            name: "nearestKeySimilarity",
+            signature: "nearestKeySimilarity(key: Float64Array): number | undefined",
+            description: "Closest tracked-key coefficient cosine; not a membership test"
           },
           {
             name: "clear",
@@ -2630,14 +2635,14 @@ const bound = key.bind(value);`
             description: "Create from flat codebook array"
           },
           {
-            name: "cleanup",
-            signature: "cleanup(input: Float64Array): Float64Array",
-            description: "Clean up noisy input to find closest codebook item"
+            name: "cleanupNearest",
+            signature: "cleanupNearest(input: Float64Array)",
+            description: "Closest codeword with a residual and explicit acceptance status"
           },
           {
-            name: "cleanupWithInfo",
-            signature: "cleanupWithInfo(input: Float64Array): any",
-            description: "Cleanup with metadata"
+            name: "cleanupWeighted",
+            signature: "cleanupWeighted(input: Float64Array, maxIterations: number, initialBeta: number, finalBeta: number)",
+            description: "Iterated soft mixture; stopping reason is separate from acceptance"
           },
           {
             name: "codebookSize",

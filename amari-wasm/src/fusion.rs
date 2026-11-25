@@ -823,6 +823,10 @@ use amari_holographic::{
 /// Type alias for 256-dimensional ProductClifford algebra
 type ProductCl3x32 = ProductCliffordAlgebra<32>;
 
+fn holographic_js_error(error: amari_holographic::memory::HolographicError) -> JsValue {
+    js_sys::Error::new(&error.to_string()).into()
+}
+
 // Values need not be units; only a key is used for division on retrieval.
 fn checked_holographic_key(coefficients: &[f64]) -> Result<ProductCl3x32, JsValue> {
     let key = ProductCl3x32::from_coefficients(coefficients)
@@ -863,8 +867,7 @@ impl WasmHolographicMemory {
         let k = checked_holographic_key(key)?;
         let v = ProductCl3x32::from_coefficients(value)
             .map_err(|e| JsValue::from_str(&format!("{}", e)))?;
-        self.inner.store(&k, &v);
-        Ok(())
+        self.inner.store(&k, &v).map_err(holographic_js_error)
     }
 
     /// Retrieve a value by key
@@ -872,16 +875,42 @@ impl WasmHolographicMemory {
     /// Returns the retrieved coefficients as a Float64Array.
     pub fn retrieve(&self, key: &[f64]) -> Result<Vec<f64>, JsValue> {
         let k = checked_holographic_key(key)?;
-        let result = self.inner.retrieve(&k);
-        Ok(result.value.to_coefficients())
+        let result = self.inner.retrieve(&k).map_err(holographic_js_error)?;
+        Ok(result.raw_value.to_coefficients())
     }
 
-    /// Get retrieval confidence for a key
-    #[wasm_bindgen(js_name = retrieveConfidence)]
-    pub fn retrieve_confidence(&self, key: &[f64]) -> Result<f64, JsValue> {
+    /// Exact key evidence, not a load-based confidence or a probability.
+    #[wasm_bindgen(js_name = membershipEvidence)]
+    pub fn membership_evidence(&self, key: &[f64]) -> Result<JsValue, JsValue> {
         let k = checked_holographic_key(key)?;
-        let result = self.inner.retrieve(&k);
-        Ok(result.confidence)
+        let evidence = self.inner.membership(&k).map_err(holographic_js_error)?;
+        let obj = Object::new();
+        use amari_holographic::memory::MembershipEvidence;
+        let kind = match evidence {
+            MembershipEvidence::Present { indices } => {
+                let list = js_sys::Array::new();
+                for index in indices {
+                    list.push(&JsValue::from(index as u32));
+                }
+                js_sys::Reflect::set(&obj, &"indices".into(), &list)?;
+                "present"
+            }
+            MembershipEvidence::Absent => "absent",
+            MembershipEvidence::Unknown => "unknown",
+        };
+        js_sys::Reflect::set(&obj, &"kind".into(), &kind.into())?;
+        Ok(obj.into())
+    }
+
+    /// Nearest tracked-key score; undefined when there is no comparison.
+    #[wasm_bindgen(js_name = nearestKeySimilarity)]
+    pub fn nearest_key_similarity(&self, key: &[f64]) -> Result<Option<f64>, JsValue> {
+        let k = checked_holographic_key(key)?;
+        Ok(self
+            .inner
+            .nearest_key(&k)
+            .map_err(holographic_js_error)?
+            .map(|n| n.similarity))
     }
 
     /// Get the number of stored items
@@ -964,54 +993,86 @@ impl WasmResonator {
             .map_err(|e| JsValue::from_str(&format!("{}", e)))
     }
 
-    /// Clean up a noisy input to find the closest codebook item
-    pub fn cleanup(&self, input: &[f64]) -> Result<Vec<f64>, JsValue> {
-        if input.len() != 256 {
-            return Err(JsValue::from_str(
-                "Input must have 256 coefficients for ProductCl3x32",
-            ));
-        }
-        let inp = ProductCl3x32::from_coefficients(input)
-            .map_err(|e| JsValue::from_str(&format!("{}", e)))?;
-        let result = self.inner.cleanup(&inp);
-        Ok(result.cleaned.to_coefficients())
+    /// Exhaustive selection. Even the nearest codeword may fail the observation residual.
+    #[wasm_bindgen(js_name = cleanupNearest)]
+    pub fn cleanup_nearest(&self, input: &[f64]) -> Result<JsValue, JsValue> {
+        let observed = ProductCl3x32::from_coefficients(input)
+            .map_err(|e| js_sys::Error::new(&e.to_string()))?;
+        let result = self
+            .inner
+            .cleanup_nearest(&observed)
+            .map_err(holographic_js_error)?;
+        use amari_holographic::memory::CleanupResult;
+        let (status, candidate, residual) = match result {
+            CleanupResult::Selected {
+                candidate,
+                residual,
+                ..
+            } => ("selected", candidate, residual),
+            CleanupResult::NoAcceptableCandidate { best, residual, .. } => {
+                ("no_acceptable_candidate", best, residual)
+            }
+        };
+        let obj = Object::new();
+        js_sys::Reflect::set(&obj, &"status".into(), &status.into())?;
+        js_sys::Reflect::set(&obj, &"residual".into(), &residual.into())?;
+        js_sys::Reflect::set(
+            &obj,
+            &"candidate".into(),
+            &js_sys::Float64Array::from(candidate.to_coefficients().as_slice()),
+        )?;
+        Ok(obj.into())
     }
 
-    /// Get cleanup result with metadata
-    #[wasm_bindgen(js_name = cleanupWithInfo)]
-    pub fn cleanup_with_info(&self, input: &[f64]) -> Result<JsValue, JsValue> {
-        if input.len() != 256 {
-            return Err(JsValue::from_str(
-                "Input must have 256 coefficients for ProductCl3x32",
-            ));
-        }
-        let inp = ProductCl3x32::from_coefficients(input)
-            .map_err(|e| JsValue::from_str(&format!("{}", e)))?;
-        let result = self.inner.cleanup(&inp);
-
+    /// Iterative soft mixing. A stalled or exhausted update does not certify recovery.
+    #[wasm_bindgen(js_name = cleanupWeighted)]
+    pub fn cleanup_weighted(
+        &self,
+        input: &[f64],
+        max_iterations: usize,
+        initial_beta: f64,
+        final_beta: f64,
+    ) -> Result<JsValue, JsValue> {
+        let observed = ProductCl3x32::from_coefficients(input)
+            .map_err(|e| js_sys::Error::new(&e.to_string()))?;
+        let config = ResonatorConfig {
+            max_iterations,
+            initial_beta,
+            final_beta,
+        };
+        let words: Vec<_> = (0..self.inner.codebook_size())
+            .filter_map(|i| self.inner.get_codebook_item(i).cloned())
+            .collect();
+        let resonator = Resonator::new(words, config).map_err(holographic_js_error)?;
+        let result = resonator
+            .cleanup_weighted(&observed)
+            .map_err(holographic_js_error)?;
         let obj = Object::new();
+        use amari_holographic::memory::WeightedStatus;
+        let status = match result.status {
+            WeightedStatus::Updated { iterations } => {
+                js_sys::Reflect::set(&obj, &"iterations".into(), &(iterations as u32).into())?;
+                "updated"
+            }
+            WeightedStatus::Stalled {
+                iterations,
+                last_delta,
+            } => {
+                js_sys::Reflect::set(&obj, &"iterations".into(), &(iterations as u32).into())?;
+                js_sys::Reflect::set(&obj, &"lastDelta".into(), &last_delta.into())?;
+                "stalled"
+            }
+            WeightedStatus::BudgetExhausted => "budget_exhausted",
+            WeightedStatus::RejectedAtIngress => "rejected_at_ingress",
+        };
+        js_sys::Reflect::set(&obj, &"status".into(), &status.into())?;
+        js_sys::Reflect::set(&obj, &"accepted".into(), &result.accepted.into())?;
+        js_sys::Reflect::set(&obj, &"residual".into(), &result.residual.into())?;
         js_sys::Reflect::set(
             &obj,
-            &"cleaned".into(),
-            &js_sys::Float64Array::from(result.cleaned.to_coefficients().as_slice()).into(),
+            &"candidate".into(),
+            &js_sys::Float64Array::from(result.candidate.to_coefficients().as_slice()),
         )?;
-        js_sys::Reflect::set(
-            &obj,
-            &"bestMatchIndex".into(),
-            &(result.best_match_index as u32).into(),
-        )?;
-        js_sys::Reflect::set(&obj, &"converged".into(), &result.converged.into())?;
-        js_sys::Reflect::set(
-            &obj,
-            &"iterations".into(),
-            &(result.iterations as u32).into(),
-        )?;
-        js_sys::Reflect::set(
-            &obj,
-            &"finalSimilarity".into(),
-            &result.final_similarity.into(),
-        )?;
-
         Ok(obj.into())
     }
 
@@ -1214,9 +1275,8 @@ mod tests {
         let result = memory.retrieve(&key);
         assert!(result.is_ok());
 
-        // Check confidence
-        let confidence = memory.retrieve_confidence(&key).unwrap();
-        assert!(confidence >= 0.0);
+        // No tracked keys: no nearest-key score.
+        assert_eq!(memory.nearest_key_similarity(&key).unwrap(), None);
     }
 
     #[allow(dead_code)]
@@ -1251,7 +1311,7 @@ mod tests {
 
         // Test cleanup with flat coefficient array
         let input = WasmHolographicMemory::random_versor(2);
-        let result = resonator.cleanup_with_info(&input);
+        let result = resonator.cleanup_nearest(&input);
         assert!(result.is_ok());
     }
 

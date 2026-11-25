@@ -53,6 +53,10 @@ pub enum GpuHolographicError {
 
     #[error("Holographic algebra error: {0}")]
     AlgebraError(String),
+
+    /// Underlying memory rejected an operation without changing its state.
+    #[error(transparent)]
+    Memory(#[from] amari_holographic::memory::HolographicError),
 }
 
 /// Result type for GPU holographic operations
@@ -940,8 +944,12 @@ impl GpuHolographicMemory {
     }
 
     /// Store a key-value pair
-    pub fn store(&mut self, key: &ProductCl3x32, value: &ProductCl3x32) {
-        self.memory.store(key, value);
+    pub fn store(
+        &mut self,
+        key: &ProductCl3x32,
+        value: &ProductCl3x32,
+    ) -> GpuHolographicResult<()> {
+        Ok(self.memory.store(key, value)?)
     }
 
     /// Store multiple key-value pairs.
@@ -961,16 +969,15 @@ impl GpuHolographicMemory {
             });
         }
         let pairs: Vec<_> = keys.iter().cloned().zip(values.iter().cloned()).collect();
-        self.memory.store_batch(&pairs);
-        Ok(())
+        Ok(self.memory.store_batch(&pairs)?)
     }
 
     /// Retrieve a value by key
     pub fn retrieve(
         &self,
         key: &ProductCl3x32,
-    ) -> amari_holographic::RetrievalResult<ProductCl3x32> {
-        self.memory.retrieve(key)
+    ) -> GpuHolographicResult<amari_holographic::RetrievalResult<ProductCl3x32>> {
+        Ok(self.memory.retrieve(key)?)
     }
 
     /// Get memory statistics

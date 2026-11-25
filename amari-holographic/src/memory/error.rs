@@ -56,10 +56,10 @@ pub enum HolographicError {
 impl fmt::Display for HolographicError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidData => write!(f,"invalid memory coefficient data"),
-            Self::InvalidKey => write!(f,"invalid retrieval key"),
-            Self::IncompatibleMemory => write!(f,"incompatible memory tracking or configuration"),
-            Self::CountOverflow => write!(f,"memory record count overflow"),
+            Self::InvalidData => write!(f, "invalid memory coefficient data"),
+            Self::InvalidKey => write!(f, "invalid retrieval key"),
+            Self::IncompatibleMemory => write!(f, "incompatible memory tracking or configuration"),
+            Self::CountOverflow => write!(f, "memory record count overflow"),
             Self::Algebra { operation, source } => {
                 write!(f, "algebra operation {operation} failed: {source}")
             }

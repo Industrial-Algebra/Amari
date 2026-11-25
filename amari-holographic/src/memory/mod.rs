@@ -1,49 +1,16 @@
-//! Holographic memory using generalized binding algebras.
+//! Additive associative memory over checked binding algebras.
 //!
-//! This module provides Vector Symbolic Architecture (VSA) operations
-//! using the [`crate::algebra::BindingAlgebra`] trait, enabling:
+//! Storage adds the ordered binding `key.bind(value)` to a raw trace. Retrieval
+//! left-multiplies the trace by the checked key inverse; it neither normalizes
+//! the result nor performs codebook cleanup. Duplicate records add twice.
 //!
-//! - Compositional key-value storage in superposition
-//! - Content-addressable retrieval with automatic cleanup
-//! - Temperature-controlled soft↔hard retrieval
-//! - Support for multiple algebra backends (Clifford, FHRR, MAP, etc.)
+//! With tracking enabled, exact membership and nearest-key similarity are
+//! separate queries. An untracked memory cannot answer membership. Load-based
+//! capacity heuristics are not evidence that any particular key was stored.
 //!
-//! # Holographic Reduced Representations
-//!
-//! A holographic memory stores associations `(key, value)` by:
-//! 1. **Binding**: `bound = key ⊛ value` (creates association, result dissimilar to both inputs)
-//! 2. **Bundling**: `memory = bound₁ ⊕ bound₂ ⊕ ... ⊕ boundₙ` (superposition in single vector)
-//! 3. **Retrieval**: `value ≈ key⁻¹ ⊛ memory` (unbind with inverse, get target + noise)
-//!
-//! The noise term is the sum/max of cross-talk from other items. Capacity is O(dim / log dim) items.
-//!
-//! # Temperature-Parameterized Operations
-//!
-//! The Maslov dequantization connects soft (standard) and hard (tropical) operations:
-//!
-//! ```text
-//! β → 0:   soft operations (sum, product)
-//! β → ∞:   hard operations (max, +)
-//! ```
-//!
-//! Encoding should be soft (preserves superposition), retrieval can be hard (automatic cleanup).
-//!
-//! # Example
-//!
-//! ```ignore
-//! use amari_holographic::{HolographicMemory, AlgebraConfig};
-//! use amari_holographic::algebra::ProductCl3x32;
-//!
-//! let mut memory = HolographicMemory::<ProductCl3x32>::new(AlgebraConfig::default());
-//!
-//! let key = ProductCl3x32::random_versor(2);
-//! let value = ProductCl3x32::random_versor(2);
-//!
-//! memory.store(&key, &value);
-//!
-//! let retrieved = memory.retrieve(&key);
-//! assert!(retrieved.confidence > 0.9);
-//! ```
+//! Use [`Resonator::cleanup_nearest`] to select a codeword or
+//! [`Resonator::cleanup_weighted`] for iterative mixing. Both distinguish a
+//! candidate from a reconstruction that meets the observation residual.
 
 pub(crate) mod domain;
 pub use domain::MemoryElement;
@@ -51,9 +18,11 @@ mod error;
 mod holographic_memory;
 mod resonator;
 
-pub use error::{HolographicError, HolographicResult};
-pub use holographic_memory::{CapacityInfo, HolographicMemory, MembershipEvidence, NearestKey, RetrievalResult};
-pub use resonator::{CleanupResult, FactorizationResult, Resonator, ResonatorConfig, WeightedResult, WeightedStatus};
-
-// Re-export the Bindable trait (now an alias for BindingAlgebra compatibility)
 pub use crate::algebra::BindingAlgebra as Bindable;
+pub use error::{HolographicError, HolographicResult};
+pub use holographic_memory::{
+    CapacityInfo, HolographicMemory, MembershipEvidence, NearestKey, RetrievalResult,
+};
+pub use resonator::{
+    CleanupResult, FactorizationResult, Resonator, ResonatorConfig, WeightedResult, WeightedStatus,
+};

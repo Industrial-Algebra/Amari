@@ -108,7 +108,7 @@ crate_refs = ["amari-holographic"]
 feature_refs = ["amari-holographic:std"]
 symbol_refs = ["amari_holographic::HolographicMemory::retrieve"]
 example_refs = []
-probe_refs = ["amari-probe:holographic:recall:v1"]
+probe_refs = ["amari-probe:holographic:recall:v2"]
 stability = "stable"
 cost = "moderate"
 

@@ -7267,6 +7267,15 @@
                 "String"
               ]
             }
+          },
+          {
+            "name": "Memory",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_holographic :: memory :: HolographicError"
+              ]
+            }
           }
         ]
       },
@@ -7329,6 +7338,15 @@
                   "kind": "tuple",
                   "types": [
                     "String"
+                  ]
+                }
+              },
+              {
+                "name": "Memory",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_holographic :: memory :: HolographicError"
                   ]
                 }
               }
@@ -7448,14 +7466,14 @@
     {
       "path": "amari_gpu::GpuHolographicMemory::retrieve",
       "kind": "method",
-      "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> amari_holographic :: RetrievalResult < ProductCl3x32 >",
+      "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> GpuHolographicResult < amari_holographic :: RetrievalResult < ProductCl3x32 > >",
       "source_path": "amari-gpu/src/holographic.rs",
       "is_reexport": true,
       "source_module": "amari_gpu::holographic",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> amari_holographic :: RetrievalResult < ProductCl3x32 >",
+          "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> GpuHolographicResult < amari_holographic :: RetrievalResult < ProductCl3x32 > >",
           "source_path": "amari-gpu/src/holographic.rs",
           "source_module": "amari_gpu::holographic",
           "is_reexport": true,
@@ -7467,14 +7485,14 @@
     {
       "path": "amari_gpu::GpuHolographicMemory::store",
       "kind": "method",
-      "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32)",
+      "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32 ,) -> GpuHolographicResult < () >",
       "source_path": "amari-gpu/src/holographic.rs",
       "is_reexport": true,
       "source_module": "amari_gpu::holographic",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32)",
+          "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32 ,) -> GpuHolographicResult < () >",
           "source_path": "amari-gpu/src/holographic.rs",
           "source_module": "amari_gpu::holographic",
           "is_reexport": true,
@@ -22152,6 +22170,15 @@
                 "String"
               ]
             }
+          },
+          {
+            "name": "Memory",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "amari_holographic :: memory :: HolographicError"
+              ]
+            }
           }
         ]
       },
@@ -22214,6 +22241,15 @@
                   "kind": "tuple",
                   "types": [
                     "String"
+                  ]
+                }
+              },
+              {
+                "name": "Memory",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "amari_holographic :: memory :: HolographicError"
                   ]
                 }
               }
@@ -22333,14 +22369,14 @@
     {
       "path": "amari_gpu::holographic::GpuHolographicMemory::retrieve",
       "kind": "method",
-      "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> amari_holographic :: RetrievalResult < ProductCl3x32 >",
+      "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> GpuHolographicResult < amari_holographic :: RetrievalResult < ProductCl3x32 > >",
       "source_path": "amari-gpu/src/holographic.rs",
       "is_reexport": false,
       "source_module": "amari_gpu::holographic",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> amari_holographic :: RetrievalResult < ProductCl3x32 >",
+          "signature": "pub fn retrieve (& self , key : & ProductCl3x32 ,) -> GpuHolographicResult < amari_holographic :: RetrievalResult < ProductCl3x32 > >",
           "source_path": "amari-gpu/src/holographic.rs",
           "source_module": "amari_gpu::holographic",
           "is_reexport": false,
@@ -22352,14 +22388,14 @@
     {
       "path": "amari_gpu::holographic::GpuHolographicMemory::store",
       "kind": "method",
-      "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32)",
+      "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32 ,) -> GpuHolographicResult < () >",
       "source_path": "amari-gpu/src/holographic.rs",
       "is_reexport": false,
       "source_module": "amari_gpu::holographic",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32)",
+          "signature": "pub fn store (& mut self , key : & ProductCl3x32 , value : & ProductCl3x32 ,) -> GpuHolographicResult < () >",
           "source_path": "amari-gpu/src/holographic.rs",
           "source_module": "amari_gpu::holographic",
           "is_reexport": false,

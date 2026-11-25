@@ -322,7 +322,7 @@ fn rational_holographic_contracts() {
     let recall_output = ProbeSchemaDocument::from_contract::<HolographicRecallOutput>().unwrap();
     assert_registered_pair(
         &catalog,
-        "amari-probe:holographic:recall:v1",
+        "amari-probe:holographic:recall:v2",
         recall_input.clone(),
         recall_output.clone(),
     );
@@ -337,7 +337,7 @@ fn rational_holographic_contracts() {
             "capacity_metrics_consistent",
             "finite_metrics",
             "map256_dimension",
-            "nonnegative_attribution_weights"
+            "membership_evidence"
         ]
     );
     let recall_schema = recall_input.exported_value().unwrap();

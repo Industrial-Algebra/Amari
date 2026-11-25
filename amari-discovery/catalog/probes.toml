@@ -91,10 +91,10 @@ max_operations = 100000
 timeout_millis = 2000
 
 [[probes]]
-id = "amari-probe:holographic:recall:v1"
+id = "amari-probe:holographic:recall:v2"
 capability_id = "amari:amari-holographic:memory:retrieval"
-input_schema = "amari.discovery/probe/holographic-recall/input/v1"
-output_schema = "amari.discovery/probe/holographic-recall/output/v1"
+input_schema = "amari.discovery/probe/holographic-recall/input/v2"
+output_schema = "amari.discovery/probe/holographic-recall/output/v2"
 required_features = ["standard-probes"]
 cost = "moderate"
 deterministic = true

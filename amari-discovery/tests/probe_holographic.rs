@@ -5,14 +5,14 @@
 #![cfg(feature = "standard-probes")]
 
 use amari_discovery::{
-    DiscoveryError, HolographicAttribution, HolographicCapacity, HolographicEntry,
+    DiscoveryError, HolographicCapacity, HolographicEntry, HolographicMembership,
     HolographicRecallOutput, HolographicRecallRequest, HolographicSuperpositionOutput,
     HolographicSuperpositionRequest, ProbeEngine, ProbeEngineLimits, ProbeExecution,
 };
 use amari_holographic::{algebra::map::MAP256, AlgebraConfig, BindingAlgebra, HolographicMemory};
 use serde_json::json;
 
-const RECALL: &str = "amari-probe:holographic:recall:v1";
+const RECALL: &str = "amari-probe:holographic:recall:v2";
 const SUPERPOSITION: &str = "amari-probe:holographic:superposition:v1";
 
 fn execute_superposition(
@@ -129,12 +129,15 @@ fn recall_matches_direct_holographic_memory_retrieval() {
     };
     let mut memory = HolographicMemory::<MAP256>::with_key_tracking(AlgebraConfig::default());
     for entry in &request.entries {
-        memory.store(
-            &MAP256::from_seed(entry.key_seed),
-            &MAP256::from_seed(entry.value_seed),
-        );
+        memory
+            .store(
+                &MAP256::from_seed(entry.key_seed),
+                &MAP256::from_seed(entry.value_seed),
+            )
+            .unwrap();
     }
-    let expected = memory.retrieve(&MAP256::from_seed(request.query_seed));
+    let query = MAP256::from_seed(request.query_seed);
+    let expected = memory.retrieve(&query).unwrap();
     let capacity = memory.capacity_info();
     let engine = ProbeEngine::new().unwrap();
     let first = execute_recall(&engine, request.clone());
@@ -142,17 +145,14 @@ fn recall_matches_direct_holographic_memory_retrieval() {
     let output: HolographicRecallOutput = serde_json::from_value(first.output.clone()).unwrap();
 
     assert_eq!(first, second);
-    assert_eq!(output.value_coefficients, expected.value.components());
     assert_eq!(output.raw_coefficients, expected.raw_value.components());
-    assert_eq!(output.confidence, expected.confidence);
-    assert_eq!(output.query_similarity, expected.query_similarity);
     assert_eq!(
-        output.attribution,
-        expected
-            .attribution
-            .into_iter()
-            .map(|(index, weight)| HolographicAttribution { index, weight })
-            .collect::<Vec<_>>()
+        output.membership_evidence,
+        HolographicMembership::Present { indices: vec![1] }
+    );
+    assert_eq!(
+        output.nearest_key_similarity,
+        memory.nearest_key(&query).unwrap().map(|k| k.similarity)
     );
     assert_eq!(
         output.capacity,
@@ -165,9 +165,9 @@ fn recall_matches_direct_holographic_memory_retrieval() {
         }
     );
     assert!(output.warnings.is_empty());
-    assert_eq!(first.resources.operations, 9_984);
+    assert_eq!(first.resources.operations, 13_056);
     assert_eq!(first.resources.nodes, 2_307);
-    assert_eq!(first.resources.iterations, 7);
+    assert_eq!(first.resources.iterations, 10);
 }
 
 #[test]
@@ -257,7 +257,7 @@ fn recall_cooperative_limits_are_enforced() {
         ),
         (
             ProbeEngineLimits {
-                max_operations: 9_983,
+                max_operations: 13_055,
                 ..ProbeEngineLimits::default()
             },
             "operations",
@@ -271,7 +271,7 @@ fn recall_cooperative_limits_are_enforced() {
         ),
         (
             ProbeEngineLimits {
-                max_iterations: 6,
+                max_iterations: 9,
                 ..ProbeEngineLimits::default()
             },
             "iterations",

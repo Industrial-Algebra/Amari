@@ -27,7 +27,7 @@ pub use cgt::{CgtNimSumOutput, CgtNimSumRequest};
 pub use core::{Cl3ProductOutput, Cl3ProductRequest};
 pub use dual::{PolynomialDerivativeOutput, PolynomialDerivativeRequest};
 pub use holographic::{
-    HolographicAttribution, HolographicCapacity, HolographicEntry, HolographicRecallOutput,
+    HolographicCapacity, HolographicEntry, HolographicMembership, HolographicRecallOutput,
     HolographicRecallRequest, HolographicSuperpositionOutput, HolographicSuperpositionRequest,
 };
 pub use network::{NetworkPath, NetworkShortestPathOutput, NetworkShortestPathRequest};
@@ -413,10 +413,10 @@ fn schema_document(schema_id: &str) -> DiscoveryResult<ProbeSchemaDocument> {
         "amari.discovery/probe/dual-polynomial-derivative/output/v1" => {
             ProbeSchemaDocument::from_contract::<PolynomialDerivativeOutput>()
         }
-        "amari.discovery/probe/holographic-recall/input/v1" => {
+        "amari.discovery/probe/holographic-recall/input/v2" => {
             ProbeSchemaDocument::from_contract::<HolographicRecallRequest>()
         }
-        "amari.discovery/probe/holographic-recall/output/v1" => {
+        "amari.discovery/probe/holographic-recall/output/v2" => {
             ProbeSchemaDocument::from_contract::<HolographicRecallOutput>()
         }
         "amari.discovery/probe/holographic-superposition/input/v1" => {

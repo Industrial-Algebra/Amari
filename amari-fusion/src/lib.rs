@@ -62,8 +62,9 @@
 //! // Store and retrieve
 //! let key = ProductCl3x32::random_versor(2);
 //! let value = ProductCl3x32::random_versor(2);
-//! memory.store(&key, &value);
-//! let result = memory.retrieve(&key);
+//! memory.store(&key, &value)?;
+//! let raw = memory.retrieve(&key)?.raw_value;
+//! # Ok::<(), amari_holographic::HolographicError>(())
 //! ```
 //!
 //! When the `holographic` feature is enabled, types are re-exported here for
@@ -128,10 +129,14 @@ pub use amari_holographic::{
     HolographicMemory,
     HolographicResult,
     MAPAlgebra,
+    MembershipEvidence,
+    NearestKey,
     ProductCliffordAlgebra,
     Resonator,
     ResonatorConfig,
     RetrievalResult,
+    WeightedResult,
+    WeightedStatus,
 };
 
 // GPU acceleration exports

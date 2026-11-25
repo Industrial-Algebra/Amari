@@ -240,6 +240,7 @@ jobs:
           cd amari-wasm
           wasm-pack test --node
           node ../scripts/test-h1-wasm.mjs pkg
+          node ../scripts/test-h3-wasm.mjs pkg
 
       - name: Upload WASM artifacts
         uses: actions/upload-artifact@v7

@@ -107,69 +107,31 @@
 //! The [`memory`] module provides [`HolographicMemory`], a key-value store
 //! that uses holographic superposition. It's generic over any [`BindingAlgebra`].
 //!
-//! ```ignore
-//! use amari_holographic::{HolographicMemory, ProductCliffordAlgebra, BindingAlgebra, AlgebraConfig};
-//!
-//! type ProductCl3x32 = ProductCliffordAlgebra<32>;
-//!
-//! // Create memory with default configuration
-//! let mut memory = HolographicMemory::<ProductCl3x32>::new(AlgebraConfig::default());
-//!
-//! // Store associations
-//! let key1 = ProductCl3x32::random_versor(2);
-//! let value1 = ProductCl3x32::random_versor(2);
-//! memory.store(&key1, &value1);
-//!
-//! let key2 = ProductCl3x32::random_versor(2);
-//! let value2 = ProductCl3x32::random_versor(2);
-//! memory.store(&key2, &value2);
-//!
-//! // Retrieve - returns value with confidence score
-//! let result = memory.retrieve(&key1);
-//! println!("Confidence: {}", result.confidence);
-//! println!("Similarity to original: {}", result.value.similarity(&value1));
-//!
-//! // Check capacity status
-//! let info = memory.capacity_info();
-//! println!("Items: {} / {}", info.item_count, info.theoretical_capacity);
+//! ```
+//! use amari_holographic::{BindingAlgebra, HolographicMemory, MAPAlgebra};
+//! type M = MAPAlgebra<4>;
+//! let mut memory = HolographicMemory::with_key_tracking(Default::default());
+//! let key = M::new([1., -1., 1., -1.]);
+//! let value = M::new([2., 0., 3., 0.]); // Values need not be keys.
+//! memory.store(&key, &value)?;
+//! memory.store(&key, &value)?;
+//! assert_eq!(memory.retrieve(&key)?.raw_value.components(), &[4., 0., 6., 0.]);
+//! # Ok::<(), amari_holographic::HolographicError>(())
 //! ```
 //!
 //! # Resonator Networks
 //!
-//! [`Resonator`] networks clean up noisy retrievals by iteratively projecting
-//! toward valid codebook items. They implement an annealed softmax dynamics
-//! that converges to the nearest codebook entry.
-//!
-//! ```ignore
-//! use amari_holographic::{Resonator, ResonatorConfig, ProductCliffordAlgebra, BindingAlgebra};
-//!
-//! type ProductCl3x32 = ProductCliffordAlgebra<32>;
-//!
-//! // Create codebook of valid states
-//! let codebook: Vec<ProductCl3x32> = (0..10)
-//!     .map(|_| ProductCl3x32::random_versor(2))
-//!     .collect();
-//!
-//! // Create resonator with annealing schedule
-//! let config = ResonatorConfig {
-//!     max_iterations: 50,
-//!     convergence_threshold: 0.999,
-//!     initial_beta: 1.0,    // Low temperature = soft attention
-//!     final_beta: 100.0,    // High temperature = hard selection
-//! };
-//! let resonator = Resonator::new(codebook, config).unwrap();
-//!
-//! // Clean up noisy retrieval
-//! let noisy = memory.retrieve(&query).raw_value;
-//! let result = resonator.cleanup(&noisy);
-//! println!("Converged: {}, Best match: {}", result.converged, result.best_match_index);
-//! ```
+//! [`Resonator`] offers separate exhaustive nearest-key selection and iterative
+//! soft mixing. A candidate is accepted only against the original observation,
+//! coefficient by coefficient. A stationary iterate alone is not evidence of
+//! recovery; factorization compares the returned **ordered product** to the bound.
 //!
 //! # Capacity and Performance
 //!
 //! ## Theoretical Capacity
 //!
-//! All algebras provide theoretical capacity of O(D / ln D) where D is dimension:
+//! The nominal load heuristic is of order D / ln D where D is dimension.
+//! It neither estimates query membership nor certifies reconstruction:
 //!
 //! | Configuration | Dimension | Capacity (~items) |
 //! |---------------|-----------|-------------------|
@@ -251,20 +213,20 @@
 //! let can = ProductCl3x32::random_versor(2);
 //!
 //! // Store relationships: dog IS-A animal, dog CAN bark
-//! memory.store(&dog.bind(&is_a), &animal);
-//! memory.store(&dog.bind(&can), &bark);
+//! memory.store(&dog.bind(&is_a), &animal)?;
+//! memory.store(&dog.bind(&can), &bark)?;
 //!
 //! // Store: cat IS-A animal, cat CAN meow
-//! memory.store(&cat.bind(&is_a), &animal);
-//! memory.store(&cat.bind(&can), &meow);
+//! memory.store(&cat.bind(&is_a), &animal)?;
+//! memory.store(&cat.bind(&can), &meow)?;
 //!
 //! // Query: what can dog do?
-//! let result = memory.retrieve(&dog.bind(&can));
-//! println!("Dog can: similarity to bark = {}", result.value.similarity(&bark));
+//! let result = memory.retrieve(&dog.bind(&can))?;
+//! println!("Dog can: similarity to bark = {}", result.raw_value.similarity(&bark));
 //!
 //! // Query: what is cat?
-//! let result = memory.retrieve(&cat.bind(&is_a));
-//! println!("Cat is-a: similarity to animal = {}", result.value.similarity(&animal));
+//! let result = memory.retrieve(&cat.bind(&is_a))?;
+//! println!("Cat is-a: similarity to animal = {}", result.raw_value.similarity(&animal));
 //! ```
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -292,5 +254,6 @@ pub use algebra::{Cl3, CliffordAlgebra, FHRRAlgebra, MAPAlgebra, ProductClifford
 // Re-export memory types
 pub use memory::{
     Bindable, CapacityInfo, CleanupResult, FactorizationResult, HolographicError,
-    HolographicMemory, HolographicResult, Resonator, ResonatorConfig, RetrievalResult,
+    HolographicMemory, HolographicResult, MembershipEvidence, NearestKey, Resonator,
+    ResonatorConfig, RetrievalResult, WeightedResult, WeightedStatus,
 };

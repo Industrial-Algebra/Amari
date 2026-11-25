@@ -90,3 +90,57 @@ test h3_sided_core_wrapper ... ok
 test h3_impossible_and_singular ... ok
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
+
+## U6 — migration and historical RED
+
+Independent consumer probes were prepared against the old surface, before migrating each consumer. The discovery test ran on `2507e6bc`, default crate features plus `standard-probes`: `c test -p amari-discovery --features standard-probes --test h3_recall`, one selected (`h3_recall_v2_evidence_and_raw_coefficients`), exit 101:
+
+```text
+called `Result::unwrap()` on an `Err` value: InvalidInput("unknown probe `amari-probe:holographic:recall:v2`")
+```
+
+`node scripts/test-h3-wasm.mjs /tmp/h1-r1-final.F7PS2s/web`, one built web-module JS scenario, exit 1. Used the retained dev-profile web build from H1's `cdad1d6d` exact-commit replay (same implementation as merge `2507e6bc`), **not** a new H3 build. Verbatim excerpt:
+
+```text
+AssertionError [ERR_ASSERTION]: raw additive recall
++ actual - expected
+
+  [
+    0,
++   0.125,
++   0.125,
+-   1,
+-   1,
+```
+
+`c test -p amari-gpu --features holographic --test h3_memory` at HEAD `2507e6bc` with U1 in-progress but before the GPU error migration. `h3_gpu_memory_batch_is_atomic`, one selected, exit 101:
+
+```text
+singular final key must reject entire batch
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
+
+**Stored data.** Keep the original trace and its convention metadata read-only. Create a new namespace labelled with *both* the H1 product convention and H3 additive-memory convention. Revalidate original ordered keys against the checked key class, reject invalid records explicitly, and replay every original `(key,value)` into an empty trace with the intended tracking mode. Check the resulting count and keys against the record log and compare raw coefficients to an independent sum of bindings before switching readers. Old attention traces cannot be rescaled into additive traces. If original pairs are lost, rebuild from upstream sources or retire the trace; no lossless conversion is known. Do not use nearest-key similarity as membership, probability or provenance. Partial-coordinate query semantics are deferred to H5, not simulated by ignoring masks.
+
+U6 partial GREEN, working tree at `0a1b6291`: `c test -p amari-gpu --features holographic --test h3_memory`, `h3_gpu_memory_batch_is_atomic`, 1 passed, exit 0. New `wasm-pack build --dev --target web --out-dir /tmp/h3-evidence/web` in `amari-wasm` with sanitized environment and `RUSTUP_TOOLCHAIN=1.100.0`, exit 0. `node scripts/test-h1-wasm.mjs /tmp/h3-evidence/web` and `node scripts/test-h3-wasm.mjs /tmp/h3-evidence/web`, one scenario each, exit 0. Output: `H3 Node: additive recall, typed evidence, rejection and both cleanup modes passed`. This was the first consumer GREEN; the final integrated run follows.
+
+**Discovery v1 → v2.** Change probe ID from `amari-probe:holographic:recall:v1` to `:v2`, and both schema IDs from `holographic-recall/{input,output}/v1` to `/v2`. The request shape (ordered seed pairs and query seed) is unchanged. Remove `confidence`; read `membership_evidence` (`{"kind":"present","indices":[...]}`, `{"kind":"absent"}` or `{"kind":"unknown"}`) and the separate nullable `nearest_key_similarity`. The seeded probe always tracks; untracked Rust/JS clients must not coerce `unknown` into absence. Use `raw_coefficients` instead of a cleaned value, and exact indices instead of inferred contribution weights. `capacity` is nominal. The 3-entry v2 cooperative-budget fixture charges 13,056 operations and 10 iterations. In the Rust/JS cleanup API replace `converged` with the nearest-selection outcome or weighted termination status plus the original-observation certificate.
+
+## Final combined verification
+
+Implementation lineage: U1 `19a867ce`, U2 `a4d97096`, U3 `24e79494`, U4 `e1353799`, U5 `0a1b6291`, U6 this commit. The following local executions were on the final U6 code tree at parent `0a1b6291` before the commit, not remote CI. Commands use `c` above; unspecified feature sets are defaults. **Every command below exited 0.**
+
+| Command | Observed selection/result |
+|---|---|
+| `c test -p amari-holographic` and `c test -p amari-holographic --all-features` | Each 182 passed, 0 failed, 17 ignored. Includes all five H3 Rust integration suites. |
+| `c test -p amari-holographic --all-features --test h1_kernel` | Five passed; `u1_signed_words` includes 64 pairs and 512 triples. |
+| `c check -p amari-rewrite --features holographic-guidance`; `c test -p amari-rewrite --features holographic-guidance` | Check passed; 527 tests passed, none failed or ignored. No rewrite edits. |
+| `c test -p amari-wasm --lib`; `c test -p amari-wasm`; `c test -p amari-fusion --features holographic` | WASM host 140 passed on each invocation; fusion 42 passed, 7 ignored. |
+| `c test -p amari-gpu --features holographic --test h3_memory`; `c test -p amari-gpu --features holographic --test h1_shader_parity -- --ignored --nocapture` | One each: `h3_gpu_memory_batch_is_atomic` and `h1_shader_parity`. `CI=true`, Vulkan loader and lavapipe ICD selected. CPU readback 4 records / 1,024 coefficients; WGSL 101 / 25,856. |
+| In `amari-wasm`: `wasm-pack build --dev --target web --out-dir /tmp/h3-final-Je8Ek9/web-pkg`; from root: `node scripts/test-h1-wasm.mjs /tmp/h3-final-Je8Ek9/web-pkg`; `node scripts/test-h3-wasm.mjs /tmp/h3-final-Je8Ek9/web-pkg` | One built web module; both scripts passed. Actual JS checked raw recall, membership, scores, singular rejection, nearest and weighted outputs. |
+| `c test -p amari-discovery --features standard-probes --test h3_recall --test probe_holographic --test wire_schema_registry` | 18 passed, including `h3_recall_v2_evidence_and_raw_coefficients` (present/absent queries, independent raw MAP oracle, old confidence absent). |
+| Fresh untracked resolution: `c generate-lockfile`; `bash scripts/generate-discovery-wasm-surface.sh`; `c run -p amari-discovery --example generate_catalog -- .` | Bindgen 0.2.130; repeated web-surface generation byte-identical. Structural catalog: 28 crates, 11,672 items, 108 edges, hash `97998b5e35abf3c34c71ea55af8e30ced701abcff4746a55d304f313e2d38daf`. |
+| `c test -p amari-discovery generated_equals_checked_in`; `c test -p amari-discovery --test catalog_wasm` | 1 structural drift check passed; 41 WASM catalog tests passed. |
+| `c fmt --all -- --check`; `c clippy $SCOPE --all-targets --all-features -- -D warnings`; `c doc $SCOPE --all-features --no-deps` | Formatting, Clippy and docs passed. `$SCOPE` = `-p amari-holographic -p amari-gpu -p amari-wasm -p amari-fusion -p amari-discovery`. Cargo manifest and existing rustdoc link warnings are separate from warning-denied Clippy. |
+
+Ignored tests are not counted as passes. No external consumers, release, or remote CI are claimed verified.
