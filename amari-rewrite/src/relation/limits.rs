@@ -219,6 +219,31 @@ impl RelationResources {
     pub fn operations(&self) -> usize {
         self.operations
     }
+
+    /// The node ceiling this budget enforces.
+    ///
+    /// Crate-internal: a checked application preflights a term's shape and
+    /// abandons the walk at the ceiling instead of allocating first (PR #384
+    /// round 3). Kept after the accounted-value accessors so the public
+    /// structural catalog's source ordinals are unchanged.
+    pub(crate) fn max_term_nodes(&self) -> usize {
+        self.max_term_nodes
+    }
+
+    /// The depth ceiling this budget enforces.
+    pub(crate) fn max_term_depth(&self) -> usize {
+        self.max_term_depth
+    }
+
+    /// Operations still available before the ceiling is reached.
+    pub(crate) fn remaining_operations(&self) -> usize {
+        self.max_operations.saturating_sub(self.operations)
+    }
+
+    /// The operation ceiling this budget enforces.
+    pub(crate) fn max_operations(&self) -> usize {
+        self.max_operations
+    }
 }
 
 /// The wire form of [`RelationLimits`]: validation happens after decoding,

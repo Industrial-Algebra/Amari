@@ -11,7 +11,7 @@
 use alloc::vec::Vec;
 
 use crate::analysis::unify_with;
-use crate::error::RewriteResult;
+use crate::error::{RewriteError, RewriteResult};
 use crate::relation::{RelationLimits, RelationResources, Sha256Digest};
 use crate::trs::{Substitution, Term};
 
@@ -166,8 +166,12 @@ impl ConstraintSet {
         for constraint in &self.constraints {
             match constraint {
                 TermConstraint::Equal(left, right) => {
-                    if unify_with(&mut substitution, left, right, &mut resources).is_err() {
-                        return Ok(ConstraintOutcome::Unsatisfiable);
+                    match unify_with(&mut substitution, left, right, &mut resources) {
+                        Ok(()) => {}
+                        Err(RewriteError::UnificationFailure { .. }) => {
+                            return Ok(ConstraintOutcome::Unsatisfiable);
+                        }
+                        Err(error) => return Err(error),
                     }
                 }
                 TermConstraint::NotEqual(left, right) => {

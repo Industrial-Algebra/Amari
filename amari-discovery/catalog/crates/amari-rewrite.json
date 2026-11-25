@@ -3975,6 +3975,1116 @@
       ]
     },
     {
+      "path": "amari_rewrite::holographic::HolographicEncoder",
+      "kind": "struct",
+      "signature": "pub struct HolographicEncoder < const D : usize >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HolographicEncoder < const D : usize >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::digest",
+      "kind": "method",
+      "signature": "pub fn digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::dimension",
+      "kind": "method",
+      "signature": "pub fn dimension (& self) -> usize",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn dimension (& self) -> usize",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::dimension"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::encode",
+      "kind": "method",
+      "signature": "pub fn encode (& self , trace : & RecallTrace) -> Result < TraceEncoding < D > , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn encode (& self , trace : & RecallTrace) -> Result < TraceEncoding < D > , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::encode"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::limits",
+      "kind": "method",
+      "signature": "pub fn limits (& self) -> RelationLimits",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn limits (& self) -> RelationLimits",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::limits"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::new",
+      "kind": "method",
+      "signature": "pub fn new (seed : u64 , limits : RelationLimits) -> Result < Self , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (seed : u64 , limits : RelationLimits) -> Result < Self , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::seed",
+      "kind": "method",
+      "signature": "pub fn seed (& self) -> u64",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn seed (& self) -> u64",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::seed"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::trace_token",
+      "kind": "method",
+      "signature": "pub fn trace_token (& self , trace : & RecallTrace , index : usize ,) -> Result < FHRRAlgebra < D > , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn trace_token (& self , trace : & RecallTrace , index : usize ,) -> Result < FHRRAlgebra < D > , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::trace_token"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::vector_digest",
+      "kind": "method",
+      "signature": "pub fn vector_digest (& self , vector : & FHRRAlgebra < D >) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn vector_digest (& self , vector : & FHRRAlgebra < D >) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "HolographicEncoder::vector_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicError",
+      "kind": "enum",
+      "signature": "pub enum HolographicError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "LimitExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "value",
+                  "ty": "usize"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "MalformedTrace",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "EmptyCorpus",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "UnvalidatedProvenance",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "RewriteError"
+              ]
+            }
+          },
+          {
+            "name": "Composition",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "reason",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::holographic",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum HolographicError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "LimitExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "value",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "MalformedTrace",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "EmptyCorpus",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "UnvalidatedProvenance",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "RewriteError"
+                  ]
+                }
+              },
+              {
+                "name": "Composition",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "reason",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/holographic/mod.rs",
+          "source_module": "amari_rewrite::holographic",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::holographic",
+          "declaration_ident": "HolographicError"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_CORPUS_TRACES",
+      "kind": "const",
+      "signature": "pub const MAX_CORPUS_TRACES : usize",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_CORPUS_TRACES : usize",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "MAX_CORPUS_TRACES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_RECALL_RESULTS",
+      "kind": "const",
+      "signature": "pub const MAX_RECALL_RESULTS : usize",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_RECALL_RESULTS : usize",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "MAX_RECALL_RESULTS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_TRACE_DIMENSION",
+      "kind": "const",
+      "signature": "pub const MAX_TRACE_DIMENSION : usize",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_TRACE_DIMENSION : usize",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "MAX_TRACE_DIMENSION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_TRACE_TERMS",
+      "kind": "const",
+      "signature": "pub const MAX_TRACE_TERMS : usize",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_TRACE_TERMS : usize",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "MAX_TRACE_TERMS"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig",
+      "kind": "struct",
+      "signature": "pub struct RecallConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RecallConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::max_results",
+      "kind": "method",
+      "signature": "pub fn max_results (& self) -> usize",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_results (& self) -> usize",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallConfig::max_results"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::max_terms",
+      "kind": "method",
+      "signature": "pub fn max_terms (& self) -> usize",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_terms (& self) -> usize",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallConfig::max_terms"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::max_traces",
+      "kind": "method",
+      "signature": "pub fn max_traces (& self) -> usize",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_traces (& self) -> usize",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallConfig::max_traces"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (max_traces : usize , max_terms : usize , max_results : usize ,) -> Result < Self , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (max_traces : usize , max_terms : usize , max_results : usize ,) -> Result < Self , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace",
+      "kind": "struct",
+      "signature": "pub struct RecallTrace",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RecallTrace",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::goal",
+      "kind": "method",
+      "signature": "pub fn goal (& self) -> & Term",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn goal (& self) -> & Term",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace::goal"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::query_hash",
+      "kind": "method",
+      "signature": "pub fn query_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn query_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace::query_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::steps",
+      "kind": "method",
+      "signature": "pub fn steps (& self) -> & [Term]",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn steps (& self) -> & [Term]",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace::steps"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::system_hash",
+      "kind": "method",
+      "signature": "pub fn system_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn system_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace::system_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::terms",
+      "kind": "method",
+      "signature": "pub fn terms (& self) -> Vec < & Term >",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn terms (& self) -> Vec < & Term >",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace::terms"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::trace_hash",
+      "kind": "method",
+      "signature": "pub fn trace_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn trace_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace::trace_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::validate",
+      "kind": "method",
+      "signature": "pub fn validate (system : & TermSystem , certificate : & ReplayCertificate ,) -> Result < Self , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn validate (system : & TermSystem , certificate : & ReplayCertificate ,) -> Result < Self , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "RecallTrace::validate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::SCORE_DIRECTION",
+      "kind": "const",
+      "signature": "pub const SCORE_DIRECTION : & str",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const SCORE_DIRECTION : & str",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "SCORE_DIRECTION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TRACE_SCHEMA",
+      "kind": "const",
+      "signature": "pub const TRACE_SCHEMA : & str",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const TRACE_SCHEMA : & str",
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "TRACE_SCHEMA"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus",
+      "kind": "struct",
+      "signature": "pub struct TraceCorpus < const D : usize >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TraceCorpus < const D : usize >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::admit",
+      "kind": "method",
+      "signature": "pub fn admit (& mut self , trace : & RecallTrace) -> Result < () , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn admit (& mut self , trace : & RecallTrace) -> Result < () , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::admit"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::config",
+      "kind": "method",
+      "signature": "pub fn config (& self) -> RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn config (& self) -> RecallConfig",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::config"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::encoder",
+      "kind": "method",
+      "signature": "pub fn encoder (& self) -> & HolographicEncoder < D >",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn encoder (& self) -> & HolographicEncoder < D >",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::encoder"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::encoder_digest",
+      "kind": "method",
+      "signature": "pub fn encoder_digest (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn encoder_digest (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::encoder_digest"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::is_empty",
+      "kind": "method",
+      "signature": "pub fn is_empty (& self) -> bool",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_empty (& self) -> bool",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::is_empty"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::len",
+      "kind": "method",
+      "signature": "pub fn len (& self) -> usize",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn len (& self) -> usize",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::len"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::new",
+      "kind": "method",
+      "signature": "pub fn new (encoder : HolographicEncoder < D > , config : RecallConfig) -> Self",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (encoder : HolographicEncoder < D > , config : RecallConfig) -> Self",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::recall",
+      "kind": "method",
+      "signature": "pub fn recall (& self , query : & RecallTrace , limit : usize ,) -> Result < TraceRecall , HolographicError >",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn recall (& self , query : & RecallTrace , limit : usize ,) -> Result < TraceRecall , HolographicError >",
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceCorpus::recall"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceEncoding",
+      "kind": "struct",
+      "signature": "pub struct TraceEncoding < const D : usize >",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "vector",
+            "ty": "FHRRAlgebra < D >"
+          },
+          {
+            "label": "goal",
+            "ty": "FHRRAlgebra < D >"
+          },
+          {
+            "label": "path",
+            "ty": "FHRRAlgebra < D >"
+          },
+          {
+            "label": "digest",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "trace_hash",
+            "ty": "Sha256Digest"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::encode",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TraceEncoding < const D : usize >",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "vector",
+                "ty": "FHRRAlgebra < D >"
+              },
+              {
+                "label": "goal",
+                "ty": "FHRRAlgebra < D >"
+              },
+              {
+                "label": "path",
+                "ty": "FHRRAlgebra < D >"
+              },
+              {
+                "label": "digest",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "trace_hash",
+                "ty": "Sha256Digest"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/holographic/encode.rs",
+          "source_module": "amari_rewrite::holographic::encode",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::encode",
+          "declaration_ident": "TraceEncoding"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceMatch",
+      "kind": "struct",
+      "signature": "pub struct TraceMatch",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "trace_hash",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "score",
+            "ty": "TraceSimilarity"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TraceMatch",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "trace_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "score",
+                "ty": "TraceSimilarity"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceMatch"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceRecall",
+      "kind": "struct",
+      "signature": "pub struct TraceRecall",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "query_hash",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "encoder_digest",
+            "ty": "Sha256Digest"
+          },
+          {
+            "label": "considered",
+            "ty": "usize"
+          },
+          {
+            "label": "matches",
+            "ty": "Vec < TraceMatch >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TraceRecall",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "query_hash",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "encoder_digest",
+                "ty": "Sha256Digest"
+              },
+              {
+                "label": "considered",
+                "ty": "usize"
+              },
+              {
+                "label": "matches",
+                "ty": "Vec < TraceMatch >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceRecall"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceSimilarity",
+      "kind": "struct",
+      "signature": "pub struct TraceSimilarity",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "combined",
+            "ty": "f64"
+          },
+          {
+            "label": "goal_alignment",
+            "ty": "f64"
+          },
+          {
+            "label": "path_alignment",
+            "ty": "f64"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "is_reexport": true,
+      "source_module": "amari_rewrite::holographic::recall",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct TraceSimilarity",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "combined",
+                "ty": "f64"
+              },
+              {
+                "label": "goal_alignment",
+                "ty": "f64"
+              },
+              {
+                "label": "path_alignment",
+                "ty": "f64"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/holographic/recall.rs",
+          "source_module": "amari_rewrite::holographic::recall",
+          "is_reexport": true,
+          "declaration_module": "amari_rewrite::holographic::recall",
+          "declaration_ident": "TraceSimilarity"
+        }
+      ]
+    },
+    {
       "path": "amari_rewrite::inverse::ApproximateSearchEvidence",
       "kind": "struct",
       "signature": "pub struct ApproximateSearchEvidence",
@@ -26130,6 +27240,171 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::HolographicEncoder",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::encode",
+        "ident": "HolographicEncoder"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::HolographicError",
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic",
+        "ident": "HolographicError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::RecallTrace",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::TraceCorpus",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceCorpus"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::TraceEncoding",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::encode",
+        "ident": "TraceEncoding"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::TraceMatch",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceMatch"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::TraceRecall",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceRecall"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::holographic::TraceSimilarity",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceSimilarity"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::inverse::ApproximateSearchEvidence",
       "source_path": "amari-rewrite/src/inverse/outcome.rs",
       "source_ordinal": 6,
@@ -28908,6 +30183,60 @@
     },
     {
       "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::holographic::RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::holographic::TraceMatch",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceMatch"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::holographic::TraceSimilarity",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceSimilarity"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
       "impl_type_path": "amari_rewrite::inverse::GuidanceCandidate",
       "source_path": "amari-rewrite/src/inverse/guidance.rs",
       "source_ordinal": 6,
@@ -30418,6 +31747,171 @@
         "kind": "local",
         "module": "amari_rewrite::error",
         "ident": "RewriteError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::HolographicEncoder",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::encode",
+        "ident": "HolographicEncoder"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::HolographicError",
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic",
+        "ident": "HolographicError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::RecallTrace",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::TraceCorpus",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceCorpus"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::TraceEncoding",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::encode",
+        "ident": "TraceEncoding"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::TraceMatch",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceMatch"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::TraceRecall",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceRecall"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::holographic::TraceSimilarity",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceSimilarity"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -33167,6 +34661,24 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::holographic::RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::inverse::InverseSearchConfig",
       "source_path": "amari-rewrite/src/inverse/config.rs",
       "source_ordinal": 4,
@@ -34241,6 +35753,60 @@
         "kind": "local",
         "module": "amari_rewrite::error",
         "ident": "RewriteError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::holographic::HolographicError",
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic",
+        "ident": "HolographicError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::holographic::RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::holographic::RecallTrace",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallTrace"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -37798,6 +39364,114 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::holographic::HolographicError",
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic",
+        "ident": "HolographicError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::holographic::RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::holographic::RecallTrace",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "RecallTrace"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::holographic::TraceMatch",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceMatch"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::holographic::TraceRecall",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 10,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceRecall"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::holographic::TraceSimilarity",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 8,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic::recall",
+        "ident": "TraceSimilarity"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_rewrite::inverse::ApproximateSearchEvidence",
       "source_path": "amari-rewrite/src/inverse/outcome.rs",
       "source_ordinal": 6,
@@ -40998,6 +42672,24 @@
     },
     {
       "trait_path": "thiserror::Error",
+      "impl_type_path": "amari_rewrite::holographic::HolographicError",
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "thiserror::Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::holographic",
+        "ident": "HolographicError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "thiserror::Error",
       "impl_type_path": "amari_rewrite::inverse::GuidanceFailure",
       "source_path": "amari-rewrite/src/inverse/guidance.rs",
       "source_ordinal": 10,
@@ -41740,6 +43432,350 @@
       "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic",
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::digest",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::dimension",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::encode",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::limits",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::new",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::seed",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::trace_token",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicEncoder::vector_digest",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::HolographicError",
+      "source_path": "amari-rewrite/src/holographic/mod.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_CORPUS_TRACES",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_RECALL_RESULTS",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_TRACE_DIMENSION",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::MAX_TRACE_TERMS",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::max_results",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::max_terms",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::max_traces",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallConfig::new",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::goal",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::query_hash",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::steps",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::system_hash",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::terms",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::trace_hash",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::RecallTrace::validate",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::SCORE_DIRECTION",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::TRACE_SCHEMA",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 14,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::admit",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 6,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::config",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 3,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::encoder",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::encoder_digest",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 2,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::is_empty",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::len",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::new",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 0,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceCorpus::recall",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 7,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceEncoding",
+      "source_path": "amari-rewrite/src/holographic/encode.rs",
+      "source_ordinal": 11,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceMatch",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 9,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceRecall",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 10,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::holographic::TraceSimilarity",
+      "source_path": "amari-rewrite/src/holographic/recall.rs",
+      "source_ordinal": 8,
+      "gate": "feature(\"holographic-guidance\")",
+      "status": "disabled",
       "surface_kind": "top_level"
     },
     {
@@ -48464,6 +50500,7 @@
     "amari_rewrite::completion",
     "amari_rewrite::completion::inverse",
     "amari_rewrite::error",
+    "amari_rewrite::holographic",
     "amari_rewrite::inverse",
     "amari_rewrite::language",
     "amari_rewrite::network",
