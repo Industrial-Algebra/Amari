@@ -578,7 +578,25 @@ impl BackendRound {
 ///
 /// The trait exists so the hybrid stays non-generic over the holographic
 /// dimension: [`RecallLane`] implements it for one `D`, and a caller holds the
-/// lane behind a borrow.
+/// lane behind a borrow. It is sealed so dependent crates cannot supply
+/// unvalidated evidence.
+///
+/// ```compile_fail
+/// use amari_rewrite::inverse::hybrid::RecallBackend;
+/// use amari_rewrite::inverse::{GuidanceCandidate, GuidanceFailure};
+/// use amari_rewrite::relation::Sha256Digest;
+///
+/// struct Unvalidated;
+/// impl RecallBackend for Unvalidated {
+///     fn recall_hash(&self) -> Sha256Digest { unimplemented!() }
+///     fn similarities(
+///         &self,
+///         _candidates: &[GuidanceCandidate<'_>],
+///     ) -> Result<Vec<f64>, GuidanceFailure> {
+///         unimplemented!()
+///     }
+/// }
+/// ```
 #[cfg(feature = "holographic-guidance")]
 pub trait RecallBackend {
     /// This memory's identity: the encoder, the original system, the query, the

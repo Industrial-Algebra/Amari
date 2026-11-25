@@ -938,6 +938,85 @@ mod core {
         let other = Term::constant("unrelated");
         assert_eq!(other, Term::constant("unrelated"));
     }
+
+    #[test]
+    fn symbolic_weight_one_preserves_equal_digest_native_path_order() {
+        let system = system(vec![amari_rewrite::trs::Rule::new(
+            parse("Z"),
+            parse("q"),
+        )
+        .unwrap()]);
+        let round = Round::of(&system, &parse("f(g(X), Y)"));
+        let native = symbolic_order(&round);
+        assert_eq!(native, vec![0, 1], "the engine keeps [0,0] before [1]");
+        let strategy = hybrid(weights(1.0, 0.0, 0.0, 0.0));
+        let mode = GuidanceMode::CompleteWithinLimits;
+        let candidates = round.candidates();
+        let evaluation = strategy
+            .evaluate(&round.request(&candidates, &mode))
+            .expect("admissible round");
+        assert_eq!(evaluation.order, native);
+    }
+
+    #[test]
+    fn one_nonzero_symbolic_lane_preserves_native_order_at_subnormal_weight() {
+        let system = system(vec![
+            amari_rewrite::trs::Rule::new(parse("a"), parse("x")).unwrap(),
+            amari_rewrite::trs::Rule::new(parse("b"), parse("x")).unwrap(),
+            amari_rewrite::trs::Rule::new(parse("c"), parse("x")).unwrap(),
+        ]);
+        let mut round = Round::of(&system, &parse("x"));
+        // Put request order into canonical A,B,C order first, then make native
+        // preference B,A,C. Otherwise the fixture could pass accidentally.
+        let canonical = digest_order(&round);
+        let states = round.states.clone();
+        let predecessors = round.predecessors.clone();
+        let scores = round.scores.clone();
+        round.states = canonical.iter().map(|&index| states[index].clone()).collect();
+        round.predecessors = canonical
+            .iter()
+            .map(|&index| predecessors[index].clone())
+            .collect();
+        round.scores = canonical.iter().map(|&index| scores[index].clone()).collect();
+        round.scores[0].depth = 2;
+        round.scores[1].depth = 1;
+        round.scores[2].depth = 3;
+        let native = symbolic_order(&round);
+        assert_eq!(native, vec![1, 0, 2], "symbolic preference is B,A,C");
+        assert_eq!(
+            digest_order(&round),
+            vec![0, 1, 2],
+            "the fixture's canonical order is A,B,C"
+        );
+        let strategy = hybrid(weights(f64::from_bits(1), 0.0, 0.0, 0.0));
+        let mode = GuidanceMode::CompleteWithinLimits;
+        let candidates = round.candidates();
+        let evaluation = strategy
+            .evaluate(&round.request(&candidates, &mode))
+            .expect("admissible round");
+        assert_eq!(evaluation.order, native);
+    }
+
+    #[test]
+    fn pruning_a_witness_preserves_the_legacy_replayable_witness_exception() {
+        let system = two_candidate_system();
+        let strategy = hybrid(weights(1.0, 0.0, 0.0, 0.0));
+        let beam = GuidanceMode::HeuristicPruning { beam_width: 1 };
+        let outcome = completed(guided(
+            BackwardExplorer::new(&system, small_config()).search_with_strategy(
+                &parse("x"),
+                &parse("b"),
+                SearchMode::BreadthFirst,
+                &beam,
+                Some(&strategy),
+            ),
+        ));
+        assert!(
+            matches!(outcome, BackwardSearchOutcome::Witness(_)),
+            "a replay-valid existential witness stays Completed even though \
+             another candidate was pruned; exhaustion would be Approximate"
+        );
+    }
 }
 
 // ------------------------------------------------------------ neural backend
@@ -1550,7 +1629,7 @@ mod recall_backend {
         let component = f_c
             .component(HybridBackend::Recall)
             .expect("component evidence");
-        assert_eq!(component.raw, Some(0.0));
+        assert_eq!(component.raw, None);
     }
 
     #[test]
@@ -1669,6 +1748,88 @@ mod recall_backend {
         // Recall never answers "nothing similar" for a corpus it never saw, and
         // the hybrid never invents a score for it: the symbolic lane decides.
         assert_eq!(evaluation.order, symbolic_order(&round));
+    }
+
+    #[test]
+    fn search_surfaces_an_empty_recall_corpus_as_strategy_failure() {
+        let system = two_witness_system();
+        let lane = lane(&system, SEED, trace_fc(&system), Vec::new());
+        let strategy = HybridStrategy::new(config(weights(0.5, 0.0, 0.0, 0.5))).with_recall(&lane);
+        let outcome = guided(BackwardExplorer::new(&system, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("d"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&strategy),
+        ));
+        match outcome {
+            amari_rewrite::inverse::GuidedSearchOutcome::StrategyFailed(failure) => {
+                assert_eq!(
+                    failure.kind,
+                    GuidanceFailureKind::Unavailable {
+                        stage: "recall corpus"
+                    }
+                );
+            }
+            other => panic!("degraded guidance must not complete ordinarily: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn recall_lane_rejects_the_active_system_mismatch() {
+        let original = two_witness_system();
+        let lane = lane(
+            &original,
+            SEED,
+            trace_fc(&original),
+            vec![trace_b(&original), trace_fc(&original)],
+        );
+        let strategy = HybridStrategy::new(config(weights(0.0, 0.0, 0.0, 1.0))).with_recall(&lane);
+        let mut rules = original.rules().to_vec();
+        rules.push(Rule::new(parse("p"), parse("q")).unwrap());
+        let active = TermSystem::new(rules);
+        let outcome = guided(BackwardExplorer::new(&active, small_config()).search_with_strategy(
+            &parse("x"),
+            &parse("d"),
+            SearchMode::BreadthFirst,
+            &GuidanceMode::CompleteWithinLimits,
+            Some(&strategy),
+        ));
+        match outcome {
+            amari_rewrite::inverse::GuidedSearchOutcome::StrategyFailed(failure) => {
+                assert_eq!(
+                    failure.kind,
+                    GuidanceFailureKind::BackendRejected {
+                        stage: "recall system"
+                    }
+                );
+            }
+            other => panic!("a lane from another system must not steer this search: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn an_empty_round_preserves_recall_failure_status() {
+        let system = two_witness_system();
+        let round = Round::of(&system, &parse("x"));
+        let lane = lane(&system, SEED, trace_fc(&system), Vec::new());
+        let strategy = HybridStrategy::new(config(weights(0.5, 0.0, 0.0, 0.5))).with_recall(&lane);
+        let mode = GuidanceMode::CompleteWithinLimits;
+        let empty = Vec::new();
+        let evaluation = strategy
+            .evaluate(&round.request(&empty, &mode))
+            .expect("the empty round still evaluates its backends");
+        assert!(evaluation.order.is_empty());
+        assert!(evaluation.candidates.is_empty());
+        match evaluation.availability(HybridBackend::Recall) {
+            Some(HybridAvailability::Failed(failure)) => assert_eq!(
+                failure.kind,
+                GuidanceFailureKind::Unavailable {
+                    stage: "recall corpus"
+                }
+            ),
+            other => panic!("the empty round lost recall status: {other:?}"),
+        }
     }
 
     #[test]
