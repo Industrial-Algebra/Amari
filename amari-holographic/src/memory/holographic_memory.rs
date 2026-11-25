@@ -9,6 +9,7 @@ use alloc::vec::Vec;
 use rayon::prelude::*;
 
 use crate::algebra::{AlgebraConfig, BindingAlgebra};
+use super::error::{HolographicError, HolographicResult};
 
 /// A holographic associative memory storing key-value pairs in superposition.
 ///
@@ -118,20 +119,27 @@ impl<A: BindingAlgebra> HolographicMemory<A> {
         }
     }
 
-    /// Store a key-value association.
-    pub fn store(&mut self, key: &A, value: &A) {
+    /// Store a key-value association by additive superposition.
+    ///
+    /// The trace is the raw sum `T = Σ keyᵢ ⊛ valueᵢ`; no attention weighting
+    /// or normalization is applied. Repeated associations therefore accumulate.
+    pub fn store(&mut self, key: &A, value: &A) -> HolographicResult<()> {
         // Bind key and value
         let bound = key.bind(value);
 
-        // Bundle into memory trace
-        if self.item_count == 0 {
-            self.trace = bound;
+        // Add to the raw memory trace; storage is accumulation, not attention.
+        let candidate = if self.item_count == 0 {
+            bound
         } else {
-            self.trace = self
-                .trace
-                .bundle(&bound, self.config.bundle_beta)
-                .unwrap_or_else(|_| self.trace.clone());
-        }
+            self.trace.superpose(&bound).map_err(|source| {
+                HolographicError::Algebra {
+                    operation: "store superpose".to_string(),
+                    source,
+                }
+            })?
+        };
+
+        self.trace = candidate;
 
         // Track key if enabled
         if let Some(ref mut keys) = self.stored_keys {
@@ -139,34 +147,45 @@ impl<A: BindingAlgebra> HolographicMemory<A> {
         }
 
         self.item_count += 1;
+        Ok(())
     }
 
-    /// Store multiple associations at once (more efficient bundling).
-    pub fn store_batch(&mut self, pairs: &[(A, A)]) {
+    /// Store multiple associations by concatenating their additive traces.
+    pub fn store_batch(&mut self, pairs: &[(A, A)]) -> HolographicResult<()> {
         if pairs.is_empty() {
-            return;
+            return Ok(());
         }
 
-        // Bind all pairs
+        // Bind all pairs. Binding is commutative-free per algebra, but the
+        // subsequent superposition is ordered so the result is deterministic.
         #[cfg(feature = "parallel")]
         let bindings: Vec<_> = pairs.par_iter().map(|(k, v)| k.bind(v)).collect();
 
         #[cfg(not(feature = "parallel"))]
         let bindings: Vec<_> = pairs.iter().map(|(k, v)| k.bind(v)).collect();
 
-        // Bundle all bindings
-        let batch_trace =
-            A::bundle_all(&bindings, self.config.bundle_beta).unwrap_or_else(|_| A::zero());
-
-        // Merge with existing trace
-        if self.item_count == 0 {
-            self.trace = batch_trace;
-        } else {
-            self.trace = self
-                .trace
-                .bundle(&batch_trace, self.config.bundle_beta)
-                .unwrap_or_else(|_| self.trace.clone());
+        let mut batch_trace = A::zero();
+        for binding in &bindings {
+            batch_trace = batch_trace.superpose(binding).map_err(|source| {
+                HolographicError::Algebra {
+                    operation: "store_batch superpose".to_string(),
+                    source,
+                }
+            })?;
         }
+
+        let candidate = if self.item_count == 0 {
+            batch_trace
+        } else {
+            self.trace.superpose(&batch_trace).map_err(|source| {
+                HolographicError::Algebra {
+                    operation: "store_batch merge superpose".to_string(),
+                    source,
+                }
+            })?
+        };
+
+        self.trace = candidate;
 
         // Track keys if enabled
         if let Some(ref mut keys) = self.stored_keys {
@@ -176,6 +195,7 @@ impl<A: BindingAlgebra> HolographicMemory<A> {
         }
 
         self.item_count += pairs.len();
+        Ok(())
     }
 
     /// Retrieve the value associated with a key.
@@ -251,21 +271,26 @@ impl<A: BindingAlgebra> HolographicMemory<A> {
         }
     }
 
-    /// Merge another memory into this one.
-    pub fn merge(&mut self, other: &Self) {
+    /// Merge another memory into this one by additive superposition.
+    ///
+    /// An empty source is a no-op. The trace and item count advance together.
+    pub fn merge(&mut self, other: &Self) -> HolographicResult<()> {
         if other.item_count == 0 {
-            return;
+            return Ok(());
         }
 
-        if self.item_count == 0 {
-            self.trace = other.trace.clone();
+        let candidate = if self.item_count == 0 {
+            other.trace.clone()
         } else {
-            self.trace = self
-                .trace
-                .bundle(&other.trace, self.config.bundle_beta)
-                .unwrap_or_else(|_| self.trace.clone());
-        }
+            self.trace.superpose(&other.trace).map_err(|source| {
+                HolographicError::Algebra {
+                    operation: "merge superpose".to_string(),
+                    source,
+                }
+            })?
+        };
 
+        self.trace = candidate;
         self.item_count += other.item_count;
 
         // Merge keys if tracking
@@ -274,6 +299,7 @@ impl<A: BindingAlgebra> HolographicMemory<A> {
         {
             self_keys.extend(other_keys.iter().cloned());
         }
+        Ok(())
     }
 
     /// Get the raw memory trace (for inspection/serialization).

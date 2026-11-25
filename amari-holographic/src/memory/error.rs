@@ -5,6 +5,14 @@ use core::fmt;
 /// Errors that can occur during holographic memory operations.
 #[derive(Debug, Clone)]
 pub enum HolographicError {
+    /// An underlying algebra operation failed.
+    Algebra {
+        /// The operation that failed.
+        operation: String,
+        /// The algebra-level cause, preserved for diagnostics.
+        source: crate::algebra::AlgebraError,
+    },
+
     /// Memory at capacity (SNR below threshold)
     AtCapacity {
         /// Current signal-to-noise ratio
@@ -40,6 +48,9 @@ pub enum HolographicError {
 impl fmt::Display for HolographicError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Algebra { operation, source } => {
+                write!(f, "algebra operation {operation} failed: {source}")
+            }
             Self::AtCapacity { snr, threshold } => {
                 write!(
                     f,
