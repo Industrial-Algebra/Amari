@@ -32,13 +32,15 @@
 //!   unused bindings cannot be walked before a length comparison rejects the
 //!   certificate.
 //!
-//! Every test in this binary holds [`exclusive`] for its whole body, because the
-//! counters are process-wide: the previous round achieved the same isolation by
-//! having exactly one test.
+//! Every test holds [`exclusive`] for its whole body to isolate the process-wide
+//! live-byte high-water mark. Allocation COUNTING is additionally thread-local
+//! to the measured closure, so harness activity on another test thread cannot
+//! inflate the count (F37, PR #384 round 7).
 
 #![cfg(feature = "std")]
 
 use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use amari_rewrite::inverse::{
@@ -52,13 +54,19 @@ use amari_rewrite::Path;
 
 struct Counting;
 
-static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
 static LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
 static PEAK_BYTES: AtomicUsize = AtomicUsize::new(0);
 
+thread_local! {
+    static COUNT_ON_THIS_THREAD: Cell<bool> = const { Cell::new(false) };
+    static THREAD_ALLOCATIONS: Cell<usize> = const { Cell::new(0) };
+}
+
 impl Counting {
     fn record(size: usize) {
-        ALLOCATIONS.fetch_add(1, Ordering::SeqCst);
+        if COUNT_ON_THIS_THREAD.with(Cell::get) {
+            THREAD_ALLOCATIONS.with(|count| count.set(count.get() + 1));
+        }
         let live = LIVE_BYTES.load(Ordering::SeqCst) + size;
         LIVE_BYTES.store(live, Ordering::SeqCst);
         let _ = PEAK_BYTES.fetch_max(live, Ordering::SeqCst);
@@ -92,11 +100,10 @@ unsafe impl GlobalAlloc for Counting {
 #[global_allocator]
 static ALLOCATOR: Counting = Counting;
 
-/// Serializes the allocation-sensitive tests: the counters are process-wide, so
-/// a sibling test building its own fixtures while a measured closure runs would
-/// be charged to that closure. Every test in this binary takes this guard for
-/// its WHOLE body (setup included), which is what the single-test arrangement
-/// of the previous round achieved by having exactly one test.
+/// Serializes allocation-sensitive tests for the process-wide live-byte mark.
+/// Allocation counts are isolated per measured thread; sibling fixtures still
+/// affect the shared byte high-water mark, so every test takes this guard for
+/// its WHOLE body (setup included).
 static MEASURE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// Hold the allocation counters exclusively for the rest of the test body.
@@ -106,14 +113,17 @@ fn exclusive() -> std::sync::MutexGuard<'static, ()> {
         .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
-/// Run `body`, returning its value with the allocation count and peak live-byte
-/// growth observed while it ran. The caller holds [`exclusive`].
+/// Run `body`, returning its value with THIS THREAD's allocation count and the
+/// process-wide peak live-byte growth observed while it ran. The caller holds
+/// [`exclusive`] to keep sibling tests out of the peak-byte measurement.
 fn measure<T>(body: impl FnOnce() -> T) -> (usize, usize, T) {
     let start = LIVE_BYTES.load(Ordering::SeqCst);
-    ALLOCATIONS.store(0, Ordering::SeqCst);
+    THREAD_ALLOCATIONS.with(|count| count.set(0));
+    COUNT_ON_THIS_THREAD.with(|active| active.set(true));
     PEAK_BYTES.store(start, Ordering::SeqCst);
     let value = body();
-    let allocations = ALLOCATIONS.load(Ordering::SeqCst);
+    COUNT_ON_THIS_THREAD.with(|active| active.set(false));
+    let allocations = THREAD_ALLOCATIONS.with(Cell::get);
     let peak = PEAK_BYTES.load(Ordering::SeqCst).saturating_sub(start);
     (allocations, peak, value)
 }

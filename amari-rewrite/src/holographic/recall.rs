@@ -601,6 +601,14 @@ impl<const D: usize> TraceCorpus<D> {
 ///   names the trace-term measurement has always used.
 fn admission_rejection(rejection: CertificateRejection) -> HolographicError {
     match rejection {
+        CertificateRejection::Certificate(crate::error::RewriteError::RelationLimitExceeded {
+            resource: "operations",
+            limit,
+        }) => HolographicError::LimitExceeded {
+            resource: "operations",
+            value: limit.saturating_add(1),
+            limit,
+        },
         CertificateRejection::Certificate(error) => HolographicError::UnvalidatedProvenance(error),
         CertificateRejection::StepCeiling(ceiling) => HolographicError::LimitExceeded {
             resource: ceiling.resource,

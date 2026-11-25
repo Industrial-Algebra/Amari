@@ -18,12 +18,14 @@
 //! budget on purpose; the positive control shows a term at a ceiling still
 //! unifies.
 //!
-//! Every test holds [`exclusive`] for its whole body, because the counters are
-//! process-wide.
+//! Every test holds [`exclusive`] for its whole body to isolate the process-wide
+//! live-byte counters. Allocation counts are thread-local to each measured
+//! closure, so test-harness activity on another thread cannot inflate them.
 
 #![cfg(feature = "std")]
 
 use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use amari_rewrite::analysis::{unify, unify_with};
@@ -33,13 +35,19 @@ use amari_rewrite::RewriteError;
 
 struct Counting;
 
-static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
 static LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
 static PEAK_BYTES: AtomicUsize = AtomicUsize::new(0);
 
+thread_local! {
+    static COUNT_ON_THIS_THREAD: Cell<bool> = const { Cell::new(false) };
+    static THREAD_ALLOCATIONS: Cell<usize> = const { Cell::new(0) };
+}
+
 impl Counting {
     fn record(size: usize) {
-        ALLOCATIONS.fetch_add(1, Ordering::SeqCst);
+        if COUNT_ON_THIS_THREAD.with(Cell::get) {
+            THREAD_ALLOCATIONS.with(|count| count.set(count.get() + 1));
+        }
         let live = LIVE_BYTES.load(Ordering::SeqCst) + size;
         LIVE_BYTES.store(live, Ordering::SeqCst);
         let _ = PEAK_BYTES.fetch_max(live, Ordering::SeqCst);
@@ -86,10 +94,12 @@ fn exclusive() -> std::sync::MutexGuard<'static, ()> {
 /// growth observed while it ran. The caller holds [`exclusive`].
 fn measure<T>(body: impl FnOnce() -> T) -> (usize, usize, T) {
     let start = LIVE_BYTES.load(Ordering::SeqCst);
-    ALLOCATIONS.store(0, Ordering::SeqCst);
+    THREAD_ALLOCATIONS.with(|count| count.set(0));
+    COUNT_ON_THIS_THREAD.with(|active| active.set(true));
     PEAK_BYTES.store(start, Ordering::SeqCst);
     let value = body();
-    let allocations = ALLOCATIONS.load(Ordering::SeqCst);
+    COUNT_ON_THIS_THREAD.with(|active| active.set(false));
+    let allocations = THREAD_ALLOCATIONS.with(Cell::get);
     let peak = PEAK_BYTES.load(Ordering::SeqCst).saturating_sub(start);
     (allocations, peak, value)
 }
