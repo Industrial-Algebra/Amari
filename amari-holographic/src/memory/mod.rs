@@ -53,7 +53,7 @@ mod resonator;
 
 pub use error::{HolographicError, HolographicResult};
 pub use holographic_memory::{CapacityInfo, HolographicMemory, MembershipEvidence, NearestKey, RetrievalResult};
-pub use resonator::{CleanupResult, FactorizationResult, Resonator, ResonatorConfig};
+pub use resonator::{CleanupResult, FactorizationResult, Resonator, ResonatorConfig, WeightedResult, WeightedStatus};
 
 // Re-export the Bindable trait (now an alias for BindingAlgebra compatibility)
 pub use crate::algebra::BindingAlgebra as Bindable;

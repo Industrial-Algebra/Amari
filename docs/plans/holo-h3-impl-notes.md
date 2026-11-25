@@ -71,3 +71,22 @@ test h3_sided_core_wrapper ... ok
 test h3_impossible_and_singular ... ok
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
+
+## U5 — cleanup and quantitative acceptance
+
+`c test -p amari-holographic --test h3_cleanup` at parent `e1353799`, default features, RED compile exit 101, 3 intended / 0 ran:
+```text
+error[E0432]: unresolved import `amari_holographic::memory::WeightedStatus`
+error[E0599]: no method named `cleanup_nearest` found for struct `Resonator<A>` in the current scope
+```
+GREEN (same parent, U5 edits) `c test -p amari-holographic --test h3_cleanup --test h3_factor`, exit 0:
+```text
+test u5_original_observation_certificate ... ok
+test u5_orthogonal_and_invalid ... ok
+test u5_real_update_and_hard_selection ... ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test h3_sided_local ... ok
+test h3_sided_core_wrapper ... ok
+test h3_impossible_and_singular ... ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
