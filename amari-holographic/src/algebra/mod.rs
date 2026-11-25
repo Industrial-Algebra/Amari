@@ -432,8 +432,12 @@ pub trait GeometricAlgebra: BindingAlgebra {
         self.grade_project(2)
     }
 
-    /// Compute the dual (Hodge star operator).
-    fn dual(&self) -> Self;
+    /// Right multiplication by the inverse pseudoscalar, undefined for null metrics.
+    fn right_clifford_dual(&self) -> Result<Self, amari_core::DualError>;
+    /// Metric Hodge star: `reverse(x) I`, undefined for null metrics.
+    fn hodge_dual(&self) -> Result<Self, amari_core::DualError>;
+    /// Oriented metric-independent basis complement, including for null signatures.
+    fn formal_complement(&self) -> Self;
 
     /// Compute the inner product (contraction).
     fn inner_product(&self, other: &Self) -> Self;

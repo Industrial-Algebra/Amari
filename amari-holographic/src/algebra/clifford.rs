@@ -322,17 +322,23 @@ impl<const P: usize, const Q: usize, const R: usize> GeometricAlgebra for Cliffo
         self.inner.grade_spectrum()
     }
 
-    fn dual(&self) -> Self {
-        // The dual (Hodge star) multiplies by the pseudoscalar inverse
-        // For Cl(n,0,0), the pseudoscalar is e_{12...n} and I^2 = (-1)^(n(n-1)/2)
-        // Simplified implementation: just use geometric product with pseudoscalar
-        let mut pseudo_coeffs = alloc::vec![0.0; Self::ALGEBRA_DIM];
-        if Self::ALGEBRA_DIM > 0 {
-            // The pseudoscalar is the last basis element
-            pseudo_coeffs[Self::ALGEBRA_DIM - 1] = 1.0;
+    fn right_clifford_dual(&self) -> Result<Self, amari_core::DualError> {
+        if R > 0 {
+            return Err(amari_core::DualError::DegeneratePseudoscalar);
         }
-        let pseudoscalar = Multivector::from_coefficients(pseudo_coeffs);
-        Self::new(self.inner.geometric_product(&pseudoscalar))
+        // I^-1 = (-1)^Q reverse(I). Reversal negates grades 2,3 mod 4.
+        let negative = (Q % 2 == 1) ^ (Self::VECTOR_DIM % 4 >= 2);
+        let mut inv = Multivector::zero();
+        inv.set(Self::ALGEBRA_DIM - 1, if negative { -1. } else { 1. });
+        Ok(Self::new(self.inner.geometric_product(&inv)))
+    }
+
+    fn hodge_dual(&self) -> Result<Self, amari_core::DualError> {
+        self.inner.hodge_dual().map(Self::new)
+    }
+
+    fn formal_complement(&self) -> Self {
+        Self::new(self.inner.formal_complement())
     }
 
     fn inner_product(&self, other: &Self) -> Self {

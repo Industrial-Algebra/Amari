@@ -7039,6 +7039,25 @@
       ]
     },
     {
+      "path": "amari_gpu::GpuHolographic::adapter_info",
+      "kind": "method",
+      "signature": "pub fn adapter_info (& self) -> & wgpu :: AdapterInfo",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "is_reexport": true,
+      "source_module": "amari_gpu::holographic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn adapter_info (& self) -> & wgpu :: AdapterInfo",
+          "source_path": "amari-gpu/src/holographic.rs",
+          "source_module": "amari_gpu::holographic",
+          "is_reexport": true,
+          "declaration_module": "amari_gpu::holographic",
+          "declaration_ident": "GpuHolographic::adapter_info"
+        }
+      ]
+    },
+    {
       "path": "amari_gpu::GpuHolographic::batch_bind",
       "kind": "method",
       "signature": "pub async fn batch_bind (& self , keys : & [f64] , values : & [f64]) -> GpuHolographicResult < Vec < f64 > >",
@@ -21901,6 +21920,25 @@
           "is_reexport": false,
           "declaration_module": "amari_gpu::holographic",
           "declaration_ident": "GpuHolographic"
+        }
+      ]
+    },
+    {
+      "path": "amari_gpu::holographic::GpuHolographic::adapter_info",
+      "kind": "method",
+      "signature": "pub fn adapter_info (& self) -> & wgpu :: AdapterInfo",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "is_reexport": false,
+      "source_module": "amari_gpu::holographic",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn adapter_info (& self) -> & wgpu :: AdapterInfo",
+          "source_path": "amari-gpu/src/holographic.rs",
+          "source_module": "amari_gpu::holographic",
+          "is_reexport": false,
+          "declaration_module": "amari_gpu::holographic",
+          "declaration_ident": "GpuHolographic::adapter_info"
         }
       ]
     },
@@ -44094,31 +44132,15 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_gpu::GpuHolographic::adapter_info",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 1,
+      "gate": "all(feature(\"holographic\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_gpu::GpuHolographic::batch_bind",
-      "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 2,
-      "gate": "all(feature(\"holographic\"))",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_gpu::GpuHolographic::batch_bundle",
-      "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 5,
-      "gate": "all(feature(\"holographic\"))",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_gpu::GpuHolographic::batch_similarity",
-      "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 4,
-      "gate": "all(feature(\"holographic\"))",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_gpu::GpuHolographic::batch_unbind",
       "source_path": "amari-gpu/src/holographic.rs",
       "source_ordinal": 3,
       "gate": "all(feature(\"holographic\"))",
@@ -44126,9 +44148,33 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_gpu::GpuHolographic::find_most_similar",
+      "path": "amari_gpu::GpuHolographic::batch_bundle",
       "source_path": "amari-gpu/src/holographic.rs",
       "source_ordinal": 6,
+      "gate": "all(feature(\"holographic\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_gpu::GpuHolographic::batch_similarity",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 5,
+      "gate": "all(feature(\"holographic\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_gpu::GpuHolographic::batch_unbind",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 4,
+      "gate": "all(feature(\"holographic\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_gpu::GpuHolographic::find_most_similar",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 7,
       "gate": "all(feature(\"holographic\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -44144,7 +44190,7 @@
     {
       "path": "amari_gpu::GpuHolographic::new_product_cl3x32",
       "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "all(feature(\"holographic\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -44152,7 +44198,7 @@
     {
       "path": "amari_gpu::GpuHolographic::should_use_gpu",
       "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "all(feature(\"holographic\"))",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -47678,31 +47724,15 @@
       "surface_kind": "top_level"
     },
     {
+      "path": "amari_gpu::holographic::GpuHolographic::adapter_info",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 1,
+      "gate": "feature(\"holographic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
       "path": "amari_gpu::holographic::GpuHolographic::batch_bind",
-      "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 2,
-      "gate": "feature(\"holographic\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_gpu::holographic::GpuHolographic::batch_bundle",
-      "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 5,
-      "gate": "feature(\"holographic\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_gpu::holographic::GpuHolographic::batch_similarity",
-      "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 4,
-      "gate": "feature(\"holographic\")",
-      "status": "disabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_gpu::holographic::GpuHolographic::batch_unbind",
       "source_path": "amari-gpu/src/holographic.rs",
       "source_ordinal": 3,
       "gate": "feature(\"holographic\")",
@@ -47710,9 +47740,33 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_gpu::holographic::GpuHolographic::find_most_similar",
+      "path": "amari_gpu::holographic::GpuHolographic::batch_bundle",
       "source_path": "amari-gpu/src/holographic.rs",
       "source_ordinal": 6,
+      "gate": "feature(\"holographic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_gpu::holographic::GpuHolographic::batch_similarity",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 5,
+      "gate": "feature(\"holographic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_gpu::holographic::GpuHolographic::batch_unbind",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 4,
+      "gate": "feature(\"holographic\")",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_gpu::holographic::GpuHolographic::find_most_similar",
+      "source_path": "amari-gpu/src/holographic.rs",
+      "source_ordinal": 7,
       "gate": "feature(\"holographic\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -47728,7 +47782,7 @@
     {
       "path": "amari_gpu::holographic::GpuHolographic::new_product_cl3x32",
       "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 2,
       "gate": "feature(\"holographic\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
@@ -47736,7 +47790,7 @@
     {
       "path": "amari_gpu::holographic::GpuHolographic::should_use_gpu",
       "source_path": "amari-gpu/src/holographic.rs",
-      "source_ordinal": 7,
+      "source_ordinal": 8,
       "gate": "feature(\"holographic\")",
       "status": "disabled",
       "surface_kind": "inherent_method"
