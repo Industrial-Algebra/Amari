@@ -145,6 +145,7 @@ mod fixtures {
     /// One expansion round's engine candidates, their states, and their
     /// transparent symbolic scores — in the engine's own order.
     pub struct Round {
+        pub system: TermSystem,
         pub parent: SymbolicState,
         pub states: Vec<SymbolicState>,
         pub predecessors: Vec<SymbolicPredecessor>,
@@ -172,6 +173,7 @@ mod fixtures {
                 })
                 .collect();
             Self {
+                system: system.clone(),
                 parent,
                 states,
                 predecessors,
@@ -198,6 +200,7 @@ mod fixtures {
             mode: &'a GuidanceMode,
         ) -> GuidanceRequest<'a> {
             GuidanceRequest {
+                system_hash: amari_rewrite::inverse::system_hash(&self.system),
                 parent: &self.parent,
                 depth: 0,
                 mode,
@@ -375,6 +378,7 @@ mod core {
 
         // The degenerate single-candidate round is finite too: `0.0`, not NaN.
         let single = Round {
+            system: round.system.clone(),
             parent: round.parent.clone(),
             states: round.states[..1].to_vec(),
             predecessors: round.predecessors[..1].to_vec(),
@@ -601,6 +605,7 @@ mod core {
         let reversed_states: Vec<_> = round.states.iter().rev().cloned().collect();
         let reversed_predecessors: Vec<_> = round.predecessors.iter().rev().cloned().collect();
         let reversed_round = Round {
+            system: round.system.clone(),
             parent: round.parent.clone(),
             states: reversed_states,
             predecessors: reversed_predecessors,
@@ -941,11 +946,9 @@ mod core {
 
     #[test]
     fn symbolic_weight_one_preserves_equal_digest_native_path_order() {
-        let system = system(vec![amari_rewrite::trs::Rule::new(
-            parse("Z"),
-            parse("q"),
-        )
-        .unwrap()]);
+        let system = system(vec![
+            amari_rewrite::trs::Rule::new(parse("Z"), parse("q")).unwrap()
+        ]);
         let round = Round::of(&system, &parse("f(g(X), Y)"));
         let native = symbolic_order(&round);
         assert_eq!(native, vec![0, 1], "the engine keeps [0,0] before [1]");
@@ -972,12 +975,18 @@ mod core {
         let states = round.states.clone();
         let predecessors = round.predecessors.clone();
         let scores = round.scores.clone();
-        round.states = canonical.iter().map(|&index| states[index].clone()).collect();
+        round.states = canonical
+            .iter()
+            .map(|&index| states[index].clone())
+            .collect();
         round.predecessors = canonical
             .iter()
             .map(|&index| predecessors[index].clone())
             .collect();
-        round.scores = canonical.iter().map(|&index| scores[index].clone()).collect();
+        round.scores = canonical
+            .iter()
+            .map(|&index| scores[index].clone())
+            .collect();
         round.scores[0].depth = 2;
         round.scores[1].depth = 1;
         round.scores[2].depth = 3;
@@ -1488,7 +1497,7 @@ mod recall_backend {
     };
     use amari_rewrite::inverse::hybrid::{
         HybridAvailability, HybridBackend, HybridConfigError, HybridStrategy, RecallBackend,
-        RecallLane,
+        RecallLane, RecallProjection,
     };
     use amari_rewrite::inverse::{
         guidance_hash, query_hash, system_hash, BackwardExplorer, BackwardSearchOutcome,
@@ -1630,6 +1639,11 @@ mod recall_backend {
             .component(HybridBackend::Recall)
             .expect("component evidence");
         assert_eq!(component.raw, None);
+        assert_eq!(
+            component.recall_projection,
+            Some(RecallProjection::NoMatchingTrace),
+            "the absent candidate is explicitly unmeasured"
+        );
     }
 
     #[test]
@@ -1755,13 +1769,15 @@ mod recall_backend {
         let system = two_witness_system();
         let lane = lane(&system, SEED, trace_fc(&system), Vec::new());
         let strategy = HybridStrategy::new(config(weights(0.5, 0.0, 0.0, 0.5))).with_recall(&lane);
-        let outcome = guided(BackwardExplorer::new(&system, small_config()).search_with_strategy(
-            &parse("x"),
-            &parse("d"),
-            SearchMode::BreadthFirst,
-            &GuidanceMode::CompleteWithinLimits,
-            Some(&strategy),
-        ));
+        let outcome = guided(
+            BackwardExplorer::new(&system, small_config()).search_with_strategy(
+                &parse("x"),
+                &parse("d"),
+                SearchMode::BreadthFirst,
+                &GuidanceMode::CompleteWithinLimits,
+                Some(&strategy),
+            ),
+        );
         match outcome {
             amari_rewrite::inverse::GuidedSearchOutcome::StrategyFailed(failure) => {
                 assert_eq!(
@@ -1788,13 +1804,15 @@ mod recall_backend {
         let mut rules = original.rules().to_vec();
         rules.push(Rule::new(parse("p"), parse("q")).unwrap());
         let active = TermSystem::new(rules);
-        let outcome = guided(BackwardExplorer::new(&active, small_config()).search_with_strategy(
-            &parse("x"),
-            &parse("d"),
-            SearchMode::BreadthFirst,
-            &GuidanceMode::CompleteWithinLimits,
-            Some(&strategy),
-        ));
+        let outcome = guided(
+            BackwardExplorer::new(&active, small_config()).search_with_strategy(
+                &parse("x"),
+                &parse("d"),
+                SearchMode::BreadthFirst,
+                &GuidanceMode::CompleteWithinLimits,
+                Some(&strategy),
+            ),
+        );
         match outcome {
             amari_rewrite::inverse::GuidedSearchOutcome::StrategyFailed(failure) => {
                 assert_eq!(
@@ -1938,7 +1956,7 @@ mod combined {
     use crate::fixtures::*;
     use amari_rewrite::holographic::{HolographicEncoder, RecallConfig, RecallTrace};
     use amari_rewrite::inverse::hybrid::{
-        HybridAvailability, HybridBackend, HybridStrategy, RecallLane,
+        HybridAvailability, HybridBackend, HybridStrategy, RecallLane, RecallProjection,
     };
     use amari_rewrite::inverse::{
         scorer_hash_with, BackwardExplorer, BackwardSearchOutcome, GuidanceMode, GuidanceStrategy,
@@ -2056,7 +2074,13 @@ mod combined {
                 let normalized = component.normalized.expect("normalized when available");
                 assert!(normalized.is_finite());
                 assert!((0.0..=1.0).contains(&normalized));
-                assert!(component.raw.expect("raw evidence").is_finite());
+                if backend == HybridBackend::Recall
+                    && component.recall_projection == Some(RecallProjection::NoMatchingTrace)
+                {
+                    assert_eq!(component.raw, None, "unmatched recall is unmeasured");
+                } else {
+                    assert!(component.raw.expect("raw evidence").is_finite());
+                }
                 sum += component.contribution;
             }
             assert_eq!(candidate.combined.to_bits(), sum.to_bits());

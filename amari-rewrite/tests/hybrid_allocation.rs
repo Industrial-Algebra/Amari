@@ -99,9 +99,8 @@ fn recall_trace_count_is_rejected_before_projection_or_encoding() {
     let traces = vec![trace(&system, &parse("b")), trace(&system, &parse("f(c)"))];
     let config = RecallConfig::new(1, MAX_TRACE_TERMS, 1).expect("bounded config");
     let encoder = HolographicEncoder::<64>::new(7, RelationLimits::default()).expect("encoder");
-    let (allocations, outcome) = measure(|| {
-        RecallLane::new(&system, encoder, config, query, traces)
-    });
+    let (allocations, outcome) =
+        measure(|| RecallLane::new(&system, encoder, config, query, traces));
     let error = outcome.expect_err("two traces exceed the one-trace ceiling");
     assert!(
         matches!(

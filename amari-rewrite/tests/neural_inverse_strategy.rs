@@ -228,6 +228,7 @@ fn two_state_config() -> InverseSearchConfig {
 /// One expansion round's engine candidates, their canonical states, and their
 /// transparent symbolic scores — in the engine's own order.
 struct Round {
+    system: TermSystem,
     parent: SymbolicState,
     states: Vec<SymbolicState>,
     predecessors: Vec<SymbolicPredecessor>,
@@ -255,6 +256,7 @@ impl Round {
             })
             .collect();
         Self {
+            system: system.clone(),
             parent,
             states,
             predecessors,
@@ -281,6 +283,7 @@ impl Round {
         mode: &'a GuidanceMode,
     ) -> GuidanceRequest<'a> {
         GuidanceRequest {
+            system_hash: amari_rewrite::inverse::system_hash(&self.system),
             parent: &self.parent,
             depth: 0,
             mode,
@@ -556,6 +559,7 @@ fn ties_resolve_by_the_canonical_content_order() {
     // Permuting the request cannot change the identity order: the same
     // candidate is first either way.
     let swapped = Round {
+        system: round.system.clone(),
         parent: SymbolicState::new(target.clone(), ConstraintSet::new()),
         states: round.states.iter().rev().cloned().collect(),
         predecessors: round.predecessors.iter().rev().cloned().collect(),

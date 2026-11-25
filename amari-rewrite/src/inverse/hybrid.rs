@@ -55,7 +55,9 @@
 //!   it has **no ordering effect**;
 //! - weight `1`: for a single enabled backend the combined score *is* that
 //!   backend's normalized score, so the hybrid's order is that backend's order
-//!   exactly;
+//!   exactly. More generally, exactly one positive-weight available backend
+//!   supplies its native permutation at ANY positive weight, including a
+//!   subnormal weight whose products could otherwise collapse into a tie;
 //! - **all weights zero** is defined, not undefined: every contribution is
 //!   `+0.0`, every combined score is `+0.0`, and the round is ordered by the
 //!   canonical content key alone. That is a pure, documented tie-break, never a
@@ -79,10 +81,18 @@
 //!   vocabulary plus the round meter ([`BackendFailure`]), `raw` and `normalized`
 //!   are `None`, and the contribution is exactly `+0.0`.
 //!
-//! A failure is therefore explicit evidence *and* the round still ranks from the
-//! remaining evidence — the hybrid answers with what it actually has and never
-//! claims a failed backend's score. No component ever disappears because another
-//! backend scored well, and no component's evidence is omitted from the answer.
+//! Recall components additionally carry `RecallProjection`: `Matched` records
+//! the measured similarity and supplying trace identity; `NoMatchingTrace`
+//! leaves `raw = None`, while its native 0.0 remains only an ordering input.
+//! An absent projection is never presented as a measured zero similarity.
+//!
+//! A failure is therefore explicit evidence *and* [`HybridStrategy::evaluate`]
+//! still ranks from the remaining evidence — the hybrid answers with what it
+//! actually has and never claims a failed backend's score. The search-facing
+//! [`HybridStrategy::rank`] does not silently accept that degraded authority:
+//! when the failed lane has positive weight it returns a typed
+//! [`crate::inverse::GuidanceFailure`], which becomes `StrategyFailed`. No
+//! component ever disappears because another backend scored well.
 //!
 //! ## Ordering authority, completeness authority, and identity
 //!
@@ -90,7 +100,9 @@
 //! exhausted closure keeps the unguided explored set and evidence hash; any
 //! truncation stays inside [`crate::inverse::GuidanceMode::HeuristicPruning`],
 //! which applies it to the *combined* order and counts what it dropped. A
-//! budget-truncated run stays `Partial`.
+//! budget-truncated run stays `Partial`. Pruned exhaustion is `Approximate`;
+//! the engine's existing existential-witness exception remains: a replay-valid
+//! witness may still be `Completed` even when another candidate was pruned.
 //!
 //! A round's answer is a function of `(configuration, backends, candidates)`
 //! alone: no mutable global, no model cache, no RNG, no filesystem, and no
@@ -462,6 +474,33 @@ impl HybridAvailability {
     }
 }
 
+/// Provenance of one candidate's recall projection.
+#[cfg(feature = "holographic-guidance")]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum RecallProjection {
+    /// A remembered trace contains the candidate's canonical term.
+    Matched {
+        /// Measured combined similarity with that trace.
+        similarity: f64,
+        /// Identity of the trace supplying the measurement.
+        trace_hash: Sha256Digest,
+    },
+    /// No remembered trace contains the candidate. Its native 0.0 is only an
+    /// ordering input, not a measured similarity.
+    NoMatchingTrace,
+}
+
+#[cfg(feature = "holographic-guidance")]
+impl RecallProjection {
+    /// Native scalar used only for ranking.
+    pub fn native_value(self) -> f64 {
+        match self {
+            Self::Matched { similarity, .. } => similarity,
+            Self::NoMatchingTrace => 0.0,
+        }
+    }
+}
+
 /// One backend's evidence for one candidate.
 ///
 /// `raw` is the backend's native statistic in its native direction, `normalized`
@@ -482,6 +521,9 @@ pub struct HybridComponent {
     pub weight: f64,
     /// `weight * normalized`, exactly `+0.0` when unavailable.
     pub contribution: f64,
+    /// Recall projection provenance, when this is the recall lane.
+    #[cfg(feature = "holographic-guidance")]
+    pub recall_projection: Option<RecallProjection>,
 }
 
 /// One candidate's exhaustive hybrid evidence.
@@ -515,15 +557,15 @@ pub struct HybridEvaluation {
     pub order: Vec<usize>,
     /// Per-candidate evidence, in request order.
     pub candidates: Vec<HybridCandidate>,
+    /// Backend availability at ROUND level, in [`HybridBackend::ALL`] order.
+    /// This survives a zero-candidate round.
+    pub statuses: [HybridAvailability; 4],
 }
 
 impl HybridEvaluation {
     /// The availability of one backend for this round.
     pub fn availability(&self, backend: HybridBackend) -> Option<HybridAvailability> {
-        self.candidates
-            .first()
-            .and_then(|candidate| candidate.component(backend))
-            .map(|component| component.availability)
+        Some(self.statuses[backend as usize])
     }
 
     /// The candidate evidence for one request index.
@@ -542,6 +584,9 @@ struct BackendRound {
     raws: Option<Vec<f64>>,
     /// The backend's own preference order (a permutation).
     order: Option<Vec<usize>>,
+    /// Recall projection provenance, indexed by request position.
+    #[cfg(feature = "holographic-guidance")]
+    recall_projections: Option<Vec<RecallProjection>>,
 }
 
 impl BackendRound {
@@ -550,6 +595,8 @@ impl BackendRound {
             availability: HybridAvailability::Missing,
             raws: None,
             order: None,
+            #[cfg(feature = "holographic-guidance")]
+            recall_projections: None,
         }
     }
 
@@ -561,6 +608,8 @@ impl BackendRound {
             }),
             raws: None,
             order: None,
+            #[cfg(feature = "holographic-guidance")]
+            recall_projections: None,
         }
     }
 
@@ -569,8 +618,29 @@ impl BackendRound {
             availability: HybridAvailability::Available,
             raws: Some(raws),
             order: Some(order),
+            #[cfg(feature = "holographic-guidance")]
+            recall_projections: None,
         }
     }
+
+    #[cfg(feature = "holographic-guidance")]
+    fn available_recall(
+        raws: Vec<f64>,
+        order: Vec<usize>,
+        projections: Vec<RecallProjection>,
+    ) -> Self {
+        Self {
+            availability: HybridAvailability::Available,
+            raws: Some(raws),
+            order: Some(order),
+            recall_projections: Some(projections),
+        }
+    }
+}
+
+#[cfg(feature = "holographic-guidance")]
+mod recall_sealed {
+    pub trait Sealed {}
 }
 
 /// A validated memory of replay-validated inverse traces, as the hybrid
@@ -598,7 +668,10 @@ impl BackendRound {
 /// }
 /// ```
 #[cfg(feature = "holographic-guidance")]
-pub trait RecallBackend {
+pub trait RecallBackend: recall_sealed::Sealed {
+    /// Identity of the system whose replay evidence this memory carries.
+    fn recall_system(&self) -> Sha256Digest;
+
     /// This memory's identity: the encoder, the original system, the query, the
     /// admitted trace identities, and the ceilings that can change an answer.
     fn recall_hash(&self) -> Sha256Digest;
@@ -614,6 +687,12 @@ pub trait RecallBackend {
         &self,
         candidates: &[GuidanceCandidate<'_>],
     ) -> Result<Vec<f64>, GuidanceFailure>;
+
+    /// Score one round with typed projection provenance, in request order.
+    fn projection_evidence(
+        &self,
+        candidates: &[GuidanceCandidate<'_>],
+    ) -> Result<Vec<RecallProjection>, GuidanceFailure>;
 }
 
 /// A bounded holographic recall memory bound to one original term system.
@@ -660,6 +739,15 @@ impl<const D: usize> RecallLane<D> {
         query: crate::holographic::RecallTrace,
         traces: Vec<crate::holographic::RecallTrace>,
     ) -> Result<Self, HybridConfigError> {
+        if traces.len() > config.max_traces() {
+            return Err(HybridConfigError::RecallAdmission(
+                crate::holographic::HolographicError::LimitExceeded {
+                    resource: "recall traces",
+                    value: traces.len(),
+                    limit: config.max_traces(),
+                },
+            ));
+        }
         let system = crate::inverse::system_hash(original);
         if query.system_hash() != system {
             return Err(HybridConfigError::ForeignTraceProvenance {
@@ -715,7 +803,11 @@ impl<const D: usize> RecallLane<D> {
 
     /// The candidate's native similarity: the highest `combined` similarity
     /// among matched traces whose content contains its term.
-    fn similarity_of(&self, recall: &crate::holographic::TraceRecall, key: &Sha256Digest) -> f64 {
+    fn similarity_of(
+        &self,
+        recall: &crate::holographic::TraceRecall,
+        key: &Sha256Digest,
+    ) -> RecallProjection {
         for matched in &recall.matches {
             let Ok(found) = self
                 .traces
@@ -726,16 +818,25 @@ impl<const D: usize> RecallLane<D> {
             if self.traces[found].1.contains(key) {
                 // Matches arrive in descending similarity order, so the first
                 // containing trace is the most similar one.
-                return matched.score.combined;
+                return RecallProjection::Matched {
+                    similarity: matched.score.combined,
+                    trace_hash: matched.trace_hash,
+                };
             }
         }
-        // No remembered trace contains this term: the native neutral value.
-        0.0
+        RecallProjection::NoMatchingTrace
     }
 }
 
 #[cfg(feature = "holographic-guidance")]
+impl<const D: usize> recall_sealed::Sealed for RecallLane<D> {}
+
+#[cfg(feature = "holographic-guidance")]
 impl<const D: usize> RecallBackend for RecallLane<D> {
+    fn recall_system(&self) -> Sha256Digest {
+        self.system
+    }
+
     fn recall_hash(&self) -> Sha256Digest {
         let mut payload = Vec::with_capacity(176 + self.traces.len() * 32);
         payload.extend_from_slice(&(D as u64).to_le_bytes());
@@ -755,17 +856,29 @@ impl<const D: usize> RecallBackend for RecallLane<D> {
         &self,
         candidates: &[GuidanceCandidate<'_>],
     ) -> Result<Vec<f64>, GuidanceFailure> {
+        self.projection_evidence(candidates).map(|projections| {
+            projections
+                .into_iter()
+                .map(RecallProjection::native_value)
+                .collect()
+        })
+    }
+
+    fn projection_evidence(
+        &self,
+        candidates: &[GuidanceCandidate<'_>],
+    ) -> Result<Vec<RecallProjection>, GuidanceFailure> {
         let total = candidates.len();
         let recall = self
             .corpus
             .recall(&self.query, self.limit)
             .map_err(|error| GuidanceFailure::new(recall_kind(&error), total, 0))?;
-        let mut similarities = Vec::with_capacity(total);
+        let mut projections = Vec::with_capacity(total);
         for candidate in candidates {
             let key = term_projection(candidate.state.term());
-            similarities.push(self.similarity_of(&recall, &key));
+            projections.push(self.similarity_of(&recall, &key));
         }
-        Ok(similarities)
+        Ok(projections)
     }
 }
 
@@ -981,7 +1094,7 @@ impl<'a> HybridStrategy<'a> {
         // once so every lane and the final order agree on it.
         let keys: Vec<Vec<u8>> = candidates.iter().map(content_key).collect();
 
-        let symbolic = symbolic_round(candidates, &keys);
+        let symbolic = symbolic_round(candidates);
         #[cfg(feature = "neural")]
         let neural = match self.neural {
             Some(neural) => neural_round(neural, request),
@@ -1033,6 +1146,7 @@ impl<'a> HybridStrategy<'a> {
             }
         }
 
+        let statuses = HybridBackend::ALL.map(|backend| rounds[backend as usize].availability);
         let mut evidence = Vec::with_capacity(total);
         for index in 0..total {
             let mut combined = 0.0f64;
@@ -1040,7 +1154,29 @@ impl<'a> HybridStrategy<'a> {
             for (slot, backend) in HybridBackend::ALL.into_iter().enumerate() {
                 let round = &rounds[slot];
                 let weight = self.config.weights.get(backend);
-                let raw = round.raws.as_ref().map(|raws| raws[index]);
+                #[cfg(feature = "holographic-guidance")]
+                let recall_projection = if backend == HybridBackend::Recall {
+                    round
+                        .recall_projections
+                        .as_ref()
+                        .map(|projections| projections[index])
+                } else {
+                    None
+                };
+                let raw = {
+                    #[cfg(feature = "holographic-guidance")]
+                    {
+                        match recall_projection {
+                            Some(RecallProjection::Matched { similarity, .. }) => Some(similarity),
+                            Some(RecallProjection::NoMatchingTrace) => None,
+                            None => round.raws.as_ref().map(|raws| raws[index]),
+                        }
+                    }
+                    #[cfg(not(feature = "holographic-guidance"))]
+                    {
+                        round.raws.as_ref().map(|raws| raws[index])
+                    }
+                };
                 let normalized = normalized[slot].as_ref().map(|values| values[index]);
                 // Exactly `+0.0` when unavailable: an unavailable lane can never
                 // move a combined score, and it is never reported as a score.
@@ -1056,6 +1192,8 @@ impl<'a> HybridStrategy<'a> {
                     normalized,
                     weight,
                     contribution,
+                    #[cfg(feature = "holographic-guidance")]
+                    recall_projection,
                 });
             }
             evidence.push(HybridCandidate {
@@ -1065,16 +1203,32 @@ impl<'a> HybridStrategy<'a> {
             });
         }
 
-        let mut order: Vec<usize> = (0..total).collect();
-        order.sort_by(|&left, &right| {
-            evidence[left]
-                .combined
-                .total_cmp(&evidence[right].combined)
-                .then_with(|| keys[left].cmp(&keys[right]))
-        });
+        let mut positive = HybridBackend::ALL
+            .into_iter()
+            .enumerate()
+            .filter(|(_, backend)| self.config.weights.get(*backend) > 0.0);
+        let single = positive.next();
+        let multiple = positive.next().is_some();
+        let order = match (single, multiple) {
+            (Some((slot, _)), false) if statuses[slot].is_available() => rounds[slot]
+                .order
+                .clone()
+                .expect("an available backend has a full permutation"),
+            _ => {
+                let mut order: Vec<usize> = (0..total).collect();
+                order.sort_by(|&left, &right| {
+                    evidence[left]
+                        .combined
+                        .total_cmp(&evidence[right].combined)
+                        .then_with(|| keys[left].cmp(&keys[right]))
+                });
+                order
+            }
+        };
         Ok(HybridEvaluation {
             order,
             candidates: evidence,
+            statuses,
         })
     }
 }
@@ -1085,7 +1239,19 @@ impl GuidanceStrategy for HybridStrategy<'_> {
     }
 
     fn rank(&self, request: &GuidanceRequest<'_>) -> Result<Vec<usize>, GuidanceFailure> {
-        self.evaluate(request).map(|evaluation| evaluation.order)
+        let evaluation = self.evaluate(request)?;
+        for (slot, backend) in HybridBackend::ALL.into_iter().enumerate() {
+            if self.config.weights.get(backend) > 0.0 {
+                if let HybridAvailability::Failed(failure) = evaluation.statuses[slot] {
+                    return Err(GuidanceFailure::new(
+                        failure.kind,
+                        request.candidates.len(),
+                        failure.scored,
+                    ));
+                }
+            }
+        }
+        Ok(evaluation.order)
     }
 }
 
@@ -1113,15 +1279,22 @@ fn ordinal_normalization(order: &[usize], total: usize, scale: f64) -> Option<Ve
     )
 }
 
-/// The symbolic lane: the engine's own lexicographic order, in content order.
-fn symbolic_round(candidates: &[GuidanceCandidate<'_>], keys: &[Vec<u8>]) -> BackendRound {
+/// The symbolic lane: the engine's own lexicographic order. Equal-score,
+/// equal-digest transitions keep their native request order, exactly as the
+/// engine's stable `(score, digest)` sort does.
+fn symbolic_round(candidates: &[GuidanceCandidate<'_>]) -> BackendRound {
     let total = candidates.len();
     let mut order: Vec<usize> = (0..total).collect();
     order.sort_by(|&left, &right| {
         candidates[left]
             .score
             .cmp(candidates[right].score)
-            .then_with(|| keys[left].cmp(&keys[right]))
+            .then_with(|| {
+                candidates[left]
+                    .state
+                    .canonical_digest()
+                    .cmp(&candidates[right].state.canonical_digest())
+            })
     });
     let mut positions = vec![0usize; total];
     for (position, &index) in order.iter().enumerate() {
@@ -1251,17 +1424,30 @@ fn recall_round(
     keys: &[Vec<u8>],
 ) -> BackendRound {
     let total = request.candidates.len();
-    let similarities = match recall.similarities(request.candidates) {
-        Ok(similarities) => similarities,
+    if recall.recall_system() != request.system_hash {
+        return BackendRound::failed(GuidanceFailure::new(
+            GuidanceFailureKind::BackendRejected {
+                stage: "recall system",
+            },
+            total,
+            0,
+        ));
+    }
+    let projections = match recall.projection_evidence(request.candidates) {
+        Ok(projections) => projections,
         Err(failure) => return BackendRound::failed(failure),
     };
-    if similarities.len() != total {
+    if projections.len() != total {
         return BackendRound::failed(GuidanceFailure::new(
             GuidanceFailureKind::MalformedRanking,
             total,
             0,
         ));
     }
+    let similarities: Vec<f64> = projections
+        .iter()
+        .map(|projection| projection.native_value())
+        .collect();
     if let Some(index) = similarities.iter().position(|value| !value.is_finite()) {
         return BackendRound::failed(GuidanceFailure::new(
             GuidanceFailureKind::NonFiniteScore {
@@ -1279,7 +1465,7 @@ fn recall_round(
             .total_cmp(&similarities[left])
             .then_with(|| keys[left].cmp(&keys[right]))
     });
-    BackendRound::available(similarities, order)
+    BackendRound::available_recall(similarities, order, projections)
 }
 
 /// The canonical content key that settles every remaining tie.
