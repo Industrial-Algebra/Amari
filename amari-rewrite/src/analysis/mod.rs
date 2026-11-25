@@ -25,4 +25,5 @@ pub use lpo::{lpo_greater, prove_terminating, Precedence, TerminationProof, Term
 // The module and its primary entry point share the name `unify`;
 // they live in different namespaces, so `analysis::unify(...)` calls
 // the function while `analysis::unify::unify` remains the module path.
+pub(crate) use self::unify::unify_admitted;
 pub use self::unify::{unify, unify_with};

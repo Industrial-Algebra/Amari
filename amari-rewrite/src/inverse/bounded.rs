@@ -69,15 +69,41 @@ fn limit(resource: &'static str, ceiling: usize) -> RewriteError {
     }
 }
 
-/// Preflight a borrowed term's shape.
+/// A borrowed measurement rejection with the observed value preserved.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum BorrowedMeasurementError {
+    /// A term shape exceeded its ceiling.
+    Shape {
+        resource: &'static str,
+        value: usize,
+        limit: usize,
+    },
+    /// The shared operation meter was exhausted.
+    Operations { limit: usize },
+}
+
+impl BorrowedMeasurementError {
+    fn into_rewrite(self) -> RewriteError {
+        match self {
+            Self::Shape {
+                resource, limit, ..
+            } => RewriteError::RelationLimitExceeded { resource, limit },
+            Self::Operations { limit } => RewriteError::RelationLimitExceeded {
+                resource: "operations",
+                limit,
+            },
+        }
+    }
+}
+
+/// Preflight a borrowed term's shape, preserving the offending lower bound.
 ///
-/// Iterative (explicit worklist), charging one operation per inspected node and
-/// rejecting as soon as the node or depth ceiling is exceeded — before a
-/// worklist proportional to the term can grow.
-pub(crate) fn measure_borrowed(
+/// Iterative (explicit worklist), charging one operation per inspected node
+/// and rejecting before an unaffordable queue grows.
+pub(crate) fn measure_borrowed_detailed(
     term: &Term,
     resources: &mut RelationResources,
-) -> RewriteResult<TermShape> {
+) -> Result<TermShape, BorrowedMeasurementError> {
     let max_nodes = resources.max_term_nodes();
     let max_depth = resources.max_term_depth();
     let mut nodes = 0usize;
@@ -85,22 +111,41 @@ pub(crate) fn measure_borrowed(
     let mut stack: VecDeque<(&Term, usize)> = VecDeque::new();
     stack.push_back((term, 1));
     while let Some((node, node_depth)) = stack.pop_front() {
-        resources.record_operations(1)?;
+        resources
+            .record_operations(1)
+            .map_err(|_| BorrowedMeasurementError::Operations {
+                limit: resources.max_operations(),
+            })?;
         nodes = nodes.saturating_add(1);
         if nodes > max_nodes {
-            return Err(limit("term nodes", max_nodes));
+            return Err(BorrowedMeasurementError::Shape {
+                resource: "term nodes",
+                value: nodes,
+                limit: max_nodes,
+            });
         }
         if node_depth > max_depth {
-            return Err(limit("term depth", max_depth));
+            return Err(BorrowedMeasurementError::Shape {
+                resource: "term depth",
+                value: node_depth,
+                limit: max_depth,
+            });
         }
         depth = depth.max(node_depth);
         if let Term::Sym(_, args) = node {
-            // Charge-before-push: every pending frame is a distinct node, so an
-            // over-budget term is rejected here rather than after the worklist
-            // grew to its arity.
             let pending = nodes.saturating_add(stack.len()).saturating_add(args.len());
             if pending > max_nodes {
-                return Err(limit("term nodes", max_nodes));
+                return Err(BorrowedMeasurementError::Shape {
+                    resource: "term nodes",
+                    value: pending,
+                    limit: max_nodes,
+                });
+            }
+            let inevitable = stack.len().saturating_add(args.len());
+            if inevitable > resources.remaining_operations() {
+                return Err(BorrowedMeasurementError::Operations {
+                    limit: resources.max_operations(),
+                });
             }
             for arg in args {
                 stack.push_back((arg, node_depth + 1));
@@ -108,6 +153,14 @@ pub(crate) fn measure_borrowed(
         }
     }
     Ok(TermShape { nodes, depth })
+}
+
+/// Preflight a borrowed term's shape under the ordinary rewrite error type.
+pub(crate) fn measure_borrowed(
+    term: &Term,
+    resources: &mut RelationResources,
+) -> RewriteResult<TermShape> {
+    measure_borrowed_detailed(term, resources).map_err(BorrowedMeasurementError::into_rewrite)
 }
 
 /// Measure the shape `term` would have after this substitution is applied.

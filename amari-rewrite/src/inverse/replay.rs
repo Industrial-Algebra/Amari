@@ -11,11 +11,11 @@
 use alloc::string::ToString;
 use alloc::vec::Vec;
 
-use crate::analysis::unify;
+use crate::analysis::unify_admitted;
 use crate::error::{RewriteError, RewriteResult};
 use crate::inverse::bounded::{
-    apply_checked, measure_borrowed, measure_matcher, shape_after_replacement, TermShape,
-    TraceVariables,
+    apply_checked, measure_borrowed, measure_borrowed_detailed, measure_matcher,
+    shape_after_replacement, BorrowedMeasurementError, TermShape, TraceVariables,
 };
 use crate::inverse::{
     BackwardDerivation, BidirectionalDerivation, GuidanceMode, InverseSearchConfig,
@@ -175,8 +175,9 @@ impl ReplayCertificate {
     /// (the hashes and the replay).
     pub fn verify(&self, system: &TermSystem) -> RewriteResult<()> {
         let mut resources = RelationResources::new(&RelationLimits::default());
-        preflight_and_admit(self, &mut resources).map_err(certificate_rejection_error)?;
-        self.verify_admitted(system)
+        let admission =
+            preflight_and_admit(self, &mut resources).map_err(certificate_rejection_error)?;
+        self.verify_admitted(system, &admission)
     }
 
     /// Verify a certificate whose cheap preflight and borrowed admission have
@@ -187,7 +188,11 @@ impl ReplayCertificate {
     /// rejection onto its own public error type) and then enters here, which is
     /// what keeps a valid certificate's borrowed terms from being walked twice
     /// (F27, PR #384 round 5).
-    pub(crate) fn verify_admitted(&self, system: &TermSystem) -> RewriteResult<()> {
+    pub(crate) fn verify_admitted(
+        &self,
+        system: &TermSystem,
+        admission: &CertificateAdmission,
+    ) -> RewriteResult<()> {
         let mismatch = |message: &str| RewriteError::ResidualMismatch {
             message: message.to_string(),
         };
@@ -203,17 +208,31 @@ impl ReplayCertificate {
         if crate::inverse::guidance_hash(&self.guidance) != self.guidance_hash {
             return Err(mismatch("certificate guidance hash mismatch"));
         }
-        match (&self.query, &self.derivation) {
-            (ReplayQuery::Backward { target, goal }, ReplayDerivation::Backward(derivation)) => {
-                replay_backward(system, target, goal, derivation)
-            }
+        match (&self.query, &self.derivation, admission) {
+            (
+                ReplayQuery::Backward { target, goal },
+                ReplayDerivation::Backward(derivation),
+                CertificateAdmission::Backward { leaf },
+            ) => replay_backward(system, target, goal, derivation, *leaf),
             (
                 ReplayQuery::Bidirectional { source, goal },
                 ReplayDerivation::Bidirectional(derivation),
-            ) => replay_bidirectional(system, source, goal, derivation),
+                CertificateAdmission::Bidirectional {
+                    source: source_shape,
+                },
+            ) => replay_bidirectional(system, source, goal, derivation, *source_shape),
             _ => Err(mismatch("query kind does not match derivation kind")),
         }
     }
+}
+
+/// Shapes computed by the single borrowed-admission pass and needed by replay.
+/// Every other borrowed term is still admitted; only these shapes have a
+/// consumer after preflight, so carrying them avoids a second measurement.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum CertificateAdmission {
+    Backward { leaf: Option<TermShape> },
+    Bidirectional { source: TermShape },
 }
 
 /// One rejection from the shared certificate preflight and borrowed admission.
@@ -234,6 +253,8 @@ pub(crate) enum CertificateRejection {
     Shape {
         /// The rejected resource (`"term nodes"` or `"term depth"`).
         resource: &'static str,
+        /// The measured offending lower bound.
+        value: usize,
         /// The applied ceiling.
         limit: usize,
     },
@@ -263,7 +284,7 @@ pub(crate) enum CertificateRejection {
 pub(crate) fn preflight_and_admit(
     certificate: &ReplayCertificate,
     resources: &mut RelationResources,
-) -> Result<(), CertificateRejection> {
+) -> Result<CertificateAdmission, CertificateRejection> {
     // The embedded configuration is part of the certified statement, so it must
     // be a VALID configuration: a certificate carrying limits no search could
     // run under (for example max_depth = 0) is rejected regardless of whether
@@ -310,15 +331,9 @@ pub(crate) fn preflight_and_admit(
             ));
         }
     }
-    // Borrowed admission: one shared meter, no clones, no hashes yet.
-    admit_certificate(&certificate.query, &certificate.derivation, resources).map_err(|error| {
-        match error {
-            RewriteError::RelationLimitExceeded { resource, limit } => {
-                CertificateRejection::Shape { resource, limit }
-            }
-            other => CertificateRejection::Certificate(other),
-        }
-    })
+    // Borrowed admission: one shared meter, no clones, no hashes yet. Carry
+    // the shapes replay consumes into its continuation (F32, PR #384 round 6).
+    admit_certificate(&certificate.query, &certificate.derivation, resources)
 }
 
 /// Map one shared rejection onto [`ReplayCertificate::verify`]'s error type.
@@ -326,9 +341,9 @@ fn certificate_rejection_error(rejection: CertificateRejection) -> RewriteError 
     match rejection {
         CertificateRejection::Certificate(error) => error,
         CertificateRejection::StepCeiling(ceiling) => ceiling_error(ceiling),
-        CertificateRejection::Shape { resource, limit } => {
-            RewriteError::RelationLimitExceeded { resource, limit }
-        }
+        CertificateRejection::Shape {
+            resource, limit, ..
+        } => RewriteError::RelationLimitExceeded { resource, limit },
     }
 }
 
@@ -343,36 +358,68 @@ fn admit_certificate(
     query: &ReplayQuery,
     derivation: &ReplayDerivation,
     resources: &mut RelationResources,
-) -> RewriteResult<()> {
+) -> Result<CertificateAdmission, CertificateRejection> {
     match (query, derivation) {
         (ReplayQuery::Backward { target, goal }, ReplayDerivation::Backward(derivation)) => {
-            let _ = admit(target, resources)?;
-            let _ = admit(goal, resources)?;
+            let _ = admit_borrowed(target, resources)?;
+            let _ = admit_borrowed(goal, resources)?;
+            let mut leaf = None;
             for step in &derivation.steps {
-                let _ = admit(&step.term, resources)?;
+                leaf = Some(admit_borrowed(&step.term, resources)?);
             }
-            Ok(())
+            Ok(CertificateAdmission::Backward { leaf })
         }
         (
             ReplayQuery::Bidirectional { source, goal },
             ReplayDerivation::Bidirectional(derivation),
         ) => {
-            let _ = admit(source, resources)?;
-            let _ = admit(goal, resources)?;
-            let _ = admit(&derivation.meeting_forward, resources)?;
-            let _ = admit(&derivation.meeting_backward, resources)?;
+            let source_shape = admit_borrowed(source, resources)?;
+            let _ = admit_borrowed(goal, resources)?;
+            let _ = admit_borrowed(&derivation.meeting_forward, resources)?;
+            let _ = admit_borrowed(&derivation.meeting_backward, resources)?;
             for step in &derivation.backward_steps {
-                let _ = admit(&step.term, resources)?;
+                let _ = admit_borrowed(&step.term, resources)?;
             }
             for (_, range) in derivation.unifier.iter() {
-                let _ = admit(range, resources)?;
+                let _ = admit_borrowed(range, resources)?;
             }
-            Ok(())
+            Ok(CertificateAdmission::Bidirectional {
+                source: source_shape,
+            })
         }
-        _ => Err(mismatch(
+        _ => Err(CertificateRejection::Certificate(mismatch(
             "query kind does not match derivation kind".to_string(),
-        )),
+        ))),
     }
+}
+
+/// Admit one borrowed certificate term, retaining the observed shape value for
+/// the holographic boundary's public LimitExceeded payload.
+fn admit_borrowed(
+    term: &Term,
+    resources: &mut RelationResources,
+) -> Result<TermShape, CertificateRejection> {
+    let shape = measure_borrowed_detailed(term, resources).map_err(|error| match error {
+        BorrowedMeasurementError::Shape {
+            resource,
+            value,
+            limit,
+        } => CertificateRejection::Shape {
+            resource,
+            value,
+            limit,
+        },
+        BorrowedMeasurementError::Operations { limit } => {
+            CertificateRejection::Certificate(RewriteError::RelationLimitExceeded {
+                resource: "operations",
+                limit,
+            })
+        }
+    })?;
+    resources
+        .record_term(shape.nodes, shape.depth)
+        .map_err(CertificateRejection::Certificate)?;
+    Ok(shape)
 }
 
 /// One derivation half whose step count exceeds what the embedded search
@@ -665,30 +712,29 @@ fn replay_backward(
     target: &Term,
     goal: &Term,
     derivation: &BackwardDerivation,
+    admitted_leaf: Option<TermShape>,
 ) -> RewriteResult<()> {
     let mut resources = RelationResources::new(&RelationLimits::default());
-    // The embedded step/state/operation ceilings were already decided on
-    // integers by the caller (see the crate-internal step checker); this replay
-    // only meters the work it performs.
-    // Admit every borrowed endpoint before it is cloned or unified.
-    let _ = admit(target, &mut resources)?;
-    let _ = admit(goal, &mut resources)?;
+    // The caller's shared preflight admitted every borrowed endpoint and step;
+    // replay carries the leaf shape forward instead of measuring it again.
     if derivation.steps.is_empty() {
         // Zero-step witness: target must unify with the goal. ONLY a genuine
         // unification failure is a certificate mismatch; a resource rejection
         // from unification is the replay's own typed budget error and is
         // propagated unchanged (F26, PR #384 round 5).
-        return unify(target, goal, &mut resources)
+        return unify_admitted(target, goal, &mut resources)
             .map(|_| ())
             .map_err(|error| translate_unification(error, "zero-step witness does not unify"));
     }
     let leaf = &derivation.steps.last().expect("non-empty").term;
-    let leaf_shape = admit(leaf, &mut resources)?;
+    let leaf_shape = admitted_leaf.ok_or_else(|| {
+        mismatch("certificate admission is missing the backward leaf shape".to_string())
+    })?;
     // F7 (PR #384 round 2): the leaf/goal unifier is retained, never discarded.
     // It is the one assignment every reconstructed term is read under. F26: a
     // resource rejection is not a mismatch, so it keeps its type (and its
     // `RelationLimitExceeded` resource name) all the way out.
-    let assignment = unify(leaf, goal, &mut resources).map_err(|error| {
+    let assignment = unify_admitted(leaf, goal, &mut resources).map_err(|error| {
         translate_unification(error, "derivation leaf does not unify with the goal")
     })?;
     // F9 (PR #384 round 3): the anchor of the one whole-trace correspondence.
@@ -777,17 +823,13 @@ fn replay_bidirectional(
     source: &Term,
     goal: &Term,
     derivation: &BidirectionalDerivation,
+    source_shape: TermShape,
 ) -> RewriteResult<()> {
     let mut resources = RelationResources::new(&RelationLimits::default());
-    // The embedded step/state/operation/transition ceilings were already decided
-    // on integers by the caller (see the crate-internal step checker).
-    // Admit every borrowed endpoint and meeting term BEFORE any clone, including
-    // the source clone the forward half needs.
-    let mut current_shape = admit(source, &mut resources)?;
+    // The shared preflight admitted all caller-owned terms. Only the source
+    // shape is needed immediately; it is carried forward for the first rebuild.
+    let mut current_shape = source_shape;
     let mut current = source.clone();
-    let _ = admit(goal, &mut resources)?;
-    let _ = admit(&derivation.meeting_forward, &mut resources)?;
-    let _ = admit(&derivation.meeting_backward, &mut resources)?;
     for step in &derivation.forward_steps {
         let (next, next_shape) = replay_step(
             system,
@@ -844,10 +886,10 @@ fn replay_bidirectional(
     for step in derivation.backward_steps.iter().rev() {
         // F1 (PR #384 round 1): the recorded backward term of each step IS the
         // state this replay must reach, so it is compared before the step is
-        // applied. F8: the replay state must be an INSTANCE of the recorded term
+        // applied. Its borrowed shape was admitted by the shared preflight.
+        // F8: the replay state must be an INSTANCE of the recorded term
         // under the ONE correspondence accumulated so far; a constant or a term
         // of another shape is still a hard rejection.
-        let _ = admit(&step.term, &mut resources)?;
         if !match_pattern_into(&mut correspondence, &step.term, &current) {
             return Err(mismatch(
                 "replayed state does not match the recorded backward term".to_string(),
@@ -978,10 +1020,10 @@ mod tests {
             .expect_err("the shared meter cannot pay for the sixth value");
         assert_eq!(
             error,
-            CertificateRejection::Shape {
+            CertificateRejection::Certificate(RewriteError::RelationLimitExceeded {
                 resource: "operations",
                 limit: 5,
-            },
+            }),
             "the aggregate admission is one pool, not one meter per range"
         );
     }

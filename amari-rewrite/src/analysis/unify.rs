@@ -125,6 +125,29 @@ pub fn unify_with(
     // F24: admit every borrowed input BEFORE it is cloned. Nothing in this
     // function clones a caller term or range until this returns Ok.
     admit_borrowed_inputs(substitution, left, right, resources)?;
+    unify_with_admitted(substitution, left, right, resources)
+}
+
+/// Unify two certificate terms whose borrowed admission was already performed
+/// by the shared certificate preflight. The fresh substitution has no ranges
+/// to admit; the worklist, resolution, and occurs work remains fully metered.
+pub(crate) fn unify_admitted(
+    left: &Term,
+    right: &Term,
+    resources: &mut RelationResources,
+) -> RewriteResult<Substitution> {
+    let mut substitution = Substitution::new();
+    unify_with_admitted(&mut substitution, left, right, resources)?;
+    Ok(substitution)
+}
+
+/// Worklist continuation shared by public and pre-admitted unification.
+fn unify_with_admitted(
+    substitution: &mut Substitution,
+    left: &Term,
+    right: &Term,
+    resources: &mut RelationResources,
+) -> RewriteResult<()> {
     let mut worklist: Vec<(Term, Term)> = Vec::new();
     push_pair(&mut worklist, left, right, resources)?;
     let mut seen = SeenEquations::new();
@@ -156,15 +179,12 @@ pub fn unify_with(
                 // may survive: every one of them is now stale.
                 seen.invalidate();
             }
-            Decision::Children(children) => {
-                // The children are the children of the RESOLVED pair, so a
-                // pre-bound variable whose range is a symbol is decomposed into
-                // the range's arguments and never the variable itself.
-                //
-                // Charge-before-clone: each child equation is one pending pop,
-                // so a budget that cannot pay for the children rejects here
-                // instead of cloning and enqueueing them.
-                for (left_arg, right_arg) in &children {
+            Decision::Children(left_args, right_args) => {
+                // The children are borrowed from the RESOLVED pair. Each is
+                // cloned exactly once by `push_pair`, after that pair's
+                // enqueue charge succeeds — no batch clone precedes the
+                // budget check (F31, PR #384 round 6).
+                for (left_arg, right_arg) in left_args.iter().zip(right_args.iter()) {
                     push_pair(&mut worklist, left_arg, right_arg, resources)?;
                 }
                 // Decomposed: the pair itself is decided, so remember it. A
@@ -178,14 +198,14 @@ pub fn unify_with(
 }
 
 /// The decision `resolve_pair` makes about one popped equation.
-enum Decision {
+enum Decision<'a> {
     /// Both sides resolved to the same term: nothing to do.
     Equal,
     /// Bind `variable` to `range`.
     Bind(Variable, Term),
     /// Both sides resolved to symbols with the same head and arity: decompose
-    /// into these child equations.
-    Children(Vec<(Term, Term)>),
+    /// these borrowed argument slices, cloning each child only at enqueue.
+    Children(&'a [Term], &'a [Term]),
 }
 
 fn same_variable(left: &Term, right: &Term) -> bool {
@@ -355,12 +375,12 @@ fn admit_acyclic(
 /// Resolution is a borrowed root chase: it returns a reference into the
 /// equation or into the substitution and allocates nothing. Clones happen only
 /// for the decision's own ownership requirement, and only after admission.
-fn resolve_pair(
-    substitution: &Substitution,
-    lhs: &Term,
-    rhs: &Term,
+fn resolve_pair<'a>(
+    substitution: &'a Substitution,
+    lhs: &'a Term,
+    rhs: &'a Term,
     resources: &mut RelationResources,
-) -> RewriteResult<Decision> {
+) -> RewriteResult<Decision<'a>> {
     let left = resolve(substitution, lhs, resources)?;
     let right = resolve(substitution, rhs, resources)?;
     Ok(match (left, right) {
@@ -374,12 +394,7 @@ fn resolve_pair(
             if left_args.len() != right_args.len() {
                 return Err(failure("arity mismatch"));
             }
-            let children = left_args
-                .iter()
-                .zip(right_args.iter())
-                .map(|(left_arg, right_arg)| (left_arg.clone(), right_arg.clone()))
-                .collect();
-            Decision::Children(children)
+            Decision::Children(left_args, right_args)
         }
     })
 }

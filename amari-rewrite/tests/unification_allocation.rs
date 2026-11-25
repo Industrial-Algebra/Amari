@@ -257,15 +257,9 @@ fn child_equations_are_not_cloned_before_their_enqueue_budget() {
     let right = wide(4_000);
     // Admission costs 8,002 operations; root enqueue/pop and two root
     // resolves consume the remaining four. No child enqueue is affordable.
-    let limits =
-        RelationLimits::new(4_096, 64, 4_096, 8_006).expect("valid tightened limits");
-    let (allocations, peak, outcome) = measure(|| {
-        unify(
-            &left,
-            &right,
-            &mut RelationResources::new(&limits),
-        )
-    });
+    let limits = RelationLimits::new(4_096, 64, 4_096, 8_006).expect("valid tightened limits");
+    let (allocations, peak, outcome) =
+        measure(|| unify(&left, &right, &mut RelationResources::new(&limits)));
     let error = outcome.expect_err("no child equation fits the remaining budget");
     assert!(
         matches!(

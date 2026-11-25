@@ -241,12 +241,12 @@ impl RecallTrace {
         // valid certificate from being walked twice.
         let limits = RelationLimits::default();
         let mut meter = RelationResources::new(&limits);
-        crate::inverse::preflight_and_admit(certificate, &mut meter)
+        let admission = crate::inverse::preflight_and_admit(certificate, &mut meter)
             .map_err(admission_rejection)?;
         // Every borrowed term is admitted and the certificate is preflight-clean,
         // so only the hashes and the replay remain: no second admission walk.
         certificate
-            .verify_admitted(system)
+            .verify_admitted(system, &admission)
             .map_err(HolographicError::UnvalidatedProvenance)?;
         // The trace content is read out from the certified pair, never from
         // caller text.
@@ -607,30 +607,19 @@ fn admission_rejection(rejection: CertificateRejection) -> HolographicError {
             value: ceiling.value,
             limit: ceiling.limit,
         },
-        CertificateRejection::Shape { resource, limit } => {
-            admission_error(crate::error::RewriteError::RelationLimitExceeded { resource, limit })
-        }
-    }
-}
-
-/// Surface a relation-limit rejection as an admission limit.
-///
-/// `value` is the first inadmissible value (`limit + 1`): the measured walk
-/// abandons at the ceiling rather than counting the whole over-limit term.
-fn admission_error(error: crate::error::RewriteError) -> HolographicError {
-    match error {
-        crate::error::RewriteError::RelationLimitExceeded { resource, limit } => {
-            HolographicError::LimitExceeded {
-                resource: match resource {
-                    "term nodes" => "trace term nodes",
-                    "term depth" => "trace term depth",
-                    other => other,
-                },
-                value: limit.saturating_add(1),
-                limit,
-            }
-        }
-        other => HolographicError::UnvalidatedProvenance(other),
+        CertificateRejection::Shape {
+            resource,
+            value,
+            limit,
+        } => HolographicError::LimitExceeded {
+            resource: match resource {
+                "term nodes" => "trace term nodes",
+                "term depth" => "trace term depth",
+                other => other,
+            },
+            value,
+            limit,
+        },
     }
 }
 
