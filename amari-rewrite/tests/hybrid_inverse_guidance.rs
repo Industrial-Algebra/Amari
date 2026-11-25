@@ -1004,6 +1004,14 @@ mod core {
             .evaluate(&round.request(&candidates, &mode))
             .expect("admissible round");
         assert_eq!(evaluation.order, native);
+
+        // A positive-weight lane that is merely MISSING does not disable the
+        // sole available native lane (and produces no failure).
+        let strategy = hybrid(weights(f64::from_bits(1), 1.0, 0.0, 0.0));
+        let evaluation = strategy
+            .evaluate(&round.request(&candidates, &mode))
+            .expect("admissible round");
+        assert_eq!(evaluation.order, native);
     }
 
     #[test]
@@ -1025,6 +1033,26 @@ mod core {
             "a replay-valid existential witness stays Completed even though \
              another candidate was pruned; exhaustion would be Approximate"
         );
+    }
+
+    #[test]
+    fn pruned_exhaustion_is_approximate_with_drop_and_frontier_evidence() {
+        let system = two_witness_system();
+        let strategy = hybrid(weights(1.0, 0.0, 0.0, 0.0));
+        let beam = GuidanceMode::HeuristicPruning { beam_width: 1 };
+        let outcome = completed(guided(
+            BackwardExplorer::new(&system, two_state_config()).search_with_strategy(
+                &parse("x"),
+                &parse("z"),
+                SearchMode::BreadthFirst,
+                &beam,
+                Some(&strategy),
+            ),
+        ));
+        let evidence = approximate(&outcome);
+        assert_eq!(evidence.dropped_candidates, 1);
+        assert!(evidence.frontier.is_some());
+        assert!(evidence.summary.contains("heuristic pruning dropped 1"));
     }
 }
 
@@ -1643,6 +1671,38 @@ mod recall_backend {
             component.recall_projection,
             Some(RecallProjection::NoMatchingTrace),
             "the absent candidate is explicitly unmeasured"
+        );
+    }
+
+    #[test]
+    fn recall_absence_is_relative_to_the_bounded_returned_matches() {
+        let system = two_witness_system();
+        let lane = RecallLane::new(
+            &system,
+            encoder(SEED),
+            RecallConfig::new(8, MAX_TRACE_TERMS, 1).expect("one returned match"),
+            trace_fc(&system),
+            vec![trace_b(&system), trace_fc(&system)],
+        )
+        .expect("both traces are admitted");
+        assert_eq!(lane.trace_count(), 2);
+        let round = Round::of(&system, &parse("x"));
+        let strategy = HybridStrategy::new(config(weights(0.0, 0.0, 0.0, 1.0))).with_recall(&lane);
+        let mode = GuidanceMode::CompleteWithinLimits;
+        let candidates = round.candidates();
+        let evaluation = strategy
+            .evaluate(&round.request(&candidates, &mode))
+            .expect("admissible round");
+        let b = evaluation
+            .candidate(0)
+            .expect("b evidence")
+            .component(HybridBackend::Recall)
+            .expect("recall component");
+        assert_eq!(b.raw, None);
+        assert_eq!(
+            b.recall_projection,
+            Some(RecallProjection::NoMatchingTrace),
+            "b is admitted but omitted by the one-result recall"
         );
     }
 

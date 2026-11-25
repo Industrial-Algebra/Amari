@@ -17,7 +17,7 @@
 //! | symbolic | LOWER is preferred | the candidate's position in the engine's lexicographic symbolic order |
 //! | neural | LOWER is preferred | the ranker's score |
 //! | geometric | LOWER is preferred | the seven-lane transparent total |
-//! | recall | HIGHER is preferred | the maximum `combined` similarity of a remembered trace that contains the candidate's term |
+//! | recall | HIGHER is preferred | the maximum `combined` similarity among the bounded matches returned for this query that contains the candidate's term |
 //!
 //! Raw lanes are never added together. Each *available* backend ranks the round
 //! in its own native direction with its own content tie-break, and the hybrid
@@ -79,12 +79,15 @@
 //!   score the round (a ceiling, a rejected stage, a non-finite score, an empty
 //!   recall corpus, …). The failure is the guidance seam's own typed, sanitized
 //!   vocabulary plus the round meter ([`BackendFailure`]), `raw` and `normalized`
-//!   are `None`, and the contribution is exactly `+0.0`.
+//!   are `None`, and the contribution is exactly `+0.0`. `Missing` and `Failed`
+//!   are distinct: a missing lane does not trigger search failure.
 //!
 //! Recall components additionally carry `RecallProjection`: `Matched` records
 //! the measured similarity and supplying trace identity; `NoMatchingTrace`
 //! leaves `raw = None`, while its native 0.0 remains only an ordering input.
-//! An absent projection is never presented as a measured zero similarity.
+//! Absence is relative to the BOUNDED matches returned for this query: an
+//! admitted trace omitted by the result limit is still `NoMatchingTrace`. An
+//! absent projection is never presented as a measured zero similarity.
 //!
 //! A failure is therefore explicit evidence *and* [`HybridStrategy::evaluate`]
 //! still ranks from the remaining evidence — the hybrid answers with what it
@@ -99,9 +102,9 @@
 //! Ordering only: complete mode consumes the full permutation, so a fully
 //! exhausted closure keeps the unguided explored set and evidence hash; any
 //! truncation stays inside [`crate::inverse::GuidanceMode::HeuristicPruning`],
-//! which applies it to the *combined* order and counts what it dropped. A
-//! budget-truncated run stays `Partial`. Pruned exhaustion is `Approximate`;
-//! the engine's existing existential-witness exception remains: a replay-valid
+//! which applies it to the *combined* order and counts what it dropped. Pruned
+//! exhaustion is `Approximate`; resource-budget truncation is `Partial`. The
+//! engine's existing existential-witness exception remains: a replay-valid
 //! witness may still be `Completed` even when another candidate was pruned.
 //!
 //! A round's answer is a function of `(configuration, backends, candidates)`
@@ -478,15 +481,18 @@ impl HybridAvailability {
 #[cfg(feature = "holographic-guidance")]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum RecallProjection {
-    /// A remembered trace contains the candidate's canonical term.
+    /// A trace returned among the bounded recall matches contains the
+    /// candidate's canonical term.
     Matched {
         /// Measured combined similarity with that trace.
         similarity: f64,
         /// Identity of the trace supplying the measurement.
         trace_hash: Sha256Digest,
     },
-    /// No remembered trace contains the candidate. Its native 0.0 is only an
-    /// ordering input, not a measured similarity.
+    /// No trace among the BOUNDED matches returned for this query contains the
+    /// candidate. An admitted trace omitted by the result limit may still
+    /// exist. Its native 0.0 is only an ordering input, not a measured
+    /// similarity.
     NoMatchingTrace,
 }
 
@@ -658,11 +664,18 @@ mod recall_sealed {
 ///
 /// struct Unvalidated;
 /// impl RecallBackend for Unvalidated {
+///     fn recall_system(&self) -> Sha256Digest { unimplemented!() }
 ///     fn recall_hash(&self) -> Sha256Digest { unimplemented!() }
 ///     fn similarities(
 ///         &self,
 ///         _candidates: &[GuidanceCandidate<'_>],
 ///     ) -> Result<Vec<f64>, GuidanceFailure> {
+///         unimplemented!()
+///     }
+///     fn projection_evidence(
+///         &self,
+///         _candidates: &[GuidanceCandidate<'_>],
+///     ) -> Result<Vec<amari_rewrite::inverse::hybrid::RecallProjection>, GuidanceFailure> {
 ///         unimplemented!()
 ///     }
 /// }
@@ -702,10 +715,11 @@ pub trait RecallBackend: recall_sealed::Sealed {
 /// requires that recorded system to be `original`, so provenance is checked
 /// rather than assumed. The lane projects recall evidence onto candidates by
 /// **canonical term identity**: a candidate's native similarity is the highest
-/// `combined` similarity among the recalled traces whose content contains the
-/// candidate's state term, and `0.0` (the neutral native value) when no
-/// remembered trace does. Constraint sets are not part of a trace's content and
-/// are therefore not projected.
+/// `combined` similarity among the bounded matches returned for this query
+/// whose content contains the candidate's state term, and `0.0` (the neutral
+/// native value) when no returned match does. An admitted trace omitted by the
+/// result limit is therefore absent from the projection. Constraint sets are
+/// not part of a trace's content and are therefore not projected.
 #[cfg(feature = "holographic-guidance")]
 #[derive(Clone, Debug)]
 pub struct RecallLane<const D: usize> {
@@ -802,7 +816,8 @@ impl<const D: usize> RecallLane<D> {
     }
 
     /// The candidate's native similarity: the highest `combined` similarity
-    /// among matched traces whose content contains its term.
+    /// among the bounded matches returned for this query whose content contains
+    /// its term.
     fn similarity_of(
         &self,
         recall: &crate::holographic::TraceRecall,
@@ -1121,8 +1136,9 @@ impl<'a> HybridStrategy<'a> {
 
         // The ordinal-fraction normalization, per available backend. A backend
         // whose answer is not a full permutation (or whose raw evidence does not
-        // cover the round) is degraded to typed failure evidence: the invariant
-        // `raw.is_some() <=> normalized.is_some()` holds for every component.
+        // cover the round) is degraded to typed failure evidence. Recall is the
+        // deliberate exception to raw/normalized co-presence: NoMatchingTrace
+        // has raw=None but keeps its ordinal derived from native 0.0.
         let scale = if total <= 1 { 0.0 } else { (total - 1) as f64 };
         let mut normalized: [Option<Vec<f64>>; 4] = [None, None, None, None];
         for (slot, round) in rounds.iter_mut().enumerate() {
@@ -1206,7 +1222,9 @@ impl<'a> HybridStrategy<'a> {
         let mut positive = HybridBackend::ALL
             .into_iter()
             .enumerate()
-            .filter(|(_, backend)| self.config.weights.get(*backend) > 0.0);
+            .filter(|(slot, backend)| {
+                self.config.weights.get(*backend) > 0.0 && statuses[*slot].is_available()
+            });
         let single = positive.next();
         let multiple = positive.next().is_some();
         let order = match (single, multiple) {
