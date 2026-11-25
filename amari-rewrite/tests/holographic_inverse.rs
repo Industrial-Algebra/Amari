@@ -1008,6 +1008,59 @@ mod guidance {
             }
         );
     }
+
+    /// F38 (P2): aggregate borrowed-admission exhaustion remains a public
+    /// recall LimitExceeded, not an UnvalidatedProvenance wrapper.
+    #[test]
+    fn recall_reports_aggregate_admission_operation_exhaustion() {
+        let system = TermSystem::new(Vec::new());
+        let endpoint = Term::constant("a");
+        let mut unifier = amari_rewrite::trs::Substitution::new();
+        for index in 0..245 {
+            let range = Term::sym("f", (0..4_095).map(|_| Term::constant("a")));
+            unifier.insert(format!("Z{index}"), range);
+        }
+        let certificate = ReplayCertificate::issue(
+            &system,
+            ReplayQuery::Bidirectional {
+                source: endpoint.clone(),
+                goal: endpoint.clone(),
+            },
+            ReplayDerivation::Bidirectional(amari_rewrite::inverse::BidirectionalDerivation {
+                forward_steps: Vec::new(),
+                backward_steps: Vec::new(),
+                meeting_forward: endpoint.clone(),
+                meeting_backward: endpoint,
+                unifier,
+            }),
+            InverseSearchConfig::default(),
+            GuidanceMode::CompleteWithinLimits,
+            ResourceObservation {
+                states: 1,
+                transitions: 0,
+                retained_bytes: 64,
+                operations: 0,
+            },
+        );
+        let error = RecallTrace::validate(&system, &certificate)
+            .expect_err("the shared admission meter must exhaust");
+        assert_eq!(
+            error,
+            HolographicError::LimitExceeded {
+                resource: "operations",
+                value: 1_000_001,
+                limit: 1_000_000,
+            }
+        );
+        // Direct verification retains its own typed RewriteError mapping.
+        assert!(matches!(
+            certificate.verify(&system),
+            Err(amari_rewrite::RewriteError::RelationLimitExceeded {
+                resource: "operations",
+                limit: 1_000_000,
+            })
+        ));
+    }
 }
 
 /// Default-feature builds expose no holographic surface.
