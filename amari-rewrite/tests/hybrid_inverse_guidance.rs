@@ -204,21 +204,6 @@ mod fixtures {
                 candidates,
             }
         }
-
-        /// A request whose candidate slice is reversed: the same content in a
-        /// different request order.
-        pub fn reversed_request<'a>(
-            &'a self,
-            candidates: &'a [GuidanceCandidate<'a>],
-            mode: &'a GuidanceMode,
-        ) -> GuidanceRequest<'a> {
-            GuidanceRequest {
-                parent: &self.parent,
-                depth: 0,
-                mode,
-                candidates,
-            }
-        }
     }
 
     pub fn guided(
@@ -1096,11 +1081,7 @@ mod neural_backend {
         }
         // The zero-weight backend still changes the *identity*, because a
         // supplied backend must never replay as an absent one.
-        assert_ne!(plain_hash(&without), plain_hash(&with));
-    }
-
-    fn plain_hash(strategy: &HybridStrategy<'_>) -> amari_rewrite::relation::Sha256Digest {
-        strategy.strategy_hash()
+        assert_ne!(without.strategy_hash(), with.strategy_hash());
     }
 
     #[test]
