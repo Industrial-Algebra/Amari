@@ -1,0 +1,11 @@
+empty: member=true confidence=1 norm=0 valid=true
+partial: all-false == all-true: true
+single: recall=1 absent_member=true singular_norm=0 singular_conf=0.756883 valid=true
+mixed: raw=[0.0, 0.0, 1.0, 0.0, 0.8, 0.0, 0.0, 0.0] expected=[0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+factor: sim_to_a=-1 recon=-1 converged=true iterations=2
+orthogonal: sim=0 converged=true iterations=1
+infinite-beta exact match: index=1 expected=0
+soft: sequential=[0.0, 0.25, 0.25, 0.5, 0.0, 0.0, 0.0, 0.0] merged=[0.0, 0.5, 0.25, 0.25, 0.0, 0.0, 0.0, 0.0] additive=[0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+mixed tracking: count=1 consistent=false
+hard: recall2=0 capacity=3 snr=2 near=true count=2
+default ProductCl3x32: count=8 cap=46 near=false snr=5.656854 confidence=0.940894 oldest_sim=0.000082 newest_sim=0.965734 absent=true 

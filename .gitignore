@@ -25,3 +25,4 @@ wasm-pack.log
 !amari-discovery/tests/fixtures/wasm-surface/*.d.ts
 
 .z3-trace
+docs/audits/holographic-repro/target/

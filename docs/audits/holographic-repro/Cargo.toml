@@ -1,0 +1,13 @@
+[package]
+name = "holographic-audit-oracles"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+amari-core = { path = "../../../amari-core" }
+amari-holographic = { path = "../../../amari-holographic", features = ["full"] }
+serde_json = "1"
+num-complex = "0.4"

@@ -1,0 +1,13 @@
+mismatches: gp=16/64 product=16/64 rayon_product=16/64 associativity=142/512 inner=16/64 outer=21/64 reverse=0/8 conjugate=0/8 Hodge=3/8 cyclic_hom=36/64
+wrong GP pairs (local indices): [(1, 7), (2, 5), (2, 7), (3, 7), (4, 5), (4, 6), (4, 7), (5, 2), (5, 4), (5, 6), (5, 7), (6, 4), (6, 5), (7, 1), (7, 2), (7, 3)]
+(e1 e3)e2 vs e1(e3 e2): [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0] vs [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0]
+(1+e1)*reported_inverse = [1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; core inverse None
+(2+e1)*reported_inverse = [1.0, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; core inverse Some([0.6666666666666666, -0.3333333333333333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+1 wedge e1=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], e1 inner I=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], perm(e12)=[0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+dual(e12) local/full/core e3 coeff: -1, -1, 1
+self-sim negative=-1, null=0; null dual=[0.0, 0.0], core is_err=true; pure-null random_versor(1) inverse is_err=true
+x=1e-200: norm=0 normalized scalar=None similarity(self)=0 (full: norm=1e-200, self-sim=0)
+x=1e200: norm=inf normalized scalar=Some(0.0) similarity(self)=NaN (full: norm=1e200, self-sim=NaN)
+[1,1] beta=0 sequential=1, rayon=0.5
+shuffle([0,2]) scalars = [2.0, 0.0]
+K=0 permute(0) panics: true

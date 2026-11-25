@@ -1,0 +1,18 @@
+
+running 4 tests
+dense conv=1.897149936107019e-15 inverse=9.42055475210265e-16 adjoint error=20.396078054371134 E=144 -> 623.9999999999999
+.time=30 spectral=120 bound=120 conv=[Complex { re: 4.0, im: 0.0 }, Complex { re: 1.0, im: 0.0 }, Complex { re: 2.0, im: 0.0 }, Complex { re: 3.0, im: 0.0 }] maxerr=9.992007221626409e-16 unbinderr=7.108895957933346e-16 raw=[0.0, 2.0, 0.0, 0.0]
+.permuted spectrum FHRRAlgebra { real: [1.0, 1.0, 1.0, 1.0], imag: [0.0, 0.0, 0.0, 0.0] }; IDFT=[Complex { re: 1.0, im: 0.0 }, Complex { re: -4.592425496802574e-17, im: 5.551115123125783e-17 }, Complex { re: 0.0, im: 6.123233995736765e-17 }, Complex { re: 8.226161367281941e-17, im: 8.326672684688674e-17 }]
+fhrr hard=Ok(FHRRAlgebra { real: [3.0], imag: [0.0] }) beta0=Ok(FHRRAlgebra { real: [2.0], imag: [0.0] }) all(0,0,4)=Ok(FHRRAlgebra { real: [2.0], imag: [0.0] })
+MAP distributivity: MAPAlgebra { components: [-1.0] } vs Ok(MAPAlgebra { components: [1.0] })
+normalized key: norm=1, mag=0.5, recovered Ok(FHRRAlgebra { real: [0.25, 0.25, 0.25, 0.25], imag: [0.0, 0.0, 0.0, 0.0] })
+.fhrr energy 2 -> 13, unbind FHRRAlgebra { real: [4.0, 9.0], imag: [0.0, 0.0] }, reciprocal product FHRRAlgebra { real: [1.0, 1.0], imag: [0.0, 0.0] }
+map recovered Ok(MAPAlgebra { components: [4.0, 9.0] }); zero inverses Ok(FHRRAlgebra { real: [0.0, 0.0], imag: [-0.0, -0.0] }) Ok(MAPAlgebra { components: [0.0, 0.0] })
+normalized 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000: Ok(FHRRAlgebra { real: [0.0], imag: [0.0] }) Ok(MAPAlgebra { components: [0.0] })
+normalized NaN: Ok(FHRRAlgebra { real: [NaN], imag: [NaN] }) Ok(MAPAlgebra { components: [NaN] })
+zero-dimensional panic F=true M=true
+MAP bundle Ok(MAPAlgebra { components: [0.9426807890983486] }) all Ok(MAPAlgebra { components: [0.7615941559557649] }) beta0 Ok(MAPAlgebra { components: [0.0] })
+lse 0 693147.1805599453, bad vec Err(DimensionMismatch { expected: 2, actual: 2 })
+.
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
