@@ -1,4 +1,4 @@
-//! Optimized Cl(3,0,0) implementation with unrolled operations.
+//! Optimized Cl(3,0,0) implementation with fixed-size operations.
 //!
 //! This module provides a highly optimized implementation of the 3D Euclidean
 //! Clifford algebra, which is the building block for ProductCliffordAlgebra.
@@ -21,21 +21,17 @@
 //!
 //! # Geometric Product
 //!
-//! The geometric product is fully unrolled for maximum performance.
-//! Each coefficient of the result is computed using explicit formulas
-//! derived from the multiplication table:
-//!
+//! Products use the signed basis table (row times column):
 //! ```text
-//!      | 1   e1  e2  e3  e12 e13 e23 e123
-//! -----+----------------------------------
-//!   1  | 1   e1  e2  e3  e12 e13 e23 e123
-//!  e1  | e1  1   e12 e13 e2  e3  e123 e23
-//!  e2  | e2 -e12 1   e23 -e1 e123 e3  -e13
-//!  e3  | e3 -e13 -e23 1  e123 -e1 -e2 e12
-//! e12  | e12 -e2 e1  e123 -1 -e23 e13 -e3
-//! e13  | e13 -e3 e123 e1 e23  -1 -e12 e2
-//! e23  | e23 e123 -e3 e2 -e13 e12 -1  -e1
-//! e123 | e123 e23 -e13 e12 -e3 e2 -e1 -1
+//!      |     1    e1    e2    e3   e12   e13   e23  e123
+//!    1 |     1    e1    e2    e3   e12   e13   e23  e123
+//!   e1 |    e1     1   e12   e13    e2    e3  e123   e23
+//!   e2 |    e2  -e12     1   e23   -e1 -e123    e3  -e13
+//!   e3 |    e3  -e13  -e23     1  e123   -e1   -e2   e12
+//!  e12 |   e12   -e2    e1  e123    -1  -e23   e13   -e3
+//!  e13 |   e13   -e3 -e123    e1   e23    -1  -e12    e2
+//!  e23 |   e23  e123   -e3    e2  -e13   e12    -1   -e1
+//! e123 |  e123   e23  -e13   e12   -e3    e2   -e1    -1
 //! ```
 
 use alloc::vec::Vec;
@@ -44,7 +40,7 @@ use super::{AlgebraError, AlgebraResult, BindingAlgebra, GeometricAlgebra};
 
 /// Optimized 3D Euclidean Clifford algebra Cl(3,0,0).
 ///
-/// Uses a fixed-size array representation with unrolled geometric product
+/// Uses a fixed-size array representation with a table-driven geometric product
 /// for maximum performance. This is the building block for `ProductCliffordAlgebra`.
 ///
 /// # Example
@@ -151,89 +147,40 @@ impl Cl3 {
         &self.coeffs
     }
 
-    /// Unrolled geometric product.
-    ///
-    /// This is the core binding operation, fully unrolled for performance.
+    /// Signed blade multiplication in local coefficient order. Entry `[lhs][rhs]`
+    /// is `(output_slot, sign)`, where `sign` is +1 or −1. Backends generating
+    /// shaders must use these slots, not bit-mask order.
+    pub const PRODUCT_TABLE: [[(usize, i8); 8]; 8] = {
+        let mut table = [[(0, 1); 8]; 8];
+        let mut i = 0;
+        while i < 8 {
+            let mut j = 0;
+            while j < 8 {
+                let a = Self::MASK[i];
+                let b = Self::MASK[j];
+                // Moving each right generator past larger left generators.
+                let swaps = ((a >> 1) & b).count_ones() + ((a >> 2) & b).count_ones();
+                table[i][j] = (Self::MASK[a ^ b], if swaps % 2 == 0 { 1 } else { -1 });
+                j += 1;
+            }
+            i += 1;
+        }
+        table
+    };
+
+    // Swapping e3 and e12 is its own inverse: slot -> mask and mask -> slot.
+    const MASK: [usize; 8] = [0, 1, 2, 4, 3, 5, 6, 7];
+
+    /// Geometric product, extended bilinearly from the Euclidean basis table.
     #[inline]
     pub fn geometric_product(&self, other: &Self) -> Self {
-        let a = &self.coeffs;
-        let b = &other.coeffs;
-
-        // Unrolled multiplication using the Cl(3) multiplication table
-        // Result coefficient for each basis element
-
-        // Scalar: 1*1 + e1*e1 + e2*e2 + e3*e3 - e12*e12 - e13*e13 - e23*e23 - e123*e123
-        let s = a[Self::S] * b[Self::S]
-            + a[Self::E1] * b[Self::E1]
-            + a[Self::E2] * b[Self::E2]
-            + a[Self::E3] * b[Self::E3]
-            - a[Self::E12] * b[Self::E12]
-            - a[Self::E13] * b[Self::E13]
-            - a[Self::E23] * b[Self::E23]
-            - a[Self::E123] * b[Self::E123];
-
-        // e1: 1*e1 + e1*1 + e2*e12 + e3*e13 - e12*e2 - e13*e3 + e23*e123 + e123*e23
-        let e1 = a[Self::S] * b[Self::E1] + a[Self::E1] * b[Self::S]
-            - a[Self::E2] * b[Self::E12]
-            - a[Self::E3] * b[Self::E13]
-            + a[Self::E12] * b[Self::E2]
-            + a[Self::E13] * b[Self::E3]
-            - a[Self::E23] * b[Self::E123]
-            - a[Self::E123] * b[Self::E23];
-
-        // e2: 1*e2 + e2*1 - e1*e12 + e3*e23 + e12*e1 - e13*e123 - e23*e3 + e123*e13
-        let e2 = a[Self::S] * b[Self::E2] + a[Self::E2] * b[Self::S] + a[Self::E1] * b[Self::E12]
-            - a[Self::E3] * b[Self::E23]
-            - a[Self::E12] * b[Self::E1]
-            - a[Self::E13] * b[Self::E123]
-            + a[Self::E23] * b[Self::E3]
-            + a[Self::E123] * b[Self::E13];
-
-        // e3: 1*e3 + e3*1 - e1*e13 - e2*e23 + e12*e123 + e13*e1 + e23*e2 - e123*e12
-        let e3 = a[Self::S] * b[Self::E3]
-            + a[Self::E3] * b[Self::S]
-            + a[Self::E1] * b[Self::E13]
-            + a[Self::E2] * b[Self::E23]
-            + a[Self::E12] * b[Self::E123]
-            - a[Self::E13] * b[Self::E1]
-            - a[Self::E23] * b[Self::E2]
-            - a[Self::E123] * b[Self::E12];
-
-        // e12: 1*e12 + e12*1 + e1*e2 - e2*e1 + e3*e123 - e13*e23 + e23*e13 + e123*e3
-        let e12 = a[Self::S] * b[Self::E12] + a[Self::E12] * b[Self::S] + a[Self::E1] * b[Self::E2]
-            - a[Self::E2] * b[Self::E1]
-            - a[Self::E3] * b[Self::E123]
-            + a[Self::E13] * b[Self::E23]
-            - a[Self::E23] * b[Self::E13]
-            - a[Self::E123] * b[Self::E3];
-
-        // e13: 1*e13 + e13*1 + e1*e3 - e3*e1 - e2*e123 - e12*e23 + e23*e12 + e123*e2
-        let e13 = a[Self::S] * b[Self::E13] + a[Self::E13] * b[Self::S] + a[Self::E1] * b[Self::E3]
-            - a[Self::E3] * b[Self::E1]
-            + a[Self::E2] * b[Self::E123]
-            - a[Self::E12] * b[Self::E23]
-            + a[Self::E23] * b[Self::E12]
-            + a[Self::E123] * b[Self::E2];
-
-        // e23: 1*e23 + e23*1 + e2*e3 - e3*e2 + e1*e123 + e12*e13 - e13*e12 - e123*e1
-        let e23 = a[Self::S] * b[Self::E23] + a[Self::E23] * b[Self::S] + a[Self::E2] * b[Self::E3]
-            - a[Self::E3] * b[Self::E2]
-            - a[Self::E1] * b[Self::E123]
-            + a[Self::E12] * b[Self::E13]
-            - a[Self::E13] * b[Self::E12]
-            - a[Self::E123] * b[Self::E1];
-
-        // e123: 1*e123 + e123*1 + e1*e23 - e23*e1 + e2*e13 - e13*e2 + e3*e12 - e12*e3
-        let e123 = a[Self::S] * b[Self::E123]
-            + a[Self::E123] * b[Self::S]
-            + a[Self::E1] * b[Self::E23]
-            + a[Self::E2] * b[Self::E13]
-            + a[Self::E3] * b[Self::E12]
-            + a[Self::E12] * b[Self::E3]
-            + a[Self::E13] * b[Self::E2]
-            + a[Self::E23] * b[Self::E1];
-
-        Self::new([s, e1, e2, e3, e12, e13, e23, e123])
+        let mut out = [0.; 8];
+        for (i, row) in Self::PRODUCT_TABLE.iter().enumerate() {
+            for (j, &(slot, sign)) in row.iter().enumerate() {
+                out[slot] += f64::from(sign) * self.coeffs[i] * other.coeffs[j];
+            }
+        }
+        Self::new(out)
     }
 
     /// Compute the reverse.
