@@ -120,6 +120,32 @@ fn u4_duals() {
     assert_eq!(null.formal_complement().get(0).unwrap(), 1.);
 }
 #[test]
+fn u5_permutations() {
+    let targets = [0, 2, 3, 1, 6, 4, 5, 7];
+    let signs = [1., 1., 1., 1., 1., -1., -1., 1.];
+    for i in 0..8 {
+        let x = blade(i);
+        let y = x.permute(1);
+        assert_eq!(y, blade(targets[i]).scale(signs[i]));
+        assert_eq!(x.permute_generators([1, 2, 0]).unwrap(), y);
+        assert_eq!(y.permute(-1), x);
+        assert_eq!(x.permute(3), x);
+        assert_eq!(x.permute(i32::MIN), y);
+        for j in 0..8 {
+            assert_eq!((x * blade(j)).permute(1), y * blade(j).permute(1));
+        }
+    }
+    for bad in [[1, 1, 0], [0, 1, 3]] {
+        assert!(blade(1).permute_generators(bad).is_err());
+    }
+    assert_eq!(
+        *ProductCliffordAlgebra::new([blade(4), blade(5)])
+            .permute(1)
+            .components(),
+        [-blade(4), blade(6)]
+    );
+}
+#[test]
 fn u1_signed_words() {
     for i in 0..8 {
         for j in 0..8 {

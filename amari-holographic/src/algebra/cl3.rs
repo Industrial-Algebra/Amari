@@ -433,6 +433,31 @@ impl Cl3 {
         ]
     }
 
+    /// Extend a permutation of the three generators to every ordered blade.
+    /// `map[i]` is the new zero-based generator index of generator `i`.
+    pub fn permute_generators(&self, map: [usize; 3]) -> AlgebraResult<Self> {
+        if map.iter().any(|&j| j >= 3) || map[0] == map[1] || map[1] == map[2] || map[0] == map[2] {
+            return Err(AlgebraError::InvalidParameter {
+                name: "generator permutation".into(),
+                value: alloc::format!("{map:?}"),
+                reason: "expected a bijection on 0..3".into(),
+            });
+        }
+        let mut result = Self::zero();
+        for (i, mask) in Self::MASK.into_iter().enumerate() {
+            let (mut slot, mut sign) = (0, 1);
+            for (k, j) in map.into_iter().enumerate() {
+                if mask & (1 << k) != 0 {
+                    let (next, s) = Self::PRODUCT_TABLE[slot][j + 1];
+                    slot = next;
+                    sign *= s;
+                }
+            }
+            result.coeffs[slot] = self.coeffs[i] * f64::from(sign);
+        }
+        Ok(result)
+    }
+
     /// Cyclic permutation of vector indices.
     ///
     /// This permutes e1 -> e2 -> e3 -> e1 and extends to higher grades.
@@ -443,9 +468,9 @@ impl Cl3 {
             a[Self::E3],   // e1 <- e3
             a[Self::E1],   // e2 <- e1
             a[Self::E2],   // e3 <- e2
-            a[Self::E23],  // e12 <- e23
-            a[Self::E12],  // e13 <- e12
-            a[Self::E13],  // e23 <- e13
+            -a[Self::E13], // e13 -> -e12
+            -a[Self::E23], // e23 -> -e13
+            a[Self::E12],  // e12 -> e23
             a[Self::E123], // e123 unchanged
         ])
     }
