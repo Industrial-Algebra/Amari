@@ -103,9 +103,10 @@
 //! exhausted closure keeps the unguided explored set and evidence hash; any
 //! truncation stays inside [`crate::inverse::GuidanceMode::HeuristicPruning`],
 //! which applies it to the *combined* order and counts what it dropped. Pruned
-//! exhaustion is `Approximate`; resource-budget truncation is `Partial`. The
-//! engine's existing existential-witness exception remains: a replay-valid
-//! witness may still be `Completed` even when another candidate was pruned.
+//! exhaustion or a budget stop AFTER any pruning is `Approximate`; a budget
+//! stop is `Partial` only when nothing was pruned. The engine's existing
+//! existential-witness exception remains: a replay-valid witness may still be
+//! `Completed` even when another candidate was pruned.
 //!
 //! A round's answer is a function of `(configuration, backends, candidates)`
 //! alone: no mutable global, no model cache, no RNG, no filesystem, and no

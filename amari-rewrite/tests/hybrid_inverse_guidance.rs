@@ -1036,7 +1036,7 @@ mod core {
     }
 
     #[test]
-    fn pruned_exhaustion_is_approximate_with_drop_and_frontier_evidence() {
+    fn budget_stop_after_pruning_is_approximate_with_drop_and_frontier_evidence() {
         let system = two_witness_system();
         let strategy = hybrid(weights(1.0, 0.0, 0.0, 0.0));
         let beam = GuidanceMode::HeuristicPruning { beam_width: 1 };
