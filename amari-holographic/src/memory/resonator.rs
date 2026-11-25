@@ -9,6 +9,9 @@ use alloc::vec::Vec;
 use rayon::prelude::*;
 
 use super::error::{HolographicError, HolographicResult};
+use super::domain::{finite,key_inverse,cosine,MemoryElement};
+
+fn certificate<A:MemoryElement>(observed:&A,candidate:&A)->HolographicResult<(bool,f64)>{let obs=finite(observed)?;let val=finite(candidate)?;if obs.len()!=val.len(){return Err(HolographicError::DimensionMismatch{expected:obs.len(),actual:val.len()});}let(mut accepted,mut max)=(true,0_f64);for(x,y)in obs.iter().zip(val){let err=(x-y).abs();accepted &= err<=1e-10+1e-8*x.abs();max=max.max(err);}Ok((accepted,max))}
 use crate::algebra::BindingAlgebra;
 
 /// Configuration for resonator cleanup.
@@ -59,10 +62,10 @@ pub struct FactorizationResult<A: BindingAlgebra> {
     pub factor_b: A,
     /// Number of iterations performed
     pub iterations: usize,
-    /// Whether the resonator converged
-    pub converged: bool,
-    /// Similarity of reconstruction to original bound
-    pub reconstruction_similarity: f64,
+    /// Whether every reconstructed coefficient meets the frozen observation certificate.
+    pub accepted: bool,
+    /// Maximum absolute reconstruction residual.
+    pub residual: f64,
 }
 
 /// A resonator network for cleaning up noisy retrievals.
@@ -79,7 +82,7 @@ pub struct Resonator<A: BindingAlgebra> {
     config: ResonatorConfig,
 }
 
-impl<A: BindingAlgebra> Resonator<A> {
+impl<A: MemoryElement> Resonator<A> {
     /// Create a resonator with the given codebook.
     ///
     /// # Errors
@@ -90,6 +93,7 @@ impl<A: BindingAlgebra> Resonator<A> {
             return Err(HolographicError::EmptyCodebook);
         }
 
+        for word in &codebook { finite(word)?; }
         Ok(Self { codebook, config })
     }
 
@@ -170,60 +174,26 @@ impl<A: BindingAlgebra> Resonator<A> {
     }
 
     /// Factorize a bound pair: given `A⊛B`, find `A` and `B` from codebooks.
-    pub fn factorize(&self, bound: &A, other_codebook: &Resonator<A>) -> FactorizationResult<A> {
-        // Start with random estimates from codebooks
-        let mut estimate_a = self.codebook[0].clone();
-        let mut estimate_b = other_codebook.codebook[0].clone();
-
-        let mut iterations = 0;
-        let mut converged = false;
-        let mut prev_sim = 0.0;
-
-        for iter in 0..self.config.max_iterations {
-            iterations = iter + 1;
-
-            // Temperature annealing
-            let t = iter as f64 / self.config.max_iterations.max(1) as f64;
-            let _beta =
-                self.config.initial_beta + t * (self.config.final_beta - self.config.initial_beta);
-
-            // Update estimate_b: unbind current estimate_a from bound
-            let raw_b = estimate_a.unbind(bound).unwrap_or_else(|_| A::zero());
-            let cleanup_b = other_codebook.cleanup(&raw_b);
-            estimate_b = cleanup_b.cleaned;
-
-            // Update estimate_a: unbind current estimate_b from bound
-            let raw_a = estimate_b.unbind(bound).unwrap_or_else(|_| A::zero());
-            let cleanup_a = self.cleanup(&raw_a);
-            estimate_a = cleanup_a.cleaned;
-
-            // Check reconstruction quality
-            let reconstruction = estimate_a.bind(&estimate_b);
-            let recon_sim = reconstruction.similarity(bound);
-
-            if (recon_sim - prev_sim).abs() < 1.0 - self.config.convergence_threshold {
-                converged = true;
-                return FactorizationResult {
-                    factor_a: estimate_a,
-                    factor_b: estimate_b,
-                    iterations,
-                    converged,
-                    reconstruction_similarity: recon_sim,
-                };
-            }
-            prev_sim = recon_sim;
+    pub fn factorize(&self, bound: &A, other_codebook: &Resonator<A>) -> HolographicResult<FactorizationResult<A>> {
+        finite(bound)?;
+        // Reject singular candidates, even if the search would not visit them.
+        let left=self.codebook.iter().map(key_inverse).collect::<HolographicResult<Vec<_>>>()?;
+        let right=other_codebook.codebook.iter().map(key_inverse).collect::<HolographicResult<Vec<_>>>()?;
+        let mut a=0;
+        for iterations in 1..=self.config.max_iterations {
+            let b=other_codebook.best_index(&left[a].bind(bound))?;
+            let next=self.best_index(&bound.bind(&right[b]))?;
+            let (accepted,residual)=certificate(bound,&self.codebook[next].bind(&other_codebook.codebook[b]))?;
+            if accepted || next==a || iterations==self.config.max_iterations {return Ok(FactorizationResult{factor_a:self.codebook[next].clone(),factor_b:other_codebook.codebook[b].clone(),iterations,accepted,residual});} a=next;
         }
+        Err(HolographicError::ResonatorDidNotConverge(0))
+    }
 
-        let reconstruction = estimate_a.bind(&estimate_b);
-        let recon_sim = reconstruction.similarity(bound);
-
-        FactorizationResult {
-            factor_a: estimate_a,
-            factor_b: estimate_b,
-            iterations,
-            converged,
-            reconstruction_similarity: recon_sim,
-        }
+    fn best_index(&self,input:&A)->HolographicResult<usize>{
+        let obs=finite(input)?;let mut best=0;let mut max=f64::NEG_INFINITY;let mut best_word=Vec::new();
+        for(i,word)in self.codebook.iter().enumerate(){let c=finite(word)?;let score=cosine(&obs,&c)?;
+            if score>max || (score==max && c<best_word){best=i;max=score;best_word=c;}}
+        Ok(best)
     }
 
     /// Compute weighted bundle of codebook items.

@@ -53,3 +53,21 @@ test u3_full_exact_evidence_and_duplicate_indices ... ok
 test u3_walsh_crosstalk_without_age_gradient ... ok
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
+
+## U4 — sided recovery
+
+RED at `2507e6bc` plus two factorizer regressions; `c test -p amari-holographic --test h3_factor`, defaults, exit 101 (2 ran). Local and core e12 slots differ in index but both return the wrong sign:
+```text
+  left: [0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0]
+ right: [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
+  left: [0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0]
+ right: [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
+GREEN at parent `24e79494` with U4 edits, same command; exit 0:
+```text
+test h3_sided_local ... ok
+test h3_sided_core_wrapper ... ok
+test h3_impossible_and_singular ... ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
