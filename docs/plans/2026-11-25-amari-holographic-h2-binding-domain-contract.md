@@ -79,6 +79,17 @@ Scope: `algebra/mod.rs` contracts, helpers, affected examples/docs. Binding is d
 
 Apply §3 on the combined tree. **Red → gate:** for each changed public behavior demonstrate the old call or stored fixture and its approved successor (compile-fail for removed surface, runtime assertions for changed semantics). Keep H1 regression controls passing. No edits to `amari-rewrite` or its expected outputs to make this gate pass.
 
+## Numerical Acceptance Law (round-1 P2#2 remediation — frozen, in-contract)
+
+Per-operation certificates. H1's unscaled two-sided `1e−12` identity certificate and H3's elementwise `atol=1e−10, rtol=1e−8` recovery certificate are unchanged law; the following govern H2's units:
+
+- **U1 keys and inverses:** every admitted key satisfies the H1 unscaled identity certificate (max absolute coefficient of both `k·inv(k)−1` and `inv(k)·k−1` ≤ `1e−12`); bipolar MAP keys are EXACT ±1 equality; FHRR unitary keys certify per-bin complex components. Non-unit nonzero keys unbind via the named general inverse under the same certificate or fail typed; `Ok` nonunit is forbidden.
+- **U2 norms, normalization, similarity:** scale-aware RELATIVE accuracy — for representable scales the computed norm has relative error ≤ `1e−12` (stable accumulation; `hypot`-style) and normalization preserves direction with each coefficient within `1e−12` relative of the scaled input. Mandatory control: at norm `1e−200` the computed norm is nonzero and within `1e−12` relative of `1e−200` (a zero result FAILS); at `1e200` likewise; subnormal/overflow/unrepresentable results reject typed per D2, never silently zero. Similarity is Euclidean-only (D3) with `1e−12` relative accuracy on representable inputs.
+- **U4 bundling:** sequential and parallel (Rayon) results are BITWISE identical on fixtures (deterministic tie rule; exactly-representable fixture values; the SAME accumulation order on both paths), and a worker error produces the SAME propagated error on both paths. The β=0 fixture: list bundling of `[1,1]` is `1` on both paths; the historical `0.5` divergence is the mandatory RED.
+- **U5 logarithmic helpers:** log-mean-exp's β→0 limit equals `ln(mean)` within `1e−12` relative on fixtures; log-sum-exp at β=`1e−6` on the audit fixture computes `693147.1805599453` within `1e−9` relative (the value is order `1/β`; a relative bound is the correct form) and its β=0 boundary is the D2-typed outcome, never a silent 0-or-infinity swap.
+
+No implementation may introduce other tolerances, scaling substitutions, or zero-target policies for these operations.
+
 ## 3. Consumer impact and migration disclosure
 
 | Consumer | Standing acceptance / migration |
@@ -89,6 +100,18 @@ Apply §3 on the combined tree. **Red → gate:** for each changed public behavi
 | `amari-fusion` | Feature `holographic` reexports types in `src/lib.rs`. Compile/test downstream-style trait calls through reexports, `c test -p amari-fusion --features holographic`; disclose changed signatures/errors and do not maintain an unchecked back door. |
 | `amari-discovery/src/probes/holographic.rs` | Seeded `MAP256` tracked recall and additive superposition are distinct probes. Exercise each public probe, compare coefficients and error/wire semantics. A score is not H3 membership. If surface changes, regenerate WASM first (`bash scripts/generate-discovery-wasm-surface.sh`), then structural catalog (`c run -p amari-discovery --example generate_catalog -- .`); verify drift on the merged tree. |
 | External and persisted consumers | `tracedecay` was recorded against `^0.23.0`; no runtime validation claimed. Provide old → new Rust/JS examples for key admission vs general binding, metric pairing vs retrieval score, shuffle vs delay, list cleanup and β helpers. Version changed traces, scores, positional digests and cached bundles by convention; rebuild from original ordered operands/keys where semantics change. No generic conversion from a compressed aggregate or invented unitary key. Keep H1's product migration independent. |
+
+
+### API surface named by the D-decisions (round-2 remediation)
+
+| Decision | Public names (Rust) | Typed errors |
+|---|---|---|
+| D1 | `TypedKey` validation constructors per backend (bipolar MAP, unitary FHRR, H1-certified Product keys) — `bind_key`/`unbind_key` on typed keys; `unbind_general` (named checked-inverse unbind on general elements); `correlation` (adjoint, never an unbind) | `KeyDomain` (nonunit/non-bipolar/non-representable), H1 `Inverse` errors propagate |
+| D2 | per-operation `Result` returns; construction-time `try_new`/deserialization validation for K>0, D>0, shape | `EmptyDimension`, `InvalidShape`, `Unrepresentable`, `NonFinite` |
+| D3 | `coefficient_cosine` (Euclidean-only), `normalized_metric_pairing` (signed, documented); unqualified `similarity` removed on non-Euclidean | `UnsupportedSignature` |
+| D4 | `bundle` (global list semantics, deterministic ties, thread-count independent); pair form documented as fold order | worker errors propagate; no `unwrap_or` |
+| D5 | `log_sum_exp` (true domain, diverging limit documented), `log_mean_exp` (finite mean limit) | `Beta` domain errors per D2 |
+| D6 | `rotate_bins`/`permute_bins` (checked bijective maps), phase-ramp delay as a distinct future op if ever needed | `NonBijectiveMap`, `EmptyDimension` |
 
 ## 4. Non-goals and test-exclusion/deferral register
 
