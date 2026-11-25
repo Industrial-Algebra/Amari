@@ -230,16 +230,54 @@ impl Cl3 {
 
     /// Compute the inverse.
     ///
-    /// For Cl(3,0,0): x⁻¹ = x̃ / (x x̃)
+    /// Returns a candidate only if both computed identity errors are at most
+    /// 1e-12 per coefficient. This is a floating-point certificate, not a
+    /// decision procedure for exact invertibility.
     pub fn inverse(&self) -> Option<Self> {
-        let norm_sq = self.norm_squared();
-        if norm_sq.abs() < 1e-10 {
-            return None;
-        }
+        self.checked_inverse().ok()
+    }
 
-        let rev = self.reverse();
-        let scale = 1.0 / norm_sq;
-        Some(rev.scale(scale))
+    /// General inverse with diagnostic failure and a two-sided certificate.
+    pub fn checked_inverse(&self) -> AlgebraResult<Self> {
+        if !self.coeffs.iter().all(|x| x.is_finite()) {
+            return Err(AlgebraError::NotInvertible {
+                reason: "nonfinite coefficients".into(),
+            });
+        }
+        // Core checks the whole reverse product before using scalar division,
+        // otherwise it solves the left-multiplication system. Inversion is not
+        // the binding hot path. Convert the e3/e12 slots explicitly.
+        let mut m = amari_core::Multivector::<3, 0, 0>::zero();
+        for (i, &mask) in Self::MASK.iter().enumerate() {
+            m.set(mask, self.coeff(i));
+        }
+        let inv = m.inverse().ok_or_else(|| AlgebraError::NotInvertible {
+            reason: "singular or unrepresentable solve".into(),
+        })?;
+        let y = Self::new(Self::MASK.map(|k| inv.get(k)));
+        self.certify_candidate(y)
+    }
+
+    fn certify_candidate(&self, y: Self) -> AlgebraResult<Self> {
+        let mut max = 0.0_f64;
+        for p in [*self * y, y * *self] {
+            for (i, &v) in p.coefficients().iter().enumerate() {
+                let err = (v - if i == 0 { 1.0 } else { 0.0 }).abs();
+                if !err.is_finite() {
+                    return Err(AlgebraError::NotInvertible {
+                        reason: "nonfinite inverse residual".into(),
+                    });
+                }
+                max = max.max(err);
+            }
+        }
+        if max <= 1e-12 {
+            Ok(y)
+        } else {
+            Err(AlgebraError::NotInvertible {
+                reason: alloc::format!("two-sided identity error {max:e} exceeds 1e-12"),
+            })
+        }
     }
 
     /// Scale by a scalar.
@@ -421,9 +459,7 @@ impl BindingAlgebra for Cl3 {
     }
 
     fn inverse(&self) -> AlgebraResult<Self> {
-        Self::inverse(self).ok_or_else(|| AlgebraError::NotInvertible {
-            reason: "norm squared too small".into(),
-        })
+        self.checked_inverse()
     }
 
     fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
@@ -629,6 +665,17 @@ impl core::ops::Neg for Cl3 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn u2_unscaled_certificate() {
+        let a = 1. - 2f64.powi(-40);
+        let b = 2f64.powi(39);
+        let e = Cl3::unit_vector(0);
+        let x = Cl3::one() + e.scale(a);
+        let y = (Cl3::one() - e).scale(b);
+        assert_eq!(x * y, Cl3::scalar(0.5) - e.scale(0.5));
+        assert!(x.certify_candidate(y).is_err());
+    }
 
     #[test]
     fn test_cl3_basis_squares() {

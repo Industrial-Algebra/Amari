@@ -32,6 +32,34 @@ fn word(slots: &[usize]) -> Cl3 {
     blade(MASK.iter().position(|&k| k == mask).unwrap()).scale(sign)
 }
 #[test]
+fn u2_inverses() {
+    let one = blade(0);
+    let v = blade(1);
+    let x = one.scale(2.) + v;
+    assert!((one + v).inverse().is_none());
+    assert!(ProductCliffordAlgebra::new([one, one + v])
+        .unbind(&ProductCliffordAlgebra::identity())
+        .is_err());
+    let y = x.inverse().unwrap();
+    for (got, expected) in y
+        .coefficients()
+        .iter()
+        .zip(((one.scale(2.) - v).scale(1. / 3.)).coefficients())
+    {
+        assert!((got - expected).abs() <= 1e-12);
+    }
+    for val in [x, blade(5), Cl3::scalar(1e-20), Cl3::scalar(1e200)] {
+        let inv = val.inverse().unwrap();
+        for residual in [val * inv - one, inv * val - one] {
+            assert!(residual.coefficients().iter().all(|r| r.abs() <= 1e-12));
+        }
+    }
+    for f in [0., f64::NAN, f64::INFINITY] {
+        assert!(Cl3::scalar(f).inverse().is_none());
+    }
+}
+
+#[test]
 fn u1_signed_words() {
     for i in 0..8 {
         for j in 0..8 {
