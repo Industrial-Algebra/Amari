@@ -20,3 +20,21 @@ test u1_store_sequential_trace_is_additive_at_hard_beta ... ok
 test u1_batch_and_merge_partitions_match_sequential_trace ... ok
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
+
+## U2 — checked, transactional operations
+
+At `19a867ce`, `c test -p amari-holographic --test h3_atomic` (default features), 2 selected, exit 101:
+```text
+batch accepted a zero divisor
+accepted non-bipolar key
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
+GREEN: edited tree at same parent, `c test -p amari-holographic --lib --test h3_atomic u2_`, exit 0:
+```text
+test memory::holographic_memory::tests::u2_checked_count_before_commit ... ok
+test algebra::cl3::tests::u2_unscaled_certificate ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 154 filtered out; finished in 0.00s
+test u2_invalid_key_classes_and_imaginary_values ... ok
+test u2_transactional_bad_prefix_and_mixed_tracking ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```

@@ -45,6 +45,8 @@
 //! assert!(retrieved.confidence > 0.9);
 //! ```
 
+pub(crate) mod domain;
+pub use domain::MemoryElement;
 mod error;
 mod holographic_memory;
 mod resonator;
