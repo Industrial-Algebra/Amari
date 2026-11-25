@@ -25,6 +25,13 @@ impl<const D:usize> MemoryElement for FHRRAlgebra<D> {
 pub(crate) fn finite<A:MemoryElement>(x:&A)->HolographicResult<Vec<f64>> {
     let c=x.full_coefficients(); if c.is_empty() || c.iter().any(|v|!v.is_finite()) {return Err(HolographicError::InvalidData);} Ok(c)
 }
+/// Coefficient cosine after independent max-absolute scaling; avoids squaring extreme inputs.
+pub(crate) fn cosine(a:&[f64], b:&[f64])->HolographicResult<f64>{
+    if a.len()!=b.len(){return Err(HolographicError::DimensionMismatch{expected:a.len(),actual:b.len()});}
+    let max=|v:&[f64]|v.iter().fold(0_f64,|m,x|m.max(x.abs()));
+    let (u,v)=(max(a),max(b)); if u==0. || v==0.{return Err(HolographicError::InvalidData);}
+    let(mut aa,mut bb,mut ab)=(0.,0.,0.);for(x,y)in a.iter().zip(b){let(x,y)=(x/u,y/v);aa+=x*x;bb+=y*y;ab+=x*y;}let s=ab/(aa.sqrt()*bb.sqrt());if !s.is_finite(){return Err(HolographicError::InvalidData);}Ok(s.clamp(-1.,1.))
+}
 pub(crate) fn key_inverse<A:MemoryElement>(key:&A)->HolographicResult<A>{
     finite(key)?;
     if !key.admissible_key(){return Err(HolographicError::InvalidKey);}

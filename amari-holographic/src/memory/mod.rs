@@ -52,7 +52,7 @@ mod holographic_memory;
 mod resonator;
 
 pub use error::{HolographicError, HolographicResult};
-pub use holographic_memory::{CapacityInfo, HolographicMemory, RetrievalResult};
+pub use holographic_memory::{CapacityInfo, HolographicMemory, MembershipEvidence, NearestKey, RetrievalResult};
 pub use resonator::{CleanupResult, FactorizationResult, Resonator, ResonatorConfig};
 
 // Re-export the Bindable trait (now an alias for BindingAlgebra compatibility)

@@ -38,3 +38,18 @@ test u2_invalid_key_classes_and_imaginary_values ... ok
 test u2_transactional_bad_prefix_and_mixed_tracking ... ok
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
+
+## U3 — query evidence
+
+Parent `a4d97096`, `c test -p amari-holographic --test h3_membership` (defaults). RED 2 intended, 0 ran, compile exit 101:
+```text
+error[E0432]: unresolved import `amari_holographic::memory::MembershipEvidence`
+error[E0599]: no method named `membership` found for struct `HolographicMemory<A>` in the current scope
+error[E0599]: no method named `nearest_key` found for struct `HolographicMemory<A>` in the current scope
+```
+GREEN: identical command, exit 0:
+```text
+test u3_full_exact_evidence_and_duplicate_indices ... ok
+test u3_walsh_crosstalk_without_age_gradient ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```

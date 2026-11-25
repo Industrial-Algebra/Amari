@@ -7,6 +7,18 @@ use alloc::vec::Vec;
 /// A raw additive trace with optional exact ordered key tracking.
 #[derive(Clone)]
 pub struct HolographicMemory<A:BindingAlgebra>{trace:A,item_count:usize,config:AlgebraConfig,stored_keys:Option<Vec<A>>}
+/// Exact tracked membership, distinct from similarity.
+#[derive(Clone,Debug,PartialEq,Eq)]
+pub enum MembershipEvidence { /// All matching record positions, in ingestion order.
+Present { /// Exact matching indices.
+indices:Vec<usize> }, /// No match among fully tracked keys.
+Absent, /// Key tracking was disabled.
+Unknown }
+/// Best tracked coefficient cosine. Ties resolve to the earliest record.
+#[derive(Clone,Debug,PartialEq)]
+pub struct NearestKey { /// Storage position.
+pub index:usize, /// Full-representation coefficient cosine (not a probability).
+pub similarity:f64 }
 /// Raw retrieval from an additive trace. No implicit normalization or cleanup.
 #[derive(Clone,Debug)]
 pub struct RetrievalResult<A:BindingAlgebra>{/// Left unbinding of the entire trace.
@@ -46,6 +58,10 @@ impl<A:MemoryElement> HolographicMemory<A>{
     pub fn store_batch(&mut self,pairs:&[(A,A)])->HolographicResult<()>{let n=self.next_count(pairs.len())?;let mut trace=self.trace.clone();for(k,v)in pairs{trace=Self::add(&trace,&Self::binding(k,v)?)?;}if let Some(keys)=&mut self.stored_keys{keys.extend(pairs.iter().map(|(k,_)|k.clone()));}self.trace=trace;self.item_count=n;Ok(())}
     /// Concatenate compatible memories; an empty source never changes the destination.
     pub fn merge(&mut self,other:&Self)->HolographicResult<()>{if other.item_count==0{return Ok(());}if self.stored_keys.is_some()!=other.stored_keys.is_some() || self.config!=other.config{return Err(HolographicError::IncompatibleMemory);}let n=self.next_count(other.item_count)?;let trace=Self::add(&self.trace,&other.trace)?;if let(Some(dst),Some(src))=(&mut self.stored_keys,&other.stored_keys){dst.extend(src.iter().cloned());}self.trace=trace;self.item_count=n;Ok(())}
+    /// Compare complete checked keys exactly, without similarity thresholds.
+    pub fn membership(&self,key:&A)->HolographicResult<MembershipEvidence>{key_inverse(key)?;let Some(keys)=&self.stored_keys else{return Ok(MembershipEvidence::Unknown);};let query=key.full_coefficients();let indices:Vec<_>=keys.iter().enumerate().filter(|(_,k)|k.full_coefficients()==query).map(|(i,_)|i).collect();Ok(if indices.is_empty(){MembershipEvidence::Absent}else{MembershipEvidence::Present{indices}})}
+    /// Closest tracked record, independently of membership. No score without keys.
+    pub fn nearest_key(&self,key:&A)->HolographicResult<Option<NearestKey>>{key_inverse(key)?;let Some(keys)=&self.stored_keys else{return Ok(None);};let query=key.full_coefficients();let mut best:Option<NearestKey>=None;for(index,k)in keys.iter().enumerate(){let similarity=super::domain::cosine(&query,&k.full_coefficients())?;if best.as_ref().is_none_or(|b|similarity>b.similarity){best=Some(NearestKey{index,similarity});}}Ok(best)}
     /// Raw left unbinding. For an empty memory and valid key the result is zero.
     pub fn retrieve(&self,key:&A)->HolographicResult<RetrievalResult<A>>{let raw_value=key_inverse(key)?.bind(&self.trace);finite(&raw_value)?;Ok(RetrievalResult{raw_value})}
 }
