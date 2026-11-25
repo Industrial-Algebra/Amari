@@ -6,6 +6,10 @@ Holographic Reduced Representations and Vector Symbolic Architectures for the Am
 
 `amari-holographic` provides implementations of various binding algebras for holographic memory and vector symbolic architectures (VSA). These high-dimensional distributed representations enable storing and retrieving associations through algebraic operations.
 
+## 0.25.0 Clifford migration
+
+Raw `Cl3` coefficients remain `[1,e1,e2,e3,e12,e13,e23,I]` in each of the 32 blocks of a 256-coefficient key. The kernel has changed: `e13 * e2` formerly produced `+I`, but Euclidean anticommutation gives `−I`. Keep original raw operands; invalidate all previously computed bindings (including derived keys), indexes and traces. Replay from those operands, in dependency order, into a new versioned cache namespace before switching readers. Do not import an old lossy trace without the source records. Update WASM callers to handle a JS error when a key has a singular factor or nonfinite coefficients; values need not be invertible. Select the named right Clifford dual, metric Hodge star or formal complement according to the intended operation rather than blindly renaming an old `dual()` call.
+
 ## Key Concepts
 
 ### Vector Symbolic Architectures (VSA)

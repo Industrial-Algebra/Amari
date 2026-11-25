@@ -34,11 +34,11 @@ fn word(slots: &[usize]) -> Cl3 {
 #[test]
 fn u3_grade_products() {
     use amari_holographic::algebra::GeometricAlgebra;
-    for i in 0..8 {
-        for j in 0..8 {
+    for (i, &left) in MASK.iter().enumerate() {
+        for (j, &right) in MASK.iter().enumerate() {
             let (a, b) = (blade(i), blade(j));
-            let (r, s) = (MASK[i].count_ones(), MASK[j].count_ones());
-            let t = (MASK[i] ^ MASK[j]).count_ones();
+            let (r, s) = (left.count_ones(), right.count_ones());
+            let t = (left ^ right).count_ones();
             let w = word(&[i, j]);
             for (got, grade, core) in [
                 (a.outer_product(&b), r + s, lift(a).outer_product(&lift(b))),

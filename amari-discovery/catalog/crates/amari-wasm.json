@@ -24805,7 +24805,7 @@
       "trait_path": "Default",
       "impl_type_path": "amari_wasm::fusion::WasmHolographicMemory",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 18,
       "trait_endpoint": {
         "kind": "external",
         "path": "Default"
@@ -28999,7 +28999,7 @@
     {
       "path": "amari_wasm::fusion::WasmHolographicMemory",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 16,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -29095,7 +29095,7 @@
     {
       "path": "amari_wasm::fusion::WasmResonator",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 19,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -29415,7 +29415,7 @@
     {
       "path": "amari_wasm::fusion::init_holographic",
       "source_path": "amari-wasm/src/fusion.rs",
-      "source_ordinal": 20,
+      "source_ordinal": 21,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"

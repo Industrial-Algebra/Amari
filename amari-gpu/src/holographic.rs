@@ -63,6 +63,7 @@ pub type GpuHolographicResult<T> = Result<T, GpuHolographicError>;
 /// Provides batch operations for VSA using WebGPU compute shaders.
 /// Automatically falls back to CPU for small batch sizes.
 pub struct GpuHolographic {
+    adapter_info: wgpu::AdapterInfo,
     device: wgpu::Device,
     queue: wgpu::Queue,
     bind_pipeline: wgpu::ComputePipeline,
@@ -122,7 +123,13 @@ impl GpuHolographic {
             similarity_pipeline,
             bundle_pipeline,
             dimension,
+            adapter_info: adapter.get_info(),
         })
+    }
+
+    /// Adapter actually used for GPU dispatch and readback.
+    pub fn adapter_info(&self) -> &wgpu::AdapterInfo {
+        &self.adapter_info
     }
 
     /// Create GPU context for ProductCl3x32 (256-dimensional)
@@ -768,6 +775,20 @@ impl GpuHolographic {
     // ========================================================================
 
     fn get_bind_shader(dimension: usize) -> String {
+        // Specialize once at pipeline creation from the CPU/Rayon source of truth.
+        use std::fmt::Write;
+        let mut terms: [String; 8] = Default::default();
+        for (i, row) in amari_holographic::Cl3::PRODUCT_TABLE.iter().enumerate() {
+            for (j, &(out, sign)) in row.iter().enumerate() {
+                let op = if sign < 0 { '-' } else { '+' };
+                write!(terms[out], " {op} a{i}*b{j}").unwrap();
+            }
+        }
+        let product: String = terms
+            .iter()
+            .enumerate()
+            .map(|(out, sum)| format!("    output[component_offset + {out}u] = 0.0{sum};\n"))
+            .collect();
         format!(
             r#"
 // Holographic binding shader (element-wise product for ProductClifford)
@@ -791,14 +812,7 @@ fn cl3_geometric_product(a0: f32, a1: f32, a2: f32, a3: f32, a4: f32, a5: f32, a
                          component_offset: u32) {{
     // Matches amari-holographic Cl3 coefficient order:
     // [s, e1, e2, e3, e12, e13, e23, e123].
-    output[component_offset + 0u] = a0*b0 + a1*b1 + a2*b2 + a3*b3 - a4*b4 - a5*b5 - a6*b6 - a7*b7;
-    output[component_offset + 1u] = a0*b1 + a1*b0 - a2*b4 - a3*b5 + a4*b2 + a5*b3 - a6*b7 - a7*b6;
-    output[component_offset + 2u] = a0*b2 + a2*b0 + a1*b4 - a3*b6 - a4*b1 - a5*b7 + a6*b3 + a7*b5;
-    output[component_offset + 3u] = a0*b3 + a3*b0 + a1*b5 + a2*b6 + a4*b7 - a5*b1 - a6*b2 - a7*b4;
-    output[component_offset + 4u] = a0*b4 + a4*b0 + a1*b2 - a2*b1 - a3*b7 + a5*b6 - a6*b5 - a7*b3;
-    output[component_offset + 5u] = a0*b5 + a5*b0 + a1*b3 - a3*b1 + a2*b7 - a4*b6 + a6*b4 + a7*b2;
-    output[component_offset + 6u] = a0*b6 + a6*b0 + a2*b3 - a3*b2 - a1*b7 + a4*b5 - a5*b4 - a7*b1;
-    output[component_offset + 7u] = a0*b7 + a7*b0 + a1*b6 + a2*b5 + a3*b4 + a4*b3 + a5*b2 + a6*b1;
+{product}
 }}
 
 @compute @workgroup_size(1)

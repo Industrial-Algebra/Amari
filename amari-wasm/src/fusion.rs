@@ -823,6 +823,15 @@ use amari_holographic::{
 /// Type alias for 256-dimensional ProductClifford algebra
 type ProductCl3x32 = ProductCliffordAlgebra<32>;
 
+// Values need not be units; only a key is used for division on retrieval.
+fn checked_holographic_key(coefficients: &[f64]) -> Result<ProductCl3x32, JsValue> {
+    let key = ProductCl3x32::from_coefficients(coefficients)
+        .map_err(|e| JsValue::from_str(&format!("invalid holographic key: {e}")))?;
+    key.inverse()
+        .map_err(|e| JsValue::from_str(&format!("invalid holographic key: {e}")))?;
+    Ok(key)
+}
+
 /// WASM wrapper for HolographicMemory using ProductClifford algebra
 #[wasm_bindgen]
 pub struct WasmHolographicMemory {
@@ -851,13 +860,7 @@ impl WasmHolographicMemory {
     ///
     /// Each array should have 256 coefficients for ProductCl3x32.
     pub fn store(&mut self, key: &[f64], value: &[f64]) -> Result<(), JsValue> {
-        if key.len() != 256 || value.len() != 256 {
-            return Err(JsValue::from_str(
-                "Key and value must have 256 coefficients for ProductCl3x32",
-            ));
-        }
-        let k = ProductCl3x32::from_coefficients(key)
-            .map_err(|e| JsValue::from_str(&format!("{}", e)))?;
+        let k = checked_holographic_key(key)?;
         let v = ProductCl3x32::from_coefficients(value)
             .map_err(|e| JsValue::from_str(&format!("{}", e)))?;
         self.inner.store(&k, &v);
@@ -868,13 +871,7 @@ impl WasmHolographicMemory {
     ///
     /// Returns the retrieved coefficients as a Float64Array.
     pub fn retrieve(&self, key: &[f64]) -> Result<Vec<f64>, JsValue> {
-        if key.len() != 256 {
-            return Err(JsValue::from_str(
-                "Key must have 256 coefficients for ProductCl3x32",
-            ));
-        }
-        let k = ProductCl3x32::from_coefficients(key)
-            .map_err(|e| JsValue::from_str(&format!("{}", e)))?;
+        let k = checked_holographic_key(key)?;
         let result = self.inner.retrieve(&k);
         Ok(result.value.to_coefficients())
     }
@@ -882,13 +879,7 @@ impl WasmHolographicMemory {
     /// Get retrieval confidence for a key
     #[wasm_bindgen(js_name = retrieveConfidence)]
     pub fn retrieve_confidence(&self, key: &[f64]) -> Result<f64, JsValue> {
-        if key.len() != 256 {
-            return Err(JsValue::from_str(
-                "Key must have 256 coefficients for ProductCl3x32",
-            ));
-        }
-        let k = ProductCl3x32::from_coefficients(key)
-            .map_err(|e| JsValue::from_str(&format!("{}", e)))?;
+        let k = checked_holographic_key(key)?;
         let result = self.inner.retrieve(&k);
         Ok(result.confidence)
     }

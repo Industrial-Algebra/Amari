@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Holographic Clifford correction (breaking behavior)
+
+`Cl3`/`ProductCliffordAlgebra` binding, including WASM and GPU, now uses the Euclidean product. For example, `e13 * e2` changes from `+e123` to `−e123`. Raw coefficient slots do not move. Rebuild derived bindings, indexes and memory traces from their original inputs in a new cache namespace; old compressed traces alone cannot be converted. WASM rejects singular or nonfinite keys. See the [crate migration notes](amari-holographic/README.md#0250-clifford-migration).
+
 ### Added
 
 #### `amari-rewrite` analysis and completion (0.25.0 Cohort 6)

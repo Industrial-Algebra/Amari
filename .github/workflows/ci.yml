@@ -86,6 +86,28 @@ jobs:
           echo "==> Structural catalog is up to date"
         if: matrix.rust == 'stable'
 
+  h1-shader-parity:
+    name: Holographic Shader Parity
+    runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable
+      WGPU_BACKEND: vulkan
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install lavapipe
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mesa-vulkan-drivers libvulkan1 libgmp-dev libmpfr-dev
+          icd=$(find /usr/share/vulkan/icd.d -name 'lvp_icd*.json' -print -quit)
+          test -f "$icd"
+          echo "VK_ICD_FILENAMES=$icd" >> "$GITHUB_ENV"
+      - name: Verify basis products through CPU and WGSL readback (adapter required)
+        run: |
+          cargo test -p amari-gpu --features holographic --test h1_shader_parity -- --ignored --nocapture | tee "$RUNNER_TEMP/parity.log"
+          grep -F '1 passed; 0 failed' "$RUNNER_TEMP/parity.log"
+        shell: bash
+
   test-wasm-compat:
     name: Test Suite (WASM-Compatible Precision)
     runs-on: ubuntu-latest
@@ -217,6 +239,7 @@ jobs:
         run: |
           cd amari-wasm
           wasm-pack test --node
+          node ../scripts/test-h1-wasm.mjs pkg
 
       - name: Upload WASM artifacts
         uses: actions/upload-artifact@v7
