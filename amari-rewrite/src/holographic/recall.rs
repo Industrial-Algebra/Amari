@@ -188,11 +188,13 @@ impl RecallTrace {
     /// # Errors
     ///
     /// - [`HolographicError::LimitExceeded`] when the trace has more than
-    ///   [`MAX_TRACE_TERMS`] terms or a borrowed term exceeds the node or depth
-    ///   ceiling;
-    /// - [`HolographicError::UnvalidatedProvenance`] when the certificate does
-    ///   not verify against `system` (tampered hash, tampered query, tampered
-    ///   intermediate term, foreign system, or an invented derivation);
+    ///   [`MAX_TRACE_TERMS`] terms, a borrowed term exceeds the node or depth
+    ///   ceiling, or the shared borrowed-admission walk exhausts its aggregate
+    ///   operation budget (reported with the first inadmissible value);
+    /// - [`HolographicError::UnvalidatedProvenance`] when admission succeeds
+    ///   but the certificate does not verify against `system` (tampered hash,
+    ///   tampered query, tampered intermediate term, foreign system, or an
+    ///   invented derivation), or when replay itself returns a typed error;
     /// - [`HolographicError::MalformedTrace`] when the query kind and the
     ///   derivation kind disagree.
     pub fn validate(

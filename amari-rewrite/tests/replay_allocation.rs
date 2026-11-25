@@ -41,7 +41,6 @@
 
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 use amari_rewrite::inverse::{
     BackwardDerivation, BackwardProvenance, BidirectionalDerivation, GuidanceMode,
@@ -54,8 +53,9 @@ use amari_rewrite::Path;
 
 struct Counting;
 
-static LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
-static PEAK_BYTES: AtomicUsize = AtomicUsize::new(0);
+/// (live bytes, high-water bytes), updated under one lock so concurrent
+/// allocator calls cannot publish a stale live value or lose a peak.
+static BYTE_COUNTERS: std::sync::Mutex<(usize, usize)> = std::sync::Mutex::new((0, 0));
 
 thread_local! {
     static COUNT_ON_THIS_THREAD: Cell<bool> = const { Cell::new(false) };
@@ -63,13 +63,39 @@ thread_local! {
 }
 
 impl Counting {
-    fn record(size: usize) {
+    fn count_allocation() {
         if COUNT_ON_THIS_THREAD.with(Cell::get) {
             THREAD_ALLOCATIONS.with(|count| count.set(count.get() + 1));
         }
-        let live = LIVE_BYTES.load(Ordering::SeqCst) + size;
-        LIVE_BYTES.store(live, Ordering::SeqCst);
-        let _ = PEAK_BYTES.fetch_max(live, Ordering::SeqCst);
+    }
+
+    fn adjust(add: usize, subtract: usize) {
+        let mut counters = BYTE_COUNTERS
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        counters.0 = counters.0.saturating_add(add).saturating_sub(subtract);
+        counters.1 = counters.1.max(counters.0);
+    }
+
+    fn record(size: usize) {
+        Self::count_allocation();
+        Self::adjust(size, 0);
+    }
+
+    fn begin_byte_measurement() -> usize {
+        let mut counters = BYTE_COUNTERS
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        counters.1 = counters.0;
+        counters.0
+    }
+
+    fn end_byte_measurement(start: usize) -> usize {
+        BYTE_COUNTERS
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .1
+            .saturating_sub(start)
     }
 }
 
@@ -83,15 +109,19 @@ unsafe impl GlobalAlloc for Counting {
     }
 
     unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
-        LIVE_BYTES.fetch_sub(layout.size(), Ordering::SeqCst);
+        Self::adjust(0, layout.size());
         unsafe { System.dealloc(pointer, layout) }
     }
 
     unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
         let moved = unsafe { System.realloc(pointer, layout, new_size) };
         if !moved.is_null() {
-            LIVE_BYTES.fetch_sub(layout.size(), Ordering::SeqCst);
-            Self::record(new_size);
+            Self::count_allocation();
+            if new_size >= layout.size() {
+                Self::adjust(new_size - layout.size(), 0);
+            } else {
+                Self::adjust(0, layout.size() - new_size);
+            }
         }
         moved
     }
@@ -117,14 +147,13 @@ fn exclusive() -> std::sync::MutexGuard<'static, ()> {
 /// process-wide peak live-byte growth observed while it ran. The caller holds
 /// [`exclusive`] to keep sibling tests out of the peak-byte measurement.
 fn measure<T>(body: impl FnOnce() -> T) -> (usize, usize, T) {
-    let start = LIVE_BYTES.load(Ordering::SeqCst);
+    let start = Counting::begin_byte_measurement();
     THREAD_ALLOCATIONS.with(|count| count.set(0));
     COUNT_ON_THIS_THREAD.with(|active| active.set(true));
-    PEAK_BYTES.store(start, Ordering::SeqCst);
     let value = body();
     COUNT_ON_THIS_THREAD.with(|active| active.set(false));
     let allocations = THREAD_ALLOCATIONS.with(Cell::get);
-    let peak = PEAK_BYTES.load(Ordering::SeqCst).saturating_sub(start);
+    let peak = Counting::end_byte_measurement(start);
     (allocations, peak, value)
 }
 
