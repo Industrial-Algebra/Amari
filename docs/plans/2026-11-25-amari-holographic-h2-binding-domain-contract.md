@@ -23,7 +23,16 @@ Sources: [audit and register](../audits/2026-11-18-amari-holographic-audit.md), 
 
 **Settled constraints.** H1's verified local kernel, two-sided unscaled `1e−12` Product factor inverse certificate, named duals, signed generator permutation and checked WASM keys stand. Do not replace them with norm tests. H3's checked retrieval-key classes, exact tracked-key membership / explicit `Unknown`, separately labelled nearest similarity, additive trace, and frozen coefficient-wise recovery certificate stand. A more general algebraic inverse in H2 would not by itself widen H3 membership. Values need not be keys. Neither H2 implementation nor H2 inclusion in 0.25.0 is decided here.
 
-**Operator decision record — OPEN.** Fill in the choice, public signatures, errors, numerical tolerances and migration for each row *before* implementation; no option here is a default approval.
+**Operator decision record — RESOLVED 2026-11-25 (round-1 remediation; per-row detail below).** No option was a default approval; each row records the operator's selection. Public signatures, errors, tolerances and migration follow from these selections and the frozen certificates in the Numerical Acceptance Law section.
+
+| Decision | Operator selection |
+|---|---|
+| D1 | **Typed keys + named general inverse.** Typed validated key classes (bipolar MAP, unitary FHRR, H1-certified Product keys) for binding/unbinding/membership; a separately named checked-inverse unbind on general elements; every admitted key certified `k·k⁻¹ = 1` both sides; adjoint/correlation exposed as correlation, never as unbind. |
+| D2 | **Per-operation typed policy.** Every public operation: empty/zero-norm/NaN/±∞/unrepresentable each get a defined result or a typed error at a named boundary — no universal sentinel; K=0/D=0 rejected at construction; shape invariants at construction and deserialization. |
+| D3 | **Remove + two named operations.** Unqualified similarity removed on non-Euclidean signatures (typed error); separately named normalized metric pairing (signed, documented) and positive coefficient cosine (Euclidean-only). Generic trait callers get the typed error. |
+| D4 | **One global bundling semantics.** Bundle is one defined global operation: associative list semantics, deterministic tie rule, thread-count-independent results, error propagation (never `unwrap_or`), empty list = identity with a defined result; the binary pair form is documented as fold order. |
+| D5 | **Both, separately named.** log-sum-exp kept on its true mathematical domain (diverging zero-temperature limit documented; β=0 per D2); log-mean-exp exposed separately with the finite mean limit; no continuity claim spanning both. |
+| D6 | **Rename to bin reindex + checked maps.** Spectral bin reindexing under an accurate name with checked bijective maps and D=0 rejection; any temporal delay would be a distinct phase-ramp operation; trait `permute` documented as bin reindexing; amari-rewrite's positional consumption migrates with a name-level note, zero behavior change (stop-and-coordinate if behavior would change). |
 
 | Decision | Alternatives and consequence |
 |---|---|
