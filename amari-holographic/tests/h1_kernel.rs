@@ -32,6 +32,33 @@ fn word(slots: &[usize]) -> Cl3 {
     blade(MASK.iter().position(|&k| k == mask).unwrap()).scale(sign)
 }
 #[test]
+fn u3_grade_products() {
+    use amari_holographic::algebra::GeometricAlgebra;
+    for i in 0..8 {
+        for j in 0..8 {
+            let (a, b) = (blade(i), blade(j));
+            let (r, s) = (MASK[i].count_ones(), MASK[j].count_ones());
+            let t = (MASK[i] ^ MASK[j]).count_ones();
+            let w = word(&[i, j]);
+            for (got, grade, core) in [
+                (a.outer_product(&b), r + s, lift(a).outer_product(&lift(b))),
+                (
+                    a.inner_product(&b),
+                    r.abs_diff(s),
+                    lift(a).inner_product(&lift(b)),
+                ),
+            ] {
+                assert_eq!(got, if grade == t { w } else { Cl3::zero() });
+                assert_eq!(lift(got), core);
+            }
+        }
+    }
+    let a = blade(0) + blade(1);
+    let b = blade(1) + blade(7);
+    assert_eq!(lift(a.inner_product(&b)), lift(a).inner_product(&lift(b)));
+    assert_eq!(lift(a.outer_product(&b)), lift(a).outer_product(&lift(b)));
+}
+#[test]
 fn u2_inverses() {
     let one = blade(0);
     let v = blade(1);

@@ -183,6 +183,20 @@ impl Cl3 {
         Self::new(out)
     }
 
+    fn grade_product(&self, other: &Self, target: impl Fn(u32, u32) -> u32) -> Self {
+        let mut result = Self::zero();
+        for (i, row) in Self::PRODUCT_TABLE.iter().enumerate() {
+            for (j, &(k, sign)) in row.iter().enumerate() {
+                if Self::MASK[k].count_ones()
+                    == target(Self::MASK[i].count_ones(), Self::MASK[j].count_ones())
+                {
+                    result.coeffs[k] += sign as f64 * self.coeff(i) * other.coeff(j);
+                }
+            }
+        }
+        result
+    }
+
     /// Compute the reverse.
     ///
     /// Reverses the order of vectors in each blade:
@@ -588,27 +602,11 @@ impl GeometricAlgebra for Cl3 {
     }
 
     fn inner_product(&self, other: &Self) -> Self {
-        // Inner product: sum of grade contractions
-        // Simplified: just return scalar and vector parts
-        let prod = self.geometric_product(other);
-        let mut result = [0.0; 8];
-        result[Self::S] = prod.coeffs[Self::S];
-        result[Self::E1] = prod.coeffs[Self::E1];
-        result[Self::E2] = prod.coeffs[Self::E2];
-        result[Self::E3] = prod.coeffs[Self::E3];
-        Self::new(result)
+        self.grade_product(other, u32::abs_diff)
     }
 
     fn outer_product(&self, other: &Self) -> Self {
-        // Outer product: keep only terms that increase grade
-        // Simplified implementation
-        let prod = self.geometric_product(other);
-        let mut result = [0.0; 8];
-        result[Self::E12] = prod.coeffs[Self::E12];
-        result[Self::E13] = prod.coeffs[Self::E13];
-        result[Self::E23] = prod.coeffs[Self::E23];
-        result[Self::E123] = prod.coeffs[Self::E123];
-        Self::new(result)
+        self.grade_product(other, |r, s| r + s)
     }
 }
 
