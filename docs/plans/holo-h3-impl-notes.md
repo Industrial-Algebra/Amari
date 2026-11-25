@@ -144,3 +144,17 @@ Implementation lineage: U1 `19a867ce`, U2 `a4d97096`, U3 `24e79494`, U4 `e135379
 | `c fmt --all -- --check`; `c clippy $SCOPE --all-targets --all-features -- -D warnings`; `c doc $SCOPE --all-features --no-deps` | Formatting, Clippy and docs passed. `$SCOPE` = `-p amari-holographic -p amari-gpu -p amari-wasm -p amari-fusion -p amari-discovery`. Cargo manifest and existing rustdoc link warnings are separate from warning-denied Clippy. |
 
 Ignored tests are not counted as passes. No external consumers, release, or remote CI are claimed verified.
+
+## Implementation review R1 — committed regression gates
+
+Parent `7f9ec2b7`; tests and evidence only. Both P2s concerned missing coverage, not reproduced production defects. The six new `r1_` fixtures passed on their first run against the reviewed implementation. To verify sensitivity, the following **negative controls** ran in disposable detached worktrees at the same parent plus the new tests, with isolated build directories. No mutated production source was staged.
+
+| Default-feature command (`c` as above) | Deliberate change and observed RED |
+|---|---|
+| `c test -p amari-holographic --test h3_atomic r1_` | Commit trace after each batch prefix; advance merge count before addition. `r1_batch_superpose_rollback` and `r1_merge_superpose_rollback`: **2 failed**, exit 101. The marked backend reports wrapped `NumericalError` for `7 + 13` (prefix already bound and accumulated) or `3 + 13` (compatible tracked merge). Tests compare trace bits, count and ordered matching indices for every admissible key; a valid retrieval must still return 3. |
+| `c test -p amari-holographic --test h3_cleanup r1_` | Use final β instead of initial β for budget one; keep first codebook position on a tie. Single-update, reversed nearest tie and finite-to-hard tie tests **failed**, 1 unaffected pass, exit 101. |
+| `c test -p amari-holographic --test h3_cleanup r1_linear_schedule_three_updates` | Change the interpolation divisor from `N−1` to `N` only. **1 failed**, exit 101: `assertion failed: (actual - expected).abs() < 1e-12`. This distinguishes the middle weight, not just the final β. |
+
+**Unmodified production tree, GREEN:** `c test -p amari-holographic --test h3_atomic --test h3_cleanup r1_` selected 2 atomic and 4 cleanup tests, all passed, exit 0. Cleanup tests: `r1_linear_schedule_three_updates`, `r1_single_update_endpoint`, `r1_nearest_tie_is_order_independent`, `r1_finite_then_hard_tie`. The one-update budget uses the initial endpoint when endpoints differ; coincident hard endpoints select the exact word with `Updated { iterations: 1 }`.
+
+`c test -p amari-holographic` and `c test -p amari-holographic --all-features` each reported **188 passed, 0 failed, 17 ignored** (formerly 182 passed), exit 0. `c fmt --all -- --check` and `c clippy -p amari-holographic --all-targets --all-features -- -D warnings` both exited 0.
