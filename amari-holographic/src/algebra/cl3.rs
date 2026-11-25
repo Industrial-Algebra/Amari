@@ -395,7 +395,7 @@ impl Cl3 {
 
     /// Compute the dual (multiply by pseudoscalar inverse).
     #[inline]
-    pub fn dual(&self) -> Self {
+    fn right_dual_euclidean(&self) -> Self {
         // In Cl(3), I = e123, I² = -1, I⁻¹ = -I
         // dual(x) = x * I⁻¹ = -x * I
         self.geometric_product(&Self::pseudoscalar(-1.0))
@@ -597,8 +597,17 @@ impl GeometricAlgebra for Cl3 {
         Self::grade_spectrum(self)
     }
 
-    fn dual(&self) -> Self {
-        Self::dual(self)
+    fn right_clifford_dual(&self) -> Result<Self, amari_core::DualError> {
+        Ok(self.right_dual_euclidean())
+    }
+
+    fn hodge_dual(&self) -> Result<Self, amari_core::DualError> {
+        Ok(self.formal_complement())
+    }
+
+    fn formal_complement(&self) -> Self {
+        // In a positive orthonormal frame the metric star equals the oriented complement.
+        self.reverse().geometric_product(&Self::pseudoscalar(1.0))
     }
 
     fn inner_product(&self, other: &Self) -> Self {

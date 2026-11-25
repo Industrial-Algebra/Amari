@@ -87,6 +87,39 @@ fn u2_inverses() {
 }
 
 #[test]
+fn u4_duals() {
+    use amari_holographic::algebra::{CliffordAlgebra as C, GeometricAlgebra};
+    let dest = [7, 6, 5, 4, 3, 2, 1, 0];
+    let orientation = [1., 1., -1., 1., 1., -1., 1., 1.];
+    for i in 0..8 {
+        let x = blade(i);
+        let c = C::new(lift(x));
+        let h = blade(dest[i]).scale(orientation[i]);
+        let right = word(&[i, 7]).scale(-1.);
+        assert_eq!(x.formal_complement(), h);
+        assert_eq!(x.hodge_dual().unwrap(), h);
+        assert_eq!(x.right_clifford_dual().unwrap(), right);
+        assert_eq!(c.formal_complement().inner(), &lift(h));
+        assert_eq!(c.hodge_dual().unwrap().inner(), &lift(h));
+        assert_eq!(c.right_clifford_dual().unwrap().inner(), &lift(right));
+        let rev = if i >= 4 { -1. } else { 1. };
+        assert_eq!(x.reverse(), x.scale(rev));
+        assert_eq!(
+            x.conjugate(),
+            x.scale(if i == 0 || i == 7 { 1. } else { -1. })
+        );
+    }
+    let neg = C::<0, 1, 0>::unit_vector(0).unwrap();
+    assert_eq!(neg.hodge_dual().unwrap().get(0).unwrap(), -1.);
+    assert_eq!(neg.formal_complement().get(0).unwrap(), 1.);
+    let null = C::<0, 0, 1>::unit_vector(0).unwrap();
+    for x in [null.clone(), C::identity()] {
+        assert!(x.right_clifford_dual().is_err());
+        assert!(x.hodge_dual().is_err());
+    }
+    assert_eq!(null.formal_complement().get(0).unwrap(), 1.);
+}
+#[test]
 fn u1_signed_words() {
     for i in 0..8 {
         for j in 0..8 {
