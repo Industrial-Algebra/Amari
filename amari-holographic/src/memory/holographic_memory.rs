@@ -1,104 +1,61 @@
-//! Holographic associative memory for key-value storage in superposition.
-//!
-//! This module provides the main `HolographicMemory` data structure that stores
-//! key-value associations using holographic reduced representations.
-
+//! Additive, checked associative memory. A raw trace is an ordered sum of bindings.
+use super::domain::{finite, key_inverse, MemoryElement};
+use super::{HolographicError, HolographicResult};
+use crate::algebra::{AlgebraConfig, BindingAlgebra};
 use alloc::vec::Vec;
 
-#[cfg(feature = "parallel")]
-use rayon::prelude::*;
-
-use crate::algebra::{AlgebraConfig, BindingAlgebra};
-
-/// A holographic associative memory storing key-value pairs in superposition.
-///
-/// This is generic over any algebra implementing [`BindingAlgebra`], allowing
-/// use with Clifford, ProductClifford, FHRR, MAP, or custom algebras.
-///
-/// # Capacity
-///
-/// Reliable retrieval degrades as items are added. Capacity scales as O(dim / log dim).
-/// The memory tracks estimated SNR and warns when approaching capacity limits.
-///
-/// # Example
-///
-/// ```ignore
-/// use amari_holographic::{HolographicMemory, AlgebraConfig};
-/// use amari_holographic::algebra::ProductCl3x32;
-///
-/// let mut memory = HolographicMemory::<ProductCl3x32>::new(AlgebraConfig::default());
-///
-/// let key = ProductCl3x32::random_versor(2);
-/// let value = ProductCl3x32::random_versor(2);
-///
-/// memory.store(&key, &value);
-///
-/// let retrieved = memory.retrieve(&key);
-/// assert!(retrieved.confidence > 0.9);
-/// ```
+/// A raw additive trace with optional exact ordered key tracking.
 #[derive(Clone)]
 pub struct HolographicMemory<A: BindingAlgebra> {
-    /// The superposed memory trace
     trace: A,
-    /// Number of items stored
     item_count: usize,
-    /// Algebra configuration (bundling/retrieval parameters)
     config: AlgebraConfig,
-    /// Optional: store keys for resonator cleanup and attribution
     stored_keys: Option<Vec<A>>,
 }
-
-/// Result of a retrieval operation.
+/// Exact tracked membership, distinct from similarity.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum MembershipEvidence {
+    /// All matching record positions, in ingestion order.
+    Present {
+        /// Exact matching indices.
+        indices: Vec<usize>,
+    },
+    /// No match among fully tracked keys.
+    Absent,
+    /// Key tracking was disabled.
+    Unknown,
+}
+/// Best tracked coefficient cosine. Ties resolve to the earliest record.
+#[derive(Clone, Debug, PartialEq)]
+pub struct NearestKey {
+    /// Storage position.
+    pub index: usize,
+    /// Full-representation coefficient cosine (not a probability).
+    pub similarity: f64,
+}
+/// Raw retrieval from an additive trace. No implicit normalization or cleanup.
 #[derive(Clone, Debug)]
 pub struct RetrievalResult<A: BindingAlgebra> {
-    /// The retrieved value (after cleanup if enabled)
-    pub value: A,
-    /// Raw retrieved value before cleanup
+    /// Left unbinding of the entire trace.
     pub raw_value: A,
-    /// Estimated confidence in [0, 1] based on SNR
-    pub confidence: f64,
-    /// Attribution: which stored items contributed
-    /// Indices correspond to storage order if key tracking is enabled
-    pub attribution: Vec<(usize, f64)>,
-    /// Similarity of retrieved value to query (sanity check)
-    pub query_similarity: f64,
 }
-
-impl<A: BindingAlgebra> RetrievalResult<A> {
-    /// Verify that this retrieval result is valid.
-    pub fn verify_result_validity(&self) -> bool {
-        // Check that value is finite
-        let value_norm = self.value.norm();
-        if !value_norm.is_finite() {
-            return false;
-        }
-
-        // Check confidence is in valid range
-        if !(0.0..=1.0).contains(&self.confidence) {
-            return false;
-        }
-
-        true
-    }
-}
-
-/// Information about memory capacity and health.
+/// Nominal load heuristics, not query evidence or measured interference.
 #[derive(Clone, Debug)]
 pub struct CapacityInfo {
-    /// Current number of stored items
+    /// Number of stored records.
     pub item_count: usize,
-    /// Theoretical maximum before severe degradation
+    /// Nominal load scale.
     pub theoretical_capacity: usize,
-    /// Estimated signal-to-noise ratio (higher is better)
+    /// Nominal signal-to-noise estimate from load alone.
     pub estimated_snr: f64,
-    /// Recommended: stop storing if SNR drops below this
+    /// Nominal load warning threshold.
     pub snr_threshold: f64,
-    /// Whether memory is approaching capacity limits
+    /// Heuristic load warning, not retrieval confidence.
     pub near_capacity: bool,
 }
 
-impl<A: BindingAlgebra> HolographicMemory<A> {
-    /// Create a new empty holographic memory.
+impl<A: MemoryElement> HolographicMemory<A> {
+    /// Create empty, untracked memory.
     pub fn new(config: AlgebraConfig) -> Self {
         Self {
             trace: A::zero(),
@@ -107,331 +64,194 @@ impl<A: BindingAlgebra> HolographicMemory<A> {
             stored_keys: None,
         }
     }
-
-    /// Create with key tracking enabled (for resonator cleanup and attribution).
+    /// Create empty memory retaining ordered keys.
     pub fn with_key_tracking(config: AlgebraConfig) -> Self {
         Self {
-            trace: A::zero(),
-            item_count: 0,
-            config,
             stored_keys: Some(Vec::new()),
+            ..Self::new(config)
         }
     }
-
-    /// Store a key-value association.
-    pub fn store(&mut self, key: &A, value: &A) {
-        // Bind key and value
-        let bound = key.bind(value);
-
-        // Bundle into memory trace
-        if self.item_count == 0 {
-            self.trace = bound;
-        } else {
-            self.trace = self
-                .trace
-                .bundle(&bound, self.config.bundle_beta)
-                .unwrap_or_else(|_| self.trace.clone());
-        }
-
-        // Track key if enabled
-        if let Some(ref mut keys) = self.stored_keys {
-            keys.push(key.clone());
-        }
-
-        self.item_count += 1;
-    }
-
-    /// Store multiple associations at once (more efficient bundling).
-    pub fn store_batch(&mut self, pairs: &[(A, A)]) {
-        if pairs.is_empty() {
-            return;
-        }
-
-        // Bind all pairs
-        #[cfg(feature = "parallel")]
-        let bindings: Vec<_> = pairs.par_iter().map(|(k, v)| k.bind(v)).collect();
-
-        #[cfg(not(feature = "parallel"))]
-        let bindings: Vec<_> = pairs.iter().map(|(k, v)| k.bind(v)).collect();
-
-        // Bundle all bindings
-        let batch_trace =
-            A::bundle_all(&bindings, self.config.bundle_beta).unwrap_or_else(|_| A::zero());
-
-        // Merge with existing trace
-        if self.item_count == 0 {
-            self.trace = batch_trace;
-        } else {
-            self.trace = self
-                .trace
-                .bundle(&batch_trace, self.config.bundle_beta)
-                .unwrap_or_else(|_| self.trace.clone());
-        }
-
-        // Track keys if enabled
-        if let Some(ref mut keys) = self.stored_keys {
-            for (k, _) in pairs {
-                keys.push(k.clone());
-            }
-        }
-
-        self.item_count += pairs.len();
-    }
-
-    /// Retrieve the value associated with a key.
-    pub fn retrieve(&self, key: &A) -> RetrievalResult<A> {
-        self.retrieve_at_temperature(key, self.config.retrieval_beta)
-    }
-
-    /// Retrieve with custom temperature (override config settings).
-    pub fn retrieve_at_temperature(&self, key: &A, beta: f64) -> RetrievalResult<A> {
-        // Unbind with key to get noisy value
-        let raw_value = key.unbind(&self.trace).unwrap_or_else(|_| A::zero());
-
-        // Compute confidence based on SNR estimate
-        let snr = self.estimate_snr();
-        let confidence = self.snr_to_confidence(snr);
-
-        // For hard retrieval, normalize the result
-        let value = if beta.is_infinite() {
-            raw_value.normalize().unwrap_or_else(|_| raw_value.clone())
-        } else {
-            raw_value.clone()
-        };
-
-        // Compute attribution if key tracking is enabled
-        let attribution = self.compute_attribution(key, &value);
-
-        // Compute query similarity
-        let query_similarity = value.similarity(key);
-
-        RetrievalResult {
-            value,
-            raw_value,
-            confidence,
-            attribution,
-            query_similarity,
-        }
-    }
-
-    /// Query with a partial or noisy key (holographic graceful degradation).
-    pub fn query_partial(&self, partial_key: &A, _mask: &[bool]) -> RetrievalResult<A> {
-        // For partial queries, we just retrieve normally
-        // The holographic representation naturally handles partial information
-        self.retrieve(partial_key)
-    }
-
-    /// Check if a key is likely stored (approximate membership).
-    pub fn probably_contains(&self, key: &A) -> bool {
-        let result = self.retrieve(key);
-        result.confidence > self.config.similarity_threshold
-    }
-
-    /// Get capacity information.
-    pub fn capacity_info(&self) -> CapacityInfo {
-        let theoretical_capacity = self.theoretical_capacity();
-        let estimated_snr = self.estimate_snr();
-        let snr_threshold = 2.0; // Minimum acceptable SNR
-
-        CapacityInfo {
-            item_count: self.item_count,
-            theoretical_capacity,
-            estimated_snr,
-            snr_threshold,
-            near_capacity: self.item_count > theoretical_capacity / 2,
-        }
-    }
-
-    /// Clear the memory.
-    pub fn clear(&mut self) {
-        self.trace = A::zero();
-        self.item_count = 0;
-        if let Some(ref mut keys) = self.stored_keys {
-            keys.clear();
-        }
-    }
-
-    /// Merge another memory into this one.
-    pub fn merge(&mut self, other: &Self) {
-        if other.item_count == 0 {
-            return;
-        }
-
-        if self.item_count == 0 {
-            self.trace = other.trace.clone();
-        } else {
-            self.trace = self
-                .trace
-                .bundle(&other.trace, self.config.bundle_beta)
-                .unwrap_or_else(|_| self.trace.clone());
-        }
-
-        self.item_count += other.item_count;
-
-        // Merge keys if tracking
-        if let (Some(ref mut self_keys), Some(ref other_keys)) =
-            (&mut self.stored_keys, &other.stored_keys)
-        {
-            self_keys.extend(other_keys.iter().cloned());
-        }
-    }
-
-    /// Get the raw memory trace (for inspection/serialization).
+    /// Return the unmodified sum of bindings.
     pub fn trace(&self) -> &A {
         &self.trace
     }
-
-    /// Get the number of stored items.
+    /// Number of committed records.
     pub fn item_count(&self) -> usize {
         self.item_count
     }
-
-    /// Verify memory consistency.
+    /// Finite trace, with one tracked key per record when tracking is enabled.
     pub fn verify_consistency(&self) -> bool {
-        // Check trace is valid
-        let norm = self.trace.norm();
-        if !norm.is_finite() {
-            return false;
-        }
-
-        // Check item count consistency with stored keys
-        if let Some(ref keys) = self.stored_keys {
-            if keys.len() != self.item_count {
-                return false;
-            }
-        }
-
-        true
+        finite(&self.trace).is_ok()
+            && self
+                .stored_keys
+                .as_ref()
+                .is_none_or(|keys| keys.len() == self.item_count)
     }
-
-    // ========================================================================
-    // Private helper methods
-    // ========================================================================
-
-    /// Estimate signal-to-noise ratio.
-    fn estimate_snr(&self) -> f64 {
-        if self.item_count == 0 {
-            return f64::INFINITY;
+    /// Remove all associations, preserving the tracking mode.
+    pub fn clear(&mut self) {
+        self.trace = A::zero();
+        self.item_count = 0;
+        if let Some(keys) = &mut self.stored_keys {
+            keys.clear();
         }
-
-        // Use the algebra's estimate_snr method
-        self.trace.estimate_snr(self.item_count)
     }
-
-    /// Convert SNR to confidence in [0, 1].
-    fn snr_to_confidence(&self, snr: f64) -> f64 {
-        if snr.is_infinite() {
-            return 1.0;
+    /// Nominal dimension/load heuristics only.
+    pub fn capacity_info(&self) -> CapacityInfo {
+        let theoretical_capacity = self.trace.theoretical_capacity();
+        CapacityInfo {
+            item_count: self.item_count,
+            theoretical_capacity,
+            estimated_snr: if self.item_count == 0 {
+                f64::INFINITY
+            } else {
+                self.trace.estimate_snr(self.item_count)
+            },
+            snr_threshold: 2.,
+            near_capacity: self.item_count > theoretical_capacity / 2,
         }
-        // Sigmoid-like function that maps SNR to confidence
-        // SNR of 2 gives ~0.88, SNR of 5 gives ~0.99
-        1.0 - (-snr / 2.0).exp()
     }
-
-    /// Theoretical capacity.
-    fn theoretical_capacity(&self) -> usize {
-        self.trace.theoretical_capacity()
+    fn add(trace: &A, bound: &A) -> HolographicResult<A> {
+        let result = trace
+            .superpose(bound)
+            .map_err(|source| HolographicError::Algebra {
+                operation: "trace superposition".into(),
+                source,
+            })?;
+        finite(&result)?;
+        Ok(result)
     }
-
-    /// Compute attribution for a retrieval.
-    fn compute_attribution(&self, key: &A, _value: &A) -> Vec<(usize, f64)> {
-        let Some(ref keys) = self.stored_keys else {
-            return Vec::new();
+    fn binding(key: &A, value: &A) -> HolographicResult<A> {
+        key_inverse(key)?;
+        finite(value)?;
+        let b = key.bind(value);
+        finite(&b)?;
+        Ok(b)
+    }
+    fn next_count(&self, n: usize) -> HolographicResult<usize> {
+        self.item_count
+            .checked_add(n)
+            .ok_or(HolographicError::CountOverflow)
+    }
+    /// Validate key, value and resulting trace before publishing any state.
+    pub fn store(&mut self, key: &A, value: &A) -> HolographicResult<()> {
+        let n = self.next_count(1)?;
+        let trace = Self::add(&self.trace, &Self::binding(key, value)?)?;
+        if let Some(keys) = &mut self.stored_keys {
+            keys.push(key.clone());
+        }
+        self.trace = trace;
+        self.item_count = n;
+        Ok(())
+    }
+    /// Store every pair in order or commit none of them.
+    pub fn store_batch(&mut self, pairs: &[(A, A)]) -> HolographicResult<()> {
+        let n = self.next_count(pairs.len())?;
+        let mut trace = self.trace.clone();
+        for (k, v) in pairs {
+            trace = Self::add(&trace, &Self::binding(k, v)?)?;
+        }
+        if let Some(keys) = &mut self.stored_keys {
+            keys.extend(pairs.iter().map(|(k, _)| k.clone()));
+        }
+        self.trace = trace;
+        self.item_count = n;
+        Ok(())
+    }
+    /// Concatenate compatible memories; an empty source never changes the destination.
+    pub fn merge(&mut self, other: &Self) -> HolographicResult<()> {
+        if other.item_count == 0 {
+            return Ok(());
+        }
+        if self.stored_keys.is_some() != other.stored_keys.is_some() || self.config != other.config
+        {
+            return Err(HolographicError::IncompatibleMemory);
+        }
+        let n = self.next_count(other.item_count)?;
+        let trace = Self::add(&self.trace, &other.trace)?;
+        if let (Some(dst), Some(src)) = (&mut self.stored_keys, &other.stored_keys) {
+            dst.extend(src.iter().cloned());
+        }
+        self.trace = trace;
+        self.item_count = n;
+        Ok(())
+    }
+    /// Compare complete checked keys exactly, without similarity thresholds.
+    pub fn membership(&self, key: &A) -> HolographicResult<MembershipEvidence> {
+        key_inverse(key)?;
+        let Some(keys) = &self.stored_keys else {
+            return Ok(MembershipEvidence::Unknown);
         };
-
-        // Compute similarity of each stored key to the query key
-        let mut attributions: Vec<(usize, f64)> = keys
+        let query = key.full_coefficients();
+        let indices: Vec<_> = keys
             .iter()
             .enumerate()
-            .map(|(i, stored_key)| {
-                let sim = key.similarity(stored_key);
-                (i, sim.max(0.0))
-            })
+            .filter(|(_, k)| k.full_coefficients() == query)
+            .map(|(i, _)| i)
             .collect();
-
-        // Sort by attribution (descending)
-        attributions.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(core::cmp::Ordering::Equal));
-
-        // Normalize to sum to 1
-        let total: f64 = attributions.iter().map(|(_, w)| w).sum();
-        if total > 1e-10 {
-            for (_, w) in &mut attributions {
-                *w /= total;
+        Ok(if indices.is_empty() {
+            MembershipEvidence::Absent
+        } else {
+            MembershipEvidence::Present { indices }
+        })
+    }
+    /// Closest tracked record, independently of membership. No score without keys.
+    pub fn nearest_key(&self, key: &A) -> HolographicResult<Option<NearestKey>> {
+        key_inverse(key)?;
+        let Some(keys) = &self.stored_keys else {
+            return Ok(None);
+        };
+        let query = key.full_coefficients();
+        let mut best: Option<NearestKey> = None;
+        for (index, k) in keys.iter().enumerate() {
+            let similarity = super::domain::cosine(&query, &k.full_coefficients())?;
+            if best.as_ref().is_none_or(|b| similarity > b.similarity) {
+                best = Some(NearestKey { index, similarity });
             }
         }
-
-        // Keep only significant attributions
-        attributions
-            .into_iter()
-            .filter(|(_, w)| *w > 0.01)
-            .collect()
+        Ok(best)
+    }
+    /// Raw left unbinding. For an empty memory and valid key the result is zero.
+    pub fn retrieve(&self, key: &A) -> HolographicResult<RetrievalResult<A>> {
+        let raw_value = key_inverse(key)?.bind(&self.trace);
+        finite(&raw_value)?;
+        Ok(RetrievalResult { raw_value })
     }
 }
-
-/// Marker for verified memory operations.
-#[derive(Debug, Clone, Copy)]
-#[allow(dead_code)]
-pub struct MemoryVerified;
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::algebra::product_clifford::ProductCl3x8;
-
+    use crate::Cl3;
+    #[test]
+    fn u2_checked_count_before_commit() {
+        let mut m = HolographicMemory::new(Default::default());
+        m.item_count = usize::MAX;
+        assert!(matches!(
+            m.store(&Cl3::one(), &Cl3::one()),
+            Err(HolographicError::CountOverflow)
+        ));
+        assert_eq!(*m.trace(), Cl3::zero());
+    }
     #[test]
     fn test_memory_store_retrieve() {
-        let mut memory = HolographicMemory::<ProductCl3x8>::new(AlgebraConfig::default());
-
-        let key = ProductCl3x8::random_versor(2);
-        let value = ProductCl3x8::random_versor(2);
-
-        memory.store(&key, &value);
-
-        let result = memory.retrieve(&key);
-        assert!(result.confidence > 0.5, "confidence: {}", result.confidence);
-
-        let sim = result.value.similarity(&value);
-        assert!(sim > 0.9, "similarity: {}", sim);
+        let mut m = HolographicMemory::new(Default::default());
+        let k = Cl3::scalar(2.) + Cl3::unit_vector(0);
+        let v = Cl3::unit_vector(1);
+        m.store(&k, &v).unwrap();
+        assert_eq!(m.retrieve(&k).unwrap().raw_value, v);
+        assert!(m.retrieve(&Cl3::zero()).is_err());
     }
-
-    #[test]
-    fn test_memory_capacity_info() {
-        let memory = HolographicMemory::<ProductCl3x8>::new(AlgebraConfig::default());
-        let info = memory.capacity_info();
-
-        assert_eq!(info.item_count, 0);
-        assert!(info.estimated_snr.is_infinite());
-        assert!(!info.near_capacity);
-    }
-
     #[test]
     fn test_memory_clear() {
-        let mut memory = HolographicMemory::<ProductCl3x8>::new(AlgebraConfig::default());
-
-        let key = ProductCl3x8::random_versor(2);
-        let value = ProductCl3x8::random_versor(2);
-
-        memory.store(&key, &value);
-        assert_eq!(memory.item_count(), 1);
-
-        memory.clear();
-        assert_eq!(memory.item_count(), 0);
+        let mut m = HolographicMemory::with_key_tracking(Default::default());
+        m.store(&Cl3::one(), &Cl3::zero()).unwrap();
+        m.clear();
+        assert_eq!(m.item_count(), 0);
+        assert!(m.verify_consistency());
     }
-
     #[test]
-    fn test_snr_to_confidence() {
-        let memory = HolographicMemory::<ProductCl3x8>::new(AlgebraConfig::default());
-
-        // High SNR should give high confidence
-        let high_conf = memory.snr_to_confidence(10.0);
-        assert!(high_conf > 0.99);
-
-        // Low SNR should give lower confidence
-        let low_conf = memory.snr_to_confidence(1.0);
-        assert!(low_conf < 0.5);
-
-        // Infinite SNR (empty memory) should give 1.0
-        let inf_conf = memory.snr_to_confidence(f64::INFINITY);
-        assert!((inf_conf - 1.0).abs() < 1e-10);
+    fn test_memory_capacity_info() {
+        let m = HolographicMemory::<Cl3>::new(Default::default());
+        assert!(m.capacity_info().estimated_snr.is_infinite());
+        assert!(!m.capacity_info().near_capacity);
     }
 }

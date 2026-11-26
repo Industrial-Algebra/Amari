@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "0.24.1",
   "description": "Generated structural catalog for Amari 0.24.1: 28 crates, 108 dependency edges",
-  "content_hash": "0cda267c3285366874af272e58af38ca43826638fd7e13aafc91eb9e7d5ca47c",
+  "content_hash": "6b2ea66e04bf45cdba9a3363ba86e9955547307da47c95574f0091e4ee32ad43",
   "probe_descriptors": [
     {
       "id": "amari-probe:core:geometric-product:v1",
@@ -113,10 +113,10 @@
       }
     },
     {
-      "id": "amari-probe:holographic:recall:v1",
+      "id": "amari-probe:holographic:recall:v2",
       "capability_id": "amari:amari-holographic:memory:retrieval",
-      "input_schema": "amari.discovery/probe/holographic-recall/input/v1",
-      "output_schema": "amari.discovery/probe/holographic-recall/output/v1",
+      "input_schema": "amari.discovery/probe/holographic-recall/input/v2",
+      "output_schema": "amari.discovery/probe/holographic-recall/output/v2",
       "required_features": [
         "standard-probes"
       ],
@@ -457,7 +457,7 @@
   ],
   "wasm_surface": {
     "path": "amari-discovery/catalog/generated-wasm.json",
-    "source_hash": "e29ac880c1297a6b0fe97e2cd95a54487841a67a4db67afa052252d43e37e592",
+    "source_hash": "7782488ffac3b8b1397ae173cfa7320a2260ff01b1a234c313106c76d4a59961",
     "class_count": 153,
     "function_count": 30,
     "enum_count": 2,
@@ -1088,7 +1088,7 @@
   ],
   "totals": {
     "crates": 28,
-    "items": 11718,
+    "items": 11728,
     "dependency_edges": 108
   }
 }

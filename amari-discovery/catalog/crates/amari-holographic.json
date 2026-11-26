@@ -2033,30 +2033,42 @@
     },
     {
       "path": "amari_holographic::CleanupResult",
-      "kind": "struct",
-      "signature": "pub struct CleanupResult < A : BindingAlgebra >",
+      "kind": "enum",
+      "signature": "pub enum CleanupResult < A >",
       "shape": {
-        "kind": "struct",
-        "fields": [
+        "kind": "enum",
+        "variants": [
           {
-            "label": "cleaned",
-            "ty": "A"
+            "name": "Selected",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "candidate",
+                  "ty": "A"
+                },
+                {
+                  "name": "residual",
+                  "ty": "f64"
+                }
+              ]
+            }
           },
           {
-            "label": "iterations",
-            "ty": "usize"
-          },
-          {
-            "label": "converged",
-            "ty": "bool"
-          },
-          {
-            "label": "final_similarity",
-            "ty": "f64"
-          },
-          {
-            "label": "best_match_index",
-            "ty": "usize"
+            "name": "NoAcceptableCandidate",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "best",
+                  "ty": "A"
+                },
+                {
+                  "name": "residual",
+                  "ty": "f64"
+                }
+              ]
+            }
           }
         ]
       },
@@ -2065,30 +2077,42 @@
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
-          "kind": "struct",
-          "signature": "pub struct CleanupResult < A : BindingAlgebra >",
+          "kind": "enum",
+          "signature": "pub enum CleanupResult < A >",
           "shape": {
-            "kind": "struct",
-            "fields": [
+            "kind": "enum",
+            "variants": [
               {
-                "label": "cleaned",
-                "ty": "A"
+                "name": "Selected",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "candidate",
+                      "ty": "A"
+                    },
+                    {
+                      "name": "residual",
+                      "ty": "f64"
+                    }
+                  ]
+                }
               },
               {
-                "label": "iterations",
-                "ty": "usize"
-              },
-              {
-                "label": "converged",
-                "ty": "bool"
-              },
-              {
-                "label": "final_similarity",
-                "ty": "f64"
-              },
-              {
-                "label": "best_match_index",
-                "ty": "usize"
+                "name": "NoAcceptableCandidate",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "best",
+                      "ty": "A"
+                    },
+                    {
+                      "name": "residual",
+                      "ty": "f64"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -2727,7 +2751,7 @@
     {
       "path": "amari_holographic::FactorizationResult",
       "kind": "struct",
-      "signature": "pub struct FactorizationResult < A : BindingAlgebra >",
+      "signature": "pub struct FactorizationResult < A >",
       "shape": {
         "kind": "struct",
         "fields": [
@@ -2744,11 +2768,11 @@
             "ty": "usize"
           },
           {
-            "label": "converged",
+            "label": "accepted",
             "ty": "bool"
           },
           {
-            "label": "reconstruction_similarity",
+            "label": "residual",
             "ty": "f64"
           }
         ]
@@ -2759,7 +2783,7 @@
       "variants": [
         {
           "kind": "struct",
-          "signature": "pub struct FactorizationResult < A : BindingAlgebra >",
+          "signature": "pub struct FactorizationResult < A >",
           "shape": {
             "kind": "struct",
             "fields": [
@@ -2776,11 +2800,11 @@
                 "ty": "usize"
               },
               {
-                "label": "converged",
+                "label": "accepted",
                 "ty": "bool"
               },
               {
-                "label": "reconstruction_similarity",
+                "label": "residual",
                 "ty": "f64"
               }
             ]
@@ -3048,6 +3072,46 @@
         "kind": "enum",
         "variants": [
           {
+            "name": "InvalidData",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "InvalidKey",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "IncompatibleMemory",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "CountOverflow",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Algebra",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "operation",
+                  "ty": "String"
+                },
+                {
+                  "name": "source",
+                  "ty": "crate :: algebra :: AlgebraError"
+                }
+              ]
+            }
+          },
+          {
             "name": "AtCapacity",
             "data": {
               "kind": "struct",
@@ -3133,6 +3197,46 @@
           "shape": {
             "kind": "enum",
             "variants": [
+              {
+                "name": "InvalidData",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "InvalidKey",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "IncompatibleMemory",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "CountOverflow",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Algebra",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "operation",
+                      "ty": "String"
+                    },
+                    {
+                      "name": "source",
+                      "ty": "crate :: algebra :: AlgebraError"
+                    }
+                  ]
+                }
+              },
               {
                 "name": "AtCapacity",
                 "data": {
@@ -3302,21 +3406,59 @@
       ]
     },
     {
-      "path": "amari_holographic::HolographicMemory::merge",
+      "path": "amari_holographic::HolographicMemory::membership",
       "kind": "method",
-      "signature": "pub fn merge (& mut self , other : & Self)",
+      "signature": "pub fn membership (& self , key : & A) -> HolographicResult < MembershipEvidence >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn merge (& mut self , other : & Self)",
+          "signature": "pub fn membership (& self , key : & A) -> HolographicResult < MembershipEvidence >",
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "HolographicMemory::membership"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::HolographicMemory::merge",
+      "kind": "method",
+      "signature": "pub fn merge (& mut self , other : & Self) -> HolographicResult < () >",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn merge (& mut self , other : & Self) -> HolographicResult < () >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
           "declaration_module": "amari_holographic::memory::holographic_memory",
           "declaration_ident": "HolographicMemory::merge"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::HolographicMemory::nearest_key",
+      "kind": "method",
+      "signature": "pub fn nearest_key (& self , key : & A) -> HolographicResult < Option < NearestKey > >",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn nearest_key (& self , key : & A) -> HolographicResult < Option < NearestKey > >",
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "HolographicMemory::nearest_key"
         }
       ]
     },
@@ -3340,54 +3482,16 @@
       ]
     },
     {
-      "path": "amari_holographic::HolographicMemory::probably_contains",
-      "kind": "method",
-      "signature": "pub fn probably_contains (& self , key : & A) -> bool",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn probably_contains (& self , key : & A) -> bool",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "HolographicMemory::probably_contains"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::HolographicMemory::query_partial",
-      "kind": "method",
-      "signature": "pub fn query_partial (& self , partial_key : & A , _mask : & [bool]) -> RetrievalResult < A >",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn query_partial (& self , partial_key : & A , _mask : & [bool]) -> RetrievalResult < A >",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "HolographicMemory::query_partial"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::HolographicMemory::retrieve",
       "kind": "method",
-      "signature": "pub fn retrieve (& self , key : & A) -> RetrievalResult < A >",
+      "signature": "pub fn retrieve (& self , key : & A) -> HolographicResult < RetrievalResult < A > >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn retrieve (& self , key : & A) -> RetrievalResult < A >",
+          "signature": "pub fn retrieve (& self , key : & A) -> HolographicResult < RetrievalResult < A > >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
@@ -3397,35 +3501,16 @@
       ]
     },
     {
-      "path": "amari_holographic::HolographicMemory::retrieve_at_temperature",
-      "kind": "method",
-      "signature": "pub fn retrieve_at_temperature (& self , key : & A , beta : f64) -> RetrievalResult < A >",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn retrieve_at_temperature (& self , key : & A , beta : f64) -> RetrievalResult < A >",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "HolographicMemory::retrieve_at_temperature"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::HolographicMemory::store",
       "kind": "method",
-      "signature": "pub fn store (& mut self , key : & A , value : & A)",
+      "signature": "pub fn store (& mut self , key : & A , value : & A) -> HolographicResult < () >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn store (& mut self , key : & A , value : & A)",
+          "signature": "pub fn store (& mut self , key : & A , value : & A) -> HolographicResult < () >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
@@ -3437,14 +3522,14 @@
     {
       "path": "amari_holographic::HolographicMemory::store_batch",
       "kind": "method",
-      "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)])",
+      "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)]) -> HolographicResult < () >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)])",
+          "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)]) -> HolographicResult < () >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
@@ -4013,6 +4098,128 @@
       ]
     },
     {
+      "path": "amari_holographic::MembershipEvidence",
+      "kind": "enum",
+      "signature": "pub enum MembershipEvidence",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Present",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "indices",
+                  "ty": "Vec < usize >"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Absent",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Unknown",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum MembershipEvidence",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Present",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "indices",
+                      "ty": "Vec < usize >"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Absent",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Unknown",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "MembershipEvidence"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::NearestKey",
+      "kind": "struct",
+      "signature": "pub struct NearestKey",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "index",
+            "ty": "usize"
+          },
+          {
+            "label": "similarity",
+            "ty": "f64"
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct NearestKey",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "index",
+                "ty": "usize"
+              },
+              {
+                "label": "similarity",
+                "ty": "f64"
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "NearestKey"
+        }
+      ]
+    },
+    {
       "path": "amari_holographic::ProductCliffordAlgebra",
       "kind": "struct",
       "signature": "pub struct ProductCliffordAlgebra < const K : usize >",
@@ -4441,7 +4648,7 @@
     {
       "path": "amari_holographic::Resonator",
       "kind": "struct",
-      "signature": "pub struct Resonator < A : BindingAlgebra >",
+      "signature": "pub struct Resonator < A >",
       "shape": {
         "kind": "struct",
         "fields": []
@@ -4452,7 +4659,7 @@
       "variants": [
         {
           "kind": "struct",
-          "signature": "pub struct Resonator < A : BindingAlgebra >",
+          "signature": "pub struct Resonator < A >",
           "shape": {
             "kind": "struct",
             "fields": []
@@ -4466,21 +4673,40 @@
       ]
     },
     {
-      "path": "amari_holographic::Resonator::cleanup",
+      "path": "amari_holographic::Resonator::cleanup_nearest",
       "kind": "method",
-      "signature": "pub fn cleanup (& self , noisy : & A) -> CleanupResult < A >",
+      "signature": "pub fn cleanup_nearest (& self , input : & A) -> HolographicResult < CleanupResult < A > >",
       "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn cleanup (& self , noisy : & A) -> CleanupResult < A >",
+          "signature": "pub fn cleanup_nearest (& self , input : & A) -> HolographicResult < CleanupResult < A > >",
           "source_path": "amari-holographic/src/memory/resonator.rs",
           "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
           "declaration_module": "amari_holographic::memory::resonator",
-          "declaration_ident": "Resonator::cleanup"
+          "declaration_ident": "Resonator::cleanup_nearest"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::Resonator::cleanup_weighted",
+      "kind": "method",
+      "signature": "pub fn cleanup_weighted (& self , input : & A) -> HolographicResult < WeightedResult < A > >",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::resonator",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn cleanup_weighted (& self , input : & A) -> HolographicResult < WeightedResult < A > >",
+          "source_path": "amari-holographic/src/memory/resonator.rs",
+          "source_module": "amari_holographic::memory::resonator",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::resonator",
+          "declaration_ident": "Resonator::cleanup_weighted"
         }
       ]
     },
@@ -4506,14 +4732,14 @@
     {
       "path": "amari_holographic::Resonator::factorize",
       "kind": "method",
-      "signature": "pub fn factorize (& self , bound : & A , other_codebook : & Resonator < A >) -> FactorizationResult < A >",
+      "signature": "pub fn factorize (& self , bound : & A , other : & Self) -> HolographicResult < FactorizationResult < A > >",
       "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn factorize (& self , bound : & A , other_codebook : & Resonator < A >) -> FactorizationResult < A >",
+          "signature": "pub fn factorize (& self , bound : & A , other : & Self) -> HolographicResult < FactorizationResult < A > >",
           "source_path": "amari-holographic/src/memory/resonator.rs",
           "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
@@ -4525,14 +4751,14 @@
     {
       "path": "amari_holographic::Resonator::get_codebook_item",
       "kind": "method",
-      "signature": "pub fn get_codebook_item (& self , index : usize) -> Option < & A >",
+      "signature": "pub fn get_codebook_item (& self , i : usize) -> Option < & A >",
       "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn get_codebook_item (& self , index : usize) -> Option < & A >",
+          "signature": "pub fn get_codebook_item (& self , i : usize) -> Option < & A >",
           "source_path": "amari-holographic/src/memory/resonator.rs",
           "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
@@ -4572,10 +4798,6 @@
             "ty": "usize"
           },
           {
-            "label": "convergence_threshold",
-            "ty": "f64"
-          },
-          {
             "label": "initial_beta",
             "ty": "f64"
           },
@@ -4598,10 +4820,6 @@
               {
                 "label": "max_iterations",
                 "ty": "usize"
-              },
-              {
-                "label": "convergence_threshold",
-                "ty": "f64"
               },
               {
                 "label": "initial_beta",
@@ -4629,24 +4847,8 @@
         "kind": "struct",
         "fields": [
           {
-            "label": "value",
-            "ty": "A"
-          },
-          {
             "label": "raw_value",
             "ty": "A"
-          },
-          {
-            "label": "confidence",
-            "ty": "f64"
-          },
-          {
-            "label": "attribution",
-            "ty": "Vec < (usize , f64) >"
-          },
-          {
-            "label": "query_similarity",
-            "ty": "f64"
           }
         ]
       },
@@ -4661,24 +4863,8 @@
             "kind": "struct",
             "fields": [
               {
-                "label": "value",
-                "ty": "A"
-              },
-              {
                 "label": "raw_value",
                 "ty": "A"
-              },
-              {
-                "label": "confidence",
-                "ty": "f64"
-              },
-              {
-                "label": "attribution",
-                "ty": "Vec < (usize , f64) >"
-              },
-              {
-                "label": "query_similarity",
-                "ty": "f64"
               }
             ]
           },
@@ -4691,21 +4877,172 @@
       ]
     },
     {
-      "path": "amari_holographic::RetrievalResult::verify_result_validity",
-      "kind": "method",
-      "signature": "pub fn verify_result_validity (& self) -> bool",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "path": "amari_holographic::WeightedResult",
+      "kind": "struct",
+      "signature": "pub struct WeightedResult < A >",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "candidate",
+            "ty": "A"
+          },
+          {
+            "label": "residual",
+            "ty": "f64"
+          },
+          {
+            "label": "accepted",
+            "ty": "bool"
+          },
+          {
+            "label": "status",
+            "ty": "WeightedStatus"
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
+      "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
-          "kind": "method",
-          "signature": "pub fn verify_result_validity (& self) -> bool",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
+          "kind": "struct",
+          "signature": "pub struct WeightedResult < A >",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "candidate",
+                "ty": "A"
+              },
+              {
+                "label": "residual",
+                "ty": "f64"
+              },
+              {
+                "label": "accepted",
+                "ty": "bool"
+              },
+              {
+                "label": "status",
+                "ty": "WeightedStatus"
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/resonator.rs",
+          "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "RetrievalResult::verify_result_validity"
+          "declaration_module": "amari_holographic::memory::resonator",
+          "declaration_ident": "WeightedResult"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::WeightedStatus",
+      "kind": "enum",
+      "signature": "pub enum WeightedStatus",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Updated",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "iterations",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Stalled",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "iterations",
+                  "ty": "usize"
+                },
+                {
+                  "name": "last_delta",
+                  "ty": "f64"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BudgetExhausted",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "RejectedAtIngress",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::resonator",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum WeightedStatus",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Updated",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "iterations",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Stalled",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "iterations",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "last_delta",
+                      "ty": "f64"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "BudgetExhausted",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "RejectedAtIngress",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/resonator.rs",
+          "source_module": "amari_holographic::memory::resonator",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::resonator",
+          "declaration_ident": "WeightedStatus"
         }
       ]
     },
@@ -11083,30 +11420,42 @@
     },
     {
       "path": "amari_holographic::memory::CleanupResult",
-      "kind": "struct",
-      "signature": "pub struct CleanupResult < A : BindingAlgebra >",
+      "kind": "enum",
+      "signature": "pub enum CleanupResult < A >",
       "shape": {
-        "kind": "struct",
-        "fields": [
+        "kind": "enum",
+        "variants": [
           {
-            "label": "cleaned",
-            "ty": "A"
+            "name": "Selected",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "candidate",
+                  "ty": "A"
+                },
+                {
+                  "name": "residual",
+                  "ty": "f64"
+                }
+              ]
+            }
           },
           {
-            "label": "iterations",
-            "ty": "usize"
-          },
-          {
-            "label": "converged",
-            "ty": "bool"
-          },
-          {
-            "label": "final_similarity",
-            "ty": "f64"
-          },
-          {
-            "label": "best_match_index",
-            "ty": "usize"
+            "name": "NoAcceptableCandidate",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "best",
+                  "ty": "A"
+                },
+                {
+                  "name": "residual",
+                  "ty": "f64"
+                }
+              ]
+            }
           }
         ]
       },
@@ -11115,30 +11464,42 @@
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
-          "kind": "struct",
-          "signature": "pub struct CleanupResult < A : BindingAlgebra >",
+          "kind": "enum",
+          "signature": "pub enum CleanupResult < A >",
           "shape": {
-            "kind": "struct",
-            "fields": [
+            "kind": "enum",
+            "variants": [
               {
-                "label": "cleaned",
-                "ty": "A"
+                "name": "Selected",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "candidate",
+                      "ty": "A"
+                    },
+                    {
+                      "name": "residual",
+                      "ty": "f64"
+                    }
+                  ]
+                }
               },
               {
-                "label": "iterations",
-                "ty": "usize"
-              },
-              {
-                "label": "converged",
-                "ty": "bool"
-              },
-              {
-                "label": "final_similarity",
-                "ty": "f64"
-              },
-              {
-                "label": "best_match_index",
-                "ty": "usize"
+                "name": "NoAcceptableCandidate",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "best",
+                      "ty": "A"
+                    },
+                    {
+                      "name": "residual",
+                      "ty": "f64"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -11153,7 +11514,7 @@
     {
       "path": "amari_holographic::memory::FactorizationResult",
       "kind": "struct",
-      "signature": "pub struct FactorizationResult < A : BindingAlgebra >",
+      "signature": "pub struct FactorizationResult < A >",
       "shape": {
         "kind": "struct",
         "fields": [
@@ -11170,11 +11531,11 @@
             "ty": "usize"
           },
           {
-            "label": "converged",
+            "label": "accepted",
             "ty": "bool"
           },
           {
-            "label": "reconstruction_similarity",
+            "label": "residual",
             "ty": "f64"
           }
         ]
@@ -11185,7 +11546,7 @@
       "variants": [
         {
           "kind": "struct",
-          "signature": "pub struct FactorizationResult < A : BindingAlgebra >",
+          "signature": "pub struct FactorizationResult < A >",
           "shape": {
             "kind": "struct",
             "fields": [
@@ -11202,11 +11563,11 @@
                 "ty": "usize"
               },
               {
-                "label": "converged",
+                "label": "accepted",
                 "ty": "bool"
               },
               {
-                "label": "reconstruction_similarity",
+                "label": "residual",
                 "ty": "f64"
               }
             ]
@@ -11226,6 +11587,46 @@
       "shape": {
         "kind": "enum",
         "variants": [
+          {
+            "name": "InvalidData",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "InvalidKey",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "IncompatibleMemory",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "CountOverflow",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Algebra",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "operation",
+                  "ty": "String"
+                },
+                {
+                  "name": "source",
+                  "ty": "crate :: algebra :: AlgebraError"
+                }
+              ]
+            }
+          },
           {
             "name": "AtCapacity",
             "data": {
@@ -11312,6 +11713,46 @@
           "shape": {
             "kind": "enum",
             "variants": [
+              {
+                "name": "InvalidData",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "InvalidKey",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "IncompatibleMemory",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "CountOverflow",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Algebra",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "operation",
+                      "ty": "String"
+                    },
+                    {
+                      "name": "source",
+                      "ty": "crate :: algebra :: AlgebraError"
+                    }
+                  ]
+                }
+              },
               {
                 "name": "AtCapacity",
                 "data": {
@@ -11481,21 +11922,59 @@
       ]
     },
     {
-      "path": "amari_holographic::memory::HolographicMemory::merge",
+      "path": "amari_holographic::memory::HolographicMemory::membership",
       "kind": "method",
-      "signature": "pub fn merge (& mut self , other : & Self)",
+      "signature": "pub fn membership (& self , key : & A) -> HolographicResult < MembershipEvidence >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn merge (& mut self , other : & Self)",
+          "signature": "pub fn membership (& self , key : & A) -> HolographicResult < MembershipEvidence >",
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "HolographicMemory::membership"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::HolographicMemory::merge",
+      "kind": "method",
+      "signature": "pub fn merge (& mut self , other : & Self) -> HolographicResult < () >",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn merge (& mut self , other : & Self) -> HolographicResult < () >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
           "declaration_module": "amari_holographic::memory::holographic_memory",
           "declaration_ident": "HolographicMemory::merge"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::HolographicMemory::nearest_key",
+      "kind": "method",
+      "signature": "pub fn nearest_key (& self , key : & A) -> HolographicResult < Option < NearestKey > >",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn nearest_key (& self , key : & A) -> HolographicResult < Option < NearestKey > >",
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "HolographicMemory::nearest_key"
         }
       ]
     },
@@ -11519,54 +11998,16 @@
       ]
     },
     {
-      "path": "amari_holographic::memory::HolographicMemory::probably_contains",
-      "kind": "method",
-      "signature": "pub fn probably_contains (& self , key : & A) -> bool",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn probably_contains (& self , key : & A) -> bool",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "HolographicMemory::probably_contains"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::memory::HolographicMemory::query_partial",
-      "kind": "method",
-      "signature": "pub fn query_partial (& self , partial_key : & A , _mask : & [bool]) -> RetrievalResult < A >",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn query_partial (& self , partial_key : & A , _mask : & [bool]) -> RetrievalResult < A >",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "HolographicMemory::query_partial"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::memory::HolographicMemory::retrieve",
       "kind": "method",
-      "signature": "pub fn retrieve (& self , key : & A) -> RetrievalResult < A >",
+      "signature": "pub fn retrieve (& self , key : & A) -> HolographicResult < RetrievalResult < A > >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn retrieve (& self , key : & A) -> RetrievalResult < A >",
+          "signature": "pub fn retrieve (& self , key : & A) -> HolographicResult < RetrievalResult < A > >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
@@ -11576,35 +12017,16 @@
       ]
     },
     {
-      "path": "amari_holographic::memory::HolographicMemory::retrieve_at_temperature",
-      "kind": "method",
-      "signature": "pub fn retrieve_at_temperature (& self , key : & A , beta : f64) -> RetrievalResult < A >",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "pub fn retrieve_at_temperature (& self , key : & A , beta : f64) -> RetrievalResult < A >",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "HolographicMemory::retrieve_at_temperature"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::memory::HolographicMemory::store",
       "kind": "method",
-      "signature": "pub fn store (& mut self , key : & A , value : & A)",
+      "signature": "pub fn store (& mut self , key : & A , value : & A) -> HolographicResult < () >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn store (& mut self , key : & A , value : & A)",
+          "signature": "pub fn store (& mut self , key : & A , value : & A) -> HolographicResult < () >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
@@ -11616,14 +12038,14 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::store_batch",
       "kind": "method",
-      "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)])",
+      "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)]) -> HolographicResult < () >",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::holographic_memory",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)])",
+          "signature": "pub fn store_batch (& mut self , pairs : & [(A , A)]) -> HolographicResult < () >",
           "source_path": "amari-holographic/src/memory/holographic_memory.rs",
           "source_module": "amari_holographic::memory::holographic_memory",
           "is_reexport": true,
@@ -11709,9 +12131,188 @@
       ]
     },
     {
+      "path": "amari_holographic::memory::MembershipEvidence",
+      "kind": "enum",
+      "signature": "pub enum MembershipEvidence",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Present",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "indices",
+                  "ty": "Vec < usize >"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Absent",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Unknown",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum MembershipEvidence",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Present",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "indices",
+                      "ty": "Vec < usize >"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Absent",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Unknown",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "MembershipEvidence"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::MemoryElement",
+      "kind": "trait",
+      "signature": "pub trait MemoryElement : BindingAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::domain",
+      "variants": [
+        {
+          "kind": "trait",
+          "signature": "pub trait MemoryElement : BindingAlgebra",
+          "source_path": "amari-holographic/src/memory/domain.rs",
+          "source_module": "amari_holographic::memory::domain",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::domain",
+          "declaration_ident": "MemoryElement"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::MemoryElement::admissible_key",
+      "kind": "method",
+      "signature": "fn admissible_key (& self) -> bool",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::domain",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn admissible_key (& self) -> bool",
+          "source_path": "amari-holographic/src/memory/domain.rs",
+          "source_module": "amari_holographic::memory::domain",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::domain",
+          "declaration_ident": "MemoryElement::admissible_key"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::MemoryElement::full_coefficients",
+      "kind": "method",
+      "signature": "fn full_coefficients (& self) -> Vec < f64 >",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::domain",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn full_coefficients (& self) -> Vec < f64 >",
+          "source_path": "amari-holographic/src/memory/domain.rs",
+          "source_module": "amari_holographic::memory::domain",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::domain",
+          "declaration_ident": "MemoryElement::full_coefficients"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::NearestKey",
+      "kind": "struct",
+      "signature": "pub struct NearestKey",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "index",
+            "ty": "usize"
+          },
+          {
+            "label": "similarity",
+            "ty": "f64"
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::holographic_memory",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct NearestKey",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "index",
+                "ty": "usize"
+              },
+              {
+                "label": "similarity",
+                "ty": "f64"
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+          "source_module": "amari_holographic::memory::holographic_memory",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::holographic_memory",
+          "declaration_ident": "NearestKey"
+        }
+      ]
+    },
+    {
       "path": "amari_holographic::memory::Resonator",
       "kind": "struct",
-      "signature": "pub struct Resonator < A : BindingAlgebra >",
+      "signature": "pub struct Resonator < A >",
       "shape": {
         "kind": "struct",
         "fields": []
@@ -11722,7 +12323,7 @@
       "variants": [
         {
           "kind": "struct",
-          "signature": "pub struct Resonator < A : BindingAlgebra >",
+          "signature": "pub struct Resonator < A >",
           "shape": {
             "kind": "struct",
             "fields": []
@@ -11736,21 +12337,40 @@
       ]
     },
     {
-      "path": "amari_holographic::memory::Resonator::cleanup",
+      "path": "amari_holographic::memory::Resonator::cleanup_nearest",
       "kind": "method",
-      "signature": "pub fn cleanup (& self , noisy : & A) -> CleanupResult < A >",
+      "signature": "pub fn cleanup_nearest (& self , input : & A) -> HolographicResult < CleanupResult < A > >",
       "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn cleanup (& self , noisy : & A) -> CleanupResult < A >",
+          "signature": "pub fn cleanup_nearest (& self , input : & A) -> HolographicResult < CleanupResult < A > >",
           "source_path": "amari-holographic/src/memory/resonator.rs",
           "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
           "declaration_module": "amari_holographic::memory::resonator",
-          "declaration_ident": "Resonator::cleanup"
+          "declaration_ident": "Resonator::cleanup_nearest"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::Resonator::cleanup_weighted",
+      "kind": "method",
+      "signature": "pub fn cleanup_weighted (& self , input : & A) -> HolographicResult < WeightedResult < A > >",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::resonator",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn cleanup_weighted (& self , input : & A) -> HolographicResult < WeightedResult < A > >",
+          "source_path": "amari-holographic/src/memory/resonator.rs",
+          "source_module": "amari_holographic::memory::resonator",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::resonator",
+          "declaration_ident": "Resonator::cleanup_weighted"
         }
       ]
     },
@@ -11776,14 +12396,14 @@
     {
       "path": "amari_holographic::memory::Resonator::factorize",
       "kind": "method",
-      "signature": "pub fn factorize (& self , bound : & A , other_codebook : & Resonator < A >) -> FactorizationResult < A >",
+      "signature": "pub fn factorize (& self , bound : & A , other : & Self) -> HolographicResult < FactorizationResult < A > >",
       "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn factorize (& self , bound : & A , other_codebook : & Resonator < A >) -> FactorizationResult < A >",
+          "signature": "pub fn factorize (& self , bound : & A , other : & Self) -> HolographicResult < FactorizationResult < A > >",
           "source_path": "amari-holographic/src/memory/resonator.rs",
           "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
@@ -11795,14 +12415,14 @@
     {
       "path": "amari_holographic::memory::Resonator::get_codebook_item",
       "kind": "method",
-      "signature": "pub fn get_codebook_item (& self , index : usize) -> Option < & A >",
+      "signature": "pub fn get_codebook_item (& self , i : usize) -> Option < & A >",
       "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
       "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
           "kind": "method",
-          "signature": "pub fn get_codebook_item (& self , index : usize) -> Option < & A >",
+          "signature": "pub fn get_codebook_item (& self , i : usize) -> Option < & A >",
           "source_path": "amari-holographic/src/memory/resonator.rs",
           "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
@@ -11842,10 +12462,6 @@
             "ty": "usize"
           },
           {
-            "label": "convergence_threshold",
-            "ty": "f64"
-          },
-          {
             "label": "initial_beta",
             "ty": "f64"
           },
@@ -11868,10 +12484,6 @@
               {
                 "label": "max_iterations",
                 "ty": "usize"
-              },
-              {
-                "label": "convergence_threshold",
-                "ty": "f64"
               },
               {
                 "label": "initial_beta",
@@ -11899,24 +12511,8 @@
         "kind": "struct",
         "fields": [
           {
-            "label": "value",
-            "ty": "A"
-          },
-          {
             "label": "raw_value",
             "ty": "A"
-          },
-          {
-            "label": "confidence",
-            "ty": "f64"
-          },
-          {
-            "label": "attribution",
-            "ty": "Vec < (usize , f64) >"
-          },
-          {
-            "label": "query_similarity",
-            "ty": "f64"
           }
         ]
       },
@@ -11931,24 +12527,8 @@
             "kind": "struct",
             "fields": [
               {
-                "label": "value",
-                "ty": "A"
-              },
-              {
                 "label": "raw_value",
                 "ty": "A"
-              },
-              {
-                "label": "confidence",
-                "ty": "f64"
-              },
-              {
-                "label": "attribution",
-                "ty": "Vec < (usize , f64) >"
-              },
-              {
-                "label": "query_similarity",
-                "ty": "f64"
               }
             ]
           },
@@ -11961,21 +12541,172 @@
       ]
     },
     {
-      "path": "amari_holographic::memory::RetrievalResult::verify_result_validity",
-      "kind": "method",
-      "signature": "pub fn verify_result_validity (& self) -> bool",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "path": "amari_holographic::memory::WeightedResult",
+      "kind": "struct",
+      "signature": "pub struct WeightedResult < A >",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "candidate",
+            "ty": "A"
+          },
+          {
+            "label": "residual",
+            "ty": "f64"
+          },
+          {
+            "label": "accepted",
+            "ty": "bool"
+          },
+          {
+            "label": "status",
+            "ty": "WeightedStatus"
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/resonator.rs",
       "is_reexport": true,
-      "source_module": "amari_holographic::memory::holographic_memory",
+      "source_module": "amari_holographic::memory::resonator",
       "variants": [
         {
-          "kind": "method",
-          "signature": "pub fn verify_result_validity (& self) -> bool",
-          "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-          "source_module": "amari_holographic::memory::holographic_memory",
+          "kind": "struct",
+          "signature": "pub struct WeightedResult < A >",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "candidate",
+                "ty": "A"
+              },
+              {
+                "label": "residual",
+                "ty": "f64"
+              },
+              {
+                "label": "accepted",
+                "ty": "bool"
+              },
+              {
+                "label": "status",
+                "ty": "WeightedStatus"
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/resonator.rs",
+          "source_module": "amari_holographic::memory::resonator",
           "is_reexport": true,
-          "declaration_module": "amari_holographic::memory::holographic_memory",
-          "declaration_ident": "RetrievalResult::verify_result_validity"
+          "declaration_module": "amari_holographic::memory::resonator",
+          "declaration_ident": "WeightedResult"
+        }
+      ]
+    },
+    {
+      "path": "amari_holographic::memory::WeightedStatus",
+      "kind": "enum",
+      "signature": "pub enum WeightedStatus",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Updated",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "iterations",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Stalled",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "iterations",
+                  "ty": "usize"
+                },
+                {
+                  "name": "last_delta",
+                  "ty": "f64"
+                }
+              ]
+            }
+          },
+          {
+            "name": "BudgetExhausted",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "RejectedAtIngress",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "is_reexport": true,
+      "source_module": "amari_holographic::memory::resonator",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum WeightedStatus",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Updated",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "iterations",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Stalled",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "iterations",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "last_delta",
+                      "ty": "f64"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "BudgetExhausted",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "RejectedAtIngress",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-holographic/src/memory/resonator.rs",
+          "source_module": "amari_holographic::memory::resonator",
+          "is_reexport": true,
+          "declaration_module": "amari_holographic::memory::resonator",
+          "declaration_ident": "WeightedStatus"
         }
       ]
     },
@@ -14955,6 +15686,41 @@
           "status": "provided"
         }
       ]
+    },
+    {
+      "export_path": "amari_holographic::memory::MemoryElement",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 0,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "supertraits": [
+        {
+          "endpoint": {
+            "kind": "local",
+            "module": "amari_holographic::algebra",
+            "ident": "BindingAlgebra"
+          }
+        }
+      ],
+      "required_items": [
+        {
+          "name": "full_coefficients",
+          "kind": "method",
+          "signature": "fn full_coefficients (& self) -> Vec < f64 >",
+          "status": "required"
+        }
+      ],
+      "provided_items": [
+        {
+          "name": "admissible_key",
+          "kind": "method",
+          "signature": "fn admissible_key (& self) -> bool",
+          "status": "provided"
+        }
+      ]
     }
   ],
   "trait_implementations": [
@@ -14998,7 +15764,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_holographic::CapacityInfo",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15044,7 +15810,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "CleanupResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15091,7 +15857,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_holographic::FactorizationResult",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15101,7 +15867,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "FactorizationResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15164,6 +15930,42 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "NearestKey"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_holographic::ProductCliffordAlgebra",
       "source_path": "amari-holographic/src/algebra/product_clifford.rs",
       "source_ordinal": 0,
@@ -15185,7 +15987,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_holographic::Resonator",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15195,7 +15997,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "Resonator"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15222,7 +16024,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_holographic::RetrievalResult",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15233,6 +16035,43 @@
         "ident": "RetrievalResult"
       },
       "generics": "< A : BindingAlgebra >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::WeightedResult",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedResult"
+      },
+      "generics": "< A >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::WeightedStatus",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedStatus"
+      },
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15465,7 +16304,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_holographic::memory::CapacityInfo",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15493,7 +16332,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "CleanupResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15502,7 +16341,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_holographic::memory::FactorizationResult",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15512,7 +16351,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "FactorizationResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15556,9 +16395,45 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::memory::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::memory::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "NearestKey"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_holographic::memory::Resonator",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 6,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15568,7 +16443,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "Resonator"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15595,7 +16470,7 @@
       "trait_path": "Clone",
       "impl_type_path": "amari_holographic::memory::RetrievalResult",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Clone"
@@ -15606,6 +16481,43 @@
         "ident": "RetrievalResult"
       },
       "generics": "< A : BindingAlgebra >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::memory::WeightedResult",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedResult"
+      },
+      "generics": "< A >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_holographic::memory::WeightedStatus",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedStatus"
+      },
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15812,7 +16724,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_holographic::CapacityInfo",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -15858,7 +16770,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "CleanupResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15905,7 +16817,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_holographic::FactorizationResult",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -15915,7 +16827,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "FactorizationResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15953,6 +16865,42 @@
         "ident": "MAPAlgebra"
       },
       "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "NearestKey"
+      },
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -15998,7 +16946,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_holographic::RetrievalResult",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -16009,6 +16957,43 @@
         "ident": "RetrievalResult"
       },
       "generics": "< A : BindingAlgebra >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::WeightedResult",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedResult"
+      },
+      "generics": "< A >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::WeightedStatus",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedStatus"
+      },
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -16241,7 +17226,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_holographic::memory::CapacityInfo",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -16269,7 +17254,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "CleanupResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -16278,7 +17263,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_holographic::memory::FactorizationResult",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -16288,7 +17273,7 @@
         "module": "amari_holographic::memory::resonator",
         "ident": "FactorizationResult"
       },
-      "generics": "< A : BindingAlgebra >",
+      "generics": "< A >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -16306,6 +17291,42 @@
         "kind": "local",
         "module": "amari_holographic::memory::error",
         "ident": "HolographicError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::memory::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::memory::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "NearestKey"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -16333,7 +17354,7 @@
       "trait_path": "Debug",
       "impl_type_path": "amari_holographic::memory::RetrievalResult",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "trait_endpoint": {
         "kind": "external",
         "path": "Debug"
@@ -16344,6 +17365,43 @@
         "ident": "RetrievalResult"
       },
       "generics": "< A : BindingAlgebra >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::memory::WeightedResult",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedResult"
+      },
+      "generics": "< A >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_holographic::memory::WeightedStatus",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::resonator",
+        "ident": "WeightedStatus"
+      },
       "unsafe_trait": false,
       "negative": false,
       "is_derived": true
@@ -16603,6 +17661,42 @@
     },
     {
       "trait_path": "Eq",
+      "impl_type_path": "amari_holographic::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_holographic::memory::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
       "impl_type_path": "amari_holographic::optical::BinaryHologram",
       "source_path": "amari-holographic/src/optical/hologram.rs",
       "source_ordinal": 0,
@@ -16711,6 +17805,24 @@
     },
     {
       "trait_path": "PartialEq",
+      "impl_type_path": "amari_holographic::AlgebraConfig",
+      "source_path": "amari-holographic/src/algebra/mod.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra",
+        "ident": "AlgebraConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
       "impl_type_path": "amari_holographic::AlgebraError",
       "source_path": "amari-holographic/src/algebra/mod.rs",
       "source_ordinal": 0,
@@ -16740,6 +17852,60 @@
         "kind": "local",
         "module": "amari_holographic::algebra::cl3",
         "ident": "Cl3"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_holographic::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_holographic::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "NearestKey"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_holographic::algebra::AlgebraConfig",
+      "source_path": "amari-holographic/src/algebra/mod.rs",
+      "source_ordinal": 6,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra",
+        "ident": "AlgebraConfig"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -16794,6 +17960,42 @@
         "kind": "local",
         "module": "amari_holographic::algebra::cl3",
         "ident": "Cl3"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_holographic::memory::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "MembershipEvidence"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_holographic::memory::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::holographic_memory",
+        "ident": "NearestKey"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -18330,6 +19532,303 @@
       "is_derived": false
     },
     {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::Cl3",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::cl3",
+        "ident": "Cl3"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::CliffordAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::clifford",
+        "ident": "CliffordAlgebra"
+      },
+      "generics": "< const P : usize , const Q : usize , const R : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::FHRRAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::fhrr",
+        "ident": "FHRRAlgebra"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::MAPAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::map",
+        "ident": "MAPAlgebra"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::ProductCliffordAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::product_clifford",
+        "ident": "ProductCliffordAlgebra"
+      },
+      "generics": "< const K : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::Cl3",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::cl3",
+        "ident": "Cl3"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::CliffordAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::clifford",
+        "ident": "CliffordAlgebra"
+      },
+      "generics": "< const P : usize , const Q : usize , const R : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::FHRRAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::fhrr",
+        "ident": "FHRRAlgebra"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::MAPAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::map",
+        "ident": "MAPAlgebra"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::ProductCliffordAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::product_clifford",
+        "ident": "ProductCliffordAlgebra"
+      },
+      "generics": "< const K : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::cl3::Cl3",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 1,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::cl3",
+        "ident": "Cl3"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::clifford::CliffordAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 3,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::clifford",
+        "ident": "CliffordAlgebra"
+      },
+      "generics": "< const P : usize , const Q : usize , const R : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::fhrr::FHRRAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 5,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::fhrr",
+        "ident": "FHRRAlgebra"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::map::MAPAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 4,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::map",
+        "ident": "MAPAlgebra"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_holographic::memory::MemoryElement",
+      "impl_type_path": "amari_holographic::algebra::product_clifford::ProductCliffordAlgebra",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 2,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::memory::domain",
+        "ident": "MemoryElement"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_holographic::algebra::product_clifford",
+        "ident": "ProductCliffordAlgebra"
+      },
+      "generics": "< const K : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
       "trait_path": "core::fmt::Display",
       "impl_type_path": "amari_holographic::optical::SymbolId",
       "source_path": "amari-holographic/src/optical/codebook.rs",
@@ -19166,7 +20665,7 @@
     {
       "path": "amari_holographic::CapacityInfo",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -19686,7 +21185,7 @@
     {
       "path": "amari_holographic::FactorizationResult",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -19814,7 +21313,7 @@
     {
       "path": "amari_holographic::HolographicMemory::capacity_info",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19822,7 +21321,7 @@
     {
       "path": "amari_holographic::HolographicMemory::clear",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19830,7 +21329,15 @@
     {
       "path": "amari_holographic::HolographicMemory::item_count",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_holographic::HolographicMemory::membership",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19838,7 +21345,15 @@
     {
       "path": "amari_holographic::HolographicMemory::merge",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_holographic::HolographicMemory::nearest_key",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19852,33 +21367,9 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_holographic::HolographicMemory::probably_contains",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 7,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_holographic::HolographicMemory::query_partial",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 6,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
       "path": "amari_holographic::HolographicMemory::retrieve",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 4,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_holographic::HolographicMemory::retrieve_at_temperature",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19886,7 +21377,7 @@
     {
       "path": "amari_holographic::HolographicMemory::store",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19894,7 +21385,7 @@
     {
       "path": "amari_holographic::HolographicMemory::store_batch",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19902,7 +21393,7 @@
     {
       "path": "amari_holographic::HolographicMemory::trace",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -19910,7 +21401,7 @@
     {
       "path": "amari_holographic::HolographicMemory::verify_consistency",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -20132,6 +21623,22 @@
       "surface_kind": "inherent_method"
     },
     {
+      "path": "amari_holographic::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_holographic::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
       "path": "amari_holographic::ProductCliffordAlgebra",
       "source_path": "amari-holographic/src/algebra/product_clifford.rs",
       "source_ordinal": 0,
@@ -20310,15 +21817,23 @@
     {
       "path": "amari_holographic::Resonator",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
-      "path": "amari_holographic::Resonator::cleanup",
+      "path": "amari_holographic::Resonator::cleanup_nearest",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_holographic::Resonator::cleanup_weighted",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -20326,7 +21841,7 @@
     {
       "path": "amari_holographic::Resonator::codebook_size",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -20334,7 +21849,7 @@
     {
       "path": "amari_holographic::Resonator::factorize",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -20342,7 +21857,7 @@
     {
       "path": "amari_holographic::Resonator::get_codebook_item",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -20366,18 +21881,26 @@
     {
       "path": "amari_holographic::RetrievalResult",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
-      "path": "amari_holographic::RetrievalResult::verify_result_validity",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 0,
+      "path": "amari_holographic::WeightedResult",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
-      "surface_kind": "inherent_method"
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_holographic::WeightedStatus",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_holographic::algebra",
@@ -22942,7 +24465,7 @@
     {
       "path": "amari_holographic::memory::CapacityInfo",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -22958,7 +24481,7 @@
     {
       "path": "amari_holographic::memory::FactorizationResult",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
@@ -22982,7 +24505,7 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::capacity_info",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 8,
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -22990,7 +24513,7 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::clear",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 9,
+      "source_ordinal": 5,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -22998,7 +24521,15 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::item_count",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_holographic::memory::HolographicMemory::membership",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23006,7 +24537,15 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::merge",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 10,
+      "source_ordinal": 12,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_holographic::memory::HolographicMemory::nearest_key",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23020,33 +24559,9 @@
       "surface_kind": "inherent_method"
     },
     {
-      "path": "amari_holographic::memory::HolographicMemory::probably_contains",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 7,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_holographic::memory::HolographicMemory::query_partial",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 6,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
       "path": "amari_holographic::memory::HolographicMemory::retrieve",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 4,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "inherent_method"
-    },
-    {
-      "path": "amari_holographic::memory::HolographicMemory::retrieve_at_temperature",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23054,7 +24569,7 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::store",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23062,7 +24577,7 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::store_batch",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 3,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23070,7 +24585,7 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::trace",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23078,7 +24593,7 @@
     {
       "path": "amari_holographic::memory::HolographicMemory::verify_consistency",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 13,
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23100,17 +24615,65 @@
       "surface_kind": "top_level"
     },
     {
-      "path": "amari_holographic::memory::Resonator",
-      "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 4,
+      "path": "amari_holographic::memory::MembershipEvidence",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
-      "path": "amari_holographic::memory::Resonator::cleanup",
-      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "path": "amari_holographic::memory::MemoryElement",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_holographic::memory::MemoryElement::admissible_key",
+      "source_path": "amari-holographic/src/memory/domain.rs",
       "source_ordinal": 1,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_holographic::memory::MemoryElement::full_coefficients",
+      "source_path": "amari-holographic/src/memory/domain.rs",
+      "source_ordinal": 0,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_holographic::memory::NearestKey",
+      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
+      "source_ordinal": 2,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_holographic::memory::Resonator",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 6,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_holographic::memory::Resonator::cleanup_nearest",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 5,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_holographic::memory::Resonator::cleanup_weighted",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 6,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23118,7 +24681,7 @@
     {
       "path": "amari_holographic::memory::Resonator::codebook_size",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 4,
+      "source_ordinal": 1,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23126,7 +24689,7 @@
     {
       "path": "amari_holographic::memory::Resonator::factorize",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 2,
+      "source_ordinal": 7,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23134,7 +24697,7 @@
     {
       "path": "amari_holographic::memory::Resonator::get_codebook_item",
       "source_path": "amari-holographic/src/memory/resonator.rs",
-      "source_ordinal": 5,
+      "source_ordinal": 2,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "inherent_method"
@@ -23158,18 +24721,26 @@
     {
       "path": "amari_holographic::memory::RetrievalResult",
       "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 1,
+      "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "top_level"
     },
     {
-      "path": "amari_holographic::memory::RetrievalResult::verify_result_validity",
-      "source_path": "amari-holographic/src/memory/holographic_memory.rs",
-      "source_ordinal": 0,
+      "path": "amari_holographic::memory::WeightedResult",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 4,
       "gate": "always",
       "status": "enabled",
-      "surface_kind": "inherent_method"
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_holographic::memory::WeightedStatus",
+      "source_path": "amari-holographic/src/memory/resonator.rs",
+      "source_ordinal": 3,
+      "gate": "always",
+      "status": "enabled",
+      "surface_kind": "top_level"
     },
     {
       "path": "amari_holographic::optical",

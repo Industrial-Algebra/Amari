@@ -5,6 +5,22 @@ use core::fmt;
 /// Errors that can occur during holographic memory operations.
 #[derive(Debug, Clone)]
 pub enum HolographicError {
+    /// Nonfinite or empty coefficient representation.
+    InvalidData,
+    /// Outside the checked retrieval-key domain.
+    InvalidKey,
+    /// Source and destination have different tracking or configuration.
+    IncompatibleMemory,
+    /// Number of records cannot be represented.
+    CountOverflow,
+    /// An underlying algebra operation failed.
+    Algebra {
+        /// The operation that failed.
+        operation: String,
+        /// The algebra-level cause, preserved for diagnostics.
+        source: crate::algebra::AlgebraError,
+    },
+
     /// Memory at capacity (SNR below threshold)
     AtCapacity {
         /// Current signal-to-noise ratio
@@ -40,6 +56,13 @@ pub enum HolographicError {
 impl fmt::Display for HolographicError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::InvalidData => write!(f, "invalid memory coefficient data"),
+            Self::InvalidKey => write!(f, "invalid retrieval key"),
+            Self::IncompatibleMemory => write!(f, "incompatible memory tracking or configuration"),
+            Self::CountOverflow => write!(f, "memory record count overflow"),
+            Self::Algebra { operation, source } => {
+                write!(f, "algebra operation {operation} failed: {source}")
+            }
             Self::AtCapacity { snr, threshold } => {
                 write!(
                     f,

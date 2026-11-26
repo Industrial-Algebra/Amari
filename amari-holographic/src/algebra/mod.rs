@@ -454,7 +454,7 @@ pub trait GeometricAlgebra: BindingAlgebra {
 ///
 /// This struct holds hyperparameters that affect how binding and bundling
 /// behave, but is separate from the algebra implementation itself.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AlgebraConfig {
     /// Temperature for bundling: 1.0 = soft (logsumexp), f64::INFINITY = hard (max)
     pub bundle_beta: f64,

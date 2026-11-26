@@ -68,6 +68,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "probe_dual",
         "probe_engine",
         "probe_framing",
+        "h3_recall",
         "probe_holographic",
         "probe_network",
         "probe_optimization",

@@ -26,3 +26,6 @@ wasm-pack.log
 
 .z3-trace
 docs/audits/holographic-repro/target/
+# pi-superpowers-plus workflow-monitor runtime state — moment sessions must not
+# inherit a phase-gate dialog from a previous session's tracked workflow.
+.pi/superpowers-state.json

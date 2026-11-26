@@ -23,7 +23,8 @@ const MAX_RECALL_ENTRIES: u64 = 32;
 #[cfg(feature = "standard-probes")]
 const RECALL_PASSES_PER_ENTRY: u64 = 11;
 #[cfg(feature = "standard-probes")]
-const RECALL_FIXED_PASSES: u64 = 6;
+// v2 validates the query separately for raw recall, exact membership and nearest score.
+const RECALL_FIXED_PASSES: u64 = 18;
 
 /// Typed request for deterministic additive MAP256 superposition.
 #[derive(
@@ -99,7 +100,7 @@ pub struct HolographicEntry {
 )]
 #[serde(deny_unknown_fields)]
 #[wire_contract(
-    id = "amari.discovery/probe/holographic-recall/input/v1",
+    id = "amari.discovery/probe/holographic-recall/input/v2",
     role = "input",
     compatibility = "additive_patch",
     constraints(
@@ -119,13 +120,19 @@ pub struct HolographicRecallRequest {
     pub query_seed: u64,
 }
 
-/// One normalized key-attribution weight.
+/// Exact tracked-key evidence; absence of tracking is never reported as absence of a key.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
-pub struct HolographicAttribution {
-    /// Entry index in storage order.
-    pub index: usize,
-    /// Nonnegative normalized attribution weight.
-    pub weight: f64,
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum HolographicMembership {
+    /// All exact matches in storage order.
+    Present {
+        /// Zero-based positions of all exact matches in ingestion order.
+        indices: Vec<usize>,
+    },
+    /// No match in a fully tracked trace.
+    Absent,
+    /// The trace did not retain sufficient evidence.
+    Unknown,
 }
 
 /// Capacity metrics reported by `HolographicMemory<MAP256>`.
@@ -154,28 +161,24 @@ pub struct HolographicCapacity {
     amari_discovery_macros::WireContract,
 )]
 #[wire_contract(
-    id = "amari.discovery/probe/holographic-recall/output/v1",
+    id = "amari.discovery/probe/holographic-recall/output/v2",
     role = "output",
     compatibility = "additive_patch",
     constraints(
         bounded_warnings = "warnings are deterministic and bounded to known capacity conditions",
         capacity_metrics_consistent = "capacity item count, theoretical capacity, and near_capacity reflect the stored entries",
-        finite_metrics = "all returned coefficients, confidence, similarity, attribution weights, and SNR metrics are finite",
-        map256_dimension = "raw and cleaned coefficient vectors each contain exactly 256 MAP components",
-        nonnegative_attribution_weights = "every key-attribution weight is nonnegative"
+        finite_metrics = "all returned coefficients and reported scores are finite",
+        map256_dimension = "raw recall contains exactly 256 MAP components",
+        membership_evidence = "present indices identify exact tracked-key matches, independently of nearest_key_similarity"
     )
 )]
 pub struct HolographicRecallOutput {
-    /// Retrieved value after configured cleanup.
-    pub value_coefficients: Vec<f64>,
-    /// Raw value before configured cleanup.
+    /// Raw left unbinding of the additive memory trace, without cleanup.
     pub raw_coefficients: Vec<f64>,
-    /// Deterministic confidence derived from entry count and dimension.
-    pub confidence: f64,
-    /// Similarity between the retrieved value and query key.
-    pub query_similarity: f64,
-    /// Significant tracked-key attributions in memory order semantics.
-    pub attribution: Vec<HolographicAttribution>,
+    /// Exact-key evidence, not a calibrated probability.
+    pub membership_evidence: HolographicMembership,
+    /// Nearest tracked-key score, or null if no comparison is possible.
+    pub nearest_key_similarity: Option<f64>,
     /// Capacity metrics from the underlying memory.
     pub capacity: HolographicCapacity,
     /// Deterministic bounded warnings.
@@ -185,10 +188,10 @@ pub struct HolographicRecallOutput {
 #[cfg(feature = "standard-probes")]
 pub(super) fn recall_registration() -> DiscoveryResult<AdapterRegistration> {
     Ok(AdapterRegistration {
-        id: "amari-probe:holographic:recall:v1".parse()?,
+        id: "amari-probe:holographic:recall:v2".parse()?,
         capability_id: "amari:amari-holographic:memory:retrieval".parse()?,
-        input_schema: "amari.discovery/probe/holographic-recall/input/v1".to_owned(),
-        output_schema: "amari.discovery/probe/holographic-recall/output/v1".to_owned(),
+        input_schema: "amari.discovery/probe/holographic-recall/input/v2".to_owned(),
+        output_schema: "amari.discovery/probe/holographic-recall/output/v2".to_owned(),
         required_features: vec!["standard-probes".to_owned()],
         limits: ProbeLimits {
             max_input_bytes: 65_536,
@@ -235,26 +238,32 @@ fn execute_recall(input: &Value, limits: &EffectiveProbeLimits) -> DiscoveryResu
     let resources = validate_recall(&request, limits)?;
 
     let mut memory = HolographicMemory::<MAP256>::with_key_tracking(AlgebraConfig::default());
+    let failed =
+        |e: amari_holographic::HolographicError| DiscoveryError::ProbeFailed(e.to_string());
     for entry in request.entries {
-        memory.store(
-            &MAP256::from_seed(entry.key_seed),
-            &MAP256::from_seed(entry.value_seed),
-        );
+        memory
+            .store(
+                &MAP256::from_seed(entry.key_seed),
+                &MAP256::from_seed(entry.value_seed),
+            )
+            .map_err(failed)?;
     }
-    let retrieval = memory.retrieve(&MAP256::from_seed(request.query_seed));
+    let query = MAP256::from_seed(request.query_seed);
+    let retrieval = memory.retrieve(&query).map_err(failed)?;
+    use amari_holographic::memory::MembershipEvidence;
+    let membership_evidence = match memory.membership(&query).map_err(failed)? {
+        MembershipEvidence::Present { indices } => HolographicMembership::Present { indices },
+        MembershipEvidence::Absent => HolographicMembership::Absent,
+        MembershipEvidence::Unknown => HolographicMembership::Unknown,
+    };
+    let nearest_key_similarity = memory
+        .nearest_key(&query)
+        .map_err(failed)?
+        .map(|k| k.similarity);
     let capacity = memory.capacity_info();
-    let value_coefficients = retrieval.value.components().to_vec();
     let raw_coefficients = retrieval.raw_value.components().to_vec();
-    if value_coefficients
-        .iter()
-        .chain(&raw_coefficients)
-        .any(|coefficient| !coefficient.is_finite())
-        || !retrieval.confidence.is_finite()
-        || !retrieval.query_similarity.is_finite()
-        || retrieval
-            .attribution
-            .iter()
-            .any(|(_, weight)| !weight.is_finite())
+    if raw_coefficients.iter().any(|c| !c.is_finite())
+        || nearest_key_similarity.is_some_and(|s| !s.is_finite())
         || !capacity.estimated_snr.is_finite()
         || !capacity.snr_threshold.is_finite()
     {
@@ -262,11 +271,6 @@ fn execute_recall(input: &Value, limits: &EffectiveProbeLimits) -> DiscoveryResu
             "MAP256 recall produced a non-finite result".to_owned(),
         ));
     }
-    let attribution = retrieval
-        .attribution
-        .into_iter()
-        .map(|(index, weight)| HolographicAttribution { index, weight })
-        .collect();
     let warnings = if capacity.near_capacity {
         vec!["MAP256 memory is near or above recommended capacity".to_owned()]
     } else {
@@ -276,11 +280,9 @@ fn execute_recall(input: &Value, limits: &EffectiveProbeLimits) -> DiscoveryResu
     Ok(AdapterOutput {
         resources,
         output: serde_json::to_value(HolographicRecallOutput {
-            value_coefficients,
             raw_coefficients,
-            confidence: retrieval.confidence,
-            query_similarity: retrieval.query_similarity,
-            attribution,
+            membership_evidence,
+            nearest_key_similarity,
             capacity: HolographicCapacity {
                 item_count: capacity.item_count,
                 theoretical_capacity: capacity.theoretical_capacity,
@@ -361,8 +363,9 @@ fn validate_recall(
         .ok_or_else(|| {
             DiscoveryError::LimitExceeded("holographic recall node count overflow".to_owned())
         })?;
+    // Store each record, scan for exact matches, and scan separately for nearest.
     let iterations = entry_count
-        .checked_mul(2)
+        .checked_mul(3)
         .and_then(|count| count.checked_add(1))
         .ok_or_else(|| {
             DiscoveryError::LimitExceeded("holographic recall iteration count overflow".to_owned())

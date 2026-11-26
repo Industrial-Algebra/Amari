@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_hash": "e29ac880c1297a6b0fe97e2cd95a54487841a67a4db67afa052252d43e37e592",
+  "source_hash": "7782488ffac3b8b1397ae173cfa7320a2260ff01b1a234c313106c76d4a59961",
   "description": "153 classes, 30 functions, 2 enums, 1 interfaces, 2 type aliases",
   "classes": [
     {
@@ -3583,15 +3583,21 @@
           "is_static": false
         },
         {
-          "name": "retrieve",
-          "doc": "Retrieve a value by key\n\nReturns the retrieved coefficients as a Float64Array.",
-          "signature": "(key: Float64Array | number[]): Float64Array",
+          "name": "membershipEvidence",
+          "doc": "Exact key evidence, not a load-based confidence or a probability.",
+          "signature": "(key: Float64Array | number[]): any",
           "is_static": false
         },
         {
-          "name": "retrieveConfidence",
-          "doc": "Get retrieval confidence for a key",
-          "signature": "(key: Float64Array | number[]): number",
+          "name": "nearestKeySimilarity",
+          "doc": "Nearest tracked-key score; undefined when there is no comparison.",
+          "signature": "(key: Float64Array | number[]): number | undefined",
+          "is_static": false
+        },
+        {
+          "name": "retrieve",
+          "doc": "Retrieve a value by key\n\nReturns the retrieved coefficients as a Float64Array.",
+          "signature": "(key: Float64Array | number[]): Float64Array",
           "is_static": false
         },
         {
@@ -6598,15 +6604,15 @@
       "constructor_signature": "(codebook_flat: Float64Array | number[]);",
       "methods": [
         {
-          "name": "cleanup",
-          "doc": "Clean up a noisy input to find the closest codebook item",
-          "signature": "(input: Float64Array | number[]): Float64Array",
+          "name": "cleanupNearest",
+          "doc": "Exhaustive selection. Even the nearest codeword may fail the observation residual.",
+          "signature": "(input: Float64Array | number[]): any",
           "is_static": false
         },
         {
-          "name": "cleanupWithInfo",
-          "doc": "Get cleanup result with metadata",
-          "signature": "(input: Float64Array | number[]): any",
+          "name": "cleanupWeighted",
+          "doc": "Iterative soft mixing. A stalled or exhausted update does not certify recovery.",
+          "signature": "(input: Float64Array | number[], max_iterations: number, initial_beta: number, final_beta: number): any",
           "is_static": false
         },
         {
@@ -11797,6 +11803,14 @@
           "type_signature": "readonly wasmholographicmemory_itemCount: (a: number) => number"
         },
         {
+          "name": "wasmholographicmemory_membershipEvidence",
+          "type_signature": "readonly wasmholographicmemory_membershipEvidence: (a: number, b: number, c: number) => [number, number, number]"
+        },
+        {
+          "name": "wasmholographicmemory_nearestKeySimilarity",
+          "type_signature": "readonly wasmholographicmemory_nearestKeySimilarity: (a: number, b: number, c: number) => [number, number, number, number]"
+        },
+        {
           "name": "wasmholographicmemory_new",
           "type_signature": "readonly wasmholographicmemory_new: () => number"
         },
@@ -11807,10 +11821,6 @@
         {
           "name": "wasmholographicmemory_retrieve",
           "type_signature": "readonly wasmholographicmemory_retrieve: (a: number, b: number, c: number) => [number, number, number, number]"
-        },
-        {
-          "name": "wasmholographicmemory_retrieveConfidence",
-          "type_signature": "readonly wasmholographicmemory_retrieveConfidence: (a: number, b: number, c: number) => [number, number, number]"
         },
         {
           "name": "wasmholographicmemory_store",
@@ -13565,12 +13575,12 @@
           "type_signature": "readonly wasmrelativisticparticle_with_energy: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number]"
         },
         {
-          "name": "wasmresonator_cleanup",
-          "type_signature": "readonly wasmresonator_cleanup: (a: number, b: number, c: number) => [number, number, number, number]"
+          "name": "wasmresonator_cleanupNearest",
+          "type_signature": "readonly wasmresonator_cleanupNearest: (a: number, b: number, c: number) => [number, number, number]"
         },
         {
-          "name": "wasmresonator_cleanupWithInfo",
-          "type_signature": "readonly wasmresonator_cleanupWithInfo: (a: number, b: number, c: number) => [number, number, number]"
+          "name": "wasmresonator_cleanupWeighted",
+          "type_signature": "readonly wasmresonator_cleanupWeighted: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number]"
         },
         {
           "name": "wasmresonator_codebookSize",

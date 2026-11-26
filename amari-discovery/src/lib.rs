@@ -100,7 +100,7 @@ pub use planner::{
 };
 pub use probes::{
     CgtNimSumOutput, CgtNimSumRequest, Cl3ProductOutput, Cl3ProductRequest, DecimalRational,
-    DecimalSurcomplex, HolographicAttribution, HolographicCapacity, HolographicEntry,
+    DecimalSurcomplex, HolographicCapacity, HolographicEntry, HolographicMembership,
     HolographicRecallOutput, HolographicRecallRequest, HolographicSuperpositionOutput,
     HolographicSuperpositionRequest, NetworkPath, NetworkShortestPathOutput,
     NetworkShortestPathRequest, ObjectiveDirection, ParetoFrontOutput, ParetoFrontRequest,
