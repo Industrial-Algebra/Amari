@@ -10,18 +10,18 @@
 //! Gating note: the backends are `amari-rewrite`'s non-default `network` and
 //! `holographic-guidance` features, and the hybrid bridge is compiled under
 //! `any(feature = "neural", feature = "holographic-guidance")`. Discovery
-//! never enables any of them; the capabilities advertise those features
-//! through `feature_refs` so a consumer learns the gate without this crate
-//! ever linking them. The test target is gated exactly like the other
-//! `rewrite_discovery_*` targets (`standard-probes`, the default).
+//! never enables any of them. The hybrid OR-gate and optional-lane availability
+//! are DESCRIPTIVE metadata, not unconditional Cargo feature steps. The test
+//! target is gated exactly like the other `rewrite_discovery_*` targets
+//! (`standard-probes`, the default).
 
 #![cfg(feature = "standard-probes")]
 
 use std::collections::BTreeSet;
 
 use amari_discovery::{
-    CandidateRetriever, CapabilityRecord, Catalog, ProjectKind, ProjectSnapshot, SnapshotState,
-    StabilityTier,
+    CandidateRetriever, CapabilityRecord, Catalog, GoalSpec, GraphPath, PlanGenerator, PlanStep,
+    ProjectKind, ProjectSnapshot, RankingComponents, SnapshotState, StabilityTier,
 };
 use assert_cmd::Command;
 use serde_json::Value;
@@ -35,8 +35,6 @@ const HYBRID_STRATEGY: &str = "amari:amari-rewrite:hybrid:strategy";
 
 const NETWORK_FEATURE: &str = "amari-rewrite:network";
 const HOLOGRAPHIC_FEATURE: &str = "amari-rewrite:holographic-guidance";
-const NEURAL_FEATURE: &str = "amari-rewrite:neural";
-
 const INVERSE_PREDECESSORS: &str = "amari:amari-rewrite:inverse:predecessors";
 const BACKWARD_SEARCH: &str = "amari:amari-rewrite:inverse:backward-search";
 const NEURAL_STRATEGY: &str = "amari:amari-rewrite:neural:strategy";
@@ -50,9 +48,11 @@ const CAPABILITIES: [&str; 6] = [
     HYBRID_STRATEGY,
 ];
 
-/// The exact executable probe set at the Task 49 base commit (`576399e`),
-/// derived from `catalog/probes.toml` before any catalog edit and pinned here
-/// so a metadata-only curation task can never add, drop, or rename a probe.
+/// The exact catalog probe DESCRIPTOR set at the Task 49 base commit
+/// (`576399e`), derived from `catalog/probes.toml` before any catalog edit.
+/// The separate `engine_derives_executable_state_from_the_private_registry`
+/// test in `probe_engine.rs` pins the 24 executable handlers (one descriptor
+/// is intentionally unregistered).
 const BASE_PROBE_IDS: [&str; 25] = [
     "amari-probe:cgt:nim-sum:v1",
     "amari-probe:core:geometric-product:v1",
@@ -150,7 +150,7 @@ fn expected_feature_refs(id: &str) -> Vec<String> {
     let features: &[&str] = match id {
         STATE_EMBEDDING | SEARCH_GRAPH | GEOMETRIC_STRATEGY => &[NETWORK_FEATURE],
         TRACE_ENCODING | TRACE_RECALL => &[HOLOGRAPHIC_FEATURE],
-        HYBRID_STRATEGY => &[NEURAL_FEATURE, HOLOGRAPHIC_FEATURE],
+        HYBRID_STRATEGY => &[],
         other => panic!("unexpected guidance capability {other}"),
     };
     features
@@ -332,6 +332,24 @@ fn detail_exposes_guidance_feature_gates_and_experimental_tier() {
             expected_feature_refs(id),
             "detail for {id} must expose its exact feature gate"
         );
+        let description = value["data"]["description"].as_str().unwrap();
+        match id {
+            TRACE_ENCODING => {
+                assert!(description.contains("replay-validated"));
+                assert!(description.contains("encoder configuration"));
+                assert!(description.contains("independent"));
+            }
+            TRACE_RECALL => {
+                assert!(description.contains("ranked trace"));
+                assert!(description.contains("RecallLane"));
+            }
+            HYBRID_STRATEGY => {
+                assert!(description.contains("available, supplied lanes"));
+                assert!(description.contains("either feature"));
+                assert!(description.contains("optional lane"));
+            }
+            _ => {}
+        }
         let probes = value["data"]["probe_refs"].as_array().unwrap();
         assert!(
             probes.is_empty(),
@@ -345,13 +363,11 @@ fn graph_carries_every_required_guidance_relation() {
     let expected = [
         (STATE_EMBEDDING, SEARCH_GRAPH, "produces_input_for"),
         (SEARCH_GRAPH, GEOMETRIC_STRATEGY, "composes_with"),
-        (GEOMETRIC_STRATEGY, INVERSE_PREDECESSORS, "composes_with"),
         (GEOMETRIC_STRATEGY, BACKWARD_SEARCH, "composes_with"),
         (TRACE_ENCODING, TRACE_RECALL, "produces_input_for"),
         (TRACE_RECALL, HYBRID_STRATEGY, "composes_with"),
         (NEURAL_STRATEGY, HYBRID_STRATEGY, "composes_with"),
         (GEOMETRIC_STRATEGY, HYBRID_STRATEGY, "composes_with"),
-        (HYBRID_STRATEGY, INVERSE_PREDECESSORS, "composes_with"),
         (HYBRID_STRATEGY, BACKWARD_SEARCH, "composes_with"),
     ];
     for (from, to, kind) in expected {
@@ -361,6 +377,15 @@ fn graph_carries_every_required_guidance_relation() {
                 .iter()
                 .any(|(source, target, actual)| source == from && target == to && actual == kind),
             "graph for {from} must carry {kind} -> {to}: {relations:?}"
+        );
+    }
+    for from in [GEOMETRIC_STRATEGY, HYBRID_STRATEGY] {
+        let relations = graph_relations(&command_json(&["discover", "graph", from]));
+        assert!(
+            !relations
+                .iter()
+                .any(|(_, target, _)| target == INVERSE_PREDECESSORS),
+            "{from} must not claim composition with the legacy BackwardSearch iterator"
         );
     }
 }
@@ -403,7 +428,64 @@ fn recommendation_recalls_hybrid_strategy_for_hybrid_guidance_goal() {
 }
 
 #[test]
-fn executable_probe_surface_is_unchanged() {
+fn recall_only_hybrid_plan_has_no_unconditional_feature_steps() {
+    let catalog = Catalog::embedded().unwrap();
+    let target: amari_discovery::CapabilityId = HYBRID_STRATEGY.parse().unwrap();
+    let candidate = amari_discovery::RankedCandidate {
+        capability_id: target.clone(),
+        path: GraphPath {
+            target: target.clone(),
+            source_seed: target.clone(),
+            capabilities: vec![target],
+            steps: Vec::new(),
+            total_cost: 0.0,
+        },
+        components: RankingComponents {
+            applicability: 1.0,
+            evidence: 0.8,
+            effort: 0.2,
+            maturity: 1.0,
+            runtime: 0.2,
+            platform: 1.0,
+            verification: 0.5,
+            risk: 0.1,
+        },
+        objectives: [0.0, 0.2, 0.2, 0.0, 0.2, 0.0, 0.5, 0.1],
+        confidence: 0.8,
+        evidence: Vec::new(),
+        validated_assumptions: Vec::new(),
+    };
+    let context = amari_discovery::PlanningContext {
+        snapshot: ProjectSnapshot {
+            project_kind: ProjectKind::RustCargo,
+            ..empty_snapshot("recall-only-hybrid")
+        },
+        goal: GoalSpec {
+            statement: "use holographic recall guidance only".to_owned(),
+            constraints: Vec::new(),
+        },
+        probe_results: Vec::new(),
+    };
+    let plan = PlanGenerator::default()
+        .generate(&catalog, &context, &candidate)
+        .expect("the recall-only hybrid plan generates");
+    let features: Vec<String> = plan
+        .steps
+        .iter()
+        .filter_map(|step| match step {
+            PlanStep::Feature { feature, .. } => Some(feature.clone()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        features.is_empty(),
+        "the OR-gate is descriptive metadata and must not become two \
+         unconditional Cargo feature actions: {features:?}"
+    );
+}
+
+#[test]
+fn catalog_probe_descriptor_set_is_unchanged() {
     let catalog = Catalog::embedded().unwrap();
     let actual: BTreeSet<String> = catalog
         .probes()
@@ -413,37 +495,81 @@ fn executable_probe_surface_is_unchanged() {
     let expected: BTreeSet<String> = BASE_PROBE_IDS.iter().map(|id| (*id).to_owned()).collect();
     assert_eq!(
         actual, expected,
-        "Task 49 is metadata only: the executable probe set must equal the base set"
+        "Task 49 is metadata only: the catalog probe descriptor set must equal the base set"
     );
     assert_eq!(catalog.probes().len(), BASE_PROBE_IDS.len());
 }
 
-#[test]
-fn discovery_never_enables_a_guidance_feature() {
-    // The crate manifest is the authoritative declaration of what discovery
-    // links. The guidance backends are curated as `feature_refs` strings only:
-    // the dependency on `amari-rewrite` must stay at the `completion` feature
-    // and no guidance stack may appear anywhere in the manifest.
-    const MANIFEST: &str = include_str!("../Cargo.toml");
-    let dependency = MANIFEST
-        .lines()
-        .find(|line| line.starts_with("amari-rewrite = "))
-        .expect("the manifest must declare the amari-rewrite dependency");
-    assert!(
-        dependency.contains("\"completion\""),
-        "the amari-rewrite dependency must keep its completion feature: {dependency}"
-    );
+fn collect_manifest_strings(value: &toml::Value, output: &mut Vec<String>) {
+    match value {
+        toml::Value::String(text) => output.push(text.clone()),
+        toml::Value::Array(values) => {
+            for value in values {
+                collect_manifest_strings(value, output);
+            }
+        }
+        toml::Value::Table(table) => {
+            for value in table.values() {
+                collect_manifest_strings(value, output);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn assert_no_guidance_features(manifest: &str) {
+    let value: toml::Value = toml::from_str(manifest).expect("valid discovery manifest");
+    let rewrite = value["dependencies"]["amari-rewrite"]
+        .as_table()
+        .expect("amari-rewrite dependency table");
     for forbidden in ["neural", "network", "holographic-guidance"] {
         assert!(
-            !dependency.contains(forbidden),
-            "the amari-rewrite dependency must not enable {forbidden}: {dependency}"
+            !rewrite["features"].as_array().is_some_and(|features| {
+                features
+                    .iter()
+                    .any(|feature| feature.as_str() == Some(forbidden))
+            }),
+            "the direct amari-rewrite dependency must not enable {forbidden}"
         );
     }
-    let lowered = MANIFEST.to_ascii_lowercase();
+    let mut strings = Vec::new();
+    if let Some(features) = value["features"].as_table() {
+        for definition in features.values() {
+            collect_manifest_strings(definition, &mut strings);
+        }
+    }
+    for reference in strings {
+        for forbidden in ["neural", "network", "holographic-guidance"] {
+            assert!(
+                reference != format!("amari-rewrite/{forbidden}"),
+                "feature forwarding must not enable {forbidden}: {reference}"
+            );
+        }
+    }
+}
+
+#[test]
+fn discovery_never_enables_a_guidance_feature() {
+    assert_no_guidance_features(include_str!("../Cargo.toml"));
+    let manifest = include_str!("../Cargo.toml").to_ascii_lowercase();
     for forbidden in ["katakuri", "borsalino"] {
         assert!(
-            !lowered.contains(forbidden),
+            !manifest.contains(forbidden),
             "amari-discovery must not depend on {forbidden}"
         );
     }
+}
+
+#[test]
+fn manifest_guard_rejects_feature_forwarding() {
+    let forwarded = r#"
+[dependencies]
+amari-rewrite = { workspace = true, features = ["completion"] }
+[features]
+ai = ["amari-rewrite/holographic-guidance"]
+"#;
+    assert!(
+        std::panic::catch_unwind(|| assert_no_guidance_features(forwarded)).is_err(),
+        "the guard must reject an ai = [\"amari-rewrite/holographic-guidance\"] forward"
+    );
 }
