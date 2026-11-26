@@ -191,9 +191,27 @@ fn relations_and_probe_descriptors_are_complete_and_unique() {
         assert!(probe_ids.insert(probe.id.to_string()));
         assert!(capability_ids.contains(&probe.capability_id.to_string()));
         assert!(probe.input_schema.starts_with("amari.discovery/probe/"));
-        assert!(probe.input_schema.ends_with("/v1"));
         assert!(probe.output_schema.starts_with("amari.discovery/probe/"));
-        assert!(probe.output_schema.ends_with("/v1"));
+        // Probe schemas are versioned per wire contract. Approved versions are
+        // an allowlist: `holographic:recall` is v2 (H3 contract — membership
+        // evidence replaces confidence); every other probe is v1. A bump
+        // outside this map is an unintended wire change and must fail here.
+        const EXPECTED_VERSIONS: &[(&str, &str)] = &[("amari-probe:holographic:recall:v2", "v2")];
+        let expected_version = EXPECTED_VERSIONS
+            .iter()
+            .find(|(id, _)| *id == probe.id.as_str())
+            .map(|(_, v)| *v)
+            .unwrap_or("v1");
+        assert!(
+            probe.input_schema.ends_with(&format!("/{expected_version}")),
+            "input schema {} not at expected version {expected_version}",
+            probe.input_schema
+        );
+        assert!(
+            probe.output_schema.ends_with(&format!("/{expected_version}")),
+            "output schema {} not at expected version {expected_version}",
+            probe.output_schema
+        );
         assert!(probe.limits.max_input_bytes > 0);
         assert!(probe.limits.max_output_bytes > 0);
         assert!(probe.limits.max_operations > 0);
