@@ -13,6 +13,11 @@ mod bidirectional;
 mod bounded;
 mod config;
 pub(crate) mod guidance;
+// The hybrid combination of the symbolic, neural, geometric, and recall lanes
+// needs at least one of those lanes compiled; a default build exposes no hybrid
+// surface at all (0.25, Task 48).
+#[cfg(any(feature = "neural", feature = "holographic-guidance"))]
+pub mod hybrid;
 mod outcome;
 mod replay;
 mod state;

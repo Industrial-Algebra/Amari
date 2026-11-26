@@ -590,6 +590,7 @@ fn a_trained_ranker_orders_the_engine_chosen_candidate_first() {
     let mode = GuidanceMode::CompleteWithinLimits;
     let order = strategy
         .rank(&GuidanceRequest {
+            system_hash: amari_rewrite::inverse::system_hash(&system),
             parent: &parent,
             depth: 0,
             mode: &mode,

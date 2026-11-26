@@ -152,6 +152,7 @@ fn small_search_config() -> InverseSearchConfig {
 /// One expansion round's engine candidates, their canonical states, and their
 /// transparent symbolic scores — in the engine's own order.
 struct Round {
+    system: TermSystem,
     parent: SymbolicState,
     states: Vec<SymbolicState>,
     predecessors: Vec<SymbolicPredecessor>,
@@ -178,6 +179,7 @@ impl Round {
             })
             .collect();
         Self {
+            system: system.clone(),
             parent,
             states,
             predecessors,
@@ -204,6 +206,7 @@ impl Round {
         mode: &'a GuidanceMode,
     ) -> GuidanceRequest<'a> {
         GuidanceRequest {
+            system_hash: amari_rewrite::inverse::system_hash(&self.system),
             parent: &self.parent,
             depth: 0,
             mode,
@@ -1224,6 +1227,7 @@ fn fabricated_transitions_cannot_mint_witnesses() {
     // to consume and records nothing.
     let mode = GuidanceMode::CompleteWithinLimits;
     let request = GuidanceRequest {
+        system_hash: amari_rewrite::inverse::system_hash(&other),
         parent: &a,
         depth: 0,
         mode: &mode,
