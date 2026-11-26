@@ -203,12 +203,16 @@ fn relations_and_probe_descriptors_are_complete_and_unique() {
             .map(|(_, v)| *v)
             .unwrap_or("v1");
         assert!(
-            probe.input_schema.ends_with(&format!("/{expected_version}")),
+            probe
+                .input_schema
+                .ends_with(&format!("/{expected_version}")),
             "input schema {} not at expected version {expected_version}",
             probe.input_schema
         );
         assert!(
-            probe.output_schema.ends_with(&format!("/{expected_version}")),
+            probe
+                .output_schema
+                .ends_with(&format!("/{expected_version}")),
             "output schema {} not at expected version {expected_version}",
             probe.output_schema
         );
