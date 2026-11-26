@@ -73,6 +73,7 @@ pub enum SearchMode {
 #[derive(Clone, Debug)]
 pub struct BackwardExplorer<'a> {
     system: &'a TermSystem,
+    system_hash: crate::relation::Sha256Digest,
     config: crate::inverse::InverseSearchConfig,
 }
 
@@ -109,7 +110,11 @@ impl Pending {
 impl<'a> BackwardExplorer<'a> {
     /// Bind an explorer to a system and a validated configuration.
     pub fn new(system: &'a TermSystem, config: crate::inverse::InverseSearchConfig) -> Self {
-        Self { system, config }
+        Self {
+            system,
+            system_hash: crate::inverse::system_hash(system),
+            config,
+        }
     }
 
     /// Search backward from `target` for a state matching the `goal`
@@ -348,6 +353,7 @@ impl<'a> BackwardExplorer<'a> {
                     })
                     .collect();
                 let request = GuidanceRequest {
+                    system_hash: self.system_hash,
                     parent: &parent_state,
                     depth,
                     mode: guidance,

@@ -6562,6 +6562,10 @@
         "kind": "struct",
         "fields": [
           {
+            "label": "system_hash",
+            "ty": "Sha256Digest"
+          },
+          {
             "label": "parent",
             "ty": "& 'a SymbolicState"
           },
@@ -6589,6 +6593,10 @@
           "shape": {
             "kind": "struct",
             "fields": [
+              {
+                "label": "system_hash",
+                "ty": "Sha256Digest"
+              },
               {
                 "label": "parent",
                 "ty": "& 'a SymbolicState"
@@ -8193,6 +8201,1574 @@
           "is_reexport": true,
           "declaration_module": "amari_rewrite::inverse::guidance",
           "declaration_ident": "guidance_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "kind": "struct",
+      "signature": "pub struct BackendFailure",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "kind",
+            "ty": "GuidanceFailureKind"
+          },
+          {
+            "label": "scored",
+            "ty": "usize"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct BackendFailure",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "kind",
+                "ty": "GuidanceFailureKind"
+              },
+              {
+                "label": "scored",
+                "ty": "usize"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "BackendFailure"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HYBRID_FRAME",
+      "kind": "const",
+      "signature": "pub const HYBRID_FRAME : & str",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const HYBRID_FRAME : & str",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HYBRID_FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HYBRID_SCHEMA_VERSION",
+      "kind": "const",
+      "signature": "pub const HYBRID_SCHEMA_VERSION : u32",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const HYBRID_SCHEMA_VERSION : u32",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HYBRID_SCHEMA_VERSION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridAvailability",
+      "kind": "enum",
+      "signature": "pub enum HybridAvailability",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Available",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Missing",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Failed",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "BackendFailure"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum HybridAvailability",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Available",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Missing",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Failed",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "BackendFailure"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridAvailability"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridAvailability::failure",
+      "kind": "method",
+      "signature": "pub fn failure (& self) -> Option < & BackendFailure >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn failure (& self) -> Option < & BackendFailure >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridAvailability::failure"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridAvailability::is_available",
+      "kind": "method",
+      "signature": "pub fn is_available (& self) -> bool",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_available (& self) -> bool",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridAvailability::is_available"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "kind": "enum",
+      "signature": "pub enum HybridBackend",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Symbolic",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Neural",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Geometric",
+            "data": {
+              "kind": "unit"
+            }
+          },
+          {
+            "name": "Recall",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum HybridBackend",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Symbolic",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Neural",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Geometric",
+                "data": {
+                  "kind": "unit"
+                }
+              },
+              {
+                "name": "Recall",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridBackend"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend::ALL",
+      "kind": "const",
+      "signature": "pub const ALL : [Self ; 4]",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const ALL : [Self ; 4]",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridBackend::ALL"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend::name",
+      "kind": "method",
+      "signature": "pub const fn name (self) -> & 'static str",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn name (self) -> & 'static str",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridBackend::name"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend::prefers_lower",
+      "kind": "method",
+      "signature": "pub const fn prefers_lower (self) -> bool",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub const fn prefers_lower (self) -> bool",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridBackend::prefers_lower"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridCandidate",
+      "kind": "struct",
+      "signature": "pub struct HybridCandidate",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "index",
+            "ty": "usize"
+          },
+          {
+            "label": "components",
+            "ty": "Vec < HybridComponent >"
+          },
+          {
+            "label": "combined",
+            "ty": "f64"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HybridCandidate",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "index",
+                "ty": "usize"
+              },
+              {
+                "label": "components",
+                "ty": "Vec < HybridComponent >"
+              },
+              {
+                "label": "combined",
+                "ty": "f64"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridCandidate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridCandidate::component",
+      "kind": "method",
+      "signature": "pub fn component (& self , backend : HybridBackend) -> Option < & HybridComponent >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn component (& self , backend : HybridBackend) -> Option < & HybridComponent >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridCandidate::component"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridComponent",
+      "kind": "struct",
+      "signature": "pub struct HybridComponent",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "backend",
+            "ty": "HybridBackend"
+          },
+          {
+            "label": "availability",
+            "ty": "HybridAvailability"
+          },
+          {
+            "label": "raw",
+            "ty": "Option < f64 >"
+          },
+          {
+            "label": "normalized",
+            "ty": "Option < f64 >"
+          },
+          {
+            "label": "weight",
+            "ty": "f64"
+          },
+          {
+            "label": "contribution",
+            "ty": "f64"
+          },
+          {
+            "label": "recall_projection",
+            "ty": "Option < RecallProjection >"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HybridComponent",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "backend",
+                "ty": "HybridBackend"
+              },
+              {
+                "label": "availability",
+                "ty": "HybridAvailability"
+              },
+              {
+                "label": "raw",
+                "ty": "Option < f64 >"
+              },
+              {
+                "label": "normalized",
+                "ty": "Option < f64 >"
+              },
+              {
+                "label": "weight",
+                "ty": "f64"
+              },
+              {
+                "label": "contribution",
+                "ty": "f64"
+              },
+              {
+                "label": "recall_projection",
+                "ty": "Option < RecallProjection >"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridComponent"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig",
+      "kind": "struct",
+      "signature": "pub struct HybridConfig",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HybridConfig",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridConfig"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::DEFAULT_MAX_CANDIDATES",
+      "kind": "const",
+      "signature": "pub const DEFAULT_MAX_CANDIDATES : usize",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const DEFAULT_MAX_CANDIDATES : usize",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridConfig::DEFAULT_MAX_CANDIDATES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::max_candidates",
+      "kind": "method",
+      "signature": "pub fn max_candidates (& self) -> usize",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_candidates (& self) -> usize",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridConfig::max_candidates"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::new",
+      "kind": "method",
+      "signature": "pub fn new (weights : HybridWeights , max_candidates : usize) -> Result < Self , HybridConfigError >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (weights : HybridWeights , max_candidates : usize) -> Result < Self , HybridConfigError >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridConfig::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::weights",
+      "kind": "method",
+      "signature": "pub fn weights (& self) -> & HybridWeights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn weights (& self) -> & HybridWeights",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridConfig::weights"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfigError",
+      "kind": "enum",
+      "signature": "pub enum HybridConfigError",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NonFiniteWeight",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "backend",
+                  "ty": "HybridBackend"
+                }
+              ]
+            }
+          },
+          {
+            "name": "WeightOutOfRange",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "backend",
+                  "ty": "HybridBackend"
+                },
+                {
+                  "name": "weight",
+                  "ty": "f64"
+                }
+              ]
+            }
+          },
+          {
+            "name": "LimitExceeded",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "resource",
+                  "ty": "& 'static str"
+                },
+                {
+                  "name": "value",
+                  "ty": "usize"
+                },
+                {
+                  "name": "limit",
+                  "ty": "usize"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ForeignTraceProvenance",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "role",
+                  "ty": "& 'static str"
+                }
+              ]
+            }
+          },
+          {
+            "name": "RecallAdmission",
+            "data": {
+              "kind": "tuple",
+              "types": [
+                "crate :: holographic :: HolographicError"
+              ]
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum HybridConfigError",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "NonFiniteWeight",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "backend",
+                      "ty": "HybridBackend"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "WeightOutOfRange",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "backend",
+                      "ty": "HybridBackend"
+                    },
+                    {
+                      "name": "weight",
+                      "ty": "f64"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "LimitExceeded",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "resource",
+                      "ty": "& 'static str"
+                    },
+                    {
+                      "name": "value",
+                      "ty": "usize"
+                    },
+                    {
+                      "name": "limit",
+                      "ty": "usize"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ForeignTraceProvenance",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "role",
+                      "ty": "& 'static str"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "RecallAdmission",
+                "data": {
+                  "kind": "tuple",
+                  "types": [
+                    "crate :: holographic :: HolographicError"
+                  ]
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridConfigError"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridEvaluation",
+      "kind": "struct",
+      "signature": "pub struct HybridEvaluation",
+      "shape": {
+        "kind": "struct",
+        "fields": [
+          {
+            "label": "order",
+            "ty": "Vec < usize >"
+          },
+          {
+            "label": "candidates",
+            "ty": "Vec < HybridCandidate >"
+          },
+          {
+            "label": "statuses",
+            "ty": "[HybridAvailability ; 4]"
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HybridEvaluation",
+          "shape": {
+            "kind": "struct",
+            "fields": [
+              {
+                "label": "order",
+                "ty": "Vec < usize >"
+              },
+              {
+                "label": "candidates",
+                "ty": "Vec < HybridCandidate >"
+              },
+              {
+                "label": "statuses",
+                "ty": "[HybridAvailability ; 4]"
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridEvaluation"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridEvaluation::availability",
+      "kind": "method",
+      "signature": "pub fn availability (& self , backend : HybridBackend) -> Option < HybridAvailability >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn availability (& self , backend : HybridBackend) -> Option < HybridAvailability >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridEvaluation::availability"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridEvaluation::candidate",
+      "kind": "method",
+      "signature": "pub fn candidate (& self , index : usize) -> Option < & HybridCandidate >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn candidate (& self , index : usize) -> Option < & HybridCandidate >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridEvaluation::candidate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy",
+      "kind": "struct",
+      "signature": "pub struct HybridStrategy < 'a >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HybridStrategy < 'a >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::config",
+      "kind": "method",
+      "signature": "pub fn config (& self) -> & HybridConfig",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn config (& self) -> & HybridConfig",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::config"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::evaluate",
+      "kind": "method",
+      "signature": "pub fn evaluate (& self , request : & GuidanceRequest < '_ > ,) -> Result < HybridEvaluation , GuidanceFailure >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn evaluate (& self , request : & GuidanceRequest < '_ > ,) -> Result < HybridEvaluation , GuidanceFailure >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::evaluate"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::max_candidates",
+      "kind": "method",
+      "signature": "pub fn max_candidates (& self) -> usize",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn max_candidates (& self) -> usize",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::max_candidates"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::new",
+      "kind": "method",
+      "signature": "pub fn new (config : HybridConfig) -> Self",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (config : HybridConfig) -> Self",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::replay_hash",
+      "kind": "method",
+      "signature": "pub fn replay_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn replay_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::replay_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::with_geometric",
+      "kind": "method",
+      "signature": "pub fn with_geometric (mut self , geometric : & 'a crate :: network :: GeometricStrategy) -> Self",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_geometric (mut self , geometric : & 'a crate :: network :: GeometricStrategy) -> Self",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::with_geometric"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::with_neural",
+      "kind": "method",
+      "signature": "pub fn with_neural (mut self , neural : & 'a crate :: neural :: NeuralStrategy) -> Self",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_neural (mut self , neural : & 'a crate :: neural :: NeuralStrategy) -> Self",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::with_neural"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::with_recall",
+      "kind": "method",
+      "signature": "pub fn with_recall (mut self , recall : & 'a dyn RecallBackend) -> Self",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn with_recall (mut self , recall : & 'a dyn RecallBackend) -> Self",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridStrategy::with_recall"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights",
+      "kind": "struct",
+      "signature": "pub struct HybridWeights",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct HybridWeights",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridWeights"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::MAX",
+      "kind": "const",
+      "signature": "pub const MAX : f64",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX : f64",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridWeights::MAX"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::MIN",
+      "kind": "const",
+      "signature": "pub const MIN : f64",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MIN : f64",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridWeights::MIN"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::get",
+      "kind": "method",
+      "signature": "pub fn get (& self , backend : HybridBackend) -> f64",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn get (& self , backend : HybridBackend) -> f64",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridWeights::get"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::is_zero",
+      "kind": "method",
+      "signature": "pub fn is_zero (& self) -> bool",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn is_zero (& self) -> bool",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridWeights::is_zero"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::new",
+      "kind": "method",
+      "signature": "pub fn new (symbolic : f64 , neural : f64 , geometric : f64 , recall : f64 ,) -> Result < Self , HybridConfigError >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (symbolic : f64 , neural : f64 , geometric : f64 , recall : f64 ,) -> Result < Self , HybridConfigError >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridWeights::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::single",
+      "kind": "method",
+      "signature": "pub fn single (backend : HybridBackend , weight : f64) -> Result < Self , HybridConfigError >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn single (backend : HybridBackend , weight : f64) -> Result < Self , HybridConfigError >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "HybridWeights::single"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::MAX_HYBRID_CANDIDATES",
+      "kind": "const",
+      "signature": "pub const MAX_HYBRID_CANDIDATES : usize",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const MAX_HYBRID_CANDIDATES : usize",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "MAX_HYBRID_CANDIDATES"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::NORMALIZATION_CONVENTION",
+      "kind": "const",
+      "signature": "pub const NORMALIZATION_CONVENTION : & str",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const NORMALIZATION_CONVENTION : & str",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "NORMALIZATION_CONVENTION"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::NORMALIZATION_FRAME",
+      "kind": "const",
+      "signature": "pub const NORMALIZATION_FRAME : & str",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const NORMALIZATION_FRAME : & str",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "NORMALIZATION_FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RECALL_LANE_FRAME",
+      "kind": "const",
+      "signature": "pub const RECALL_LANE_FRAME : & str",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "const",
+          "signature": "pub const RECALL_LANE_FRAME : & str",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RECALL_LANE_FRAME"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend",
+      "kind": "trait",
+      "signature": "pub trait RecallBackend : recall_sealed :: Sealed",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "trait",
+          "signature": "pub trait RecallBackend : recall_sealed :: Sealed",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallBackend"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::projection_evidence",
+      "kind": "method",
+      "signature": "fn projection_evidence (& self , candidates : & [GuidanceCandidate < '_ >] ,) -> Result < Vec < RecallProjection > , GuidanceFailure >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn projection_evidence (& self , candidates : & [GuidanceCandidate < '_ >] ,) -> Result < Vec < RecallProjection > , GuidanceFailure >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallBackend::projection_evidence"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::recall_hash",
+      "kind": "method",
+      "signature": "fn recall_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn recall_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallBackend::recall_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::recall_system",
+      "kind": "method",
+      "signature": "fn recall_system (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn recall_system (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallBackend::recall_system"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::similarities",
+      "kind": "method",
+      "signature": "fn similarities (& self , candidates : & [GuidanceCandidate < '_ >] ,) -> Result < Vec < f64 > , GuidanceFailure >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "fn similarities (& self , candidates : & [GuidanceCandidate < '_ >] ,) -> Result < Vec < f64 > , GuidanceFailure >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallBackend::similarities"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane",
+      "kind": "struct",
+      "signature": "pub struct RecallLane < const D : usize >",
+      "shape": {
+        "kind": "struct",
+        "fields": []
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "struct",
+          "signature": "pub struct RecallLane < const D : usize >",
+          "shape": {
+            "kind": "struct",
+            "fields": []
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallLane"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::limit",
+      "kind": "method",
+      "signature": "pub fn limit (& self) -> usize",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn limit (& self) -> usize",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallLane::limit"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::new",
+      "kind": "method",
+      "signature": "pub fn new (original : & crate :: trs :: TermSystem , encoder : crate :: holographic :: HolographicEncoder < D > , config : crate :: holographic :: RecallConfig , query : crate :: holographic :: RecallTrace , traces : Vec < crate :: holographic :: RecallTrace > ,) -> Result < Self , HybridConfigError >",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn new (original : & crate :: trs :: TermSystem , encoder : crate :: holographic :: HolographicEncoder < D > , config : crate :: holographic :: RecallConfig , query : crate :: holographic :: RecallTrace , traces : Vec < crate :: holographic :: RecallTrace > ,) -> Result < Self , HybridConfigError >",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallLane::new"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::query_trace_hash",
+      "kind": "method",
+      "signature": "pub fn query_trace_hash (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn query_trace_hash (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallLane::query_trace_hash"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::system",
+      "kind": "method",
+      "signature": "pub fn system (& self) -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn system (& self) -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallLane::system"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::trace_count",
+      "kind": "method",
+      "signature": "pub fn trace_count (& self) -> usize",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn trace_count (& self) -> usize",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallLane::trace_count"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallProjection",
+      "kind": "enum",
+      "signature": "pub enum RecallProjection",
+      "shape": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Matched",
+            "data": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "similarity",
+                  "ty": "f64"
+                },
+                {
+                  "name": "trace_hash",
+                  "ty": "Sha256Digest"
+                }
+              ]
+            }
+          },
+          {
+            "name": "NoMatchingTrace",
+            "data": {
+              "kind": "unit"
+            }
+          }
+        ]
+      },
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "enum",
+          "signature": "pub enum RecallProjection",
+          "shape": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Matched",
+                "data": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "name": "similarity",
+                      "ty": "f64"
+                    },
+                    {
+                      "name": "trace_hash",
+                      "ty": "Sha256Digest"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "NoMatchingTrace",
+                "data": {
+                  "kind": "unit"
+                }
+              }
+            ]
+          },
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallProjection"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallProjection::native_value",
+      "kind": "method",
+      "signature": "pub fn native_value (self) -> f64",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "method",
+          "signature": "pub fn native_value (self) -> f64",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "RecallProjection::native_value"
+        }
+      ]
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::normalization_hash",
+      "kind": "fn",
+      "signature": "pub fn normalization_hash () -> Sha256Digest",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "is_reexport": false,
+      "source_module": "amari_rewrite::inverse::hybrid",
+      "variants": [
+        {
+          "kind": "fn",
+          "signature": "pub fn normalization_hash () -> Sha256Digest",
+          "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+          "source_module": "amari_rewrite::inverse::hybrid",
+          "is_reexport": false,
+          "declaration_module": "amari_rewrite::inverse::hybrid",
+          "declaration_ident": "normalization_hash"
         }
       ]
     },
@@ -26434,6 +28010,50 @@
       ]
     },
     {
+      "export_path": "amari_rewrite::inverse::hybrid::RecallBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 31,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallBackend"
+      },
+      "supertraits": [
+        {
+          "endpoint": {
+            "kind": "external",
+            "path": "recall_sealed::Sealed"
+          }
+        }
+      ],
+      "required_items": [
+        {
+          "name": "recall_system",
+          "kind": "method",
+          "signature": "fn recall_system (& self) -> Sha256Digest",
+          "status": "required"
+        },
+        {
+          "name": "recall_hash",
+          "kind": "method",
+          "signature": "fn recall_hash (& self) -> Sha256Digest",
+          "status": "required"
+        },
+        {
+          "name": "similarities",
+          "kind": "method",
+          "signature": "fn similarities (& self , candidates : & [GuidanceCandidate < '_ >] ,) -> Result < Vec < f64 > , GuidanceFailure >",
+          "status": "required"
+        },
+        {
+          "name": "projection_evidence",
+          "kind": "method",
+          "signature": "fn projection_evidence (& self , candidates : & [GuidanceCandidate < '_ >] ,) -> Result < Vec < RecallProjection > , GuidanceFailure >",
+          "status": "required"
+        }
+      ]
+    },
+    {
       "export_path": "amari_rewrite::neural::DifferentiableRule",
       "source_path": "amari-rewrite/src/neural/mod.rs",
       "source_ordinal": 3,
@@ -27949,6 +29569,205 @@
     },
     {
       "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "BackendFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridAvailability",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridAvailability"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridCandidate",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 25,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridCandidate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridComponent",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfig",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfigError",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 17,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfigError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridEvaluation",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 27,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridEvaluation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridWeights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::RecallLane",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 32,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallLane"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::RecallProjection",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Clone"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallProjection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Clone",
       "impl_type_path": "amari_rewrite::language::AcceptingRun",
       "source_path": "amari-rewrite/src/language/automaton.rs",
       "source_ordinal": 4,
@@ -30358,6 +32177,132 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::backward",
         "ident": "SearchMode"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "BackendFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridAvailability",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridAvailability"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridComponent",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfig",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridWeights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Copy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::RecallProjection",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Copy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallProjection"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -32463,6 +34408,205 @@
     },
     {
       "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "BackendFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridAvailability",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridAvailability"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridCandidate",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 25,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridCandidate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridComponent",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfig",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfigError",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 17,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfigError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridEvaluation",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 27,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridEvaluation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridWeights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::RecallLane",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 32,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallLane"
+      },
+      "generics": "< const D : usize >",
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::RecallProjection",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Debug"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallProjection"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Debug",
       "impl_type_path": "amari_rewrite::language::AcceptingRun",
       "source_path": "amari-rewrite/src/language/automaton.rs",
       "source_ordinal": 4,
@@ -34697,6 +36841,42 @@
     },
     {
       "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfig",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 16,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridWeights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 13,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Default"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "Default",
       "impl_type_path": "amari_rewrite::language::TreeAutomatonLimits",
       "source_path": "amari-rewrite/src/language/limits.rs",
       "source_ordinal": 2,
@@ -35973,6 +38153,60 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": false
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "BackendFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridAvailability",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridAvailability"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Eq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Eq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
     },
     {
       "trait_path": "Eq",
@@ -37959,6 +40193,24 @@
     },
     {
       "trait_path": "Hash",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Hash"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "Hash",
       "impl_type_path": "amari_rewrite::language::GrammarProduction",
       "source_path": "amari-rewrite/src/language/grammar.rs",
       "source_ordinal": 4,
@@ -38388,6 +40640,24 @@
       "unsafe_trait": false,
       "negative": false,
       "is_derived": false
+    },
+    {
+      "trait_path": "Ord",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "Ord"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
     },
     {
       "trait_path": "Ord",
@@ -39915,6 +42185,186 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::outcome",
         "ident": "UnsupportedRelation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 18,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "BackendFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridAvailability",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 20,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridAvailability"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridCandidate",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 25,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridCandidate"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridComponent",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 24,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridComponent"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfig",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 14,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfig"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfigError",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 17,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfigError"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridEvaluation",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 27,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridEvaluation"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridWeights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 11,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridWeights"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialEq",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::RecallProjection",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 22,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialEq"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallProjection"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -41902,6 +44352,24 @@
     },
     {
       "trait_path": "PartialOrd",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "PartialOrd"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "PartialOrd",
       "impl_type_path": "amari_rewrite::language::GrammarProduction",
       "source_path": "amari-rewrite/src/language/grammar.rs",
       "source_ordinal": 4,
@@ -42282,6 +44750,25 @@
     },
     {
       "trait_path": "amari_rewrite::inverse::GuidanceStrategy",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridStrategy",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 40,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::guidance",
+        "ident": "GuidanceStrategy"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridStrategy"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_rewrite::inverse::GuidanceStrategy",
       "impl_type_path": "amari_rewrite::network::GeometricStrategy",
       "source_path": "amari-rewrite/src/network/strategy.rs",
       "source_ordinal": 9,
@@ -42314,6 +44801,26 @@
         "module": "amari_rewrite::neural::strategy",
         "ident": "NeuralStrategy"
       },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "amari_rewrite::inverse::hybrid::RecallBackend",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::RecallLane",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 35,
+      "trait_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallBackend"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "RecallLane"
+      },
+      "generics": "< const D : usize >",
       "unsafe_trait": false,
       "negative": false,
       "is_derived": false
@@ -42442,6 +44949,42 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::guidance",
         "ident": "GuidanceFailureKind"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 19,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "BackendFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": false
+    },
+    {
+      "trait_path": "fmt::Display",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 9,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "fmt::Display"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridBackend"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -42701,6 +45244,24 @@
         "kind": "local",
         "module": "amari_rewrite::inverse::guidance",
         "ident": "GuidanceFailure"
+      },
+      "unsafe_trait": false,
+      "negative": false,
+      "is_derived": true
+    },
+    {
+      "trait_path": "thiserror::Error",
+      "impl_type_path": "amari_rewrite::inverse::hybrid::HybridConfigError",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 17,
+      "trait_endpoint": {
+        "kind": "external",
+        "path": "thiserror::Error"
+      },
+      "impl_type_endpoint": {
+        "kind": "local",
+        "module": "amari_rewrite::inverse::hybrid",
+        "ident": "HybridConfigError"
       },
       "unsafe_trait": false,
       "negative": false,
@@ -44504,6 +47065,462 @@
       "source_ordinal": 3,
       "gate": "always",
       "status": "enabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "module"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::BackendFailure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 18,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HYBRID_FRAME",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HYBRID_SCHEMA_VERSION",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 2,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridAvailability",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 20,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridAvailability::failure",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridAvailability::is_available",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 7,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend::ALL",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend::name",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridBackend::prefers_lower",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 2,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridCandidate",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 25,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridCandidate::component",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridComponent",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 24,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 14,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::DEFAULT_MAX_CANDIDATES",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::max_candidates",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 3,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::new",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfig::weights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 2,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridConfigError",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 17,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridEvaluation",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 27,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridEvaluation::availability",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridEvaluation::candidate",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 39,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::config",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 4,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::evaluate",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 8,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::max_candidates",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 5,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::new",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::replay_hash",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 6,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::with_geometric",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"network\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::with_neural",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "all(feature(\"neural\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridStrategy::with_recall",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 3,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 11,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::MAX",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::MIN",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_const"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::get",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 4,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::is_zero",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 5,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::new",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 2,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::HybridWeights::single",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 3,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::MAX_HYBRID_CANDIDATES",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 4,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::NORMALIZATION_CONVENTION",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 3,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::NORMALIZATION_FRAME",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RECALL_LANE_FRAME",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 5,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 32,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::projection_evidence",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 3,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::recall_hash",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::recall_system",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallBackend::similarities",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "trait_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 33,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::limit",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 3,
+      "gate": "all(feature(\"holographic-guidance\"), all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::new",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "all(feature(\"holographic-guidance\"), all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::query_trace_hash",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 4,
+      "gate": "all(feature(\"holographic-guidance\"), all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::system",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 1,
+      "gate": "all(feature(\"holographic-guidance\"), all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallLane::trace_count",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 2,
+      "gate": "all(feature(\"holographic-guidance\"), all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallProjection",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 22,
+      "gate": "all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\")))",
+      "status": "disabled",
+      "surface_kind": "top_level"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::RecallProjection::native_value",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 0,
+      "gate": "all(feature(\"holographic-guidance\"), all(feature(\"holographic-guidance\"), any(feature(\"holographic-guidance\"), feature(\"neural\"))))",
+      "status": "disabled",
+      "surface_kind": "inherent_method"
+    },
+    {
+      "path": "amari_rewrite::inverse::hybrid::normalization_hash",
+      "source_path": "amari-rewrite/src/inverse/hybrid.rs",
+      "source_ordinal": 10,
+      "gate": "any(feature(\"holographic-guidance\"), feature(\"neural\"))",
+      "status": "disabled",
       "surface_kind": "top_level"
     },
     {
@@ -50502,6 +53519,7 @@
     "amari_rewrite::error",
     "amari_rewrite::holographic",
     "amari_rewrite::inverse",
+    "amari_rewrite::inverse::hybrid",
     "amari_rewrite::language",
     "amari_rewrite::network",
     "amari_rewrite::neural",

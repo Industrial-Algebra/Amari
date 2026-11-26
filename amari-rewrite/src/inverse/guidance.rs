@@ -178,6 +178,9 @@ pub struct GuidanceCandidate<'a> {
 /// already holds.
 #[derive(Clone, Copy, Debug)]
 pub struct GuidanceRequest<'a> {
+    /// Identity of the system the active explorer is running against.
+    /// Backends bound to replay evidence must match this identity.
+    pub system_hash: Sha256Digest,
     /// The state being expanded.
     pub parent: &'a SymbolicState,
     /// Backward depth of the parent (the candidates are one deeper).
