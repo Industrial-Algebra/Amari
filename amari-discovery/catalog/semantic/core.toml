@@ -760,7 +760,7 @@ cost = "moderate"
 [[capabilities]]
 id = "amari:amari-rewrite:holographic:trace-encoding"
 name = "Holographic recall trace encoding"
-description = "Encode bounded, replay-validated inverse-search traces deterministically for a fixed encoder configuration (seed, dimension, schema, and limits): the vector digest depends on that configuration, while trace identity is independent of it."
+description = "Encode bounded, replay-validated inverse-search traces deterministically for a fixed seed, dimension, and schema. The encoder digest binds seed, dimension, schema, and limits; limits act as admission ceilings, not as vector content. Trace identity is independent of seed and dimension."
 aliases = ["trace encoding", "holographic encoding", "recall trace encoding"]
 concepts = ["holographic guidance", "inverse rewriting", "trace encoding"]
 crate_refs = ["amari-rewrite"]

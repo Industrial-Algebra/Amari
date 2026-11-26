@@ -336,7 +336,8 @@ fn detail_exposes_guidance_feature_gates_and_experimental_tier() {
         match id {
             TRACE_ENCODING => {
                 assert!(description.contains("replay-validated"));
-                assert!(description.contains("encoder configuration"));
+                assert!(description.contains("encoder digest"));
+                assert!(description.contains("admission"));
                 assert!(description.contains("independent"));
             }
             TRACE_RECALL => {
@@ -347,6 +348,9 @@ fn detail_exposes_guidance_feature_gates_and_experimental_tier() {
                 assert!(description.contains("available, supplied lanes"));
                 assert!(description.contains("Either feature"));
                 assert!(description.contains("optional lane"));
+                assert!(description.contains("own feature gate"));
+                assert!(description.contains("`Missing`"));
+                assert!(description.contains("`neural` or `holographic-guidance`"));
             }
             _ => {}
         }
@@ -379,12 +383,16 @@ fn graph_carries_every_required_guidance_relation() {
             "graph for {from} must carry {kind} -> {to}: {relations:?}"
         );
     }
-    for from in [GEOMETRIC_STRATEGY, HYBRID_STRATEGY] {
+    for from in [GEOMETRIC_STRATEGY, HYBRID_STRATEGY, INVERSE_PREDECESSORS] {
         let relations = graph_relations(&command_json(&["discover", "graph", from]));
         assert!(
-            !relations
-                .iter()
-                .any(|(_, target, _)| target == INVERSE_PREDECESSORS),
+            !relations.iter().any(|(source, target, kind)| {
+                kind == "composes_with"
+                    && ((matches!(source.as_str(), GEOMETRIC_STRATEGY | HYBRID_STRATEGY)
+                        && target == INVERSE_PREDECESSORS)
+                        || (source == INVERSE_PREDECESSORS
+                            && matches!(target.as_str(), GEOMETRIC_STRATEGY | HYBRID_STRATEGY)))
+            }),
             "{from} must not claim composition with the legacy BackwardSearch iterator"
         );
     }
@@ -519,18 +527,27 @@ fn collect_manifest_strings(value: &toml::Value, output: &mut Vec<String>) {
 
 fn assert_no_guidance_features(manifest: &str) {
     let value: toml::Value = toml::from_str(manifest).expect("valid discovery manifest");
-    let rewrite = value["dependencies"]["amari-rewrite"]
-        .as_table()
-        .expect("amari-rewrite dependency table");
-    for forbidden in ["neural", "network", "holographic-guidance"] {
-        assert!(
-            !rewrite["features"].as_array().is_some_and(|features| {
-                features
-                    .iter()
-                    .any(|feature| feature.as_str() == Some(forbidden))
-            }),
-            "the direct amari-rewrite dependency must not enable {forbidden}"
-        );
+    for section in ["dependencies", "workspace.dependencies"] {
+        let Some(rewrite) = value
+            .get(section)
+            .and_then(|section_values| section_values.get("amari-rewrite"))
+            .and_then(toml::Value::as_table)
+        else {
+            continue;
+        };
+        for forbidden in ["neural", "network", "holographic-guidance"] {
+            assert!(
+                !rewrite
+                    .get("features")
+                    .and_then(toml::Value::as_array)
+                    .is_some_and(|features| {
+                        features
+                            .iter()
+                            .any(|feature| feature.as_str() == Some(forbidden))
+                    }),
+                "the {section} amari-rewrite dependency must not enable {forbidden}"
+            );
+        }
     }
     let mut strings = Vec::new();
     if let Some(features) = value["features"].as_table() {
@@ -551,6 +568,7 @@ fn assert_no_guidance_features(manifest: &str) {
 #[test]
 fn discovery_never_enables_a_guidance_feature() {
     assert_no_guidance_features(include_str!("../Cargo.toml"));
+    assert_no_guidance_features(include_str!("../../Cargo.toml"));
     let manifest = include_str!("../Cargo.toml").to_ascii_lowercase();
     for forbidden in ["katakuri", "borsalino"] {
         assert!(
@@ -571,5 +589,15 @@ ai = ["amari-rewrite/holographic-guidance"]
     assert!(
         std::panic::catch_unwind(|| assert_no_guidance_features(forwarded)).is_err(),
         "the guard must reject an ai = [\"amari-rewrite/holographic-guidance\"] forward"
+    );
+    let inherited = r#"
+[workspace.dependencies]
+amari-rewrite = { path = "amari-rewrite", features = ["holographic-guidance"] }
+[dependencies]
+amari-rewrite = { workspace = true, features = ["completion"] }
+"#;
+    assert!(
+        std::panic::catch_unwind(|| assert_no_guidance_features(inherited)).is_err(),
+        "the guard must reject inherited workspace guidance features"
     );
 }
