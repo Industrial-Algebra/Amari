@@ -345,7 +345,7 @@ fn detail_exposes_guidance_feature_gates_and_experimental_tier() {
             }
             HYBRID_STRATEGY => {
                 assert!(description.contains("available, supplied lanes"));
-                assert!(description.contains("either feature"));
+                assert!(description.contains("Either feature"));
                 assert!(description.contains("optional lane"));
             }
             _ => {}

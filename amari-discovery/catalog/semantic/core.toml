@@ -760,7 +760,7 @@ cost = "moderate"
 [[capabilities]]
 id = "amari:amari-rewrite:holographic:trace-encoding"
 name = "Holographic recall trace encoding"
-description = "Encode bounded, caller-supplied inverse-search traces into fixed-dimension holographic bindings with exact, versioned arithmetic, so a recall trace has one deterministic encoding and one identity digest."
+description = "Encode bounded, replay-validated inverse-search traces deterministically for a fixed encoder configuration (seed, dimension, schema, and limits): the vector digest depends on that configuration, while trace identity is independent of it."
 aliases = ["trace encoding", "holographic encoding", "recall trace encoding"]
 concepts = ["holographic guidance", "inverse rewriting", "trace encoding"]
 crate_refs = ["amari-rewrite"]
@@ -774,7 +774,7 @@ cost = "low"
 [[capabilities]]
 id = "amari:amari-rewrite:holographic:trace-recall"
 name = "Holographic trace recall"
-description = "Recall similar traces from a bounded corpus by holographic similarity and project each bounded match into typed evidence, without creating, validating, or dropping any candidate."
+description = "Return bounded ranked trace references with decomposed similarity scores from a replay-validated corpus. Candidate projection is a separate concern of `inverse::hybrid::RecallLane`, by canonical term identity."
 aliases = ["trace recall", "holographic recall", "trace corpus"]
 concepts = ["holographic guidance", "inverse rewriting", "similarity recall"]
 crate_refs = ["amari-rewrite"]
@@ -788,11 +788,11 @@ cost = "moderate"
 [[capabilities]]
 id = "amari:amari-rewrite:hybrid:strategy"
 name = "Hybrid inverse-search guidance"
-description = "Combine the symbolic, neural, geometric, and holographic-recall lanes into one transparent ordinal-fraction order over one round's candidates. The module is compiled under `any(neural, holographic-guidance)`, and the `network` feature implies `neural`, so enabling `network` alone already enables it. The symbolic engine still owns every transition."
+description = "Combine available, supplied lanes (symbolic, neural, geometric, and holographic recall) into one transparent ordinal-fraction order over one round's candidates. Either feature `neural` or `holographic-guidance` exposes the module (`network` implies `neural`), but each optional lane retains its own feature gate and unsupplied or uncompiled lanes are `Missing`. These alternatives are descriptive metadata only, not unconditional Cargo feature actions. The symbolic engine still owns every transition."
 aliases = ["hybrid guidance", "hybrid inverse search", "combined guidance", "multi-lane ranking"]
 concepts = ["inverse rewriting", "hybrid guidance", "candidate ranking", "holographic guidance"]
 crate_refs = ["amari-rewrite"]
-feature_refs = ["amari-rewrite:neural", "amari-rewrite:holographic-guidance"]
+feature_refs = []
 symbol_refs = ["amari_rewrite::inverse::hybrid::HybridStrategy", "amari_rewrite::inverse::hybrid::HybridEvaluation", "amari_rewrite::inverse::hybrid::HybridWeights", "amari_rewrite::inverse::hybrid::HybridConfig", "amari_rewrite::inverse::hybrid::RecallProjection"]
 example_refs = []
 probe_refs = []
@@ -807,11 +807,6 @@ kind = "produces_input_for"
 [[relations]]
 from = "amari:amari-rewrite:geometric:search-graph"
 to = "amari:amari-rewrite:geometric:strategy"
-kind = "composes_with"
-
-[[relations]]
-from = "amari:amari-rewrite:geometric:strategy"
-to = "amari:amari-rewrite:inverse:predecessors"
 kind = "composes_with"
 
 [[relations]]
@@ -837,11 +832,6 @@ kind = "composes_with"
 [[relations]]
 from = "amari:amari-rewrite:geometric:strategy"
 to = "amari:amari-rewrite:hybrid:strategy"
-kind = "composes_with"
-
-[[relations]]
-from = "amari:amari-rewrite:hybrid:strategy"
-to = "amari:amari-rewrite:inverse:predecessors"
 kind = "composes_with"
 
 [[relations]]
