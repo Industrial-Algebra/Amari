@@ -199,7 +199,7 @@ fn relations_and_probe_descriptors_are_complete_and_unique() {
         const EXPECTED_VERSIONS: &[(&str, &str)] = &[("amari-probe:holographic:recall:v2", "v2")];
         let expected_version = EXPECTED_VERSIONS
             .iter()
-            .find(|(id, _)| *id == probe.id.as_str())
+            .find(|(id, _)| *id == probe.id.to_string())
             .map(|(_, v)| *v)
             .unwrap_or("v1");
         assert!(
