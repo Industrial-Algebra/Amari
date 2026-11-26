@@ -86,6 +86,7 @@ SHARDS: dict[str, tuple[str, ...]] = {
         "probe_tropical",
         "probe_worker_protocol",
         "rewrite_discovery_analysis",
+        "rewrite_discovery_guidance",
         "rewrite_discovery_inverse_search",
         "rewrite_discovery_languages",
         "rewrite_discovery_macros",
