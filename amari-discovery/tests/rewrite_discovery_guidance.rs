@@ -346,11 +346,14 @@ fn detail_exposes_guidance_feature_gates_and_experimental_tier() {
             }
             HYBRID_STRATEGY => {
                 assert!(description.contains("available, supplied lanes"));
-                assert!(description.contains("Either feature"));
-                assert!(description.contains("optional lane"));
-                assert!(description.contains("own feature gate"));
-                assert!(description.contains("`Missing`"));
-                assert!(description.contains("`neural` or `holographic-guidance`"));
+                assert!(description.contains(
+                    "Either feature `neural` or `holographic-guidance` exposes the module \
+                     (`network` implies `neural`)"
+                ));
+                assert!(description.contains(
+                    "each optional lane retains its own feature gate and unsupplied or \
+                     uncompiled lanes are `Missing`"
+                ));
             }
             _ => {}
         }
@@ -527,10 +530,17 @@ fn collect_manifest_strings(value: &toml::Value, output: &mut Vec<String>) {
 
 fn assert_no_guidance_features(manifest: &str) {
     let value: toml::Value = toml::from_str(manifest).expect("valid discovery manifest");
-    for section in ["dependencies", "workspace.dependencies"] {
-        let Some(rewrite) = value
-            .get(section)
-            .and_then(|section_values| section_values.get("amari-rewrite"))
+    for (section, dependencies) in [
+        ("dependencies", value.get("dependencies")),
+        (
+            "workspace.dependencies",
+            value
+                .get("workspace")
+                .and_then(|workspace| workspace.get("dependencies")),
+        ),
+    ] {
+        let Some(rewrite) = dependencies
+            .and_then(|table| table.get("amari-rewrite"))
             .and_then(toml::Value::as_table)
         else {
             continue;
@@ -550,7 +560,7 @@ fn assert_no_guidance_features(manifest: &str) {
         }
     }
     let mut strings = Vec::new();
-    if let Some(features) = value["features"].as_table() {
+    if let Some(features) = value.get("features").and_then(toml::Value::as_table) {
         for definition in features.values() {
             collect_manifest_strings(definition, &mut strings);
         }
@@ -586,9 +596,14 @@ amari-rewrite = { workspace = true, features = ["completion"] }
 [features]
 ai = ["amari-rewrite/holographic-guidance"]
 "#;
+    let error = std::panic::catch_unwind(|| assert_no_guidance_features(forwarded))
+        .expect_err("the feature forward must be rejected");
+    let message = error
+        .downcast_ref::<String>()
+        .expect("a formatted feature rejection");
     assert!(
-        std::panic::catch_unwind(|| assert_no_guidance_features(forwarded)).is_err(),
-        "the guard must reject an ai = [\"amari-rewrite/holographic-guidance\"] forward"
+        message.contains("feature forwarding must not enable holographic-guidance"),
+        "unexpected rejection: {message}"
     );
     let inherited = r#"
 [workspace.dependencies]
@@ -596,8 +611,15 @@ amari-rewrite = { path = "amari-rewrite", features = ["holographic-guidance"] }
 [dependencies]
 amari-rewrite = { workspace = true, features = ["completion"] }
 "#;
+    let error = std::panic::catch_unwind(|| assert_no_guidance_features(inherited))
+        .expect_err("inherited workspace guidance must be rejected");
+    let message = error
+        .downcast_ref::<String>()
+        .expect("a formatted feature rejection");
     assert!(
-        std::panic::catch_unwind(|| assert_no_guidance_features(inherited)).is_err(),
-        "the guard must reject inherited workspace guidance features"
+        message.contains(
+            "workspace.dependencies amari-rewrite dependency must not enable holographic-guidance"
+        ),
+        "unexpected rejection: {message}"
     );
 }
