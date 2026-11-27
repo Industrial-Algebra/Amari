@@ -2190,19 +2190,23 @@ mod tests {
         let a: Vec<f64> = (0..dim).map(|i| (i as f64) / 1000.0).collect();
         let b: Vec<f64> = (0..dim).map(|i| (i as f64) / 500.0).collect();
 
-        if let Ok(gpu) = GpuHolographic::new(dim).await {
-            let result = gpu.batch_bundle_cpu(&a, &b).unwrap();
+        {
+            let gpu = GpuHolographic::new(dim)
+                .await
+                .expect("explicit adapter-backed bundle test requires a device");
+            let result = gpu.batch_bundle(&a, &b).await.unwrap();
             assert_eq!(result.len(), dim);
-            // Check sum - bundle adds corresponding coefficients
+            // beta=1: one norm-weighted pair, not additive memory storage.
+            let na = a.iter().fold(0.0_f64, |n, x| n.hypot(*x));
+            let nb = b.iter().fold(0.0_f64, |n, x| n.hypot(*x));
+            let odds = (na - nb).exp();
             for i in 0..dim {
-                assert!(
-                    (result[i] - (a[i] + b[i])).abs() < 0.01,
-                    "Mismatch at {}: {} vs {}",
-                    i,
-                    result[i],
-                    a[i] + b[i]
-                );
+                let expected = (odds * a[i] + b[i]) / (1. + odds);
+                assert!((result[i] - expected).abs() <= 1e-12);
             }
+            let mut invalid = b.clone();
+            invalid[dim - 1] = f64::NAN;
+            assert!(gpu.batch_bundle(&a, &invalid).await.is_err());
         }
     }
 

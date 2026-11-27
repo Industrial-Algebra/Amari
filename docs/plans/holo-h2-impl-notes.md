@@ -1,5 +1,33 @@
 # H2 implementation and migration evidence
 
+## U6 — consumers and combined verification
+
+`c test -p amari-fusion --features holographic --test h2_binding_domain` prior to consumer implementation (`fc7b3f1a`), confirmed in an isolated exact-parent `35db4b73` replay: exit 101, 0 ran, `error[E0432]: unresolved imports \`amari_fusion::unbind_general\`, \`amari_fusion::TypedKey\``. GREEN: `fusion_distinguishes_typed_keys_from_general_inverse` 1 passed, exit 0. Fusion reexports the checked operations. WASM still admits mixed certified keys at 256 finite coefficients; `randomVersor(2)` was exercised through store and tracked self-score. Singular suffix, wrong length and NaN errors do not trap or change itemCount. H3 evidence remains distinct from score. The public GPU pair bundle is CPU-backed at β=1; its adapter-required test compares coefficients and rejects a nonfinite suffix. Only the binding shader has a readback parity claim. No `tracedecay` runtime validation or release decision.
+
+### Exact unit replays
+
+Focused commands in the unit sections passed at `a2933e78` (7), `fc7b3f1a` (3), `cdd302df` (3), `9c089872` (5, all features), `35db4b73` (2 integration + 2 lib). U3's four original runtime REDs also reproduced on its actual `fc7b3f1a` parent. No rewritten expectation is part of the shape/name migration. In particular, `encode.rs` uses trait `permute`; no rewrite source edits after the coordinated D3 commit.
+
+### Combined tree, separate from focused unit GREENs
+
+Ran on `35db4b73` plus the U6 changes. `Cargo.lock` untracked, fresh `c generate-lockfile` confirmed bindgen `0.2.130` / test `0.3.80`. Under `RUSTUP_TOOLCHAIN=1.100.0` and the four compiler/target variables unset, ran `bash scripts/generate-discovery-wasm-surface.sh` **first** (web output byte-identical; schema gate 1 passed), then `c run -p amari-discovery --example generate_catalog -- .`: 11,786 items, hash `f626e1ea1f62b4446045291442f3a629fba069a442f0cb730b5662c689e92c7c`. No new discovery test binary.
+
+All commands below exited 0. Counts are totals across binaries, not the last binary printed.
+
+| Command (from repo root) | Result |
+|---|---|
+| `c fmt --all -- --check` | clean |
+| `c test -p amari-holographic` / same `--all-features` | 208 / 210 passed; 17 ignored each |
+| `c test -p amari-holographic --all-features --test h1_kernel` | 5 passed; 64 pairs, 512 triples |
+| `c check` and `c test -p amari-rewrite --features holographic-guidance` (same package/features for check) | 560 passed, none ignored; remediation golden byte-identical |
+| `c test -p amari-fusion --features holographic`; `c test -p amari-wasm --lib` | 43 passed / 7 ignored; 140 passed |
+| `c test -p amari-gpu --features holographic --lib test_batch_bundle_cpu -- --ignored --nocapture`; same crate/features `--test h3_memory`; `--test h1_shader_parity -- --ignored --nocapture` | 1 each; `CI=true`, Vulkan lvp ICD, llvmpipe (LLVM 21.1.8). Read back 4 records / 1,024 coefficients CPU, **101 / 25,856 shader** |
+| `(cd amari-wasm && wasm-pack build --dev --target web --out-dir "$pkg")`; `node scripts/test-h1-wasm.mjs "$pkg"`; `node scripts/test-h3-wasm.mjs "$pkg"` | both exercised generated web bindings |
+| `c test -p amari-discovery --features standard-probes --test h3_recall --test probe_holographic --test wire_schema_registry`; `c test -p amari-discovery generated_equals_checked_in`; `c test -p amari-discovery --test catalog_wasm` | 18; 1 drift; 41 WASM catalog |
+| `c clippy $crates --all-targets --all-features -- -D warnings`; `c doc $crates --all-features --no-deps` | passed; Cargo manifest and rustdoc link warnings are separate, not a warning-free docs claim |
+
+`$crates` selects `-p` for each of amari-holographic, amari-gpu, amari-wasm, amari-fusion and amari-discovery. Combined precommit logs `/tmp/h2-final-HoYeHL`. This is local implementation evidence, not PR CI or independent review.
+
 ## U2 — stable geometry and coordinated D3 rewrite migration
 
 Parent `a2933e78`. RED `c test -p amari-holographic --test h2_geometry` default, 1 selected, exit 101: `tiny scalar norm = 0`. Final working tree, same command: `u2_small_nonzero_norm`, `domains`, `scales_and_directions` all passed (3, exit 0).

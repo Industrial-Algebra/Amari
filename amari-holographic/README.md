@@ -52,7 +52,7 @@ let bound = key.bind(&value);
 
 // Retrieve
 let retrieved = key.unbind(&bound)?;
-assert!(retrieved.similarity(&value) > 0.9);
+assert!(retrieved.similarity(&value)? > 0.9);
 ```
 
 **Advantages:**
@@ -400,6 +400,18 @@ let initial = OpticalRotorField::random((64, 64), 42);
 let (final_state, iterations) = tropical.attractor_converge(&initial, &attractors, 100, 1e-6);
 ```
 
+## Binding-domain migration
+
+Use `TypedKey::try_new(element)?` for retrieval keys (bipolar MAP, unitary FHRR, or certified ProductClifford factors). `bind_key` and `unbind_key` preserve the distinction between a key and an arbitrary value. `unbind_general(&element, &bound)?` is left division by a certified general inverse; `correlation` is not division. Do not silently project stored keys into a new class.
+
+`similarity` and `norm` now return `AlgebraResult<f64>`. Coefficient cosine is Euclidean-only; use `normalized_metric_pairing` for a signed Clifford pairing. A zero lane has no cosine. For identical valid nonzero operands, cosine returns exactly 1. Neither a signed metric value nor a load heuristic establishes key membership.
+
+FHRR `cyclic_shift(s)` is now `rotate_bins(s)`; it moves whole complex bins, not time samples. `permute_bins` and Product `shuffle_components` require bijections. Use `try_new` for checked shapes. The rewrite encoder calls trait `permute` and keeps the same positional meaning.
+
+Replace pairwise attention folds with `A::bundle_all(&ordered_items, beta)?`. Do not merge pre-bundled chunks: at β=0 `[0,0,4]` averages to 4/3 globally, not 2. Binding distributes over additive superposition, not over voting or other nonlinear cleanup. A hard tie follows the first input, so reversing the inputs can change it. Version stored scores and cached bundles and replay original ordered inputs; neither compressed aggregates nor nonunit keys have a generic migration.
+
+Replace `algebra::logsumexp` with `algebra::log_sum_exp(a,b,beta)?` for an unnormalized sum (undefined at β=0), or `algebra::log_mean_exp(a,b,beta)?` for the continuous mean limit. Neither accepts a negative inverse temperature.
+
 ## API Reference
 
 ### Core Trait: `BindingAlgebra`
@@ -413,8 +425,8 @@ pub trait BindingAlgebra: Clone + Send + Sync {
     fn inverse(&self) -> AlgebraResult<Self>;
     fn unbind(&self, other: &Self) -> AlgebraResult<Self>;
     fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self>;
-    fn similarity(&self, other: &Self) -> f64;
-    fn norm(&self) -> f64;
+    fn similarity(&self, other: &Self) -> AlgebraResult<f64>;
+    fn norm(&self) -> AlgebraResult<f64>;
     fn normalize(&self) -> AlgebraResult<Self>;
     fn permute(&self, shift: usize) -> Self;
     fn dimension(&self) -> usize;

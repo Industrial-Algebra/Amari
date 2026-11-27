@@ -13,11 +13,17 @@ for(const k of [key,unit]){
  recovered.forEach((x,i)=>assert.ok(Math.abs(x-value[i])<1e-12));
  const singular=k.slice(), nan=k.slice(); singular.fill(0,248); singular[248]=singular[249]=1; nan[255]=NaN;
  for(const bad of [singular,nan,k.slice(1)]){
-  for(const op of [()=>m.store(bad,value),()=>m.retrieve(bad),()=>m.membershipEvidence(bad)]){
+  for(const op of [()=>m.store(bad,value),()=>m.retrieve(bad),()=>m.membershipEvidence(bad),()=>m.nearestKeySimilarity(bad)]){
    assert.throws(op,e=>!(e instanceof WebAssembly.RuntimeError) && /key|coefficients/i.test(String(e)));
   }
   assert.equal(m.itemCount(),1);
  }
  m.store(k,new Float64Array(256)); assert.equal(m.itemCount(),2); m.free();
 }
-console.log('H1 WASM fusion: mixed/unit recall and key error cases passed');
+const sampled = Memory.randomVersor(2);
+const sampledMemory = Memory.withKeyTracking();
+sampledMemory.store(sampled,value);
+assert.equal(sampledMemory.nearestKeySimilarity(sampled),1);
+assert.equal(sampledMemory.itemCount(),1);
+sampledMemory.free();
+console.log('WASM fusion: mixed/unit recall, key errors, and exact self-score of sampled key passed');

@@ -110,6 +110,7 @@ pub use types::{EvaluationError, EvaluationResult, TropicalDualClifford};
 #[cfg(feature = "holographic")]
 pub use amari_holographic::{
     // Algebra types
+    unbind_general,
     AlgebraConfig,
     AlgebraError,
     AlgebraResult,
@@ -135,6 +136,7 @@ pub use amari_holographic::{
     Resonator,
     ResonatorConfig,
     RetrievalResult,
+    TypedKey,
     WeightedResult,
     WeightedStatus,
 };
