@@ -57,6 +57,22 @@ mod tests;
 // Re-exports
 mod geometry;
 mod keys;
+fn checked_map<const N: usize>(map: &[usize; N]) -> AlgebraResult<()> {
+    if N == 0 {
+        return Err(AlgebraError::EmptyDimension);
+    }
+    let mut seen = [false; N];
+    for &j in map {
+        if j >= N || seen[j] {
+            return Err(AlgebraError::NonBijectiveMap);
+        }
+        seen[j] = true;
+    }
+    Ok(())
+}
+fn shifted(i: usize, shift: i32, n: usize) -> usize {
+    (i as i128 + i128::from(shift)).rem_euclid(n as i128) as usize
+}
 pub use cl3::Cl3;
 pub use clifford::CliffordAlgebra;
 pub use fhrr::FHRRAlgebra;
@@ -75,6 +91,12 @@ pub enum AlgebraError {
     KeyDomain,
     /// Euclidean cosine is not a metric pairing on a signed or null signature.
     UnsupportedSignature,
+    /// Zero factors or bins.
+    EmptyDimension,
+    /// Input lengths do not match the requested shape.
+    InvalidShape,
+    /// Indices are out of range or repeated.
+    NonBijectiveMap,
     /// A coefficient is not finite.
     NonFinite,
     /// The requested result is outside the supported floating-point range.
@@ -108,6 +130,9 @@ pub enum AlgebraError {
 impl fmt::Display for AlgebraError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::EmptyDimension => write!(f, "empty algebra dimension"),
+            Self::InvalidShape => write!(f, "invalid algebra shape"),
+            Self::NonBijectiveMap => write!(f, "nonbijective permutation"),
             Self::UnsupportedSignature => write!(f, "unsupported metric signature"),
             Self::KeyDomain => write!(f, "invalid binding key"),
             Self::NonFinite => write!(f, "nonfinite coefficient"),

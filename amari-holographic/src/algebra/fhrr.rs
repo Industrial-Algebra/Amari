@@ -71,23 +71,33 @@ pub struct FHRRAlgebra<const D: usize> {
 impl<const D: usize> FHRRAlgebra<D> {
     /// Create a new FHRR element from real and imaginary arrays.
     pub fn new(real: [f64; D], imag: [f64; D]) -> Self {
+        const {
+            assert!(D > 0, "FHRR requires at least one bin");
+        }
         Self { real, imag }
+    }
+    /// Checked construction for dynamically selected specializations.
+    pub fn try_new(real: [f64; D], imag: [f64; D]) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
+        Ok(Self { real, imag })
     }
 
     /// Create from Vecs (for convenience).
     pub fn from_vecs(real: Vec<f64>, imag: Vec<f64>) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
         if real.len() != D || imag.len() != D {
-            return Err(AlgebraError::DimensionMismatch {
-                expected: D,
-                actual: real.len().min(imag.len()),
-            });
+            return Err(AlgebraError::InvalidShape);
         }
 
         let mut r = [0.0; D];
         let mut i = [0.0; D];
         r.copy_from_slice(&real);
         i.copy_from_slice(&imag);
-        Ok(Self::new(r, i))
+        Self::try_new(r, i)
     }
 
     /// Create the identity element (all 1+0i).
@@ -285,18 +295,18 @@ impl<const D: usize> FHRRAlgebra<D> {
         (real_sum, imag_sum)
     }
 
-    /// Cyclic shift (circular permutation in time domain).
-    ///
-    /// This corresponds to multiplication by a phase ramp in frequency domain.
-    pub fn cyclic_shift(&self, shift: i32) -> Self {
-        let n = D as i32;
-        let shift = ((shift % n) + n) % n;
-
+    /// Gather complete complex bins by a bijection (destination index → source).
+    pub fn permute_bins(&self, map: &[usize; D]) -> AlgebraResult<Self> {
+        super::checked_map(map)?;
+        Self::try_new(map.map(|i| self.real[i]), map.map(|i| self.imag[i]))
+    }
+    /// Rotate frequency bins; not a temporal delay. Positive shifts move input i to i+shift.
+    pub fn rotate_bins(&self, shift: i32) -> Self {
         let mut real = [0.0; D];
         let mut imag = [0.0; D];
 
         for i in 0..D {
-            let j = (i as i32 + shift) as usize % D;
+            let j = super::shifted(i, shift, D);
             real[j] = self.real[i];
             imag[j] = self.imag[i];
         }
@@ -444,7 +454,7 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
     }
 
     fn permute(&self, shift: i32) -> Self {
-        self.cyclic_shift(shift)
+        self.rotate_bins(shift)
     }
 
     fn get(&self, index: usize) -> AlgebraResult<f64> {
@@ -475,7 +485,7 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
 
         let mut real = [0.0; D];
         real.copy_from_slice(coeffs);
-        Ok(Self::new(real, [0.0; D]))
+        Self::try_new(real, [0.0; D])
     }
 
     fn to_coefficients(&self) -> Vec<f64> {
@@ -591,8 +601,8 @@ mod tests {
     #[test]
     fn test_fhrr_cyclic_shift() {
         let a = FHRR64::random_unitary();
-        let shifted = a.cyclic_shift(10);
-        let back = shifted.cyclic_shift(-10);
+        let shifted = a.rotate_bins(10);
+        let back = shifted.rotate_bins(-10);
 
         // Should recover original
         for i in 0..64 {

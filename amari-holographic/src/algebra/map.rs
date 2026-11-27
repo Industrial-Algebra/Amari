@@ -71,11 +71,24 @@ pub struct MAPAlgebra<const D: usize> {
 impl<const D: usize> MAPAlgebra<D> {
     /// Create a new MAP element from components.
     pub fn new(components: [f64; D]) -> Self {
+        const {
+            assert!(D > 0, "MAP requires at least one component");
+        }
         Self { components }
+    }
+    /// Fallible construction rejects zero-dimensional MAP.
+    pub fn try_new(components: [f64; D]) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
+        Ok(Self { components })
     }
 
     /// Create from a Vec.
     pub fn from_vec(components: Vec<f64>) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
         if components.len() != D {
             return Err(AlgebraError::DimensionMismatch {
                 expected: D,
@@ -85,7 +98,7 @@ impl<const D: usize> MAPAlgebra<D> {
 
         let mut arr = [0.0; D];
         arr.copy_from_slice(&components);
-        Ok(Self::new(arr))
+        Self::try_new(arr)
     }
 
     /// Create the identity element (all +1).
@@ -234,12 +247,9 @@ impl<const D: usize> MAPAlgebra<D> {
 
     /// Cyclic shift (permutation).
     pub fn cyclic_shift(&self, shift: i32) -> Self {
-        let n = D as i32;
-        let shift = ((shift % n) + n) % n;
-
         let mut result = [0.0; D];
         for i in 0..D {
-            let j = (i as i32 + shift) as usize % D;
+            let j = super::shifted(i, shift, D);
             result[j] = self.components[i];
         }
 
@@ -427,7 +437,7 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
 
         let mut arr = [0.0; D];
         arr.copy_from_slice(coeffs);
-        Ok(Self::new(arr))
+        Self::try_new(arr)
     }
 
     fn to_coefficients(&self) -> Vec<f64> {

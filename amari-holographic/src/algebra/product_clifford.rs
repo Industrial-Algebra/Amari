@@ -82,7 +82,17 @@ impl<const K: usize> ProductCliffordAlgebra<K> {
 
     /// Create a new product algebra element from components.
     pub fn new(components: [Cl3; K]) -> Self {
+        const {
+            assert!(K > 0, "Product requires at least one factor");
+        }
         Self { components }
+    }
+    /// Fallible construction rejects an empty product shape.
+    pub fn try_new(components: [Cl3; K]) -> AlgebraResult<Self> {
+        if K == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
+        Ok(Self { components })
     }
 
     /// Create from a Vec of Cl3 components.
@@ -101,7 +111,7 @@ impl<const K: usize> ProductCliffordAlgebra<K> {
         for (i, c) in components.into_iter().enumerate() {
             arr[i] = c;
         }
-        Ok(Self::new(arr))
+        Self::try_new(arr)
     }
 
     /// Get a reference to component i.
@@ -220,22 +230,16 @@ impl<const K: usize> ProductCliffordAlgebra<K> {
     ///
     /// This is a different operation from permuting within each Cl3.
     /// It reorders the K components themselves.
-    pub fn shuffle_components(&self, permutation: &[usize; K]) -> Self {
-        let mut result = [Cl3::new_zero(); K];
-        for (i, &p) in permutation.iter().enumerate() {
-            if p < K {
-                result[i] = self.components[p];
-            }
-        }
-        Self::new(result)
+    pub fn shuffle_components(&self, permutation: &[usize; K]) -> AlgebraResult<Self> {
+        super::checked_map(permutation)?;
+        Self::try_new(permutation.map(|i| self.components[i]))
     }
 
     /// Create a default cyclic permutation of components.
     fn default_component_permutation(shift: i32) -> [usize; K] {
-        let shift = ((shift % K as i32) + K as i32) as usize % K;
         let mut perm = [0usize; K];
         for i in 0..K {
-            perm[i] = (i + shift) % K;
+            perm[i] = super::shifted(i, shift, K);
         }
         perm
     }
@@ -391,7 +395,8 @@ impl<const K: usize> BindingAlgebra for ProductCliffordAlgebra<K> {
         // Combine two types of permutation:
         // 1. Permute within each Cl3 component
         // 2. Shuffle which component goes where
-        let shuffled = self.shuffle_components(&Self::default_component_permutation(shift));
+        let shuffled =
+            Self::new(Self::default_component_permutation(shift).map(|i| self.components[i]));
         shuffled.permute_components(shift)
     }
 
@@ -437,7 +442,7 @@ impl<const K: usize> BindingAlgebra for ProductCliffordAlgebra<K> {
             arr.copy_from_slice(&coeffs[start..start + 8]);
             components[i] = Cl3::new(arr);
         }
-        Ok(Self::new(components))
+        Self::try_new(components)
     }
 
     fn to_coefficients(&self) -> Vec<f64> {
