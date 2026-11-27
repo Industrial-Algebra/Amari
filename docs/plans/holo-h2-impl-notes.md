@@ -1,5 +1,21 @@
 # H2 implementation and migration evidence
 
+## Implementation review R1 — two P2 findings on `1e1f7d02`
+
+**F5, trait and method rustdoc:** binding distributes over `superpose` (bilinearity), not nonlinear attention, voting or cleanup. `rg -in 'distribut|commutes with' amari-holographic` checked the crate source, README and tests; neither of the two former promises remains. The additive coefficient test still runs; no nonlinear distribution assertion was introduced.
+
+**D2, direct NaN calls:** workspace search for `bundle_from_norms|hard_bundle|soft_cleanup` found no external Rust callers. Removed the hidden public trait methods; serial and Rayon callers now use private reducers. Validation runs before singleton return or cleanup. No migration to another unchecked method.
+
+RED on the reviewed head plus regression tests, before changing the implementation, default features: `c test -p amari-holographic --test h2_r1_direct`, exit 101, **2 ran, 2 failed** (`direct_weighted_nan`, `direct_hard_nan`). Public checked controls rejected the singleton; the direct calls `MAPAlgebra::bundle_from_norms(&items, &[1.], 1.)` and `MAPAlgebra::hard_bundle(&items)` both produced this verbatim diagnostic:
+
+```text
+called `Result::unwrap_err()` on an `Ok` value: MAPAlgebra { components: [NaN] }
+```
+
+`c test -p amari-holographic --doc bundle_all` on the same pre-fix implementation, two direct-call compile-fail controls: both failed with `Test compiled successfully, but it's marked \`compile_fail\`.` (exit 101). GREEN after the change: same doctest command, **2 passed**; same integration binary, **1 passed** (`public_bundle_paths_reject_nan_before_singleton_shortcut`, checks `NonFinite` through whole-list, soft-majority and hard-majority APIs).
+
+Combined R1 working-tree rerun of the U6 command matrix below: `211` default / `213` all-feature holographic tests passed, 17 ignored in each; H1 5; aggregate rewrite 560; fusion 43/7; WASM host 140 + both Node scripts; GPU three gates including lavapipe 101/25,856 actual binding readback; discovery 18 + drift 1 + WASM catalog 41; fmt, scoped warning-denied Clippy, docs all exit 0. Fresh exact bindgen pins, web regeneration then structural regeneration: 11,774 items, hash `a1814d049d0a548b36c2d930ed521856f18cd466ffbdbd4fe253f9119314f2ef`. Raw combined logs `/tmp/h2-final-QQq2FR`. Independent R2 pending.
+
 ## U6 — consumers and combined verification
 
 `c test -p amari-fusion --features holographic --test h2_binding_domain` prior to consumer implementation (`fc7b3f1a`), confirmed in an isolated exact-parent `35db4b73` replay: exit 101, 0 ran, `error[E0432]: unresolved imports \`amari_fusion::unbind_general\`, \`amari_fusion::TypedKey\``. GREEN: `fusion_distinguishes_typed_keys_from_general_inverse` 1 passed, exit 0. Fusion reexports the checked operations. WASM still admits mixed certified keys at 256 finite coefficients; `randomVersor(2)` was exercised through store and tracked self-score. Singular suffix, wrong length and NaN errors do not trap or change itemCount. H3 evidence remains distinct from score. The public GPU pair bundle is CPU-backed at β=1; its adapter-required test compares coefficients and rejects a nonfinite suffix. Only the binding shader has a readback parity claim. No `tracedecay` runtime validation or release decision.

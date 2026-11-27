@@ -721,25 +721,6 @@
       ]
     },
     {
-      "path": "amari_holographic::Bindable::bundle_from_norms",
-      "kind": "method",
-      "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::bundle_from_norms"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::Bindable::coefficient_cosine",
       "kind": "method",
       "signature": "fn coefficient_cosine (& self , other : & Self) -> AlgebraResult < f64 >",
@@ -869,25 +850,6 @@
           "is_reexport": true,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::get"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::Bindable::hard_bundle",
-      "kind": "method",
-      "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::hard_bundle"
         }
       ]
     },
@@ -1040,25 +1002,6 @@
           "is_reexport": true,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::similarity"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::Bindable::soft_cleanup",
-      "kind": "method",
-      "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::soft_cleanup"
         }
       ]
     },
@@ -1253,25 +1196,6 @@
       ]
     },
     {
-      "path": "amari_holographic::BindingAlgebra::bundle_from_norms",
-      "kind": "method",
-      "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::bundle_from_norms"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::BindingAlgebra::coefficient_cosine",
       "kind": "method",
       "signature": "fn coefficient_cosine (& self , other : & Self) -> AlgebraResult < f64 >",
@@ -1401,25 +1325,6 @@
           "is_reexport": true,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::get"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::BindingAlgebra::hard_bundle",
-      "kind": "method",
-      "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::hard_bundle"
         }
       ]
     },
@@ -1572,25 +1477,6 @@
           "is_reexport": true,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::similarity"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::BindingAlgebra::soft_cleanup",
-      "kind": "method",
-      "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::soft_cleanup"
         }
       ]
     },
@@ -6188,25 +6074,6 @@
       ]
     },
     {
-      "path": "amari_holographic::algebra::BindingAlgebra::bundle_from_norms",
-      "kind": "method",
-      "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": false,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": false,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::bundle_from_norms"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::algebra::BindingAlgebra::coefficient_cosine",
       "kind": "method",
       "signature": "fn coefficient_cosine (& self , other : & Self) -> AlgebraResult < f64 >",
@@ -6336,25 +6203,6 @@
           "is_reexport": false,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::get"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::algebra::BindingAlgebra::hard_bundle",
-      "kind": "method",
-      "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": false,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": false,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::hard_bundle"
         }
       ]
     },
@@ -6507,25 +6355,6 @@
           "is_reexport": false,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::similarity"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::algebra::BindingAlgebra::soft_cleanup",
-      "kind": "method",
-      "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": false,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": false,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::soft_cleanup"
         }
       ]
     },
@@ -12204,25 +12033,6 @@
       ]
     },
     {
-      "path": "amari_holographic::memory::Bindable::bundle_from_norms",
-      "kind": "method",
-      "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::bundle_from_norms"
-        }
-      ]
-    },
-    {
       "path": "amari_holographic::memory::Bindable::coefficient_cosine",
       "kind": "method",
       "signature": "fn coefficient_cosine (& self , other : & Self) -> AlgebraResult < f64 >",
@@ -12352,25 +12162,6 @@
           "is_reexport": true,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::get"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::memory::Bindable::hard_bundle",
-      "kind": "method",
-      "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::hard_bundle"
         }
       ]
     },
@@ -12523,25 +12314,6 @@
           "is_reexport": true,
           "declaration_module": "amari_holographic::algebra",
           "declaration_ident": "BindingAlgebra::similarity"
-        }
-      ]
-    },
-    {
-      "path": "amari_holographic::memory::Bindable::soft_cleanup",
-      "kind": "method",
-      "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "is_reexport": true,
-      "source_module": "amari_holographic::algebra",
-      "variants": [
-        {
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "source_path": "amari-holographic/src/algebra/mod.rs",
-          "source_module": "amari_holographic::algebra",
-          "is_reexport": true,
-          "declaration_module": "amari_holographic::algebra",
-          "declaration_ident": "BindingAlgebra::soft_cleanup"
         }
       ]
     },
@@ -16278,24 +16050,6 @@
           "status": "provided"
         },
         {
-          "name": "bundle_from_norms",
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
-          "name": "soft_cleanup",
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "status": "provided"
-        },
-        {
-          "name": "hard_bundle",
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
           "name": "similarity",
           "kind": "method",
           "signature": "fn similarity (& self , other : & Self) -> AlgebraResult < f64 >",
@@ -16477,24 +16231,6 @@
           "name": "bundle_all",
           "kind": "method",
           "signature": "fn bundle_all (items : & [Self] , beta : f64) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
-          "name": "bundle_from_norms",
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
-          "name": "soft_cleanup",
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "status": "provided"
-        },
-        {
-          "name": "hard_bundle",
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
           "status": "provided"
         },
         {
@@ -16777,24 +16513,6 @@
           "status": "provided"
         },
         {
-          "name": "bundle_from_norms",
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
-          "name": "soft_cleanup",
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "status": "provided"
-        },
-        {
-          "name": "hard_bundle",
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
           "name": "similarity",
           "kind": "method",
           "signature": "fn similarity (& self , other : & Self) -> AlgebraResult < f64 >",
@@ -17071,24 +16789,6 @@
           "name": "bundle_all",
           "kind": "method",
           "signature": "fn bundle_all (items : & [Self] , beta : f64) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
-          "name": "bundle_from_norms",
-          "kind": "method",
-          "signature": "fn bundle_from_norms (items : & [Self] , norms : & [f64] , beta : f64) -> AlgebraResult < Self >",
-          "status": "provided"
-        },
-        {
-          "name": "soft_cleanup",
-          "kind": "method",
-          "signature": "fn soft_cleanup (self , _beta : f64) -> Self",
-          "status": "provided"
-        },
-        {
-          "name": "hard_bundle",
-          "kind": "method",
-          "signature": "fn hard_bundle (items : & [Self]) -> AlgebraResult < Self >",
           "status": "provided"
         },
         {
@@ -21851,7 +21551,7 @@
     {
       "path": "amari_holographic::Bindable::algebra_name",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 24,
+      "source_ordinal": 21,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21881,17 +21581,9 @@
       "surface_kind": "trait_method"
     },
     {
-      "path": "amari_holographic::Bindable::bundle_from_norms",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 10,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
       "path": "amari_holographic::Bindable::coefficient_cosine",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21907,7 +21599,7 @@
     {
       "path": "amari_holographic::Bindable::estimate_snr",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 26,
+      "source_ordinal": 23,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21915,7 +21607,7 @@
     {
       "path": "amari_holographic::Bindable::from_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 19,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21923,7 +21615,7 @@
     {
       "path": "amari_holographic::Bindable::from_geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21931,7 +21623,7 @@
     {
       "path": "amari_holographic::Bindable::geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21939,15 +21631,7 @@
     {
       "path": "amari_holographic::Bindable::get",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 20,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::Bindable::hard_bundle",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 17,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21971,7 +21655,7 @@
     {
       "path": "amari_holographic::Bindable::norm",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21979,7 +21663,7 @@
     {
       "path": "amari_holographic::Bindable::normalize",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -21987,7 +21671,7 @@
     {
       "path": "amari_holographic::Bindable::permute",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 19,
+      "source_ordinal": 16,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22003,7 +21687,7 @@
     {
       "path": "amari_holographic::Bindable::set",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 21,
+      "source_ordinal": 18,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22011,15 +21695,7 @@
     {
       "path": "amari_holographic::Bindable::similarity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 13,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::Bindable::soft_cleanup",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22035,7 +21711,7 @@
     {
       "path": "amari_holographic::Bindable::theoretical_capacity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 25,
+      "source_ordinal": 22,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22043,7 +21719,7 @@
     {
       "path": "amari_holographic::Bindable::to_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 23,
+      "source_ordinal": 20,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22075,7 +21751,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::algebra_name",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 24,
+      "source_ordinal": 21,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22105,17 +21781,9 @@
       "surface_kind": "trait_method"
     },
     {
-      "path": "amari_holographic::BindingAlgebra::bundle_from_norms",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 10,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
       "path": "amari_holographic::BindingAlgebra::coefficient_cosine",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22131,7 +21799,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::estimate_snr",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 26,
+      "source_ordinal": 23,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22139,7 +21807,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::from_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 19,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22147,7 +21815,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::from_geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22155,7 +21823,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22163,15 +21831,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::get",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 20,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::BindingAlgebra::hard_bundle",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 17,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22195,7 +21855,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::norm",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22203,7 +21863,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::normalize",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22211,7 +21871,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::permute",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 19,
+      "source_ordinal": 16,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22227,7 +21887,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::set",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 21,
+      "source_ordinal": 18,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22235,15 +21895,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::similarity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 13,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::BindingAlgebra::soft_cleanup",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22259,7 +21911,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::theoretical_capacity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 25,
+      "source_ordinal": 22,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -22267,7 +21919,7 @@
     {
       "path": "amari_holographic::BindingAlgebra::to_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 23,
+      "source_ordinal": 20,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23691,7 +23343,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::algebra_name",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 24,
+      "source_ordinal": 21,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23721,17 +23373,9 @@
       "surface_kind": "trait_method"
     },
     {
-      "path": "amari_holographic::algebra::BindingAlgebra::bundle_from_norms",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 10,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
       "path": "amari_holographic::algebra::BindingAlgebra::coefficient_cosine",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23747,7 +23391,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::estimate_snr",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 26,
+      "source_ordinal": 23,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23755,7 +23399,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::from_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 19,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23763,7 +23407,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::from_geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23771,7 +23415,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23779,15 +23423,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::get",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 20,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::algebra::BindingAlgebra::hard_bundle",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 17,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23811,7 +23447,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::norm",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23819,7 +23455,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::normalize",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23827,7 +23463,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::permute",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 19,
+      "source_ordinal": 16,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23843,7 +23479,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::set",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 21,
+      "source_ordinal": 18,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23851,15 +23487,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::similarity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 13,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::algebra::BindingAlgebra::soft_cleanup",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23875,7 +23503,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::theoretical_capacity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 25,
+      "source_ordinal": 22,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -23883,7 +23511,7 @@
     {
       "path": "amari_holographic::algebra::BindingAlgebra::to_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 23,
+      "source_ordinal": 20,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26235,7 +25863,7 @@
     {
       "path": "amari_holographic::memory::Bindable::algebra_name",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 24,
+      "source_ordinal": 21,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26265,17 +25893,9 @@
       "surface_kind": "trait_method"
     },
     {
-      "path": "amari_holographic::memory::Bindable::bundle_from_norms",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 10,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
       "path": "amari_holographic::memory::Bindable::coefficient_cosine",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 14,
+      "source_ordinal": 11,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26291,7 +25911,7 @@
     {
       "path": "amari_holographic::memory::Bindable::estimate_snr",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 26,
+      "source_ordinal": 23,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26299,7 +25919,7 @@
     {
       "path": "amari_holographic::memory::Bindable::from_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 22,
+      "source_ordinal": 19,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26307,7 +25927,7 @@
     {
       "path": "amari_holographic::memory::Bindable::from_geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 16,
+      "source_ordinal": 13,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26315,7 +25935,7 @@
     {
       "path": "amari_holographic::memory::Bindable::geometry_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 15,
+      "source_ordinal": 12,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26323,15 +25943,7 @@
     {
       "path": "amari_holographic::memory::Bindable::get",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 20,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::memory::Bindable::hard_bundle",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 12,
+      "source_ordinal": 17,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26355,7 +25967,7 @@
     {
       "path": "amari_holographic::memory::Bindable::norm",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 17,
+      "source_ordinal": 14,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26363,7 +25975,7 @@
     {
       "path": "amari_holographic::memory::Bindable::normalize",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 18,
+      "source_ordinal": 15,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26371,7 +25983,7 @@
     {
       "path": "amari_holographic::memory::Bindable::permute",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 19,
+      "source_ordinal": 16,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26387,7 +25999,7 @@
     {
       "path": "amari_holographic::memory::Bindable::set",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 21,
+      "source_ordinal": 18,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26395,15 +26007,7 @@
     {
       "path": "amari_holographic::memory::Bindable::similarity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 13,
-      "gate": "always",
-      "status": "enabled",
-      "surface_kind": "trait_method"
-    },
-    {
-      "path": "amari_holographic::memory::Bindable::soft_cleanup",
-      "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 11,
+      "source_ordinal": 10,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26419,7 +26023,7 @@
     {
       "path": "amari_holographic::memory::Bindable::theoretical_capacity",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 25,
+      "source_ordinal": 22,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"
@@ -26427,7 +26031,7 @@
     {
       "path": "amari_holographic::memory::Bindable::to_coefficients",
       "source_path": "amari-holographic/src/algebra/mod.rs",
-      "source_ordinal": 23,
+      "source_ordinal": 20,
       "gate": "always",
       "status": "enabled",
       "surface_kind": "trait_method"

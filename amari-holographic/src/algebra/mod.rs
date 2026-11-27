@@ -55,6 +55,7 @@ pub mod product_clifford;
 mod tests;
 
 // Re-exports
+mod bundle;
 mod geometry;
 mod keys;
 fn checked_map<const N: usize>(map: &[usize; N]) -> AlgebraResult<()> {
@@ -199,13 +200,16 @@ pub type AlgebraResult<T> = Result<T, AlgebraError>;
 ///
 /// # Algebraic Laws
 ///
-/// Implementations should satisfy (approximately, due to noise):
+/// In the algebraic model, up to floating-point rounding:
 ///
 /// 1. **Binding inverse**: `x.bind(&x.inverse()?) ≈ Self::identity()`
 /// 2. **Identity**: `x.bind(&Self::identity()) = x`
-/// 3. **Distributivity**: `a.bind(&b.bundle(&c, β)?) ≈ a.bind(&b).bundle(&a.bind(&c), β)?`
-/// 4. **Dissimilarity**: `similarity(a.bind(&b), a) ≈ 0` and `similarity(a.bind(&b), b) ≈ 0`
-/// 5. **Bundle similarity**: `similarity(a.bundle(&b, β)?, a) > 0`
+/// 3. **Distributivity over additive superposition**: `(Σᵢ kᵢ) ⊛ (Σⱼ vⱼ) = Σᵢⱼ (kᵢ ⊛ vⱼ)`.
+///    Here the sums use [`superpose`](Self::superpose), not [`bundle`](Self::bundle).
+///    There is no distributive law for nonlinear bundling or cleanup.
+///
+/// Dissimilarity after binding and similarity after bundling are statistical
+/// expectations for suitable input ensembles, not algebraic identities.
 ///
 /// # Type Parameters
 ///
@@ -231,10 +235,9 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
 
     /// Bind two elements (association/structure-creation).
     ///
-    /// The binding operation creates a new representation that:
-    /// - Is dissimilar to both inputs
-    /// - Distributes over bundling: `a ⊛ (b ⊕ c) ≈ (a ⊛ b) ⊕ (a ⊛ c)`
-    /// - Has an inverse: `a ⊛ a⁻¹ ≈ identity`
+    /// Binding distributes over additive [`superpose`](Self::superpose):
+    /// `k ⊛ (v + w) = (k ⊛ v) + (k ⊛ w)` in exact arithmetic. This law does
+    /// not extend to attention weights, majority voting, or other cleanup.
     ///
     /// # Mathematical Interpretation
     ///
@@ -346,86 +349,21 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
     /// Whole-list attention, not a pair fold: not associative or partition invariant.
     /// Empty input returns zero by convention; singleton is unchanged.
     /// Algebras may override with more efficient parallel implementations.
+    /// Callers cannot supply unchecked norms or invoke the hard reducer directly:
+    ///
+    /// ```compile_fail,E0599
+    /// use amari_holographic::{BindingAlgebra, MAPAlgebra};
+    /// let items = [MAPAlgebra::new([f64::NAN])];
+    /// let _ = MAPAlgebra::bundle_from_norms(&items, &[1.0], 1.0);
+    /// ```
+    ///
+    /// ```compile_fail,E0599
+    /// use amari_holographic::{BindingAlgebra, MAPAlgebra};
+    /// let items = [MAPAlgebra::new([f64::NAN])];
+    /// let _ = MAPAlgebra::hard_bundle(&items);
+    /// ```
     fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
-        if beta.is_nan() || beta < 0. {
-            return Err(AlgebraError::Beta);
-        }
-        let norms = items
-            .iter()
-            .map(Self::norm)
-            .collect::<AlgebraResult<Vec<_>>>()?;
-        Self::bundle_from_norms(items, &norms, beta)
-    }
-    #[doc(hidden)]
-    fn bundle_from_norms(items: &[Self], norms: &[f64], beta: f64) -> AlgebraResult<Self> {
-        if beta.is_nan() || beta < 0. {
-            return Err(AlgebraError::Beta);
-        }
-        if items.len() != norms.len() {
-            return Err(AlgebraError::InvalidShape);
-        }
-        if items.is_empty() {
-            return Ok(Self::zero());
-        }
-        if items.len() == 1 {
-            return Ok(items[0].clone());
-        }
-        if beta == f64::INFINITY {
-            return Self::hard_bundle(items);
-        }
-        let max = norms.iter().copied().fold(0., f64::max);
-        let weights: Vec<_> = norms
-            .iter()
-            .map(|n| {
-                if max < 1e-10 || beta == 0. {
-                    1.
-                } else {
-                    ((n - max) * beta).exp()
-                }
-            })
-            .collect();
-        let total: f64 = weights.iter().sum();
-        let mut sum = Self::zero();
-        for (x, w) in items.iter().zip(weights) {
-            sum = sum.superpose(&x.scale(w / total)?)?;
-        }
-        if sum.geometry_coefficients().iter().any(|x| !x.is_finite()) {
-            return Err(AlgebraError::Unrepresentable);
-        }
-        Ok(sum.soft_cleanup(beta))
-    }
-    #[doc(hidden)]
-    fn soft_cleanup(self, _beta: f64) -> Self {
-        self
-    }
-    #[doc(hidden)]
-    fn hard_bundle(items: &[Self]) -> AlgebraResult<Self> {
-        let Some(first) = items.first() else {
-            return Ok(Self::zero());
-        };
-        let first = first.geometry_coefficients();
-        let mut votes = alloc::vec![0_isize;first.len()];
-        for x in items {
-            let c = x.geometry_coefficients();
-            if c.len() != first.len() {
-                return Err(AlgebraError::InvalidShape);
-            }
-            for (v, a) in votes.iter_mut().zip(c) {
-                *v += if a > 0. {
-                    1
-                } else if a < 0. {
-                    -1
-                } else {
-                    0
-                };
-            }
-        }
-        let result: Vec<_> = votes
-            .into_iter()
-            .zip(first)
-            .map(|(v, x)| if v == 0 { x } else { v.signum() as f64 })
-            .collect();
-        Self::from_geometry_coefficients(&result)
+        bundle::serial(items, beta, core::convert::identity)
     }
 
     /// Compute similarity between two elements.

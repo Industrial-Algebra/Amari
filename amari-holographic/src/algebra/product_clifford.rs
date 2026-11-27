@@ -268,12 +268,16 @@ where
 
     /// Parallel bundling of multiple elements.
     pub fn par_bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
-        if beta.is_nan() || beta < 0. {
-            return Err(AlgebraError::Beta);
-        }
-        let norms: Vec<_> = items.par_iter().map(Self::norm).collect();
-        let norms = norms.into_iter().collect::<AlgebraResult<Vec<_>>>()?;
-        Self::bundle_from_norms(items, &norms, beta)
+        super::bundle::checked(
+            items,
+            beta,
+            || {
+                // Preserve input order, including which error is returned first.
+                let norms: Vec<_> = items.par_iter().map(Self::norm).collect();
+                norms.into_iter().collect()
+            },
+            core::convert::identity,
+        )
     }
 }
 

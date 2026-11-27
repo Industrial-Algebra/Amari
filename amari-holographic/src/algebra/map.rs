@@ -328,8 +328,8 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
         super::unbind_general(self, other)
     }
 
-    fn soft_cleanup(self, beta: f64) -> Self {
-        self.soft_sign(beta)
+    fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
+        super::bundle::serial(items, beta, |sum| sum.soft_sign(beta))
     }
 
     fn permute(&self, shift: i32) -> Self {
