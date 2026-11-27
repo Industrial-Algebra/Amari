@@ -268,34 +268,12 @@ where
 
     /// Parallel bundling of multiple elements.
     pub fn par_bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
-        if items.is_empty() {
-            return Ok(Self::product_zero());
+        if beta.is_nan() || beta < 0. {
+            return Err(AlgebraError::Beta);
         }
-        if items.len() == 1 {
-            return Ok(items[0].clone());
-        }
-
-        items
-            .par_iter()
-            .cloned()
-            .reduce(Self::product_zero, |a, b| a.bundle(&b, beta).unwrap_or(a))
-            .pipe(Ok)
-    }
-}
-
-// Helper trait for method chaining
-trait Pipe: Sized {
-    fn pipe<F, R>(self, f: F) -> R
-    where
-        F: FnOnce(Self) -> R;
-}
-
-impl<T> Pipe for T {
-    fn pipe<F, R>(self, f: F) -> R
-    where
-        F: FnOnce(Self) -> R,
-    {
-        f(self)
+        let norms: Vec<_> = items.par_iter().map(Self::norm).collect();
+        let norms = norms.into_iter().collect::<AlgebraResult<Vec<_>>>()?;
+        Self::bundle_from_norms(items, &norms, beta)
     }
 }
 
@@ -325,70 +303,6 @@ impl<const K: usize> BindingAlgebra for ProductCliffordAlgebra<K> {
             .ok_or_else(|| AlgebraError::NotInvertible {
                 reason: "one or more components not invertible".into(),
             })
-    }
-
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling: winner-take-all
-            let self_norm = self.compute_norm()?;
-            let other_norm = other.compute_norm()?;
-            if self_norm >= other_norm {
-                Ok(self.clone())
-            } else {
-                Ok(other.clone())
-            }
-        } else {
-            // Soft bundling: weighted average
-            let self_norm = self.compute_norm()?;
-            let other_norm = other.compute_norm()?;
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            Ok(self
-                .component_scale(w1)
-                .component_add(&other.component_scale(w2)))
-        }
-    }
-
-    fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
-        if items.is_empty() {
-            return Ok(Self::zero());
-        }
-        if items.len() == 1 {
-            return Ok(items[0].clone());
-        }
-
-        // For product algebras, we can bundle more efficiently
-        // by accumulating directly instead of pairwise
-        if beta.is_infinite() {
-            // Hard bundling: find element with maximum norm
-            let mut best = items[0].clone();
-            let mut best_norm = best.compute_norm()?;
-
-            for item in items.iter().skip(1) {
-                let norm = item.compute_norm()?;
-                if norm > best_norm {
-                    best = item.clone();
-                    best_norm = norm;
-                }
-            }
-            Ok(best)
-        } else {
-            // Soft bundling: compute weighted sum
-            let mut result = items[0].clone();
-            for item in items.iter().skip(1) {
-                result = result.bundle(item, beta)?;
-            }
-            Ok(result)
-        }
     }
 
     fn permute(&self, shift: i32) -> Self {

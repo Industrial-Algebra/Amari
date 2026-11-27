@@ -273,53 +273,16 @@ impl<const D: usize> MAPAlgebra<D> {
         self.components.iter().filter(|&&x| x < 0.0).count()
     }
 
-    /// Majority element from a bundle (returns ±1 for each component).
-    ///
-    /// This implements hard bundling: for each position, take the
-    /// sign of the sum. Ties go to +1.
-    pub fn majority(elements: &[Self]) -> Self {
-        if elements.is_empty() {
-            return Self::map_identity();
-        }
-
-        let mut sum = [0.0; D];
-        for elem in elements {
-            for i in 0..D {
-                sum[i] += elem.components[i];
-            }
-        }
-
-        let mut result = [0.0; D];
-        for i in 0..D {
-            result[i] = if sum[i] >= 0.0 { 1.0 } else { -1.0 };
-        }
-
-        Self::new(result)
+    /// Hard whole-list bundle. Tied components follow the first input.
+    pub fn majority(elements: &[Self]) -> AlgebraResult<Self> {
+        Self::bundle_all(elements, f64::INFINITY)
     }
 
     /// Soft majority with temperature parameter.
     ///
     /// Uses tanh instead of sign for differentiable bundling.
-    pub fn soft_majority(elements: &[Self], beta: f64) -> Self {
-        if elements.is_empty() {
-            return Self::map_identity();
-        }
-
-        let mut sum = [0.0; D];
-        for elem in elements {
-            for i in 0..D {
-                sum[i] += elem.components[i];
-            }
-        }
-
-        // Normalize by count before applying tanh
-        let n = elements.len() as f64;
-        let mut result = [0.0; D];
-        for i in 0..D {
-            result[i] = (sum[i] / n * beta).tanh();
-        }
-
-        Self::new(result)
+    pub fn soft_majority(elements: &[Self], beta: f64) -> AlgebraResult<Self> {
+        Self::bundle_all(elements, beta)
     }
 }
 
@@ -365,47 +328,8 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
         super::unbind_general(self, other)
     }
 
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling: add and take sign
-            let sum = self.add(other);
-            Ok(sum.sign())
-        } else {
-            // Soft bundling: weighted average with soft sign
-            let self_norm = self.compute_norm()?;
-            let other_norm = other.compute_norm()?;
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            let weighted = self.scale(w1).add(&other.scale(w2));
-            // Apply soft sign cleanup
-            Ok(weighted.soft_sign(beta))
-        }
-    }
-
-    fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
-        if items.is_empty() {
-            return Ok(Self::zero());
-        }
-        if items.len() == 1 {
-            return Ok(items[0].clone());
-        }
-
-        if beta.is_infinite() {
-            // Use efficient majority function
-            Ok(Self::majority(items))
-        } else {
-            // Use soft majority
-            Ok(Self::soft_majority(items, beta))
-        }
+    fn soft_cleanup(self, beta: f64) -> Self {
+        self.soft_sign(beta)
     }
 
     fn permute(&self, shift: i32) -> Self {
@@ -557,7 +481,7 @@ mod tests {
         c_arr[0] = 1.0; // One component different
         let c = MAP64::from_coefficients(&c_arr).unwrap();
 
-        let majority = MAP64::majority(&[a, b, c]);
+        let majority = MAP64::majority(&[a, b, c]).unwrap();
 
         // Majority should be all +1 (two +1s beat one -1)
         for i in 0..64 {

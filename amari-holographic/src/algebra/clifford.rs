@@ -190,36 +190,6 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
             })
     }
 
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling: winner-take-all
-            let self_norm = self.inner.coefficient_norm();
-            let other_norm = other.inner.coefficient_norm();
-            if self_norm >= other_norm {
-                Ok(self.clone())
-            } else {
-                Ok(other.clone())
-            }
-        } else {
-            // Soft bundling: weighted average
-            let self_norm = self.inner.coefficient_norm();
-            let other_norm = other.inner.coefficient_norm();
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            let result = self.inner.clone() * w1 + other.inner.clone() * w2;
-            Ok(Self::new(result))
-        }
-    }
-
     fn coefficient_cosine(&self, other: &Self) -> AlgebraResult<f64> {
         if Q != 0 || R != 0 {
             return Err(AlgebraError::UnsupportedSignature);

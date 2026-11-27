@@ -396,35 +396,6 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
         super::unbind_general(self, other)
     }
 
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling: winner-take-all
-            let self_norm = self.compute_norm()?;
-            let other_norm = other.compute_norm()?;
-            if self_norm >= other_norm {
-                Ok(self.clone())
-            } else {
-                Ok(other.clone())
-            }
-        } else {
-            // Soft bundling: weighted average
-            let self_norm = self.compute_norm()?;
-            let other_norm = other.compute_norm()?;
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            Ok(self.scale(w1).add(&other.scale(w2)))
-        }
-    }
-
     fn superpose(&self, other: &Self) -> AlgebraResult<Self> {
         // FHRR's public coefficient representation intentionally exposes only
         // real parts, so use the complete complex representation here.

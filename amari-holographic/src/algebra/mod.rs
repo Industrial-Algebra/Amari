@@ -93,6 +93,8 @@ pub enum AlgebraError {
     UnsupportedSignature,
     /// Zero factors or bins.
     EmptyDimension,
+    /// Inverse temperature outside the operation's domain.
+    Beta,
     /// Input lengths do not match the requested shape.
     InvalidShape,
     /// Indices are out of range or repeated.
@@ -130,6 +132,7 @@ pub enum AlgebraError {
 impl fmt::Display for AlgebraError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Beta => write!(f, "invalid inverse temperature"),
             Self::EmptyDimension => write!(f, "empty algebra dimension"),
             Self::InvalidShape => write!(f, "invalid algebra shape"),
             Self::NonBijectiveMap => write!(f, "nonbijective permutation"),
@@ -275,7 +278,9 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
     /// - `beta = ∞`: Hard bundling (winner-take-all / max)
     ///
     /// The result should be similar to both inputs.
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self>;
+    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
+        Self::bundle_all(&[self.clone(), other.clone()], beta)
+    }
 
     /// Additively superpose two elements for holographic accumulation.
     ///
@@ -338,23 +343,89 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
         Self::from_coefficients(&coefficients)
     }
 
-    /// Bundle multiple elements efficiently.
-    ///
-    /// Default implementation uses pairwise bundling.
+    /// Whole-list attention, not a pair fold: not associative or partition invariant.
+    /// Empty input returns zero by convention; singleton is unchanged.
     /// Algebras may override with more efficient parallel implementations.
     fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
+        if beta.is_nan() || beta < 0. {
+            return Err(AlgebraError::Beta);
+        }
+        let norms = items
+            .iter()
+            .map(Self::norm)
+            .collect::<AlgebraResult<Vec<_>>>()?;
+        Self::bundle_from_norms(items, &norms, beta)
+    }
+    #[doc(hidden)]
+    fn bundle_from_norms(items: &[Self], norms: &[f64], beta: f64) -> AlgebraResult<Self> {
+        if beta.is_nan() || beta < 0. {
+            return Err(AlgebraError::Beta);
+        }
+        if items.len() != norms.len() {
+            return Err(AlgebraError::InvalidShape);
+        }
         if items.is_empty() {
             return Ok(Self::zero());
         }
         if items.len() == 1 {
             return Ok(items[0].clone());
         }
-
-        let mut result = items[0].clone();
-        for item in items.iter().skip(1) {
-            result = result.bundle(item, beta)?;
+        if beta == f64::INFINITY {
+            return Self::hard_bundle(items);
         }
-        Ok(result)
+        let max = norms.iter().copied().fold(0., f64::max);
+        let weights: Vec<_> = norms
+            .iter()
+            .map(|n| {
+                if max < 1e-10 || beta == 0. {
+                    1.
+                } else {
+                    ((n - max) * beta).exp()
+                }
+            })
+            .collect();
+        let total: f64 = weights.iter().sum();
+        let mut sum = Self::zero();
+        for (x, w) in items.iter().zip(weights) {
+            sum = sum.superpose(&x.scale(w / total)?)?;
+        }
+        if sum.geometry_coefficients().iter().any(|x| !x.is_finite()) {
+            return Err(AlgebraError::Unrepresentable);
+        }
+        Ok(sum.soft_cleanup(beta))
+    }
+    #[doc(hidden)]
+    fn soft_cleanup(self, _beta: f64) -> Self {
+        self
+    }
+    #[doc(hidden)]
+    fn hard_bundle(items: &[Self]) -> AlgebraResult<Self> {
+        let Some(first) = items.first() else {
+            return Ok(Self::zero());
+        };
+        let first = first.geometry_coefficients();
+        let mut votes = alloc::vec![0_isize;first.len()];
+        for x in items {
+            let c = x.geometry_coefficients();
+            if c.len() != first.len() {
+                return Err(AlgebraError::InvalidShape);
+            }
+            for (v, a) in votes.iter_mut().zip(c) {
+                *v += if a > 0. {
+                    1
+                } else if a < 0. {
+                    -1
+                } else {
+                    0
+                };
+            }
+        }
+        let result: Vec<_> = votes
+            .into_iter()
+            .zip(first)
+            .map(|(v, x)| if v == 0 { x } else { v.signum() as f64 })
+            .collect();
+        Self::from_geometry_coefficients(&result)
     }
 
     /// Compute similarity between two elements.

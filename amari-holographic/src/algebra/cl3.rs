@@ -501,35 +501,6 @@ impl BindingAlgebra for Cl3 {
         self.checked_inverse()
     }
 
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling
-            let self_norm = self.norm_squared().abs().sqrt();
-            let other_norm = other.norm_squared().abs().sqrt();
-            if self_norm >= other_norm {
-                Ok(*self)
-            } else {
-                Ok(*other)
-            }
-        } else {
-            // Soft bundling: weighted average
-            let self_norm = self.norm_squared().abs().sqrt();
-            let other_norm = other.norm_squared().abs().sqrt();
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            Ok(self.scale(w1).add(&other.scale(w2)))
-        }
-    }
-
     fn permute(&self, shift: i32) -> Self {
         // Apply cyclic permutation `shift` times
         let shift = shift.rem_euclid(3);
