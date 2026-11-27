@@ -246,7 +246,10 @@ pub mod memory;
 pub mod optical;
 
 // Re-export core types from algebra
-pub use algebra::{AlgebraConfig, AlgebraError, AlgebraResult, BindingAlgebra, GeometricAlgebra};
+pub use algebra::{
+    unbind_general, AlgebraConfig, AlgebraError, AlgebraResult, BindingAlgebra, GeometricAlgebra,
+    TypedKey,
+};
 
 // Re-export specific algebras
 pub use algebra::{Cl3, CliffordAlgebra, FHRRAlgebra, MAPAlgebra, ProductCliffordAlgebra};

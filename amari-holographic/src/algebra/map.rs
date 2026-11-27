@@ -143,6 +143,11 @@ impl<const D: usize> MAPAlgebra<D> {
         &self.components
     }
 
+    /// Real pointwise correlation (the adjoint), not general inverse recovery.
+    pub fn correlation(&self, bound: &Self) -> Self {
+        self.elementwise_multiply(bound)
+    }
+
     /// Element-wise multiplication (binding).
     ///
     /// For bipolar elements, this implements XOR in {-1, +1}.
@@ -330,14 +335,24 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
     }
 
     fn inverse(&self) -> AlgebraResult<Self> {
-        // MAP elements are self-inverse: x * x = identity
-        // This is because (+1)² = (-1)² = 1
-        Ok(self.clone())
+        let mut inv = [0.; D];
+        for (out, &x) in inv.iter_mut().zip(&self.components) {
+            if !x.is_finite() {
+                return Err(AlgebraError::NonFinite);
+            }
+            if x == 0. {
+                return Err(AlgebraError::KeyDomain);
+            }
+            *out = 1. / x;
+            if !out.is_finite() {
+                return Err(AlgebraError::Unrepresentable);
+            }
+        }
+        super::keys::certify(self, Self::new(inv))
     }
 
     fn unbind(&self, other: &Self) -> AlgebraResult<Self> {
-        // Since self-inverse, unbind = bind
-        Ok(self.elementwise_multiply(other))
+        super::unbind_general(self, other)
     }
 
     fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {

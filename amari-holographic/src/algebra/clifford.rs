@@ -103,9 +103,12 @@ impl<const P: usize, const Q: usize, const R: usize> CliffordAlgebra<P, Q, R> {
     /// Create a random unit versor (product of unit vectors).
     ///
     /// Versors are always invertible, making them ideal for binding keys.
-    pub fn random_versor(num_factors: usize) -> Self {
+    pub fn random_versor(num_factors: usize) -> AlgebraResult<Self> {
         if num_factors == 0 {
-            return Self::scalar(1.0);
+            return Ok(Self::scalar(1.0));
+        }
+        if P == 0 && Q == 0 {
+            return Err(AlgebraError::KeyDomain);
         }
 
         // Start with a random unit vector
@@ -117,10 +120,11 @@ impl<const P: usize, const Q: usize, const R: usize> CliffordAlgebra<P, Q, R> {
             result = Self::new(result.inner.geometric_product(&v.inner));
         }
 
-        result
+        super::keys::certify(&result, result.inverse()?)?;
+        Ok(result)
     }
 
-    /// Create a random unit vector.
+    /// Create a coefficient-normalized random vector.
     fn random_unit_vector() -> Self {
         let mut coeffs = alloc::vec![0.0; Self::ALGEBRA_DIM];
         let mut norm_sq = 0.0;
@@ -391,7 +395,7 @@ mod tests {
 
     #[test]
     fn test_clifford_binding_identity() {
-        let a = Cl3Full::random_versor(1);
+        let a = Cl3Full::random_versor(1).unwrap();
         let identity = Cl3Full::identity();
         let bound = a.bind(&identity);
 
@@ -402,7 +406,7 @@ mod tests {
 
     #[test]
     fn test_clifford_inverse() {
-        let a = Cl3Full::random_versor(2);
+        let a = Cl3Full::random_versor(2).unwrap();
         let a_inv = a.inverse().expect("versor should be invertible");
         let product = a.bind(&a_inv);
 
@@ -414,8 +418,8 @@ mod tests {
 
     #[test]
     fn test_clifford_dissimilarity() {
-        let a = Cl3Full::random_versor(1);
-        let b = Cl3Full::random_versor(1);
+        let a = Cl3Full::random_versor(1).unwrap();
+        let b = Cl3Full::random_versor(1).unwrap();
         let bound = a.bind(&b);
 
         // bound should be dissimilar to both a and b
@@ -430,8 +434,8 @@ mod tests {
 
     #[test]
     fn test_clifford_bundling() {
-        let a = Cl3Full::random_versor(1);
-        let b = Cl3Full::random_versor(1);
+        let a = Cl3Full::random_versor(1).unwrap();
+        let b = Cl3Full::random_versor(1).unwrap();
         let bundled = a.bundle(&b, 1.0).expect("bundling should succeed");
 
         // bundled should be similar to both a and b

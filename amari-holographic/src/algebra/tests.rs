@@ -176,42 +176,42 @@ mod property_tests {
 
         #[test]
         fn test_cl3_identity_law() {
-            test_binding_identity_law(|| Cl3Full::random_versor(2));
+            test_binding_identity_law(|| Cl3Full::random_versor(2).unwrap());
         }
 
         #[test]
         fn test_cl3_inverse_law() {
-            test_inverse_law(|| Cl3Full::random_versor(2));
+            test_inverse_law(|| Cl3Full::random_versor(2).unwrap());
         }
 
         #[test]
         fn test_cl3_unbind_recovery() {
-            test_unbind_recovery(|| Cl3Full::random_versor(2));
+            test_unbind_recovery(|| Cl3Full::random_versor(2).unwrap());
         }
 
         #[test]
         fn test_cl3_dissimilarity() {
-            test_binding_dissimilarity(|| Cl3Full::random_versor(1));
+            test_binding_dissimilarity(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_bundling() {
-            test_bundling_similarity(|| Cl3Full::random_versor(1));
+            test_bundling_similarity(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_permute() {
-            test_permute_reversible(|| Cl3Full::random_versor(1));
+            test_permute_reversible(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_normalize() {
-            test_normalization(|| Cl3Full::random_versor(1));
+            test_normalization(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_coefficients() {
-            test_coefficient_roundtrip(|| Cl3Full::random_versor(1));
+            test_coefficient_roundtrip(|| Cl3Full::random_versor(1).unwrap());
         }
     }
 

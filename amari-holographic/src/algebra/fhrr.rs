@@ -251,15 +251,18 @@ impl<const D: usize> FHRRAlgebra<D> {
         let mut imag = [0.0; D];
 
         for i in 0..D {
-            let mag = (self.real[i].powi(2) + self.imag[i].powi(2)).sqrt();
-            if mag < 1e-10 {
-                // Keep as zero (or could set to 1+0i)
-                real[i] = 0.0;
-                imag[i] = 0.0;
-            } else {
-                real[i] = self.real[i] / mag;
-                imag[i] = self.imag[i] / mag;
+            let (a, b) = (self.real[i], self.imag[i]);
+            if !a.is_finite() || !b.is_finite() {
+                return Err(AlgebraError::NonFinite);
             }
+            let scale = a.abs().max(b.abs());
+            if scale == 0. {
+                return Err(AlgebraError::KeyDomain);
+            }
+            let (u, v) = (a / scale, b / scale);
+            let n = u.hypot(v);
+            real[i] = u / n;
+            imag[i] = v / n;
         }
 
         Ok(Self::new(real, imag))
@@ -320,6 +323,11 @@ impl<const D: usize> FHRRAlgebra<D> {
         Self::new(real, imag)
     }
 
+    /// Adjoint correlation, not inverse recovery for a general spectrum.
+    pub fn correlation(&self, bound: &Self) -> Self {
+        self.conjugate().complex_multiply(bound)
+    }
+
     /// Component-wise element inverse (1/z for each component).
     ///
     /// For unitary elements, this equals the conjugate.
@@ -328,16 +336,21 @@ impl<const D: usize> FHRRAlgebra<D> {
         let mut imag = [0.0; D];
 
         for i in 0..D {
-            let mag_sq = self.real[i].powi(2) + self.imag[i].powi(2);
-            if mag_sq < 1e-20 {
-                return Err(AlgebraError::NotInvertible {
-                    reason: alloc::format!("component {} has near-zero magnitude", i),
-                });
+            let (a, b) = (self.real[i], self.imag[i]);
+            if !a.is_finite() || !b.is_finite() {
+                return Err(AlgebraError::NonFinite);
             }
-
-            // 1/(a + bi) = (a - bi) / (a² + b²)
-            real[i] = self.real[i] / mag_sq;
-            imag[i] = -self.imag[i] / mag_sq;
+            let m = a.abs().max(b.abs());
+            if m == 0. {
+                return Err(AlgebraError::KeyDomain);
+            }
+            let (u, v) = (a / m, b / m);
+            let den = u * u + v * v;
+            real[i] = (u / den) / m;
+            imag[i] = (-v / den) / m;
+            if !real[i].is_finite() || !imag[i].is_finite() {
+                return Err(AlgebraError::Unrepresentable);
+            }
         }
 
         Ok(Self::new(real, imag))
@@ -366,14 +379,11 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
     }
 
     fn inverse(&self) -> AlgebraResult<Self> {
-        // For practical FHRR, we use the conjugate (assumes unit magnitude)
-        // This is much faster than true component-wise inverse
-        Ok(self.conjugate())
+        super::keys::certify(self, self.component_inverse()?)
     }
 
     fn unbind(&self, other: &Self) -> AlgebraResult<Self> {
-        // key.unbind(bound) = conj(key) * bound
-        Ok(self.conjugate().complex_multiply(other))
+        super::unbind_general(self, other)
     }
 
     fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {

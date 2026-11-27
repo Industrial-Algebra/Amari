@@ -55,9 +55,11 @@ pub mod product_clifford;
 mod tests;
 
 // Re-exports
+mod keys;
 pub use cl3::Cl3;
 pub use clifford::CliffordAlgebra;
 pub use fhrr::FHRRAlgebra;
+pub use keys::{unbind_general, TypedKey};
 pub use map::MAPAlgebra;
 pub use product_clifford::ProductCliffordAlgebra;
 
@@ -68,6 +70,12 @@ pub use product_clifford::ProductCliffordAlgebra;
 /// Errors that can occur during algebra operations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum AlgebraError {
+    /// Operand does not belong to the certified binding-key class.
+    KeyDomain,
+    /// A coefficient is not finite.
+    NonFinite,
+    /// The requested result is outside the supported floating-point range.
+    Unrepresentable,
     /// Element is not invertible (singular)
     NotInvertible { reason: String },
 
@@ -97,6 +105,9 @@ pub enum AlgebraError {
 impl fmt::Display for AlgebraError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::KeyDomain => write!(f, "invalid binding key"),
+            Self::NonFinite => write!(f, "nonfinite coefficient"),
+            Self::Unrepresentable => write!(f, "unrepresentable arithmetic result"),
             Self::NotInvertible { reason } => {
                 write!(f, "element not invertible: {}", reason)
             }
