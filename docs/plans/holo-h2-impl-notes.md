@@ -33,6 +33,10 @@ Same command after implementation, same parent plus U1 changes: 7 passed, exit 0
 
 **Migration:** `TypedKey::try_new(element)?` admits a retrieval key; call `bind_key` / `unbind_key` on the validated key. For general algebraic division call `unbind_general(&key,&bound)?`. Use `correlation` when the original adjoint/rebinding was intended instead. A reciprocal is not admission to H3 membership. Full-wrapper `CliffordAlgebra::random_versor` is now fallible, including for positive factor counts in purely null signatures. Rebuild derived values from original operands if previous code stored the result of nonunit rebinding as a recovered value; there is no blanket reinterpretation of old results.
 
+## U5 — logarithmic helpers and the linear law
+
+Parent `9c089872`, `c test -p amari-holographic --test h2_temperature`, default: RED exit 101, zero tests ran: `error[E0432]: unresolved imports \`amari_holographic::algebra::log_mean_exp\`, \`amari_holographic::algebra::log_sum_exp\``. GREEN, same command: `distinct_zero_limits` and `bind_distributes_over_addition`, 2 passed. `c test -p amari-holographic --lib algebra::temperature`: `large_range_and_invalid_inputs`, `finite_and_hard_limits`, 2 passed, exits 0. Equal-input mean, `ln(2)/β` offset, unequal-input mean and hard limits, typed rejection, and extreme opposite signs are tested numerically. No distributivity claim about nonlinear cleanup.
+
 ## U4 — whole-list bundling
 
 Parent `cdd302df`, `c test -p amari-holographic --all-features --test h2_bundle`: three runtime failures (exit 101), recorded before implementation. `map_pair_list`: `left: [0.9426807890983486]`, `right: [0.7615941559557649]`; `whole_list_not_fold`: `left: 2.0`, `right: 1.3333333333333333`; `rayon_identity_pair`: `left: 0.5`, `right: 1.0`. GREEN same command: 5 passed, including `boundaries_and_ties` and `pool_sizes_match_ordered_formula_and_suffix_errors` (lengths 3/17/64, pools 1/2/4), exit 0. Rayon computes norms in parallel, then consumes all results in input order, including errors; no chunk-level bundle is combined with another.

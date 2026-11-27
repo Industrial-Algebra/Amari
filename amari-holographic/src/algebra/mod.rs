@@ -274,7 +274,7 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
     /// evidence.
     ///
     /// The `beta` parameter controls soft vs hard bundling:
-    /// - `beta = 1.0`: Soft bundling (weighted average / logsumexp)
+    /// - `beta = 1.0`: Soft bundling (norm-weighted average)
     /// - `beta = ∞`: Hard bundling (winner-take-all / max)
     ///
     /// The result should be similar to both inputs.
@@ -585,7 +585,7 @@ pub trait GeometricAlgebra: BindingAlgebra {
 /// behave, but is separate from the algebra implementation itself.
 #[derive(Clone, Debug, PartialEq)]
 pub struct AlgebraConfig {
-    /// Temperature for bundling: 1.0 = soft (logsumexp), f64::INFINITY = hard (max)
+    /// Inverse temperature for bundling: 1.0 = soft attention, f64::INFINITY = component majority
     pub bundle_beta: f64,
 
     /// Temperature for retrieval
@@ -646,25 +646,8 @@ impl AlgebraConfig {
 // Helper Functions
 // ============================================================================
 
-/// Compute log-sum-exp with temperature: `(1/β) * ln(exp(β*a) + exp(β*b))`
-///
-/// This smoothly interpolates between:
-/// - β → ∞: max(a, b)
-/// - β → 0: (a + b) / 2
-#[inline]
-pub fn logsumexp(a: f64, b: f64, beta: f64) -> f64 {
-    if beta.is_infinite() {
-        return a.max(b);
-    }
-    if beta <= 0.0 {
-        return (a + b) / 2.0;
-    }
-
-    // Numerically stable logsumexp
-    let max_val = a.max(b);
-    let sum = (beta * (a - max_val)).exp() + (beta * (b - max_val)).exp();
-    max_val + sum.ln() / beta
-}
+mod temperature;
+pub use temperature::{log_mean_exp, log_sum_exp};
 
 /// Compute softmax weights for two values.
 #[inline]
