@@ -208,8 +208,8 @@ impl<const D: usize> MAPAlgebra<D> {
     }
 
     /// Compute the L2 norm.
-    pub fn compute_norm(&self) -> f64 {
-        self.norm_squared().sqrt()
+    pub fn compute_norm(&self) -> AlgebraResult<f64> {
+        self.norm()
     }
 
     /// Dot product.
@@ -362,8 +362,8 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
             Ok(sum.sign())
         } else {
             // Soft bundling: weighted average with soft sign
-            let self_norm = self.compute_norm();
-            let other_norm = other.compute_norm();
+            let self_norm = self.compute_norm()?;
+            let other_norm = other.compute_norm()?;
 
             let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
                 (0.5, 0.5)
@@ -396,29 +396,6 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
             // Use soft majority
             Ok(Self::soft_majority(items, beta))
         }
-    }
-
-    fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.compute_norm();
-        let other_norm = other.compute_norm();
-
-        if self_norm < 1e-10 || other_norm < 1e-10 {
-            return 0.0;
-        }
-
-        self.dot(other) / (self_norm * other_norm)
-    }
-
-    fn norm(&self) -> f64 {
-        self.compute_norm()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let n = self.compute_norm();
-        if n < 1e-10 {
-            return Err(AlgebraError::NormalizationFailed { norm: n });
-        }
-        Ok(self.scale(1.0 / n))
     }
 
     fn permute(&self, shift: i32) -> Self {
@@ -553,8 +530,8 @@ mod tests {
         let bound = a.bind(&b);
 
         // bound should be dissimilar to both a and b
-        let sim_a = bound.similarity(&a).abs();
-        let sim_b = bound.similarity(&b).abs();
+        let sim_a = bound.similarity(&a).unwrap().abs();
+        let sim_b = bound.similarity(&b).unwrap().abs();
 
         // With 256 dimensions, random bipolar vectors should be nearly orthogonal
         assert!(sim_a < 0.3, "similarity with a: {}", sim_a);

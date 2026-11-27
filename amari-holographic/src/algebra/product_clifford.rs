@@ -182,8 +182,8 @@ impl<const K: usize> ProductCliffordAlgebra<K> {
     }
 
     /// Compute the norm.
-    pub fn compute_norm(&self) -> f64 {
-        self.norm_squared().abs().sqrt()
+    pub fn compute_norm(&self) -> AlgebraResult<f64> {
+        self.norm()
     }
 
     /// Compute component-wise inverse.
@@ -326,8 +326,8 @@ impl<const K: usize> BindingAlgebra for ProductCliffordAlgebra<K> {
     fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
         if beta.is_infinite() {
             // Hard bundling: winner-take-all
-            let self_norm = self.compute_norm();
-            let other_norm = other.compute_norm();
+            let self_norm = self.compute_norm()?;
+            let other_norm = other.compute_norm()?;
             if self_norm >= other_norm {
                 Ok(self.clone())
             } else {
@@ -335,8 +335,8 @@ impl<const K: usize> BindingAlgebra for ProductCliffordAlgebra<K> {
             }
         } else {
             // Soft bundling: weighted average
-            let self_norm = self.compute_norm();
-            let other_norm = other.compute_norm();
+            let self_norm = self.compute_norm()?;
+            let other_norm = other.compute_norm()?;
 
             let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
                 (0.5, 0.5)
@@ -367,10 +367,10 @@ impl<const K: usize> BindingAlgebra for ProductCliffordAlgebra<K> {
         if beta.is_infinite() {
             // Hard bundling: find element with maximum norm
             let mut best = items[0].clone();
-            let mut best_norm = best.compute_norm();
+            let mut best_norm = best.compute_norm()?;
 
             for item in items.iter().skip(1) {
-                let norm = item.compute_norm();
+                let norm = item.compute_norm()?;
                 if norm > best_norm {
                     best = item.clone();
                     best_norm = norm;
@@ -385,31 +385,6 @@ impl<const K: usize> BindingAlgebra for ProductCliffordAlgebra<K> {
             }
             Ok(result)
         }
-    }
-
-    fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.compute_norm();
-        let other_norm = other.compute_norm();
-
-        if self_norm < 1e-10 || other_norm < 1e-10 {
-            return 0.0;
-        }
-
-        // Average similarity across components
-        let inner = self.inner_product(other);
-        inner / (self_norm * other_norm)
-    }
-
-    fn norm(&self) -> f64 {
-        self.compute_norm()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let n = self.compute_norm();
-        if n < 1e-10 {
-            return Err(AlgebraError::NormalizationFailed { norm: n });
-        }
-        Ok(self.component_scale(1.0 / n))
     }
 
     fn permute(&self, shift: i32) -> Self {
@@ -543,7 +518,7 @@ mod tests {
         let identity = ProductCl3x4::identity();
         let bound = a.bind(&identity);
 
-        let sim = a.similarity(&bound);
+        let sim = a.similarity(&bound).unwrap();
         assert!(sim > 0.99, "similarity with identity: {}", sim);
     }
 
@@ -555,7 +530,7 @@ mod tests {
 
         // a * a^-1 should be close to identity
         let identity = ProductCl3x8::identity();
-        let sim = product.similarity(&identity);
+        let sim = product.similarity(&identity).unwrap();
         assert!(sim > 0.99, "inverse product similarity: {}", sim);
     }
 
@@ -575,8 +550,8 @@ mod tests {
         let bound = a.bind(&b);
 
         // bound should be dissimilar to both a and b
-        let sim_a = bound.similarity(&a).abs();
-        let sim_b = bound.similarity(&b).abs();
+        let sim_a = bound.similarity(&a).unwrap().abs();
+        let sim_b = bound.similarity(&b).unwrap().abs();
 
         // With 64 dimensions, we expect low similarity
         assert!(sim_a < 0.5, "similarity with a: {}", sim_a);
@@ -600,7 +575,7 @@ mod tests {
         let bound = key.bind(&value);
         let recovered = key.unbind(&bound).expect("unbind should succeed");
 
-        let sim = recovered.similarity(&value);
+        let sim = recovered.similarity(&value).unwrap();
         assert!(sim > 0.99, "recovery similarity: {}", sim);
     }
 
@@ -611,8 +586,8 @@ mod tests {
         let bundled = a.bundle(&b, 1.0).expect("bundling should succeed");
 
         // bundled should have some similarity to both
-        let sim_a = bundled.similarity(&a);
-        let sim_b = bundled.similarity(&b);
+        let sim_a = bundled.similarity(&a).unwrap();
+        let sim_b = bundled.similarity(&b).unwrap();
 
         assert!(sim_a > 0.0 || sim_b > 0.0, "bundled should have similarity");
     }

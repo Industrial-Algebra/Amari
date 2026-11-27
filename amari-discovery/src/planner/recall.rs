@@ -168,7 +168,9 @@ impl CandidateRetriever {
     ) -> DiscoveryResult<RetrievedCandidate> {
         let capability_tokens = capability_tokens(capability);
         let capability_vector = self.encode(&capability_tokens)?;
-        let holographic_score = query_vector.similarity(&capability_vector);
+        let holographic_score = query_vector
+            .similarity(&capability_vector)
+            .map_err(|e| DiscoveryError::InvalidInput(format!("undefined recall cosine: {e}")))?;
         let lexical_score = lexical_score(query_tokens, &capability_tokens);
         let matched_evidence = query_tokens
             .keys()

@@ -530,31 +530,6 @@ impl BindingAlgebra for Cl3 {
         }
     }
 
-    fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.norm_squared().abs().sqrt();
-        let other_norm = other.norm_squared().abs().sqrt();
-
-        if self_norm < 1e-10 || other_norm < 1e-10 {
-            return 0.0;
-        }
-
-        // <A B̃>₀ / (|A| |B|)
-        let inner = self.geometric_product(&other.reverse()).coeffs[Self::S];
-        inner / (self_norm * other_norm)
-    }
-
-    fn norm(&self) -> f64 {
-        self.norm_squared().abs().sqrt()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let n = self.norm();
-        if n < 1e-10 {
-            return Err(AlgebraError::NormalizationFailed { norm: n });
-        }
-        Ok(self.scale(1.0 / n))
-    }
-
     fn permute(&self, shift: i32) -> Self {
         // Apply cyclic permutation `shift` times
         let shift = shift.rem_euclid(3);
@@ -765,7 +740,7 @@ mod tests {
         let identity = Cl3::identity();
         let bound = a.bind(&identity);
 
-        let sim = a.similarity(&bound);
+        let sim = a.similarity(&bound).unwrap();
         assert!(sim > 0.99, "similarity with identity: {}", sim);
     }
 

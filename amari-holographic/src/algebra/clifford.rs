@@ -100,6 +100,13 @@ impl<const P: usize, const Q: usize, const R: usize> CliffordAlgebra<P, Q, R> {
         Some(Self::new(Multivector::from_coefficients(coeffs)))
     }
 
+    /// Signed metric pairing of coefficient-normalized operands, not a retrieval cosine.
+    pub fn normalized_metric_pairing(&self, other: &Self) -> AlgebraResult<f64> {
+        let a = self.normalize()?;
+        let b = other.normalize()?;
+        Ok(a.inner.scalar_product(&b.inner.reverse()))
+    }
+
     /// Create a random unit versor (product of unit vectors).
     ///
     /// Versors are always invertible, making them ideal for binding keys.
@@ -213,28 +220,11 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
         }
     }
 
-    fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.inner.coefficient_norm();
-        let other_norm = other.inner.coefficient_norm();
-
-        if self_norm < 1e-10 || other_norm < 1e-10 {
-            return 0.0;
+    fn coefficient_cosine(&self, other: &Self) -> AlgebraResult<f64> {
+        if Q != 0 || R != 0 {
+            return Err(AlgebraError::UnsupportedSignature);
         }
-
-        // Use scalar product with reverse: <A B̃>₀
-        let inner = self.inner.scalar_product(&other.inner.reverse());
-        inner / (self_norm * other_norm)
-    }
-
-    fn norm(&self) -> f64 {
-        self.inner.coefficient_norm()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let n = self.inner.coefficient_norm();
-        (n > 0.0)
-            .then(|| Self::new(self.inner.clone() / n))
-            .ok_or(AlgebraError::NormalizationFailed { norm: n })
+        super::geometry::cosine(self.to_coefficients(), other.to_coefficients())
     }
 
     fn permute(&self, shift: i32) -> Self {
@@ -400,7 +390,7 @@ mod tests {
         let bound = a.bind(&identity);
 
         // a * identity should equal a
-        let sim = a.similarity(&bound);
+        let sim = a.similarity(&bound).unwrap();
         assert!(sim > 0.99, "similarity with identity binding: {}", sim);
     }
 
@@ -412,7 +402,7 @@ mod tests {
 
         // a * a^-1 should be close to identity
         let identity = Cl3Full::identity();
-        let sim = product.similarity(&identity);
+        let sim = product.similarity(&identity).unwrap();
         assert!(sim > 0.99, "inverse product similarity: {}", sim);
     }
 
@@ -423,8 +413,8 @@ mod tests {
         let bound = a.bind(&b);
 
         // bound should be dissimilar to both a and b
-        let sim_a = bound.similarity(&a).abs();
-        let sim_b = bound.similarity(&b).abs();
+        let sim_a = bound.similarity(&a).unwrap().abs();
+        let sim_b = bound.similarity(&b).unwrap().abs();
 
         // In high dimensions, similarity should be low (close to 0)
         // For Cl(3), dimension is only 8, so we're more lenient
@@ -439,8 +429,8 @@ mod tests {
         let bundled = a.bundle(&b, 1.0).expect("bundling should succeed");
 
         // bundled should be similar to both a and b
-        let sim_a = bundled.similarity(&a);
-        let sim_b = bundled.similarity(&b);
+        let sim_a = bundled.similarity(&a).unwrap();
+        let sim_b = bundled.similarity(&b).unwrap();
 
         // For soft bundling, result should have some similarity to both
         assert!(

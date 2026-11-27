@@ -1,5 +1,19 @@
 # H2 implementation and migration evidence
 
+## U2 — stable geometry and coordinated D3 rewrite migration
+
+Parent `a2933e78`. RED `c test -p amari-holographic --test h2_geometry` default, 1 selected, exit 101: `tiny scalar norm = 0`. Final working tree, same command: `u2_small_nonzero_norm`, `domains`, `scales_and_directions` all passed (3, exit 0).
+
+Rewrite paused per operator ([coordination handoff](2026-11-25-holographic-rewrite-coordination-handoff.md)). Only `recall.rs`'s lane function/three field assignments and success extraction in six existing `holographic_inverse.rs` assertions migrate. Undefined lanes propagate `HolographicError::Composition`; no substituted scores or skipped candidates. The six assertions' numbers and bits were not changed. `holographic_remediation.rs` remains byte-identical. During migration `c test -p amari-rewrite --features holographic-guidance --test holographic_remediation similarity_lanes_are_clamped_to_the_documented_interval -- --exact` selected 1, exit 101:
+
+```text
+assertion `left == right` failed: an identical trace ranks at the top of the interval
+  left: 0.9999999999999998
+ right: 1.0
+```
+
+Operator-approved structural identity (candidate for promotion to contract text): **cosine(x,x) is exactly 1.0** for bitwise-identical full representations on the admitted finite, nonzero Euclidean domain. Not a tolerance or ranking policy. Zero/nonfinite remain errors; signed/null signatures return `UnsupportedSignature`. Use `normalized_metric_pairing` for the signed operation; handle fallible norm and cosine at the call site. The ordinary error already met the general `1e−12` law; the identity restores the stricter pre-H2 rewrite result. `c test -p amari-rewrite --features holographic-guidance`, all test binaries, 560 passed, 0 failed/ignored, exit 0.
+
 `c` means `env -u CARGO_ENCODED_RUSTFLAGS -u CARGO_BUILD_TARGET -u RUSTC_WRAPPER -u RUSTC_WORKSPACE_WRAPPER cargo +1.100.0` from the H2 worktree root.
 
 ## U1 — binding keys and general division

@@ -57,31 +57,6 @@ impl BindingAlgebra for TestAlgebra {
         ))
     }
 
-    fn similarity(&self, other: &Self) -> f64 {
-        let denominator = self.norm() * other.norm();
-        if denominator <= f64::EPSILON {
-            return 0.0;
-        }
-        self.0
-            .iter()
-            .zip(&other.0)
-            .map(|(left, right)| left * right)
-            .sum::<f64>()
-            / denominator
-    }
-
-    fn norm(&self) -> f64 {
-        self.0.iter().map(|value| value * value).sum::<f64>().sqrt()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let norm = self.norm();
-        if norm <= f64::EPSILON {
-            return Err(AlgebraError::NormalizationFailed { norm });
-        }
-        Ok(Self(self.0.iter().map(|value| value / norm).collect()))
-    }
-
     fn permute(&self, _shift: i32) -> Self {
         self.clone()
     }
@@ -194,9 +169,9 @@ fn repeated_superposition_grows_while_bundle_remains_attention_like() {
         attention = attention.bundle(item, 1.0).unwrap();
     }
 
-    assert!((trace.norm() - 2.0).abs() <= 1.0e-12);
-    assert!(attention.norm() <= 1.0);
-    assert!(trace.norm() > attention.norm());
+    assert!((trace.norm().unwrap() - 2.0).abs() <= 1.0e-12);
+    assert!(attention.norm().unwrap() <= 1.0);
+    assert!(trace.norm().unwrap() > attention.norm().unwrap());
 }
 
 #[test]

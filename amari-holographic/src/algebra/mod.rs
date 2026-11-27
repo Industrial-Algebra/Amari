@@ -55,6 +55,7 @@ pub mod product_clifford;
 mod tests;
 
 // Re-exports
+mod geometry;
 mod keys;
 pub use cl3::Cl3;
 pub use clifford::CliffordAlgebra;
@@ -72,6 +73,8 @@ pub use product_clifford::ProductCliffordAlgebra;
 pub enum AlgebraError {
     /// Operand does not belong to the certified binding-key class.
     KeyDomain,
+    /// Euclidean cosine is not a metric pairing on a signed or null signature.
+    UnsupportedSignature,
     /// A coefficient is not finite.
     NonFinite,
     /// The requested result is outside the supported floating-point range.
@@ -105,6 +108,7 @@ pub enum AlgebraError {
 impl fmt::Display for AlgebraError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::UnsupportedSignature => write!(f, "unsupported metric signature"),
             Self::KeyDomain => write!(f, "invalid binding key"),
             Self::NonFinite => write!(f, "nonfinite coefficient"),
             Self::Unrepresentable => write!(f, "unrepresentable arithmetic result"),
@@ -334,15 +338,33 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
     /// - `1.0`: Identical (up to normalization)
     /// - `0.0`: Orthogonal / dissimilar
     /// - `-1.0`: Opposite
-    fn similarity(&self, other: &Self) -> f64;
+    fn similarity(&self, other: &Self) -> AlgebraResult<f64> {
+        self.coefficient_cosine(other)
+    }
+    /// Euclidean coefficient cosine; signed/null Clifford signatures reject it.
+    fn coefficient_cosine(&self, other: &Self) -> AlgebraResult<f64> {
+        geometry::cosine(self.geometry_coefficients(), other.geometry_coefficients())
+    }
+    /// Coefficients used for Euclidean geometry, including imaginary components.
+    fn geometry_coefficients(&self) -> Vec<f64> {
+        self.to_coefficients()
+    }
+    /// Construct from the representation used for Euclidean geometry.
+    fn from_geometry_coefficients(c: &[f64]) -> AlgebraResult<Self> {
+        Self::from_coefficients(c)
+    }
 
     /// Compute the norm (magnitude) of the element.
-    fn norm(&self) -> f64;
+    fn norm(&self) -> AlgebraResult<f64> {
+        geometry::norm(&self.geometry_coefficients())
+    }
 
     /// Normalize the element to unit norm.
     ///
     /// Returns `Err(NormalizationFailed)` if the norm is too small.
-    fn normalize(&self) -> AlgebraResult<Self>;
+    fn normalize(&self) -> AlgebraResult<Self> {
+        Self::from_geometry_coefficients(&geometry::unit(self.geometry_coefficients())?)
+    }
 
     /// Apply a random permutation for sequence encoding.
     ///

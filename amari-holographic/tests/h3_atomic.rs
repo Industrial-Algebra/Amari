@@ -51,10 +51,10 @@ impl BindingAlgebra for Fault {
         }
         self.0.superpose(&b.0).map(Self)
     }
-    fn similarity(&self, b: &Self) -> f64 {
+    fn similarity(&self, b: &Self) -> AlgebraResult<f64> {
         self.0.similarity(&b.0)
     }
-    fn norm(&self) -> f64 {
+    fn norm(&self) -> AlgebraResult<f64> {
         self.0.norm()
     }
     fn normalize(&self) -> AlgebraResult<Self> {

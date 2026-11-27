@@ -362,7 +362,11 @@ impl GpuHolographic {
             let b_vec = ProductCl3x32::from_coefficients(&b[start..end])
                 .map_err(|e| GpuHolographicError::AlgebraError(format!("{}", e)))?;
 
-            results.push(a_vec.similarity(&b_vec));
+            results.push(
+                a_vec
+                    .similarity(&b_vec)
+                    .map_err(|e| GpuHolographicError::AlgebraError(e.to_string()))?,
+            );
         }
 
         Ok(results)
