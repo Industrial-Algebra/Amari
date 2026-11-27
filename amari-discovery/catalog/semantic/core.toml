@@ -696,3 +696,145 @@ kind = "composes_with"
 from = "amari:amari-rewrite:neural:strategy"
 to = "amari:amari-rewrite:inverse:backward-search"
 kind = "composes_with"
+
+# ---------------------------------------------------------------------------
+# Geometric, holographic, and hybrid inverse guidance (0.25 Cohort 9, Task 49)
+# — experimental metadata.
+#
+# These six capabilities describe the opt-in `amari-rewrite` geometric
+# (`network`), holographic (`holographic-guidance`), and hybrid (`any(neural,
+# holographic-guidance)`) guidance backends: the exact state embedding, the
+# inverse search graph, the geometric strategy, trace encoding, trace recall,
+# and the hybrid strategy that combines the lanes. Discovery curates metadata
+# only. No probe is declared here, and `amari-discovery` enables none of these
+# features, so no Katakuri, borsalino-tensor, or `amari-network`/`amari-
+# holographic` binding enters this crate's graph beyond what it already links.
+# The catalog consequently never stores model weights, optimizer state, replay
+# certificates, recall vectors, or raw traces: those are caller-owned runtime
+# data. Ordering guidance never creates a transition; the symbolic inverse
+# engine keeps that authority.
+# ---------------------------------------------------------------------------
+
+[[capabilities]]
+id = "amari:amari-rewrite:geometric:state-embedding"
+name = "Geometric inverse state embedding"
+description = "Embed alpha-canonical inverse-search states into a fixed geometric vector space with a versioned, deterministic encoding, so distances between states are reproducible run to run."
+aliases = ["state embedding", "geometric state embedding", "inverse state embedding"]
+concepts = ["inverse rewriting", "geometric guidance", "state embedding"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:network"]
+symbol_refs = ["amari_rewrite::network::InverseStateEmbeddingV1"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-rewrite:geometric:search-graph"
+name = "Geometric inverse search graph"
+description = "Build a bounded inverse-search graph over embedded states and expose its configuration, so neighbourhood structure over already-generated states can inform which expansion to try next."
+aliases = ["inverse search graph", "geometric search graph", "state graph"]
+concepts = ["inverse rewriting", "geometric guidance", "search graph"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:network"]
+symbol_refs = ["amari_rewrite::network::InverseSearchGraph", "amari_rewrite::network::InverseGraphConfig"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:geometric:strategy"
+name = "Geometric inverse-search guidance"
+description = "Order the bounded candidates of one inverse-search round by a transparent geometric score, leaving every transition, validation, and pruning decision to the symbolic engine."
+aliases = ["geometric guidance", "geometric strategy", "geometric inverse search"]
+concepts = ["inverse rewriting", "geometric guidance", "candidate ranking"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:network"]
+symbol_refs = ["amari_rewrite::network::GeometricStrategy", "amari_rewrite::network::GeometricStrategyConfig"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:holographic:trace-encoding"
+name = "Holographic recall trace encoding"
+description = "Encode bounded, replay-validated inverse-search traces deterministically for a fixed seed, dimension, and schema. The encoder digest binds seed, dimension, schema, and limits; limits act as admission ceilings, not as vector content. Trace identity is independent of seed and dimension."
+aliases = ["trace encoding", "holographic encoding", "recall trace encoding"]
+concepts = ["holographic guidance", "inverse rewriting", "trace encoding"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:holographic-guidance"]
+symbol_refs = ["amari_rewrite::holographic::HolographicEncoder", "amari_rewrite::holographic::RecallTrace"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "low"
+
+[[capabilities]]
+id = "amari:amari-rewrite:holographic:trace-recall"
+name = "Holographic trace recall"
+description = "Return bounded ranked trace references with decomposed similarity scores from a replay-validated corpus. Candidate projection is a separate concern of `inverse::hybrid::RecallLane`, by canonical term identity."
+aliases = ["trace recall", "holographic recall", "trace corpus"]
+concepts = ["holographic guidance", "inverse rewriting", "similarity recall"]
+crate_refs = ["amari-rewrite"]
+feature_refs = ["amari-rewrite:holographic-guidance"]
+symbol_refs = ["amari_rewrite::holographic::TraceCorpus", "amari_rewrite::holographic::TraceRecall", "amari_rewrite::holographic::RecallConfig"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[capabilities]]
+id = "amari:amari-rewrite:hybrid:strategy"
+name = "Hybrid inverse-search guidance"
+description = "Combine available, supplied lanes (symbolic, neural, geometric, and holographic recall) into one transparent ordinal-fraction order over one round's candidates. Either feature `neural` or `holographic-guidance` exposes the module (`network` implies `neural`), but each optional lane retains its own feature gate and unsupplied or uncompiled lanes are `Missing`. These alternatives are descriptive metadata only, not unconditional Cargo feature actions. The symbolic engine still owns every transition."
+aliases = ["hybrid guidance", "hybrid inverse search", "combined guidance", "multi-lane ranking"]
+concepts = ["inverse rewriting", "hybrid guidance", "candidate ranking", "holographic guidance"]
+crate_refs = ["amari-rewrite"]
+feature_refs = []
+symbol_refs = ["amari_rewrite::inverse::hybrid::HybridStrategy", "amari_rewrite::inverse::hybrid::HybridEvaluation", "amari_rewrite::inverse::hybrid::HybridWeights", "amari_rewrite::inverse::hybrid::HybridConfig", "amari_rewrite::inverse::hybrid::RecallProjection"]
+example_refs = []
+probe_refs = []
+stability = "experimental"
+cost = "moderate"
+
+[[relations]]
+from = "amari:amari-rewrite:geometric:state-embedding"
+to = "amari:amari-rewrite:geometric:search-graph"
+kind = "produces_input_for"
+
+[[relations]]
+from = "amari:amari-rewrite:geometric:search-graph"
+to = "amari:amari-rewrite:geometric:strategy"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:geometric:strategy"
+to = "amari:amari-rewrite:inverse:backward-search"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:holographic:trace-encoding"
+to = "amari:amari-rewrite:holographic:trace-recall"
+kind = "produces_input_for"
+
+[[relations]]
+from = "amari:amari-rewrite:holographic:trace-recall"
+to = "amari:amari-rewrite:hybrid:strategy"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:neural:strategy"
+to = "amari:amari-rewrite:hybrid:strategy"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:geometric:strategy"
+to = "amari:amari-rewrite:hybrid:strategy"
+kind = "composes_with"
+
+[[relations]]
+from = "amari:amari-rewrite:hybrid:strategy"
+to = "amari:amari-rewrite:inverse:backward-search"
+kind = "composes_with"
