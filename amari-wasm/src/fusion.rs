@@ -831,9 +831,9 @@ fn holographic_js_error(error: amari_holographic::memory::HolographicError) -> J
 fn checked_holographic_key(coefficients: &[f64]) -> Result<ProductCl3x32, JsValue> {
     let key = ProductCl3x32::from_coefficients(coefficients)
         .map_err(|e| JsValue::from_str(&format!("invalid holographic key: {e}")))?;
-    key.inverse()
-        .map_err(|e| JsValue::from_str(&format!("invalid holographic key: {e}")))?;
-    Ok(key)
+    amari_holographic::TypedKey::try_new(key)
+        .map(|validated| validated.as_element().clone())
+        .map_err(|e| JsValue::from_str(&format!("invalid holographic key: {e}")))
 }
 
 /// WASM wrapper for HolographicMemory using ProductClifford algebra

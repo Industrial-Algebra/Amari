@@ -45,7 +45,7 @@ fn u3_walsh_crosstalk_without_age_gradient() {
     for (i, k) in keys.iter().enumerate() {
         let raw = m.retrieve(k).unwrap().raw_value;
         assert_eq!(raw.components(), &[8., 0., 0., 0., 0., 0., 0., 0.]);
-        assert!((raw.similarity(&M::identity()) - 1. / 8f64.sqrt()).abs() < 1e-12);
+        assert!((raw.similarity(&M::identity()).unwrap() - 1. / 8f64.sqrt()).abs() < 1e-12);
         assert_eq!(
             m.membership(k).unwrap(),
             MembershipEvidence::Present { indices: vec![i] }

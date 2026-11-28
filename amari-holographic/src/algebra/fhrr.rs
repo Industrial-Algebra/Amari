@@ -71,23 +71,33 @@ pub struct FHRRAlgebra<const D: usize> {
 impl<const D: usize> FHRRAlgebra<D> {
     /// Create a new FHRR element from real and imaginary arrays.
     pub fn new(real: [f64; D], imag: [f64; D]) -> Self {
+        const {
+            assert!(D > 0, "FHRR requires at least one bin");
+        }
         Self { real, imag }
+    }
+    /// Checked construction for dynamically selected specializations.
+    pub fn try_new(real: [f64; D], imag: [f64; D]) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
+        Ok(Self { real, imag })
     }
 
     /// Create from Vecs (for convenience).
     pub fn from_vecs(real: Vec<f64>, imag: Vec<f64>) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
         if real.len() != D || imag.len() != D {
-            return Err(AlgebraError::DimensionMismatch {
-                expected: D,
-                actual: real.len().min(imag.len()),
-            });
+            return Err(AlgebraError::InvalidShape);
         }
 
         let mut r = [0.0; D];
         let mut i = [0.0; D];
         r.copy_from_slice(&real);
         i.copy_from_slice(&imag);
-        Ok(Self::new(r, i))
+        Self::try_new(r, i)
     }
 
     /// Create the identity element (all 1+0i).
@@ -238,8 +248,8 @@ impl<const D: usize> FHRRAlgebra<D> {
     }
 
     /// Compute the L2 norm.
-    pub fn compute_norm(&self) -> f64 {
-        self.norm_squared().sqrt()
+    pub fn compute_norm(&self) -> AlgebraResult<f64> {
+        self.norm()
     }
 
     /// Normalize to unit magnitude in each component.
@@ -251,15 +261,18 @@ impl<const D: usize> FHRRAlgebra<D> {
         let mut imag = [0.0; D];
 
         for i in 0..D {
-            let mag = (self.real[i].powi(2) + self.imag[i].powi(2)).sqrt();
-            if mag < 1e-10 {
-                // Keep as zero (or could set to 1+0i)
-                real[i] = 0.0;
-                imag[i] = 0.0;
-            } else {
-                real[i] = self.real[i] / mag;
-                imag[i] = self.imag[i] / mag;
+            let (a, b) = (self.real[i], self.imag[i]);
+            if !a.is_finite() || !b.is_finite() {
+                return Err(AlgebraError::NonFinite);
             }
+            let scale = a.abs().max(b.abs());
+            if scale == 0. {
+                return Err(AlgebraError::KeyDomain);
+            }
+            let (u, v) = (a / scale, b / scale);
+            let n = u.hypot(v);
+            real[i] = u / n;
+            imag[i] = v / n;
         }
 
         Ok(Self::new(real, imag))
@@ -282,18 +295,18 @@ impl<const D: usize> FHRRAlgebra<D> {
         (real_sum, imag_sum)
     }
 
-    /// Cyclic shift (circular permutation in time domain).
-    ///
-    /// This corresponds to multiplication by a phase ramp in frequency domain.
-    pub fn cyclic_shift(&self, shift: i32) -> Self {
-        let n = D as i32;
-        let shift = ((shift % n) + n) % n;
-
+    /// Gather complete complex bins by a bijection (destination index → source).
+    pub fn permute_bins(&self, map: &[usize; D]) -> AlgebraResult<Self> {
+        super::checked_map(map)?;
+        Self::try_new(map.map(|i| self.real[i]), map.map(|i| self.imag[i]))
+    }
+    /// Rotate frequency bins; not a temporal delay. Positive shifts move input i to i+shift.
+    pub fn rotate_bins(&self, shift: i32) -> Self {
         let mut real = [0.0; D];
         let mut imag = [0.0; D];
 
         for i in 0..D {
-            let j = (i as i32 + shift) as usize % D;
+            let j = super::shifted(i, shift, D);
             real[j] = self.real[i];
             imag[j] = self.imag[i];
         }
@@ -320,6 +333,11 @@ impl<const D: usize> FHRRAlgebra<D> {
         Self::new(real, imag)
     }
 
+    /// Adjoint correlation, not inverse recovery for a general spectrum.
+    pub fn correlation(&self, bound: &Self) -> Self {
+        self.conjugate().complex_multiply(bound)
+    }
+
     /// Component-wise element inverse (1/z for each component).
     ///
     /// For unitary elements, this equals the conjugate.
@@ -328,16 +346,21 @@ impl<const D: usize> FHRRAlgebra<D> {
         let mut imag = [0.0; D];
 
         for i in 0..D {
-            let mag_sq = self.real[i].powi(2) + self.imag[i].powi(2);
-            if mag_sq < 1e-20 {
-                return Err(AlgebraError::NotInvertible {
-                    reason: alloc::format!("component {} has near-zero magnitude", i),
-                });
+            let (a, b) = (self.real[i], self.imag[i]);
+            if !a.is_finite() || !b.is_finite() {
+                return Err(AlgebraError::NonFinite);
             }
-
-            // 1/(a + bi) = (a - bi) / (a² + b²)
-            real[i] = self.real[i] / mag_sq;
-            imag[i] = -self.imag[i] / mag_sq;
+            let m = a.abs().max(b.abs());
+            if m == 0. {
+                return Err(AlgebraError::KeyDomain);
+            }
+            let (u, v) = (a / m, b / m);
+            let den = u * u + v * v;
+            real[i] = (u / den) / m;
+            imag[i] = (-v / den) / m;
+            if !real[i].is_finite() || !imag[i].is_finite() {
+                return Err(AlgebraError::Unrepresentable);
+            }
         }
 
         Ok(Self::new(real, imag))
@@ -366,43 +389,11 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
     }
 
     fn inverse(&self) -> AlgebraResult<Self> {
-        // For practical FHRR, we use the conjugate (assumes unit magnitude)
-        // This is much faster than true component-wise inverse
-        Ok(self.conjugate())
+        super::keys::certify(self, self.component_inverse()?)
     }
 
     fn unbind(&self, other: &Self) -> AlgebraResult<Self> {
-        // key.unbind(bound) = conj(key) * bound
-        Ok(self.conjugate().complex_multiply(other))
-    }
-
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling: winner-take-all
-            let self_norm = self.compute_norm();
-            let other_norm = other.compute_norm();
-            if self_norm >= other_norm {
-                Ok(self.clone())
-            } else {
-                Ok(other.clone())
-            }
-        } else {
-            // Soft bundling: weighted average
-            let self_norm = self.compute_norm();
-            let other_norm = other.compute_norm();
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            Ok(self.scale(w1).add(&other.scale(w2)))
-        }
+        super::unbind_general(self, other)
     }
 
     fn superpose(&self, other: &Self) -> AlgebraResult<Self> {
@@ -417,33 +408,24 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
         Ok(FHRRAlgebra::scale(self, factor))
     }
 
-    fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.compute_norm();
-        let other_norm = other.compute_norm();
-
-        if self_norm < 1e-10 || other_norm < 1e-10 {
-            return 0.0;
-        }
-
-        // Real part of normalized inner product
-        let (real_inner, _) = self.inner_product(other);
-        real_inner / (self_norm * other_norm)
+    fn geometry_coefficients(&self) -> Vec<f64> {
+        self.real.iter().chain(&self.imag).copied().collect()
     }
-
-    fn norm(&self) -> f64 {
-        self.compute_norm()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let n = self.compute_norm();
-        if n < 1e-10 {
-            return Err(AlgebraError::NormalizationFailed { norm: n });
+    fn from_geometry_coefficients(c: &[f64]) -> AlgebraResult<Self> {
+        if c.len() != 2 * D {
+            return Err(AlgebraError::DimensionMismatch {
+                expected: 2 * D,
+                actual: c.len(),
+            });
         }
-        Ok(self.scale(1.0 / n))
+        Ok(Self::new(
+            core::array::from_fn(|i| c[i]),
+            core::array::from_fn(|i| c[D + i]),
+        ))
     }
 
     fn permute(&self, shift: i32) -> Self {
-        self.cyclic_shift(shift)
+        self.rotate_bins(shift)
     }
 
     fn get(&self, index: usize) -> AlgebraResult<f64> {
@@ -474,7 +456,7 @@ impl<const D: usize> BindingAlgebra for FHRRAlgebra<D> {
 
         let mut real = [0.0; D];
         real.copy_from_slice(coeffs);
-        Ok(Self::new(real, [0.0; D]))
+        Self::try_new(real, [0.0; D])
     }
 
     fn to_coefficients(&self) -> Vec<f64> {
@@ -568,7 +550,7 @@ mod tests {
         let recovered = key.unbind(&bound).expect("unbind should succeed");
 
         // recovered should be close to value
-        let sim = recovered.similarity(&value);
+        let sim = recovered.similarity(&value).unwrap();
         assert!(sim > 0.99, "recovery similarity: {}", sim);
     }
 
@@ -579,8 +561,8 @@ mod tests {
         let bound = a.bind(&b);
 
         // bound should be dissimilar to both a and b
-        let sim_a = bound.similarity(&a).abs();
-        let sim_b = bound.similarity(&b).abs();
+        let sim_a = bound.similarity(&a).unwrap().abs();
+        let sim_b = bound.similarity(&b).unwrap().abs();
 
         // With 256 dimensions, random elements should be nearly orthogonal
         assert!(sim_a < 0.3, "similarity with a: {}", sim_a);
@@ -590,8 +572,8 @@ mod tests {
     #[test]
     fn test_fhrr_cyclic_shift() {
         let a = FHRR64::random_unitary();
-        let shifted = a.cyclic_shift(10);
-        let back = shifted.cyclic_shift(-10);
+        let shifted = a.rotate_bins(10);
+        let back = shifted.rotate_bins(-10);
 
         // Should recover original
         for i in 0..64 {

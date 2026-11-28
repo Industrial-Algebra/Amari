@@ -573,9 +573,9 @@ impl<const D: usize> TraceCorpus<D> {
             matches.push(TraceMatch {
                 trace_hash: entry.trace_hash,
                 score: TraceSimilarity {
-                    combined: lane_similarity(&encoded.vector, &entry.vector),
-                    goal_alignment: lane_similarity(&encoded.goal, &entry.goal),
-                    path_alignment: lane_similarity(&encoded.path, &entry.path),
+                    combined: lane_similarity(&encoded.vector, &entry.vector)?,
+                    goal_alignment: lane_similarity(&encoded.goal, &entry.goal)?,
+                    path_alignment: lane_similarity(&encoded.path, &entry.path)?,
                 },
             });
         }
@@ -664,6 +664,10 @@ fn check(resource: &'static str, value: usize, limit: usize) -> Result<(), Holog
 fn lane_similarity<const D: usize>(
     left: &amari_holographic::FHRRAlgebra<D>,
     right: &amari_holographic::FHRRAlgebra<D>,
-) -> f64 {
-    <amari_holographic::FHRRAlgebra<D> as BindingAlgebra>::similarity(left, right).clamp(-1.0, 1.0)
+) -> Result<f64, HolographicError> {
+    let score = <amari_holographic::FHRRAlgebra<D> as BindingAlgebra>::similarity(left, right)
+        .map_err(|_| HolographicError::Composition {
+            reason: "lane similarity",
+        })?;
+    Ok(score.clamp(-1.0, 1.0))
 }

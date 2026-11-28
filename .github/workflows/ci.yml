@@ -104,6 +104,7 @@ jobs:
           echo "VK_ICD_FILENAMES=$icd" >> "$GITHUB_ENV"
       - name: Verify basis products through CPU and WGSL readback (adapter required)
         run: |
+          cargo test -p amari-gpu --features holographic --lib holographic::tests::test_batch_bundle_cpu -- --exact --ignored --nocapture
           cargo test -p amari-gpu --features holographic --test h1_shader_parity -- --ignored --nocapture | tee "$RUNNER_TEMP/parity.log"
           grep -F '1 passed; 0 failed' "$RUNNER_TEMP/parity.log"
         shell: bash

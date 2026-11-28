@@ -55,9 +55,29 @@ pub mod product_clifford;
 mod tests;
 
 // Re-exports
+mod bundle;
+mod geometry;
+mod keys;
+fn checked_map<const N: usize>(map: &[usize; N]) -> AlgebraResult<()> {
+    if N == 0 {
+        return Err(AlgebraError::EmptyDimension);
+    }
+    let mut seen = [false; N];
+    for &j in map {
+        if j >= N || seen[j] {
+            return Err(AlgebraError::NonBijectiveMap);
+        }
+        seen[j] = true;
+    }
+    Ok(())
+}
+fn shifted(i: usize, shift: i32, n: usize) -> usize {
+    (i as i128 + i128::from(shift)).rem_euclid(n as i128) as usize
+}
 pub use cl3::Cl3;
 pub use clifford::CliffordAlgebra;
 pub use fhrr::FHRRAlgebra;
+pub use keys::{unbind_general, TypedKey};
 pub use map::MAPAlgebra;
 pub use product_clifford::ProductCliffordAlgebra;
 
@@ -68,6 +88,22 @@ pub use product_clifford::ProductCliffordAlgebra;
 /// Errors that can occur during algebra operations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum AlgebraError {
+    /// Operand does not belong to the certified binding-key class.
+    KeyDomain,
+    /// Euclidean cosine is not a metric pairing on a signed or null signature.
+    UnsupportedSignature,
+    /// Zero factors or bins.
+    EmptyDimension,
+    /// Inverse temperature outside the operation's domain.
+    Beta,
+    /// Input lengths do not match the requested shape.
+    InvalidShape,
+    /// Indices are out of range or repeated.
+    NonBijectiveMap,
+    /// A coefficient is not finite.
+    NonFinite,
+    /// The requested result is outside the supported floating-point range.
+    Unrepresentable,
     /// Element is not invertible (singular)
     NotInvertible { reason: String },
 
@@ -97,6 +133,14 @@ pub enum AlgebraError {
 impl fmt::Display for AlgebraError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Beta => write!(f, "invalid inverse temperature"),
+            Self::EmptyDimension => write!(f, "empty algebra dimension"),
+            Self::InvalidShape => write!(f, "invalid algebra shape"),
+            Self::NonBijectiveMap => write!(f, "nonbijective permutation"),
+            Self::UnsupportedSignature => write!(f, "unsupported metric signature"),
+            Self::KeyDomain => write!(f, "invalid binding key"),
+            Self::NonFinite => write!(f, "nonfinite coefficient"),
+            Self::Unrepresentable => write!(f, "unrepresentable arithmetic result"),
             Self::NotInvertible { reason } => {
                 write!(f, "element not invertible: {}", reason)
             }
@@ -156,13 +200,16 @@ pub type AlgebraResult<T> = Result<T, AlgebraError>;
 ///
 /// # Algebraic Laws
 ///
-/// Implementations should satisfy (approximately, due to noise):
+/// In the algebraic model, up to floating-point rounding:
 ///
 /// 1. **Binding inverse**: `x.bind(&x.inverse()?) ≈ Self::identity()`
 /// 2. **Identity**: `x.bind(&Self::identity()) = x`
-/// 3. **Distributivity**: `a.bind(&b.bundle(&c, β)?) ≈ a.bind(&b).bundle(&a.bind(&c), β)?`
-/// 4. **Dissimilarity**: `similarity(a.bind(&b), a) ≈ 0` and `similarity(a.bind(&b), b) ≈ 0`
-/// 5. **Bundle similarity**: `similarity(a.bundle(&b, β)?, a) > 0`
+/// 3. **Distributivity over additive superposition**: `(Σᵢ kᵢ) ⊛ (Σⱼ vⱼ) = Σᵢⱼ (kᵢ ⊛ vⱼ)`.
+///    Here the sums use [`superpose`](Self::superpose), not [`bundle`](Self::bundle).
+///    There is no distributive law for nonlinear bundling or cleanup.
+///
+/// Dissimilarity after binding and similarity after bundling are statistical
+/// expectations for suitable input ensembles, not algebraic identities.
 ///
 /// # Type Parameters
 ///
@@ -188,10 +235,9 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
 
     /// Bind two elements (association/structure-creation).
     ///
-    /// The binding operation creates a new representation that:
-    /// - Is dissimilar to both inputs
-    /// - Distributes over bundling: `a ⊛ (b ⊕ c) ≈ (a ⊛ b) ⊕ (a ⊛ c)`
-    /// - Has an inverse: `a ⊛ a⁻¹ ≈ identity`
+    /// Binding distributes over additive [`superpose`](Self::superpose):
+    /// `k ⊛ (v + w) = (k ⊛ v) + (k ⊛ w)` in exact arithmetic. This law does
+    /// not extend to attention weights, majority voting, or other cleanup.
     ///
     /// # Mathematical Interpretation
     ///
@@ -231,11 +277,13 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
     /// evidence.
     ///
     /// The `beta` parameter controls soft vs hard bundling:
-    /// - `beta = 1.0`: Soft bundling (weighted average / logsumexp)
+    /// - `beta = 1.0`: Soft bundling (norm-weighted average)
     /// - `beta = ∞`: Hard bundling (winner-take-all / max)
     ///
     /// The result should be similar to both inputs.
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self>;
+    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
+        Self::bundle_all(&[self.clone(), other.clone()], beta)
+    }
 
     /// Additively superpose two elements for holographic accumulation.
     ///
@@ -298,23 +346,24 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
         Self::from_coefficients(&coefficients)
     }
 
-    /// Bundle multiple elements efficiently.
-    ///
-    /// Default implementation uses pairwise bundling.
+    /// Whole-list attention, not a pair fold: not associative or partition invariant.
+    /// Empty input returns zero by convention; singleton is unchanged.
     /// Algebras may override with more efficient parallel implementations.
+    /// Callers cannot supply unchecked norms or invoke the hard reducer directly:
+    ///
+    /// ```compile_fail,E0599
+    /// use amari_holographic::{BindingAlgebra, MAPAlgebra};
+    /// let items = [MAPAlgebra::new([f64::NAN])];
+    /// let _ = MAPAlgebra::bundle_from_norms(&items, &[1.0], 1.0);
+    /// ```
+    ///
+    /// ```compile_fail,E0599
+    /// use amari_holographic::{BindingAlgebra, MAPAlgebra};
+    /// let items = [MAPAlgebra::new([f64::NAN])];
+    /// let _ = MAPAlgebra::hard_bundle(&items);
+    /// ```
     fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
-        if items.is_empty() {
-            return Ok(Self::zero());
-        }
-        if items.len() == 1 {
-            return Ok(items[0].clone());
-        }
-
-        let mut result = items[0].clone();
-        for item in items.iter().skip(1) {
-            result = result.bundle(item, beta)?;
-        }
-        Ok(result)
+        bundle::serial(items, beta, core::convert::identity)
     }
 
     /// Compute similarity between two elements.
@@ -323,15 +372,33 @@ pub trait BindingAlgebra: Sized + Clone + Send + Sync {
     /// - `1.0`: Identical (up to normalization)
     /// - `0.0`: Orthogonal / dissimilar
     /// - `-1.0`: Opposite
-    fn similarity(&self, other: &Self) -> f64;
+    fn similarity(&self, other: &Self) -> AlgebraResult<f64> {
+        self.coefficient_cosine(other)
+    }
+    /// Euclidean coefficient cosine; signed/null Clifford signatures reject it.
+    fn coefficient_cosine(&self, other: &Self) -> AlgebraResult<f64> {
+        geometry::cosine(self.geometry_coefficients(), other.geometry_coefficients())
+    }
+    /// Coefficients used for Euclidean geometry, including imaginary components.
+    fn geometry_coefficients(&self) -> Vec<f64> {
+        self.to_coefficients()
+    }
+    /// Construct from the representation used for Euclidean geometry.
+    fn from_geometry_coefficients(c: &[f64]) -> AlgebraResult<Self> {
+        Self::from_coefficients(c)
+    }
 
     /// Compute the norm (magnitude) of the element.
-    fn norm(&self) -> f64;
+    fn norm(&self) -> AlgebraResult<f64> {
+        geometry::norm(&self.geometry_coefficients())
+    }
 
     /// Normalize the element to unit norm.
     ///
     /// Returns `Err(NormalizationFailed)` if the norm is too small.
-    fn normalize(&self) -> AlgebraResult<Self>;
+    fn normalize(&self) -> AlgebraResult<Self> {
+        Self::from_geometry_coefficients(&geometry::unit(self.geometry_coefficients())?)
+    }
 
     /// Apply a random permutation for sequence encoding.
     ///
@@ -456,7 +523,7 @@ pub trait GeometricAlgebra: BindingAlgebra {
 /// behave, but is separate from the algebra implementation itself.
 #[derive(Clone, Debug, PartialEq)]
 pub struct AlgebraConfig {
-    /// Temperature for bundling: 1.0 = soft (logsumexp), f64::INFINITY = hard (max)
+    /// Inverse temperature for bundling: 1.0 = soft attention, f64::INFINITY = component majority
     pub bundle_beta: f64,
 
     /// Temperature for retrieval
@@ -517,25 +584,8 @@ impl AlgebraConfig {
 // Helper Functions
 // ============================================================================
 
-/// Compute log-sum-exp with temperature: `(1/β) * ln(exp(β*a) + exp(β*b))`
-///
-/// This smoothly interpolates between:
-/// - β → ∞: max(a, b)
-/// - β → 0: (a + b) / 2
-#[inline]
-pub fn logsumexp(a: f64, b: f64, beta: f64) -> f64 {
-    if beta.is_infinite() {
-        return a.max(b);
-    }
-    if beta <= 0.0 {
-        return (a + b) / 2.0;
-    }
-
-    // Numerically stable logsumexp
-    let max_val = a.max(b);
-    let sum = (beta * (a - max_val)).exp() + (beta * (b - max_val)).exp();
-    max_val + sum.ln() / beta
-}
+mod temperature;
+pub use temperature::{log_mean_exp, log_sum_exp};
 
 /// Compute softmax weights for two values.
 #[inline]

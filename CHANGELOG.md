@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Holographic binding domains and numerical policy (breaking)
+
+Rust retrieval keys now distinguish certified keys, general inversion and correlation. Norms and cosines return typed errors; signed Clifford metric pairing is a separate operation. Empty specializations and invalid permutations are rejected. FHRR rotations reindex bins, not time. Recompute cached attention bundles from the original ordered operands: whole-list weighting is not a binary fold, and hard ties follow the first input. Replace `logsumexp` with the checked `log_sum_exp` or `log_mean_exp`; only the latter has a finite arithmetic-mean limit at zero. See `amari-holographic/README.md` for migration examples. No release inclusion is implied.
+
 ### Holographic additive memory (breaking behavior)
 
 Rebuild stored attention traces from the original ordered key/value pairs in a new namespace; no rescaling of the compressed trace recovers the additive contributions. Memory operations now report failures instead of fabricating zero or advancing the record count. Tracked membership is exact key evidence; nearest-key similarity is a separate optional readout, not confidence. The discovery recall probe moves to v2. Split resonator cleanup into nearest selection and weighted updates; accept reconstruction only against the observed coefficients. See the [H3 migration and verification notes](docs/plans/holo-h3-impl-notes.md).

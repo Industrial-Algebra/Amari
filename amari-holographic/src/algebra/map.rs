@@ -71,11 +71,24 @@ pub struct MAPAlgebra<const D: usize> {
 impl<const D: usize> MAPAlgebra<D> {
     /// Create a new MAP element from components.
     pub fn new(components: [f64; D]) -> Self {
+        const {
+            assert!(D > 0, "MAP requires at least one component");
+        }
         Self { components }
+    }
+    /// Fallible construction rejects zero-dimensional MAP.
+    pub fn try_new(components: [f64; D]) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
+        Ok(Self { components })
     }
 
     /// Create from a Vec.
     pub fn from_vec(components: Vec<f64>) -> AlgebraResult<Self> {
+        if D == 0 {
+            return Err(AlgebraError::EmptyDimension);
+        }
         if components.len() != D {
             return Err(AlgebraError::DimensionMismatch {
                 expected: D,
@@ -85,7 +98,7 @@ impl<const D: usize> MAPAlgebra<D> {
 
         let mut arr = [0.0; D];
         arr.copy_from_slice(&components);
-        Ok(Self::new(arr))
+        Self::try_new(arr)
     }
 
     /// Create the identity element (all +1).
@@ -141,6 +154,11 @@ impl<const D: usize> MAPAlgebra<D> {
     /// Get all components.
     pub fn components(&self) -> &[f64; D] {
         &self.components
+    }
+
+    /// Real pointwise correlation (the adjoint), not general inverse recovery.
+    pub fn correlation(&self, bound: &Self) -> Self {
+        self.elementwise_multiply(bound)
     }
 
     /// Element-wise multiplication (binding).
@@ -203,8 +221,8 @@ impl<const D: usize> MAPAlgebra<D> {
     }
 
     /// Compute the L2 norm.
-    pub fn compute_norm(&self) -> f64 {
-        self.norm_squared().sqrt()
+    pub fn compute_norm(&self) -> AlgebraResult<f64> {
+        self.norm()
     }
 
     /// Dot product.
@@ -229,12 +247,9 @@ impl<const D: usize> MAPAlgebra<D> {
 
     /// Cyclic shift (permutation).
     pub fn cyclic_shift(&self, shift: i32) -> Self {
-        let n = D as i32;
-        let shift = ((shift % n) + n) % n;
-
         let mut result = [0.0; D];
         for i in 0..D {
-            let j = (i as i32 + shift) as usize % D;
+            let j = super::shifted(i, shift, D);
             result[j] = self.components[i];
         }
 
@@ -258,53 +273,16 @@ impl<const D: usize> MAPAlgebra<D> {
         self.components.iter().filter(|&&x| x < 0.0).count()
     }
 
-    /// Majority element from a bundle (returns ±1 for each component).
-    ///
-    /// This implements hard bundling: for each position, take the
-    /// sign of the sum. Ties go to +1.
-    pub fn majority(elements: &[Self]) -> Self {
-        if elements.is_empty() {
-            return Self::map_identity();
-        }
-
-        let mut sum = [0.0; D];
-        for elem in elements {
-            for i in 0..D {
-                sum[i] += elem.components[i];
-            }
-        }
-
-        let mut result = [0.0; D];
-        for i in 0..D {
-            result[i] = if sum[i] >= 0.0 { 1.0 } else { -1.0 };
-        }
-
-        Self::new(result)
+    /// Hard whole-list bundle. Tied components follow the first input.
+    pub fn majority(elements: &[Self]) -> AlgebraResult<Self> {
+        Self::bundle_all(elements, f64::INFINITY)
     }
 
     /// Soft majority with temperature parameter.
     ///
     /// Uses tanh instead of sign for differentiable bundling.
-    pub fn soft_majority(elements: &[Self], beta: f64) -> Self {
-        if elements.is_empty() {
-            return Self::map_identity();
-        }
-
-        let mut sum = [0.0; D];
-        for elem in elements {
-            for i in 0..D {
-                sum[i] += elem.components[i];
-            }
-        }
-
-        // Normalize by count before applying tanh
-        let n = elements.len() as f64;
-        let mut result = [0.0; D];
-        for i in 0..D {
-            result[i] = (sum[i] / n * beta).tanh();
-        }
-
-        Self::new(result)
+    pub fn soft_majority(elements: &[Self], beta: f64) -> AlgebraResult<Self> {
+        Self::bundle_all(elements, beta)
     }
 }
 
@@ -330,80 +308,28 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
     }
 
     fn inverse(&self) -> AlgebraResult<Self> {
-        // MAP elements are self-inverse: x * x = identity
-        // This is because (+1)² = (-1)² = 1
-        Ok(self.clone())
+        let mut inv = [0.; D];
+        for (out, &x) in inv.iter_mut().zip(&self.components) {
+            if !x.is_finite() {
+                return Err(AlgebraError::NonFinite);
+            }
+            if x == 0. {
+                return Err(AlgebraError::KeyDomain);
+            }
+            *out = 1. / x;
+            if !out.is_finite() {
+                return Err(AlgebraError::Unrepresentable);
+            }
+        }
+        super::keys::certify(self, Self::new(inv))
     }
 
     fn unbind(&self, other: &Self) -> AlgebraResult<Self> {
-        // Since self-inverse, unbind = bind
-        Ok(self.elementwise_multiply(other))
-    }
-
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling: add and take sign
-            let sum = self.add(other);
-            Ok(sum.sign())
-        } else {
-            // Soft bundling: weighted average with soft sign
-            let self_norm = self.compute_norm();
-            let other_norm = other.compute_norm();
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            let weighted = self.scale(w1).add(&other.scale(w2));
-            // Apply soft sign cleanup
-            Ok(weighted.soft_sign(beta))
-        }
+        super::unbind_general(self, other)
     }
 
     fn bundle_all(items: &[Self], beta: f64) -> AlgebraResult<Self> {
-        if items.is_empty() {
-            return Ok(Self::zero());
-        }
-        if items.len() == 1 {
-            return Ok(items[0].clone());
-        }
-
-        if beta.is_infinite() {
-            // Use efficient majority function
-            Ok(Self::majority(items))
-        } else {
-            // Use soft majority
-            Ok(Self::soft_majority(items, beta))
-        }
-    }
-
-    fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.compute_norm();
-        let other_norm = other.compute_norm();
-
-        if self_norm < 1e-10 || other_norm < 1e-10 {
-            return 0.0;
-        }
-
-        self.dot(other) / (self_norm * other_norm)
-    }
-
-    fn norm(&self) -> f64 {
-        self.compute_norm()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let n = self.compute_norm();
-        if n < 1e-10 {
-            return Err(AlgebraError::NormalizationFailed { norm: n });
-        }
-        Ok(self.scale(1.0 / n))
+        super::bundle::serial(items, beta, |sum| sum.soft_sign(beta))
     }
 
     fn permute(&self, shift: i32) -> Self {
@@ -435,7 +361,7 @@ impl<const D: usize> BindingAlgebra for MAPAlgebra<D> {
 
         let mut arr = [0.0; D];
         arr.copy_from_slice(coeffs);
-        Ok(Self::new(arr))
+        Self::try_new(arr)
     }
 
     fn to_coefficients(&self) -> Vec<f64> {
@@ -538,8 +464,8 @@ mod tests {
         let bound = a.bind(&b);
 
         // bound should be dissimilar to both a and b
-        let sim_a = bound.similarity(&a).abs();
-        let sim_b = bound.similarity(&b).abs();
+        let sim_a = bound.similarity(&a).unwrap().abs();
+        let sim_b = bound.similarity(&b).unwrap().abs();
 
         // With 256 dimensions, random bipolar vectors should be nearly orthogonal
         assert!(sim_a < 0.3, "similarity with a: {}", sim_a);
@@ -555,7 +481,7 @@ mod tests {
         c_arr[0] = 1.0; // One component different
         let c = MAP64::from_coefficients(&c_arr).unwrap();
 
-        let majority = MAP64::majority(&[a, b, c]);
+        let majority = MAP64::majority(&[a, b, c]).unwrap();
 
         // Majority should be all +1 (two +1s beat one -1)
         for i in 0..64 {

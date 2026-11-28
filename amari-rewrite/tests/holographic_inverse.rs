@@ -247,7 +247,7 @@ mod guidance {
             assert!(real == 1.0 || real == -1.0, "component {index} is a sign");
             assert_eq!(token_a.imag(index), Some(0.0));
         }
-        assert_eq!(token_a.norm(), (DIMENSION as f64).sqrt());
+        assert_eq!(token_a.norm().expect("norm must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence"), (DIMENSION as f64).sqrt());
 
         // The dimension is part of the frozen derivation: a different `D` is a
         // different vector, not a prefix of this one.
@@ -329,7 +329,7 @@ mod guidance {
                 2.0 * encoding.vector.real(index).unwrap()
             );
         }
-        assert_eq!(doubled.norm(), 2.0 * encoding.vector.norm());
+        assert_eq!(doubled.norm().expect("norm must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence"), 2.0 * encoding.vector.norm().expect("norm must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence"));
 
         // Bundling is the wrong algebra here, and this is why: an attention
         // weighted bundle of a trace with itself IS the trace (bounded
@@ -350,7 +350,7 @@ mod guidance {
             digest_hex(&encoder.vector_digest(&doubled)),
             digest_hex(&encoder.vector_digest(&bundled))
         );
-        assert!(bundled.norm() < doubled.norm());
+        assert!(bundled.norm().expect("norm must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence") < doubled.norm().expect("norm must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence"));
 
         // Position binding is real: moving a step's position changes the
         // vector, so trace order is part of the encoding.
@@ -539,15 +539,15 @@ mod guidance {
             let encoded = encoder.encode(source).expect("bounded");
             assert_eq!(
                 entry.score.combined.to_bits(),
-                BindingAlgebra::similarity(&encoded_query.vector, &encoded.vector).to_bits()
+                BindingAlgebra::similarity(&encoded_query.vector, &encoded.vector).expect("similarity must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence").to_bits()
             );
             assert_eq!(
                 entry.score.goal_alignment.to_bits(),
-                BindingAlgebra::similarity(&encoded_query.goal, &encoded.goal).to_bits()
+                BindingAlgebra::similarity(&encoded_query.goal, &encoded.goal).expect("similarity must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence").to_bits()
             );
             assert_eq!(
                 entry.score.path_alignment.to_bits(),
-                BindingAlgebra::similarity(&encoded_query.path, &encoded.path).to_bits()
+                BindingAlgebra::similarity(&encoded_query.path, &encoded.path).expect("similarity must succeed on this Euclidean fixture — D3 migration; a panic here is a behavior change, not a test failure to silence").to_bits()
             );
         }
 

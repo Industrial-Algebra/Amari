@@ -100,12 +100,22 @@ impl<const P: usize, const Q: usize, const R: usize> CliffordAlgebra<P, Q, R> {
         Some(Self::new(Multivector::from_coefficients(coeffs)))
     }
 
+    /// Signed metric pairing of coefficient-normalized operands, not a retrieval cosine.
+    pub fn normalized_metric_pairing(&self, other: &Self) -> AlgebraResult<f64> {
+        let a = self.normalize()?;
+        let b = other.normalize()?;
+        Ok(a.inner.scalar_product(&b.inner.reverse()))
+    }
+
     /// Create a random unit versor (product of unit vectors).
     ///
     /// Versors are always invertible, making them ideal for binding keys.
-    pub fn random_versor(num_factors: usize) -> Self {
+    pub fn random_versor(num_factors: usize) -> AlgebraResult<Self> {
         if num_factors == 0 {
-            return Self::scalar(1.0);
+            return Ok(Self::scalar(1.0));
+        }
+        if P == 0 && Q == 0 {
+            return Err(AlgebraError::KeyDomain);
         }
 
         // Start with a random unit vector
@@ -117,10 +127,11 @@ impl<const P: usize, const Q: usize, const R: usize> CliffordAlgebra<P, Q, R> {
             result = Self::new(result.inner.geometric_product(&v.inner));
         }
 
-        result
+        super::keys::certify(&result, result.inverse()?)?;
+        Ok(result)
     }
 
-    /// Create a random unit vector.
+    /// Create a coefficient-normalized random vector.
     fn random_unit_vector() -> Self {
         let mut coeffs = alloc::vec![0.0; Self::ALGEBRA_DIM];
         let mut norm_sq = 0.0;
@@ -179,58 +190,11 @@ impl<const P: usize, const Q: usize, const R: usize> BindingAlgebra for Clifford
             })
     }
 
-    fn bundle(&self, other: &Self, beta: f64) -> AlgebraResult<Self> {
-        if beta.is_infinite() {
-            // Hard bundling: winner-take-all
-            let self_norm = self.inner.coefficient_norm();
-            let other_norm = other.inner.coefficient_norm();
-            if self_norm >= other_norm {
-                Ok(self.clone())
-            } else {
-                Ok(other.clone())
-            }
-        } else {
-            // Soft bundling: weighted average
-            let self_norm = self.inner.coefficient_norm();
-            let other_norm = other.inner.coefficient_norm();
-
-            let (w1, w2) = if beta <= 0.0 || (self_norm < 1e-10 && other_norm < 1e-10) {
-                (0.5, 0.5)
-            } else {
-                let max_norm = self_norm.max(other_norm);
-                let exp1 = (beta * (self_norm - max_norm)).exp();
-                let exp2 = (beta * (other_norm - max_norm)).exp();
-                let sum = exp1 + exp2;
-                (exp1 / sum, exp2 / sum)
-            };
-
-            let result = self.inner.clone() * w1 + other.inner.clone() * w2;
-            Ok(Self::new(result))
+    fn coefficient_cosine(&self, other: &Self) -> AlgebraResult<f64> {
+        if Q != 0 || R != 0 {
+            return Err(AlgebraError::UnsupportedSignature);
         }
-    }
-
-    fn similarity(&self, other: &Self) -> f64 {
-        let self_norm = self.inner.coefficient_norm();
-        let other_norm = other.inner.coefficient_norm();
-
-        if self_norm < 1e-10 || other_norm < 1e-10 {
-            return 0.0;
-        }
-
-        // Use scalar product with reverse: <A B̃>₀
-        let inner = self.inner.scalar_product(&other.inner.reverse());
-        inner / (self_norm * other_norm)
-    }
-
-    fn norm(&self) -> f64 {
-        self.inner.coefficient_norm()
-    }
-
-    fn normalize(&self) -> AlgebraResult<Self> {
-        let n = self.inner.coefficient_norm();
-        (n > 0.0)
-            .then(|| Self::new(self.inner.clone() / n))
-            .ok_or(AlgebraError::NormalizationFailed { norm: n })
+        super::geometry::cosine(self.to_coefficients(), other.to_coefficients())
     }
 
     fn permute(&self, shift: i32) -> Self {
@@ -391,36 +355,36 @@ mod tests {
 
     #[test]
     fn test_clifford_binding_identity() {
-        let a = Cl3Full::random_versor(1);
+        let a = Cl3Full::random_versor(1).unwrap();
         let identity = Cl3Full::identity();
         let bound = a.bind(&identity);
 
         // a * identity should equal a
-        let sim = a.similarity(&bound);
+        let sim = a.similarity(&bound).unwrap();
         assert!(sim > 0.99, "similarity with identity binding: {}", sim);
     }
 
     #[test]
     fn test_clifford_inverse() {
-        let a = Cl3Full::random_versor(2);
+        let a = Cl3Full::random_versor(2).unwrap();
         let a_inv = a.inverse().expect("versor should be invertible");
         let product = a.bind(&a_inv);
 
         // a * a^-1 should be close to identity
         let identity = Cl3Full::identity();
-        let sim = product.similarity(&identity);
+        let sim = product.similarity(&identity).unwrap();
         assert!(sim > 0.99, "inverse product similarity: {}", sim);
     }
 
     #[test]
     fn test_clifford_dissimilarity() {
-        let a = Cl3Full::random_versor(1);
-        let b = Cl3Full::random_versor(1);
+        let a = Cl3Full::random_versor(1).unwrap();
+        let b = Cl3Full::random_versor(1).unwrap();
         let bound = a.bind(&b);
 
         // bound should be dissimilar to both a and b
-        let sim_a = bound.similarity(&a).abs();
-        let sim_b = bound.similarity(&b).abs();
+        let sim_a = bound.similarity(&a).unwrap().abs();
+        let sim_b = bound.similarity(&b).unwrap().abs();
 
         // In high dimensions, similarity should be low (close to 0)
         // For Cl(3), dimension is only 8, so we're more lenient
@@ -430,13 +394,13 @@ mod tests {
 
     #[test]
     fn test_clifford_bundling() {
-        let a = Cl3Full::random_versor(1);
-        let b = Cl3Full::random_versor(1);
+        let a = Cl3Full::random_versor(1).unwrap();
+        let b = Cl3Full::random_versor(1).unwrap();
         let bundled = a.bundle(&b, 1.0).expect("bundling should succeed");
 
         // bundled should be similar to both a and b
-        let sim_a = bundled.similarity(&a);
-        let sim_b = bundled.similarity(&b);
+        let sim_a = bundled.similarity(&a).unwrap();
+        let sim_b = bundled.similarity(&b).unwrap();
 
         // For soft bundling, result should have some similarity to both
         assert!(

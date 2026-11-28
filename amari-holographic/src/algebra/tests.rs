@@ -15,7 +15,7 @@ mod property_tests {
             let a = make_random();
             let bound = a.bind(&identity);
 
-            let sim = a.similarity(&bound);
+            let sim = a.similarity(&bound).unwrap();
             assert!(
                 sim > 0.99,
                 "{}: identity law failed, similarity = {}",
@@ -34,7 +34,7 @@ mod property_tests {
             if let Ok(a_inv) = a.inverse() {
                 let product = a.bind(&a_inv);
 
-                let sim = product.similarity(&identity);
+                let sim = product.similarity(&identity).unwrap();
                 assert!(
                     sim > 0.95,
                     "{}: inverse law failed, similarity = {}",
@@ -53,7 +53,7 @@ mod property_tests {
 
             let bound = key.bind(&value);
             if let Ok(recovered) = key.unbind(&bound) {
-                let sim = recovered.similarity(&value);
+                let sim = recovered.similarity(&value).unwrap();
                 assert!(
                     sim > 0.95,
                     "{}: unbind recovery failed, similarity = {}",
@@ -71,8 +71,8 @@ mod property_tests {
             let b = make_random();
             let bound = a.bind(&b);
 
-            let sim_a = bound.similarity(&a).abs();
-            let sim_b = bound.similarity(&b).abs();
+            let sim_a = bound.similarity(&a).unwrap().abs();
+            let sim_b = bound.similarity(&b).unwrap().abs();
 
             // For high-dimensional spaces, similarity should be low
             // For low dimensions (like Cl3), we're more lenient
@@ -100,8 +100,8 @@ mod property_tests {
 
             if let Ok(bundled) = a.bundle(&b, 1.0) {
                 // Bundled should have some similarity to inputs
-                let sim_a = bundled.similarity(&a);
-                let sim_b = bundled.similarity(&b);
+                let sim_a = bundled.similarity(&a).unwrap();
+                let sim_b = bundled.similarity(&b).unwrap();
 
                 // At least one should have positive similarity
                 assert!(
@@ -122,7 +122,7 @@ mod property_tests {
             let permuted = a.permute(shift);
             let back = permuted.permute(-shift);
 
-            let sim = a.similarity(&back);
+            let sim = a.similarity(&back).unwrap();
             assert!(
                 sim > 0.99,
                 "{}: permutation should be reversible, similarity = {}",
@@ -137,7 +137,7 @@ mod property_tests {
         for _ in 0..10 {
             let a = make_random();
             if let Ok(normalized) = a.normalize() {
-                let norm = normalized.norm();
+                let norm = normalized.norm().unwrap();
                 assert!(
                     (norm - 1.0).abs() < 0.01,
                     "{}: normalized element should have unit norm, got {}",
@@ -155,7 +155,7 @@ mod property_tests {
             let coeffs = a.to_coefficients();
 
             if let Ok(reconstructed) = A::from_coefficients(&coeffs) {
-                let sim = a.similarity(&reconstructed);
+                let sim = a.similarity(&reconstructed).unwrap();
                 assert!(
                     sim > 0.99,
                     "{}: coefficient round-trip failed, similarity = {}",
@@ -176,42 +176,42 @@ mod property_tests {
 
         #[test]
         fn test_cl3_identity_law() {
-            test_binding_identity_law(|| Cl3Full::random_versor(2));
+            test_binding_identity_law(|| Cl3Full::random_versor(2).unwrap());
         }
 
         #[test]
         fn test_cl3_inverse_law() {
-            test_inverse_law(|| Cl3Full::random_versor(2));
+            test_inverse_law(|| Cl3Full::random_versor(2).unwrap());
         }
 
         #[test]
         fn test_cl3_unbind_recovery() {
-            test_unbind_recovery(|| Cl3Full::random_versor(2));
+            test_unbind_recovery(|| Cl3Full::random_versor(2).unwrap());
         }
 
         #[test]
         fn test_cl3_dissimilarity() {
-            test_binding_dissimilarity(|| Cl3Full::random_versor(1));
+            test_binding_dissimilarity(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_bundling() {
-            test_bundling_similarity(|| Cl3Full::random_versor(1));
+            test_bundling_similarity(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_permute() {
-            test_permute_reversible(|| Cl3Full::random_versor(1));
+            test_permute_reversible(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_normalize() {
-            test_normalization(|| Cl3Full::random_versor(1));
+            test_normalization(|| Cl3Full::random_versor(1).unwrap());
         }
 
         #[test]
         fn test_cl3_coefficients() {
-            test_coefficient_roundtrip(|| Cl3Full::random_versor(1));
+            test_coefficient_roundtrip(|| Cl3Full::random_versor(1).unwrap());
         }
     }
 
@@ -471,7 +471,7 @@ mod comparison_tests {
             let _bound = a.bind(&b);
             let _inv = a.inverse();
             let _bundled = a.bundle(&b, 1.0);
-            let _sim = a.similarity(&b);
+            let _sim = a.similarity(&b).unwrap();
             let _norm = a.norm();
             let _normalized = a.normalize();
             let _permuted = a.permute(3);
