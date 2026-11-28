@@ -1,0 +1,22 @@
+# Ingest PR inline review comments to the org wall (v0.4.3 U3 pilot).
+# Calls the reusable workflow in IA-home. Reusable workflows do NOT
+# inherit their source repo's secrets — the CALLER forwards every
+# secret the called workflow requires.
+
+name: Review ingest
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  ingest:
+    uses: Industrial-Algebra/IA-home/.github/workflows/review-ingest.yml@main
+    with:
+      repo_name: amari
+      wall: ns_ia_shared
+      pr_number: ${{ github.event.pull_request.number }}
+    secrets:
+      IJIMA_REVIEW_INGEST_TOKEN: ${{ secrets.IJIMA_REVIEW_INGEST_TOKEN }}
+      IJIMA_INGEST_URL: ${{ secrets.IJIMA_INGEST_URL }}
+      IJIMA_TS_AUTH_KEY: ${{ secrets.IJIMA_TS_AUTH_KEY }}
