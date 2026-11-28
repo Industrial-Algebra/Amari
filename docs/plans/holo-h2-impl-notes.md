@@ -1,5 +1,11 @@
 # H2 implementation and migration evidence
 
+## PR #391 CI remediation — discovery trait surface
+
+On `eee357bd`, `c test -p amari-discovery --test catalog_traits real_binding_algebra_supertraits_and_items -- --exact` ran one test and exited 101: `bundle should be required` (30 filtered out). Discovery Catalog Tests failed; Discovery Integration Tests and Mathematical Correctness Check propagated that failure. The generated catalog agreed with the trait: H2 U4 provides pair `bundle` by delegating to `bundle_all`. Only the hand-maintained assertion was stale. The corrected test checks `provided_items`; `bind` and `inverse` remain required. No production code or catalog artifact changed.
+
+The same focused command passed (1/1). Drift checks alone had missed this assertion, so the pre-push discovery gate now also requires the unfiltered `c test -p amari-discovery`. It passed with 1,229 passed, 0 failed, 1 ignored, including `catalog_traits`, `catalog_integrity` and `catalog_generation`. `python3 scripts/run-discovery-test-shard.py --verify` confirmed all 76 integration targets are registered across three shards.
+
 ## Implementation review R1 — two P2 findings on `1e1f7d02`
 
 **F5, trait and method rustdoc:** binding distributes over `superpose` (bilinearity), not nonlinear attention, voting or cleanup. `rg -in 'distribut|commutes with' amari-holographic` checked the crate source, README and tests; neither of the two former promises remains. The additive coefficient test still runs; no nonlinear distribution assertion was introduced.

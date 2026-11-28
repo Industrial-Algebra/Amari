@@ -587,7 +587,12 @@ fn real_binding_algebra_supertraits_and_items() {
         .collect();
     assert!(req_names.contains(&"bind"), "bind should be required");
     assert!(req_names.contains(&"inverse"), "inverse should be required");
-    assert!(req_names.contains(&"bundle"), "bundle should be required");
+    // H2 D4 (whole-list bundling): the trait provides the canonical pair
+    // implementation via bundle_all; implementors need not supply their own.
+    assert!(
+        ba_def.provided_items.iter().any(|i| i.name == "bundle"),
+        "bundle should be a provided (default) item"
+    );
 
     // unbind has a default implementation
     let unbind_item = ba_def.provided_items.iter().find(|i| i.name == "unbind");
